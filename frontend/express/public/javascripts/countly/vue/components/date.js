@@ -292,7 +292,13 @@
                 if (!this.customRangeSelection) {
                     return;
                 }
-                var anchorClass = ".anchor-" + moment(date).startOf("month").unix();
+                var anchorClass = null;
+                if (this.tableType === "month") {
+                    anchorClass = ".anchor-" + moment(date).startOf("year").unix();
+                }
+                else {
+                    anchorClass = ".anchor-" + moment(date).startOf("month").unix();
+                }
                 this.$refs.vs.scrollIntoView(anchorClass);
             },
             handleDropdownHide: function(aborted) {
