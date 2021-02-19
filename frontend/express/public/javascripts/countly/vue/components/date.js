@@ -109,7 +109,8 @@
                 globalMax = moment(),
                 cursor = moment(globalMin.toDate()),
                 formatter = null,
-                tableType = "";
+                tableType = "",
+                shortcuts = [];
 
             if (this.type === "monthrange") {
                 formatter = "YYYY-MM";
@@ -134,6 +135,15 @@
                     });
                     cursor = cursor.add(1, "M");
                 }
+                shortcuts = [
+                    {label: this.i18n("common.yesterday"), value: "yesterday"},
+                    {label: this.i18n("common.today"), value: "hour"},
+                    {label: this.i18n("taskmanager.last-7days"), value: "7days"},
+                    {label: this.i18n("taskmanager.last-30days"), value: "30days"},
+                    {label: this.i18n("taskmanager.last-60days"), value: "60days"},
+                    {label: moment().format("MMMM, YYYY"), value: "day"},
+                    {label: moment().year(), value: "month"},
+                ];
             }
 
             var state = {
@@ -161,15 +171,7 @@
                 tableType: tableType,
 
                 // Shortcuts
-                shortcuts: [
-                    {label: this.i18n("common.yesterday"), value: "yesterday"},
-                    {label: this.i18n("common.today"), value: "hour"},
-                    {label: this.i18n("taskmanager.last-7days"), value: "7days"},
-                    {label: this.i18n("taskmanager.last-30days"), value: "30days"},
-                    {label: this.i18n("taskmanager.last-60days"), value: "60days"},
-                    {label: moment().format("MMMM, YYYY"), value: "day"},
-                    {label: moment().year(), value: "month"},
-                ],
+                shortcuts: shortcuts,
             };
 
             return _.extend(state, getDefaultInputState(formatter));
@@ -421,7 +423,7 @@
             }
         },
         template: '<div class="cly-vue-daterp" :class="{\'cly-vue-daterp--custom-selection\': customRangeSelection}">\
-                        <div class="cly-vue-daterp__shortcuts-col">\
+                        <div class="cly-vue-daterp__shortcuts-col" v-if="shortcuts && shortcuts.length > 0">\
                             <div class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"\
                                 @click="handleCustomRangeClick">\
                                 Custom Range<i class="el-icon-caret-right"></i>\

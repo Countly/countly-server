@@ -303,8 +303,9 @@
         template: '#vue-example-date-template',
         data: function() {
             return {
-                selectedDate: '10weeks'
-            }
+                selectedDateRange: '10weeks',
+                selectedMonthRange: '10months'
+            };
         }
     });
 

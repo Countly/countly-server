@@ -465,23 +465,25 @@ body {
     .cly-vue-daterp {
         background: #FFFFFF;
         border-radius: 4px;
-        width: 160px;
         border: 1px #EBEBEF solid;
         color: $--color-text-custom-1-active;
-
-        &--custom-selection {
-            width: 501px;
-        }
+        display: inline-block;
 
         &__shortcuts-col {
             width: 144px;
             padding: 8px;
             vertical-align: top;
         }
-        
+
         &__calendars-col {
-            border-left: 1px #EBEBEF solid;
-            margin-left:-5px;
+            width: 341px;
+        }
+        
+        &__shortcuts-col {
+            + .cly-vue-daterp__calendars-col {
+                border-left: 1px #EBEBEF solid;
+                margin-left:-5px;
+            }
         }
 
         &__calendars-wrapper {
