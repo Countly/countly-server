@@ -81,7 +81,7 @@ tracker.enable = function() {
         url: url,
         app_version: versionInfo.version,
         storage_path: "../../../.sdk/",
-        interval: 60000,
+        interval: 10000,
         fail_timeout: 600,
         session_update: 120,
         debug: (logger.getLevel("tracker:server") === "debug")
