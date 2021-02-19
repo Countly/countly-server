@@ -169,7 +169,8 @@ module.exports = function(grunt) {
                         'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
                         'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
                         'frontend/express/public/javascripts/dom/drop/drop-theme-countly.min.css',
-                        'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.css'
+                        'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.css',
+                        'frontend/express/public/stylesheets/bulma/bulma-custom.css',
                     ]
                 }
             }
