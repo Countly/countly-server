@@ -176,7 +176,8 @@
         },
         renderCommon: function(isRefresh) {
             if (!isRefresh) {
-                $(this.el).html("<div class='cly-vue-theme-clydef'><div class='vue-wrapper'></div><div id='vue-templates'></div></div>");
+                $(this.el).html("<div><div class='vue-wrapper'></div><div id='vue-templates'></div></div>");
+                $("body").addClass("cly-vue-theme-clydef");
                 this.elementsToBeRendered.forEach(function(el) {
                     $("#vue-templates").append(el);
                 });
@@ -222,6 +223,7 @@
             var self = this;
             self.elementsToBeRendered = [];
             if (self.vm) {
+                $("body").removeClass("cly-vue-theme-clydef");
                 self.vm.$destroy();
                 self.vm.$off();
                 $(self.vm.$el).remove();

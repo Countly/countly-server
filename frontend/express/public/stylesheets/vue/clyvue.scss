@@ -1,15 +1,6 @@
 @import "./element-variables.scss";
 @import "./typography-variables.scss";
 
-body {
-    .el-popper {
-        font-family: $--font-family !important;
-        button {
-            font: $--font-weight-primary $--text-button-size $--font-family !important;
-        }
-    }
-}
-
 .cly-vue-theme-clydef {
 
     font-family: $--font-family !important;
@@ -101,7 +92,6 @@ body {
             font-weight: $--font-weight-primary !important;
         }
     }
-
 
     // tabs component
     .cly-vue-tabs {
@@ -465,7 +455,6 @@ body {
     .cly-vue-daterp {
         background: #FFFFFF;
         border-radius: 4px;
-        border: 1px #EBEBEF solid;
         color: $--color-text-custom-1-active;
         display: inline-block;
 
@@ -3092,6 +3081,7 @@ body {
         display: none;
     }
 }
+
 .cly-vue-tooltip {
     display: block !important;
     z-index: 10000;
@@ -3191,6 +3181,7 @@ body {
         transition: opacity 0.05s;
     }
 }
+
 .cly-vue-listbox {
     height: inherit;
     .el-scrollbar {
@@ -3220,15 +3211,18 @@ body {
             border-color: $--color-primary;
         }
     }
-}
 
-.cly-vue-listbox__no-data {
-    padding: 11px 7px 2px 7px;
+    &__no-data {
+        padding: 11px 7px 2px 7px;
+    }
 }
 
 .cly-vue-dropdown {
     &__pop {
         padding: 0px;
+    }
+    &__pop-container {
+        word-break: initial;
     }
 }
 
