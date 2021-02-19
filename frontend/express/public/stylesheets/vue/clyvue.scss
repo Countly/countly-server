@@ -627,6 +627,38 @@ body {
                     }
                 }
             }
+        } 
+        
+        .el-month-table {
+            margin-top: 2px;
+            margin-bottom: 14px;
+            td {
+                width: 78px;
+                height: 66px;
+                padding: 0;
+                > div { 
+                    padding: 0px;
+                    a {
+                        width: 72px;
+                        height: 50px;
+                        background: #fff;
+                        border-radius: 4px;
+                        font-size: 14px;
+                        padding-top: 10px;
+                    }
+                }
+                &.in-range{
+                    > div a {
+                        background: #ccdbf2;
+                        mix-blend-mode: normal;
+                    }
+                }
+                &.start-date, &.end-date {
+                    > div a {
+                        background: #1967D2
+                    }
+                }
+            }
         }
     }
 

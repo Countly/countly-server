@@ -124,7 +124,7 @@
                 }
             }
             else {
-                formatter = "MM/DD/YYYY";
+                formatter = "YYYY-MM-DD";
                 tableType = "date";
                 while (cursor < globalMax) {
                     globalRange.push({
@@ -462,7 +462,7 @@
                                         </div>\
                                     </el-tab-pane>\
                                 </el-tabs>\
-                                <div class="cly-vue-daterp__day-names-wrapper">\
+                                <div class="cly-vue-daterp__day-names-wrapper" v-if="tableType === \'date\'">\
                                     <table class="cly-vue-daterp__day-names"><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></table>\
                                 </div>\
                             </div>\
@@ -479,6 +479,7 @@
                                                 :date="item.date"\
                                                 :min-date="minDate"\
                                                 :max-date="maxDate"\
+                                                :rangeState="rangeState"\
                                                 @pick="handleRangePick"\
                                                 @changerange="handleChangeRange">\
                                             </month-table>\
@@ -493,6 +494,7 @@
                                                 :date="item.date"\
                                                 :min-date="minDate"\
                                                 :max-date="maxDate"\
+                                                :rangeState="rangeState"\
                                                 @pick="handleRangePick"\
                                                 @changerange="handleChangeRange">\
                                             </date-table>\
