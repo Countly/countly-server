@@ -176,6 +176,8 @@
                 formatter: formatter,
                 globalRange: globalRange,
                 tableType: tableType,
+                globalMin: globalMin,
+                globalMax: globalMax,
 
                 // Shortcuts
                 shortcuts: shortcuts,
@@ -218,7 +220,7 @@
                 var needsSync = newVal !== moment(parsedRange[index]).format(this.formatter);
                 if (needsSync) {
                     var parsed = moment(newVal);
-                    if (parsed && parsed.isValid()) {
+                    if (parsed && parsed.isValid() && (parsed >= this.globalMin) && (parsed <= this.globalMax)) {
                         target.raw['invalid' + index] = false;
                         parsedRange[index] = parsed.toDate();
                         this.handleUserInputUpdate(parsedRange[index]);
