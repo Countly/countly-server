@@ -185,13 +185,13 @@
         },
         watch: {
             'inBetweenInput.raw.textStart': function(newVal) {
-                this.tryParsing(newVal, this.inBetweenInput.parsed, 0);
+                this.tryParsing(newVal, this.inBetweenInput, 0);
             },
             'inBetweenInput.raw.textEnd': function(newVal) {
-                this.tryParsing(newVal, this.inBetweenInput.parsed, 1);
+                this.tryParsing(newVal, this.inBetweenInput, 1);
             },
             'sinceInput.raw.text': function(newVal) {
-                this.tryParsing(newVal, this.sinceInput.parsed, 0);
+                this.tryParsing(newVal, this.sinceInput, 0);
             },
             'inTheLastInput.raw': {
                 deep: true,
@@ -214,12 +214,17 @@
         },
         methods: {
             tryParsing: function(newVal, target, index) {
-                var needsSync = newVal !== moment(target[index]).format(this.formatter);
+                var parsedRange = target.parsed;
+                var needsSync = newVal !== moment(parsedRange[index]).format(this.formatter);
                 if (needsSync) {
                     var parsed = moment(newVal);
                     if (parsed && parsed.isValid()) {
-                        target[index] = parsed.toDate();
-                        this.handleUserInputUpdate(target[index]);
+                        target.raw['invalid' + index] = false;
+                        parsedRange[index] = parsed.toDate();
+                        this.handleUserInputUpdate(parsedRange[index]);
+                    }
+                    else {
+                        target.raw['invalid' + index] = true;
                     }
                 }
             },
@@ -301,7 +306,26 @@
                 }
                 this.$refs.vs.scrollIntoView(anchorClass);
             },
+            handleTextStartFocus: function() {
+                this.scrollTo(this.inBetweenInput.parsed[0]);
+            },
+            handleTextEndFocus: function() {
+                this.scrollTo(this.inBetweenInput.parsed[1]);
+            },
+            handleTextStartBlur: function() {
+                if (this.inBetweenInput.raw.invalid0 && this.inBetweenInput.parsed[0]) {
+                    this.inBetweenInput.raw.textStart = moment(this.inBetweenInput.parsed[0]).format(this.formatter);
+                    this.inBetweenInput.raw.invalid0 = false;
+                }
+            },
+            handleTextEndBlur: function() {
+                if (this.inBetweenInput.raw.invalid1 && this.inBetweenInput.parsed[1]) {
+                    this.inBetweenInput.raw.textEnd = moment(this.inBetweenInput.parsed[1]).format(this.formatter);
+                    this.inBetweenInput.raw.invalid1 = false;
+                }
+            },
             handleDropdownHide: function(aborted) {
+                this.abortPicking();
                 if (aborted) {
                     this.loadValue(this.value);
                 }
@@ -485,9 +509,9 @@
                                         <el-tab-pane name="inBetween">\
                                             <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
                                             <div class="cly-vue-daterp__input-wrapper">\
-                                                <el-input size="small" v-model="inBetweenInput.raw.textStart"></el-input>\
+                                                <el-input size="small" :class="{\'is-error\': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>\
                                                 <span class="text-medium cly-vue-daterp__in-between-conj">and</span>\
-                                                <el-input size="small" v-model="inBetweenInput.raw.textEnd"></el-input>\
+                                                <el-input size="small" :class="{\'is-error\': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>\
                                             </div>\
                                         </el-tab-pane>\
                                         <el-tab-pane name="since">\
