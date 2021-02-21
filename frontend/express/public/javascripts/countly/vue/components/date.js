@@ -334,6 +334,7 @@
             },
             handleDropdownShow: function() {
                 var self = this;
+                this.$forceUpdate();
                 this.$nextTick(function() {
                     self.scrollTo(self.minDate);
                 });
@@ -379,6 +380,7 @@
                 this.customRangeSelection = true;
                 var self = this;
                 this.$nextTick(function() {
+                    self.$forceUpdate();
                     self.scrollTo(self.minDate);
                 });
             },
@@ -507,7 +509,7 @@
                             </div>\
                             <div class="cly-vue-daterp__calendars-col" v-if="customRangeSelection">\
                                 <div class="cly-vue-daterp__input-methods">\
-                                    <el-tabs v-model="rangeMode" @tab-click="handleTabChange">\
+                                    <el-tabs ref="elTabs" v-model="rangeMode" @tab-click="handleTabChange">\
                                         <el-tab-pane name="inBetween">\
                                             <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
                                             <div class="cly-vue-daterp__input-wrapper">\
