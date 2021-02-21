@@ -54,6 +54,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/webfont.js',
                     'frontend/express/public/javascripts/utils/selectize.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/es6-promise.auto.min.js',
+                    'frontend/express/public/javascripts/utils/polyfill/intersection-observer.js',
                     'frontend/express/public/javascripts/utils/vue/vue.min.js',
                     'frontend/express/public/javascripts/utils/vue/vuex.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue-color.min.js',

@@ -110,7 +110,7 @@
         },
         data: function() {
             var globalRange = [],
-                globalMin = moment([2000, 0, 1]),
+                globalMin = moment([2015, 0, 1]),
                 globalMax = moment(),
                 cursor = moment(globalMin.toDate()),
                 formatter = null,
