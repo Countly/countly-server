@@ -539,15 +539,15 @@
                                     </div>\
                                 </div>\
                                 <div class="cly-vue-daterp__calendars-wrapper">\
-                                    <div class="cly-vue-daterp__table-wrap" style="height: 248px" ref="localViewport">\
+                                    <div class="cly-vue-daterp__table-wrap" style="height: 248px" ref="calendarsViewport">\
                                         <vue-scroll ref="vs" :ops="scrollOps">\
                                             <div class="cly-vue-daterp__table-view" v-if="tableType === \'month\'">\
                                                 <month-table\
                                                     v-for="item in globalRange"\
                                                     :key="item.key"\
                                                     :date-meta="item"\
-                                                    in-viewport-root-margin="10% 0%"\
-                                                    :in-viewport-root="$refs.localViewport"\
+                                                    :in-viewport-requires-root="true"\
+                                                    :in-viewport-root="$refs.calendarsViewport"\
                                                     selection-mode="range"\
                                                     :date="item.date"\
                                                     :min-date="minDate"\
@@ -562,8 +562,8 @@
                                                     v-for="item in globalRange"\
                                                     :key="item.key"\
                                                     :date-meta="item"\
-                                                    in-viewport-root-margin="10% 0%"\
-                                                    :in-viewport-root="$refs.localViewport"\
+                                                    :in-viewport-requires-root="true"\
+                                                    :in-viewport-root="$refs.calendarsViewport"\
                                                     selection-mode="range"\
                                                     :date="item.date"\
                                                     :min-date="minDate"\
