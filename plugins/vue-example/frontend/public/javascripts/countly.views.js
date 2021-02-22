@@ -304,7 +304,9 @@
         data: function() {
             return {
                 selectedDateRange: '10weeks',
-                selectedMonthRange: '10months'
+                selectedMonthRange: '10months',
+                selectedDynamicRange: '10weeks',
+                selectedDynamicType: 'daterange',
             };
         }
     });

@@ -49,6 +49,84 @@
         };
     }
 
+    function getInitialState(instance) {
+        var globalRange = [],
+            globalMin = moment([2010, 0, 1]),
+            globalMax = moment(),
+            cursor = moment(globalMin.toDate()),
+            formatter = null,
+            tableType = "",
+            shortcuts = [];
+
+        if (instance.type === "monthrange") {
+            formatter = "YYYY-MM";
+            tableType = "month";
+            while (cursor < globalMax) {
+                globalRange.push({
+                    date: cursor.toDate(),
+                    title: cursor.format("YYYY"),
+                    key: cursor.unix()
+                });
+                cursor = cursor.add(1, "Y");
+            }
+        }
+        else {
+            formatter = "YYYY-MM-DD";
+            tableType = "date";
+            while (cursor < globalMax) {
+                globalRange.push({
+                    date: cursor.toDate(),
+                    title: cursor.format("MMMM YYYY"),
+                    key: cursor.unix()
+                });
+                cursor = cursor.add(1, "M");
+            }
+            if (instance.displayShortcuts) {
+                shortcuts = [
+                    {label: instance.i18n("common.yesterday"), value: "yesterday"},
+                    {label: instance.i18n("common.today"), value: "hour"},
+                    {label: instance.i18n("taskmanager.last-7days"), value: "7days"},
+                    {label: instance.i18n("taskmanager.last-30days"), value: "30days"},
+                    {label: instance.i18n("taskmanager.last-60days"), value: "60days"},
+                    {label: moment().format("MMMM, YYYY"), value: "day"},
+                    {label: moment().year(), value: "month"},
+                ];
+            }
+        }
+
+        var state = {
+            // Calendar state
+            rangeState: {
+                endDate: null,
+                selecting: false,
+                row: null,
+                column: null
+            },
+
+            rangeBackup: {
+                minDate: null,
+                maxDate: null
+            },
+
+            scrollOps: {
+                scrollPanel: { scrollingX: false},
+                bar: {minSize: 0.2, background: 'rgba(129,134,141,.3)'}
+            },
+
+            // Constants
+            formatter: formatter,
+            globalRange: globalRange,
+            tableType: tableType,
+            globalMin: globalMin,
+            globalMax: globalMax,
+
+            // Shortcuts
+            shortcuts: shortcuts,
+        };
+
+        return _.extend(state, getDefaultInputState(formatter));
+    }
+
     var AbstractTableComponent = {
         props: {
             dateMeta: Object
@@ -109,81 +187,7 @@
             disabled: { type: Boolean, default: false}
         },
         data: function() {
-            var globalRange = [],
-                globalMin = moment([2010, 0, 1]),
-                globalMax = moment(),
-                cursor = moment(globalMin.toDate()),
-                formatter = null,
-                tableType = "",
-                shortcuts = [];
-
-            if (this.type === "monthrange") {
-                formatter = "YYYY-MM";
-                tableType = "month";
-                while (cursor < globalMax) {
-                    globalRange.push({
-                        date: cursor.toDate(),
-                        title: cursor.format("YYYY"),
-                        key: cursor.unix()
-                    });
-                    cursor = cursor.add(1, "Y");
-                }
-            }
-            else {
-                formatter = "YYYY-MM-DD";
-                tableType = "date";
-                while (cursor < globalMax) {
-                    globalRange.push({
-                        date: cursor.toDate(),
-                        title: cursor.format("MMMM YYYY"),
-                        key: cursor.unix()
-                    });
-                    cursor = cursor.add(1, "M");
-                }
-                if (this.displayShortcuts) {
-                    shortcuts = [
-                        {label: this.i18n("common.yesterday"), value: "yesterday"},
-                        {label: this.i18n("common.today"), value: "hour"},
-                        {label: this.i18n("taskmanager.last-7days"), value: "7days"},
-                        {label: this.i18n("taskmanager.last-30days"), value: "30days"},
-                        {label: this.i18n("taskmanager.last-60days"), value: "60days"},
-                        {label: moment().format("MMMM, YYYY"), value: "day"},
-                        {label: moment().year(), value: "month"},
-                    ];
-                }
-            }
-
-            var state = {
-                // Calendar state
-                rangeState: {
-                    endDate: null,
-                    selecting: false,
-                    row: null,
-                    column: null
-                },
-
-                rangeBackup: {
-                    minDate: null,
-                    maxDate: null
-                },
-
-                scrollOps: {
-                    scrollPanel: { scrollingX: false},
-                    bar: {minSize: 0.2, background: 'rgba(129,134,141,.3)'}
-                },
-
-                // Constants
-                formatter: formatter,
-                globalRange: globalRange,
-                tableType: tableType,
-                globalMin: globalMin,
-                globalMax: globalMax,
-
-                // Shortcuts
-                shortcuts: shortcuts,
-            };
-
-            return _.extend(state, getDefaultInputState(formatter));
+            return getInitialState(this);
         },
         watch: {
             'inBetweenInput.raw.textStart': function(newVal) {
@@ -212,6 +216,10 @@
                 handler: function(newVal) {
                     this.loadValue(newVal);
                 }
+            },
+            'type': function() {
+                Object.assign(this.$data, getInitialState(this));
+                this.loadValue(this.value);
             }
         },
         methods: {
@@ -487,6 +495,8 @@
                             <slot name="trigger">\
                                 <cly-input-dropdown-trigger\
                                     ref="trigger"\
+                                    :arrow="false"\
+                                    :prefix-icon="\'el-icon-date\'"\
                                     :disabled="disabled"\
                                     :focused="dropdown.focused"\
                                     :opened="dropdown.visible"\
@@ -509,7 +519,7 @@
                             </div>\
                             <div class="cly-vue-daterp__calendars-col" v-if="customRangeSelection">\
                                 <div class="cly-vue-daterp__input-methods">\
-                                    <el-tabs ref="elTabs" v-model="rangeMode" @tab-click="handleTabChange">\
+                                    <el-tabs v-model="rangeMode" @tab-click="handleTabChange">\
                                         <el-tab-pane name="inBetween">\
                                             <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
                                             <div class="cly-vue-daterp__input-wrapper">\

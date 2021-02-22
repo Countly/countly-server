@@ -11,4 +11,12 @@
         <cly-daterangepicker v-model="selectedDateRange" :display-shortcuts="false"></cly-daterangepicker>
         <pre>{{selectedDateRange}}</pre>
     </cly-section>
+    <cly-section title="Dynamic type">
+        <el-select size="small" v-model="selectedDynamicType">
+            <el-option label="Date range" value="daterange"></el-option>
+            <el-option label="Month range" value="monthrange"></el-option>
+        </el-select>
+        <cly-daterangepicker v-model="selectedDynamicRange" :type="selectedDynamicType"></cly-daterangepicker>
+        <pre>{{selectedDateRange}}</pre>
+    </cly-section>
 </div>

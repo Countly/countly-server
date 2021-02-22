@@ -8,6 +8,7 @@
         props: {
             focused: {type: Boolean, default: false},
             opened: {type: Boolean, default: false},
+            arrow: {type: Boolean, default: true},
             selectedOptions: {
                 type: [Array, Object],
                 default: function() {
@@ -38,11 +39,12 @@
         template: '<el-input\
                         ref="elInput"\
                         :class="{ \'is-focus\': focused, \'is-disabled\': disabled }"\
+                        v-bind="$attrs"\
                         readonly="readonly" \
                         v-model="description"\
                         :placeholder="placeholder">\
                         <template slot="suffix">\
-                            <i class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
+                            <i v-if="arrow" class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
                         </template>\
                     </el-input>'
 

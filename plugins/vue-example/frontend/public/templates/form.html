@@ -114,27 +114,6 @@
 
             </div>
         </cly-section>
-        <cly-section title="Nested dropdowns and selects">
-            <div class="example-cell">
-                <cly-input-dropdown 
-                    :disabled="dropdownsDisabled"    
-                    v-model="selectedLB.name">
-                    <cly-input-dropdown :popper-append-to-body="false" v-model="selectedLB.name">
-                        <el-select :popper-append-to-body="false" v-model="selectedRadio">
-                            <el-option :key="item.value" :value="item.value" :label="item.name"
-                                v-for="item in selectWItems"></el-option>
-                        </el-select>
-                        <el-select :popper-append-to-body="false" v-model="selectedRadio">
-                            <el-option :key="item.value" :value="item.value" :label="item.name"
-                                v-for="item in selectWItems"></el-option>
-                        </el-select>
-                    </cly-input-dropdown>
-                </cly-input-dropdown>
-            </div>
-            <div class="example-cell">
-                {{selectedLB}}
-            </div>
-        </cly-section>
         <cly-section title="cly-select-x (Simple)">
             <div class="example-cell">
                 <cly-select-x
