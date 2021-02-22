@@ -55,8 +55,7 @@
             globalMax = moment(),
             cursor = moment(globalMin.toDate()),
             formatter = null,
-            tableType = "",
-            shortcuts = [];
+            tableType = "";
 
         if (instance.type === "monthrange") {
             formatter = "YYYY-MM";
@@ -80,17 +79,6 @@
                     key: cursor.unix()
                 });
                 cursor = cursor.add(1, "M");
-            }
-            if (instance.displayShortcuts) {
-                shortcuts = [
-                    {label: instance.i18n("common.yesterday"), value: "yesterday"},
-                    {label: instance.i18n("common.today"), value: "hour"},
-                    {label: instance.i18n("taskmanager.last-7days"), value: "7days"},
-                    {label: instance.i18n("taskmanager.last-30days"), value: "30days"},
-                    {label: instance.i18n("taskmanager.last-60days"), value: "60days"},
-                    {label: moment().format("MMMM, YYYY"), value: "day"},
-                    {label: moment().year(), value: "month"},
-                ];
             }
         }
 
@@ -118,10 +106,7 @@
             globalRange: globalRange,
             tableType: tableType,
             globalMin: globalMin,
-            globalMax: globalMax,
-
-            // Shortcuts
-            shortcuts: shortcuts,
+            globalMax: globalMax
         };
 
         return _.extend(state, getDefaultInputState(formatter));
@@ -239,64 +224,7 @@
                     },
                     parsed: [minDate, maxDate]
                 };
-            },
-            valueToInputState: function(value) {
-
-                var isShortcut = this.shortcuts && this.shortcuts.some(function(shortcut) {
-                    return shortcut.value === value;
-                });
-
-                if (isShortcut) {
-                    return {
-                        selectedShortcut: value,
-                        customRangeSelection: false
-                    };
-                }
-
-                var meta = countlyCommon.convertToTimePeriodObj(value),
-                    now = moment().toDate(),
-                    state = {
-                        selectedShortcut: null,
-                        customRangeSelection: true
-                    };
-
-                if (meta.type === "range") {
-                    state.rangeMode = 'inBetween';
-                    state.minDate = new Date(meta.value[0] * 1000);
-                    state.maxDate = new Date(meta.value[1] * 1000);
-                    state.inBetweenInput = {
-                        raw: {
-                            textStart: moment(state.minDate).format(this.formatter),
-                            textEnd: moment(state.maxDate).format(this.formatter)
-                        },
-                        parsed: [state.minDate, state.maxDate]
-                    };
-                }
-                else if (meta.type === "since") {
-                    state.rangeMode = 'since';
-                    state.minDate = new Date(meta.value.since * 1000);
-                    state.maxDate = now;
-                    state.sinceInput = {
-                        raw: {
-                            text: moment(state.minDate).format(this.formatter),
-                        },
-                        parsed: [state.minDate, state.maxDate]
-                    };
-                }
-                else if (meta.type === "last-n") {
-                    state.rangeMode = 'inTheLast';
-                    state.minDate = moment().subtract(meta.value, meta.level).startOf("day").toDate();
-                    state.maxDate = now;
-                    state.inTheLastInput = {
-                        raw: {
-                            text: meta.value + '',
-                            level: meta.level
-                        },
-                        parsed: [state.minDate, state.maxDate]
-                    };
-                }
-                return state;
-            },
+            }
         },
         watch: {
             'inBetweenInput.raw.textStart': function(newVal) {
@@ -405,6 +333,22 @@
             'date-table': dateTableComponent,
             'month-table': monthTableComponent
         },
+        computed: {
+            shortcuts: function() {
+                if (this.type === "daterange" && this.displayShortcuts) {
+                    return [
+                        {label: this.i18n("common.yesterday"), value: "yesterday"},
+                        {label: this.i18n("common.today"), value: "hour"},
+                        {label: this.i18n("taskmanager.last-7days"), value: "7days"},
+                        {label: this.i18n("taskmanager.last-30days"), value: "30days"},
+                        {label: this.i18n("taskmanager.last-60days"), value: "60days"},
+                        {label: moment().format("MMMM, YYYY"), value: "day"},
+                        {label: moment().year(), value: "month"},
+                    ];
+                }
+                return [];
+            }
+        },
         props: {
             value: [Object, String, Array],
             type: {
@@ -429,6 +373,10 @@
                 }
             },
             'type': function() {
+                /*
+                    Type change causes almost everything to change.
+                    So we simply reinitialize the component.
+                */
                 Object.assign(this.$data, getInitialState(this));
                 this.loadValue(this.value);
             }
@@ -441,6 +389,63 @@
                 Object.keys(changes).forEach(function(fieldKey) {
                     self[fieldKey] = changes[fieldKey];
                 });
+            },
+            valueToInputState: function(value) {
+
+                var isShortcut = this.shortcuts && this.shortcuts.some(function(shortcut) {
+                    return shortcut.value === value;
+                });
+
+                if (isShortcut) {
+                    return {
+                        selectedShortcut: value,
+                        customRangeSelection: false
+                    };
+                }
+
+                var meta = countlyCommon.convertToTimePeriodObj(value),
+                    now = moment().toDate(),
+                    state = {
+                        selectedShortcut: null,
+                        customRangeSelection: true
+                    };
+
+                if (meta.type === "range") {
+                    state.rangeMode = 'inBetween';
+                    state.minDate = new Date(meta.value[0] * 1000);
+                    state.maxDate = new Date(meta.value[1] * 1000);
+                    state.inBetweenInput = {
+                        raw: {
+                            textStart: moment(state.minDate).format(this.formatter),
+                            textEnd: moment(state.maxDate).format(this.formatter)
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                }
+                else if (meta.type === "since") {
+                    state.rangeMode = 'since';
+                    state.minDate = new Date(meta.value.since * 1000);
+                    state.maxDate = now;
+                    state.sinceInput = {
+                        raw: {
+                            text: moment(state.minDate).format(this.formatter),
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                }
+                else if (meta.type === "last-n") {
+                    state.rangeMode = 'inTheLast';
+                    state.minDate = moment().subtract(meta.value, meta.level).startOf("day").toDate();
+                    state.maxDate = now;
+                    state.inTheLastInput = {
+                        raw: {
+                            text: meta.value + '',
+                            level: meta.level
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                }
+                return state;
             },
             handleDropdownHide: function(aborted) {
                 this.abortPicking();
