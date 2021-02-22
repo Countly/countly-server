@@ -399,7 +399,8 @@
                 default: true
             },
             placeholder: {type: String, default: 'Select'},
-            disabled: { type: Boolean, default: false}
+            disabled: { type: Boolean, default: false},
+            size: {type: String, default: 'small'}
         },
         data: function() {
             return getInitialState(this);
@@ -563,6 +564,7 @@
                                     :selected-options="label"\
                                     :focused="dropdown.focused"\
                                     :opened="dropdown.visible"\
+                                    :size="size"\
                                     :placeholder="placeholder">\
                                 </cly-input-dropdown-trigger>\
                             </slot>\

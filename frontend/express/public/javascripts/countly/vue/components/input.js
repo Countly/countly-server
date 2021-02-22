@@ -1309,6 +1309,7 @@
                             <slot name="trigger">\
                                 <cly-input-dropdown-trigger\
                                     ref="trigger"\
+                                    :size="size"\
                                     :disabled="disabled"\
                                     :focused="dropdown.focused"\
                                     :opened="dropdown.visible"\
@@ -1378,7 +1379,8 @@
             mode: {type: String, default: 'single-list'}, // multi-check,
             autoCommit: {type: Boolean, default: true},
             disabled: { type: Boolean, default: false},
-            width: { type: [Number, Object], default: 400}
+            width: { type: [Number, Object], default: 400},
+            size: {type: String, default: ''}
         },
         data: function() {
             return {

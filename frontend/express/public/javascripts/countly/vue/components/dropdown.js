@@ -28,10 +28,10 @@
                         return option.label;
                     }).join(', ');
                 }
-                else if (this.selectedOptions.label) {
-                    return this.selectedOptions.label;
+                else if (typeof this.selectedOptions === 'string') {
+                    return this.selectedOptions;
                 }
-                return this.selectedOptions;
+                return this.selectedOptions.label;
             }
         },
         methods: {
@@ -39,7 +39,7 @@
                 this.$refs.elInput.focus();
             }
         },
-        template: '<el-input\
+        template: '<el-pseudo-input\
                         ref="elInput"\
                         :class="{ \'is-focus\': focused, \'is-disabled\': disabled }"\
                         v-bind="$attrs"\
@@ -49,7 +49,7 @@
                         <template slot="suffix">\
                             <i v-if="arrow" class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
                         </template>\
-                    </el-input>'
+                    </el-pseudo-input>'
 
     }));
 
@@ -179,7 +179,7 @@
                     </cly-dropdown>',
         props: {
             placeholder: {type: String, default: 'Select'},
-            selectedOptions: { type: [Object, Array] },
+            selectedOptions: { type: [Object, Array, String] },
             disabled: { type: Boolean, default: false}
         },
         methods: {
