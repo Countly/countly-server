@@ -250,6 +250,12 @@
                     this.inBetweenInput.raw.invalid1 = false;
                 }
             },
+            handleSinceBlur:  function() {
+                if (this.sinceInput.raw.invalid0 && this.sinceInput.parsed[0]) {
+                    this.sinceInput.raw.text = moment(this.sinceInput.parsed[0]).format(this.formatter);
+                    this.sinceInput.raw.invalid0 = false;
+                }
+            },
             handleUserInputUpdate: function(scrollToDate) {
                 var inputObj = null;
 
@@ -632,7 +638,7 @@
                                         <el-tab-pane name="since">\
                                             <template slot="label"><span class="text-medium font-weight-bold">Since</span></template>\
                                             <div class="cly-vue-daterp__input-wrapper">\
-                                                <el-input size="small" v-model="sinceInput.raw.text"></el-input>\
+                                                <el-input size="small" :class="{\'is-error\': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>\
                                             </div>\
                                         </el-tab-pane>\
                                         <el-tab-pane name="inTheLast">\
