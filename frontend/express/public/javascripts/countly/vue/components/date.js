@@ -112,6 +112,45 @@
         return _.extend(state, getDefaultInputState(formatter));
     }
 
+    function getRangeLabel(value) {
+        var effectiveRange = null;
+        if (Array.isArray(value)) {
+            effectiveRange = [moment(value[0]), moment(value[1])];
+        }
+        else {
+            switch (value) {
+            case "7days":
+                effectiveRange = [moment().startOf("day").subtract(7, "d"), moment().endOf("day")];
+                break;
+            case "30days":
+                effectiveRange = [moment().startOf("day").subtract(30, "d"), moment().endOf("day")];
+                break;
+            case "60days":
+                effectiveRange = [moment().startOf("day").subtract(60, "d"), moment().endOf("day")];
+                break;
+            case "yesterday":
+                effectiveRange = [moment().startOf("day").subtract(1, "d"), moment().endOf("day").subtract(1, "d")];
+                break;
+            case "hour":
+                effectiveRange = [moment().startOf("day"), moment().endOf("day")];
+                break;
+            case "day":
+                effectiveRange = [moment().startOf("month"), moment().endOf("month")];
+                break;
+            case "month":
+                effectiveRange = [moment().startOf("year"), moment().endOf("year")];
+                break;
+            }
+        }
+        if (effectiveRange[1] - effectiveRange[0] > 86400000) {
+            return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
+        }
+        else {
+
+            return effectiveRange[0].format("lll") + " - " + effectiveRange[1].format("lll");
+        }
+    }
+
     var AbstractTableComponent = {
         props: {
             dateMeta: Object
@@ -397,7 +436,9 @@
                 });
 
                 if (isShortcut) {
+
                     return {
+                        label: getRangeLabel(value),
                         selectedShortcut: value,
                         customRangeSelection: false
                     };
@@ -445,6 +486,7 @@
                         parsed: [state.minDate, state.maxDate]
                     };
                 }
+                state.label = getRangeLabel([state.minDate, state.maxDate]);
                 return state;
             },
             handleDropdownHide: function(aborted) {
@@ -518,6 +560,7 @@
                                     :arrow="false"\
                                     :prefix-icon="\'el-icon-date\'"\
                                     :disabled="disabled"\
+                                    :selected-options="label"\
                                     :focused="dropdown.focused"\
                                     :opened="dropdown.visible"\
                                     :placeholder="placeholder">\

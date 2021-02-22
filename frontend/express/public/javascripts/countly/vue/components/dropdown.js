@@ -10,7 +10,7 @@
             opened: {type: Boolean, default: false},
             arrow: {type: Boolean, default: true},
             selectedOptions: {
-                type: [Array, Object],
+                type: [Array, Object, String],
                 default: function() {
                     return {};
                 }
@@ -28,7 +28,10 @@
                         return option.label;
                     }).join(', ');
                 }
-                return this.selectedOptions.label;
+                else if (this.selectedOptions.label) {
+                    return this.selectedOptions.label;
+                }
+                return this.selectedOptions;
             }
         },
         methods: {
