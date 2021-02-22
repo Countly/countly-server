@@ -5,6 +5,58 @@
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
+    var availableShortcuts = {
+        "yesterday": {
+            label: countlyVue.i18n("common.yesterday"),
+            value: "yesterday",
+            getRange: function() {
+                return [moment().startOf("day").subtract(1, "d"), moment().endOf("day").subtract(1, "d")];
+            }
+        },
+        "hour": {
+            label: countlyVue.i18n("common.today"),
+            value: "hour",
+            getRange: function() {
+                return [moment().startOf("day"), moment().endOf("day")];
+            }
+        },
+        "7days": {
+            label: countlyVue.i18n("taskmanager.last-7days"),
+            value: "7days",
+            getRange: function() {
+                return [moment().startOf("day").subtract(7, "d"), moment().endOf("day")];
+            }
+        },
+        "30days": {
+            label: countlyVue.i18n("taskmanager.last-30days"),
+            value: "30days",
+            getRange: function() {
+                return [moment().startOf("day").subtract(30, "d"), moment().endOf("day")];
+            }
+        },
+        "60days": {
+            label: countlyVue.i18n("taskmanager.last-60days"),
+            value: "60days",
+            getRange: function() {
+                return [moment().startOf("day").subtract(60, "d"), moment().endOf("day")];
+            }
+        },
+        "day": {
+            label: moment().format("MMMM, YYYY"),
+            value: "day",
+            getRange: function() {
+                return [moment().startOf("month"), moment().endOf("month")];
+            }
+        },
+        "month": {
+            label: moment().year(),
+            value: "month",
+            getRange: function() {
+                return [moment().startOf("year"), moment().endOf("year")];
+            }
+        }
+    };
+
     /**
      * Provides picker with the default input state
      * @param {String} formatter Formatter string e.g. MM/DD/YYYY
@@ -26,6 +78,7 @@
             rangeMode: 'inBetween',
             minDate: minDate,
             maxDate: maxDate,
+            label: getRangeLabel([minDate, maxDate]),
             inBetweenInput: {
                 raw: {
                     textStart: minDateText,
@@ -113,40 +166,11 @@
     }
 
     function getRangeLabel(value) {
-        var effectiveRange = null;
-        if (Array.isArray(value)) {
-            effectiveRange = [moment(value[0]), moment(value[1])];
-        }
-        else {
-            switch (value) {
-            case "7days":
-                effectiveRange = [moment().startOf("day").subtract(7, "d"), moment().endOf("day")];
-                break;
-            case "30days":
-                effectiveRange = [moment().startOf("day").subtract(30, "d"), moment().endOf("day")];
-                break;
-            case "60days":
-                effectiveRange = [moment().startOf("day").subtract(60, "d"), moment().endOf("day")];
-                break;
-            case "yesterday":
-                effectiveRange = [moment().startOf("day").subtract(1, "d"), moment().endOf("day").subtract(1, "d")];
-                break;
-            case "hour":
-                effectiveRange = [moment().startOf("day"), moment().endOf("day")];
-                break;
-            case "day":
-                effectiveRange = [moment().startOf("month"), moment().endOf("month")];
-                break;
-            case "month":
-                effectiveRange = [moment().startOf("year"), moment().endOf("year")];
-                break;
-            }
-        }
+        var effectiveRange = [moment(value[0]), moment(value[1])];
         if (effectiveRange[1] - effectiveRange[0] > 86400000) {
             return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
         }
         else {
-
             return effectiveRange[0].format("lll") + " - " + effectiveRange[1].format("lll");
         }
     }
@@ -375,15 +399,9 @@
         computed: {
             shortcuts: function() {
                 if (this.type === "daterange" && this.displayShortcuts) {
-                    return [
-                        {label: this.i18n("common.yesterday"), value: "yesterday"},
-                        {label: this.i18n("common.today"), value: "hour"},
-                        {label: this.i18n("taskmanager.last-7days"), value: "7days"},
-                        {label: this.i18n("taskmanager.last-30days"), value: "30days"},
-                        {label: this.i18n("taskmanager.last-60days"), value: "60days"},
-                        {label: moment().format("MMMM, YYYY"), value: "day"},
-                        {label: moment().year(), value: "month"},
-                    ];
+                    return Object.keys(availableShortcuts).map(function(shortcutKey) {
+                        return availableShortcuts[shortcutKey];
+                    });
                 }
                 return [];
             }
@@ -426,6 +444,8 @@
                 var changes = this.valueToInputState(value),
                     self = this;
 
+                changes.label = getRangeLabel([changes.minDate, changes.maxDate]);
+
                 Object.keys(changes).forEach(function(fieldKey) {
                     self[fieldKey] = changes[fieldKey];
                 });
@@ -437,9 +457,10 @@
                 });
 
                 if (isShortcut) {
-
+                    var shortcutRange = availableShortcuts[value].getRange();
                     return {
-                        label: getRangeLabel(value),
+                        minDate: shortcutRange[0].toDate(),
+                        maxDate: shortcutRange[1].toDate(),
                         selectedShortcut: value,
                         customRangeSelection: false
                     };
@@ -487,7 +508,22 @@
                         parsed: [state.minDate, state.maxDate]
                     };
                 }
-                state.label = getRangeLabel([state.minDate, state.maxDate]);
+                else if (availableShortcuts[value]) {
+                    /*
+                        Shortcuts values should be mapped to a real date range if shortcuts are disabled. 
+                    */
+                    var effectiveShortcutRange = availableShortcuts[value].getRange();
+                    state.rangeMode = 'inBetween';
+                    state.minDate = effectiveShortcutRange[0].toDate();
+                    state.maxDate = effectiveShortcutRange[1].toDate();
+                    state.inBetweenInput = {
+                        raw: {
+                            textStart: effectiveShortcutRange[0].format(this.formatter),
+                            textEnd: effectiveShortcutRange[1].format(this.formatter)
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                }
                 return state;
             },
             handleDropdownHide: function(aborted) {
