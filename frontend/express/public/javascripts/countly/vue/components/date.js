@@ -167,61 +167,7 @@
         mixins: [AbstractTableComponent]
     };
 
-    Vue.component("cly-daterangepicker", countlyBaseComponent.extend({
-        mixins: [_mixins.i18n],
-        components: {
-            'date-table': dateTableComponent,
-            'month-table': monthTableComponent
-        },
-        props: {
-            value: [Object, String, Array],
-            type: {
-                type: String,
-                default: "daterange"
-            },
-            displayShortcuts: {
-                type: Boolean,
-                default: true
-            },
-            placeholder: {type: String, default: 'Select'},
-            disabled: { type: Boolean, default: false}
-        },
-        data: function() {
-            return getInitialState(this);
-        },
-        watch: {
-            'inBetweenInput.raw.textStart': function(newVal) {
-                this.tryParsing(newVal, this.inBetweenInput, 0);
-            },
-            'inBetweenInput.raw.textEnd': function(newVal) {
-                this.tryParsing(newVal, this.inBetweenInput, 1);
-            },
-            'sinceInput.raw.text': function(newVal) {
-                this.tryParsing(newVal, this.sinceInput, 0);
-            },
-            'inTheLastInput.raw': {
-                deep: true,
-                handler: function(newVal) {
-                    var parsed = moment().subtract(newVal.text, newVal.level).startOf("day");
-                    if (!parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
-                        if (parsed && parsed.isValid()) {
-                            this.inTheLastInput.parsed[0] = parsed.toDate();
-                            this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);
-                        }
-                    }
-                }
-            },
-            'value': {
-                immediate: true,
-                handler: function(newVal) {
-                    this.loadValue(newVal);
-                }
-            },
-            'type': function() {
-                Object.assign(this.$data, getInitialState(this));
-                this.loadValue(this.value);
-            }
-        },
+    var InputControlsMixin = {
         methods: {
             tryParsing: function(newVal, target, index) {
                 var parsedRange = target.parsed;
@@ -238,13 +184,61 @@
                     }
                 }
             },
-            loadValue: function(value) {
-                var changes = this.valueToInputState(value),
-                    self = this;
+            handleTextStartFocus: function() {
+                this.scrollTo(this.inBetweenInput.parsed[0]);
+            },
+            handleTextEndFocus: function() {
+                this.scrollTo(this.inBetweenInput.parsed[1]);
+            },
+            handleTextStartBlur: function() {
+                if (this.inBetweenInput.raw.invalid0 && this.inBetweenInput.parsed[0]) {
+                    this.inBetweenInput.raw.textStart = moment(this.inBetweenInput.parsed[0]).format(this.formatter);
+                    this.inBetweenInput.raw.invalid0 = false;
+                }
+            },
+            handleTextEndBlur: function() {
+                if (this.inBetweenInput.raw.invalid1 && this.inBetweenInput.parsed[1]) {
+                    this.inBetweenInput.raw.textEnd = moment(this.inBetweenInput.parsed[1]).format(this.formatter);
+                    this.inBetweenInput.raw.invalid1 = false;
+                }
+            },
+            handleUserInputUpdate: function(scrollToDate) {
+                var inputObj = null;
 
-                Object.keys(changes).forEach(function(fieldKey) {
-                    self[fieldKey] = changes[fieldKey];
-                });
+                switch (this.rangeMode) {
+                case 'inBetween':
+                    inputObj = this.inBetweenInput.parsed;
+                    break;
+                case 'since':
+                    inputObj = this.sinceInput.parsed;
+                    break;
+                case 'inTheLast':
+                    inputObj = this.inTheLastInput.parsed;
+                    break;
+                default:
+                    return;
+                }
+
+                if (scrollToDate) {
+                    this.scrollTo(scrollToDate);
+                }
+                else if (inputObj[0]) {
+                    this.scrollTo(inputObj[0]);
+                }
+
+                if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] <= inputObj[1]) {
+                    this.minDate = inputObj[0];
+                    this.maxDate = inputObj[1];
+                }
+            },
+            setCurrentInBetween: function(minDate, maxDate) {
+                this.inBetweenInput = {
+                    raw: {
+                        textStart: moment(minDate).format(this.formatter),
+                        textEnd: moment(maxDate).format(this.formatter)
+                    },
+                    parsed: [minDate, maxDate]
+                };
             },
             valueToInputState: function(value) {
 
@@ -303,50 +297,34 @@
                 }
                 return state;
             },
-            scrollTo: function(date) {
-                if (!this.customRangeSelection) {
-                    return;
-                }
-                var anchorClass = null;
-                if (this.tableType === "month") {
-                    anchorClass = ".anchor-" + moment(date).startOf("year").unix();
-                }
-                else {
-                    anchorClass = ".anchor-" + moment(date).startOf("month").unix();
-                }
-                this.$refs.vs.scrollIntoView(anchorClass);
+        },
+        watch: {
+            'inBetweenInput.raw.textStart': function(newVal) {
+                this.tryParsing(newVal, this.inBetweenInput, 0);
             },
-            handleTextStartFocus: function() {
-                this.scrollTo(this.inBetweenInput.parsed[0]);
+            'inBetweenInput.raw.textEnd': function(newVal) {
+                this.tryParsing(newVal, this.inBetweenInput, 1);
             },
-            handleTextEndFocus: function() {
-                this.scrollTo(this.inBetweenInput.parsed[1]);
+            'sinceInput.raw.text': function(newVal) {
+                this.tryParsing(newVal, this.sinceInput, 0);
             },
-            handleTextStartBlur: function() {
-                if (this.inBetweenInput.raw.invalid0 && this.inBetweenInput.parsed[0]) {
-                    this.inBetweenInput.raw.textStart = moment(this.inBetweenInput.parsed[0]).format(this.formatter);
-                    this.inBetweenInput.raw.invalid0 = false;
+            'inTheLastInput.raw': {
+                deep: true,
+                handler: function(newVal) {
+                    var parsed = moment().subtract(newVal.text, newVal.level).startOf("day");
+                    if (!parsed.isSame(moment(this.inTheLastInput.parsed[0]))) {
+                        if (parsed && parsed.isValid()) {
+                            this.inTheLastInput.parsed[0] = parsed.toDate();
+                            this.handleUserInputUpdate(this.inTheLastInput.parsed[0]);
+                        }
+                    }
                 }
             },
-            handleTextEndBlur: function() {
-                if (this.inBetweenInput.raw.invalid1 && this.inBetweenInput.parsed[1]) {
-                    this.inBetweenInput.raw.textEnd = moment(this.inBetweenInput.parsed[1]).format(this.formatter);
-                    this.inBetweenInput.raw.invalid1 = false;
-                }
-            },
-            handleDropdownHide: function(aborted) {
-                this.abortPicking();
-                if (aborted) {
-                    this.loadValue(this.value);
-                }
-            },
-            handleDropdownShow: function() {
-                var self = this;
-                this.$forceUpdate();
-                this.$nextTick(function() {
-                    self.scrollTo(self.minDate);
-                });
-            },
+        }
+    };
+
+    var CalendarsMixin = {
+        methods: {
             handleRangePick: function(val) {
                 this.rangeMode = "inBetween";
                 if (!this.rangeState.selecting) {
@@ -384,58 +362,18 @@
 
                 this.setCurrentInBetween(startsAt, endsAt);
             },
-            handleCustomRangeClick: function() {
-                this.customRangeSelection = true;
-                var self = this;
-                this.$nextTick(function() {
-                    self.$forceUpdate();
-                    self.scrollTo(self.minDate);
-                });
-            },
-            handleShortcutClick: function(value) {
-                // this.customRangeSelection = false;
-                this.selectedShortcut = value;
-                if (value) {
-                    this.doCommit(value);
-                }
-            },
-            handleUserInputUpdate: function(scrollToDate) {
-                var inputObj = null;
-
-                switch (this.rangeMode) {
-                case 'inBetween':
-                    inputObj = this.inBetweenInput.parsed;
-                    break;
-                case 'since':
-                    inputObj = this.sinceInput.parsed;
-                    break;
-                case 'inTheLast':
-                    inputObj = this.inTheLastInput.parsed;
-                    break;
-                default:
+            scrollTo: function(date) {
+                if (!this.customRangeSelection) {
                     return;
                 }
-
-                if (scrollToDate) {
-                    this.scrollTo(scrollToDate);
+                var anchorClass = null;
+                if (this.tableType === "month") {
+                    anchorClass = ".anchor-" + moment(date).startOf("year").unix();
                 }
-                else if (inputObj[0]) {
-                    this.scrollTo(inputObj[0]);
+                else {
+                    anchorClass = ".anchor-" + moment(date).startOf("month").unix();
                 }
-
-                if (inputObj && inputObj[0] && inputObj[1] && inputObj[0] <= inputObj[1]) {
-                    this.minDate = inputObj[0];
-                    this.maxDate = inputObj[1];
-                }
-            },
-            setCurrentInBetween: function(minDate, maxDate) {
-                this.inBetweenInput = {
-                    raw: {
-                        textStart: moment(minDate).format(this.formatter),
-                        textEnd: moment(maxDate).format(this.formatter)
-                    },
-                    parsed: [minDate, maxDate]
-                };
+                this.$refs.vs.scrollIntoView(anchorClass);
             },
             abortPicking: function() {
                 if (this.rangeState.selecting) {
@@ -452,6 +390,83 @@
                         maxDate: null
                     };
                     this.setCurrentInBetween(this.minDate, this.maxDate);
+                }
+            },
+        }
+    };
+
+    Vue.component("cly-daterangepicker", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n,
+            InputControlsMixin,
+            CalendarsMixin
+        ],
+        components: {
+            'date-table': dateTableComponent,
+            'month-table': monthTableComponent
+        },
+        props: {
+            value: [Object, String, Array],
+            type: {
+                type: String,
+                default: "daterange"
+            },
+            displayShortcuts: {
+                type: Boolean,
+                default: true
+            },
+            placeholder: {type: String, default: 'Select'},
+            disabled: { type: Boolean, default: false}
+        },
+        data: function() {
+            return getInitialState(this);
+        },
+        watch: {
+            'value': {
+                immediate: true,
+                handler: function(newVal) {
+                    this.loadValue(newVal);
+                }
+            },
+            'type': function() {
+                Object.assign(this.$data, getInitialState(this));
+                this.loadValue(this.value);
+            }
+        },
+        methods: {
+            loadValue: function(value) {
+                var changes = this.valueToInputState(value),
+                    self = this;
+
+                Object.keys(changes).forEach(function(fieldKey) {
+                    self[fieldKey] = changes[fieldKey];
+                });
+            },
+            handleDropdownHide: function(aborted) {
+                this.abortPicking();
+                if (aborted) {
+                    this.loadValue(this.value);
+                }
+            },
+            handleDropdownShow: function() {
+                var self = this;
+                this.$forceUpdate();
+                this.$nextTick(function() {
+                    self.scrollTo(self.minDate);
+                });
+            },
+            handleCustomRangeClick: function() {
+                this.customRangeSelection = true;
+                var self = this;
+                this.$nextTick(function() {
+                    self.$forceUpdate();
+                    self.scrollTo(self.minDate);
+                });
+            },
+            handleShortcutClick: function(value) {
+                this.selectedShortcut = value;
+                if (value) {
+                    this.doCommit(value);
                 }
             },
             handleTabChange: function() {
