@@ -53,16 +53,25 @@ function create() {
         }
     });
 
-    countlySources.fixBarSegmentData = function(segment, params, rangeData) {
+    countlySources.fixBarSegmentData = function(params, rangeData) {
         var fetchValue = countlySources.fetchValue;
-        for (var i = 0; i < rangeData.length; i++) {
-            rangeData[i].sources = fetchValue(countlyCommon.decode(rangeData[i]._id), undefined, undefined, params.app.type);
+        var chartData = rangeData.chartData || [];
+        var appType = params.app && params.app.type;
+
+        if (appType) {
+            for (var i = 0; i < chartData.length; i++) {
+                var str = chartData[i]._id || chartData[i].range; // range = _id when caller is dashboards
+                chartData[i].sources = fetchValue(countlyCommon.decode(str), undefined, undefined,);
+            }
+
+            chartData = countlyCommon.mergeMetricsByName(chartData, "sources");
         }
 
-        rangeData = countlyCommon.mergeMetricsByName(rangeData, "sources");
-        rangeData.sort(function(a, b) {
+        chartData.sort(function(a, b) {
             return b.t - a.t;
         });
+
+        rangeData.chartData = chartData;
 
         return rangeData;
     };
