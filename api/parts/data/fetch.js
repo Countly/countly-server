@@ -2055,7 +2055,9 @@ function fetchData(params, allMetrics, metric, cb) {
                 items = items || [];
                 if (items) {
                     if (model.fixBarSegmentData) {
-                        items = model.fixBarSegmentData(metrics[1], params, items);
+                        var chData = {chartData: items};
+                        chData = model.fixBarSegmentData(params, chData);
+                        items = chData.chartData;
                     }
 
                     var total = 0, totalPercent = 0;
