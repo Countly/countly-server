@@ -155,6 +155,15 @@ usersApi.delete = function(app_id, query, params, callback) {
         callback = params;
         params = {};
     }
+    query = query || {};
+    if (typeof query === "string" && query.length) {
+        try {
+            query = JSON.parse(query);
+        }
+        catch (ex) {
+            query = {};
+        }
+    }
     plugins.dispatch("/drill/preprocess_query", {
         query: query
     });
@@ -169,6 +178,9 @@ usersApi.delete = function(app_id, query, params, callback) {
             }
         }
     ], {allowDiskUse: true}, function(err0, res) {
+        if (err0) {
+            console.log("Error generating list of uids", err0, res);
+        }
         if (res && res[0] && res[0].uid && res[0].uid.length) {
             common.db.collection("metric_changes" + app_id).remove({uid: {$in: res[0].uid}}, function() {
                 plugins.dispatch("/i/app_users/delete", {
@@ -439,11 +451,12 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
             //store last merged uid for reference
             newAppUserP.merged_uid = oldAppUser.uid;
             if (typeof newAppUserP.merges === "undefined") {
-                newAppUserP.merges = 1;
+                newAppUserP.merges = 0;
             }
             if (typeof oldAppUser.merges !== "undefined") {
                 newAppUserP.merges += oldAppUser.merges;
             }
+            newAppUserP.merges++;
             //update new user
             common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function(err) {
                 if (err) {

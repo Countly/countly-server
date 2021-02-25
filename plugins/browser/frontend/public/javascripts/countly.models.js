@@ -1,5 +1,5 @@
 /*global CountlyHelpers, jQuery, countlyBrowser, countlyCommon, _*/
-CountlyHelpers.createMetricModel(window.countlyBrowser = window.countlyBrowser || {}, {name: "browser", estOverrideMetric: "browsers"}, jQuery);
+CountlyHelpers.createMetricModel(window.countlyBrowser = window.countlyBrowser || {}, {name: "browser", estOverrideMetric: "browser"}, jQuery);
 
 countlyBrowser.getBrowserData = function() {
     var chartData = countlyCommon.extractTwoLevelData(countlyBrowser.getDb(), countlyBrowser.getMeta("browser"), countlyBrowser.clearObject, [
@@ -12,7 +12,7 @@ countlyBrowser.getBrowserData = function() {
         { "name": "t" },
         { "name": "u" },
         { "name": "n" }
-    ], "browsers");
+    ], "browser");
     chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, "browser");
     var browserNames = _.pluck(chartData.chartData, 'browser'),
         browserTotal = _.pluck(chartData.chartData, 'u'),

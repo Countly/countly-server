@@ -15,6 +15,29 @@ plugins.setConfigs("crashes", {
     grouping_strategy: "error_and_file"
 });
 
+/**
+ * Crash metrics
+ * cr_u    - simply users but tracked for crash plugin (can't use users from core aggregated data, because it needs more segmentation, like by app version, etc)
+ * cr_s    - simply sessions but tracked for crash plugin (can't use users from core aggregated data, because it needs more segmentation, like by app version, etc)
+ *
+ * crfses  - crash fatal free sessions (how many users experienced any fatal crash in selected period)
+ * crauf   - crash fatal free users (how many users experienced any fatal crash in selected period)
+ *
+ * crnfses - crash non fatal free sessions (how many users experienced any non fatal crash in selected period)
+ * craunf  - crash non fatal free users (how many users experienced any non fatal crash in selected period)
+ *
+ * cruf    - unique fatal crashes (on per crash group) per period
+ * crunf   - unique non fatal crashes (one per crash group) per period
+ *
+ * crf     - crash fatal (simply fatal crash count)
+ * crnf    - non fatal crashes (simply non fatal crash count)
+ * 
+ * DEPRECATED (NOT USED ANYMORE)
+ * cr - crash (no matter fatal or non fatal)
+ * cru - crash user (no matter fatal or non fatal)
+ * crru - crash resolved user (users who upgraded and got crashes resolved from upgraded vesion)
+ */
+
 (function() {
     plugins.register("/master", function() {
         fs.chmod(path.resolve(__dirname + "/../bin/minidump_stackwalk"), 0o744, function(err) {

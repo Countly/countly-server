@@ -368,6 +368,11 @@ class ProcessJob extends J.IPCJob {
                     break;
                 }
 
+                // reload notes for msgs
+                let ids = msgs.map(m => m.n.toString());
+                ids = ids.filter((id, i) => ids.indexOf(id) === i);
+                notes = await this.loader.notes(ids);
+
                 // mark messages as being sent
                 await Promise.all(Object.values(notes).map(json => this.loader.updateNote(json._id, {$addToSet: {jobs: this._id}, $bit: {'result.status': {or: N.Status.Sending}}})));
                 Object.values(notes).map(n => n._id.toString()).forEach(id => sending.add(id));

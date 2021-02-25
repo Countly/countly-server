@@ -78,7 +78,7 @@ window.component('push.view', function(view) {
             if (fi === -1 && k.indexOf('a') === 0) { fa= i; }
         });
 
-        var els = [ctrl.message.auto() ? t('pu.po.progress.auto') : t('pu.po.progress')];
+        var els = [ctrl.message.auto() || ctrl.message.tx() ? t('pu.po.progress.auto') : t('pu.po.progress')];
         if (ctrl.message.count()) {
             els.push(m('span.count.ion-person', 'Recipients: ' + ctrl.message.count().TOTALLY));
         }
@@ -137,7 +137,7 @@ window.component('push.view', function(view) {
 
         return m('div.comp-push', { class : 'view-message-slider' }, [
             m('h3', els),
-            ctrl.message.auto() ? m.component(components.widget, {
+            ctrl.message.auto() || ctrl.message.tx() ? m.component(components.widget, {
                 content: {
                     view: m('.message-chart-container',  [
                         m('.message-chart', {config : ctrl.chartConfig})
@@ -160,7 +160,7 @@ window.component('push.view', function(view) {
                 : '',
             (r.processed() > 0 || r.errors() > 0) && (r.isDone() || r.isSending()) ? 
                 m('div', [
-                    m('h4', t(ctrl.message.auto() ? 'pu.dash.totals' : 'pu.po.metrics')),
+                    m('h4', t(ctrl.message.auto() || ctrl.message.tx() ? 'pu.dash.totals' : 'pu.po.metrics')),
                     m('.comp-push-view-table.comp-push-metrics', [
                         r.isSending() ? 
                             m.component(view.metric, {
@@ -529,12 +529,12 @@ window.component('push.view', function(view) {
                             m('.col-left', t('pu.po.tab3.platforms')),
                             m('.col-right', ctrl.message.platforms().map(function(p){ return t('pu.platform.' + p); }).join(', '))
                         ]),
-                        ctrl.message.auto() || !ctrl.message.geos() || !ctrl.message.geos().length ? ''
+                        ctrl.message.auto() || ctrl.message.tx() || !ctrl.message.geos() || !ctrl.message.geos().length ? ''
                             : m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab1.geos')),
                                 m('.col-right', geoNames || t('pu.po.tab3.unknown'))
                             ]),
-                        ctrl.message.auto() || !ctrl.message.cohorts() || !ctrl.message.cohorts().length ? ''
+                        ctrl.message.auto() || ctrl.message.tx() || !ctrl.message.cohorts() || !ctrl.message.cohorts().length ? ''
                             : m('.comp-push-view-row', [
                                 m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.cohorts().length)),
                                 m('.col-right', oneTimeCohortNames.length ? m.trust(oneTimeCohortNames.join(', ')) : t('pu.po.tab4.cohorts.no'))
@@ -546,32 +546,34 @@ window.component('push.view', function(view) {
                     ]),	
                 ]),
 
-                ctrl.message.auto() ? 
+                ctrl.message.auto() || ctrl.message.tx() ? 
                     m('.form-group', [
                         m('h4', t('pu.po.tab1.title.auto')),
-                        m('.comp-push-view-table', [
-                            ctrl.message.autoOnEntry() === 'events' ?
+                        m('.comp-push-view-table', (ctrl.message.auto() ? [
+                                ctrl.message.autoOnEntry() === 'events' ?
+                                    m('.comp-push-view-row', [
+                                        m('.col-left', t.n('pu.po.tab4.events', ctrl.message.autoEvents().length)),
+                                        m('.col-right', eventNames.length ? m.trust(eventNames.join(', ')) : t('pu.po.tab4.events.no'))
+                                    ]) :
+                                    m('.comp-push-view-row', [
+                                        m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.autoCohorts().length)),
+                                        m('.col-right', cohortNames.length ? m.trust(cohortNames.join(', ')) : t('pu.po.tab4.cohorts.no'))
+                                    ]),
                                 m('.comp-push-view-row', [
-                                    m('.col-left', t.n('pu.po.tab4.events', ctrl.message.autoEvents().length)),
-                                    m('.col-right', eventNames.length ? m.trust(eventNames.join(', ')) : t('pu.po.tab4.events.no'))
-                                ]) :
+                                    m('.col-left', t('pu.po.tab1.trigger-type')),
+                                    m('.col-right', ctrl.message.autoOnEntry() === 'events' ? t('pu.po.tab1.trigger-type.event') : ctrl.message.autoOnEntry() ? t('pu.po.tab1.trigger-type.entry') : t('pu.po.tab1.trigger-type.exit'))
+                                ])
+                            ] : []).concat([
                                 m('.comp-push-view-row', [
-                                    m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.autoCohorts().length)),
-                                    m('.col-right', cohortNames.length ? m.trust(cohortNames.join(', ')) : t('pu.po.tab4.cohorts.no'))
+                                    m('.col-left', t('pu.po.tab1.campaign-start-date')),
+                                    m('.col-right', ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab1.scheduling-auto-now'))
                                 ]),
-                            m('.comp-push-view-row', [
-                                m('.col-left', t('pu.po.tab1.trigger-type')),
-                                m('.col-right', ctrl.message.autoOnEntry() === 'events' ? t('pu.po.tab1.trigger-type.event') : ctrl.message.autoOnEntry() ? t('pu.po.tab1.trigger-type.entry') : t('pu.po.tab1.trigger-type.exit'))
-                            ]),
-                            m('.comp-push-view-row', [
-                                m('.col-left', t('pu.po.tab1.campaign-start-date')),
-                                m('.col-right', ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab1.scheduling-auto-now'))
-                            ]),
-                            m('.comp-push-view-row', [
-                                m('.col-left', t('pu.po.tab1.campaign-end-date')),
-                                m('.col-right', ctrl.message.autoEnd() ? moment(ctrl.message.autoEnd()).format('DD.MM.YYYY, HH:mm') : t('pu.never'))
-                            ]),
-                        ]),	
+                                m('.comp-push-view-row', [
+                                    m('.col-left', t('pu.po.tab1.campaign-end-date')),
+                                    m('.col-right', ctrl.message.autoEnd() ? moment(ctrl.message.autoEnd()).format('DD.MM.YYYY, HH:mm') : t('pu.never'))
+                                ]),
+                            ])	
+                        ),
                     ]) 
                     :
                     m('.form-group', [

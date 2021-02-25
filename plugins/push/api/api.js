@@ -98,7 +98,8 @@ const PUSH_CACHE_GROUP = 'P';
                                     dur: 0,
                                     sg: {
                                         i: m,
-                                        a: m ? m.auto : undefined
+                                        a: m ? m.auto : undefined,
+                                        t: m ? m.tx : undefined,
                                     },
                                 });
                             });
@@ -120,7 +121,7 @@ const PUSH_CACHE_GROUP = 'P';
                 events = events.filter(e => !!e.sg.i);
 
                 let ids = events.map(e => e.sg.i);
-                ids = ids.filter((id, i) => ids.indexOf(id) === i).map(id => common.db.ObjectID(id));
+                ids = ids.filter((id, i) => ids.indexOf(id) === i).map(common.db.ObjectID);
 
                 common.db.collection('messages').find({_id: {$in: ids}}).toArray((err, msgs) => {
                     if (err) {
@@ -231,7 +232,7 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/cache/init', function() {
         common.cache.init(PUSH_CACHE_GROUP, {
             init: () => new Promise((res, rej) => {
-                common.db.collection('messages').find({auto: true, 'result.status': {$bitsAllSet: N.Status.Scheduled, $bitsAllClear: N.Status.Deleted | N.Status.Aborted}}).toArray((err, arr) => {
+                common.db.collection('messages').find({$or: [{auto: true}, {tx: true}], 'result.status': {$bitsAllSet: N.Status.Scheduled, $bitsAllClear: N.Status.Deleted | N.Status.Aborted}}).toArray((err, arr) => {
                     err ? rej(err) : res(arr.map(m => [m._id.toString(), m]));
                 });
             }),
@@ -376,7 +377,7 @@ const PUSH_CACHE_GROUP = 'P';
                 msgIds = pushEvents.map(e => common.db.ObjectID(e.segmentation.i));
             if (msgIds.length) {
                 return new Promise((resolve, reject) => {
-                    common.db.collection('messages').find({_id: {$in: msgIds}}, {auto: 1}).toArray(function(err, msgs) {
+                    common.db.collection('messages').find({_id: {$in: msgIds}}, {auto: 1, tx: 1}).toArray(function(err, msgs) {
                         if (err) {
                             log.e('Error while looking for a message: %j', err);
                             reject(err);
@@ -387,6 +388,7 @@ const PUSH_CACHE_GROUP = 'P';
                                     inc = {};
                                 if (msg) {
                                     event.segmentation.a = msg.auto || false;
+                                    event.segmentation.t = msg.tx || false;
 
                                     if (event.key === '[CLY]_push_open') {
                                         inc['result.delivered'] = event.count;
