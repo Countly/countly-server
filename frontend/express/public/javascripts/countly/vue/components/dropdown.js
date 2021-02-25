@@ -59,8 +59,10 @@
 
     Vue.component("cly-dropdown", countlyBaseComponent.extend({
         components: {
-            'trigger-proxy': triggerProxy
+            'trigger-proxy': triggerProxy,
+            'el-select-dropdown': ELEMENT.SelectDropdown
         },
+        mixins: [ELEMENT.utils.Emitter],
         props: {
             disabled: {
                 type: Boolean,
@@ -82,8 +84,7 @@
         template: '<div class="cly-vue-dropdown el-select"\
                     v-click-outside="handleOutsideClick">\
                     <trigger-proxy\
-                        v-popover:popover\
-                        ref="toggler"\
+                        ref="reference"\
                         @click.native.stop="handleToggle"\
                         @keydown.native.esc.stop.prevent="handleClose(true)"\
                         @keydown.native.down.enter.prevent="handleOpen"\
@@ -92,32 +93,30 @@
                         <slot name="trigger" :visible="visible" :focused="focused">\
                         </slot>\
                     </trigger-proxy>\
-                    <el-popover\
-                        ref="popover"\
+                    <el-select-dropdown\
+                        ref="popper"\
                         :width="width"\
-                        :popper-class="\'cly-vue-dropdown__pop\'"\
                         :append-to-body="popperAppendToBody"\
                         :placement="placement"\
                         :visible-arrow="false"\
                         v-model="visible"\
-                        trigger="manual">\
+                        v-show="visible">\
                         <div ref="popContent" class="cly-vue-dropdown__pop-container">\
                             <slot>\
                             </slot>\
                         </div>\
-                    </el-popover>\
+                    </el-select-dropdown>\
                 </div>',
         data: function() {
             return {
                 visible: false,
-                focused: false
+                focused: false,
+                popperClass: 'cly-vue-dropdown__pop'
             };
         },
-        mounted: function() {
-            this.popperElm = this.$refs.popContent;
-        },
         beforeDestroy: function() {
-            this.popperElm = null;
+            this.broadcast('ElSelectDropdown', 'destroyPopper');
+            this.$refs.popper && this.$refs.popper.doDestroy();
         },
         methods: {
             doClose: function(aborted) {
@@ -147,7 +146,7 @@
             updateDropdown: function() {
                 var self = this;
                 this.$nextTick(function() {
-                    self.$refs.popover.updatePopper();
+                    self.broadcast('ElSelectDropdown', 'updatePopper');
                 });
             }
         },
