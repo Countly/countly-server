@@ -1,4 +1,4 @@
-/*globals countlyCommon,countlyDeviceList,countlyGlobal,jQuery,CountlyHelpers,app,_metas */
+/*globals countlyCommon,countlyDeviceList,countlyGlobal,jQuery,countlyAuth,CountlyHelpers,app,_metas */
 (function(countlyCrashes, $) {
 
     //Private Properties
@@ -19,7 +19,8 @@
             "platform": null,
             "version": null,
             "fatality": "fatal"
-        };
+        },
+        featureName = 'crashes';
 
     countlyCrashes.getActiveFilter = function() {
         return _activeFilter;
@@ -77,7 +78,7 @@
         });
     };
 
-    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0) {
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(featureName)) {
         countlyCrashes.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 

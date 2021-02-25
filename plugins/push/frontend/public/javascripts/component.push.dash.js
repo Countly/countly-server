@@ -2,7 +2,7 @@
 
 /* jshint undef: true, unused: true */
 /* globals m, components, $, countlyView, countlyGlobal, countlyAuth, countlyCommon, CountlyHelpers */
-
+var featureName = 'push';
 window.component('push.dash', function (dash) {
     var C = window.components,
         t = C.t,
@@ -63,9 +63,11 @@ window.component('push.dash', function (dash) {
             return dt();
         };
 
-        setTimeout(function () {
-            components.push.remoteDashboard(this.app_id, refresh).then(this.data, console.log).then(this.loaded.bind(null, true));
-        }.bind(this), 1);
+        if (countlyAuth.validateRead(featureName)) {
+            setTimeout(function () {
+                components.push.remoteDashboard(this.app_id, refresh).then(this.data, console.log).then(this.loaded.bind(null, true));
+            }.bind(this), 1);
+        }
 
         this.dataDP = function () {
 
@@ -94,7 +96,9 @@ window.component('push.dash', function (dash) {
         }.bind(this);
 
         this.setTable = function (element, context, tableName) {
-
+            if (!countlyAuth.validateRead(featureName)) {
+                return;
+            }
             context.onunload = function () {
                 if (this[tableName]) {
                     try {
@@ -336,6 +340,9 @@ window.component('push.dash', function (dash) {
         }.bind(this);
 
         this.refresh = function () {
+            if (!countlyAuth.validateRead(featureName)) {
+                return;
+            }
             if (this.dtable) {
                 this.dtable.fnDraw(false);
             }

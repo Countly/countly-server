@@ -1015,12 +1015,14 @@ app.get(countlyConfig.path + '/dashboard', function(req, res, next) {
                     }
                     else {
                         var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
-
+                        var preparedAppIds = []
                         for (let i = 0; i < readableAppIds.length; i++) {
-                            readableAppIds[i] = countlyDb.ObjectID(readableAppIds[i]);
+                            if (readableAppIds[i] !== 'undefined' && (member.permission.r[readableAppIds[i]].all || Object.keys(member.permission.r[readableAppIds[i]].allowed).length > 0)) {
+                                preparedAppIds.push(countlyDb.ObjectID(readableAppIds[i]));
+                            }
                         }
 
-                        countlyDb.collection('apps').find({ _id: { '$in': readableAppIds } }).toArray(function(err4, readableApps) {
+                        countlyDb.collection('apps').find({ _id: { '$in': preparedAppIds } }).toArray(function(err4, readableApps) {
                             userOfApps = readableApps;
 
                             // TODO: handle creatable, updatable and deletable arrays

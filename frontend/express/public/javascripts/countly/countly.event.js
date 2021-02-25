@@ -1,4 +1,4 @@
-/*global countlyCommon, _, jQuery*/
+/*global countlyCommon, _, jQuery, countlyAuth */
 // eslint-disable-next-line no-shadow-restricted-names
 (function(countlyEvent, $, undefined) {
 
@@ -15,6 +15,7 @@
         _period = null;
     var _activeLoadedEvent = "";
     var _activeLoadedSegmentation = "";
+    var featureName = 'events';
 
     countlyEvent.hasLoadedData = function() {
         if (_activeLoadedEvent && _activeLoadedEvent === _activeEvent && _activeLoadedSegmentation === _activeSegmentation) {
@@ -36,7 +37,7 @@
         var currentActiveSegmentation = _activeSegmentation;
         _period = countlyCommon.getPeriodForAjax();
 
-        if (!countlyCommon.DEBUG) {
+        if (!countlyCommon.DEBUG && countlyAuth.validateRead(featureName)) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
             _initialized = true;
 

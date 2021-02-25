@@ -137,12 +137,9 @@
                		title="This text will be replaced"></i>
             </div>
 	    	<div class="content">
-	    		<div class="checkbox-container">
-                    <input id="is-global-admin" data-state="0" type="checkbox">
-                    <div class="is-global-admin-checkbox fa fa-square-o check-green"></div>
-                    <div class="checkbox-label global-admin-checkbox-label" data-localize="management-users.global-administrator"></div>
-                    <div style="clear:both"></div>
-                </div>
+	    		<div id="user-drawer-global-admin"></div>
+				<div class="checkbox-label global-admin-checkbox-label" data-localize="management-users.global-administrator"></div>
+				<div style="clear:both"></div>
 	    	</div>
 	    </div>
 	    <div id="sub-header-1th">
@@ -188,21 +185,18 @@
     <div class="details create-user-drawer-detail" style="height:100%;overflow-y:auto">
     	<div class="left-area">
     		<label data-localize="groups.name"></label>
-	    	<input class="drawer-input" id="grpName" autocomplete="off" type="text"/>
+	    	<input placeholder="Enter group name" class="drawer-input" id="grpName" autocomplete="off" type="text"/>
 	    	<label data-localize="groups.id"></label>
-	    	<input class="drawer-input" id="grpID" autocomplete="off" type="text"/>
+	    	<input placeholder="Enter group ID" class="drawer-input" id="grpID" autocomplete="off" type="text"/>
 	    </div>
 	    <div class="access-area role-section">
 	    	<div class="header">
 	    		<div class="section-title" data-localize="management-users.role"></div>
 	    	</div>
 	    	<div class="content">
-	    		<div class="checkbox-container">
-							<input id="is-global-admin" data-state="0" type="checkbox">
-							<div class="is-global-admin-checkbox fa fa-square-o check-green"></div>
-							<div class="checkbox-label global-admin-checkbox-label" data-localize="management-users.global-administrator"></div>
-							<div style="clear:both"></div>
-					</div>
+	    		<div id="group-drawer-global-admin"></div>
+				<div class="checkbox-label global-admin-checkbox-label" data-localize="management-users.global-administrator"></div>
+				<div style="clear:both"></div>
 	    	</div>
 	    </div>
 	    <div id="sub-header-1th">

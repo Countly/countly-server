@@ -17,7 +17,7 @@ const FEATURE_NAME2 = 'global_configurations';
     plugins.register('/i/plugins', function(ob) {
         var params = ob.params;
 
-        validateUpdate(params, FEATURE_NAME1, function() {
+        validateUserForGlobalAdmin(function() {
             if (process.env.COUNTLY_CONTAINER === 'api') {
                 common.returnMessage(params, 400, 'Not allowed in containerized environment');
                 return false;
@@ -61,7 +61,7 @@ const FEATURE_NAME2 = 'global_configurations';
             else {
                 common.returnOutput(params, "Not enough parameters");
             }
-        });
+        }, params);
         return true;
     });
 
@@ -175,7 +175,7 @@ const FEATURE_NAME2 = 'global_configurations';
             });
         };
 
-        validateRead(params, FEATURE_NAME1, function() {
+        validateUser(function() {
             var dir = path.resolve(__dirname, "../../");
             walk(dir, function(err, results) {
                 if (err) {
@@ -183,7 +183,7 @@ const FEATURE_NAME2 = 'global_configurations';
                 }
                 common.returnOutput(params, results || {});
             });
-        });
+        }, params);
         return true;
     });
 
@@ -244,11 +244,11 @@ const FEATURE_NAME2 = 'global_configurations';
     plugins.register("/o/configs", function(ob) {
         var params = ob.params;
 
-        validateRead(params, FEATURE_NAME1, function() {
+        validateUser(function() {
             var confs = plugins.getAllConfigs();
             delete confs.services;
             common.returnOutput(params, confs);
-        });
+        }, params);
         return true;
     });
 

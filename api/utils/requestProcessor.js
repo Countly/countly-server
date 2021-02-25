@@ -536,7 +536,7 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'create':
-                    validateCreate(params, 'global_applications', countlyApi.mgmt.apps.createApp);
+                    validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.createApp);
                     break;
                 case 'update':
                     if (paths[4] === 'plugins') {

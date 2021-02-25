@@ -1064,6 +1064,7 @@
   .manage-users-table {margin-top: -16px;}
   .manage-users-table .dataTable-top {border-radius: 0;}
   #user-table { border-bottom-left-radius:0; border-bottom-right-radius:0; }
+  #user-table tr { cursor: default !important;}
   #user-table td,
   .user-details.create-user-row td { font-family: Ubuntu; }
   
@@ -3735,7 +3736,7 @@
       width: 190px;
       height: 232px;
       border-radius: 2px;
-      border: solid 1px #d0d0d0;
+      border: dashed 2px #ebebeb;
       background-color: #ffffff;
       margin-top: 4px;
     }
@@ -3891,6 +3892,7 @@
       margin-top: 2px;
       margin-left: 3px;
       font-stretch: normal;
+      cursor: default;
       /* font-style: normal; */
       /* line-height: normal; */
       /* letter-spacing: normal; */
@@ -4009,6 +4011,7 @@
       float: left;
       width: 15%;
       text-align: center;
+      height: 10px;
     }
     
     .user-access .permission-header .first-description {
@@ -4039,6 +4042,18 @@
       width: 15%;
       text-align: center;
       float:left;
+    }
+
+    .create-user-drawer .permission-column .countly-checkbox-icon {
+        top: -6px;
+    }
+
+    .create-user-drawer .permission-column .countly-checkbox-native {
+        top: -22px;
+    }
+
+    .create-user-drawer .permission-column .countly-checkbox-wrapper {
+        margin-left: 25%;
     }
     
     .create-user-drawer .permission-item {
@@ -4264,4 +4279,28 @@
 
   .create-user-drawer .drawer-loading img {
     width: 50%;
+  }
+
+  .create-user-drawer .permission-column {
+    text-transform: capitalize;
+  }
+
+  .create-user-drawer .read-all span {
+    left: -10px;
+  }
+
+  #user-drawer-global-admin {
+    float:left;
+  }
+
+  .create-user-drawer .global-admin-checkbox-label {
+    margin-top: 0px;
+  }
+
+  .create-user-drawer #user-drawer-global-admin i {
+    top: -6px;
+  }
+
+  .create-user-drawer #user-drawer-global-admin input {
+    top: -20px;
   }

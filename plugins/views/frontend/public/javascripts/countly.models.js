@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal*/
+/*global CountlyHelpers, countlyCommon, countlyAuth, $, countlySession, jQuery, countlyGlobal*/
 
 (function() {
     window.countlyViews = window.countlyViews || {};
@@ -18,7 +18,8 @@
         _selectedViews = [],
         _graphDataObj = {},
         _viewsCount = 0,
-        _viewsNames = {};
+        _viewsNames = {},
+        featureName = 'views';
 
     //graphData['appID'][]
     //Public Methods
@@ -127,7 +128,7 @@
         });
     };
 
-    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0) {
+    if (countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID !== 0 && countlyAuth.validateRead(featureName)) {
         countlyViews.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 

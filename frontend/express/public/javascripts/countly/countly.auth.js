@@ -29,7 +29,7 @@
         }
 
         if (!member.global_admin) {
-            if (feature.substr(0, 7) === 'global_') {
+            if (typeof feature !== 'undefined' && feature.substr(0, 7) === 'global_') {
                 feature = feature.split('_')[1];
                 if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType].global === "object") && (member.permission[accessType].global.all || member.permission[accessType].global.allowed[feature]))) {
                     return false;
@@ -73,7 +73,7 @@
         }
 
         if (!member.global_admin) {
-            if (feature.substr(0, 7) === 'global_') {
+            if (typeof feature !== 'undefined' && feature.substr(0, 7) === 'global_') {
                 feature = feature.split('_')[1];
                 if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r.global === "object") && (member.permission.r.global.all || member.permission.r.global.allowed[feature]))) {
                     return false;
@@ -120,32 +120,16 @@
         var featureTemplate = '<div class="permission-item ' + (odd ? 'gray' : '') + '">';
         featureTemplate += '    <div class="permission-column first-column">' + featureName + '</div>';
         featureTemplate += '    <div class="permission-column">';
-        featureTemplate += '        <div class="checkbox-container">';
-        featureTemplate += '            <input class="permission-checkbox" id="c-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
-        featureTemplate += '            <div class="c-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
-        featureTemplate += '            <div style="clear:both;"></div>';
-        featureTemplate += '        </div>';
+        featureTemplate += '        <div class="permission-checkbox" id="c-' + featureName + '-' + index + '"></div>';
         featureTemplate += '    </div>';
         featureTemplate += '    <div class="permission-column">';
-        featureTemplate += '        <div class="checkbox-container">';
-        featureTemplate += '            <input class="permission-checkbox" id="r-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
-        featureTemplate += '            <div class="r-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
-        featureTemplate += '            <div style="clear:both;"></div>';
-        featureTemplate += '        </div>';
+        featureTemplate += '        <div class="permission-checkbox" id="r-' + featureName + '-' + index + '"></div>';
         featureTemplate += '    </div>';
         featureTemplate += '    <div class="permission-column">';
-        featureTemplate += '        <div class="checkbox-container">';
-        featureTemplate += '            <input class="permission-checkbox" id="u-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
-        featureTemplate += '            <div class="u-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
-        featureTemplate += '            <div style="clear:both;"></div>';
-        featureTemplate += '        </div>';
+        featureTemplate += '        <div class="permission-checkbox" id="u-' + featureName + '-' + index + '"></div>';
         featureTemplate += '    </div>';
         featureTemplate += '    <div class="permission-column">';
-        featureTemplate += '        <div class="checkbox-container">';
-        featureTemplate += '            <input class="permission-checkbox" id="d-' + featureName + '-' + index + '" data-state="0" type="checkbox">';
-        featureTemplate += '            <div class="d-' + featureName + '-' + index + ' fa fa-square-o check-green"></div>';
-        featureTemplate += '            <div style="clear:both;"></div>';
-        featureTemplate += '        </div>';
+        featureTemplate += '        <div class="permission-checkbox" id="d-' + featureName + '-' + index + '"></div>';
         featureTemplate += '    </div>';
         featureTemplate += '    <div style="clear:both"></div>';
         featureTemplate += '</div>';
@@ -250,26 +234,23 @@
         for (var i = 0; i < user_apps.length; i++) {
             $(parent_el + ' #user-app-selector-' + i)[0].selectize.setValue(user_apps[i]);
             for (var j = 0; j < countlyAuth.types.length; j++) {
-                if (permission_object[countlyAuth.types[j]][user_apps[i][0]].all) {
-                    $(' .mark-all-' + countlyAuth.typeNames[j] + '-checkbox-' + i).addClass('fa-check-square');
-                    $(parent_el + ' .mark-all-' + countlyAuth.typeNames[j] + '-checkbox-' + i).removeClass('fa-square-o');
-                    $(parent_el + ' #mark-all-' + countlyAuth.typeNames[j] + '-' + i).data('state', 1);
+                if (user_apps[i].length > 0) {
+                    if (permission_object[countlyAuth.types[j]][user_apps[i][0]].all) {
 
-                    for (var k = 0; k < countlyAuth.features.plugins.length; k++) {
-                        $(parent_el + ' .' + countlyAuth.types[j] + '-' + countlyAuth.features.plugins[k] + '-' + i).addClass('fa-check-square');
-                        $(parent_el + ' .' + countlyAuth.types[j] + '-' + countlyAuth.features.plugins[k] + '-' + i).removeClass('fa-square-o');
-                        $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features.plugins[k] + '-' + i).data('state', 1);
+                        $(parent_el + ' #mark-all-' + countlyAuth.typeNames[j] + '-' + i).countlyCheckbox().set(true);
+    
+                        for (var k = 0; k < countlyAuth.features.plugins.length; k++) {
+                            $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features.plugins[k] + '-' + i).countlyCheckbox().set(true).setDisabled();
+                        }
+    
+                        permission_sets[i][countlyAuth.types[j]].all = true;
                     }
-
-                    permission_sets[i][countlyAuth.types[j]].all = true;
-                }
-                else {
-                    for (var feature in permission_object[countlyAuth.types[j]][user_apps[i][0]].allowed) {
-                        $(parent_el + ' .' + countlyAuth.types[j] + '-' + feature + '-' + i).addClass('fa-check-square');
-                        $(parent_el + ' .' + countlyAuth.types[j] + '-' + feature + '-' + i).removeClass('fa-square-o');
-                        $(parent_el + ' #' + countlyAuth.types[j] + '-' + feature + '-' + i).data('state', 1);
-                        permission_sets[i] = countlyAuth.giveFeaturePermission(countlyAuth.types[j], feature, permission_sets[i]);
-                    }    
+                    else {
+                        for (var feature in permission_object[countlyAuth.types[j]][user_apps[i][0]].allowed) {
+                            $(parent_el + ' #' + countlyAuth.types[j] + '-' + feature + '-' + i).countlyCheckbox().set(true);
+                            permission_sets[i] = countlyAuth.giveFeaturePermission(countlyAuth.types[j], feature, permission_sets[i]);
+                        }
+                    }
                 }
             }
         }

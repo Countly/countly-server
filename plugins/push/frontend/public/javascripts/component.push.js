@@ -1,8 +1,8 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m, moment, vprop */
-
+/* globals m, moment, vprop, countlyAuth */
+var featureName = 'push';
 window.component('push', function(push) {
     push.C = {
         TYPE: {
