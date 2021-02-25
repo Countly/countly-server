@@ -250,7 +250,7 @@
                     this.inBetweenInput.raw.invalid1 = false;
                 }
             },
-            handleSinceBlur:  function() {
+            handleSinceBlur: function() {
                 if (this.sinceInput.raw.invalid0 && this.sinceInput.parsed[0]) {
                     this.sinceInput.raw.text = moment(this.sinceInput.parsed[0]).format(this.formatter);
                     this.sinceInput.raw.invalid0 = false;

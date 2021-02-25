@@ -1,4 +1,4 @@
-/* global jQuery, Vue */
+/* global jQuery, Vue, ELEMENT */
 
 (function(countlyVue) {
 
@@ -80,6 +80,25 @@
                 type: String,
                 default: 'bottom-start'
             }
+        },
+        inject: {
+            popperHistory: {
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        computed: {
+            popperUid: function() {
+                return "popper-" + this.componentId;
+            }
+        },
+        provide: function() {
+            var history = Object.assign({}, this.popperHistory);
+            history[this.popperUid] = true;
+            return {
+                'popperHistory': history
+            };
         },
         template: '<div class="cly-vue-dropdown el-select"\
                     v-click-outside="handleOutsideClick">\

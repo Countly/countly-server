@@ -114,6 +114,41 @@
 
             </div>
         </cly-section>
+        <cly-section title="cly-dropdown (Nested)">
+            <div class="example-cell">
+                <cly-dropdown>
+                    <template v-slot:trigger>Click Me</template>
+                    <div>
+                        <cly-dropdown>
+                            <template v-slot:trigger>Click Me</template>
+                            <div>
+                                <cly-dropdown>
+                                    <template v-slot:trigger>Click Me</template>
+                                    <div>
+                                        <cly-dropdown>
+                                            <template v-slot:trigger>Click Me</template>
+                                            <div>
+                                                <cly-dropdown>
+                                                    <template v-slot:trigger>Click Me</template>
+                                                    <div>
+                                                        <cly-dropdown>
+                                                            <template v-slot:trigger>Click Me</template>
+                                                            Helloooo
+                                                        </cly-dropdown>
+                                                    </div>
+                                                </cly-dropdown>
+                                            </div>
+                                        </cly-dropdown>
+                                    </div>
+                                </cly-dropdown>
+                            </div>
+                        </cly-dropdown>
+                    </div>
+                </cly-dropdown>
+            </div>
+            <div class="example-cell">
+            </div>
+        </cly-section>
         <cly-section title="cly-select-x (Simple)">
             <div class="example-cell">
                 <cly-select-x
