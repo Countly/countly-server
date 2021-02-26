@@ -597,6 +597,12 @@
                         height: 32px;
                         background: #FFFFFF;
                         border-radius: 4px;
+                        -webkit-box-sizing:border-box;
+                        -moz-box-sizing:border-box;
+                        -ms-box-sizing:border-box;
+                        box-sizing:border-box;
+                        border: 2px solid transparent;
+                        padding: 5px 0 0 15px;
                     }
                 }
                 &.in-range{
@@ -631,12 +637,13 @@
                 > div { 
                     padding: 0px;
                     a {
-                        width: 72px;
-                        height: 50px;
+                        width: 68px;
+                        height: 46px;
                         background: #fff;
                         border-radius: 4px;
                         font-size: 14px;
                         padding-top: 10px;
+                        border: 2px solid transparent;
                     }
                 }
                 &.in-range{
@@ -649,6 +656,40 @@
                     > div a {
                         background: #1967D2
                     }
+                }
+            }
+        }
+
+        &__table-wrap.is-start-focused {
+            .el-date-table .start-date {
+                > div span {
+                    background: #FFFFFF;
+                    border: 2px solid #0166D6;
+                    color: $--color-text-custom-1-active;
+                }
+            }
+            .el-month-table .start-date {
+                > div a {
+                    background: #FFFFFF;
+                    border: 2px solid #0166D6;
+                    color: $--color-text-custom-1-active;
+                }
+            }
+        }
+
+        &__table-wrap.is-end-focused {
+            .el-date-table .end-date {
+                > div span {
+                    background: #FFFFFF;
+                    border: 2px solid #0166D6;
+                    color: $--color-text-custom-1-active;
+                }
+            }
+            .el-month-table .end-date {
+                > div a {
+                    background: #FFFFFF;
+                    border: 2px solid #0166D6;
+                    color: $--color-text-custom-1-active;
                 }
             }
         }

@@ -141,7 +141,8 @@
                 endDate: null,
                 selecting: false,
                 row: null,
-                column: null
+                column: null,
+                focusOn: null
             },
 
             rangeBackup: {
@@ -357,10 +358,12 @@
                 if (this.minDate <= this.rangeState.endDate) {
                     startsAt = this.minDate;
                     endsAt = this.rangeState.endDate;
+                    this.rangeState.focusOn = "end";
                 }
                 else {
                     startsAt = this.rangeState.endDate;
                     endsAt = this.minDate;
+                    this.rangeState.focusOn = "start";
                 }
 
                 this.setCurrentInBetween(startsAt, endsAt);
@@ -384,7 +387,8 @@
                         endDate: null,
                         selecting: false,
                         row: null,
-                        column: null
+                        column: null,
+                        focusOn: null
                     };
                     this.minDate = this.rangeBackup.minDate;
                     this.maxDate = this.rangeBackup.maxDate;
@@ -409,6 +413,12 @@
             'month-table': monthTableComponent
         },
         computed: {
+            isStartFocused: function (){
+                return this.rangeState.selecting && this.rangeState.focusOn === "start"; 
+            },
+            isEndFocused: function (){
+                return this.rangeState.selecting && this.rangeState.focusOn === "end";
+            },
             shortcuts: function() {
                 if (this.type === "daterange" && this.displayShortcuts) {
                     return Object.keys(availableShortcuts).map(function(shortcutKey) {
@@ -636,9 +646,9 @@
                                         <el-tab-pane name="inBetween">\
                                             <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
                                             <div class="cly-vue-daterp__input-wrapper">\
-                                                <el-input size="small" :class="{\'is-error\': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>\
+                                                <el-input size="small" :class="{\'is-active\': isStartFocused, \'is-error\': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>\
                                                 <span class="text-medium cly-vue-daterp__in-between-conj">and</span>\
-                                                <el-input size="small" :class="{\'is-error\': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>\
+                                                <el-input size="small" :class="{\'is-active\': isEndFocused, \'is-error\': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>\
                                             </div>\
                                         </el-tab-pane>\
                                         <el-tab-pane name="since">\
@@ -664,7 +674,7 @@
                                     </div>\
                                 </div>\
                                 <div class="cly-vue-daterp__calendars-wrapper">\
-                                    <div class="cly-vue-daterp__table-wrap" style="height: 248px" ref="calendarsViewport">\
+                                    <div class="cly-vue-daterp__table-wrap" :class="{\'is-start-focused\': isStartFocused, \'is-end-focused\': isEndFocused}" style="height: 248px" ref="calendarsViewport">\
                                         <vue-scroll ref="vs" :ops="scrollOps">\
                                             <div class="cly-vue-daterp__table-view" v-if="tableType === \'month\'">\
                                                 <month-table\
