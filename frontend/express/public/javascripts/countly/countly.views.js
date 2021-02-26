@@ -3563,6 +3563,7 @@ window.ManageUsersView = countlyView.extend({
                         }
                     },
                     "bSortable": false,
+                    "noExport": true
                 }
             ]
         }));
@@ -3746,12 +3747,14 @@ window.ManageUsersView = countlyView.extend({
 
         var memberImageDropzone = new Dropzone("#user-avatar-upload-drop", { 
             member: null,
+            addRemoveLinks: true,
             url: "/member/icon", 
             paramName: "member_image",
             params: { _csrf: countlyGlobal.csrf_token },
             thumbnailWidth: 190, 
             thumbnailHeight: 232,
             autoProcessQueue: false,
+            clickable: ['.upload-message', '.img-upload'],
             acceptedFiles: '.jpg,.png,.jpeg',
             previewTemplate: '<div class="dz-preview dz-file-preview"><div class="dz-details"><img data-dz-thumbnail /></div></div>',
             init: function() {
@@ -3766,10 +3769,16 @@ window.ManageUsersView = countlyView.extend({
             $('.upload-message').hide();
         });
 
+        memberImageDropzone.on("reset", function() {
+            $('.upload-message').show();
+        });
+
         memberImageDropzone.on("complete", function() {
             this.member.user_id = this.member._id;
             this.member.member_image = '/memberimages/' + this.member.user_id + '.png';
+            $('.create-user-drawer .img-preview').css({'background-image': 'url(' + this.member.member_image + '?t=' + Date.now() + ')' });
         });
+
 
         tippy('.show-tooltip', {
             'theme': 'custom',
@@ -3871,7 +3880,7 @@ window.ManageUsersView = countlyView.extend({
                     // step7: show member image in drawer
                     $('#user-avatar-upload-drop').hide();
                     $('.create-user-drawer .img-preview').show();
-                    $('.create-user-drawer .img-preview').css({'background-image': (memberData.member_image) ? 'url('+ memberData.member_image +')' : 'url(/memberimages/' + memberData._id + '.png)' });
+                    $('.create-user-drawer .img-preview').css({'background-image': 'url(/memberimages/' + memberData._id + '.png?t=' + Date.now() + ')' });
 
                     // step8: set local permission box configs as member's permission
                     self.userApps = memberData.permission._.u;

@@ -4304,3 +4304,24 @@
   .create-user-drawer #user-drawer-global-admin input {
     top: -20px;
   }
+
+  .create-user-drawer .show-tooltip {
+    color: #c5c3c3;
+    font-size: 14px;
+  }
+
+  .create-user-drawer #new-image-select {
+    color: #2EB52B;
+    font-size: 12px;
+    font-weight: bolder;
+    background-color: white;
+    width: fit-content;
+    top: -120px;
+    left: 15px;
+    position: relative;
+    display: none;
+  }
+
+  .create-user-drawer .dz-remove {
+    font-size: 12px;
+  }

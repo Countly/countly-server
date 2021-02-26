@@ -125,17 +125,17 @@
 	    <div class="right-area">
 	    	<label data-localize="management-users.profile-picture" id="profile-picture-label"></label><span class="edit-picture update-picture"></span>
 	    	<div class="img-upload" id="user-avatar-upload-drop">
-	    		<div class="upload-message">Drag & drop or <span style="font-weight:bolder;color:#2EB52B;cursor:pointer;">browse</span> files to add picture</div>
+					<div class="upload-message dz-clickable">Drag & drop or <span style="font-weight:bolder;color:#2EB52B;cursor:pointer;">browse</span> files to add picture</div>
 	    	</div>
-	    	<div class="img-preview"></div>
-	    </div>
+				<div class="img-preview"></div>
+	  	</div>
 	    <div style="clear:both"></div>
 	    <div class="access-area role-section">
 	    	<div class="header">
 	    		<div class="section-title" data-localize="management-users.role"></div>
     			<i class="ion-information-circled show-tooltip"
                		title="This text will be replaced"></i>
-            </div>
+					</div>
 	    	<div class="content">
 	    		<div id="user-drawer-global-admin"></div>
 				<div class="checkbox-label global-admin-checkbox-label" data-localize="management-users.global-administrator"></div>
@@ -147,7 +147,7 @@
 	    		<span data-localize="management-users.permission-settings"></span>
 	    		<i class="ion-information-circled show-tooltip"
                		title="This text will be replaced"></i>
-            </div>
+				</div>
 	    	<div class="drawer-information"><span data-localize="management-users.user-has-access-to"></span> <span id="accessible-app-count">0</span> <span data-localize="management-users.apps"></span></div>
 	    	<div style="clear:both"></div>
 	    </div>
@@ -159,9 +159,9 @@
 	    	<div class="app-selector access-area">
 	    		<div class="selector-label" data-localize="management-users.apps"></div>
 	    		<div class="selector-wrapper">
-                    <input type="text" id="admin-app-selector">
-                </div>
-                <div style="clear:both"></div>
+						<input type="text" id="admin-app-selector">
+					</div>
+					<div style="clear:both"></div>
 	    	</div>
 	    </div>
 	    <button class="add-new-permission-set icon-button" data-localize="management-users.add-permission-set"></button>
@@ -192,16 +192,24 @@
 	    <div class="access-area role-section">
 	    	<div class="header">
 	    		<div class="section-title" data-localize="management-users.role"></div>
+					<i class="ion-information-circled show-tooltip"
+               		title="This text will be replaced"></i>
 	    	</div>
 	    	<div class="content">
 	    		<div id="group-drawer-global-admin"></div>
-				<div class="checkbox-label global-admin-checkbox-label" data-localize="management-users.global-administrator"></div>
-				<div style="clear:both"></div>
+					<div class="checkbox-label global-admin-checkbox-label" data-localize="management-users.global-administrator"></div>
+					<div style="clear:both"></div>
 	    	</div>
 	    </div>
 	    <div id="sub-header-1th">
-	    	<div class="drawer-header" data-localize="management-users.permission-settings"></div>
-	    	<div class="drawer-information"><span data-localize="groups.user-of-this-group-has-access-to"></span> <span id="accessible-app-count">0</span> <span data-localize="management-users.apps"></span></div>
+	    	<div class="drawer-header">
+	    		<span data-localize="management-users.permission-settings"></span>
+	    		<i class="ion-information-circled show-tooltip" title="This text will be replaced"></i>
+				</div>
+	    	<div class="drawer-information">
+					<span data-localize="groups.user-of-this-group-has-access-to"></span>
+					<span id="accessible-app-count">0</span> <span data-localize="management-users.apps"></span>
+				</div>
 	    	<div style="clear:both"></div>
 	    </div>
 	    <div class="admin-access access-area">
@@ -212,9 +220,9 @@
 	    	<div class="app-selector access-area">
 	    		<div class="selector-label" data-localize="management-users.apps"></div>
 	    		<div class="selector-wrapper">
-                    <input type="text" id="admin-app-selector">
-                </div>
-                <div style="clear:both"></div>
+						<input type="text" id="admin-app-selector">
+					</div>
+					<div style="clear:both"></div>
 	    	</div>
 	    </div>
 	    <button class="add-new-permission-set icon-button" data-localize="management-users.add-permission-set">
