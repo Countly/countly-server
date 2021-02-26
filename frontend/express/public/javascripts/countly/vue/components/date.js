@@ -330,9 +330,15 @@
                         maxDate: this.maxDate
                     };
                 }
-                var defaultTime = this.defaultTime || [];
-                var minDate = ELEMENT.DateUtil.modifyWithTimeString(val.minDate, defaultTime[0]);
-                var maxDate = ELEMENT.DateUtil.modifyWithTimeString(val.maxDate, defaultTime[1]);
+                var minDate, maxDate;
+                if (this.tableType === "date") {
+                    minDate = moment(val.minDate).startOf("day").toDate();
+                    maxDate = moment(val.maxDate).endOf("day").toDate();
+                }
+                else {
+                    minDate = moment(val.minDate).startOf("month").toDate();
+                    maxDate = moment(val.maxDate).endOf("month").toDate();
+                }
 
                 if (this.maxDate === maxDate && this.minDate === minDate) {
                     return;
@@ -348,7 +354,7 @@
 
                 var startsAt, endsAt;
 
-                if (this.minDate < this.rangeState.endDate) {
+                if (this.minDate <= this.rangeState.endDate) {
                     startsAt = this.minDate;
                     endsAt = this.rangeState.endDate;
                 }
