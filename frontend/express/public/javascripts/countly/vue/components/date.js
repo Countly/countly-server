@@ -325,28 +325,43 @@
         methods: {
             handleRangePick: function(val) {
                 this.rangeMode = "inBetween";
-                if (!this.rangeState.selecting) {
+                var firstClick = !this.rangeState.selecting;
+                if (firstClick) {
                     this.rangeBackup = {
                         minDate: this.minDate,
                         maxDate: this.maxDate
                     };
                 }
                 var minDate, maxDate;
-                if (this.tableType === "date") {
-                    minDate = moment(val.minDate).startOf("day").toDate();
-                    maxDate = moment(val.maxDate).endOf("day").toDate();
+                if (firstClick) {
+                    if (this.tableType === "date") {
+                        minDate = moment(val.minDate).startOf("day").toDate();
+                        maxDate = moment(val.minDate).endOf("day").toDate();
+                    }
+                    else {
+                        minDate = moment(val.minDate).startOf("month").toDate();
+                        maxDate = moment(val.minDate).endOf("month").toDate();
+                    }
+
+                    this.setCurrentInBetween(minDate, maxDate);
                 }
                 else {
-                    minDate = moment(val.minDate).startOf("month").toDate();
-                    maxDate = moment(val.maxDate).endOf("month").toDate();
+                    if (this.tableType === "date") {
+                        minDate = moment(val.minDate).startOf("day").toDate();
+                        maxDate = moment(val.maxDate).endOf("day").toDate();
+                    }
+                    else {
+                        minDate = moment(val.minDate).startOf("month").toDate();
+                        maxDate = moment(val.maxDate).endOf("month").toDate();
+                    }
                 }
 
                 if (this.maxDate === maxDate && this.minDate === minDate) {
                     return;
                 }
                 this.onPick && this.onPick(val);
-                this.maxDate = maxDate;
                 this.minDate = minDate;
+                this.maxDate = maxDate;
             },
             handleChangeRange: function(val) {
                 this.minDate = val.minDate;
