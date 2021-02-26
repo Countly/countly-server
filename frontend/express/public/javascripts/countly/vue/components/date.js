@@ -323,6 +323,9 @@
 
     var CalendarsMixin = {
         methods: {
+            disabledDateFn: function(date) {
+                return date > this.globalMax || date < this.globalMin;
+            },
             handleRangePick: function(val) {
                 this.rangeMode = "inBetween";
                 var firstClick = !this.rangeState.selecting;
@@ -702,6 +705,7 @@
                                                     :date="item.date"\
                                                     :min-date="minDate"\
                                                     :max-date="maxDate"\
+                                                    :disabled-date="disabledDateFn"\
                                                     :rangeState="rangeState"\
                                                     @pick="handleRangePick"\
                                                     @changerange="handleChangeRange">\
@@ -718,6 +722,7 @@
                                                     :date="item.date"\
                                                     :min-date="minDate"\
                                                     :max-date="maxDate"\
+                                                    :disabled-date="disabledDateFn"\
                                                     :rangeState="rangeState"\
                                                     @pick="handleRangePick"\
                                                     @changerange="handleChangeRange">\
