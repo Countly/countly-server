@@ -82,7 +82,7 @@
             }
         },
         inject: {
-            popperHistory: {
+            popperAncestors: {
                 default: function() {
                     return {};
                 }
@@ -94,10 +94,10 @@
             }
         },
         provide: function() {
-            var history = Object.assign({}, this.popperHistory);
+            var history = Object.assign({}, this.popperAncestors);
             history[this.popperUid] = true;
             return {
-                'popperHistory': history
+                'popperAncestors': history
             };
         },
         template: '<div class="cly-vue-dropdown el-select"\
