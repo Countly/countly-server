@@ -180,9 +180,6 @@ var common = require('../../../api/utils/common.js'),
                     }
 
                     const query = {_id: common.db.ObjectID(id)};
-                    if (params.member.global_admin !== true) {
-                        query.user = common.db.ObjectID(params.member._id); 
-                    }
 
                     common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params,id), function(err_update, report) {
                         if (err_update) {

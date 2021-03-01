@@ -548,6 +548,8 @@ var metricProps = {
                                         props["reports.sent-by"] = localize.format(props["reports.sent-by"]);
                                         props["reports.view-in-browser"] = localize.format(props["reports.view-in-browser"]);
                                         props["reports.get-help"] = localize.format(props["reports.get-help"]);
+                                        report.unsubscribe_local_string = props["reports.unsubscribe"] 
+
                                         const metricPropsString = {};
                                         for (let k in metricProps) {
                                             metricPropsString[k] = metricProps[k].map((item) => {
@@ -650,7 +652,7 @@ var metricProps = {
                     msg.list = {
                         unsubscribe: {
                             url: report.messages[i].unsubscribeLink, 
-                            comment: 'Countly Report Unsubscribe'
+                            comment: report.unsubscribe_local_string || 'Unsubscribe'
                         }
                     }
                 }
