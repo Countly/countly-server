@@ -16,7 +16,8 @@
                 }
             },
             placeholder: {type: String, default: ''},
-            disabled: {type: Boolean, default: false}
+            disabled: {type: Boolean, default: false},
+            adaptiveLength: {type: Boolean, default: false},
         },
         computed: {
             iconClass: function() {
@@ -32,6 +33,12 @@
                     return this.selectedOptions;
                 }
                 return this.selectedOptions.label;
+            },
+            componentName: function() {
+                if (this.adaptiveLength) {
+                    return "el-pseudo-input";
+                }
+                return "el-input";
             }
         },
         methods: {
@@ -39,7 +46,8 @@
                 this.$refs.elInput.focus();
             }
         },
-        template: '<el-pseudo-input\
+        template: '<component\
+                        :is="componentName"\
                         ref="elInput"\
                         :class="{ \'is-focus\': focused, \'is-disabled\': disabled }"\
                         v-bind="$attrs"\
@@ -49,12 +57,12 @@
                         <template slot="suffix">\
                             <i v-if="arrow" class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
                         </template>\
-                    </el-pseudo-input>'
+                    </component>'
 
     }));
 
     var triggerProxy = countlyBaseComponent.extend({
-        template: '<div><slot v-slot></slot></div>'
+        template: '<div style="width:100%"><slot v-slot></slot></div>'
     });
 
     Vue.component("cly-dropdown", countlyBaseComponent.extend({

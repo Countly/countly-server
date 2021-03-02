@@ -1159,7 +1159,9 @@
 
     var TabbedOptionsMixin = {
         props: {
-            options: {type: Array},
+            options: {type: Array, default: function() {
+                return [];
+            }},
             hideDefaultTabs: {type: Boolean, default: false},
             allPlaceholder: {type: String, default: 'All'},
             hideAllOptionsTab: {type: Boolean, default: false}
@@ -1303,7 +1305,7 @@
                         :disabled="disabled"\
                         v-bind="$attrs"\
                         v-on="$listeners"\
-                        @show="focusOnSearch"\
+                        @show="handleDropdownShow"\
                         @hide="focusOnTrigger">\
                         <template v-slot:trigger="dropdown">\
                             <slot name="trigger">\
@@ -1421,6 +1423,10 @@
             },
             updateDropdown: function() {
                 this.$refs.dropdown.updateDropdown();
+            },
+            handleDropdownShow: function() {
+                this.$forceUpdate();
+                this.focusOnSearch();
             },
             focusOnSearch: function() {
                 var self = this;

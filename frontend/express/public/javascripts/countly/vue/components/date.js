@@ -634,6 +634,7 @@
                             <slot name="trigger">\
                                 <cly-input-dropdown-trigger\
                                     ref="trigger"\
+                                    :adaptive-length="true"\
                                     :arrow="false"\
                                     :prefix-icon="\'el-icon-date\'"\
                                     :disabled="disabled"\
