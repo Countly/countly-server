@@ -74,6 +74,9 @@ gpgcheck=1
 enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-4.0.asc" > /etc/yum.repos.d/mongodb-org-4.0.repo
     fi
+    if [ -f /etc/mongod.conf.rpmsave ]; then
+        mv -f /etc/mongod.conf.rpmsave /etc/mongod.conf.rpmsave.bak
+    fi
     yum install -y mongodb-org
     if [ -f /etc/mongod.conf.rpmsave ]; then
         mv -f /etc/mongod.conf.rpmsave /etc/mongod.conf
