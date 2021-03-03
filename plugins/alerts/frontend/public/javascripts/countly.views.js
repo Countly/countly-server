@@ -56,6 +56,17 @@ var alertDefine = {
             { value: 'decreased by at least', name: 'decreased by at least' },
         ]
     },
+    dataPoint: {
+        target: [
+            { value: 'Number of daily DP', name: 'Number of daily DP' },
+            { value: 'Monthly data points', name: 'Monthly data points' }
+        ],
+        condition: [
+            { value: 'increased by at least', name: 'increased by at least' },
+            { value: 'decreased by at least', name: 'decreased by at least' },
+        ]
+    },
+    
 };
 
 // dynamic to get value for different settings properties.
@@ -362,7 +373,6 @@ window.AlertsView = countlyView.extend({
                 $("#single-target2-dropdown").clySelectSetSelection("", "please select app first");
             }
             $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
-
         },
         init: function() {
             var self = this;
@@ -402,9 +412,17 @@ window.AlertsView = countlyView.extend({
                         $("#single-target-condition-dropdown").css("visibility", "hidden");
                         $('#alert-compare-value').css("visibility", "hidden");
                     }
+                    else if (selected == 'Monthly data points') {
+                       $("#single-target-condition-dropdown").clySelectSetSelection("reach threshold","reach threshold");
+                       $("#alert-view .alert-compare-value-class").addClass("datapoint");
+                       setTimeout(function() {
+                         $("#single-target-condition-dropdown").clySelectSetItems([{value: 'reach threshold', name: 'reach threshold'}]);
+                       },10);
+                    }
                     else {
                         $("#single-target-condition-dropdown").css("visibility", "visible");
                         $('#alert-compare-value').css("visibility", "visible");
+                        
                     }
 
 
@@ -441,15 +459,13 @@ window.AlertsView = countlyView.extend({
                 var source = $("#" + dataType + "-condition-template").html();
                 $('.alert-condition-block').html(source);
 
-
                 $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
                 $("#single-target-condition-dropdown").clySelectSetItems(alertDefine[dataType].condition);
-
-                app.localize();
                 switch (dataType) {
                 case 'metric':
                 case 'crash':
                 case 'rating':
+                case 'dataPoint':
                     metricClickListner();
                     break;
                 case 'event':
@@ -457,6 +473,7 @@ window.AlertsView = countlyView.extend({
                 }
                 self.checkDisabled();
                 $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
+                app.localize();
             });
             // init content
             $(".alert-condition-block").html('');
@@ -610,6 +627,7 @@ window.AlertsView = countlyView.extend({
         loadData: function(data) {
             var self = this;
             $(($('#alert-data-types').find("[data-data-type='" + data.alertDataType + "']"))).trigger("click");
+            window.d44=$(($('#alert-data-types').find("[data-data-type='" + data.alertDataType + "']")))
             $("#current_alert_id").text(data._id);
             $("#alert-name-input").val(data.alertName);
             if (self.emailInput && self.emailInput.length > 0) {
@@ -623,12 +641,12 @@ window.AlertsView = countlyView.extend({
             case 'metric':
             case 'crash':
             case 'rating':
+            case 'dataPoint':
                 var appSelected = [];
                 for (var index in data.selectedApps) {
                     var appId = data.selectedApps[index];
                     countlyGlobal.apps[appId] && appSelected.push({ value: appId, name: countlyGlobal.apps[appId].name });
                     countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
-
                 }
                 var target = _.find(alertDefine[data.alertDataType].target, function(m) {
                     return m.value === data.alertDataSubType;
@@ -636,7 +654,6 @@ window.AlertsView = countlyView.extend({
                 if (target) {
                     $("#single-target-dropdown").clySelectSetSelection(target.value, target.name);
                 }
-
                 if (data.alertDataSubType2 && (data.alertDataSubType === 'Number of page views' || data.alertDataSubType === 'Bounce rate')) {
                     this.loadAppViewData(data.alertDataSubType2);
                 }
@@ -649,6 +666,12 @@ window.AlertsView = countlyView.extend({
                     $("#single-target-dropdown").off("cly-select-change");
                     $("#single-target-dropdown").clySelectSetSelection(data.alertDataSubType, data.alertDataSubType);
                 });
+                var target = _.find(alertDefine[data.alertDataType].target, function(m) {
+                    return m.value === data.alertDataSubType;
+                });
+                if (target) {
+                    $("#single-target-dropdown").clySelectSetSelection(target.value, target.name);
+                }
                 for (index in data.selectedApps) {
                     appId = data.selectedApps[index];
                     countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
@@ -667,7 +690,6 @@ window.AlertsView = countlyView.extend({
                     $("#" + dict[data.alertDataSubType][key]).val(data[key]);
                 }
             }
-
 
             $("#save-widget").removeClass("disabled");
         },
@@ -708,6 +730,9 @@ window.AlertsView = countlyView.extend({
 				' ' + settings.compareType +
 				' ' + settings.compareValue + "%";
 
+            if (dataType === 'dataPoint' && settings.alertDataSubType === 'Monthly data points') {
+               settings.compareDescribe = settings.compareDescribe.substring(0, settings.compareDescribe.length - 1);
+            }
             var dictObject = dict[settings.alertDataType] && dict[settings.alertDataType][settings.alertDataSubType];
             if (dictObject) {
                 for (var key in dictObject) {
