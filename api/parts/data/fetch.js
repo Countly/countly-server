@@ -1046,7 +1046,9 @@ fetch.metricToCollection = function(metric) {
     case 'device_details':
         return ['device_details', null, countlyDeviceDetails];
     case 'devices':
-        return ['devices', null];
+        return ['devices', "devices", null];
+    case 'manufacturers':
+        return ["devices", "manufacturers", null];
     case 'cities':
         return ["cities", "cities"];
     default:

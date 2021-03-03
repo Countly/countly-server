@@ -197,6 +197,7 @@ common.dbUserMap = {
     'session_count': 'sc',
     'device': 'd',
     'device_type': 'dt',
+    'manufacturer': 'mnf',
     'carrier': 'c',
     'city': 'cty',
     'region': 'rgn',
