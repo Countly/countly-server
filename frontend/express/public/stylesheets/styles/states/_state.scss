@@ -1,0 +1,46 @@
+.font-weight-bold {
+    font-weight: $--font-weight-bold !important;
+}
+
+.font-weight-normal {
+    font-weight: $--font-weight-text !important;
+}
+
+.font-italic {
+    font-style: italic !important;
+}
+
+.text-lowercase {
+    text-transform: lowercase !important;
+}
+
+.text-uppercase {
+    text-transform: uppercase !important;
+}
+
+.text-big {
+    font-size: $--text-lg-size;
+    font-weight: $--font-weight-text;
+    line-height: $--text-lg-size + 6px;
+    &.font-weight-bold {
+        font-weight: $--font-weight-primary !important;
+    }
+}
+
+.text-medium {
+    font-size: $--text-md-size;
+    font-weight: $--font-weight-text;
+    line-height: $--text-md-size + 6px;
+    &.font-weight-bold {
+        font-weight: $--font-weight-primary !important;
+    }
+}
+
+.text-small {
+    font-size: $--text-sm-size;
+    font-weight: $--font-weight-text;
+    line-height: $--text-sm-size + 6px;
+    &.font-weight-bold {
+        font-weight: $--font-weight-primary !important;
+    }
+}

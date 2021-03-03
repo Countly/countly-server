@@ -135,7 +135,13 @@
         props: {
             title: String
         },
-        template: '<div style="background-color: white; border-bottom: 1px solid #ECECEC; display: flex; height: 112px; align-items: flex-end;"><div><h2 style="margin: 0 0 32px 24px">{{title}}</h2></div></div>'
+        template: '<div class="bu-level bu-is-mobile header header--white-bg">\
+                        <div class="bu-level-left">\
+                            <div class="bu-level-item">\
+                                <h2>{{title}}</h2>\
+                            </div>\
+                        </div>\
+                    </div>'
     }));
 
     Vue.component("cly-main", countlyBaseComponent.extend({

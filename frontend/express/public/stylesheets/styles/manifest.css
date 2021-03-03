@@ -1,3 +1,175 @@
+/* Element Chalk Variables */
+/* Transition
+-------------------------- */
+/* Color
+-------------------------- */
+/* 53a8ff */
+/* 66b1ff */
+/* 79bbff */
+/* 8cc5ff */
+/* a0cfff */
+/* b3d8ff */
+/* c6e2ff */
+/* d9ecff */
+/* ecf5ff */
+/* Link
+-------------------------- */
+/* Border
+-------------------------- */
+/* Fill
+-------------------------- */
+/* Typography
+-------------------------- */
+/* Size
+-------------------------- */
+/* z-index
+-------------------------- */
+/* Disable base
+-------------------------- */
+/* Icon
+-------------------------- */
+/* Checkbox
+-------------------------- */
+/* Radio
+-------------------------- */
+/* Select
+-------------------------- */
+/* Alert
+-------------------------- */
+/* MessageBox
+-------------------------- */
+/* Message
+-------------------------- */
+/* Notification
+-------------------------- */
+/* Input
+-------------------------- */
+/* Cascader
+-------------------------- */
+/* Group
+-------------------------- */
+/* Tab
+-------------------------- */
+/* Button
+-------------------------- */
+/* cascader
+-------------------------- */
+/* Switch
+-------------------------- */
+/* Dialog
+-------------------------- */
+/* Table
+-------------------------- */
+/* Pagination
+-------------------------- */
+/* Popup
+-------------------------- */
+/* Popover
+-------------------------- */
+/* Tooltip
+-------------------------- */
+/* Tag
+-------------------------- */
+/* Tree
+-------------------------- */
+/* Dropdown
+-------------------------- */
+/* Badge
+-------------------------- */
+/* Card
+--------------------------*/
+/* Slider
+--------------------------*/
+/* Steps
+--------------------------*/
+/* Menu
+--------------------------*/
+/* Rate
+--------------------------*/
+/* DatePicker
+--------------------------*/
+/* Loading
+--------------------------*/
+/* Scrollbar
+--------------------------*/
+/* Carousel
+--------------------------*/
+/* Collapse
+--------------------------*/
+/* Transfer
+--------------------------*/
+/* Header
+  --------------------------*/
+/* Footer
+--------------------------*/
+/* Main
+--------------------------*/
+/* Timeline
+--------------------------*/
+/* Backtop
+--------------------------*/
+/* Link
+--------------------------*/
+/* Calendar
+--------------------------*/
+/* Form
+-------------------------- */
+/* Avatar
+--------------------------*/
+/* Break-point
+--------------------------*/
+button {
+  font: 500 13px Inter !important;
+}
+
+h1 {
+  font-size: 32px;
+  line-height: 48px;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+}
+
+h3 {
+  font-size: 20px;
+  line-height: 30px;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+}
+
+h4 {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+}
+
+h5 {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+}
+
+h6 {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 500;
+  margin: 0;
+  padding: 0;
+}
+
 #analytics-main-view .content-container {
   min-width: 768px;
   min-height: 400px;
@@ -5,4 +177,62 @@
   padding: 59px 0 35px 0 !important;
   transition: margin-left 0.55s;
   will-change: margin-left;
+}
+
+.header {
+  padding: 0px 24px 24px;
+  border-bottom: 1px solid #DCDFE6;
+}
+.header--white-bg {
+  background-color: #FFFFFF;
+}
+.header--no-bg {
+  background-color: none;
+}
+
+.font-weight-bold {
+  font-weight: 600 !important;
+}
+
+.font-weight-normal {
+  font-weight: 400 !important;
+}
+
+.font-italic {
+  font-style: italic !important;
+}
+
+.text-lowercase {
+  text-transform: lowercase !important;
+}
+
+.text-uppercase {
+  text-transform: uppercase !important;
+}
+
+.text-big {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 22px;
+}
+.text-big.font-weight-bold {
+  font-weight: 500 !important;
+}
+
+.text-medium {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.text-medium.font-weight-bold {
+  font-weight: 500 !important;
+}
+
+.text-small {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+.text-small.font-weight-bold {
+  font-weight: 500 !important;
 }

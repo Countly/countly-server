@@ -1,13 +1,17 @@
 // File : main.scss (Default Theme)
 // All "Base" specific SASS partials
 
+@import 'base/typography-variables';
+@import "base/element-variables";
 @import "base/colors";
 @import "base/variables";
 @import "base/mixins";
+@import "base/base";
 
 // All "Layout" specific SASS partials
 
 @import 'layout/content';
+@import 'layout/header';
 
 // All "Module" specific SASS partials
 

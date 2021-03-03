@@ -1,0 +1,12 @@
+.header {
+    padding: 0px 24px 24px;
+    border-bottom: $--border-base;
+
+    &--white-bg {
+        background-color: $--color-white;
+    }
+
+    &--no-bg {
+        background-color: none;
+    }
+}
