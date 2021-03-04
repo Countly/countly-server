@@ -1,9 +1,6 @@
 'use strict';
 const Promise = require("bluebird");
 const utils = require('../parts/utils');
-const fetch = require('../../../../api/parts/data/fetch.js');
-const countlyModel = require('../../../../api/lib/countly.model.js');
-const countlySession = countlyModel.load("users");
 const bluebird = require("bluebird");
 const moment = require('moment');
 const common = require('../../../../api/utils/common.js');
@@ -21,7 +18,7 @@ const dataPointAlert = {
         return bluebird.coroutine(function *() {
             try {
                 log.i('trigger alert:', result);
-                
+
                 utils.addAlertCount();
                 if (alertConfigs.alertBy === 'email') {
                     const emails = yield utils.getDashboardUserEmail(alertConfigs.alertValues);
@@ -104,7 +101,7 @@ const dataPointAlert = {
 	 */
     check({ alertConfigs, done }) {
         const self = this;
-        
+
         return bluebird.coroutine(function* () {
             try {
                 if (!alertConfigs.enabled) {
@@ -119,18 +116,19 @@ const dataPointAlert = {
                         return;
                     }
                     switch (alertConfigs.alertDataSubType) {
-                        case 'Number of daily DP': 
-                        case 'Monthly data points':
-                            const result = yield checkDataPoints(currentApp, alertConfigs);
-                            log.d('app:' + currentApp + ' result:', result);
-                            if (result.matched) {
-                                const app = yield utils.getAppInfo(currentApp);
-                                result.app = app;
-                                alertList.push(result);
-                            }
-                            break;
-                        default: 
-                            break;
+                    case 'Number of daily DP':
+                    case 'Monthly data points': {
+                        const result = yield checkDataPoints(currentApp, alertConfigs);
+                        log.d('app:' + currentApp + ' result:', result);
+                        if (result.matched) {
+                            const app = yield utils.getAppInfo(currentApp);
+                            result.app = app;
+                            alertList.push(result);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
                     }
                 }
                 log.d("alert list:", alertList);
@@ -150,12 +148,12 @@ const dataPointAlert = {
 /**
  * fetch datapoint data for app 
  * @param {string} app app id
- * @param {object} alert config - app config data. 
+ * @param {object} alertConfigs config - app config data. 
  * @return {object} Promise
  */
 function checkDataPoints(app, alertConfigs) {
     var periodsToFetch = [],
-    utcMoment = common.moment.utc();
+        utcMoment = common.moment.utc();
     var monthBack = 3;
     for (let i = monthBack - 1; i > 0; i--) {
         utcMoment.subtract(i, "months");
@@ -177,18 +175,18 @@ function checkDataPoints(app, alertConfigs) {
     const tYear = today.year();
     const tMonth = today.month() + 1;
     const tDate = today.date();
-    const todayDocumentId = app + "_" + tYear + ":" + tMonth; 
+    const todayDocumentId = app + "_" + tYear + ":" + tMonth;
     let todayDataPointValue = 0;
 
     const lastDay = moment().subtract(1, 'days');
     const lYear = lastDay.year();
     const lMonth = lastDay.month() + 1;
     const lDate = lastDay.date();
-    const lastdayDocumentId = app+ "_" + lYear + ":"+ lMonth;
+    const lastdayDocumentId = app + "_" + lYear + ":" + lMonth;
     let lastdayDataPointValue = 0;
 
 
-    return  new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         common.db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, dataPerApp) {
             var toReturn = {
                 "all-apps": {},
@@ -221,14 +219,14 @@ function checkDataPoints(app, alertConfigs) {
 
             for (let i = 0; i < dataPerApp.length; i++) {
                 if (dataPerApp[i]._id === todayDocumentId) {
-                    for (let hour in dataPerApp[i]["d"][tDate]) {
-                        const hourDataPoint = dataPerApp[i]["d"][tDate][hour].dp;
+                    for (let hour in dataPerApp[i].d[tDate]) {
+                        const hourDataPoint = dataPerApp[i].d[tDate][hour].dp;
                         todayDataPointValue += hourDataPoint;
                     }
                 }
                 if (dataPerApp[i]._id === lastdayDocumentId) {
-                    for (let hour in dataPerApp[i]["d"][lDate]) {
-                        const hourDataPoint = dataPerApp[i]["d"][lDate][hour].dp;
+                    for (let hour in dataPerApp[i].d[lDate]) {
+                        const hourDataPoint = dataPerApp[i].d[lDate][hour].dp;
                         lastdayDataPointValue += hourDataPoint;
                     }
                 }
@@ -288,15 +286,16 @@ function checkDataPoints(app, alertConfigs) {
                 }
             }
             if (alertConfigs.alertDataSubType === 'Monthly data points') {
-                const todayValue = toReturn[app][tYear+"-"+tMonth]["data-points"];
-                return resolve({todayValue, matched: alertConfigs.compareValue < todayValue})
-            } else {
+                const todayValue = toReturn[app][tYear + "-" + tMonth]["data-points"];
+                return resolve({todayValue, matched: alertConfigs.compareValue < todayValue});
+            }
+            else {
                 const percentNum = (todayDataPointValue / lastdayDataPointValue - 1) * 100;
                 const compareValue = parseFloat(alertConfigs.compareValue);
                 const matched = alertConfigs.compareType && alertConfigs.compareType.indexOf('increased') >= 0
                     ? percentNum > compareValue : percentNum < compareValue;
 
-                return resolve({toReturn, lastDateValue: lastdayDataPointValue, todayValue:todayDataPointValue, matched});
+                return resolve({toReturn, lastDateValue: lastdayDataPointValue, todayValue: todayDataPointValue, matched});
             }
         });
     });

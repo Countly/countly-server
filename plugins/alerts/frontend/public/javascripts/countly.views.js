@@ -66,7 +66,7 @@ var alertDefine = {
             { value: 'decreased by at least', name: 'decreased by at least' },
         ]
     },
-    
+
 };
 
 // dynamic to get value for different settings properties.
@@ -412,17 +412,17 @@ window.AlertsView = countlyView.extend({
                         $("#single-target-condition-dropdown").css("visibility", "hidden");
                         $('#alert-compare-value').css("visibility", "hidden");
                     }
-                    else if (selected == 'Monthly data points') {
-                       $("#single-target-condition-dropdown").clySelectSetSelection("reach threshold","reach threshold");
-                       $("#alert-view .alert-compare-value-class").addClass("datapoint");
-                       setTimeout(function() {
-                         $("#single-target-condition-dropdown").clySelectSetItems([{value: 'reach threshold', name: 'reach threshold'}]);
-                       },10);
+                    else if (selected === 'Monthly data points') {
+                        $("#single-target-condition-dropdown").clySelectSetSelection("reach threshold", "reach threshold");
+                        $("#alert-view .alert-compare-value-class").addClass("datapoint");
+                        setTimeout(function() {
+                            $("#single-target-condition-dropdown").clySelectSetItems([{value: 'reach threshold', name: 'reach threshold'}]);
+                        }, 10);
                     }
                     else {
                         $("#single-target-condition-dropdown").css("visibility", "visible");
                         $('#alert-compare-value').css("visibility", "visible");
-                        
+
                     }
 
 
@@ -627,7 +627,7 @@ window.AlertsView = countlyView.extend({
         loadData: function(data) {
             var self = this;
             $(($('#alert-data-types').find("[data-data-type='" + data.alertDataType + "']"))).trigger("click");
-            window.d44=$(($('#alert-data-types').find("[data-data-type='" + data.alertDataType + "']")))
+            window.d44 = $(($('#alert-data-types').find("[data-data-type='" + data.alertDataType + "']")));
             $("#current_alert_id").text(data._id);
             $("#alert-name-input").val(data.alertName);
             if (self.emailInput && self.emailInput.length > 0) {
@@ -666,11 +666,11 @@ window.AlertsView = countlyView.extend({
                     $("#single-target-dropdown").off("cly-select-change");
                     $("#single-target-dropdown").clySelectSetSelection(data.alertDataSubType, data.alertDataSubType);
                 });
-                var target = _.find(alertDefine[data.alertDataType].target, function(m) {
+                var targetEvent = _.find(alertDefine[data.alertDataType].target, function(m) {
                     return m.value === data.alertDataSubType;
                 });
-                if (target) {
-                    $("#single-target-dropdown").clySelectSetSelection(target.value, target.name);
+                if (targetEvent) {
+                    $("#single-target-dropdown").clySelectSetSelection(targetEvent.value, targetEvent.name);
                 }
                 for (index in data.selectedApps) {
                     appId = data.selectedApps[index];
@@ -731,7 +731,7 @@ window.AlertsView = countlyView.extend({
 				' ' + settings.compareValue + "%";
 
             if (dataType === 'dataPoint' && settings.alertDataSubType === 'Monthly data points') {
-               settings.compareDescribe = settings.compareDescribe.substring(0, settings.compareDescribe.length - 1);
+                settings.compareDescribe = settings.compareDescribe.substring(0, settings.compareDescribe.length - 1);
             }
             var dictObject = dict[settings.alertDataType] && dict[settings.alertDataType][settings.alertDataSubType];
             if (dictObject) {
