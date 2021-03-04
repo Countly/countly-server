@@ -5,8 +5,8 @@
     countlyAuth.types = ["c", "r", "u", "d"];
     countlyAuth.typeNames = ["create", "read", "update", "delete"];
     countlyAuth.features = {
-        "plugins": [],
-        "others": ["core", "events", "global_applications", "global_users", "global_jobs"]
+        "plugins": []
+        //"others": ["core", "events", "global_applications", "global_users", "global_jobs"]
     };
 
     for (var i = 0; i < countlyGlobal.plugins.length; i++) {
@@ -141,8 +141,6 @@
         for (var i = 0; i < sets.length; i++) {
             $(parent_el + ' #user-app-selector-' + i)[0].selectize.setValue([]);
         }
-        
-        //$(parent_el + ' .user-access').remove();
     }
 
     countlyAuth.permissionSetGenerator = function(count) {
@@ -170,6 +168,9 @@
                 permissionObject[accessType][countlyApp] = {};
                 permissionObject[accessType][countlyApp].all = false;
                 permissionObject[accessType][countlyApp].allowed = {};
+                if (accessType === "r") {
+                    permissionObject[accessType][countlyApp].allowed.core = true;
+                }
                 permissionObject[accessType].global = {};
                 permissionObject[accessType].global.all = false;
                 permissionObject[accessType].global.allowed = {};
@@ -177,11 +178,11 @@
         }
         
         if (permissionSets.length === 0) {
-            permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+            permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
         }
         else if (permissionSets.length > 0) {
             permissionSets = [];
-            permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});    
+            permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});    
         }
 
         return {
@@ -247,8 +248,10 @@
                     }
                     else {
                         for (var feature in permission_object[countlyAuth.types[j]][user_apps[i][0]].allowed) {
-                            $(parent_el + ' #' + countlyAuth.types[j] + '-' + feature + '-' + i).countlyCheckbox().set(true);
                             permission_sets[i] = countlyAuth.giveFeaturePermission(countlyAuth.types[j], feature, permission_sets[i]);
+                            if (feature !== 'core') {
+                                $(parent_el + ' #' + countlyAuth.types[j] + '-' + feature + '-' + i).countlyCheckbox().set(true);
+                            }
                         }
                     }
                 }

@@ -612,7 +612,7 @@ window.PopulatorView = countlyView.extend({
 app.populatorView = new PopulatorView();
 
 app.route('/manage/populate*state', 'populate', function(state) {
-    if (countlyAuth.validateCreate(self.featureName)) {
+    if (countlyAuth.validateRead(app.populatorView.featureName) && countlyAuth.validateCreate(app.populatorView.featureName)) {
         this.populatorView.state = state;
         this.renderWhenReady(this.populatorView);
     }
@@ -671,18 +671,15 @@ app.addAppManagementSwitchCallback(function() {
 });
 
 $(document).ready(function() {
-    var style = "display:none;";
-    if (countlyAuth.validateCreate("populator")) {
-        style = "";
-    }
-
-    if (countlyAuth.validateRead(app.populatorView.featureName)) {
+    var style = "";
+    
+    if (countlyAuth.validateRead(app.populatorView.featureName) && countlyAuth.validateCreate(app.populatorView.featureName)) {
         app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.title", priority: 70, classes: "populator-menu", style: style});
     }
 
     //listen for UI app change
     app.addAppSwitchCallback(function(appId) {
-        if (countlyAuth.validateCreate("populator", countlyGlobal.member, appId)) {
+        if (countlyAuth.validateRead(app.populatorView.featureName) && countlyAuth.validateCreate(app.populatorView.featureName)) {
             $(".populator-menu").show();
         }
         else {

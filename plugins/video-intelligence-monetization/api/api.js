@@ -7,7 +7,7 @@ var common = require('../../../api/utils/common.js'),
     countlyEvents = countlyModel.load("event"),
     { validateRead } = require('../../../api/utils/right.js');
 
-const FEATURE_NAME = 'video';
+const FEATURE_NAME = 'videointelligencemonetization';
 
 (function() {
 

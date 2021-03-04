@@ -1903,17 +1903,23 @@ const processRequest = (params) => {
                             console.log('Parse events array failed', params.qstring.events, params.req.url, params.req.body);
                         }
                         if (params.qstring.overview) {
-                            validateUserForDataReadAPI(params, 'core', function() {
-                                countlyApi.data.fetch.fetchDataEventsOverview(params);
-                            });
+                            // TODO: handle here, what permission should be required for here?
+                            countlyApi.data.fetch.fetchDataEventsOverview(params);
                         }
                         else {
+                            // TODO: handle here what permission should be required for here?
                             validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchMergedEventData);
                         }
                     }
                     else {
                         params.truncateEventValuesList = true;
-                        validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                        if (params.qstring.event === '[CLY]_star_rating') {
+                            validateUserForDataReadAPI(params, 'starrating', countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                        }
+                        else {
+                            // TODO: handle here
+                            validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                        }
                     }
                     break;
                 case 'get_events':

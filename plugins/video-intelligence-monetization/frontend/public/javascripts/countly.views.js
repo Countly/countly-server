@@ -1,8 +1,9 @@
 /*global $, jQuery, app, countlyView, countlyCommon, T, CountlyHelpers, countlyMonetization, MonetizationIntegrationView, MonetizationMetricsView, iFrameResize */
 
+
 window.MonetizationMetricsView = countlyView.extend({
     templateData: {},
-
+    featureName: 'videointelligencemonetization',
     /**
     * beforeRender view hook, initializes the template load request.
     * @returns {Promise} Returns a promise which will be resolved when templates and/or data are ready.
@@ -260,10 +261,12 @@ $(document).ready(function() {
     ];
     var wrapper = '<div class="sidebar-submenu" id="monetization-submenu">' + items.join('') + '</div>';
 
-    if ($('.sidebar-menu #management-menu').length) {
-        $('.sidebar-menu #management-menu').before(folder + wrapper);
-    }
-    else {
-        $('.sidebar-menu').append(folder + wrapper);
+    if (countlyAuth.validateRead(app.monetizationMetricsView.featureName)) {
+        if ($('.sidebar-menu #management-menu').length) {
+            $('.sidebar-menu #management-menu').before(folder + wrapper);
+        }
+        else {
+            $('.sidebar-menu').append(folder + wrapper);
+        }
     }
 });

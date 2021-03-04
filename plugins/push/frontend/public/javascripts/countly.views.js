@@ -3,6 +3,7 @@
 /* jshint undef: true, unused: true */
 /* globals app, $, countlyGlobal, countlyAuth, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery, countlyManagementView, Backbone */
 
+const featureName = 'push';
 app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyManagementView.extend({
     initialize: function() {
         this.plugin = 'push';
@@ -337,8 +338,10 @@ app.addRefreshScript('/users#', modifyUserDetailsForPush);
 app.addPageScript('/users#', modifyUserDetailsForPush);
 
 $(document).ready(function() {
-    app.addMenuForType("mobile", "reach", {code: "push", text: "push.sidebar.section", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
-    app.addSubMenuForType("mobile", "push", {code: "messaging", url: "#/messaging", text: "push.sidebar.overview", priority: 10});
+    if (countlyAuth.validateRead(featureName)) {
+        app.addMenuForType("mobile", "reach", {code: "push", text: "push.sidebar.section", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+        app.addSubMenuForType("mobile", "push", {code: "messaging", url: "#/messaging", text: "push.sidebar.overview", priority: 10});   
+    }
 
     if (app.configurationsView) {
         app.configurationsView.registerLabel("push", "push.plugin-title");

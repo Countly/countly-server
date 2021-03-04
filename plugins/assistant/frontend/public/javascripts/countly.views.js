@@ -2,20 +2,22 @@
 window.AssistantView = {
     featureName: 'assistant',
     initialize: function(isRefresh) {
-        if ($("#top-bar").find("#assistant-menu").length === 0) {
-            var assistantMenu =
-                '<div id="assistant-menu" class="dropdown icon" style="display: block">' +
-                    '<div id="notification-icon" class="empty-state">' +
-                        '<i class="ion-android-notifications"></i>' +
-                    '</div>' +
-                    '<div class="menu right" style="width: 400px; min-height:500px;"></div>' +
-                '</div>';
-
-            if (!store.get('first_app')) {
-                $("#top-bar").find(".right-menu").prepend(assistantMenu);
+        if (countlyAuth.validateRead(this.featureName)) {
+            if ($("#top-bar").find("#assistant-menu").length === 0) {
+                var assistantMenu =
+                    '<div id="assistant-menu" class="dropdown icon" style="display: block">' +
+                        '<div id="notification-icon" class="empty-state">' +
+                            '<i class="ion-android-notifications"></i>' +
+                        '</div>' +
+                        '<div class="menu right" style="width: 400px; min-height:500px;"></div>' +
+                    '</div>';
+    
+                if (!store.get('first_app')) {
+                    $("#top-bar").find(".right-menu").prepend(assistantMenu);
+                }
             }
         }
-
+        
         var self = this;
         return $.when(T.render('/assistant/templates/panel.html', function(src) {
             self.template = src;

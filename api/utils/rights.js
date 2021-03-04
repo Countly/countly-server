@@ -10,7 +10,7 @@ var common = require("./common.js"),
     log = require('./log.js')('core:rights');
 
 var authorize = require('./authorizer.js'); //for token validations
-var featuresNoNeedAppId = ['dashboards', 'global_users'];
+//var featuresNoNeedAppId = ['dashboards', 'global_users','alerts','populator','reports'];
 
 //check token and return owner id if token valid
 //owner d used later to set all member variables.
@@ -629,7 +629,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                     return false;
                 }
 
-                if (featuresNoNeedAppId.indexOf(feature) === -1 && typeof params.qstring.app_id === "undefined") {
+                if (typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
                     return false;
@@ -657,6 +657,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                         }
                     }
                     else {
+                        // check for legacy auth
                         if (!((member.user_of && Array.isArray(member.user_of) && member.user_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
                             common.returnMessage(params, 401, 'User does not have view right for this application');
                             reject('User does not have view right for this application');
@@ -672,7 +673,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                 }
 
                 common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
-                    if (!app && featuresNoNeedAppId.indexOf(feature) === -1) {
+                    if (!app) {
                         common.returnMessage(params, 401, 'App does not exist');
                         reject('App does not exist');
                         return false;
@@ -755,7 +756,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                     return false;
                 }
 
-                if (featuresNoNeedAppId.indexOf(feature) === -1 && typeof params.qstring.app_id === "undefined") {
+                if (typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
                     return false;
@@ -793,7 +794,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                 }
 
                 common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
-                    if (!app && featuresNoNeedAppId.indexOf(feature) === -1) {
+                    if (!app) {
                         common.returnMessage(params, 401, 'App does not exist');
                         reject('App does not exist');
                         return false;

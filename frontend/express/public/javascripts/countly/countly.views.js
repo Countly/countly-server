@@ -3553,7 +3553,7 @@ window.ManageUsersView = countlyView.extend({
                             return '';
                         }
                         else {
-                            return "<div class='manage-users-options-item options-item'>"
+                            return "<div class='manage-users-options-item " + ((row._id === countlyGlobal.member._id) ? 'own-row' : '') + " options-item'>"
                                     + "<div class='edit show-edit-menu' data-id='" + row._id + "'></div>"
                                     + "<div class='edit-menu manage-users-menu-" + row._id + "' id='" + row._id + "'>"
                                     + ((countlyAuth.validateUpdate(self.featureName)) ? "<div class='edit-user item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i> &nbsp; " + jQuery.i18n.map["common.edit"] + "</div>" : "")

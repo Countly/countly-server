@@ -1,9 +1,13 @@
-/*global countlyCommon, countlyGlobal, jQuery*/
+/*global countlyCommon, countlyGlobal, jQuery, countlyAuth */
 (function(countlyAssistant, $) {
 
     //Private Properties
     var _data = {};
+    var feature_name = 'assistant';
     countlyAssistant.initialize = function(isRefresh) {
+        if (!countlyAuth.validateRead(feature_name)) {
+            return;
+        }
         if (countlyCommon.ACTIVE_APP_ID === 0) {
             //no app id available, most likely a new server without a app created
             _data = {
