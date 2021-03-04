@@ -88,18 +88,53 @@ class StatsJob extends job.Job {
                                 utcMoment = moment.utc();
                                 data = {};
                                 var ids = {};
+                                var ids6 = {};
+                                var ids0 = {};
+                                var order = [];
                                 var Countly = tracker.getSDK();
-                                for (let i = 0; i < 6; i++) {
+                                for (let i = 0; i < 12; i++) {
+                                    order.push(utcMoment.format("MMM YYYY"));
                                     ids[utcMoment.format("YYYY:M")] = utcMoment.format("MMM YYYY");
+                                    if (i < 7) {
+                                        ids6[utcMoment.format("YYYY:M")] = utcMoment.format("MMM YYYY");
+                                    }
+                                    if (i === 0) {
+                                        ids0[utcMoment.format("YYYY:M")] = utcMoment.format("MMM YYYY");
+                                    }
                                     utcMoment.subtract(1, 'months');
                                 }
 
-                                data.DP = {};
+                                var DP = {};
+                                data.DP = [];
+                                data.avg12monthDP = 0;
+                                data.avg6monthDP = 0;
 
+                                var avg12 = 0;
+                                var avg6 = 0;
                                 for (let i = 0; i < allData.length; i++) {
                                     if (ids[allData[i]._id]) {
-                                        data.DP[ids[allData[i]._id]] = allData[i].e + allData[i].s;
+                                        var val = allData[i].e + allData[i].s;
+                                        DP[ids[allData[i]._id]] = val;
+                                        if (!ids0[allData[i]._id]) {
+                                            data.avg12monthDP += DP[ids[allData[i]._id]];
+                                            avg12++;
+                                        }
+                                        if (ids6[allData[i]._id] && !ids0[allData[i]._id]) {
+                                            data.avg6monthDP += DP[ids[allData[i]._id]];
+                                            avg6++;
+                                        }
                                     }
+                                }
+
+                                for (let i = 0; i < order.length; i++) {
+                                    data.DP.push((i < 9 ? "0" + (i + 1) : i + 1) + ". " + order[i] + ": " + DP[order[i]]);
+                                }
+
+                                if (avg12) {
+                                    data.avg12monthDP = Math.round(data.avg12monthDP / avg12);
+                                }
+                                if (avg6) {
+                                    data.avg12monthDP = Math.round(data.avg6monthDP / avg6);
                                 }
                                 Countly.user_details({
                                     "custom": data

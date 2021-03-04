@@ -2891,10 +2891,13 @@
         /**
         * Get bar data for metric with percentages of total
         * @memberof countlyMetric
-        * @param {string} metric_pd - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @param {string} segment - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @param {string} mtric - name of the metric to use ordering and returning
+        * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
         */
-        countlyMetric.getBarsWPercentageOfTotal = function(metric_pd) {
+        countlyMetric.getBarsWPercentageOfTotal = function(segment, mtric, estOverrideMetric) {
+            mtric = mtric || "t";
             if (_processed) {
                 var rangeData = {};
                 rangeData.chartData = [];
@@ -2908,13 +2911,13 @@
                     }
                     rangeData.chartData[i] = data[i];
                 }
-                return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData);
+
+                return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData, mtric, this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined);
             }
             else {
-                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(metric_pd), this.clearObject, fetchValue);
+                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(segment), this.clearObject, fetchValue, mtric, estOverrideMetric, this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined);
             }
         };
-
 
         /**
         * Get bar data for metric
@@ -3015,39 +3018,13 @@
                 ], estOverrideMetric || _estOverrideMetric);
             }
 
-            var osSegmentation = ((os) ? os : ((_os) ? _os[0] : null)),
-                platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),
-                chartData2 = [];
-            var osName = osSegmentation;
-            if (osSegmentation) {
-                if (countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) {
-                    osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
-                }
-                else {
-                    osName = osSegmentation.toLowerCase()[0];
-                }
-            }
+            os = ((os) ? os : ((_os) ? _os[0] : null));
 
-            if (oSVersionData.chartData) {
-                var regTest = new RegExp("^" + osName + "[0-9]");
-                var reg = new RegExp("^" + osName);
-                for (i = 0; i < oSVersionData.chartData.length; i++) {
-                    var shouldDelete = true;
-                    oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(/:/g, ".");
-                    if (regTest.test(oSVersionData.chartData[i][metric_pd || _name])) {
-                        shouldDelete = false;
-                        oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(reg, "");
-                    }
-                    else if (countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][metric_pd || _name], osName)) {
-                        shouldDelete = false;
-                    }
-                    if (shouldDelete) {
-                        delete oSVersionData.chartData[i];
-                        delete platformVersionTotal[i];
-                    }
-                }
-            }
+            var chartData2 = [];
+            var osSegmentation = os;
+            oSVersionData = countlyDeviceDetails.eliminateOSVersion(oSVersionData, osSegmentation, metric_pd || _name, false);
 
+            var platformVersionTotal = _.pluck(oSVersionData.chartData, 'u');
             oSVersionData.chartData = _.compact(oSVersionData.chartData);
             platformVersionTotal = _.without(platformVersionTotal, false, null, "", undefined, NaN);
 

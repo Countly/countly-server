@@ -534,6 +534,17 @@
         return ret;
     };
 
+    /**
+     *  Crash metric calculations
+     *  Total occurences ("cr")         - crf, crnf
+     *  Unique crashes ("cru")          - cruf, crunf
+     *  Crashes/Sessions ("cr-session") - Math.round(Math.min(cr(n)f / cr_s, 1) * 100) / 100;
+     *  Crash Free Users ("crau")       - Math.round(Math.min(crau(n)f / cr_u, 1) * 10000) / 100;
+     *  Crash Free Sessions ("crses")   - Math.round(Math.min(cr(n)fses / cr_s, 1) * 10000) / 100;
+     *  @param {string} metric - which metric to calculate
+     *  @param {string} name - label name in graph
+     *  @returns {object} Rto user in graph
+     */
     countlyCrashes.getChartData = function(metric, name) {
         var chartData = [];
         var dataProps = [];

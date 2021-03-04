@@ -49,7 +49,7 @@ function catchy(f) {
  * @return {Object}      data to cache
  */
 function cachedData(note) {
-    return {_id: note._id.toString(), apps: note.apps.map(id => id.toString()), autoEvents: note.autoEvents, autoCohorts: note.autoCohorts, actualDates: note.actualDates};
+    return {_id: note._id.toString(), apps: note.apps.map(id => id.toString()), tx: note.tx, relativeExpiration: note.relativeExpiration, auto: note.auto, autoEvents: note.autoEvents, autoCohorts: note.autoCohorts, actualDates: note.actualDates};
 }
 
 (function(/*api*/) {
@@ -89,8 +89,12 @@ function cachedData(note) {
             suf = '_' + crypto.createHash('md5').update('true').digest('base64')[0],
             ids = mts.map((m, i) => 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
                 .concat([
-                    'a_' + noy + ':' + (nom + 1) + suf, // '_a' is from crypto.createHash('md5').update('false').digest('base64')[0]
+                    'a_' + noy + ':' + (nom + 1) + suf, // '_s' is from crypto.createHash('md5').update('false').digest('base64')[0]
                     'a_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
+                ])
+                .concat([
+                    't_' + noy + ':' + (nom + 1) + suf, // '_s' is from crypto.createHash('md5').update('false').digest('base64')[0]
+                    't_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
                 ]),
             // mts.reduce((acc, m, i) => {
             //     acc.push('no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m);
@@ -141,6 +145,7 @@ function cachedData(note) {
                 var events = results.slice(0, 2).map(events1 => {
                     var ret = {weekly: {data: Array(wks.length).fill(0), keys: wkt}, monthly: {data: Array(mts.length).fill(0), keys: mtt}, total: 0};
                     var retAuto = { daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)}, total: 0 };
+                    var retTx = { daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)}, total: 0 };
                     // log.d('events', events);
                     events1.forEach(e => {
                         // log.d('event', e);
@@ -160,7 +165,8 @@ function cachedData(note) {
                             // current week & month numbers are first and last in wks / mts arrays
                             var we = moment(new Date(yer, mon, d)).isoWeek(),
                                 wi = wks[yer === agy ? 'indexOf' : 'lastIndexOf'](we),
-                                mi = mts[yer === agy ? 'indexOf' : 'lastIndexOf'](mon + 1);
+                                mi = mts[yer === agy ? 'indexOf' : 'lastIndexOf'](mon + 1),
+                                date, diff, target;
 
                             if (e.s === 'no-segment') {
                                 // log.d('%s / %d: %d', e.s, d, e.d[d].c);
@@ -170,13 +176,28 @@ function cachedData(note) {
                             }
                             else if (e.s === 'a' && 'true' in e.d[d]) {
                                 // log.d('%s / %d: %d', e.s, d, e.d[d]['true'].c);
-                                var date = moment({ year: yer, month: mon, day: d});
-                                var diff = moment().diff(date, 'days');
+                                date = moment({ year: yer, month: mon, day: d});
+                                diff = moment().diff(date, 'days');
 
                                 if (diff <= 29) {
-                                    var target = 29 - diff;
+                                    target = 29 - diff;
                                     retAuto.daily.data[target] += e.d[d].true.c;
                                     retAuto.total += e.d[d].true.c;
+                                }
+
+                                ret.weekly.data[wi] -= e.d[d].true.c;
+                                ret.monthly.data[mi] -= e.d[d].true.c;
+                                ret.total -= e.d[d].true.c;
+                            }
+                            else if (e.s === 't' && 'true' in e.d[d]) {
+                                // log.d('%s / %d: %d', e.s, d, e.d[d]['true'].c);
+                                date = moment({ year: yer, month: mon, day: d});
+                                diff = moment().diff(date, 'days');
+
+                                if (diff <= 29) {
+                                    target = 29 - diff;
+                                    retTx.daily.data[target] += e.d[d].true.c;
+                                    retTx.total += e.d[d].true.c;
                                 }
 
                                 ret.weekly.data[wi] -= e.d[d].true.c;
@@ -188,15 +209,18 @@ function cachedData(note) {
 
                     return {
                         m: ret,
-                        a: retAuto
+                        a: retAuto,
+                        t: retTx
                     };
                 });
 
                 common.returnOutput(params, {
                     sent: events[0].m,
                     sent_automated: events[0].a,
+                    sent_tx: events[0].t,
                     actions: events[1].m,
                     actions_automated: events[1].a,
+                    actions_tx: events[1].t,
                     enabled: results[2] || 0,
                     users: results[3] ? results[3] : 0,
                     cohorts: results[4] || [],
@@ -369,6 +393,7 @@ function cachedData(note) {
                 'autoCapSleep': { 'required': false, 'type': 'Number' },
                 'autoCancelTrigger': { 'required': false, 'type': 'Boolean' },
                 'actualDates': { 'required': false, 'type': 'Boolean' },
+                'expiration': { 'required': false, 'type': 'Number' },
             },
             data = common.validateArgs(params.qstring.args, argProps, true);
 
@@ -445,14 +470,6 @@ function cachedData(note) {
             data.messagePerLocale = mpl;
         }
 
-        if (data.tx && (params.qstring.args.date || params.qstring.args.expiryDate)) {
-            return [{error: 'Tx messages cannot have date / expiryDate'}];
-        }
-
-        if (data.auto && params.qstring.args.expiryDate) {
-            return [{error: 'Auto messages cannot have expiryDate'}];
-        }
-
         if (!data.auto && params.qstring.args.autoEnd) {
             return [{error: 'Non-auto messages cannot have end date'}];
         }
@@ -462,9 +479,6 @@ function cachedData(note) {
         }
         if (api.setDateParam(params, 'autoEnd', data)) {
             return [{error: 'Only long (ms since Epoch) is supported as autoEnd format'}];
-        }
-        if (api.setDateParam(params, 'expiryDate', data)) {
-            return [{error: 'Only long (ms since Epoch) is supported as expiryDate format'}];
         }
 
         if (typeof params.qstring.args.tz === 'undefined' || params.qstring.args.tz === false) {
@@ -607,7 +621,7 @@ function cachedData(note) {
             delayed: data.delayed,
             test: data.test || false,
             date: data.date || new Date(),
-            expiryDate: data.expiryDate,
+            expiration: data.expiration,
             tz: data.tz,
             tx: data.tx || false,
             auto: data.auto || false,
@@ -674,12 +688,12 @@ function cachedData(note) {
 
         note._id = new common.db.ObjectID();
 
-        if (note.tx) {
-            return ret({error: 'Tx messages shall not be prepared'});
-        }
-        else {
-            note.result.status = N.Status.NotCreated;
-        }
+        // if (note.tx) {
+        //     return ret({error: 'Tx messages shall not be prepared'});
+        // }
+        // else {
+        note.result.status = N.Status.NotCreated;
+        // }
 
         log.i('Saving message to prepare %j', note._id);
         log.d('message data %j', note);
@@ -1099,14 +1113,15 @@ function cachedData(note) {
             query.source = params.qstring.source;
         }
 
-        if (params.qstring.auto === 'true') {
-            query.auto = true;
-        }
-        else if (params.qstring.tx === 'true') {
+        if (params.qstring.tx === 'true') {
             query.tx = true;
+        }
+        else if (params.qstring.auto === 'true') {
+            query.auto = true;
         }
         else if (params.qstring.auto === 'false') {
             query.$or = [{auto: {$exists: false}}, {auto: false}];
+            query.tx = false;
         }
 
         log.d('Querying messages: %j', query);
@@ -1216,14 +1231,14 @@ function cachedData(note) {
                 return false;
             }
 
-            if (!message.auto) {
-                return common.returnMessage(params, 404, 'Message is not automated');
+            if (!message.auto && !message.tx) {
+                return common.returnMessage(params, 404, 'Message is neither automated or tx');
             }
 
-            let preload = message.autoOnEntry === 'events' ? Promise.resolve([]) : new Promise((res, rej) => common.db.collection('cohorts').find({_id: {$in: message.autoCohorts}}).toArray((err3, cohorts) => err3 ? rej(err3) : res(cohorts)));
+            let preload = message.tx || message.autoOnEntry === 'events' ? Promise.resolve([]) : new Promise((res, rej) => common.db.collection('cohorts').find({_id: {$in: message.autoCohorts}}).toArray((err3, cohorts) => err3 ? rej(err3) : res(cohorts)));
 
             preload.then(cohorts => {
-                if (message.autoOnEntry !== 'events') {
+                if (message.auto && message.autoOnEntry !== 'events') {
                     if (cohorts.length !== message.autoCohorts.length) {
                         return common.returnOutput(params, {error: 'Some of message cohorts have been deleted'});
                     }
@@ -1711,20 +1726,67 @@ function cachedData(note) {
         return new Promise((resolve, reject) => {
             try {
                 if (url) {
-                    log.d('Retrieving URL', url);
-                    var parsed = require('url').parse(url);
+                    common.db.collection('plugins').findOne({}, (error, configs) => {
+                        if (error || !configs) {
+                            return reject([400, 'No db']);
+                        }
 
-                    parsed.method = 'HEAD';
-                    log.d('Parsed', parsed);
+                        log.d('Retrieving URL', url);
+                        var parsed = require('url').parse(url);
 
-                    let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res) => {
-                        resolve({status: res.statusCode, headers: res.headers});
+                        if (configs.push && configs.push.proxyhost) {
+                            let opts = {
+                                host: configs.push.proxyhost,
+                                method: 'CONNECT',
+                                path: parsed.hostname + ':' + (parsed.port ? parsed.port : (parsed.protocol === 'https:' ? 443 : 80))
+                            };
+                            if (configs.push.proxyport) {
+                                opts.port = configs.push.proxyport;
+                            }
+                            if (configs.push.proxyuser) {
+                                opts.headers = {'Proxy-Authorization': 'Basic ' + Buffer.from(configs.push.proxyuser + ':' + configs.push.proxypass).toString('base64')};
+                            }
+                            log.d('Connecting to proxy', opts);
+
+                            require('http').request(opts).on('connect', (res, socket) => {
+                                if (res.statusCode === 200) {
+                                    parsed.method = 'HEAD';
+                                    parsed.agent = false;
+                                    log.d('Parsed proxied', parsed);
+                                    parsed.socket = socket;
+
+                                    let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res2) => {
+                                        resolve({status: res2.statusCode, headers: res2.headers});
+                                    });
+                                    req.on('error', (err) => {
+                                        log.e('error when HEADing ' + url, err);
+                                        reject([400, 'Cannot access proxied URL']);
+                                    });
+                                    req.end();
+                                }
+                                else {
+                                    log.e('Cannot connect to proxy %j: %j / %j', opts, res.statusCode, res.statusMessage);
+                                    reject([400, 'Cannot access proxy']);
+                                }
+                            }).on('error', (err) => {
+                                reject([400, 'Cannot connect to proxy server']);
+                                log.e('error when CONNECTing %j', opts, err);
+                            }).end();
+                        }
+                        else {
+                            parsed.method = 'HEAD';
+                            log.d('Parsed', parsed);
+
+                            let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res) => {
+                                resolve({status: res.statusCode, headers: res.headers});
+                            });
+                            req.on('error', (err) => {
+                                log.e('error when HEADing ' + url, err);
+                                reject([400, 'Cannot access URL']);
+                            });
+                            req.end();
+                        }
                     });
-                    req.on('error', (err) => {
-                        log.e('error when HEADing ' + url, err);
-                        reject([400, 'Cannot access URL']);
-                    });
-                    req.end();
                 }
                 else {
                     reject([400, 'No url']);
