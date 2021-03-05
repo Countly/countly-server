@@ -3268,6 +3268,23 @@
     }
 }
 
+.cly-text-button,
+.cly-icon-button {
+    color: $--color-action-blue;
+    cursor: pointer;
+    display: inline-block;
+    white-space: nowrap;
+    -webkit-appearance: none;
+    text-align: center;
+    box-sizing: border-box;
+    outline: none;
+    margin: 0;
+    padding: 7px;
+    &--is-gray {
+        color: $--color-text-secondary;
+    }
+}
+
 .cly-vue-select-x {
     &__pop {
         .el-tabs {
