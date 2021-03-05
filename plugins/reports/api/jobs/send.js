@@ -65,7 +65,7 @@ class ReportsJob extends job.Job {
                                 });
                             }
                             else {
-                                log.d(err2, ob.report.emails);
+                                log.d(err2, ob.report);
                                 done(null, null);
                             }
                         }, cache);

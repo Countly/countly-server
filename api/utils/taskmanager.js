@@ -641,12 +641,23 @@ taskmanager.rerunTask = function(options, callback) {
                 start: new Date().getTime()
             }
         }, function(err, res) {
+            log.d("calling request");
+            log.d(JSON.stringify(reqData));
+
             request(reqData, function(error, response, body) {
                 //we got a redirect, we need to follow it
+                log.d("got response");
+                log.d(JSON.stringify(response));
+
+                if (response && response.statusCode) {
+                    log.d(" with status code: " + response.statusCode);
+                }
                 if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+                    log.d("Redirecting to:" + response.headers.location);
                     reqData.uri = response.headers.location;
                     runTask(options1, reqData, function() {});
                 }
+
                 //we got response, if it contains task_id, then task is rerunning
                 //if it does not, then possibly task completed faster this time and we can get new result
                 else if (body) {

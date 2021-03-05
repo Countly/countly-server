@@ -191,19 +191,23 @@
 .countly-feedback-sticker.mleft-s > #feedback-sticker-svg, .countly-feedback-sticker.mright-s > #feedback-sticker-svg, .countly-feedback-sticker.bright-s > #feedback-sticker-svg, .countly-feedback-sticker.bleft-s > #feedback-sticker-svg {
     height: 14px;
     width: 14px;
+    vertical-align: baseline;
 }
 .countly-feedback-sticker.mleft-m > #feedback-sticker-svg, .countly-feedback-sticker.mright-m > #feedback-sticker-svg, .countly-feedback-sticker.bright-m > #feedback-sticker-svg, .countly-feedback-sticker.bleft-m > #feedback-sticker-svg {
     height: 18px;
     width: 18px;
+    vertical-align: baseline;
 }
 .countly-feedback-sticker.mleft-l > #feedback-sticker-svg, .countly-feedback-sticker.mright-l > #feedback-sticker-svg, .countly-feedback-sticker.bright-l > #feedback-sticker-svg, .countly-feedback-sticker.bleft-l > #feedback-sticker-svg {
     height: 20px;
     width: 20px;
+    vertical-align: baseline;
 }
 
 .countly-feedback-sticker > #feedback-sticker-svg {
     height: 14px;
     width: 14px;
+    vertical-align: baseline;
 }
 
 #countly-feedback-iframe {
@@ -230,6 +234,7 @@
     cursor: pointer;
     font-family: "Lato", sans-serif;
     box-sizing: content-box;
+    line-height: normal;
 }
 .countly-feedback-close-icon {
     cursor: pointer;

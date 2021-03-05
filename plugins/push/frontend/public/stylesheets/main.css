@@ -1847,7 +1847,7 @@ span.emoji-inner {
 }
 .push-group-menu {
     box-shadow: 0 3px 7px rgba(0,0,0,.08);
-    width: 540px;
+    width: 624px;
     background-color: #fff;
     position: absolute;
     right: 0px;
@@ -1888,23 +1888,29 @@ span.emoji-inner {
 .push-group-menu > div {
     flex:1;
     cursor: pointer;
+    text-align: center;
+    background-repeat: no-repeat;
+    background-size: 50% 50%;
+    background-position-x: 52px;
+    background-position-y: 3px;
 }
 
 .push-group-menu .one-time {
-    background-repeat: no-repeat;
-    background-size: 50% 50%;
-    background-position-x: 71px;
-    background-position-y: 9px;
     background-image : url('/images/push/one-time.svg')
 }
 .push-group-menu .one-time:hover{
     background-image : url('/images/push/one-time-hover.svg')
 }
+.push-group-menu .transactional {
+    background-size: 80px auto;
+    background-position-y: 39px;
+    background-position-x: 63px;
+    background-image : url('/images/push/transactional.svg')
+}
+.push-group-menu .transactional:hover{
+    background-image : url('/images/push/transactional-hover.svg')
+}
 .push-group-menu .auto-push-image {
-    background-repeat: no-repeat;
-    background-size: 50% 50%;
-    background-position-x: 60px;
-    background-position-y: 9px;
     background-image : url('/images/push/automated.svg')
 }
 .push-group-menu .auto-push-image:hover {
@@ -1915,11 +1921,11 @@ span.emoji-inner {
     text-align: center;
     font-size: 15px;
     font-weight: 500;
-    margin-top: 135px;
+    margin-top: 105px;
 }
 .push-group-menu .description {
     color: #8e8e8e;
-    padding: 10px 25px;;
+    padding: 10px 25px;
     font-size: 13px;
     line-height: 1.6;
 }
@@ -1966,11 +1972,8 @@ span.emoji-inner {
 .ee-menu > div:hover {
     background-color: #F9F9F9; 
 }
-.ee-menu .one-time{
-    background-position-x: 65px;
-}
 .ee-menu .description {
-    padding-bottom: 40px;
+    padding-bottom: 25px;
 }
 .gray-tooltip{
     background-color: #ccc !important;
@@ -2005,10 +2008,11 @@ span.emoji-inner {
     color: #6b6b6b;
     text-transform: uppercase;
     border : 1px solid #D0D0D0;
+    border-width: 1px 1px 1px 0;
     box-sizing: border-box;
 }
 .tab-buttons div:first-child {
-    border-right-width : 0px;
+    border-left-width : 1px;
 }
 
 .tab-buttons div.active {

@@ -2164,7 +2164,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     height: 20px;
     font-family: Ubuntu,Helvetica,sans-serif;
     margin-top: 15px;
-    margin-left: 30px;
+    margin-left: 35px;
     box-shadow: 0 0 0 transparent;
     display: block;
     position: relative;
@@ -2190,7 +2190,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
     position: absolute;
     top: 0;
     font-size: 11px;
-    left: -30px;
+    left: -35px;
     width: 30%;
     height: 18px;
     display: block;

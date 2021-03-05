@@ -215,7 +215,6 @@ window.component('push', function(push) {
 
         this.result = new push.MessageResult(data.result || {});
 
-        this.expiryDate = m.prop(data.expiryDate);
         this.appNames = m.prop(data.appNames || []);
         this.created = m.prop(data.created);
         this.saved = m.prop(false);
@@ -389,7 +388,9 @@ window.component('push', function(push) {
                 tz: this.tz(),
                 test: this.test(),
                 auto: this.auto(),
-                date: this.date()
+                date: this.date(),
+                expiration: this.expiration(),
+                tx: this.tx(),
             };
             if (includeId) {
                 obj._id = this._id();
@@ -516,6 +517,7 @@ window.component('push', function(push) {
         this.tz = buildClearingProp(typeof data.tz === 'undefined' ? false : data.tz);
         this.created = m.prop(data.created || null);
         this.sent = m.prop(data.sent || null);
+        this.expiration = m.prop(data.expiration);
         this.dates = function() {
             var dates = {
 			    created: moment(this.created()).format('D MMM, YYYY HH:mm'),

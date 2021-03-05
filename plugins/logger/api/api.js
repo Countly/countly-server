@@ -180,10 +180,6 @@ var exported = {},
                 problems.push("Plugin that processes this information is not enabled: remote-config");
             }
 
-            if (params.app.type !== "web" && params.qstring.sdk_name === "javascript_native_web") {
-                problems.push("App is not web type, but receives data from Web SDK");
-            }
-
             if (params.response) {
                 response = params.response || {};
                 if (response.body) {
