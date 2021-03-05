@@ -3,6 +3,11 @@
 
 .cly-vue-theme-clydef {
 
+    background-color:#FCFCFC;
+    #content-container { 
+        padding:59px 0 35px 0;
+    }
+
     font-family: $--font-family !important;
 
     button {
