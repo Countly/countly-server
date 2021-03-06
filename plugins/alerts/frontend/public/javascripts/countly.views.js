@@ -146,6 +146,9 @@ window.AlertsView = countlyView.extend({
             var appNameList = [];
             if (alertsList[i].selectedApps) {
                 appNameList = _.map(alertsList[i].selectedApps, function(appID) {
+                    if (appID === "all-apps") {
+                        return "All apps";
+                    }
                     return countlyGlobal.apps[appID] && countlyGlobal.apps[appID].name;
                 });
             }
@@ -454,6 +457,7 @@ window.AlertsView = countlyView.extend({
                 $(this).addClass('selected');
 
                 $("#widget-section-single-app").show();
+                
                 $("#single-app-dropdown").clySelectSetSelection("", "Select App");
 
                 var source = $("#" + dataType + "-condition-template").html();
@@ -473,18 +477,19 @@ window.AlertsView = countlyView.extend({
                 }
                 self.checkDisabled();
                 $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
+                const apps = [];
+                for (var appId in countlyGlobal.apps) {
+                    apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
+                    if ($(($('#alert-data-types').find(".selected")[0])).data("dataType") === "dataPoint") {
+                        apps.unshift({value:"all-apps", name: "All apps"});
+                    }
+                }
+                // $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
+                $("#single-app-dropdown").clySelectSetItems(apps);
                 app.localize();
             });
             // init content
             $(".alert-condition-block").html('');
-
-
-            for (var appId in countlyGlobal.apps) {
-                apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
-            }
-            // $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
-            $("#single-app-dropdown").clySelectSetItems(apps);
-
             $("#single-app-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
                 var dataType = $(($('#alert-data-types').find(".selected")[0])).data("dataType");
                 var dataSubType = $("#single-target-dropdown").clySelectGetSelection();
@@ -627,7 +632,6 @@ window.AlertsView = countlyView.extend({
         loadData: function(data) {
             var self = this;
             $(($('#alert-data-types').find("[data-data-type='" + data.alertDataType + "']"))).trigger("click");
-            window.d44 = $(($('#alert-data-types').find("[data-data-type='" + data.alertDataType + "']")));
             $("#current_alert_id").text(data._id);
             $("#alert-name-input").val(data.alertName);
             if (self.emailInput && self.emailInput.length > 0) {
@@ -647,6 +651,9 @@ window.AlertsView = countlyView.extend({
                     var appId = data.selectedApps[index];
                     countlyGlobal.apps[appId] && appSelected.push({ value: appId, name: countlyGlobal.apps[appId].name });
                     countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
+                    if (appId === "all-apps") {
+                        $("#single-app-dropdown").clySelectSetSelection("all-apps", "All apps");
+                    }
                 }
                 var target = _.find(alertDefine[data.alertDataType].target, function(m) {
                     return m.value === data.alertDataSubType;

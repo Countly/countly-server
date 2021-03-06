@@ -135,6 +135,9 @@ utils.getHost = function() {
 
 utils.getAppInfo = function(appID) {
     return new Promise(function(resolve, reject) {
+        if (appID === "all-apps") {
+            return resolve({ _id:"all-apps", name: "All apps"}); 
+        }
         common.db.collection('apps').findOne({ _id: common.db.ObjectID(appID)}, function(err, app) {
             if (err) {
                 return reject(err);

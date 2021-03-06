@@ -4,7 +4,7 @@ const utils = require('../parts/utils');
 const bluebird = require("bluebird");
 const moment = require('moment');
 const common = require('../../../../api/utils/common.js');
-const log = require('../../../../api/utils/log.js')('alert:crash');
+const log = require('../../../../api/utils/log.js')('alert:dataPoint');
 
 const dataPointAlert = {
     /**
@@ -61,17 +61,6 @@ const dataPointAlert = {
                             if (data.lastDateValue !== null && data.lastDateValue !== undefined) {
                                 item.data.push({key: 'Yesterday\'s Value', value: data.lastDateValue});
                             }
-                            if (data.errors) {
-                                data.errors.forEach(err => {
-                                    const errorLines = err.error.split('\n');
-                                    let error = '';
-                                    for (let i = 0; i < errorLines.length && i < 4; i++) {
-                                        error += errorLines[i] + '<br/>';
-                                    }
-                                    error += `<a href="${host}/dashboard#/${data.app._id}/crashes/${err._id}">Click to view details</a>` + '<br/>';
-                                    item.data.push({key: error});
-                                });
-                            }
                             return item;
                         })
                     });
@@ -111,9 +100,11 @@ const dataPointAlert = {
                 const alertList = [];
                 for (let i = 0; i < alertConfigs.selectedApps.length; i++) {
                     const currentApp = alertConfigs.selectedApps[i];
-                    const rightHour = yield utils.checkAppLocalTimeHour(currentApp, 23);
-                    if (!rightHour) {
-                        return;
+                    if (currentApp !== "all-apps") {
+                        const rightHour = yield utils.checkAppLocalTimeHour(currentApp, 23);
+                        if (!rightHour) {
+                           // return;
+                        }
                     }
                     switch (alertConfigs.alertDataSubType) {
                     case 'Number of daily DP':
@@ -163,12 +154,13 @@ function checkDataPoints(app, alertConfigs) {
 
     periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
 
-    var filter = {
-        $or: []
-    };
+    const filter = {};
 
-    for (let i = 0; i < periodsToFetch.length; i++) {
-        filter.$or.push({_id: app + "_" + periodsToFetch[i]});
+    if (app !== "all-apps") {
+        filter.$or = [];
+        for (let i = 0; i < periodsToFetch.length; i++) {
+            filter.$or.push({_id: app + "_" + periodsToFetch[i]});
+        }
     }
 
     const today = new moment();
