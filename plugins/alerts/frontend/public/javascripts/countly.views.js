@@ -379,8 +379,6 @@ window.AlertsView = countlyView.extend({
         },
         init: function() {
             var self = this;
-            var apps = [];
-
             // clear alertName
             $("#alert-name-input").val('');
             $("#alert-name-input").off('input').on('input', function() {
@@ -457,7 +455,7 @@ window.AlertsView = countlyView.extend({
                 $(this).addClass('selected');
 
                 $("#widget-section-single-app").show();
-                
+
                 $("#single-app-dropdown").clySelectSetSelection("", "Select App");
 
                 var source = $("#" + dataType + "-condition-template").html();
@@ -477,11 +475,11 @@ window.AlertsView = countlyView.extend({
                 }
                 self.checkDisabled();
                 $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
-                const apps = [];
+                var apps = [];
                 for (var appId in countlyGlobal.apps) {
                     apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
                     if ($(($('#alert-data-types').find(".selected")[0])).data("dataType") === "dataPoint") {
-                        apps.unshift({value:"all-apps", name: "All apps"});
+                        apps.unshift({value: "all-apps", name: "All apps"});
                     }
                 }
                 // $("#multi-app-dropdown").clyMultiSelectSetItems(apps);

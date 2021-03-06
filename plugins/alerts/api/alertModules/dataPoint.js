@@ -103,7 +103,7 @@ const dataPointAlert = {
                     if (currentApp !== "all-apps") {
                         const rightHour = yield utils.checkAppLocalTimeHour(currentApp, 23);
                         if (!rightHour) {
-                           // return;
+                            return;
                         }
                     }
                     switch (alertConfigs.alertDataSubType) {
