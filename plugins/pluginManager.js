@@ -59,6 +59,7 @@ var pluginManager = function pluginManager() {
      */
     this.dbConfigFiles = {
         countly_drill: "./drill/config.js",
+        countly_dataviews: "./drill/config.dataviews.js",
         countly_out: "../api/configs/config.db_out.js",
         countly_fs: "../api/configs/config.db_fs.js"
     };
@@ -1119,16 +1120,18 @@ var pluginManager = function pluginManager() {
         let dbs = ['countly', 'countly_out', 'countly_fs'];
         if (this.isPluginEnabled('drill')) {
             dbs.push('countly_drill');
+            dbs.push('countly_dataviews');
         }
 
         const databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
-        const [dbCountly, dbOut, dbFs, dbDrill] = databases;
+        const [dbCountly, dbOut, dbFs, dbDrill, dbDataviews] = databases;
 
         let common = require('../api/utils/common');
         common.db = dbCountly;
         common.outDb = dbOut;
         require('../api/utils/countlyFs').setHandler(dbFs);
         common.drillDb = dbDrill;
+        common.dataviewsDb = dbDataviews;
 
         return databases;
     };

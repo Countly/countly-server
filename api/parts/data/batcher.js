@@ -4,18 +4,21 @@ const plugins = require('../../../plugins/pluginManager.js');
 const log = require('../../utils/log.js')("batcher");
 const common = require('../../utils/common.js');
 
+var EventEmitter = require('events');
+
 /**
  *  Class for batching database operations for aggregated data 
  *  @example
  *  let batcher = new WriteBatcher(common.db);
  *  batcher.set("eventsa8bb6a86cc8026768c0fbb8ed5689b386909ee5c", "no-segment_2020:0_2", {"$set":{"segments.name":true, "name.Runner":true}});
  */
-class WriteBatcher {
+class WriteBatcher extends EventEmitter {
     /**
      *  Create batcher instance
      *  @param {Db} db - database object
      */
     constructor(db) {
+        super();
         this.dbs = {countly: db};
         this.data = {countly: {}};
         plugins.loadConfigs(db, () => {
@@ -111,6 +114,7 @@ class WriteBatcher {
                 promises.push(this.flush(db, collection));
             }
         }
+        this.emit("Flush all");
         return Promise.all(promises).finally(() => {
             this.schedule();
         });
