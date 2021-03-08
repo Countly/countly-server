@@ -1038,7 +1038,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.header('Expires', '0');
                 res.header('Pragma', 'no-cache');
                 var config = plugins.getConfig("security");
-                res.render('setup', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete}});
+                res.render('setup', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}});
             }
             else if (err) {
                 res.status(500).send('Server Error');
@@ -1066,7 +1066,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     res.header('Expires', '0');
                     res.header('Pragma', 'no-cache');
                     var config = plugins.getConfig("security");
-                    res.render('login', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": req.flash('info'), "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, autocomplete: config.password_autocomplete});
+                    res.render('login', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": req.flash('info'), "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, autocomplete: config.password_autocomplete || false});
                 }
                 else {
                     res.redirect(countlyConfig.path + '/setup');
@@ -1109,7 +1109,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         res.header('Expires', '0');
                         res.header('Pragma', 'no-cache');
                         var config = plugins.getConfig("security");
-                        res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", password_min: req.query.password_min || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template, autocomplete: config.password_autocomplete});
+                        res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", password_min: req.query.password_min || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template, autocomplete: config.password_autocomplete || false});
                     }
                 }
                 else {
@@ -1172,7 +1172,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.header('Expires', '0');
                 res.header('Pragma', 'no-cache');
                 var config = plugins.getConfig("security");
-                var data = { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: err || {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete}};
+                var data = { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: err || {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}};
                 if (params.email) {
                     data.params.email = params.email;
                 }
