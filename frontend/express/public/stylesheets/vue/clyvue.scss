@@ -3285,8 +3285,13 @@
     outline: none;
     margin: 0;
     padding: 7px;
-    &--is-gray {
+    &--gray {
         color: $--color-text-secondary;
+    }
+    &--disabled {
+        cursor: default;
+        color: $--color-text-secondary;
+        opacity: 0.7;
     }
 }
 
