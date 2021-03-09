@@ -619,12 +619,12 @@
 						{{#each this.data}}
 							{{#if this.type}}
 								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
-									data-item="{{this.name}} ({{this.count}} visits)" data-percent="{{this.percent}}%">
+									data-item="{{this.name}} ({{this.count}} visits)" data-percent="{{round this.percent 0}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}
 								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
-									data-item="{{this.name}}" data-percent="{{this.percent}}%">
+									data-item="{{this.name}}" data-percent="{{round this.percent 0}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{/if}}
@@ -2068,13 +2068,13 @@
 					<div class="bar bar-new">
 						{{#each this.data}}
 							{{#if this.type}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
-									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} {{this.unit}})" data-percent="{{this.percent}}%">
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 35px);"
+									data-item="{{#limitString this.name 15}}{{/limitString}} ({{this.count}} {{this.unit}})" data-percent="{{round this.percent 0}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{else}}
-								<div class="bar-inner bar-inner-new" style="width:calc(100% - 30px);"
-									data-item="{{#limitString this.name 15}}{{/limitString}}" data-percent="{{this.percent}}%">
+								<div class="bar-inner bar-inner-new" style="width:calc(100% - 35px);"
+									data-item="{{#limitString this.name 15}}{{/limitString}}" data-percent="{{round this.percent 0}}%">
 										<div class="bar-inner-percent">{{this.percent}}%</div>
 								</div>
 							{{/if}}
@@ -2671,6 +2671,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.location.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.map.helper.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.list.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.osmapping.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.detail.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>

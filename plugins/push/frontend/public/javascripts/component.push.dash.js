@@ -25,6 +25,8 @@ window.component('push.dash', function (dash) {
             actions: { monthly: { data: [], keys: [], total: 0 }, weekly: { data: [], keys: [], total: 0 } },
             sent_automated: { daily: { data: [], keys: [], total: 0 } },
             actions_automated: { daily: { data: [], keys: [], total: 0 }},
+            sent_tx: { daily: { data: [], keys: [], total: 0 } },
+            actions_tx: { daily: { data: [], keys: [], total: 0 }},
         });
 
         var self = this;
@@ -33,7 +35,7 @@ window.component('push.dash', function (dash) {
             if (arguments.length) {
                 var data = arguments[0];
                 if (data) {
-                    ['sent', 'actions', 'sent_automated', 'actions_automated'].forEach(function (ev) {
+                    ['sent', 'actions', 'sent_automated', 'actions_automated', 'sent_tx', 'actions_tx'].forEach(function (ev) {
                         ev = data[ev];
                         ['weekly', 'monthly', 'daily'].forEach(function (period) {
                             if (!ev[period] || typeof ev[period].total !== 'undefined') {
@@ -86,8 +88,8 @@ window.component('push.dash', function (dash) {
                 countlyCommon.drawGraph(this.dataDP(), element, 'bar', { legend: { show: false } });
             } else {
                 countlyCommon.drawTimeGraph([
-                    { label: t('pu.dash.metrics.sent'), data: this.data().sent_automated.daily.data.map(function (data, key) { return [key, data]; }) },
-                    { label: t('pu.dash.metrics.acti'), data: this.data().actions_automated.daily.data.map(function (data, key) { return [key, data]; }) },
+                    { label: t('pu.dash.metrics.sent'), data: this.data()['sent' + this.tab()].daily.data.map(function (data, key) { return [key, data]; }) },
+                    { label: t('pu.dash.metrics.acti'), data: this.data()['actions' + this.tab()].daily.data.map(function (data, key) { return [key, data]; }) },
                 ], '.chart');
             }
             // }
@@ -142,6 +144,7 @@ window.component('push.dash', function (dash) {
                     });
                     aoData.push({ name: 'source', value: this.source() });
                     aoData.push({ name: 'auto', value: tableName === 'dtableAutomated' });
+                    aoData.push({ name: 'tx', value: tableName === 'dtableTx' });
                 }.bind(this),
                 oLanguage: {
                     sZeroRecords: t('pu.t.nothing'),
@@ -385,12 +388,22 @@ window.component('push.dash', function (dash) {
 
         }.bind(this);
 
+        this.tableConfigTxMessages = function (element, isInitialized, context) {
+            if (!isInitialized) {
+                this.setTable(element, context, 'dtableTx');
+            }
+
+        }.bind(this);
+
         this.refresh = function () {
             if (this.dtable) {
                 this.dtable.fnDraw(false);
             }
             if (this.dtableAutomated) {
                 this.dtableAutomated.fnDraw(false);
+            }
+            if (this.dtableTx) {
+                this.dtableTx.fnDraw(false);
             }
             this.loaded(false);
             components.push.remoteDashboard(this.app_id, true).then(this.data, console.log);
@@ -410,6 +423,14 @@ window.component('push.dash', function (dash) {
             self.tab('_automated');
             self.period('daily');
             components.push.popup.show({ auto: true, apps: [countlyCommon.ACTIVE_APP_ID] });
+        };
+
+        this.createTxMessage = function (e) {
+            e.preventDefault();
+            self.pushDrawerMenuOpen = false;
+            self.tab('_tx');
+            self.period('daily');
+            components.push.popup.show({ tx: true, apps: [countlyCommon.ACTIVE_APP_ID] });
         };
 
         this.pushDrawerMenuOpen = false;
@@ -441,47 +462,58 @@ window.component('push.dash', function (dash) {
                                     float: 'right',
                                     marginRight: '5px'
                                 }
-                            }, [m('a.icon-button.btn-header.push-group.green[href=#]', {
-                                id: 'push-group-button',
-                                onclick: ctrl.messageMenu,
-                                style: { marginRight: '0px' }
-                            }, t('pu.dash.btn-group.create-message')),
-                            ctrl.pushDrawerMenuOpen ?
-                                ctrl.isCohortsEnabled() ?
-                                    m('div.push-group-menu.ee-menu', [
-                                        m('div.auto-push-image', { onclick: ctrl.createAutoMessage }, [
-                                            m('div.title', t('pu.dash.btn-group.automated-message')),
-                                            m('div.description', t('pu.dash.btn-group.automated-message-desc')),
-                                        ]),
-                                        m('div.one-time', { onclick: ctrl.createMessage }, [
-                                            m('div', [
-                                                m('div.title', t('pu.dash.btn-group.one-time-message')),
-                                                m('div.description', t('pu.dash.btn-group.one-time-message-desc'))
-                                            ])
-                                        ]),
-                                    ]) :
-                                    m('div.push-group-menu', [
-                                        m('div.not-available.auto-push-image', [
-                                            m('div.header', t('pu.dash.btn-group-available-in-enterprise')),
-                                            m('div.body', [
+                            }, [
+                                m('a.icon-button.btn-header.push-group.green[href=#]', {
+                                        id: 'push-group-button',
+                                        onclick: ctrl.messageMenu,
+                                        style: { marginRight: '0px' }
+                                    }, 
+                                    t('pu.dash.btn-group.create-message')
+                                ),
+                                ctrl.pushDrawerMenuOpen ?
+                                    ctrl.isCohortsEnabled() ?
+                                        m('div.push-group-menu.ee-menu', [
+                                            m('div.transactional', { onclick: ctrl.createTxMessage }, [
+                                                m('div.title', t('pu.dash.btn-group.tx-message')),
+                                                m('div.description', t('pu.dash.btn-group.tx-message-desc')),
+                                            ]),
+                                            m('div.auto-push-image', { onclick: ctrl.createAutoMessage }, [
                                                 m('div.title', t('pu.dash.btn-group.automated-message')),
                                                 m('div.description', t('pu.dash.btn-group.automated-message-desc')),
-                                                m('a.url[href="https://count.ly/plugins/automated-push-notifications"][target=_blank]', t('pu.dash.btn-group.automated-message-link'))
-                                            ])
-                                        ]),
-                                        m('div.one-time', { onclick: ctrl.createMessage }, [
-                                            m('div', {
-                                                style: {
-                                                    boxSizing: 'border-box',
-                                                    paddingLeft: '10px'
-                                                }
-                                            }, [
-                                                m('div.title', t('pu.dash.btn-group.one-time-message')),
-                                                m('div.description', t('pu.dash.btn-group.one-time-message-desc'))
-                                            ])
-                                        ]),
-                                    ]) : ''
-
+                                            ]),
+                                            m('div.one-time', { onclick: ctrl.createMessage }, [
+                                                m('div', [
+                                                    m('div.title', t('pu.dash.btn-group.one-time-message')),
+                                                    m('div.description', t('pu.dash.btn-group.one-time-message-desc'))
+                                                ])
+                                            ]),
+                                        ]) 
+                                        : m('div.push-group-menu', [
+                                            m('div.not-available.auto-push-image', [
+                                                m('div.header', t('pu.dash.btn-group-available-in-enterprise')),
+                                                m('div.body', [
+                                                    m('div.title', t('pu.dash.btn-group.automated-message')),
+                                                    m('div.description', t('pu.dash.btn-group.automated-message-desc')),
+                                                    m('a.url[href="https://count.ly/plugins/automated-push-notifications"][target=_blank]', t('pu.dash.btn-group.automated-message-link'))
+                                                ])
+                                            ]),
+                                            m('div.auto-push-image', { onclick: ctrl.createTxMessage }, [
+                                                m('div.title', t('pu.dash.btn-group.tx-message')),
+                                                m('div.description', t('pu.dash.btn-group.tx-message-desc')),
+                                            ]),
+                                            m('div.one-time', { onclick: ctrl.createMessage }, [
+                                                m('div', {
+                                                    style: {
+                                                        boxSizing: 'border-box',
+                                                        paddingLeft: '10px'
+                                                    }
+                                                }, [
+                                                    m('div.title', t('pu.dash.btn-group.one-time-message')),
+                                                    m('div.description', t('pu.dash.btn-group.one-time-message-desc'))
+                                                ])
+                                            ]),
+                                        ]) 
+                                    : ''
                             ])
                         ]
                         : ''
@@ -517,7 +549,7 @@ window.component('push.dash', function (dash) {
                         isVisible: true,
                         tab: ctrl.tab,
                         onChange: function (newTab) {
-                            if (newTab === '_automated')
+                            if (newTab === '_automated' || newTab === '_tx')
                                 ctrl.period('daily');
                             else
                                 ctrl.period('monthly');
@@ -537,7 +569,7 @@ window.component('push.dash', function (dash) {
 
             m.component(components.widget, {
                 header: {
-                    title: ctrl.tab() === '' ? 'push.po.one-time-messages' : 'push.po.automated-messages',
+                    title: ctrl.tab() === '' ? 'push.po.one-time-messages' : ctrl.tab() === '_automated' ? 'push.po.automated-messages' : 'push.po.tx-messages',
                     control: {
                         component: components.segmented,
                         opts: {
@@ -552,7 +584,8 @@ window.component('push.dash', function (dash) {
                 content: {
                     view: ctrl.tab() === '' ? 
                         m('table.d-table', { config: ctrl.tableConfig, key: 'single_messages' })
-                        : m('table.d-table', { config: ctrl.tableConfigAutomatedMessages, key: 'automated_messages' }), 
+                        : ctrl.tab() === '_automated' ? m('table.d-table', { config: ctrl.tableConfigAutomatedMessages, key: 'automated_messages' })
+                            : m('table.d-table', { config: ctrl.tableConfigTxMessages, key: 'tx_messages' }), 
                     config: { key: 'table-' + ctrl.tab(), class: 'message-table-container' }
                 }
             }),
@@ -566,15 +599,55 @@ window.component('push.dash', function (dash) {
         ]);
     };
 
+    function sortOpts(opts) {
+        return opts.sort(function(a, b){
+            var a = (a.title() || '').toLowerCase(),
+                b = (b.title() || '').toLowerCase();
+            return a > b ? 1 : a === b ? 0 : -1;
+        });
+    }
+
+    C.push.PERS_EVENTS = {};
     C.push.initPersOpts = function() {
-        var filters = window.countlySegmentation ? window.countlySegmentation.getFilters() : [],
-            props = filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); }),
-            custom = filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.replace('.', '|'), title: f.name}); });
+        var filters = (window.countlySegmentation ? window.countlySegmentation.getFilters() : []),
+            props = sortOpts(filters.filter(function(f){return f.id && f.id.indexOf('up.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.substr(3), title: f.name}); })),
+            custom = sortOpts(filters.filter(function(f){return f.id && f.id.indexOf('custom.') === 0;}).map(function(f){ return new C.selector.Option({value: f.id.replace('.', '|'), title: f.name}); }));
 
         C.push.PERS_OPTS = (props.length ? [new C.selector.Option({title: t('pu.po.tab2.props')})] : [])
                 .concat(props)
                 .concat(custom.length ? [new C.selector.Option({title: t('pu.po.tab2.cust')})] : [])
                 .concat(custom);
+    };
+
+    C.push.initEvent = function(key) {
+        if (C.push.PERS_EVENTS[key]) {
+            return Promise.resolve();
+        } else {
+            return window.countlySegmentation.initialize(key).then(function() {
+                C.push.PERS_EVENTS[key] = [];
+                var filters = window.countlySegmentation ? window.countlySegmentation.getFilters() : [],
+                    segments = [],
+                    props = [];
+                for (var i = 1; i < filters.length; i++) {
+                    var f = filters[i];
+                    if (f.id) {
+                        if (f.id === 'did' || f.id.indexOf('up.') === 0) {
+                            break;
+                        }
+                        var opt = new C.selector.Option({value: '[' + key + ']' + f.id.replace('.', '_'), title: f.name, desc: t.p('pu.po.tab2.ev', key, f.name)});
+
+                        if (f.id.indexOf('sg') === 0) {
+                            segments.push(opt);
+                        } else {
+                            props.push(opt);
+                        }
+                    }
+                }
+                sortOpts(segments);
+                sortOpts(props);
+                C.push.PERS_EVENTS[key] = props.concat(segments);
+            });
+        }
     };
 
     dash.getTokenName = function(token) {

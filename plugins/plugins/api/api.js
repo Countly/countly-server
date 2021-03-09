@@ -255,9 +255,11 @@ var plugin = {},
                 common.returnMessage(params, 401, 'User is not a global administrator');
                 return false;
             }
-            var confs = plugins.getAllConfigs();
-            delete confs.services;
-            common.returnOutput(params, confs);
+            plugins.loadConfigs(common.db, function() {
+                var confs = plugins.getAllConfigs();
+                delete confs.services;
+                common.returnOutput(params, confs);
+            });
         }, params);
         return true;
     });
@@ -304,8 +306,10 @@ var plugin = {},
         var params = ob.params;
         var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
         validateUserForMgmtReadAPI(function() {
-            var confs = plugins.getUserConfigs(params.member.settings);
-            common.returnOutput(params, confs);
+            plugins.loadConfigs(common.db, function() {
+                var confs = plugins.getUserConfigs(params.member.settings);
+                common.returnOutput(params, confs);
+            });
         }, params);
         return true;
     });

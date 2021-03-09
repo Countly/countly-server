@@ -115,7 +115,7 @@ class Note {
             nextbatch: data.result && data.result.nextbatch || null,
         };
 
-        this.expiryDate = data.expiryDate ? parseDate(data.expiryDate) : data.date ? new Date(data.date.getTime() + DEFAULT_EXPIRY) : new Date(Date.now() + DEFAULT_EXPIRY); // one week by default
+        this.expiration = data.expiration || DEFAULT_EXPIRY; // notification expiration in ms relative to sending date, 1 week by default
         this.created = parseDate(data.created) || new Date();
         this.build = data.build;
     }
@@ -163,7 +163,7 @@ class Note {
             media: this.media,
             mediaMime: this.mediaMime,
             result: this.result,
-            expiryDate: this.expiryDate,
+            expiration: this.expiration,
             date: this.date,
             tz: this.tz,
             tx: this.tx,
@@ -222,7 +222,7 @@ class Note {
                 diff[k] = note[k];
             }
         });
-        ['geos', 'cohorts', 'collapseKey', 'contentAvailable', 'delayWhileIdle', 'url', 'sound', 'badge', 'buttons', 'media', 'mediaMime', 'date', 'tz'].forEach(k => {
+        ['geos', 'cohorts', 'collapseKey', 'contentAvailable', 'delayWhileIdle', 'url', 'sound', 'badge', 'buttons', 'media', 'mediaMime', 'date', 'tz', 'expiration'].forEach(k => {
             if (note[k] !== null && note[k] !== undefined && this[k] !== note[k]) {
                 diff[k] = note[k];
             }
@@ -406,7 +406,7 @@ class Note {
             k = parseInt(k);
             ret = ret.substr(0, k) + (p.c && v ? v.substr(0, 1).toUpperCase() + v.substr(1) : (v || p.f)) + ret.substr(k);
         });
-        return ret;
+        return ret.trim();
     }
 
     /**
@@ -466,9 +466,9 @@ class Note {
             contentAvailable = isset(o.contentAvailable) ? o.contentAvailable : isset(this.contentAvailable) ? this.contentAvailable : null,
             delayWhileIdle = isset(o.delayWhileIdle) ? o.delayWhileIdle : isset(this.delayWhileIdle) ? this.delayWhileIdle : null,
             collapseKey = o.collapseKey || this.collapseKey || null,
-            expiryDate = o.expiryDate || this.expiryDate || null,
+            expiration = o.expiration || this.expiration || null,
             buttonsJSON = buttons > 0 ? new Array(buttons).fill(undefined).map((_, i) => {
-                return {t: mpl[`default${S}${i}${S}t`], l: mpl[`default${S}${i}${S}l`]};
+                return {t: (mpl[`default${S}${i}${S}t`] || '').trim(), l: (mpl[`default${S}${i}${S}l`] || '').trim()};
             }) : null,
             compiled;
 
@@ -552,7 +552,7 @@ class Note {
         else if (platform === Platform.HUAWEI) {
             let android = {
                     bi_tag: this.id + '.' + Date.now(),
-                    ttl: '' + Math.max(600000, Math.round((expiryDate.getTime() - Date.now()) / 1000))
+                    ttl: '' + ((expiration || DEFAULT_EXPIRY) / 1000)
                 },
                 dt = {};
 
@@ -608,7 +608,7 @@ class Note {
                 compiled.collapse_key = collapseKey;
             }
 
-            compiled.time_to_live = Math.max(600000, Math.round((expiryDate.getTime() - Date.now()) / 1000));
+            compiled.time_to_live = (expiration || DEFAULT_EXPIRY) / 1000;
             if (delayWhileIdle !== null) {
                 compiled.delay_while_idle = delayWhileIdle;
             }

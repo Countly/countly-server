@@ -51,7 +51,7 @@ window.component('delay', function(delay) {
                 : '',
 
             ctrl.opts.hours ?
-                m('input[type="number"][min=0].comp-delay-hours', {value: ctrl.hours(), oninput: m.withAttr('value', ctrl.hours), onblur: ctrl.reset, placeholder: '0'})
+                m('input[type="number"][min=0].comp-delay-hours', {value: '' + ctrl.hours(), oninput: m.withAttr('value', ctrl.hours), onblur: ctrl.reset, placeholder: '0'})
                 : '',
             ctrl.opts.hours ?
                 m('label.comp-delay-hours', t.n('pu.hours', ctrl.hours()))

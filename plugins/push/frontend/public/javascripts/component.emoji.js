@@ -113,10 +113,11 @@ window.component('emoji', function(emoji) {
                     k = keyValue();
 
                 if (k) {
-                    var title = OPEN.persOpts.filter(function(o){return o.value() === k;})[0].title().toLowerCase();
-                    if (c) {
-                        title = title.substr(0, 1).toUpperCase() + title.substr(1);
-                    }
+                    var opt = OPEN.persOpts.filter(function(o){return o.value() === k;})[0],
+                        title = opt.desc() || opt.title();
+                    // if (c) {
+                    //     title = title.substr(0, 1).toUpperCase() + title.substr(1);
+                    // }
                     OPEN_CUST.innerHTML = title + ' | ' + (f || '');
                     OPEN_CUST.className = 'pers';
                     if (f && OPEN.picker().editor) {

@@ -472,7 +472,10 @@ class CacheMaster {
     start() {
         log.d('starting master');
         this.ipc.attach();
-        return this.col.start();
+        return this.col.start().then(() => new Promise(res => setTimeout(() => {
+            log.d('started master');
+            res();
+        }, 10000)));
     }
 
     /**

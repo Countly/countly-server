@@ -12,9 +12,9 @@ var countlyModel = require('../../../../api/lib/countly.model.js'),
  * @return {object} - countlySources instance
  */
 function create() {
-    var countlySources = countlyModel.create(function(code, data, separate) {
+    var countlySources = countlyModel.create(function(code, data, separate, appType) {
         code = countlyCommon.decode(code + "");
-        if (!code.startsWith("http") && code.indexOf("://") === -1) {
+        if (appType === "mobile") {
             //ignore incorrect Android values, which are numbers
             if (!isNaN(parseFloat(code)) && isFinite(code)) {
                 return "Unknown";
@@ -35,7 +35,7 @@ function create() {
             }
         }
         else {
-            if (code.indexOf("://") === -1) {
+            if (code.indexOf("://") === -1 && code.indexOf(".") === -1) {
                 if (separate) {
                     return "Organic (" + code + ")";
                 }
@@ -49,9 +49,33 @@ function create() {
             var matches = code.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
             /*eslint-enable */
             var domain = matches && matches[1] || code;
-            return domain;
+            return domain.split("/")[0];
         }
     });
+
+    countlySources.fixBarSegmentData = function(params, rangeData) {
+        var fetchValue = countlySources.fetchValue;
+        var chartData = rangeData.chartData || [];
+        var appType = params.app && params.app.type;
+
+        if (appType) {
+            for (var i = 0; i < chartData.length; i++) {
+                var str = chartData[i]._id || chartData[i].range; // range = _id when caller is dashboards
+                chartData[i].sources = fetchValue(countlyCommon.decode(str), undefined, undefined,);
+            }
+
+            chartData = countlyCommon.mergeMetricsByName(chartData, "sources");
+        }
+
+        chartData.sort(function(a, b) {
+            return b.t - a.t;
+        });
+
+        rangeData.chartData = chartData;
+
+        return rangeData;
+    };
+
     return countlySources;
 }
 module.exports = create;
