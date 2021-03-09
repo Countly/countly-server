@@ -2,7 +2,13 @@
     <cly-tabs v-model="currentTab" :route-pattern="'#/' + appId + '/vue/example/:tab'" route-key="tab">
         <el-tab-pane name="tables" lazy>
             <span slot="label">Tables</span>
-            <cly-header title="Tables"></cly-header>
+            <cly-header title="Tables">
+                <template v-slot:header-right>
+                    <div class="bu-level-item">
+                        <el-button @click="add" type="primary" size="small" icon="el-icon-circle-plus">Create</el-button>
+                    </div>
+                </template>
+            </cly-header>
             <cly-main>
                 <table-view v-on:open-drawer="openDrawer"></table-view>
             </cly-main>

@@ -137,9 +137,16 @@
         },
         template: '<div class="bu-level bu-is-mobile header header--white-bg">\
                         <div class="bu-level-left">\
-                            <div class="bu-level-item">\
-                                <h2>{{title}}</h2>\
-                            </div>\
+                            <slot name="header-left">\
+                                <div class="bu-level-item">\
+                                    <h2>{{title}}</h2>\
+                                </div>\
+                            </slot>\
+                        </div>\
+                        <slot></slot>\
+                        <div class="bu-level-right">\
+                            <slot name="header-right">\
+                            </slot>\
                         </div>\
                     </div>'
     }));
