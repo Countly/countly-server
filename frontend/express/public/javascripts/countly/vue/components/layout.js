@@ -135,7 +135,7 @@
         props: {
             title: String
         },
-        template: '<div class="bu-level bu-is-mobile header header--white-bg">\
+        template: '<div class="bu-level bu-is-mobile header header--white">\
                         <div class="bu-level-left">\
                             <slot name="header-left">\
                                 <div class="bu-level-item">\
@@ -151,15 +151,24 @@
                     </div>'
     }));
 
+    //Every view has a single cly-main component which encapsulates all other components/dom elements
+    //This component is a single column full width component
+    //A main component can have multiple sections
     Vue.component("cly-main", countlyBaseComponent.extend({
-        template: '<div style="padding:24px"><slot></slot></div>'
+        template: '<div class="bu-columns bu-is-gapless main">\
+                        <div class="bu-column bu-is-full">\
+                            <slot></slot>\
+                        </div>\
+                    </div>'
     }));
 
+    //Each cly-section should mark a different component within the cly-main component
     Vue.component("cly-section", countlyBaseComponent.extend({
-        props: {
-            title: String
-        },
-        template: '<div style="padding:12px 0"><h4>{{title}}</h4><div style="background-color:white; border-top:1px solid #ECECEC; border-bottom:2px solid #ECECEC"><slot></slot></div></div>'
+        template: '<div class="bu-columns bu-is-gapless section">\
+                        <div class="bu-column bu-is-full">\
+                            <slot></slot>\
+                        </div>\
+                    </div>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));

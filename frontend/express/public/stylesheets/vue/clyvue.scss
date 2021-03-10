@@ -2784,33 +2784,6 @@
         }
     }
 
-    .cly-vue-eldatatable {
-        &.silent-loading {
-            .el-loading-spinner {
-                visibility: hidden;
-            }
-        }
-        &__table-header-left,
-        &__table-footer-left {
-            float: left;
-        }
-        &__table-header-right,
-        &__table-footer-right {
-            float: right;
-        }
-        &__table-nav-arrows,
-        &__table-page-selector,
-        &__table-page-size-selector {
-            display: inline-block;
-            .el-select {
-                width: 70px;
-            }
-        }
-        &__table-bottomline {
-            clear: both;
-        }
-    }
-
     .cly-vue-diff-helper {
         position: fixed;
         z-index: 9999;

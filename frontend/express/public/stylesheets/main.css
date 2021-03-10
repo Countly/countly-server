@@ -100,7 +100,7 @@
 * { outline:none; }
 html { height: 100%; }
 body { margin:0; padding:0; overflow:auto; background-color:#FCFCFC; user-select:text; font-family: Ubuntu,Helvetica,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-/* #content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:59px 0 35px 0; transition: margin-left 0.55s; will-change: margin-left; } */
+#content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:59px 0 35px 0 !important; transition: margin-left 0.55s; will-change: margin-left; }
 #content-container #event-nav,
 #content-container #app-management-bar,
 #content-container #configs-title-bar { transition: left 0.55s, width 200ms; will-change: left; border-radius:2px; }

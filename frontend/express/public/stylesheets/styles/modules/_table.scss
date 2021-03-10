@@ -1,0 +1,55 @@
+.cly-vue-eldatatable {
+	&.silent-loading {
+		.el-loading-spinner {
+			visibility: hidden;
+		}
+	}
+
+	&__header {
+		height: 56px;
+		border: $--border-base;
+		border-left: none;
+		border-right: none;
+		box-sizing: border-box;
+		padding: 12px;
+
+		&--white {
+			background-color: $--color-white;
+			color: #333C48;
+			font-size: 13px;
+		}
+	}
+
+	&__search {
+		&--grey {
+			input {
+				background-color: #F6F6F6;
+			}
+		}
+	}
+
+	&__footer {
+		height: 40px;
+		border: $--border-base;
+		border-left: none;
+		border-right: none;
+		box-sizing: border-box;
+		padding: 0px 12px;
+
+		&--white {
+			background-color: $--color-white;
+			color: #81868D;
+			font-size: 13px;
+		}
+
+		.el-select {
+			width: 70px;
+		}
+	}
+
+	&__vertical-divider {
+		border: 1px solid #ECECEC;
+		height: 38px;
+		margin: 0px 16px 0px 3px;
+	}
+}
