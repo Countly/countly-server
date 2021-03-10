@@ -416,7 +416,7 @@
             ];
 
         var _db = countlySession.getDb(),
-            dashboardData = countlyCommon.getDashboardData(_db, ["u"], ["u"], {u: "users"}, countlySession.clearObject),
+            dashboardData = countlyCommon.getDashboardData(_db, ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u: "users"}, countlySession.clearObject),
             totalUserData = countlyCommon.extractChartData(_db, countlySession.clearObject, chartData, dataProps),
             topUsers = _.sortBy(_.reject(totalUserData.chartData, function(obj) {
                 return parseInt(obj.t) === 0;
