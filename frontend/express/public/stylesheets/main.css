@@ -1653,7 +1653,7 @@ margin: 50px 0;}
 
 /* DRAWER UI */
 .cly-drawer { position:fixed; width:450px; height:100%; right:0; transform: translateX(450px); transition:transform 0.3s; top:0; background-color: #f9f9f9; border-left:1px solid #d0d0d0; z-index: 10001; box-sizing:border-box; padding-top:58px; padding-bottom:120px }
-.cly-drawer.open { transform: translateX(0); transition:transform 0.3s; }
+.cly-drawer.open { transform: translateX(0) !important; transition:transform 0.3s !important; }
 .cly-drawer .buttons { position: absolute; right:0; width:410px; padding: 20px; bottom: 0; }
 .cly-drawer .buttons .icon-button { float:none; font-size: 15px; text-align: center; padding: 12px; }
 .cly-drawer .title { position: absolute; padding:20px; font-size: 20px; color:#636363; background-color: #FFF; width: 100%; top: 0px; box-sizing:border-box }
@@ -4410,4 +4410,654 @@ p.error_message_div {
 
 .mgmt-plugins-row .selectize-dropdown [data-selectable] .highlight {
     background: #fff;
-  }
+}
+
+.routename-manageUsers .create-user-drawer-bottom {
+    background-color: white;
+    height: 45px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+  
+.routename-manageUsers  .create-user-drawer {
+    width: 641px;
+    height: 100%;
+    right: 0;
+    transform: translateX(641px);
+    transition: transform 0.3s;
+    top: 0;
+    background-color: #f9f9f9;
+    border-left: 1px solid #d0d0d0;
+    z-index: 10000;
+}
+  
+.routename-manageUsers  .create-user-drawer .left-area {
+    float:left;
+}
+  
+.routename-manageUsers  .create-user-drawer .right-area {
+    float: left;
+    margin-left: 15px;
+}
+  
+.routename-manageUsers .create-user-drawer label {
+    height: 12px;
+    font-family: Ubuntu;
+    font-size: 12px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    color: #636363;
+}
+  
+.routename-manageUsers .create-user-drawer .img-upload {
+    width: 190px;
+    height: 232px;
+    border-radius: 2px;
+    border: dashed 2px #ebebeb;
+    background-color: #ffffff;
+    margin-top: 4px;
+}
+
+.routename-manageUsers .create-user-drawer .img-preview {
+    height: 72px;
+    margin-top: 5px;
+    width: 72px;
+    border-radius: 50%;
+    display: inline-block;
+}
+  
+.routename-manageUsers .create-user-drawer .drawer-input {
+    display: block;
+    width: 351px;
+    height: 28px;
+    border-radius: 2px;
+    border: solid 1px #d6d6d6;
+    background-color: #ffffff;
+    margin-bottom: 15px;
+    margin-top: 4px;
+    padding: 0px 8px;
+    font-family: Ubuntu;
+}
+  
+.routename-manageUsers  .create-user-drawer .drawer-input::placeholder {
+    color: #a9a9a9;
+    font-style: 13px;
+}
+  
+.routename-manageUsers .create-user-drawer-detail {
+    padding: 21px;
+}
+  
+.routename-manageUsers .create-user-drawer .upload-message {
+    width: 126px;
+    margin-left: 33px;
+    margin-top: 100px;
+    height: 32px;
+    font-family: Ubuntu;
+    font-size: 12px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.33;
+    letter-spacing: normal;
+    text-align: center;
+    color: #737373;
+}
+  
+.routename-manageUsers .create-user-drawer .access-area .header {
+    width: calc(100%  - 34px);
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border: solid 1px #dbdbdb;
+    background-color: #ececec;
+    padding: 9px 12px;
+    font-family: Ubuntu;
+    font-size: 13px;
+    font-weight: 500;
+    color: #656565;
+    font-stretch: normal;
+    font-style: normal;  
+}
+  
+.routename-manageUsers .create-user-drawer .access-area .content {
+    width: calc(100%  - 36px);
+    padding: 20px 13px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-left: solid 1px #dbdbdb;
+    border-right: solid 1px #dbdbdb;
+    border-bottom: solid 1px #dbdbdb;
+    background-color: #ffffff;
+}
+  
+.routename-manageUsers .create-user-drawer .checkbox-container {
+    display: block;
+    color: gray;
+    position: relative;
+    cursor: pointer;
+    font-size: 13px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+  
+.routename-manageUsers .create-user-drawer .checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    border-radius: 2px;
+    left: 0px;
+}
+  
+.routename-manageUsers .create-user-drawer .checkbox-checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 11px;
+    width: 11px;
+    border-radius: 3px;
+    border: 1px solid #636363;
+}
+  
+.routename-manageUsers .create-user-drawer .countly-checkbox-container:hover input ~ .checkbox-checkmark {
+    border: 1px solid #217923;
+}
+  
+.routename-manageUsers .create-user-drawer .countly-checkbox-container input:checked ~ .checkbox-checkmark {
+    background-color: #2EB52B;
+    border: 1px solid #2eb52b;
+}
+  
+.routename-manageUsers  .create-user-drawer .checkbox-container input:checked:hover {
+    background-color: #217923;
+}
+  
+.routename-manageUsers  .create-user-drawer .checkbox-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+  
+/* Show the checkmark when checked */
+.routename-manageUsers  .create-user-drawer .checkbox-container input:checked ~ .checkbox-checkmark:after {
+    display: block;
+}
+  
+/* Style the checkmark/indicator */
+.routename-manageUsers .create-user-drawer .checkbox-container .checkbox-checkmark:after {
+    left: 2.5px;
+    top: 0.6px;
+    width: 2.5px;
+    height: 5px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+  
+.routename-manageUsers .create-user-drawer .check-green {
+    font-size: medium !important;
+    float:left;
+}
+  
+.routename-manageUsers .create-user-drawer .checkbox-label {
+      /* font-family: Ubuntu; */
+    font-size: 12px;
+    /* font-weight: normal; */
+    margin-top: 2px;
+    margin-left: 3px;
+    font-stretch: normal;
+    cursor: default;
+    /* font-style: normal; */
+    /* line-height: normal; */
+    /* letter-spacing: normal; */
+    color: #666666;
+    float:left;
+    border-bottom: 1px dashed #979797;
+}
+  
+.routename-manageUsers .create-user-drawer .permission-header .checkbox-label {
+    border-bottom: none;
+}
+  
+.routename-manageUsers .create-user-drawer .drawer-header {
+    font-family: Ubuntu;
+    font-size: 15px;
+    font-weight: 500;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 0.87;
+    letter-spacing: normal;
+    color: #656565;
+    float:left;
+    width: 50%;
+}
+  
+.routename-manageUsers .create-user-drawer .drawer-information {
+    opacity: 0.68;
+    font-family: Ubuntu;
+    font-size: 11px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.09;
+    letter-spacing: normal;
+    text-align: right;
+    color: #696969;
+    float:left;
+    width: 50%;
+    margin-top: 5px;
+}
+  
+.routename-manageUsers  .create-user-drawer #sub-header-1th {
+    margin-top: 48px;
+    width: calc(100% - 11px);
+}
+  
+.routename-manageUsers .create-user-drawer .admin-access, .create-user-drawer .user-access, .create-user-drawer .role-section {
+    margin-top: 16px;
+}
+  
+.routename-manageUsers .create-user-drawer .header .section-title, .create-user-drawer .drawer-header {
+    text-transform: uppercase;
+    display: inline-block;
+}
+  
+.routename-manageUsers .create-user-drawer .header .subtitle {
+    opacity: 0.68;
+    font-family: Ubuntu;
+    font-size: 11px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.45;
+    letter-spacing: normal;
+    color: #696969;
+    text-decoration: none;
+}
+  
+.routename-manageUsers .create-user-drawer .app-selector {
+    font-family: Ubuntu;
+    font-size: 12px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    color: #636363;
+    border-left: solid 1px #dbdbdb;
+    border-right: solid 1px #dbdbdb;
+    border-bottom: solid 1px #dbdbdb;
+    background-color: #ececec;
+    padding: 15px 12px;
+    width: calc(100% - 34px);
+}
+  
+.routename-manageUsers  .user-access .section-title {
+    padding: 5px 0px;
+}
+  
+.routename-manageUsers  .user-access .permission-header {
+    border-left: 1px solid #dbdbdb;
+    border-right: 1px solid #dbdbdb;
+    border-bottom: 1px solid #dbdbdb;
+    background-color: #ececec;
+    width: calc(100% - 34px);
+    padding: 8px 12px;
+    height: 12px;
+}
+
+.routename-manageUsers  .create-user-drawer .section-close-icon {
+    float: right;
+    color: silver;
+}
+  
+.routename-manageUsers  .user-access .permission-header .table-description {
+    font-family: Ubuntu;
+    text-transform: uppercase;
+    font-family: Ubuntu;
+    font-size: 11px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #484848;
+    float: left;
+    width: 15%;
+    text-align: center;
+    height: 10px;
+}
+  
+.routename-manageUsers .user-access .permission-header .first-description {
+    width: 40%;
+    text-align: left;
+}
+  
+.routename-manageUsers  .admin-access .app-selector {
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+  
+.routename-manageUsers .create-user-drawer .first-column {
+    width: 40% !important;
+    text-align: left !important;
+    float:left;
+    font-family: Ubuntu;
+    font-size: 12px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #666666;
+}
+  
+.routename-manageUsers  .create-user-drawer .permission-column {
+    width: 15%;
+    text-align: center;
+    float:left;
+}
+
+.routename-manageUsers  .create-user-drawer .permission-column .countly-checkbox-icon {
+    top: -6px;
+}
+
+.routename-manageUsers .create-user-drawer .permission-column .countly-checkbox-native {
+    top: -35px;
+}
+
+.routename-manageUsers .countly-checkbox-wrapper .fa-check {
+    color: white;
+}
+
+.routename-manageUsers .mark-all .countly-checkbox-native {
+    top: -28px;
+}
+
+.routename-manageUsers .create-user-drawer .permission-column .countly-checkbox-wrapper {
+    margin-left: 25%;
+}
+  
+.routename-manageUsers .create-user-drawer .permission-item {
+    background-color: white;
+    padding: 12px 12px;
+    width: calc(100% - 24px);
+}
+  
+.routename-manageUsers .create-user-drawer .gray {
+    background-color: #f7f7f7;
+}
+  
+.routename-manageUsers .create-user-drawer .permission-table {
+    border: 1px solid #dbdbdb;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    width: calc(100% - 10px);
+    height: 200px;
+    overflow-y: scroll;
+}
+  
+.routename-manageUsers  .create-user-drawer .permission-header .checkbox-container {
+    margin-left: 5px;
+}
+  
+.routename-manageUsers .create-user-drawer .permission-column .checkbox-container {
+    margin-left: 30px;
+}
+  
+.routename-manageUsers .create-user-drawer .selector-label { 
+    float:left;
+    width: 7%;
+    margin-top:8px;
+}
+  
+.routename-manageUsers  .create-user-drawer .selector-wrapper {
+    float:left;
+    width: 93%;
+}
+  
+.routename-manageUsers  .create-user-drawer .create-user-button {
+    border: none;
+    border-radius: 2px;
+    font-size: 14px !important;
+    padding: 10px 25px 10px 25px;
+    outline: none;
+    margin-right: 5px;
+    float: right;
+    margin-right: 30px;
+    margin-top: 5px;
+}
+  
+.routename-manageUsers .create-user-drawer .selectize-input {
+    min-height: 30px !important;
+    height: 30px !important; 
+    padding: 4px !important;
+}
+  
+.routename-manageUsers  .create-user-drawer #new-user-group-select {
+    width: calc(100% - 2px);
+    height: 24px;
+    padding: 2px 0px;
+    margin-top: 7px;
+}
+  
+.routename-manageUsers .create-user-drawer #new-user-group-select .select-items {
+    width: 100% !important;
+}
+  
+.routename-manageUsers .create-user-drawer .red-text, .create-user-drawer .green-text {
+    padding-left: 0px;
+    vertical-align: middle;
+}
+  
+.routename-manageUsers .create-user-drawer .file-selected {
+    border:2px solid #2EB52B;
+}
+  
+.routename-manageUsers .create-user-drawer .create-new-user {
+    float: right;
+    border: none;
+    margin-right: 25px;
+    margin-top: 10px;
+}  
+
+.routename-manageUsers  .add-new-permission-set {
+    margin-left: 0px;
+    margin-top: 15px;
+    background-color: #ef9c42;
+    color: white;
+    border: none;
+}
+
+.routename-manageUsers .manage-users-options-item .edit {
+    display: block;
+    right: 10px;
+    top: 0;
+    /* font-size: 17px;
+    */
+    cursor: pointer;
+    color: #a7a7a7;
+    background-color: rgba(255, 255, 255, 0.03);
+    transition: background-color 1s;
+    padding-top: 17px;
+    padding-left: 17px;
+    width: 34px;
+    height: 34px;
+}
+
+.routename-manageUsers .manage-users-options-item .edit:before {
+    font-size: 20px;
+    font-family: 'Ionicons';
+    content: "\f396";
+}
+
+.routename-manageUsers .manage-users-options-item .edit:hover {
+    color: #6B6B6B;
+    background-color: rgba(255, 255, 255, 0.06);
+    transition: background-color 1s;
+}
+
+.routename-manageUsers .manage-users-options-item:hover .edit {
+    display: block;
+}
+
+.routename-manageUsers .manage-users-options-item .edit-menu {
+    margin: -16px -195px;
+    display: none;
+    float: left;
+    z-index: 10;
+    position: absolute;
+    font-size: 13px;
+    white-space: nowrap;
+    background-color: #fff;
+    border-radius: 2px;
+    width: 210px;
+    padding: 10px 0 10px 0;
+    border: 1px solid #d0d0d0;
+}
+
+.routename-manageUsers .manage-users-options-item .edit-menu .item {
+    cursor: pointer;
+    padding: 8px 20px;
+    font-size: 24px;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 13px;
+    white-space: nowrap;
+    color: #474747;
+}
+
+.routename-manageUsers .manage-users-options-item .edit-menu .item:hover {
+    background-color: #f3f3f3;
+}
+
+.routename-manageUsers .manage-users-options-item .edit-menu:before {
+    border: 4px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #FFF;
+    right: 7px;
+    top: -8px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.routename-manageUsers .manage-users-options-item, .edit-menu {
+    margin-left: 75%;
+}
+
+.routename-manageUsers .manage-users-options-item .edit-menu:after {
+    border: 5px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #d0d0d0;
+    right: 6px;
+    top: -10px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.routename-manageUsers .create-user-drawer .edit-picture {
+    color: #2EB52B;
+    font-size: 12px;
+    font-weight: bold;
+    float: right;
+    margin-top: 25px;
+    margin-left: 20px;
+    cursor: pointer;
+}
+
+.routename-manageUsers .discard-changes {
+    border: none;
+    font-size: 13px;
+    background-color: white;
+    font-family: 'UBUNTU';
+    float: right;
+    margin-top: 15px;
+}
+
+.routename-manageUsers .create-user-drawer #profile-picture-label {
+    display: block;
+}
+
+.routename-manageUsers .create-user-drawer .update-picture::before {
+    font-size: 20px;
+    font-family: 'Ionicons';
+    content: "\f396";
+    color: gray;
+}
+
+.routename-manageUsers .create-user-drawer .drawer-loading {
+    display: block;
+    width: 20%;
+    margin-left: 40%;
+    margin-top: 25%;
+    text-align: center;
+}
+
+.routename-manageUsers .create-user-drawer .drawer-loading img {
+    width: 50%;
+}
+
+.routename-manageUsers .create-user-drawer .permission-column {
+    text-transform: capitalize;
+}
+
+.routename-manageUsers .create-user-drawer .read-all span {
+    left: -10px;
+}
+
+.routename-manageUsers #user-drawer-global-admin {
+    float:left;
+}
+
+.routename-manageUsers .create-user-drawer .global-admin-checkbox-label {
+    margin-top: 0px;
+}
+
+.routename-manageUsers .create-user-drawer #user-drawer-global-admin i {
+    top: -6px;
+}
+
+.routename-manageUsers .create-user-drawer #user-drawer-global-admin input {
+    top: -35px;
+}
+
+.routename-manageUsers .create-user-drawer .show-tooltip {
+    color: #c5c3c3;
+    font-size: 14px;
+}
+
+.routename-manageUsers .create-user-drawer #new-image-select {
+    color: #2EB52B;
+    font-size: 12px;
+    font-weight: bolder;
+    background-color: white;
+    width: fit-content;
+    top: -120px;
+    left: 15px;
+    position: relative;
+    display: none;
+}
+
+.routename-manageUsers .create-user-drawer .dz-remove {
+    font-size: 12px;
+}
+
+.routename-manageUsers .manage-users-table .own-row {
+    opacity: 0;
+}
