@@ -1,0 +1,27 @@
+// File : main.scss (Default Theme)
+// All "Base" specific SASS partials
+
+@import "theme/colors-theme-A";
+@import "theme/variables-theme-A";
+@import "base/mixins";
+
+// All "Layout" specific SASS partials
+
+@import 'layout/header';
+@import 'layout/body';
+@import 'layout/content';
+@import 'layout/footer';
+
+// All "Module" specific SASS partials
+
+@import 'modules/dropdown';
+@import 'modules/input';
+
+// All "Overrides" specific SASS partials
+
+@import 'overrides/element-override';
+
+// All "States" specific SASS partials
+// Defined at the last to increase specificity
+
+@import 'states/state';

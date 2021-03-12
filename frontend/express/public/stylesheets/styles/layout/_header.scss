@@ -1,0 +1,16 @@
+.header {
+    padding: 0px 24px 24px;
+    border-bottom: $--border-base;
+
+    &:not(:last-child) {
+        margin-bottom: 32px;
+    }
+
+    &--white {
+        background-color: $--color-white;
+    }
+
+    &--no-bg {
+        background-color: none;
+    }
+}

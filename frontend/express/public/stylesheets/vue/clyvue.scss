@@ -1,5 +1,5 @@
-@import "./element-variables.scss";
-@import "./typography-variables.scss";
+@import "../styles/base/typography-variables";
+@import "../styles/base/element-variables";
 
 .cly-vue-theme-clydef {
 
@@ -9,94 +9,6 @@
     }
 
     font-family: $--font-family !important;
-
-    button {
-        font: $--font-weight-primary $--text-button-size $--font-family !important;
-    }
-
-    // Typography
-    h1 {
-        font-size: $--heading-1-size;
-        line-height: $--heading-1-line-height;
-        font-weight: $--heading-1-weight;
-    }
-
-    h2 {
-        font-size: $--heading-2-size;
-        line-height: $--heading-2-line-height;
-        font-weight: $--heading-2-weight;
-    }
-
-    h3 {
-        font-size: $--heading-3-size;
-        line-height: $--heading-3-line-height;
-        font-weight: $--heading-3-weight;
-    }
-
-    h4 {
-        font-size: $--heading-4-size;
-        line-height: $--heading-4-line-height;
-        font-weight: $--heading-4-weight;
-    }
-
-    h5 {
-        font-size: $--heading-5-size;
-        line-height: $--heading-5-line-height;
-        font-weight: $--heading-5-weight;
-    }
-
-    h6 {
-        font-size: $--heading-6-size;
-        line-height: $--heading-6-line-height;
-        font-weight: $--heading-6-weight;
-    }
-
-    .font-weight-bold {
-        font-weight: $--font-weight-bold !important;
-    }
-
-    .font-weight-normal {
-        font-weight: $--font-weight-text !important;
-    }
-
-    .font-italic {
-        font-style: italic !important;
-    }
-
-    .text-lowercase {
-        text-transform: lowercase !important;
-    }
-
-    .text-uppercase {
-        text-transform: uppercase !important;
-    }
-
-    .text-big {
-        font-size: $--text-lg-size;
-        font-weight: $--font-weight-text;
-        line-height: $--text-lg-size + 6px;
-        &.font-weight-bold {
-            font-weight: $--font-weight-primary !important;
-        }
-    }
-
-    .text-medium {
-        font-size: $--text-md-size;
-        font-weight: $--font-weight-text;
-        line-height: $--text-md-size + 6px;
-        &.font-weight-bold {
-            font-weight: $--font-weight-primary !important;
-        }
-    }
-
-    .text-small {
-        font-size: $--text-sm-size;
-        font-weight: $--font-weight-text;
-        line-height: $--text-sm-size + 6px;
-        &.font-weight-bold {
-            font-weight: $--font-weight-primary !important;
-        }
-    }
 
     // tabs component
     .cly-vue-tabs {
@@ -2869,33 +2781,6 @@
                     background-color: #f3f3f3;
                 }
             }
-        }
-    }
-
-    .cly-vue-eldatatable {
-        &.silent-loading {
-            .el-loading-spinner {
-                visibility: hidden;
-            }
-        }
-        &__table-header-left,
-        &__table-footer-left {
-            float: left;
-        }
-        &__table-header-right,
-        &__table-footer-right {
-            float: right;
-        }
-        &__table-nav-arrows,
-        &__table-page-selector,
-        &__table-page-size-selector {
-            display: inline-block;
-            .el-select {
-                width: 70px;
-            }
-        }
-        &__table-bottomline {
-            clear: both;
         }
     }
 

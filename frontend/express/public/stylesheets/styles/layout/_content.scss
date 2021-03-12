@@ -1,0 +1,21 @@
+#analytics-main-view {
+	//There is a rule corresponding to the following rule in the main.css file - #content-container
+	//Remove that once everything is moved to vue
+	.content-container {
+		min-width: 768px;
+		min-height: 400px;
+		margin-left: 224px;
+		padding: 59px 0 35px 0 !important;
+		transition: margin-left 0.55s;
+		will-change: margin-left;
+	}
+}
+
+.main {
+	padding: 0px 24px;
+	margin: 0;
+}
+
+.section:not(:last-child) {
+	margin-bottom: 32px;
+}
