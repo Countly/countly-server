@@ -124,7 +124,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/core.js',
                     'frontend/express/public/javascripts/countly/vue/helpers.js',
                     'frontend/express/public/javascripts/countly/vue/data/vuex.js',
-                    'frontend/express/public/javascripts/countly/vue/components/imports.js',
+                    'frontend/express/public/javascripts/countly/vue/imports.js',
                     'frontend/express/public/javascripts/countly/vue/components/nav.js',
                     'frontend/express/public/javascripts/countly/vue/components/layout.js',
                     'frontend/express/public/javascripts/countly/vue/components/date.js',

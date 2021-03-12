@@ -8,6 +8,8 @@
     Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
 
     Vue.use(VeeValidate);
+    Vue.use(VueCompositionAPI);
+    Vue.use(VueECharts);
 
     Vue.component('validation-provider', VeeValidate.ValidationProvider);
     Vue.component('validation-observer', VeeValidate.ValidationObserver);
