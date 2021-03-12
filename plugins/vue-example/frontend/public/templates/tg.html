@@ -1,7 +1,6 @@
 <div>
     <cly-section title="Pie Chart">
-        <cly-graph-w v-bind:data-points="pieData" graph-type="pie">
-        </cly-graph-w>
+        <echarts class="chart" :option="pieOptions" style="height: 400px;" :autoresize="true"></echarts>
     </cly-section>
     <cly-section title="Bar Chart">
         <cly-graph-w v-bind:data-points="barData" graph-type="bar">

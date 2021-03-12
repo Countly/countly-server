@@ -431,10 +431,10 @@
             'month-table': monthTableComponent
         },
         computed: {
-            isStartFocused: function (){
-                return this.rangeState.selecting && this.rangeState.focusOn === "start"; 
+            isStartFocused: function() {
+                return this.rangeState.selecting && this.rangeState.focusOn === "start";
             },
-            isEndFocused: function (){
+            isEndFocused: function() {
                 return this.rangeState.selecting && this.rangeState.focusOn === "end";
             },
             shortcuts: function() {

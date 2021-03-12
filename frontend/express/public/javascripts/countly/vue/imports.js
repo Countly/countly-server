@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, VeeValidate, inViewportMixin */
+/* global Vue, ELEMENT, VeeValidate, inViewportMixin, VueCompositionAPI, VueECharts */
 
 (function(countlyVue) {
 
@@ -9,7 +9,7 @@
 
     Vue.use(VeeValidate);
     Vue.use(VueCompositionAPI);
-    Vue.use(VueECharts);
+    Vue.component('echarts', VueECharts);
 
     Vue.component('validation-provider', VeeValidate.ValidationProvider);
     Vue.component('validation-observer', VeeValidate.ValidationObserver);

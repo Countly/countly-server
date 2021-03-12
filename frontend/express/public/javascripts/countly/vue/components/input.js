@@ -1159,9 +1159,12 @@
 
     var TabbedOptionsMixin = {
         props: {
-            options: {type: Array, default: function() {
-                return [];
-            }},
+            options: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
             hideDefaultTabs: {type: Boolean, default: false},
             allPlaceholder: {type: String, default: 'All'},
             hideAllOptionsTab: {type: Boolean, default: false}
