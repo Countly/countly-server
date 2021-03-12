@@ -690,6 +690,20 @@ plugins.setConfigs("crashes", {
                                         groupInc["os." + report.os.replace(/^\$/, "").replace(/\./g, ":")] = 1;
                                         groupInc["app_version." + report.app_version.replace(/^\$/, "").replace(/\./g, ":")] = 1;
                                         common.writeBatcher.add('app_crashgroups' + params.app_id, "meta", {$inc: groupInc});
+
+                                        if (plugins.getConfig("crashes").automatic_symbolication === true) {
+                                            common.db.collection("app_crashsymbols" + params.app_id).findOne({build: report.build_uuid || report.app_version}, function(symbolFindError, crashSymbol) {
+                                                if (!symbolFindError && crashSymbol) {
+                                                    var dispatchParams = {
+                                                        params: {app: params.app, app_id: params.app_id, qstring: {report_id: report._id.toString(), symbol_id: crashSymbol._id.toString(), return_url: plugins.getConfig("api").domain}},
+                                                        paths: [null, "i", "crash_symbols", "symbolicate"],
+                                                        automated: true
+                                                    };
+
+                                                    plugins.dispatch("/i/crash_symbols", dispatchParams);
+                                                }
+                                            });
+                                        }
                                     });
                                 };
 
