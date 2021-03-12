@@ -2,16 +2,12 @@
     <cly-section title="Pie Chart">
         <echarts class="chart" :option="pieOptions" style="height: 400px;" :autoresize="true"></echarts>
     </cly-section>
+    <cly-section title="Time Graph">
+        <echarts class="chart" :option="largeScaleOptions" style="height: 400px;" :autoresize="true"></echarts>
+    </cly-section>
     <cly-section title="Bar Chart">
-        <cly-graph-w v-bind:data-points="barData" graph-type="bar">
-        </cly-graph-w>
     </cly-section>
     <cly-section title="Line Chart">
-        <cly-graph-w v-bind:data-points="lineData" graph-type="line">
-        </cly-graph-w>
-    </cly-section>
-    <cly-section title="Time Graph">
-        <cly-time-graph-w v-bind:data-points="randomNumbers" v-bind:config-paths="paths">
-        </cly-time-graph-w>
+        <echarts class="chart" :option="lineOptions" style="height: 400px;" :autoresize="true"></echarts>
     </cly-section>
 </div>

@@ -226,17 +226,77 @@
             return obj;
         },
         data: function() {
+            var base = +new Date(1968, 9, 3);
+            var oneDay = 24 * 3600 * 1000;
+            var date = [];
+
+            var data = [Math.random() * 300];
+
+            for (var i = 1; i < 20000; i++) {
+                var now = new Date(base += oneDay);
+                date.push([now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/'));
+                data.push(Math.round((Math.random() - 0.5) * 20 + data[i - 1]));
+            }
             return {
-                paths: [{
-                    "label": "Previous Period",
-                    "color": "#DDDDDD",
-                    "mode": "ghost"
-                }, {
-                    "label": "Total Sessions",
-                    "color": "#52A3EF"
-                }],
-                activeTab: null,
-                activeGraphTab: null,
+                largeScaleOptions: {
+                    tooltip: {
+                        trigger: 'axis',
+                        position: function(pt) {
+                            return [pt[0], '10%'];
+                        }
+                    },
+                    title: {
+                        left: 'center',
+                        text: 'Some random data',
+                    },
+                    toolbox: {
+                        feature: {
+                            dataZoom: {
+                                yAxisIndex: 'none'
+                            },
+                            restore: {},
+                            saveAsImage: {}
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: date
+                    },
+                    yAxis: {
+                        type: 'value',
+                        boundaryGap: [0, '100%']
+                    },
+                    dataZoom: [{
+                        type: 'inside',
+                        start: 0,
+                        end: 10
+                    }, {
+                        start: 0,
+                        end: 10
+                    }],
+                    series: [
+                        {
+                            name: 'Random',
+                            type: 'line',
+                            symbol: 'none',
+                            sampling: 'lttb',
+                            itemStyle: {
+                                color: 'rgb(255, 70, 131)'
+                            },
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                    offset: 0,
+                                    color: 'rgb(255, 158, 68)'
+                                }, {
+                                    offset: 1,
+                                    color: 'rgb(255, 70, 131)'
+                                }])
+                            },
+                            data: data
+                        }
+                    ]
+                },
                 pieOptions: {
                     title: {
                         text: "Traffic Sources",
@@ -277,6 +337,72 @@
                                     shadowColor: "rgba(0, 0, 0, 0.5)"
                                 }
                             }
+                        }
+                    ]
+                },
+                lineOptions: {
+                    title: {
+                        text: 'Lines'
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data: ['A', 'B', 'C', 'D', 'E']
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    toolbox: {
+                        feature: {
+                            dataZoom: {
+                                yAxisIndex: 'none'
+                            },
+                            restore: {},
+                            saveAsImage: {}
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: [0, 1, 3, 4, 5, 6]
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [
+                        {
+                            name: 'A',
+                            type: 'line',
+                            stack: 'Value',
+                            data: [120, 132, 101, 134, 90, 230, 210]
+                        },
+                        {
+                            name: 'B',
+                            type: 'line',
+                            stack: 'Value',
+                            data: [220, 182, 191, 234, 290, 330, 310]
+                        },
+                        {
+                            name: 'C',
+                            type: 'line',
+                            stack: 'Value',
+                            data: [150, 232, 201, 154, 190, 330, 410]
+                        },
+                        {
+                            name: 'D',
+                            type: 'line',
+                            stack: 'Value',
+                            data: [320, 332, 301, 334, 390, 330, 320]
+                        },
+                        {
+                            name: 'E',
+                            type: 'line',
+                            stack: 'Value',
+                            data: [820, 932, 901, 934, 1290, 1330, 1320]
                         }
                     ]
                 }
