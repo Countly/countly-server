@@ -221,7 +221,7 @@ function checkDataPoints(app, alertConfigs) {
                         const hourDataPoint = dataPerApp[i].d[tDate][hour].dp;
                         todayDataPointValue += hourDataPoint;
                         if (hour === today.hour() + '') {
-                            hourDataPointValue += hourDataPoint; 
+                            hourDataPointValue += hourDataPoint;
                         }
                     }
                 }
