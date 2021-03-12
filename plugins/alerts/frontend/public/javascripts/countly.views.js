@@ -1,4 +1,4 @@
-/*global
+///*global
     countlyView,
     countlyGlobal,
     CountlyHelpers,
@@ -58,7 +58,8 @@ var alertDefine = {
     },
     dataPoint: {
         target: [
-            { value: 'Number of daily DP', name: 'Number of daily DP' },
+            { value: 'Number of daily DP', name: 'Daily data points' },
+            { value: 'Hourly data points', name: 'Hourly data points' },
             { value: 'Monthly data points', name: 'Monthly data points' }
         ],
         condition: [
@@ -413,7 +414,7 @@ window.AlertsView = countlyView.extend({
                         $("#single-target-condition-dropdown").css("visibility", "hidden");
                         $('#alert-compare-value').css("visibility", "hidden");
                     }
-                    else if (selected === 'Monthly data points') {
+                    else if (selected === 'Monthly data points' || selected === 'Hourly data points') {
                         $("#single-target-condition-dropdown").clySelectSetSelection("reach threshold", "reach threshold");
                         $("#alert-view .alert-compare-value-class").addClass("datapoint");
                         setTimeout(function() {
@@ -478,9 +479,9 @@ window.AlertsView = countlyView.extend({
                 var apps = [];
                 for (var appId in countlyGlobal.apps) {
                     apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
-                    if ($(($('#alert-data-types').find(".selected")[0])).data("dataType") === "dataPoint") {
-                        apps.unshift({value: "all-apps", name: "All apps"});
-                    }
+                }
+                if ($(($('#alert-data-types').find(".selected")[0])).data("dataType") === "dataPoint") {
+                    apps.unshift({value: "all-apps", name: "All apps"});
                 }
                 // $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
                 $("#single-app-dropdown").clySelectSetItems(apps);
@@ -735,7 +736,7 @@ window.AlertsView = countlyView.extend({
 				' ' + settings.compareType +
 				' ' + settings.compareValue + "%";
 
-            if (dataType === 'dataPoint' && settings.alertDataSubType === 'Monthly data points') {
+            if (dataType === 'dataPoint' && (settings.alertDataSubType === 'Monthly data points' || settings.alertDataSubType === 'Hourly data points')) {
                 settings.compareDescribe = settings.compareDescribe.substring(0, settings.compareDescribe.length - 1);
             }
             var dictObject = dict[settings.alertDataType] && dict[settings.alertDataType][settings.alertDataSubType];

@@ -38,6 +38,9 @@ const dataPointAlert = {
                     if (alertConfigs.alertDataSubType === 'Number of daily DP') {
                         title = `Number of daily data points for ${appsListTitle} has changed compared to yesterday`;
                     }
+                    if (alertConfigs.alertDataSubType === 'Hourly data points') {
+                        title = `Number of hourly data points for ${appsListTitle} has reach threshold`;
+                    }
                     if (alertConfigs.alertDataSubType === 'Monthly data points') {
                         title = `Number of monthly data points for ${appsListTitle} has reach threshold`;
                     }
@@ -100,14 +103,16 @@ const dataPointAlert = {
                 const alertList = [];
                 for (let i = 0; i < alertConfigs.selectedApps.length; i++) {
                     const currentApp = alertConfigs.selectedApps[i];
-                    if (currentApp !== "all-apps") {
+                    if (currentApp !== "all-apps" || alertConfigs.alertDataSubType !== 'Hourly data points') {
                         const rightHour = yield utils.checkAppLocalTimeHour(currentApp, 23);
                         if (!rightHour) {
+                            done();
                             return;
                         }
                     }
                     switch (alertConfigs.alertDataSubType) {
                     case 'Number of daily DP':
+                    case 'Hourly data points':
                     case 'Monthly data points': {
                         const result = yield checkDataPoints(currentApp, alertConfigs);
                         log.d('app:' + currentApp + ' result:', result);
@@ -130,6 +135,7 @@ const dataPointAlert = {
             }
             catch (e) {
                 log.e(e, e.stack);
+                done();
             }
         })();
     }
@@ -167,16 +173,15 @@ function checkDataPoints(app, alertConfigs) {
     const tYear = today.year();
     const tMonth = today.month() + 1;
     const tDate = today.date();
-    const todayDocumentId = app + "_" + tYear + ":" + tMonth;
+    const todayDocumentId = (app === "all-apps" ? "" : app) + "_" + tYear + ":" + tMonth;
     let todayDataPointValue = 0;
 
     const lastDay = moment().subtract(1, 'days');
     const lYear = lastDay.year();
     const lMonth = lastDay.month() + 1;
     const lDate = lastDay.date();
-    const lastdayDocumentId = app + "_" + lYear + ":" + lMonth;
+    const lastdayDocumentId = (app === "all-apps" ? "" : app) + "_" + lYear + ":" + lMonth;
     let lastdayDataPointValue = 0;
-
 
     return new Promise((resolve) => {
         common.db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, dataPerApp) {
@@ -209,14 +214,18 @@ function checkDataPoints(app, alertConfigs) {
                 };
             }
 
+            let hourDataPointValue = 0;
             for (let i = 0; i < dataPerApp.length; i++) {
-                if (dataPerApp[i]._id === todayDocumentId) {
+                if (dataPerApp[i]._id.indexOf(todayDocumentId) > -1) {
                     for (let hour in dataPerApp[i].d[tDate]) {
                         const hourDataPoint = dataPerApp[i].d[tDate][hour].dp;
                         todayDataPointValue += hourDataPoint;
+                        if (hour === today.hour() + '') {
+                            hourDataPointValue += hourDataPoint; 
+                        }
                     }
                 }
-                if (dataPerApp[i]._id === lastdayDocumentId) {
+                if (dataPerApp[i]._id.indexOf(lastdayDocumentId) > -1) {
                     for (let hour in dataPerApp[i].d[lDate]) {
                         const hourDataPoint = dataPerApp[i].d[lDate][hour].dp;
                         lastdayDataPointValue += hourDataPoint;
@@ -262,11 +271,6 @@ function checkDataPoints(app, alertConfigs) {
                     if (dataPerApp[i].m === periodsToFetch[j]) {
                         toReturn[dataPerApp[i].a][formattedDate] = increaseDataPoints(toReturn[dataPerApp[i].a][formattedDate], dataPerApp[i]);
                         toReturn["all-apps"][formattedDate] = increaseDataPoints(toReturn["all-apps"][formattedDate], dataPerApp[i]);
-                        // only last 6 months
-                        if (j > 5) {
-                            toReturn["all-apps"]["6_months"] = increaseDataPoints(toReturn["all-apps"]["6_months"], dataPerApp[i]);
-                            toReturn[dataPerApp[i].a]["6_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["6_months"], dataPerApp[i]);
-                        }
                         // only last 3 months
                         if (j > 8) {
                             toReturn[dataPerApp[i].a]["3_months"] = increaseDataPoints(toReturn[dataPerApp[i].a]["3_months"], dataPerApp[i]);
@@ -280,13 +284,15 @@ function checkDataPoints(app, alertConfigs) {
             if (alertConfigs.alertDataSubType === 'Monthly data points') {
                 const todayValue = toReturn[app][tYear + "-" + tMonth]["data-points"];
                 return resolve({todayValue, matched: alertConfigs.compareValue < todayValue});
+            } if (alertConfigs.alertDataSubType === 'Hourly data points') {
+                const todayValue = hourDataPointValue;
+                return resolve({todayValue, matched: alertConfigs.compareValue < todayValue});
             }
             else {
                 const percentNum = (todayDataPointValue / lastdayDataPointValue - 1) * 100;
                 const compareValue = parseFloat(alertConfigs.compareValue);
                 const matched = alertConfigs.compareType && alertConfigs.compareType.indexOf('increased') >= 0
                     ? percentNum > compareValue : percentNum < compareValue;
-
                 return resolve({toReturn, lastDateValue: lastdayDataPointValue, todayValue: todayDataPointValue, matched});
             }
         });
