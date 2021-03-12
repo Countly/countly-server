@@ -15,8 +15,8 @@
 
 		&--white {
 			background-color: $--color-white;
-			color: #333C48;
-			font-size: 13px;
+			color: $--table-text-color;
+			font-size: $--text-smd-size;
 		}
 	}
 
@@ -38,8 +38,8 @@
 
 		&--white {
 			background-color: $--color-white;
-			color: #81868D;
-			font-size: 13px;
+			color: $--table-footer-text-color;
+			font-size: $--text-smd-size;
 		}
 
 		.el-select {
@@ -48,7 +48,7 @@
 	}
 
 	&__vertical-divider {
-		border: 1px solid #ECECEC;
+		border: $--border-base;
 		height: 38px;
 	}
 }

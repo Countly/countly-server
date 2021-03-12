@@ -232,7 +232,7 @@
 }
 .cly-vue-theme-clydef .header {
   padding: 0px 24px 24px;
-  border-bottom: 1px solid #DCDFE6;
+  border-bottom: 1px solid #ECECEC;
 }
 .cly-vue-theme-clydef .header:not(:last-child) {
   margin-bottom: 32px;
@@ -248,7 +248,7 @@
 }
 .cly-vue-theme-clydef .cly-vue-eldatatable__header {
   height: 56px;
-  border: 1px solid #DCDFE6;
+  border: 1px solid #ECECEC;
   border-left: none;
   border-right: none;
   box-sizing: border-box;
@@ -264,7 +264,7 @@
 }
 .cly-vue-theme-clydef .cly-vue-eldatatable__footer {
   height: 40px;
-  border: 1px solid #DCDFE6;
+  border: 1px solid #ECECEC;
   border-left: none;
   border-right: none;
   box-sizing: border-box;
@@ -281,7 +281,6 @@
 .cly-vue-theme-clydef .cly-vue-eldatatable__vertical-divider {
   border: 1px solid #ECECEC;
   height: 38px;
-  margin: 0px 16px 0px 3px;
 }
 .cly-vue-theme-clydef .font-weight-bold {
   font-weight: 600 !important;
