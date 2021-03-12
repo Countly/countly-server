@@ -175,7 +175,6 @@
             if (!controlParams.selectedDynamicCols || !Array.isArray(controlParams.selectedDynamicCols)) {
                 controlParams.selectedDynamicCols = this.availableDynamicCols.reduce(function(acc, option) {
                     if (option.default || option.required) {
-                        //What is the difference between default and required?
                         acc.push(option.value);
                     }
                     return acc;

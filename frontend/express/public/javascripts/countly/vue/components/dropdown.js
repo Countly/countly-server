@@ -46,7 +46,6 @@
                 this.$refs.elInput.focus();
             }
         },
-        //Is component a directive here? a tag? what?
         template: '<component\
                         :is="componentName"\
                         ref="elInput"\
@@ -62,7 +61,6 @@
 
     }));
 
-    //What is this?
     var triggerProxy = countlyBaseComponent.extend({
         template: '<div style="width:100%"><slot v-slot></slot></div>'
     });
