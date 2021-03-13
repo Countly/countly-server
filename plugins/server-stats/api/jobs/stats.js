@@ -106,8 +106,8 @@ class StatsJob extends job.Job {
 
                                 var DP = {};
                                 data.DP = [];
-                                data.avg12monthDP = 0;
-                                data.avg6monthDP = 0;
+                                var avg12monthDP = 0;
+                                var avg6monthDP = 0;
 
                                 var avg12 = 0;
                                 var avg6 = 0;
@@ -116,25 +116,25 @@ class StatsJob extends job.Job {
                                         var val = allData[i].e + allData[i].s;
                                         DP[ids[allData[i]._id]] = val;
                                         if (!ids0[allData[i]._id]) {
-                                            data.avg12monthDP += DP[ids[allData[i]._id]];
+                                            avg12monthDP += DP[ids[allData[i]._id]];
                                             avg12++;
                                         }
                                         if (ids6[allData[i]._id] && !ids0[allData[i]._id]) {
-                                            data.avg6monthDP += DP[ids[allData[i]._id]];
+                                            avg6monthDP += DP[ids[allData[i]._id]];
                                             avg6++;
                                         }
                                     }
                                 }
 
                                 for (let i = 0; i < order.length; i++) {
-                                    data.DP.push((i < 9 ? "0" + (i + 1) : i + 1) + ". " + order[i] + ": " + DP[order[i]]);
+                                    data.DP.push((i < 9 ? "0" + (i + 1) : i + 1) + ". " + order[i] + ": " + ((DP[order[i]] || 0).toLocaleString()));
                                 }
 
                                 if (avg12) {
-                                    data.avg12monthDP = Math.round(data.avg12monthDP / avg12);
+                                    data["Last 12 months"] = Math.round(avg12monthDP / avg12).toLocaleString();
                                 }
                                 if (avg6) {
-                                    data.avg12monthDP = Math.round(data.avg6monthDP / avg6);
+                                    data["Last 6 months"] = Math.round(avg6monthDP / avg6).toLocaleString();
                                 }
                                 Countly.user_details({
                                     "custom": data

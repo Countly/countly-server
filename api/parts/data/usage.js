@@ -250,6 +250,20 @@ usage.getPredefinedMetrics = function(params, userProps) {
                 params.qstring.metrics._device_type = "desktop";
             }
         }
+        if (!params.qstring.metrics._manufacturer && params.qstring.metrics._os) {
+            if (params.qstring.metrics._os === "iOS") {
+                params.qstring.metrics._manufacturer = "Apple";
+            }
+            else if (params.qstring.metrics._os === "watchOS") {
+                params.qstring.metrics._manufacturer = "Apple";
+            }
+            else if (params.qstring.metrics._os === "tvOS") {
+                params.qstring.metrics._manufacturer = "Apple";
+            }
+            else if (params.qstring.metrics._os === "macOS") {
+                params.qstring.metrics._manufacturer = "Apple";
+            }
+        }
     }
 
     var predefinedMetrics = [
@@ -263,11 +277,18 @@ usage.getPredefinedMetrics = function(params, userProps) {
         },
         {
             db: "devices",
-            metrics: [{
-                name: "_device",
-                set: "devices",
-                short_code: common.dbUserMap.device
-            }]
+            metrics: [
+                {
+                    name: "_device",
+                    set: "devices",
+                    short_code: common.dbUserMap.device
+                },
+                {
+                    name: "_manufacturer",
+                    set: "manufacturers",
+                    short_code: common.dbUserMap.manufacturer
+                }
+            ]
         },
         {
             db: "device_details",
