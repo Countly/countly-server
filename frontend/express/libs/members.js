@@ -316,6 +316,48 @@ membersUtility.verifyCredentials = function(username, password, callback) {
 };
 
 /**
+* Update Stats for member.
+*
+* @param {object} member - member properties
+* @example
+*   membersUtility.updateStats(member );
+**/
+membersUtility.updateStats = function(member) {
+    var countlyConfig = membersUtility.countlyConfig;
+
+    if ((!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) && !plugins.getConfig("api").offline_mode) {
+        countlyStats.getUser(membersUtility.db, member, function(statsObj) {
+            var custom = {
+                apps: (member.user_of) ? member.user_of.length : 0,
+                platforms: {"$addToSet": statsObj["total-platforms"]},
+                events: statsObj["total-events"],
+                pushes: statsObj["total-msg-sent"],
+                crashes: statsObj["total-crash-groups"],
+                users: statsObj["total-users"]
+            };
+            var date = new Date();
+            request({
+                uri: "https://stats.count.ly/i",
+                method: "GET",
+                timeout: 4E3,
+                qs: {
+                    device_id: member.email,
+                    app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
+                    timestamp: Math.round(date.getTime() / 1000),
+                    hour: date.getHours(),
+                    dow: date.getDay(),
+                    user_details: JSON.stringify(
+                        {
+                            custom: custom
+                        }
+                    )
+                }
+            }, function() {});
+        });
+    }
+};
+
+/**
 * Tries to log in user based passed userame and password. Calls "plugins"
 * methods to notify successful and unsucessful logging in attempts. If
 * successful, sets all session variables and auth token. Passes the member
@@ -343,8 +385,6 @@ membersUtility.verifyCredentials = function(username, password, callback) {
 **/
 
 membersUtility.login = function(req, res, callback) {
-    var countlyConfig = membersUtility.countlyConfig;
-
     membersUtility.verifyCredentials(req.body.username, req.body.password, (member) => {
         if (member === undefined || member.locked) {
             plugins.callMethod("loginFailed", {req: req, data: req.body});
@@ -353,36 +393,8 @@ membersUtility.login = function(req, res, callback) {
         else {
             plugins.callMethod("loginSuccessful", {req: req, data: member});
 
-            if ((!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) && !plugins.getConfig("api").offline_mode) {
-                countlyStats.getUser(membersUtility.db, member, function(statsObj) {
-                    var custom = {
-                        apps: (member.user_of) ? member.user_of.length : 0,
-                        platforms: {"$addToSet": statsObj["total-platforms"]},
-                        events: statsObj["total-events"],
-                        pushes: statsObj["total-msg-sent"],
-                        crashes: statsObj["total-crash-groups"],
-                        users: statsObj["total-users"]
-                    };
-                    var date = new Date();
-                    request({
-                        uri: "https://stats.count.ly/i",
-                        method: "GET",
-                        timeout: 4E3,
-                        qs: {
-                            device_id: member.email,
-                            app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
-                            timestamp: Math.round(date.getTime() / 1000),
-                            hour: date.getHours(),
-                            dow: date.getDay(),
-                            user_details: JSON.stringify(
-                                {
-                                    custom: custom
-                                }
-                            )
-                        }
-                    }, function() {});
-                });
-            }
+            // update stats
+            membersUtility.updateStats(member);
 
             req.session.regenerate(function() {
                 // will have a new session here
@@ -394,6 +406,75 @@ membersUtility.login = function(req, res, callback) {
                     update.lang = req.body.lang;
                 }
                 if (Object.keys(update).length) {
+                    membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
+                }
+                if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
+                    req.session.expires = Date.now() + parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10) * 1000 * 60;
+                }
+                if (member.upgrade) {
+                    res.set({
+                        'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
+                        'Expires': '0',
+                        'Pragma': 'no-cache'
+                    });
+                }
+
+                setLoggedInVariables(req, member, membersUtility.db, function() {
+                    req.session.settings = member.settings;
+                    callback(member, true);
+                });
+            });
+        }
+    });
+};
+
+/**
+* Tries to log in user without verification for external authentication.
+* Similar behavior as the membersUtility.login just bypass the verification
+* as the user is already authenticated by external authentication mechanism
+* such as Active Directory, Azure AD or Ldap
+*
+* @param {object} req - request object
+* @param {string} req.body.username - username
+* @param {object} res - response object
+* @param {function} callback - callback function. First parameter in callback
+* function is member object, if it could be retrieved succesfully. Second
+* parameter is a boolean that is true when logged in succesfully.
+* @example
+*   membersUtility.loginWithExternalAuthentication(req, res, function(member) {
+        if(member) {
+            // logged in
+        }
+        else {
+            // failed
+        }
+    });
+**/
+
+membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
+    if (!req.body || !req.body.username) {
+        callback(undefined);
+    }
+
+    var username = (req.body.username + "").trim();
+
+    membersUtility.db.collection('members').findOne({username}, (err, member) => {
+        if (member === undefined || member.locked) {
+            plugins.callMethod("loginFailed", {req: req, data: req.body});
+            callback(member, false);
+        }
+        else {
+            plugins.callMethod("loginSuccessful", {req: req, data: member});
+
+            // update stats
+            membersUtility.updateStats(member);
+
+            req.session.regenerate(function() {
+                // will have a new session here
+                if (req.body.lang && req.body.lang !== member.lang) {
+                    var update = {last_login: Math.round(new Date().getTime() / 1000)};
+                    update.lang = req.body.lang;
+
                     membersUtility.db.collection('members').update({_id: member._id}, {$set: update}, function() {});
                 }
                 if (parseInt(plugins.getConfig("frontend", member.settings).session_timeout, 10)) {
