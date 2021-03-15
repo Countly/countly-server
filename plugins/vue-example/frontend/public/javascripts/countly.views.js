@@ -255,7 +255,7 @@
                                 yAxisIndex: 'none'
                             },
                             restore: {},
-                            saveAsImage: {}
+                            saveAsImage: { show: true }
                         }
                     },
                     xAxis: {
@@ -298,6 +298,11 @@
                     ]
                 },
                 pieOptions: {
+                    toolbox: {
+                        feature: {
+                            saveAsImage: { show: true }
+                        }
+                    },
                     title: {
                         text: "Traffic Sources",
                         left: "center"
@@ -362,7 +367,7 @@
                                 yAxisIndex: 'none'
                             },
                             restore: {},
-                            saveAsImage: {}
+                            saveAsImage: { show: true }
                         }
                     },
                     xAxis: {
@@ -407,6 +412,11 @@
                     ]
                 },
                 barOptions: {
+                    toolbox: {
+                        feature: {
+                            saveAsImage: { show: true }
+                        }
+                    },
                     xAxis: {
                         type: 'category',
                         data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
