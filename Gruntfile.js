@@ -176,6 +176,7 @@ module.exports = function(grunt) {
                         'frontend/express/public/javascripts/dom/drop/drop-theme-countly.min.css',
                         'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.css',
                         'frontend/express/public/stylesheets/bulma/bulma-custom.css',
+                        'frontend/express/public/stylesheets/styles/manifest.css',
                     ]
                 }
             }

@@ -1,0 +1,54 @@
+.cly-vue-eldatatable {
+	&.silent-loading {
+		.el-loading-spinner {
+			visibility: hidden;
+		}
+	}
+
+	&__header {
+		height: 56px;
+		border: $--border-base;
+		border-left: none;
+		border-right: none;
+		box-sizing: border-box;
+		padding: 12px;
+
+		&--white {
+			background-color: $--color-white;
+			color: $--table-text-color;
+			font-size: $--text-smd-size;
+		}
+	}
+
+	&__search {
+		&--grey {
+			input {
+				background-color: #F6F6F6;
+			}
+		}
+	}
+
+	&__footer {
+		height: 40px;
+		border: $--border-base;
+		border-left: none;
+		border-right: none;
+		box-sizing: border-box;
+		padding: 0px 12px;
+
+		&--white {
+			background-color: $--color-white;
+			color: $--table-footer-text-color;
+			font-size: $--text-smd-size;
+		}
+
+		.el-select {
+			width: 70px;
+		}
+	}
+
+	&__vertical-divider {
+		border: $--border-base;
+		height: 38px;
+	}
+}

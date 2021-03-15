@@ -48,9 +48,6 @@
                 this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
                 this.$store.dispatch("countlyVueExample/fetchTooManyRecords");
             },
-            add: function() {
-                this.$emit("open-drawer", "main", countlyVueExample.factory.getEmpty());
-            },
             onEditRecord: function(row) {
                 var self = this;
                 this.$store.dispatch("countlyVueExample/myRecords/fetchSingle", row._id).then(function(doc) {
@@ -529,6 +526,11 @@
                 appId: countlyCommon.ACTIVE_APP_ID,
                 currentTab: (this.$route.params && this.$route.params.tab) || "tables"
             };
+        },
+        methods: {
+            add: function() {
+                this.openDrawer("main", countlyVueExample.factory.getEmpty());
+            }
         }
     });
 

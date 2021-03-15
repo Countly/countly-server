@@ -1,0 +1,32 @@
+// File : main.scss (Default Theme)
+// All "Base" specific SASS partials
+
+.cly-vue-theme-clydef {
+    @import "base/typography-variables";
+    @import "base/element-variables";
+    @import "base/colors";
+    @import "base/variables";
+    @import "base/mixins";
+    @import "base/base";
+
+    // All "Overrides" specific SASS partials
+
+    @import "overrides/element-override";
+    @import "overrides/bulma-overrides";
+
+    // All "Layout" specific SASS partials
+
+    @import "layout/content";
+    @import "layout/header";
+
+    // All "Module" specific SASS partials
+
+    @import "modules/dropdown";
+    @import "modules/input";
+    @import "modules/table";
+
+    // All "States" specific SASS partials
+    // Defined at the last to increase specificity
+
+    @import "states/state";
+}

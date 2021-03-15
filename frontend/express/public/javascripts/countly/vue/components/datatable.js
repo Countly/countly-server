@@ -431,6 +431,10 @@
             searchPlaceholder: {
                 type: String,
                 default: 'Search'
+            },
+            border: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
@@ -488,34 +492,38 @@
         },
         template: '<div class="cly-vue-eldatatable" :class="classes">\
                         <div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">\
-                            <div class="cly-vue-eldatatable__table-header">\
-                                <div class="cly-vue-eldatatable__table-header-left">\
+                            <div class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white">\
+                                <div class="bu-level-left">\
                                     <slot v-bind="commonScope" name="header-left"></slot>\
                                 </div>\
-                                <div class="cly-vue-eldatatable__table-header-right">\
+                                <div class="bu-level-right">\
                                     <slot v-bind="commonScope" name="header-right"></slot>\
-                                    <cly-select-x\
-                                        v-if="hasDynamicCols"\
-                                        search-placeholder="Search in Columns"\
-                                        placeholder="Edit columns" \
-                                        title="Edit columns"\
-                                        mode="multi-check-sortable"\
-                                        placement="bottom-end"\
-                                        :width="300"\
-                                        :auto-commit="false"\
-                                        :hide-default-tabs="true"\
-                                        :hide-all-options-tab="true"\
-                                        :options="availableDynamicCols"\
-                                        v-model="controlParams.selectedDynamicCols">\
-                                        <template v-slot:trigger>\
-                                            <el-button size="small" icon="el-icon-setting">Edit columns</el-button>\
-                                        </template>\
-                                    </cly-select-x>\
-                                    <el-input size="small" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>\
+                                    <div class="bu-level-item">\
+                                        <cly-select-x\
+                                            v-if="hasDynamicCols"\
+                                            search-placeholder="Search in Columns"\
+                                            placeholder="Edit columns" \
+                                            title="Edit columns"\
+                                            mode="multi-check-sortable"\
+                                            placement="bottom-end"\
+                                            :width="300"\
+                                            :auto-commit="false"\
+                                            :hide-default-tabs="true"\
+                                            :hide-all-options-tab="true"\
+                                            :options="availableDynamicCols"\
+                                            v-model="controlParams.selectedDynamicCols">\
+                                            <template v-slot:trigger>\
+                                                <el-button size="small" icon="el-icon-s-operation"></el-button>\
+                                            </template>\
+                                        </cly-select-x>\
+                                    </div>\
+                                    <div class="bu-level-item">\
+                                        <el-input size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>\
+                                    </div>\
                                 </div>\
                             </div>\
                             <el-table\
-                                :border="true"\
+                                :border="border"\
                                 :row-key="keyFn"\
                                 :data="mutatedRows"\
                                 v-bind="$attrs"\
@@ -526,33 +534,50 @@
                                         <slot :name="name" v-bind="commonScope"/>\
                                     </template>\
                             </el-table>\
-                            <div class="cly-vue-eldatatable__table-footer">\
-                                <div class="cly-vue-eldatatable__table-footer-left">\
-                                    <div class="cly-vue-eldatatable__table-page-size-selector">\
-                                        {{ i18n("common.show-items") }}\
+                            <div class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white">\
+                                <div class="bu-level-left">\
+                                    <div class="bu-level-item">\
+                                        {{ i18n("common.items-per-page") }}:\
+                                    </div>\
+                                    <div class="bu-level-item">\
                                         <el-select v-model="controlParams.perPage" size="mini">\
                                             <el-option v-for="pageSize in availablePageSizes" :key="pageSize" :value="pageSize" :label="pageSize"></el-option>\
                                         </el-select>\
                                     </div>\
-                                    {{ paginationInfo }}\
+                                    <div class="bu-level-item cly-vue-eldatatable__vertical-divider">\
+                                    </div>\
+                                    <div class="bu-level-item" style="font-size: 11px">\
+                                        {{ paginationInfo }}\
+                                    </div>\
                                     <slot v-bind="commonScope" name="footer-left"></slot>\
                                 </div>\
-                                <div class="cly-vue-eldatatable__table-footer-right">\
+                                <div class="bu-level-right">\
                                     <slot v-bind="commonScope" name="footer-right"></slot>\
-                                    <div class="cly-vue-eldatatable__table-page-selector">\
-                                        <el-select v-model="controlParams.page" size="mini">\
-                                            <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>\
-                                        </el-select>\
+                                    <div class="bu-level-item">\
+                                        <div class="cly-vue-eldatatable__table-page-selector">\
+                                            <el-select v-model="controlParams.page" size="mini">\
+                                                <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>\
+                                            </el-select>\
+                                        </div>\
                                     </div>\
-                                    <div class="cly-vue-eldatatable__table-nav-arrows">\
+                                    <div class="bu-level-item">\
+                                        of {{totalPages}} pages\
+                                    </div>\
+                                    <div class="bu-level-item">\
                                         <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\
+                                    </div>\
+                                    <div class="bu-level-item">\
                                         <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\
+                                    </div>\
+                                    <div class="bu-level-item">\
                                         <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\
+                                    </div>\
+                                    <div class="bu-level-item">\
                                         <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\
                                     </div>\
                                 </div>\
                             </div>\
-                            <div class="cly-vue-eldatatable__table-bottomline">\
+                            <div>\
                                 <slot name="bottomline" v-bind="commonScope"></slot>\
                             </div>\
                         </div>\

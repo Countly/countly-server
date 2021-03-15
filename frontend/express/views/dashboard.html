@@ -54,6 +54,7 @@
         <link rel="stylesheet" href="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/drop/drop-theme-countly.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/bulma/bulma-custom.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/styles/manifest.css?<%= countlyVersion %>" />
         <% if (stylesheets) { %>
 			<% for(var i=0, l=stylesheets.length; i<l; i++) {%>
         <link rel="stylesheet" href="<%- cdn %><%= stylesheets[i] %>?<%= countlyVersion %>" />
@@ -308,15 +309,15 @@
 		<div id="dashboards-main-view" class="main-view">
 			<div id="custom-dashboard"></div>
 		</div>
-		<div id="analytics-main-view" class="main-view">
-			<div id="sidebar">
+		<div id="analytics-main-view" class="main-view bu-columns bu-is-gapless">
+			<div id="sidebar" class="bu-column">
 				<div id="new-install-overlay"></div>
 				<div id="sidebar-menu">
                     <div id="default-type" class="sidebar-menu" style="display: none;"></div>
                 </div>
 				<div id="version-info"><%= countlyTypeName %></div>
 			</div>
-			<div id="content-container">
+			<div id="content-container" class="bu-column content-container">
 				<div id="content-top"></div>
 				<div id="content"></div>
 			</div>
