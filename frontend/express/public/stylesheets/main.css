@@ -4772,17 +4772,21 @@ p.error_message_div {
     top: -6px;
 }
 
+/*
 .routename-manageUsers .create-user-drawer .permission-column .countly-checkbox-native {
     top: -35px;
 }
+*/
 
 .routename-manageUsers .countly-checkbox-wrapper .fa-check {
     color: white;
 }
 
+/*
 .routename-manageUsers .mark-all .countly-checkbox-native {
     top: -28px;
 }
+*/
 
 .routename-manageUsers .create-user-drawer .permission-column .countly-checkbox-wrapper {
     margin-left: 25%;
@@ -5033,9 +5037,11 @@ p.error_message_div {
     top: -6px;
 }
 
+/*
 .routename-manageUsers .create-user-drawer #user-drawer-global-admin input {
     top: -35px;
 }
+*/
 
 .routename-manageUsers .create-user-drawer .show-tooltip {
     color: #c5c3c3;

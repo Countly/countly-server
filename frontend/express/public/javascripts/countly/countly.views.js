@@ -3257,10 +3257,7 @@ window.ManageUsersView = countlyView.extend({
     odd: true,
     appOptions: [],
     // TODO: don't rely plugins for features. change this section
-    features: {
-        "plugins": [],
-        "others": ["core", "events", "global_applications", "global_users", "global_jobs"]
-    },
+    features: [],
     saveUser: function() {
         var self = this;
 
@@ -3401,7 +3398,7 @@ window.ManageUsersView = countlyView.extend({
         self.userAppSelectors.push(userAppSelector);
 
         // render permission checkboxes for features/plugins
-        self.features.plugins.forEach(function(feature) {
+        self.features.forEach(function(feature) {
             $('#permission-table-' + index).append(countlyAuth.renderFeatureTemplate(feature, index));
             for (var i in types) {
                 $('#' + types[i][0] + '-' + feature + '-' + index).countlyCheckbox();
@@ -3411,6 +3408,7 @@ window.ManageUsersView = countlyView.extend({
     initialize: function() {
     },
     beforeRender: function() {
+        var self = this;
         this.appOptions = [];
         for (var app in countlyGlobal.apps) {
             this.appOptions.push({
@@ -3418,12 +3416,14 @@ window.ManageUsersView = countlyView.extend({
                 val: app
             });
         }
-        this.features.plugins = [];
-        for (var i = 0; i < countlyGlobal.plugins.length; i++) {
-            this.features.plugins.push(countlyGlobal.plugins[i].split("-").join(""))
-        }
 
-        this.features.plugins = this.features.plugins.sort();    
+        countlyAuth.initFeatures()
+            .then(function() {
+                self.features = countlyAuth.features;
+                self.features = this.features.sort();
+            })
+            .catch(function() {});
+
         if (this.template) {
             return true;
         }
@@ -3649,9 +3649,10 @@ window.ManageUsersView = countlyView.extend({
             Handle create new user button
         */
         $("#add-user-mgmt").on("click", function() {
-        	self.drawerMode = 'c';
+            self.drawerMode = 'c';
             self.userApps = [[]];
             self.adminApps = [];
+            $(".generate-password").click();
             var userCreateDrawer = $('.create-user-drawer');
             $('.create-user-drawer .discard-changes').hide();
             $('#create-user-drawer-title').html($.i18n.map['management-users.create-new-user']);
@@ -3831,13 +3832,12 @@ window.ManageUsersView = countlyView.extend({
                 dataType: "json",
                 success: function(response) {
                     var memberData = response[id];
-                    console.log(memberData.permission);
                     // step4: remove existing group input if exist and render again with correct data
                     $('#user-group-container').remove();
                     $('#new-user-group-select').remove();
                     $('.user-group-label').remove();
                     $(self).trigger('user-mgmt.user-selected', memberData);
-                    
+
                     // step5: fill form inputs with member values
                     $('.create-user-drawer').find('.full-name-text').val(memberData.full_name);
                     $('.create-user-drawer').find('.username-text').val(memberData.username);
@@ -3864,7 +3864,7 @@ window.ManageUsersView = countlyView.extend({
                         $('.create-user-drawer .add-new-permission-set').show();
                         $('.create-user-drawer .admin-access .app-selector').show();
                     }
-                    
+
                     // step7: show member image in drawer
                     $('#user-avatar-upload-drop').hide();
                     $('.create-user-drawer .img-preview').show();
@@ -4010,17 +4010,17 @@ window.ManageUsersView = countlyView.extend({
             var type = $(this).attr('id').split('-')[2];
 
             if ($('.create-user-drawer #mark-all-' + type + '-' + index).countlyCheckbox().get()) {
-                for (var i = 0; i < self.features.plugins.length; i++) {
-                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features.plugins[i] + '-' + index).countlyCheckbox().set(true);
-                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features.plugins[i] + '-' + index).countlyCheckbox().setDisabled();
+                for (var i = 0; i < self.features.length; i++) {
+                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
+                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().setDisabled();
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], true);
             }
             else {
-                for (var i = 0; i < self.features.plugins.length; i++) {
-                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features.plugins[i] + '-' + index).countlyCheckbox().set(false);
-                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features.plugins[i] + '-' + index).countlyCheckbox().unsetDisabled();
+                for (var i = 0; i < self.features.length; i++) {
+                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(false);
+                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().unsetDisabled();
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], false);
@@ -4028,7 +4028,7 @@ window.ManageUsersView = countlyView.extend({
         });
 
         $("#create-user-button").on("click", function() {
-        	$("#listof-apps").hide();
+            $("#listof-apps").hide();
             $(".row").removeClass("selected");
             $(".email-check.green-text").remove();
             $(".username-check.green-text").remove();
@@ -4039,11 +4039,12 @@ window.ManageUsersView = countlyView.extend({
             if (($('#new-user-group-select').length > 0 && $('#selected-new-user-group').val() !== "") || (typeof $('#selected-user-group').val() !== "undefined" && $('#selected-user-group').val() !== "")) {
                 isGroupSelected = true;
             }
-            
+
             self.memberModel.full_name = currUserDetails.find(".full-name-text").val();
             self.memberModel.username = currUserDetails.find(".username-text").val();
             self.memberModel.email = currUserDetails.find(".email-text").val();
             self.memberModel.global_admin = $('#user-drawer-global-admin').countlyCheckbox().get();
+            self.memberModel.password = $(".create-user-drawer #password-text").val();
 
             if (isGroupSelected) {
                 var selectedGroup;
@@ -4080,7 +4081,7 @@ window.ManageUsersView = countlyView.extend({
                     self.memberModel.permission._.a = self.adminApps;
                 }
             }
-            
+
             if (!self.memberModel.full_name.length) {
                 CountlyHelpers.notify({
                     type: 'warning',
@@ -4117,30 +4118,16 @@ window.ManageUsersView = countlyView.extend({
                     title: 'Validation error',
                     message: $.i18n.map['management-users.email-invalid-format']
                 });
-                return
+                return;
             }
-            
+
             if (!self.memberModel.global_admin) {
                 //self.memberModel.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
                 //self.memberModel.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
             }
 
             if (self.drawerMode === 'c') {
-				self.memberModel.password = currUserDetails.find(".password-text").val() || 'DummyPassword123+';
-
-				if (!self.memberModel.password.length) {
-	                currUserDetails.find(".password-text").after(reqSpan.clone());
-	            }
-	            else {
-	                $(".password-check").remove();
-	                var error = CountlyHelpers.validatePassword(self.memberModel.password);
-	                if (error) {
-	                    var invalidSpan = $("<span class='password-check red-text'>").html(error);
-	                    currUserDetails.find(".password-text").after(invalidSpan.clone());
-	                }
-	            }
-
-            	$.ajax({
+                $.ajax({
                     type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/create',
                     data: {
@@ -4148,7 +4135,7 @@ window.ManageUsersView = countlyView.extend({
                     },
                     dataType: "json",
                     success: function(member) {
-                    	CountlyHelpers.notify({
+                        CountlyHelpers.notify({
                             type: 'green',
                             delay: 3000,
                             title: jQuery.i18n.map['management-users.created'],
@@ -4162,7 +4149,7 @@ window.ManageUsersView = countlyView.extend({
                         if (isGroupSelected) {
                             groupsModel.saveUserGroup({ email: member.email, group_id: $('#selected-new-user-group').val() }, function(response) {
                                 app.activeView.render();
-                            });    
+                            });
                         }
                         else {
                             app.activeView.render();
@@ -4640,7 +4627,7 @@ window.ManageUsersView = countlyView.extend({
             $(".row").removeClass("selected");
         });
         $(".generate-password").off("click").on('click', function() {
-            $(this).parent().find(".password-text").val(CountlyHelpers.generatePassword(countlyGlobal.security.password_min));
+            $(".create-user-drawer #password-text").val(CountlyHelpers.generatePassword(countlyGlobal.security.password_min));
         });
 
         $(".change-password").off("click").on('click', function() {
