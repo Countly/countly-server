@@ -1926,10 +1926,10 @@ const processRequest = (params) => {
                     }
                     break;
                 case 'get_event_groups':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchEventGroups);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchEventGroups);
                     break;
                 case 'get_event_group':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchEventGroupById);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchEventGroupById);
                     break;
                 case 'events':
                     if (params.qstring.events) {
