@@ -912,7 +912,7 @@ window.starView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["report-manager.name"]
             }, {
                 "mData": function(row) {
-                    if ((!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) && !countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+                    if ((!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) && !countlyAuth.validateUpdate(self.featureName)) {
                         return (row.is_active) ? 'Active' : 'Deactive';
                     }
                     else {
@@ -1018,8 +1018,8 @@ window.starView = countlyView.extend({
                             + "<div class='edit-menu rating-feedback-menu' id='" + row._id + "'>"
                             + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + "><i class='fa fa-clipboard'></i>" + jQuery.i18n.map["common.copy-id"] + "</div>"
                             + "<div class='show-instructions item' data-id='" + row._id + "'" + "><i class='fa fa-eye'></i>" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
-                            + ((countlyAuth.validateUpdate(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) ? "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>" : "")
-                            + ((countlyAuth.validateDelete(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) ? "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>" : "")
+                            + ((countlyAuth.validateUpdate(self.featureName)) ? "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>" : "")
+                            + ((countlyAuth.validateDelete(self.featureName)) ? "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>" : "")
                             + "</div>"
                             + "</div>";
                     }
@@ -2226,7 +2226,7 @@ window.starView = countlyView.extend({
                 self.feedbackWidget.is_active = ($(this).attr('checked')) ? true : false;
             });
 
-            if (!countlyAuth.validateCreate(countlyGlobal.member, store.get('countly_active_app'), self.featureName)) {
+            if (!countlyAuth.validateCreate(self.featureName)) {
                 $('#create-feedback-widget-button').hide();
             }
         }
@@ -2307,20 +2307,22 @@ window.starView = countlyView.extend({
 });
 //register views
 app.starView = new starView();
-app.route("/analytics/star-rating", 'star', function() {
-    this.starView._tab = 'ratings';
-    this.renderWhenReady(this.starView);
-});
-app.route("/analytics/star-rating/:tab", 'star', function(tab) {
-    if (tab.length === 0) {
+if (countlyAuth.validateRead(app.starView.featureName)) {
+    app.route("/analytics/star-rating", 'star', function() {
         this.starView._tab = 'ratings';
-    }
-    else {
-        this.starView._tab = tab;
-    }
-    this.renderWhenReady(this.starView);
-});
+        this.renderWhenReady(this.starView);
+    });
 
+    app.route("/analytics/star-rating/:tab", 'star', function(tab) {
+        if (tab.length === 0) {
+            this.starView._tab = 'ratings';
+        }
+        else {
+            this.starView._tab = tab;
+        }
+        this.renderWhenReady(this.starView);
+    });
+}
 
 app.addPageScript("/manage/reports", function() {
     countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
@@ -2455,7 +2457,7 @@ app.addPageScript("/drill#", function() {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(countlyGlobal.member, store.get('countly_active_app'), app.starView.featureName)) {
+    if (countlyAuth.validateRead(app.starView.featureName)) {
         if (!$("#feedback-menu").length) {
             app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
         }
