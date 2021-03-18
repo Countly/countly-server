@@ -1,5 +1,6 @@
-/*global store, countlyCommon, moment, countlyView, $, countlyGlobal, T, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
+/*global store, countlyAuth, countlyCommon, moment, countlyView, $, countlyGlobal, T, jQuery, app, CountlyHelpers, Backbone, DBViewerView, CountlyDrop, countlyDBviewer*/
 window.DBViewerView = countlyView.extend({
+    featureName: 'dbviewer',
     initialize: function() {
         this.dbviewer_selected_app = "all";
         this.filter = (store.get("countly_collectionfilter")) ? store.get("countly_collectionfilter") : "{}";
@@ -1164,5 +1165,7 @@ app.route('/manage/db/indexes/:dbs/:collection', 'dbs', function(db, collection)
 });
 
 $(document).ready(function() {
-    app.addSubMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 50});
+    if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
+        app.addSubMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 50});
+    }
 });
