@@ -3,7 +3,10 @@ var common = require('../../../api/utils/common.js'),
     async = require('async'),
     moment = require('moment-timezone'),
     log = require('../../../api/utils/log')('reports:api'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'reports';
 
 (function() {
     plugins.register("/master", function() {
@@ -15,7 +18,6 @@ var common = require('../../../api/utils/common.js'),
 
     plugins.register("/o/reports", function(ob) {
         let paramsInstance = ob.params;
-        var validate = ob.validateUserForDataReadAPI;
         var paths = ob.paths;
         if (paramsInstance.qstring.args) {
             try {
@@ -28,7 +30,7 @@ var common = require('../../../api/utils/common.js'),
 
         switch (paths[3]) {
         case 'all':
-            validate(paramsInstance, function(params) {
+            validateRead(paramsInstance, FEATURE_NAME, function(params) {
                 common.db.collection('reports').find({user: common.db.ObjectID(params.member._id)}).toArray(function(err, result) {
                     var parallelTashs = [];
 
@@ -70,7 +72,6 @@ var common = require('../../../api/utils/common.js'),
 
     plugins.register("/i/reports", function(ob) {
         var paramsInstance = ob.params;
-        var validate = ob.validateUserForWriteAPI;
         var paths = ob.paths;
         if (paramsInstance.qstring.args) {
             try {
@@ -83,7 +84,8 @@ var common = require('../../../api/utils/common.js'),
 
         switch (paths[3]) {
         case 'create':
-            validate(function(params) {
+            validateCreate(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
                 var props = {};
                 props = params.qstring.args;
                 props.minute = (props.minute) ? parseInt(props.minute) : 0;
@@ -129,12 +131,12 @@ var common = require('../../../api/utils/common.js'),
                         }
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'update':
-            validate(function(params) {
+            validateUpdate(paramsInstance, FEATURE_NAME, function() {
                 var props = {};
-
+                var params = paramsInstance;
                 props = params.qstring.args;
 
                 var id = props._id;
@@ -182,10 +184,11 @@ var common = require('../../../api/utils/common.js'),
                         });
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'delete':
-            validate(function(params) {
+            validateDelete(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
                 var argProps = {
                         '_id': { 'required': true, 'type': 'String'}
                     },
@@ -208,10 +211,11 @@ var common = require('../../../api/utils/common.js'),
                         }
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'send':
-            validate(function(params) {
+            validateCreate(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
                 var argProps = {
                         '_id': { 'required': true, 'type': 'String'}
                     },
@@ -248,10 +252,11 @@ var common = require('../../../api/utils/common.js'),
                         });
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'preview':
-            validate(function(params) {
+            validateRead(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
                 var argProps = {
                         '_id': { 'required': true, 'type': 'String'}
                     },
@@ -288,10 +293,11 @@ var common = require('../../../api/utils/common.js'),
                         });
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'status':
-            validate(function(params) {
+            validateUpdate(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
                 const statusList = params.qstring.args;
 
                 var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
@@ -306,7 +312,7 @@ var common = require('../../../api/utils/common.js'),
                         common.returnMessage(params, 200, "Success");
                     });
                 }
-            }, paramsInstance);
+            });
             break;
         default:
             common.returnMessage(paramsInstance, 400, 'Invalid path');
