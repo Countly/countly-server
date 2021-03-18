@@ -1,18 +1,31 @@
 var common = require('../../../api/utils/common.js'),
+    log = common.log('dbviewer:api'),
     async = require('async'),
     plugins = require('../../pluginManager.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    {dbUserHasAccessToCollection, dbLoadEventsData} = require('../../../api/utils/rights.js'),
+    { dbUserHasAccessToCollection, dbLoadEventsData } = require('../../../api/utils/rights.js'),
+    { validateGlobalAdmin } = require('../../../api/utils/rights.js'),
     exported = {};
 
+var spawn = require('child_process').spawn,
+    child;
 (function() {
     plugins.register("/o/db", function(ob) {
-        var dbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler()};
+        var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
         var params = ob.params;
+        var paths = ob.paths;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
-
+        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+        if (paths[3]) {
+            switch (paths[3]) {
+            case 'mongotop': return validateUserForDataReadAPI(params, fetchMongoTop);
+            case 'mongostat': return validateUserForDataReadAPI(params, fetchMongoStat);
+            default: common.returnMessage(params, 404, 'Invalid endpoint');
+                break;
+            }
+        }
         /**
         * Get indexes
         **/
@@ -51,7 +64,7 @@ var common = require('../../../api/utils/common.js'),
                     params.qstring.document = common.db.ObjectID(params.qstring.document);
                 }
                 if (dbs[dbNameOnParam]) {
-                    dbs[dbNameOnParam].collection(params.qstring.collection).findOne({_id: params.qstring.document}, function(err, results) {
+                    dbs[dbNameOnParam].collection(params.qstring.collection).findOne({ _id: params.qstring.document }, function(err, results) {
                         if (!err) {
                             common.returnOutput(params, objectIdCheck(results) || {});
                         }
@@ -107,7 +120,7 @@ var common = require('../../../api/utils/common.js'),
                             return JSON.stringify(objectIdCheck(doc));
                         }
                     });
-                    var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*'};
+                    var headers = { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' };
                     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
                     var parts;
                     for (let i = 0; i < add_headers.length; i++) {
@@ -146,7 +159,7 @@ var common = require('../../../api/utils/common.js'),
         **/
         function dbGetDb(apps) {
             var lookup = {};
-            for (let i = 0; i < apps.length ;i++) {
+            for (let i = 0; i < apps.length; i++) {
                 lookup[apps[i]._id + ""] = apps[i].name;
             }
 
@@ -170,7 +183,7 @@ var common = require('../../../api/utils/common.js'),
                 function getCollections(name, callback) {
                     if (dbs[name]) {
                         dbs[name].collections(function(error, results) {
-                            var db = {name: name, collections: {}};
+                            var db = { name: name, collections: {} };
                             async.each(results, function(col, done) {
                                 if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
                                     dbUserHasAccessToCollection(params, col.collectionName, function(hasAccess) {
@@ -204,7 +217,7 @@ var common = require('../../../api/utils/common.js'),
         * */
         function aggregate(collection, aggregation) {
             if (params.qstring.iDisplayLength) {
-                aggregation.push({"$limit": parseInt(params.qstring.iDisplayLength)});
+                aggregation.push({ "$limit": parseInt(params.qstring.iDisplayLength) });
             }
             // check task is already running?
             taskManager.checkIfRunning({
@@ -212,7 +225,7 @@ var common = require('../../../api/utils/common.js'),
                 params: params
             }, function(task_id) {
                 if (task_id) {
-                    common.returnOutput(params, {task_id: task_id});
+                    common.returnOutput(params, { task_id: task_id });
                 }
                 else {
                     var taskCb = taskManager.longtask({
@@ -240,14 +253,14 @@ var common = require('../../../api/utils/common.js'),
                         },
                         outputData: function(aggregationErr, result) {
                             if (!aggregationErr) {
-                                common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result});
+                                common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result });
                             }
                             else {
                                 common.returnMessage(params, 500, aggregationErr);
                             }
                         }
                     });
-                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, {allowDiskUse: true}, taskCb);
+                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
                 }
             });
         }
@@ -366,7 +379,7 @@ var common = require('../../../api/utils/common.js'),
                             apps.push(common.db.ObjectID(params.member.user_of[i]));
                         }
                     }
-                    common.readBatcher.getMany("apps", {_id: {$in: apps}}, {}, (err, applications) => {
+                    common.readBatcher.getMany("apps", { _id: { $in: apps } }, {}, (err, applications) => {
                         if (err) {
                             console.error(err);
                         }
@@ -377,6 +390,67 @@ var common = require('../../../api/utils/common.js'),
         }, params);
         return true;
     });
+
+
+    /**
+  * Function to fetch mongotop data
+  * @param  {Object} params - params object
+  */
+    function fetchMongoTop(params) {
+        var dbParams = plugins.getDbConnectionParams('countly');
+        var args = constructDbArgs(dbParams);
+        validateGlobalAdmin(params, function() {
+            child = spawn('mongotop', args);
+            child.stdout.setEncoding('utf8');
+            child.stderr.setEncoding('utf8');
+            child.stdout.on('data', (data) => {
+                var dataArrays = data.split('\n').map(element => {
+                    return element.replace(/^\s+/, '').replace(/\s+/g, '|').split('|');
+                });
+                child.kill('SIGTERM');
+                common.returnOutput(params, dataArrays, true);
+            });
+            child.stderr.on('data', (data) => {
+                log.w(data);
+            });
+
+        });
+    }
+
+
+
+    /**
+  * Function to fetch mongostat data
+  * @param  {Object} params - params object
+  */
+    function fetchMongoStat(params) {
+        var dbParams = plugins.getDbConnectionParams('countly');
+        var args = constructDbArgs(dbParams);
+        validateGlobalAdmin(params, function() {
+            child = spawn('mongostat', args);
+            child.stdout.setEncoding('utf8');
+            child.stderr.setEncoding('utf8');
+
+            child.stdout.on('data', (data) => {
+                var dataArrays = data.split('\n').map(element => {
+                    var result = element.replace(/^\s+/, '').replace(/\s+/g, '~').split("~");
+                    if (result.length > 17) {
+                        var time = result.splice(-3);
+                        result.push(time.join(' '));
+                    }
+                    return result;
+                });
+                child.kill('SIGTERM');
+                common.returnOutput(params, dataArrays, true);
+                return;
+            });
+            child.stderr.on('data', (data) => {
+                log.w(data);
+            });
+
+        });
+    }
+
     var parseCollectionName = function parseCollectionName(name, apps, events, views) {
         var pretty = name;
 
@@ -427,6 +501,29 @@ var common = require('../../../api/utils/common.js'),
 
         return { name: name, pretty: pretty };
     };
+    /**
+* Function to construct args
+* @param  {Object} dbParams - dbParams object
+* @returns {Array} db connection params
+*/
+    function constructDbArgs(dbParams) {
+        var args = [];
+        for (var key in dbParams) {
+            if (key == 'db') {
+                continue;
+            }
+            else if (key == "host") {
+                var val = dbParams[key].split(':');
+                args.push("--" + 'host' + "=" + val[0]);
+                args.push("--" + 'port' + "=" + val[1]);
+            }
+            else {
+                args.push("--" + key + "=" + dbParams[key]);
+            }
+        }
+        return args;
+    }
+
     var checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
     var isObjectId = function(id) {
         if (typeof id === "undefined" || id === null) {

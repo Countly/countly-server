@@ -1,4 +1,4 @@
-/*global store, countlyCommon, countlyTaskManager, $, jQuery, app*/
+/*global store, countlyCommon, countlyGlobal, countlyTaskManager, $, jQuery, app*/
 (function(countlyDBviewer) {
 
     //Private Properties
@@ -99,7 +99,7 @@
                         app.recordEvent({
                             "key": "move-to-report-manager",
                             "count": 1,
-                            "segmentation": {type: "dbviewer"}
+                            "segmentation": { type: "dbviewer" }
                         });
                         countlyTaskManager.monitor(json.aaData.task_id);
                         callback(false);
@@ -137,5 +137,38 @@
 
     countlyDBviewer.getDocument = function() {
         return _document;
+    };
+    countlyDBviewer.getMongoTopData = function(callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + '/o/db/mongotop?api_key=' + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&timestamp=" + Date.now(),
+            success: function(json) {
+                if (callback) {
+                    callback(json);
+                }
+            },
+            error: function() {
+                if (callback) {
+                    callback(false);
+                }
+            }
+        });
+    };
+    countlyDBviewer.getMongoStatData = function(callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + '/o/db/mongostat?api_key=' + countlyGlobal.member.api_key +
+                "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&timestamp=" + Date.now(),
+            success: function(json) {
+                if (callback) {
+                    callback(json);
+                }
+            },
+            error: function() {
+                if (callback) {
+                    callback(false);
+                }
+            }
+        });
     };
 }(window.countlyDBviewer = window.countlyDBviewer || {}, jQuery));
