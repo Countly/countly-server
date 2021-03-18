@@ -8,7 +8,8 @@
     jQuery,
     $,
     app,
-    T
+    T,
+    countlyAuth
  */
 
 
@@ -75,6 +76,7 @@ var dict = {
 
 
 window.AlertsView = countlyView.extend({
+    featureName: 'alerts',
     initialize: function() {
     },
     statusChanged: {},
@@ -757,15 +759,14 @@ window.AlertsView = countlyView.extend({
 
 app.alertsView = new window.AlertsView();
 
-if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+if (countlyAuth.validateRead(app.alertsView.featureName)) {
     app.route('/manage/alerts', 'alerts', function() {
         this.renderWhenReady(this.alertsView);
     });
 }
 
 $(document).ready(function() {
-    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+    if (countlyAuth.validateRead(app.alertsView.featureName)) {
         app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
     }
-
 });
