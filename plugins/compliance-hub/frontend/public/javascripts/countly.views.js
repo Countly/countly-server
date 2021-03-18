@@ -1,5 +1,6 @@
-/*global countlyView,countlyDeviceDetails,countlyAppUsers,countlyDevice,$,countlyConsentManager,countlyGlobal,countlyCommon,moment,CountlyHelpers,jQuery,app,ConsentManagementView,T,Backbone,countlyUserdata */
+/*global countlyView,countlyAuth,countlyDeviceDetails,countlyAppUsers,countlyDevice,$,countlyConsentManager,countlyGlobal,countlyCommon,moment,CountlyHelpers,jQuery,app,ConsentManagementView,T,Backbone,countlyUserdata */
 window.ConsentManagementView = countlyView.extend({
+    featureName: 'compliance_hub',
     curSegment: "",
     initialize: function() {},
     beforeRender: function() {
@@ -372,17 +373,17 @@ window.ConsentManagementView = countlyView.extend({
                     if (data.appUserExport.slice(-7) === ".tar.gz") {
                         $(".cly-button-menu a.export-download").css("display", "block");
                     }
-                    if (have_rights) {
+                    if (have_rights || countlyAuth.validateDelete(self.featureName)) {
                         $(".cly-button-menu a.export-delete").css("display", "block");
                     }
                 }
                 else {
-                    if (have_rights) {
+                    if (have_rights || countlyAuth.validateRead(self.featureName)) {
                         $(".cly-button-menu a.export-user").css("display", "block");
                     }
                 }
 
-                if (have_rights) {
+                if (have_rights || countlyAuth.validateDelete(self.featureName)) {
                     $(".cly-button-menu a.delete-user").css("display", "block");
                 }
             });
@@ -608,7 +609,7 @@ app.route("/manage/compliance", "compliance", function() {
 });
 
 app.addPageScript("/users/#", function() {
-    if (app.activeView && app.activeView.tabs) {
+    if (app.activeView && app.activeView.tabs && countlyAuth.validateRead(self.featureName)) {
         var formatConsent = function(d) {
             // `d` is the original data object for the row
             var str = '';
@@ -765,5 +766,8 @@ app.addPageScript("/users/#", function() {
 });
 
 $(document).ready(function() {
-    app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 20});
+    if (countlyAuth.validateRead(self.featureName)) {
+        app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 20});
+    }
+
 });
