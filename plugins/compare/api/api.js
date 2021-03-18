@@ -7,7 +7,10 @@ var exported = {},
     fetch = require('../../../api/parts/data/fetch.js'),
     crypto = require('crypto'),
     async = require('async'),
-    log = common.log('compare:api');
+    log = common.log('compare:api'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'compare';
 
 (function() {
 
@@ -31,7 +34,7 @@ var exported = {},
             return common.returnMessage(params, 400, 'Maximum length for parameter events is 20');
         }
 
-        ob.validateUserForDataReadAPI(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             var eventKeysArr = params.qstring.events;
             var collectionNames = [];
 
@@ -101,7 +104,7 @@ var exported = {},
         }
         params.qstring.app_id = appsToFetch[0];
 
-        ob.validateUserForDataReadAPI(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             if (!params.member.global_admin) {
                 for (var i = 0; i < appsToFetch.length; i++) {
                     if (params.member && params.member.user_of) {
