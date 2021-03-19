@@ -318,9 +318,11 @@ window.DBViewerView = countlyView.extend({
             $('#show-mongotop-mongostat-buttons').show();
         }
         $("#show-mongostat").on("click", function() {
+            app.navigate('#/manage/mongostat', false);
             self.getMongoStatResults();
         });
         $("#show-mongotop").on("click", function() {
+            app.navigate('#/manage/mongotop', false);
             self.getMongoTopResults();
         });
     },
@@ -328,7 +330,6 @@ window.DBViewerView = countlyView.extend({
         var self = this;
         countlyDBviewer.getMongoTopData(function(res) {
             if (res) {
-                app.navigate('#/manage/mongotop', false);
                 self.renderMongoTopResults(res);
             }
         });
@@ -337,7 +338,6 @@ window.DBViewerView = countlyView.extend({
         var self = this;
         countlyDBviewer.getMongoStatData(function(res) {
             if (res) {
-                app.navigate('#/manage/mongostat', false);
                 self.renderMongoStatResults(res);
             }
         });

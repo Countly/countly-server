@@ -17,11 +17,10 @@ var spawn = require('child_process').spawn,
         var params = ob.params;
         var paths = ob.paths;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
         if (paths[3]) {
             switch (paths[3]) {
-            case 'mongotop': return validateUserForDataReadAPI(params, fetchMongoTop);
-            case 'mongostat': return validateUserForDataReadAPI(params, fetchMongoStat);
+            case 'mongotop': return validateGlobalAdmin(params, fetchMongoTop);
+            case 'mongostat': return validateGlobalAdmin(params, fetchMongoStat);
             default: common.returnMessage(params, 404, 'Invalid endpoint');
                 break;
             }
@@ -399,26 +398,23 @@ var spawn = require('child_process').spawn,
     function fetchMongoTop(params) {
         var dbParams = plugins.getDbConnectionParams('countly');
         var args = constructDbArgs(dbParams);
-        validateGlobalAdmin(params, function() {
-            child = spawn('mongotop', args);
-            child.stdout.setEncoding('utf8');
-            child.stderr.setEncoding('utf8');
-            child.stdout.on('data', (data) => {
-                var dataArrays = data.split('\n').map(element => {
-                    return element.replace(/^\s+/, '').replace(/\s+/g, '|').split('|');
-                });
-                for (var i = dataArrays.length - 1; i >= 0; i--) {
-                    if (dataArrays[i].length === 1 && dataArrays[i][0] === "") {
-                        dataArrays.pop();
-                    }
+        child = spawn('mongotop', args);
+        child.stdout.setEncoding('utf8');
+        child.stderr.setEncoding('utf8');
+        child.stdout.on('data', (data) => {
+            var dataArrays = data.split('\n').map(element => {
+                return element.replace(/^\s+/, '').replace(/\s+/g, '|').split('|');
+            });
+            for (var i = dataArrays.length - 1; i >= 0; i--) {
+                if (dataArrays[i].length === 1 && dataArrays[i][0] === "") {
+                    dataArrays.pop();
                 }
-                child.kill('SIGTERM');
-                common.returnOutput(params, dataArrays, true);
-            });
-            child.stderr.on('data', (data) => {
-                log.w(data);
-            });
-
+            }
+            child.kill('SIGTERM');
+            common.returnOutput(params, dataArrays, true);
+        });
+        child.stderr.on('data', (data) => {
+            log.w(data);
         });
     }
 
@@ -431,34 +427,33 @@ var spawn = require('child_process').spawn,
     function fetchMongoStat(params) {
         var dbParams = plugins.getDbConnectionParams('countly');
         var args = constructDbArgs(dbParams);
-        validateGlobalAdmin(params, function() {
-            child = spawn('mongostat', args);
-            child.stdout.setEncoding('utf8');
-            child.stderr.setEncoding('utf8');
+        child = spawn('mongostat', args);
+        child.stdout.setEncoding('utf8');
+        child.stderr.setEncoding('utf8');
 
-            child.stdout.on('data', (data) => {
-                var dataArrays = data.split('\n').map(element => {
-                    var result = element.replace(/^\s+/, '').replace(/\s+/g, '~').split("~");
-                    if (result.length > 17) {
-                        var time = result.splice(-3);
-                        result.push(time.join(' '));
-                    }
-                    return result;
-                });
-                for (var i = dataArrays.length - 1; i >= 0; i--) {
-                    if (dataArrays[i].length === 1 && dataArrays[i][0] === "") {
-                        dataArrays.pop();
-                    }
+        child.stdout.on('data', (data) => {
+            var dataArrays = data.split('\n').map(element => {
+                var result = element.replace(/^\s+/, '').replace(/\s+/g, '~').split("~");
+                if (result.length > 17) {
+                    var time = result.splice(-3);
+                    result.push(time.join(' '));
                 }
-                child.kill('SIGTERM');
-                common.returnOutput(params, dataArrays, true);
-                return;
+                return result;
             });
-            child.stderr.on('data', (data) => {
-                log.w(data);
-            });
-
+            for (var i = dataArrays.length - 1; i >= 0; i--) {
+                if (dataArrays[i].length === 1 && dataArrays[i][0] === "") {
+                    dataArrays.pop();
+                }
+            }
+            child.kill('SIGTERM');
+            common.returnOutput(params, dataArrays, true);
+            return;
         });
+        child.stderr.on('data', (data) => {
+            log.w(data);
+        });
+
+
     }
 
     var parseCollectionName = function parseCollectionName(name, apps, events, views) {
@@ -519,10 +514,10 @@ var spawn = require('child_process').spawn,
     function constructDbArgs(dbParams) {
         var args = [];
         for (var key in dbParams) {
-            if (key == 'db') {
+            if (key === 'db') {
                 continue;
             }
-            else if (key == "host") {
+            else if (key === "host") {
                 var val = dbParams[key].split(':');
                 args.push("--" + 'host' + "=" + val[0]);
                 args.push("--" + 'port' + "=" + val[1]);

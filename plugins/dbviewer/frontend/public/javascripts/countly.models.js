@@ -141,7 +141,12 @@
     countlyDBviewer.getMongoTopData = function(callback) {
         return $.ajax({
             type: "GET",
-            url: countlyCommon.API_URL + '/o/db/mongotop?api_key=' + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&timestamp=" + Date.now(),
+            url: countlyCommon.API_URL + '/o/db/mongotop',
+            data: {
+                "api_key": countlyGlobal.member.api_key,
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "timestamp": Date.now()
+            },
             success: function(json) {
                 if (callback) {
                     callback(json);
@@ -157,8 +162,12 @@
     countlyDBviewer.getMongoStatData = function(callback) {
         return $.ajax({
             type: "GET",
-            url: countlyCommon.API_URL + '/o/db/mongostat?api_key=' + countlyGlobal.member.api_key +
-                "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&timestamp=" + Date.now(),
+            url: countlyCommon.API_URL + '/o/db/mongostat',
+            data: {
+                "api_key": countlyGlobal.member.api_key,
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "timestamp": Date.now()
+            },
             success: function(json) {
                 if (callback) {
                     callback(json);
