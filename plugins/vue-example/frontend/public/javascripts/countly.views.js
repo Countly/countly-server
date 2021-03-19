@@ -248,9 +248,7 @@
                     },
                     toolbox: {
                         feature: {
-                            dataZoom: {
-                                yAxisIndex: 'none'
-                            },
+                            dataZoom: {},
                             restore: {},
                             saveAsImage: { show: true }
                         }
@@ -264,14 +262,28 @@
                         type: 'value',
                         boundaryGap: [0, '100%']
                     },
-                    dataZoom: [{
-                        type: 'inside',
-                        start: 0,
-                        end: 10
-                    }, {
-                        start: 0,
-                        end: 10
-                    }],
+                    dataZoom: [
+                        {
+                            type: 'slider',
+                            xAxisIndex: 0,
+                            filterMode: 'none'
+                        },
+                        {
+                            type: 'slider',
+                            yAxisIndex: 0,
+                            filterMode: 'none'
+                        },
+                        {
+                            type: 'inside',
+                            xAxisIndex: 0,
+                            filterMode: 'none'
+                        },
+                        {
+                            type: 'inside',
+                            yAxisIndex: 0,
+                            filterMode: 'none'
+                        }
+                    ],
                     series: [
                         {
                             name: 'Random',
