@@ -13,7 +13,9 @@ var exported = {},
 const FEATURE_NAME = 'compare';
 
 (function() {
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register('/o/compare/events', function(ob) {
         var params = ob.params;
 

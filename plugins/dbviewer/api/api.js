@@ -7,9 +7,12 @@ var common = require('../../../api/utils/common.js'),
     { dbUserHasAccessToCollection, dbLoadEventsData, validateUser } = require('../../../api/utils/rights.js'),
     exported = {};
 
-//const FEATURE_NAME = 'dbviewer';
+const FEATURE_NAME = 'dbviewer';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/o/db", function(ob) {
         var dbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler()};
         var params = ob.params;

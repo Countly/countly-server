@@ -9,6 +9,9 @@ var plugin = {},
 const FEATURE_NAME = 'compliance_hub';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     //write api call
     plugins.register("/sdk/user_properties", function(ob) {
         var params = ob.params;

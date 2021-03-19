@@ -40,6 +40,10 @@ const PUSH_CACHE_GROUP = 'P';
         common.dbUniqueMap.users.push(creds.DB_MAP['messaging-enabled']);
     }
 
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
     plugins.register('/worker', function() {
         setUpCommons();
 

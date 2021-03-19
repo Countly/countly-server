@@ -52,6 +52,9 @@ const FEATURE_NAME = 'alerts';
         });
     }
 
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
 
     plugins.register("/master", function() {
         loadJobs();

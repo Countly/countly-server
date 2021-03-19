@@ -42,6 +42,9 @@ plugins.setConfigs("crashes", {
  */
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/master", function() {
         fs.chmod(path.resolve(__dirname + "/../bin/minidump_stackwalk"), 0o744, function(err) {
             if (err && !process.env.COUNTLY_CONTAINER) {
