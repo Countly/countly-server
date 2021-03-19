@@ -9,8 +9,8 @@ window.DBViewerView = countlyView.extend({
     beforeRender: function() {
         var self = this;
         return $.when(
-            T.render('/dashboards/templates/widgets/table.html', function(src) {
-                self.tableWidgetTemplate = src;
+            T.render('/dbviewer/templates/table.html', function(src) {
+                self.tableDbviewerTemplate = src;
             }),
             T.render('/dbviewer/templates/dbviewer.html', function(src) {
                 self.template = src;
@@ -328,6 +328,7 @@ window.DBViewerView = countlyView.extend({
         var self = this;
         countlyDBviewer.getMongoTopData(function(res) {
             if (res) {
+                app.navigate('#/manage/mongotop', false);
                 self.renderMongoTopResults(res);
             }
         });
@@ -336,6 +337,7 @@ window.DBViewerView = countlyView.extend({
         var self = this;
         countlyDBviewer.getMongoStatData(function(res) {
             if (res) {
+                app.navigate('#/manage/mongostat', false);
                 self.renderMongoStatResults(res);
             }
         });
@@ -394,11 +396,9 @@ window.DBViewerView = countlyView.extend({
     refresh: function() {
         var self = this;
         if (self.mongotop) {
-            self.renderMain();
             self.getMongoTopResults();
         }
         else if (self.mongostat) {
-            self.renderMain();
             self.getMongoStatResults();
         }
     },
@@ -451,18 +451,16 @@ window.DBViewerView = countlyView.extend({
         var tableData = $('#mongotop-mongostat-display-area');
         tableData.html("");
         dataArrays.shift();
-        var $widget = $(self.tableWidgetTemplate({
+
+        var $table = $(self.tableDbviewerTemplate({
             title: 'MongoStat',
             cols: cols,
             rows: dataArrays
         }));
-        tableData.append($widget.html());
+        tableData.append($table.html());
         tableData.show();
-        $('#mongotop-mongostat-display-area>.table>.app').hide();
-        $('.dbviewer-collections').append('</div>');
         $('.dbviewer-aggregate').hide();
         $('#show-mongotop-mongostat-buttons').show();
-        app.navigate('#/manage/mongostat', false);
     },
     renderMongoTopResults: function(data) {
         var self = this;
@@ -476,19 +474,16 @@ window.DBViewerView = countlyView.extend({
         tableData.html("");
         dataArrays.shift();
 
-        var $widget = $(self.tableWidgetTemplate({
+        var $table = $(self.tableDbviewerTemplate({
             title: 'MongoTop',
             cols: cols,
             rows: dataArrays
         }));
 
-        tableData.append($widget.html());
+        tableData.append($table.html());
         tableData.show();
-        $('#mongotop-mongostat-display-area>.table>.app').hide();
-        $('.dbviewer-collections').append('</div>');
         $('.dbviewer-aggregate').hide();
         $('#show-mongotop-mongostat-buttons').show();
-        app.navigate('#/manage/mongotop', false);
     },
     renderDb: function() {
         $('.dbviewer-back-button').show();

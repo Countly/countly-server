@@ -407,6 +407,11 @@ var spawn = require('child_process').spawn,
                 var dataArrays = data.split('\n').map(element => {
                     return element.replace(/^\s+/, '').replace(/\s+/g, '|').split('|');
                 });
+                for (var i = dataArrays.length - 1; i >= 0; i--) {
+                    if (dataArrays[i].length === 1 && dataArrays[i][0] === "") {
+                        dataArrays.pop();
+                    }
+                }
                 child.kill('SIGTERM');
                 common.returnOutput(params, dataArrays, true);
             });
@@ -440,6 +445,11 @@ var spawn = require('child_process').spawn,
                     }
                     return result;
                 });
+                for (var i = dataArrays.length - 1; i >= 0; i--) {
+                    if (dataArrays[i].length === 1 && dataArrays[i][0] === "") {
+                        dataArrays.pop();
+                    }
+                }
                 child.kill('SIGTERM');
                 common.returnOutput(params, dataArrays, true);
                 return;
