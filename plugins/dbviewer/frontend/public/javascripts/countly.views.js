@@ -453,7 +453,7 @@ window.DBViewerView = countlyView.extend({
         dataArrays.shift();
 
         var $table = $(self.tableDbviewerTemplate({
-            title: 'MongoStat',
+            title: 'Mongostat',
             cols: cols,
             rows: dataArrays
         }));
@@ -475,7 +475,7 @@ window.DBViewerView = countlyView.extend({
         dataArrays.shift();
 
         var $table = $(self.tableDbviewerTemplate({
-            title: 'MongoTop',
+            title: 'Mongotop',
             cols: cols,
             rows: dataArrays
         }));
