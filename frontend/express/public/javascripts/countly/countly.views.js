@@ -4044,7 +4044,9 @@ window.ManageUsersView = countlyView.extend({
             self.memberModel.username = currUserDetails.find(".username-text").val();
             self.memberModel.email = currUserDetails.find(".email-text").val();
             self.memberModel.global_admin = $('#user-drawer-global-admin').countlyCheckbox().get();
-            self.memberModel.password = $(".create-user-drawer #password-text").val();
+            if (self.drawerMode === 'c') {
+                self.memberModel.password = $(".create-user-drawer #password-text").val();
+            }
 
             if (isGroupSelected) {
                 var selectedGroup;
