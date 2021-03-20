@@ -144,8 +144,7 @@
             url: countlyCommon.API_URL + '/o/db/mongotop',
             data: {
                 "api_key": countlyGlobal.member.api_key,
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "timestamp": Date.now()
+                "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 if (callback) {
@@ -165,8 +164,7 @@
             url: countlyCommon.API_URL + '/o/db/mongostat',
             data: {
                 "api_key": countlyGlobal.member.api_key,
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "timestamp": Date.now()
+                "app_id": countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 if (callback) {
