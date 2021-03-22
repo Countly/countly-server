@@ -1031,7 +1031,6 @@ a.json-placeholder:hover {
 .mongostat-mongotop-table {
   width: 100%;
   border-radius: 2px;
-  border: 1px solid #D0D0D0;  
 }
 
 .mongostat-mongotop-table-data {
@@ -1048,4 +1047,7 @@ a.json-placeholder:hover {
 
 .mongotop-mongostat-table-wrapper {
   overflow-x: auto;
+  border-left: 1px solid #D0D0D0;
+  border-right: 1px solid #D0D0D0;
+  border-bottom: 1px solid #D0D0D0;
 }
