@@ -5,30 +5,58 @@
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
+    var BufferedFormMixin = {
+        props: {
+            initialEditedObject: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            beforeCopyFn: {type: Function}
+        },
+        data: function() {
+            return {
+                editedObject: this.copyOfEdited()
+            }
+        },
+        watch: {
+            initialEditedObject: function() {
+                this.editedObject = this.copyOfEdited();
+                this.reset();
+                this.$emit("copy", this.editedObject);
+            }
+        },
+        methods: {
+            copyOfEdited: function() {
+                var copied = JSON.parse(JSON.stringify(this.initialEditedObject));
+                if (this.beforeCopyFn) {
+                    return this.beforeCopyFn(copied);
+                }
+                else {
+                    return copied;
+                }
+            }
+        }
+    }
+
     Vue.component("cly-drawer", countlyBaseComponent.extend(
         // @vue/component
         {
             inheritAttrs: false,
             mixins: [
-                _mixins.i18n
+                _mixins.i18n,
+                BufferedFormMixin
             ],
             props: {
                 isOpened: {type: Boolean, required: true},
-                initialEditedObject: {
-                    type: Object,
-                    default: function() {
-                        return {};
-                    }
-                },
                 name: {type: String, required: true},
                 title: {type: String, required: true},
                 saveButtonLabel: {type: String, required: true, default: ""},
-                beforeCopyFn: {type: Function},
                 closeFn: {type: Function}
             },
             data: function() {
                 return {
-                    editedObject: this.copyOfEdited(),
                     currentStepIndex: 0,
                     stepContents: [],
                     sidecarContents: [],
@@ -92,11 +120,6 @@
                 }
             },
             watch: {
-                initialEditedObject: function() {
-                    this.editedObject = this.copyOfEdited();
-                    this.reset();
-                    this.$emit("copy", this.editedObject);
-                },
                 isOpened: function(newState) {
                     if (!newState) {
                         this.reset();
@@ -123,15 +146,6 @@
                     this.$emit("close", this.name);
                     if (this.closeFn) {
                         this.closeFn();
-                    }
-                },
-                copyOfEdited: function() {
-                    var copied = JSON.parse(JSON.stringify(this.initialEditedObject));
-                    if (this.beforeCopyFn) {
-                        return this.beforeCopyFn(copied);
-                    }
-                    else {
-                        return copied;
                     }
                 },
                 setStep: function(newIndex) {
