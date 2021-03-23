@@ -4009,19 +4009,19 @@ window.ManageUsersView = countlyView.extend({
         $('body').off('click', '.create-user-drawer .mark-all').on('click', '.create-user-drawer .mark-all', function() {
             var index = $(this).attr('id').split('-')[3];
             var type = $(this).attr('id').split('-')[2];
-
+            
             if ($('.create-user-drawer #mark-all-' + type + '-' + index).countlyCheckbox().get()) {
                 for (var i = 0; i < self.features.length; i++) {
-                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
-                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().setDisabled();
+                   $('#' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
+                   $('#' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().setDisabled();
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], true);
             }
             else {
-                for (var i = 0; i < self.features.length; i++) {
-                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(false);
-                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().unsetDisabled();
+                for (var j = 0; j < self.features.length; j++) {
+                   $('#' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().set(false);
+                   $('#' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().unsetDisabled();
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], false);
