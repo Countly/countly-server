@@ -1,6 +1,7 @@
-/*global countlyAnalyticsAPI, CountlyHelpers, countlyView, _, WebDashboardView, countlyLocation, countlyTotalUsers, countlySources, countlyWebDashboard, countlyCommon, countlyGlobal, countlySession, Handlebars, app, $, jQuery*/
+/*global countlyAnalyticsAPI, countlyAuth, CountlyHelpers, countlyView, _, WebDashboardView, countlyLocation, countlyTotalUsers, countlySources, countlyWebDashboard, countlyCommon, countlyGlobal, countlySession, Handlebars, app, $, jQuery*/
 
 window.WebDashboardView = countlyView.extend({
+    featureName: 'web',
     selectedView: "#draw-total-sessions",
     selectedMap: "#map-list-sessions",
     initialize: function() {
@@ -504,18 +505,22 @@ app.addAppManagementSwitchCallback(function(appId, type) {
     }
 });
 
+app.webDashboardView = new WebDashboardView();
+
 $(document).ready(function() {
-    app.addSubMenuForType("web", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-device_type", url: "#/analytics/device_type", text: "device_type.title", priority: 45});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
-    app.addSubMenuForType("web", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
-    app.addSubMenuForType("web", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
-    app.addSubMenuForType("web", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
+    if (countlyAuth.validateRead(app.webDashboardView.featureName)) {
+        app.addSubMenuForType("web", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-device_type", url: "#/analytics/device_type", text: "device_type.title", priority: 45});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
+        app.addSubMenuForType("web", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
+        app.addSubMenuForType("web", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
+        app.addSubMenuForType("web", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
+    }
 
     app.addAppSwitchCallback(function(appId) {
         if (countlyGlobal.apps[appId].type === "web") {
