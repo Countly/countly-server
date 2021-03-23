@@ -1,6 +1,7 @@
-/*global countlyPopulator, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, T, jQuery, PopulatorView, CountlyHelpers*/
+/*global countlyPopulator, countlyAuth, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, T, jQuery, PopulatorView, CountlyHelpers*/
 
 window.PopulatorView = countlyView.extend({
+    featureName: 'populator',
     _tab: 'populator',
     templateTable: undefined,
     templateId: undefined,
@@ -72,25 +73,20 @@ window.PopulatorView = countlyView.extend({
 
         columnsDefine.push({
             mData: function(row) {
-                if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
-                    return '';
-                }
-                else {
-                    var editMenu = "<div class='populator-template-options-item options-item' data-id='" + row._id + "'>" +
+                var editMenu = "<div class='populator-template-options-item options-item' data-id='" + row._id + "'>" +
                         "<div class='edit-icon'></div>" +
                         "<div class='edit-menu populator-template-menu'>";
 
-                    if (row.isDefault) {
-                        editMenu += "<div class='duplicate-populator-template item' data-localize='populator.duplicate-template'><i class='fa fa-clone'></i>" + $.i18n.map["populator.duplicate-template"] + "</div>";
-                    }
-                    else {
-                        editMenu += "<div class='edit-populator-template item' data-localize='populator.edit-template'><i class='fa fa-pencil'></i>" + $.i18n.map["populator.edit-template"] + "</div>" +
-                            "<div class='duplicate-populator-template item' data-localize='populator.duplicate-template'><i class='fa fa-clone'></i>" + $.i18n.map["populator.duplicate-template"] + "</div>" +
-                            "<div class='delete-populator-template item' data-localize='populator.delete-template'><i class='fa fa-trash'></i>" + $.i18n.map["populator.delete-template"] + "</div>";
-                    }
-
-                    editMenu += "</div></div>";
+                if (row.isDefault && countlyAuth.validateCreate(self.featureName)) {
+                    editMenu += "<div class='duplicate-populator-template item' data-localize='populator.duplicate-template'><i class='fa fa-clone'></i>" + $.i18n.map["populator.duplicate-template"] + "</div>";
                 }
+                else {
+                    editMenu += (countlyAuth.validateUpdate(self.featureName) ? "<div class='edit-populator-template item' data-localize='populator.edit-template'><i class='fa fa-pencil'></i>" + $.i18n.map["populator.edit-template"] + "</div>" : "") +
+                        (countlyAuth.validateCreate(self.featureName) ? "<div class='duplicate-populator-template item' data-localize='populator.duplicate-template'><i class='fa fa-clone'></i>" + $.i18n.map["populator.duplicate-template"] + "</div>" : "") +
+                        (countlyAuth.validateDelete(self.featureName) ? "<div class='delete-populator-template item' data-localize='populator.delete-template'><i class='fa fa-trash'></i>" + $.i18n.map["populator.delete-template"] + "</div>" : "");
+                }
+
+                editMenu += "</div></div>";
 
                 return editMenu;
             },
@@ -461,7 +457,7 @@ window.PopulatorView = countlyView.extend({
 
         $(this.el).html(this.template(this.templateData));
 
-        if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
+        if (!countlyAuth.validateCreate('populator')) {
             $("#create-populator-template-button").hide();
         }
         else {
@@ -599,6 +595,10 @@ window.PopulatorView = countlyView.extend({
         /*if (this.state === "/autostart") {
             $("#start-populate").click();
         }*/
+        if (!countlyAuth.validateCreate(self.featureName)) {
+            $('#populator-tab').hide();
+            $('#create-populator-template-button').hide();
+        }
     },
     refresh: function() {}
 });
@@ -635,22 +635,24 @@ app.addPageScript("/manage/apps", function() {
         '<div class="clear:both"></div><br>' +
         '</div>';
 
-    $("#add-new-app table .table-add").before(populateApp);
-    $('#save-first-app-add').before(populateFirstApp);
+    if (countlyAuth.validateRead(app.populatorView.featureName)) {
+        $("#add-new-app table .table-add").before(populateApp);
+        $('#save-first-app-add').before(populateFirstApp);
 
-    var saveBtn = store.get('first_app') ? '#save-first-app-add' : '#save-app-add';
-    $(saveBtn).click(function() {
-        var isFirstApp = store.get('first_app'),
-            isFirstAppPopulateChecked = $("#add-first-app #populate-first-app-after").is(':checked'),
-            isNewAppPopulateChecked = $("#add-new-app table #populate-app-after").is(':checked');
+        var saveBtn = store.get('first_app') ? '#save-first-app-add' : '#save-app-add';
+        $(saveBtn).click(function() {
+            var isFirstApp = store.get('first_app'),
+                isFirstAppPopulateChecked = $("#add-first-app #populate-first-app-after").is(':checked'),
+                isNewAppPopulateChecked = $("#add-new-app table #populate-app-after").is(':checked');
 
-        if ((isFirstApp && isFirstAppPopulateChecked) || (!isFirstApp && isNewAppPopulateChecked)) {
-            start_populating = true;
-            setTimeout(function() {
-                start_populating = false;
-            }, 5000);
-        }
-    });
+            if ((isFirstApp && isFirstAppPopulateChecked) || (!isFirstApp && isNewAppPopulateChecked)) {
+                start_populating = true;
+                setTimeout(function() {
+                    start_populating = false;
+                }, 5000);
+            }
+        });
+    }
 });
 
 app.addAppManagementSwitchCallback(function() {
@@ -670,8 +672,9 @@ $(document).ready(function() {
     if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
         style = "";
     }
-    app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.title", priority: 70, classes: "populator-menu", style: style});
-
+    if (countlyAuth.validateRead(app.populatorView.featureName)) {
+        app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.title", priority: 70, classes: "populator-menu", style: style});
+    }
     //listen for UI app change
     app.addAppSwitchCallback(function(appId) {
         if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[appId]) {

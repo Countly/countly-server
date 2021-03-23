@@ -451,7 +451,7 @@ window.component('push.dash', function (dash) {
             m.component(components.widget, {
                 header: {
                     title: 'pu.dash.users',
-                    view: (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) ?
+                    view: (countlyAuth.validateCreate('push')) ?
                         [
                             m('div', {
                                 style: {

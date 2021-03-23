@@ -912,7 +912,7 @@ window.starView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["report-manager.name"]
             }, {
                 "mData": function(row) {
-                    if ((!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) && !countlyAuth.validateUpdate(self.featureName)) {
+                    if (!countlyAuth.validateUpdate(self.featureName)) {
                         return (row.is_active) ? 'Active' : 'Deactive';
                     }
                     else {
@@ -1009,20 +1009,15 @@ window.starView = countlyView.extend({
             }];
             columnsDefine.push({
                 "mData": function(row) {
-                    if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
-                        return '';
-                    }
-                    else {
-                        return "<div class='feedback-options-item options-item'>"
-                            + "<div class='edit' data-id='" + row._id + "'></div>"
-                            + "<div class='edit-menu rating-feedback-menu' id='" + row._id + "'>"
-                            + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + "><i class='fa fa-clipboard'></i>" + jQuery.i18n.map["common.copy-id"] + "</div>"
-                            + "<div class='show-instructions item' data-id='" + row._id + "'" + "><i class='fa fa-eye'></i>" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
-                            + ((countlyAuth.validateUpdate(self.featureName)) ? "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>" : "")
-                            + ((countlyAuth.validateDelete(self.featureName)) ? "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>" : "")
-                            + "</div>"
-                            + "</div>";
-                    }
+                    return "<div class='feedback-options-item options-item'>"
+                        + "<div class='edit' data-id='" + row._id + "'></div>"
+                        + "<div class='edit-menu rating-feedback-menu' id='" + row._id + "'>"
+                        + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + "><i class='fa fa-clipboard'></i>" + jQuery.i18n.map["common.copy-id"] + "</div>"
+                        + "<div class='show-instructions item' data-id='" + row._id + "'" + "><i class='fa fa-eye'></i>" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
+                        + ((countlyAuth.validateUpdate(self.featureName)) ? "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>" : "")
+                        + ((countlyAuth.validateDelete(self.featureName)) ? "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>" : "")
+                        + "</div>"
+                        + "</div>";
                 },
                 "bSortable": false,
             });
@@ -1376,19 +1371,17 @@ window.starView = countlyView.extend({
                     "display": "none"
                 });
             });
+
+            $('.options-item').css({
+                "display": "block"
+            });
             // permission controls
             if (countlyGlobal.member.global_admin) {
                 $('#create-feedback-widget-button').css({
                     "display": "block"
                 });
-                $('.options-item').css({
-                    "display": "block"
-                });
             }
-            else if (countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
-                $('.options-item').css({
-                    "display": "block"
-                });
+            else if (countlyAuth.validateCreate(self.featureName)) {
                 $('#create-feedback-widget-button').css({
                     "display": "block"
                 });
@@ -2226,8 +2219,8 @@ window.starView = countlyView.extend({
                 self.feedbackWidget.is_active = ($(this).attr('checked')) ? true : false;
             });
 
-            if (!countlyAuth.validateCreate(self.featureName)) {
-                $('#create-feedback-widget-button').hide();
+            if (countlyAuth.validateCreate(self.featureName)) {
+                $('#create-feedback-widget-button').show();
             }
         }
         if (self._tab === 'ratings') {

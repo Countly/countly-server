@@ -1,7 +1,7 @@
 /*global
     countlyView,
     countlyCommon, 
-    countlyGlobal,
+    countlyAuth,
     store,
     $,
     pinyinUtil,
@@ -703,7 +703,7 @@ window.ChinaView = countlyView.extend({
 
 
 app.ChinaView = new window.ChinaView();
-if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+if (countlyAuth.validateRead('echartmap')) {
     app.route('/analytics/EChartMap', 'EChartMap', function() {
         if (window.echarts) {
             this.renderWhenReady(this.ChinaView);

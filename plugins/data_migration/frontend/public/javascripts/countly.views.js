@@ -1,5 +1,6 @@
-/*global countlyCommon, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView, $, T*/
+/*global countlyCommon, countlyAuth, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView, $, T*/
 window.DataMigrationView = countlyView.extend({
+    featureName: 'global_data_migration',
     //need to provide at least empty initialize function
     //to prevent using default template
     initialize: function() {},
@@ -838,9 +839,7 @@ window.DataMigrationView = countlyView.extend({
 //create view
 app.DataMigrationView = new DataMigrationView();
 
-
-
-if (countlyGlobal.member.global_admin) {
+if (countlyGlobal.member.global_admin || countlyAuth.validateRead(app.DataMigrationView.featureName)) {
     //register route
     app.route('/manage/data-migration', 'datamigration', function() {
         this.renderWhenReady(this.DataMigrationView);
