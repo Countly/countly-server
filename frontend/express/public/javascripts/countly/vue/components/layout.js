@@ -5,7 +5,7 @@
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
-    var BaseContent = countlyBaseComponent.extend(
+    var BaseContentMixin = countlyBaseComponent.extend(
         // @vue/component
         {
             inheritAttrs: false,
@@ -40,62 +40,6 @@
             }
         }
     );
-
-    var BaseStep = BaseContent.extend({
-        data: function() {
-            return {
-                isValid: true,
-                isStep: true
-            };
-        }
-    });
-
-    Vue.component("cly-content", BaseContent.extend({
-        template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
-                        '<div v-show="isActive"><slot/></div>\n' +
-                    '</div>'
-    }));
-
-    Vue.component("cly-step", BaseStep.extend({
-        methods: {
-            setValid: function(valid) {
-                this.isValid = valid;
-            }
-        },
-        template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
-                        '<div v-show="isActive"><slot :setValid="setValid"/></div>\n' +
-                    '</div>'
-    }));
-
-    Vue.component("cly-form-step", BaseStep.extend({
-        props: {
-            validatorFn: {type: Function},
-        },
-        mounted: function() {
-            var self = this;
-            this.$watch(function() {
-                return self.$refs.observer.flags.valid;
-            },
-            function(newVal) {
-                self.isValid = newVal;
-            });
-        },
-        methods: {
-            reset: function() {
-                this.$refs.observer.reset();
-            },
-            touch: function() {
-                this.$refs.observer.validate();
-            }
-        },
-        template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
-                    '<div v-show="isActive">\n' +
-                        '<validation-observer ref="observer" v-slot="v">\n' +
-                            '<slot/>\n' +
-                        '</validation-observer>\n' +
-                    '</div>\n' +
-                '</div>'
-    }));
 
     Vue.component("cly-panel", countlyBaseComponent.extend(
         // @vue/component
@@ -170,5 +114,7 @@
                         </div>\
                     </div>'
     }));
+
+    countlyVue.mixins.BaseContent = BaseContentMixin;
 
 }(window.countlyVue = window.countlyVue || {}));
