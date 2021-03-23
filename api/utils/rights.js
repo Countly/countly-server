@@ -180,7 +180,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
+                if (!(this.hasAdminAccess(member, params.qstring.app_id))) {
                     common.returnMessage(params, 401, 'User does not have write right for this application');
                     reject('User does not have write right for this application');
                     return false;
@@ -756,7 +756,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                         }
                     }
                     else {
-                        if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
+                        if (!this.hasAdminAccess(member, params.qstring.app_id)) {
                             common.returnMessage(params, 401, 'User does not have write right for this application');
                             reject('User does not have write right for this application');
                             return false;
@@ -840,4 +840,61 @@ exports.validateUpdate = function(params, feature, callback, callbackParam) {
 */
 exports.validateDelete = function(params, feature, callback, callbackParam) {
     validateWrite(params, feature, 'd', callback, callbackParam);
+};
+
+/**
+ * Is user has admin access on selected app?
+ * @param {object} member - member object from params
+ * @param {string} app_id - id value of related app
+ * @returns {boolean} isAdmin - is that user has admin access on that app?
+ */
+exports.hasAdminAccess = function(member, app_id) {
+    var types = ["c", "r", "u", "d"];
+    var isAdmin = true;
+    for (var i = 0; i < types.length; i++) {
+        if (!member.permission[types[i]][app_id].all) {
+            isAdmin = false;
+        }
+    }
+    return isAdmin || member.global_admin;
+};
+
+exports.hasCreateRight = function(feature, app_id, member) {
+    return member.permission.c[app_id].feature;
+};
+
+exports.hasReadRight = function(feature, app_id, member) {
+    return member.permission.r[app_id].feature;
+};
+
+exports.hasUpdateRight = function(feature, app_id, member) {
+    return member.permission.u[app_id].feature;
+};
+
+exports.hasDeleteRight = function(feature, app_id, member) {
+    return member.permission.d[app_id].feature;
+};
+
+/* not tested yet */
+exports.getUserApps = function(member) {
+    let userApps = [];
+    if (member.global_admin) {
+        return userApps;
+    }
+    else {
+        for (var i = 0; i < member.permission._.u.length; i++) {
+            userApps = userApps.concat(member.permission._.u[i]);
+        }
+        return userApps;
+    }
+};
+
+/* not tested yet */
+exports.getAdminApps = function(member) {
+    if (member.global_admin) {
+        return [];
+    }
+    else {
+        return member.permission._.a;
+    }
 };

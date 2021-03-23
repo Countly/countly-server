@@ -8,10 +8,13 @@ var usersApi = {},
     common = require('./../../utils/common.js'),
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.js'),
+    { hasUpdateRight, hasDeleteRight, hasAdminAccess, getUserApps, getAdminApps } = require('./../../utils/rights.js');
+
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
 const _ = require('lodash');
+const FEATURE_NAME = 'global_users';
 
 //for password checking when deleting own account. Could be removed after merging with next
 var argon2 = require('argon2');
@@ -54,15 +57,6 @@ usersApi.getUserById = function(params) {
 
         var memberObj = {};
 
-        if (member.admin_of && member.admin_of.length > 0 && member.admin_of[0] === "") {
-            member.admin_of.splice(0, 1);
-        }
-        if (member.user_of && member.user_of.length > 0 && member.user_of[0] === "") {
-            member.user_of.splice(0, 1);
-        }
-
-        member.admin_of = ((member.admin_of && member.admin_of.length > 0) ? member.admin_of : []);
-        member.user_of = ((member.user_of && member.user_of.length > 0) ? member.user_of : []);
         member.global_admin = (member.global_admin === true);
         member.locked = (member.locked === true);
         member.created_at = member.created_at || 0;
@@ -693,7 +687,7 @@ usersApi.checkNoteEditPermission = async function(params) {
                         return reject(false);
                     }
                     const globalAdmin = params.member.global_admin;
-                    const isAppAdmin = (params.member.admin_of && params.member.admin_of.indexOf(params.app_id + '') >= 0) ? true : false;
+                    const isAppAdmin = hasAdminAccess(params.member, params.qstring.args.app_id);
                     const noteOwner = (note.owner + '' === params.member._id + '');
                     return resolve(noteOwner || (isAppAdmin && note.noteType === 'public') || (globalAdmin && note.noteType === 'public'));
                 }
@@ -834,18 +828,20 @@ usersApi.deleteUserNotes = async function(params) {
 usersApi.fetchUserAppIds = async function(params) {
     const query = {};
     const appIds = [];
+    const adminApps = getAdminApps();
+    const userApps = getUserApps();
     if (!params.member.global_admin) {
-        if (params.member.admin_of) {
-            for (let i = 0; i < params.member.admin_of.length ;i++) {
-                if (params.member.admin_of[i] === "") {
+        if (adminApps.length > 0) {
+            for (let i = 0; i < adminApps.length ;i++) {
+                if (adminApps[i] === "") {
                     continue;
                 }
-                appIds.push(params.member.admin_of[i]);
+                appIds.push(adminApps[i]);
             }
         }
-        if (params.member.user_of) {
-            for (let i = 0; i < params.member.user_of.length ;i++) {
-                appIds.push(params.member.user_of[i]);
+        if (userApps.length > 0) {
+            for (let i = 0; i < userApps.length ;i++) {
+                appIds.push(userApps[i]);
             }
         }
     }
@@ -871,7 +867,7 @@ usersApi.fetchNotes = async function(params) {
             appIds = await usersApi.fetchUserAppIds(params);
         }
         filtedAppIds = appIds.filter((appId) => {
-            if (params.member.global_admin || params.member.user_of.indexOf(appId) > -1 || params.member.admin_of.indexOf(appId) > -1) {
+            if (hasAdminAccess(params.member, appId)) {
                 return true;
             }
             return false;

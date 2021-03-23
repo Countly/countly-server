@@ -12,10 +12,11 @@ var appsApi = {},
     plugins = require('../../../plugins/pluginManager.js'),
     jimp = require('jimp'),
     fs = require('fs'),
+    { hasUpdateRight, hasDeleteRight, getUserApps, getAdminApps } = require('./../../utils/rights.js'),
     countlyFs = require('./../../utils/countlyFs.js');
 const taskmanager = require('./../../utils/taskmanager.js');
 const {timezoneValidation} = require('../../utils/timezones.js');
-
+const FEATURE_NAME = 'global_applications';
 /**
 * Get all apps and outputs to browser, requires global admin permission
 * @param {params} params - params object
@@ -59,24 +60,8 @@ appsApi.getCurrentUserApps = function(params) {
         return true;
     }
 
-    var adminOfAppIds = [],
-        userOfAppIds = [];
-
-    if (params.member.admin_of) {
-        for (let i = 0; i < params.member.admin_of.length ;i++) {
-            if (params.member.admin_of[i] === "") {
-                continue;
-            }
-
-            adminOfAppIds[adminOfAppIds.length] = common.db.ObjectID(params.member.admin_of[i]);
-        }
-    }
-
-    if (params.member.user_of) {
-        for (let i = 0; i < params.member.user_of.length ;i++) {
-            userOfAppIds[userOfAppIds.length] = common.db.ObjectID(params.member.user_of[i]);
-        }
-    }
+    var adminOfAppIds = getAdminApps(),
+        userOfAppIds = getUserApps();
 
     common.db.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err, admin_of) {
         common.db.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err2, user_of) {
@@ -391,7 +376,7 @@ appsApi.updateApp = function(params) {
             }
             else {
                 common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err2, member) {
-                    if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
+                    if (hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
                         common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function() {
                             plugins.dispatch("/i/apps/update", {
                                 params: params,
@@ -573,7 +558,7 @@ appsApi.deleteApp = function(params) {
             }
             else {
                 common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err2, member) {
-                    if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
+                    if (hasDeleteRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
                         removeApp(app);
                     }
                     else {
