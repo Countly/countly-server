@@ -4149,10 +4149,11 @@ window.ManageUsersView = countlyView.extend({
                         // because upload request requires member_id as param.
                         memberImageDropzone.member = member;
                         memberImageDropzone.processQueue();
+                        alert('parola: ' + self.memberModel.password);
                         if (isGroupSelected) {
                             groupsModel.saveUserGroup({ email: member.email, group_id: $('#selected-new-user-group').val() }, function(response) {
                                 app.activeView.render();
-                            });    
+                            });
                         }
                         else {
                             app.activeView.render();
