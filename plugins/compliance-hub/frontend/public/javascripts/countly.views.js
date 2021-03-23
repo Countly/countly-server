@@ -362,7 +362,6 @@ window.ConsentManagementView = countlyView.extend({
                 data = self.dtableusers.fnGetData(row[0]);
                 //now show hide list options based on user data
 
-                var have_rights = countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(+countlyCommon.ACTIVE_APP_ID) > -1;
                 $(".cly-button-menu a.export-user").css("display", "none");
                 $(".cly-button-menu a.export-download").css("display", "none");
                 $(".cly-button-menu a.export-delete").css("display", "none");
@@ -373,17 +372,17 @@ window.ConsentManagementView = countlyView.extend({
                     if (data.appUserExport.slice(-7) === ".tar.gz") {
                         $(".cly-button-menu a.export-download").css("display", "block");
                     }
-                    if (have_rights || countlyAuth.validateDelete(self.featureName)) {
+                    if (countlyAuth.validateDelete(self.featureName)) {
                         $(".cly-button-menu a.export-delete").css("display", "block");
                     }
                 }
                 else {
-                    if (have_rights || countlyAuth.validateRead(self.featureName)) {
+                    if (countlyAuth.validateRead(self.featureName)) {
                         $(".cly-button-menu a.export-user").css("display", "block");
                     }
                 }
 
-                if (have_rights || countlyAuth.validateDelete(self.featureName)) {
+                if (countlyAuth.validateDelete(self.featureName)) {
                     $(".cly-button-menu a.delete-user").css("display", "block");
                 }
             });
