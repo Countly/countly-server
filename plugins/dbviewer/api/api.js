@@ -4,7 +4,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser } = require('../../../api/utils/rights.js'),
+    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, validateRead, getUserApps } = require('../../../api/utils/rights.js'),
     exported = {};
 
 const FEATURE_NAME = 'dbviewer';
@@ -17,6 +17,8 @@ const FEATURE_NAME = 'dbviewer';
         var dbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler()};
         var params = ob.params;
         var dbNameOnParam = params.qstring.dbs || params.qstring.db;
+        console.log(params, 'dbv params');
+        //var userApps = getUserApps(params.member);
 
         /**
         * Get indexes
@@ -257,6 +259,7 @@ const FEATURE_NAME = 'dbviewer';
             });
         }
 
+        //console.log(userApps);
 
         validateUser(params, function() {
             // conditions
@@ -358,19 +361,20 @@ const FEATURE_NAME = 'dbviewer';
                 }
                 else {
                     var apps = [];
+                    var userApps = getUserApps(params.member);
                     if (params.qstring.app_id) {
                         //if we have app_id, check permissions
-                        if (params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1) {
+                        if (userApps.length > 0 && userApps.indexOf(params.qstring.app_id) !== -1) {
                             apps.push(common.db.ObjectID(params.qstring.app_id));
                         }
                     }
                     else {
                         //else use what ever user has access to
-                        params.member.user_of = params.member.user_of || [];
-                        for (let i = 0; i < params.member.user_of.length; i++) {
-                            apps.push(common.db.ObjectID(params.member.user_of[i]));
+                        for (let i = 0; i < userApps.length; i++) {
+                            apps.push(common.db.ObjectID(userApps[i]));
                         }
                     }
+                    console.log(apps, 'prepared apps');
                     common.readBatcher.getMany("apps", {_id: {$in: apps}}, {}, (err, applications) => {
                         if (err) {
                             console.error(err);

@@ -495,6 +495,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
     }
 
     var apps = [];
+    var userApps = module.exports.getUserApps(params.member);
     if (params.qstring.app_id) {
         //if app_id was provided, we need to check if user has access for this app_id
         // is user_of array contain current app_id?
@@ -506,7 +507,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, callback) {
     }
     else {
         //use whatever user has permission for
-        apps = params.member.user_of || [];
+        apps = userApps || [];
         // also check for app based restrictions
         if (params.member.app_restrict) {
             for (var app_id in params.member.app_restrict) {
@@ -885,7 +886,7 @@ exports.getUserApps = function(member) {
         for (var i = 0; i < member.permission._.u.length; i++) {
             userApps = userApps.concat(member.permission._.u[i]);
         }
-        return userApps;
+        return userApps.concat(member.permission._.a);
     }
 };
 
