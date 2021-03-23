@@ -4,9 +4,14 @@ var plugin = {},
     moment = require('moment'),
     { validateRead } = require('../../../api/utils/rights.js');
 
-const FEAUTURE_NAME = 'times_of_day';
+const FEATURE_NAME = 'times_of_day';
 
 (function() {
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
     plugins.register("/i", function(ob) {
         var params = ob.params;
 

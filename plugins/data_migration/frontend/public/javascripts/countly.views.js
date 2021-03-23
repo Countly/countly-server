@@ -1,6 +1,6 @@
 /*global countlyCommon, countlyAuth, countlyGlobal, CountlyHelpers, jQuery, countlyDataMigration, app, countlyView, Handlebars, Dropzone, ActiveXObject, DataMigrationView, $, T*/
 window.DataMigrationView = countlyView.extend({
-    featureName: 'global_data_migration',
+    featureName: 'data_migration',
     //need to provide at least empty initialize function
     //to prevent using default template
     initialize: function() {},
@@ -887,7 +887,7 @@ if (countlyGlobal.member.global_admin || countlyAuth.validateRead(app.DataMigrat
 
     $(document).ready(function() {
         //Adding as menu item : Managment>Data migration. Before help toggle button.
-        if (countlyGlobal.member.global_admin) {
+        if (countlyAuth.validateRead(app.DataMigrationView.featureName)) {
             app.addMenu("management", {code: "data-migration", url: "#/manage/data-migration", text: "data-migration.page-title", icon: '<div class="logo-icon fa fa-arrows-alt-h"></div>', priority: 90});
         }
         var curapp = countlyCommon.ACTIVE_APP_ID;

@@ -3,8 +3,12 @@ var pluginOb = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js');
 
-(function() {
+const FEATURE_NAME = 'systemlogs';
 
+(function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
