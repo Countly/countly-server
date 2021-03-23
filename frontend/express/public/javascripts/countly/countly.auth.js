@@ -179,8 +179,8 @@
         return permission_sets;
     };
 
-    countlyAuth.initializePermissions = function(permissionObject, permissionSets) {
-        permissionObject = {
+    countlyAuth.initializePermissions = function(permissionSets) {
+        var permissionObject = {
             c: {},
             r: {},
             u: {},
@@ -259,7 +259,7 @@
         var user_apps = permission_object._.u;
 
         $(parent_el + ' #manage-users-admin-app-selector')[0].selectize.setValue(admin_apps);
-
+        
         for (var i = 0; i < user_apps.length; i++) {
             $(parent_el + ' #user-app-selector-' + i)[0].selectize.setValue(user_apps[i]);
             for (var j = 0; j < countlyAuth.types.length; j++) {
@@ -267,11 +267,11 @@
                     if (permission_object[countlyAuth.types[j]][user_apps[i][0]].all) {
 
                         $(parent_el + ' #mark-all-' + countlyAuth.typeNames[j] + '-' + i).countlyCheckbox().set(true);
-
+    
                         for (var k = 0; k < countlyAuth.features.length; k++) {
                             $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features[k] + '-' + i).countlyCheckbox().set(true).setDisabled();
                         }
-
+    
                         permission_sets[i][countlyAuth.types[j]].all = true;
                     }
                     else {
@@ -287,6 +287,6 @@
         }
 
         return permission_sets;
-    };
+    }
 
 })(window.countlyAuth = window.countlyAuth || {});
