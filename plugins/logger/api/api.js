@@ -1,8 +1,14 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'logger';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     var processSDKRequest = function(params) {
         if (params.logging_is_allowed) {
             params.log_processed = true;
@@ -256,7 +262,7 @@ var exported = {},
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForDataReadAPI;
+
         if (params.qstring.method === 'logs') {
             var filter = {};
             if (typeof params.qstring.filter !== "undefined") {
@@ -267,7 +273,7 @@ var exported = {},
                     filter = {};
                 }
             }
-            validate(params, function(parameters) {
+            validateRead(params, FEATURE_NAME, function(parameters) {
                 common.db.collection('logs' + parameters.app_id).find(filter).toArray(function(err, items) {
                     if (err) {
                         console.log(err);
@@ -278,7 +284,7 @@ var exported = {},
             return true;
         }
         if (params.qstring.method === 'collection_info') {
-            validate(params, function(parameters) {
+            validateRead(params, FEATURE_NAME, function(parameters) {
                 common.db.collection('logs' + parameters.app_id).stats(function(err, stats) {
                     if (err) {
                         console.log(err);

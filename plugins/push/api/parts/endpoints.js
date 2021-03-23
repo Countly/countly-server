@@ -1,5 +1,7 @@
 'use strict';
 
+const { getAdminApps, getUserApps } = require('../../../../api/utils/rights.js');
+
 /* jshint ignore:start */
 
 var common = require('../../../../api/utils/common.js'),
@@ -1077,7 +1079,8 @@ function cachedData(note) {
         var query = {
             'result.status': {$bitsAllSet: N.Status.Created, $bitsAllClear: N.Status.Deleted}
         };
-
+        let adminApps = getAdminApps();
+        let userApps = getUserApps();
         let app_id = params.qstring.app_id;
 
         if (!app_id || app_id.length !== 24) {
@@ -1088,7 +1091,7 @@ function cachedData(note) {
         if (!params.member.global_admin) {
             var found = false;
 
-            (params.member.admin_of || []).concat(params.member.user_of || []).forEach(id => {
+            (adminApps || []).concat(userApps || []).forEach(id => {
                 if (id === app_id) {
                     found = true;
                 }
@@ -1998,11 +2001,12 @@ function cachedData(note) {
      * @returns {boolean} - true if is admin of app
      */
     function adminOfApp(member, app) {
+        let adminApps = getAdminApps();
         if (member.global_admin) {
             return true;
         }
         else {
-            return member.admin_of && member.admin_of.indexOf(app._id.toString()) !== -1;
+            return adminApps && adminApps.indexOf(app._id.toString()) !== -1;
         }
     }
 

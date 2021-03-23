@@ -1,9 +1,15 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    fetch = require('../../../api/parts/data/fetch.js');
+    fetch = require('../../../api/parts/data/fetch.js'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'density';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/worker", function() {
         common.dbUserMap.density = 'dnst';
     });
@@ -33,9 +39,9 @@ var exported = {},
     });
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+
         if (params.qstring.method === "density") {
-            validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'density');
+            validateRead(params, FEATURE_NAME, fetch.fetchTimeObj, 'density');
             return true;
         }
         return false;

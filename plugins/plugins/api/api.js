@@ -4,13 +4,19 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateRead, validateUpdate } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'global_plugins';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register('/i/plugins', function(ob) {
         var params = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
-        validateUserForWriteAPI(function() {
+
+        validateUpdate(params, FEATURE_NAME, function() {
             if (process.env.COUNTLY_CONTAINER === 'api') {
                 common.returnMessage(params, 400, 'Not allowed in containerized environment');
                 return false;
@@ -58,13 +64,13 @@ var plugin = {},
             else {
                 common.returnOutput(params, "Not enough parameters");
             }
-        }, params);
+        });
         return true;
     });
 
     plugins.register('/o/plugins-check', function(ob) {
         var params = ob.params;
-        ob.validateUserForDataReadAPI(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             common.db.collection('plugins').count({"_id": "failed"}, function(failedErr, failedCount) {
                 if (!failedErr && failedCount < 1) {
                     common.db.collection('plugins').count({"_id": "busy"}, function(busyErr, count) {
@@ -191,8 +197,8 @@ var plugin = {},
 
     plugins.register("/o/internal-events", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        validateUserForDataReadAPI(params, function() {
+
+        validateRead(params, FEATURE_NAME, function() {
             var events = [];
             common.arrayAddUniq(events, plugins.internalEvents.concat(plugins.internalDrillEvents));
             common.returnOutput(params, events);
@@ -202,8 +208,8 @@ var plugin = {},
 
     plugins.register("/i/configs", function(ob) {
         var params = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
-        validateUserForWriteAPI(function() {
+
+        validateUpdate(params, FEATURE_NAME, function() {
             if (!params.member.global_admin) {
                 common.returnMessage(params, 401, 'User is not a global administrator');
                 return false;
@@ -243,7 +249,7 @@ var plugin = {},
             else {
                 common.returnMessage(params, 400, 'Error updating configs');
             }
-        }, params);
+        });
         return true;
     });
 
@@ -266,8 +272,7 @@ var plugin = {},
 
     plugins.register("/i/userconfigs", function(ob) {
         var params = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
-        validateUserForWriteAPI(function() {
+        validateUpdate(params, FEATURE_NAME, function() {
             var data = {};
             if (params.qstring.configs) {
                 try {
@@ -298,7 +303,7 @@ var plugin = {},
             else {
                 common.returnMessage(params, 400, 'Error updating configs');
             }
-        }, params);
+        });
         return true;
     });
 
