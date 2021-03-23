@@ -1,7 +1,5 @@
 'use strict';
 
-const { validateCreate } = require("../../../../../api/utils/rights");
-
 /* jshint undef: true, unused: true */
 /* globals app, $, countlyAuth, countlyGlobal, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery, countlyManagementView, Backbone */
 
