@@ -5,7 +5,7 @@
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
-    var BufferedFormMixin = {
+    var BufferedObjectMixin = {
         props: {
             initialEditedObject: {
                 type: Object,
@@ -40,13 +40,130 @@
         }
     }
 
+    var MultiStepFormMixin =  {
+        mixins: [BufferedObjectMixin],
+        data: function() {
+            return {
+                currentStepIndex: 0,
+                stepContents: [],
+                isMounted: false,
+                isSubmissionAllowed: false
+            }
+        },
+        computed: {
+            activeContentId: function() {
+                if (this.activeContent) {
+                    return this.activeContent.tId;
+                }
+                return null;
+            },
+            currentStepId: function() {
+                return this.activeContentId;
+            },
+            isCurrentStepValid: function() {
+                if (this.activeContent.isStep) {
+                    return this.activeContent.isValid;
+                }
+                return true;
+            },
+            isLastStep: function() {
+                return this.stepContents.length > 1 && this.currentStepIndex === this.stepContents.length - 1;
+            },
+            activeContent: function() {
+                if (this.currentStepIndex > this.stepContents.length - 1) {
+                    return null;
+                }
+                return this.stepContents[this.currentStepIndex];
+            },
+            isMultiStep: function() {
+                return this.stepContents.length > 1;
+            },
+            isValid: function() {
+                if (!this.isMounted) {
+                    return true;
+                }
+                return this.stepContents.reduce(function(item, current) {
+                    if (current.isStep) {
+                        return item && current.isValid;
+                    }
+                    return item;
+                }, true);
+            },
+            passedScope: function() {
+                var defaultKeys = ["editedObject", "currentStepId", "isSubmissionAllowed"],
+                    self = this;
+
+                var passed = defaultKeys.reduce(function(acc, val) {
+                    acc[val] = self[val];
+                    return acc;
+                }, {});
+
+                return passed;
+            }
+        },
+        watch: {
+            isValid: function(newValue) {
+                var self = this;
+                this.$nextTick(function() {
+                    self.isSubmissionAllowed = newValue;
+                });
+            }
+        },
+        mounted: function() {
+            this.stepContents = this.$children.filter(function(child) {
+                return child.isContent && child.role === "default";
+            });
+            this.isMounted = true;
+        },
+        methods: {
+            setStep: function(newIndex) {
+                if (newIndex >= 0 && newIndex < this.stepContents.length) {
+                    this.currentStepIndex = newIndex;
+                }
+            },
+            prevStep: function() {
+                this.setStep(this.currentStepIndex - 1);
+            },
+            nextStep: function() {
+                this.beforeLeavingStep();
+                if (this.isCurrentStepValid) {
+                    this.setStep(this.currentStepIndex + 1);
+                }
+            },
+            reset: function() {
+                this.callValidators("reset");
+                this.setStep(0);
+            },
+            submit: function() {
+                this.beforeLeavingStep();
+                if (this.isSubmissionAllowed) {
+                    this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
+                    if (this.doClose) {
+                        this.doClose();
+                    }
+                }
+            },
+            beforeLeavingStep: function() {
+                this.callValidators("touch");
+                this.$emit("before-leaving-step");
+            },
+            callValidators: function(command) {
+                this.stepContents.forEach(function(current) {
+                    if (current[command]) {
+                        current[command]();
+                    }
+                });
+            }
+        }
+    }
+
     Vue.component("cly-drawer", countlyBaseComponent.extend(
         // @vue/component
         {
             inheritAttrs: false,
             mixins: [
                 _mixins.i18n,
-                BufferedFormMixin
+                MultiStepFormMixin
             ],
             props: {
                 isOpened: {type: Boolean, required: true},
@@ -57,66 +174,12 @@
             },
             data: function() {
                 return {
-                    currentStepIndex: 0,
-                    stepContents: [],
-                    sidecarContents: [],
-                    inScope: [],
-                    isMounted: false,
-                    isSubmissionAllowed: false
+                    sidecarContents: []
                 };
             },
             computed: {
-                activeContentId: function() {
-                    if (this.activeContent) {
-                        return this.activeContent.tId;
-                    }
-                    return null;
-                },
-                currentStepId: function() {
-                    return this.activeContentId;
-                },
-                isCurrentStepValid: function() {
-                    if (this.activeContent.isStep) {
-                        return this.activeContent.isValid;
-                    }
-                    return true;
-                },
-                isLastStep: function() {
-                    return this.stepContents.length > 1 && this.currentStepIndex === this.stepContents.length - 1;
-                },
-                activeContent: function() {
-                    if (this.currentStepIndex > this.stepContents.length - 1) {
-                        return null;
-                    }
-                    return this.stepContents[this.currentStepIndex];
-                },
-                isMultiStep: function() {
-                    return this.stepContents.length > 1;
-                },
                 hasSidecars: function() {
                     return this.sidecarContents.length > 0;
-                },
-                passedScope: function() {
-                    var defaultKeys = ["editedObject", "currentStepId"],
-                        self = this;
-
-                    var passed = defaultKeys.reduce(function(acc, val) {
-                        acc[val] = self[val];
-                        return acc;
-                    }, {});
-
-                    return passed;
-                },
-                isValid: function() {
-                    if (!this.isMounted) {
-                        return true;
-                    }
-                    return this.stepContents.reduce(function(item, current) {
-                        if (current.isStep) {
-                            return item && current.isValid;
-                        }
-                        return item;
-                    }, true);
                 }
             },
             watch: {
@@ -124,22 +187,12 @@
                     if (!newState) {
                         this.reset();
                     }
-                },
-                isValid: function(newValue) {
-                    var self = this;
-                    this.$nextTick(function() {
-                        self.isSubmissionAllowed = newValue;
-                    });
                 }
             },
             mounted: function() {
-                this.stepContents = this.$children.filter(function(child) {
-                    return child.isContent && child.role === "default";
-                });
                 this.sidecarContents = this.$children.filter(function(child) {
                     return child.isContent && child.role === "sidecar";
                 });
-                this.isMounted = true;
             },
             methods: {
                 doClose: function() {
@@ -147,42 +200,6 @@
                     if (this.closeFn) {
                         this.closeFn();
                     }
-                },
-                setStep: function(newIndex) {
-                    if (newIndex >= 0 && newIndex < this.stepContents.length) {
-                        this.currentStepIndex = newIndex;
-                    }
-                },
-                prevStep: function() {
-                    this.setStep(this.currentStepIndex - 1);
-                },
-                nextStep: function() {
-                    this.beforeLeavingStep();
-                    if (this.isCurrentStepValid) {
-                        this.setStep(this.currentStepIndex + 1);
-                    }
-                },
-                reset: function() {
-                    this.callValidators("reset");
-                    this.setStep(0);
-                },
-                submit: function() {
-                    this.beforeLeavingStep();
-                    if (this.isSubmissionAllowed) {
-                        this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
-                        this.doClose();
-                    }
-                },
-                beforeLeavingStep: function() {
-                    this.callValidators("touch");
-                    this.$emit("before-leaving-step");
-                },
-                callValidators: function(command) {
-                    this.stepContents.forEach(function(current) {
-                        if (current[command]) {
-                            current[command]();
-                        }
-                    });
                 }
             },
             template: '<div class="cly-vue-drawer"\n' +
