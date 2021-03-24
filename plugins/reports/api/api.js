@@ -4,7 +4,7 @@ var common = require('../../../api/utils/common.js'),
     moment = require('moment-timezone'),
     log = require('../../../api/utils/log')('reports:api'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'reports';
 
@@ -385,10 +385,10 @@ const FEATURE_NAME = 'reports';
      * @return {func} cb - callback function
      */
     function validateCoreUser(params, props, cb) {
-
+        var userApps = getUserApps(params.member);
         var apps = props.apps;
         var isAppUser = apps.every(function(app) {
-            return params.member.user_of && params.member.user_of.indexOf(app) > -1;
+            return userApps && userApps.indexOf(app) > -1;
         });
 
         if (!params.member.global_admin && !isAppUser) {

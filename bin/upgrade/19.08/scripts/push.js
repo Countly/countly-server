@@ -448,7 +448,7 @@ async function notifyGCM(db, apps) {
         console.log('[push] Checking member %s for GCM notifications', member.full_name);
 
         let aps = [];
-        let adminApps = getAdminApps();
+        let adminApps = getAdminApps(member);
 
         if (member.global_admin) {
             aps = apps;

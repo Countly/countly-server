@@ -8,7 +8,7 @@ var exported = {},
     crypto = require('crypto'),
     async = require('async'),
     log = common.log('compare:api'),
-    { validateRead } = require('../../../api/utils/rights.js');
+    { validateRead, getUserApps } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'compare';
 
@@ -107,10 +107,11 @@ const FEATURE_NAME = 'compare';
         params.qstring.app_id = appsToFetch[0];
 
         validateRead(params, FEATURE_NAME, function() {
+            const userApps = getUserApps(params.member);
             if (!params.member.global_admin) {
                 for (var i = 0; i < appsToFetch.length; i++) {
-                    if (params.member && params.member.user_of) {
-                        if (params.member.user_of.indexOf(appsToFetch[i]) === -1) {
+                    if (params.member && userApps) {
+                        if (userApps.indexOf(appsToFetch[i]) === -1) {
                             return common.returnMessage(params, 401, 'User does not have view rights for one or more apps provided in apps parameter');
                         }
                     }

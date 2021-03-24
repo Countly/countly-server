@@ -60,8 +60,8 @@ appsApi.getCurrentUserApps = function(params) {
         return true;
     }
 
-    var adminOfAppIds = getAdminApps(),
-        userOfAppIds = getUserApps();
+    var adminOfAppIds = getAdminApps(params.member),
+        userOfAppIds = getUserApps(params.member);
 
     common.db.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err, admin_of) {
         common.db.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err2, user_of) {

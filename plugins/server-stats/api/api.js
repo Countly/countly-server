@@ -1,3 +1,5 @@
+const { getUserApps } = require('../../../api/utils/rights.js');
+
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js'),
     udp;
@@ -153,7 +155,7 @@ var plugins = require('../../pluginManager.js'),
 
         ob.validateUserForMgmtReadAPI(function() {
             if (!params.member.global_admin) {
-                var apps = params.member.user_of || [];
+                var apps = getUserApps(params.member) || [];
                 for (let i = 0; i < periodsToFetch.length; i++) {
                     for (let j = 0; j < apps.length; j++) {
                         if (apps[j] !== "") {
@@ -216,7 +218,7 @@ var plugins = require('../../pluginManager.js'),
             let filter = {"m": {$in: dateRangeArray} };
             if (!params.member.global_admin) {
                 filter.$or = [];
-                const hasUserApps = params.member.user_of;
+                const hasUserApps = getUserApps(params.member);
                 hasUserApps.forEach((id) => {
                     dateRangeArray.forEach((period) => {
                         filter.$or.push({_id: `${id}_${period}`});

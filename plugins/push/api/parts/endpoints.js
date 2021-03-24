@@ -1079,8 +1079,8 @@ function cachedData(note) {
         var query = {
             'result.status': {$bitsAllSet: N.Status.Created, $bitsAllClear: N.Status.Deleted}
         };
-        let adminApps = getAdminApps();
-        let userApps = getUserApps();
+        let adminApps = getAdminApps(params.member);
+        let userApps = getUserApps(params.member);
         let app_id = params.qstring.app_id;
 
         if (!app_id || app_id.length !== 24) {
@@ -2001,7 +2001,7 @@ function cachedData(note) {
      * @returns {boolean} - true if is admin of app
      */
     function adminOfApp(member, app) {
-        let adminApps = getAdminApps();
+        let adminApps = getAdminApps(member);
         if (member.global_admin) {
             return true;
         }

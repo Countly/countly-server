@@ -104,6 +104,9 @@ usersApi.getAllUsers = function(params) {
             var membersObj = {};
 
             for (let i = 0; i < members.length; i++) {
+                const userApps = getUserApps(members[i]);
+                const adminApps = getAdminApps(members[i]);
+
                 const result = failedLogins.find(x => (x._id === JSON.stringify(["login", members[i].username]))) || { fails: 0 };
 
                 if (result.fails > 0 && result.fails % bruteforceFails === 0 && Math.floor(new Date().getTime() / 1000) < (((result.fails / bruteforceFails) * bruteforceWait) + result.lastFail)) {
@@ -113,15 +116,13 @@ usersApi.getAllUsers = function(params) {
                     members[i].blocked = false;
                 }
 
-                if (members[i].admin_of && members[i].admin_of.length > 0 && members[i].admin_of[0] === "") {
-                    members[i].admin_of.splice(0, 1);
+                if (adminApps[0] === "") {
+                    adminApps.splice(0, 1);
                 }
-                if (members[i].user_of && members[i].user_of.length > 0 && members[i].user_of[0] === "") {
-                    members[i].user_of.splice(0, 1);
+                if (userApps[0] === "") {
+                    userApps[0].splice(0, 1);
                 }
 
-                members[i].admin_of = ((members[i].admin_of && members[i].admin_of.length > 0) ? members[i].admin_of : []);
-                members[i].user_of = ((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []);
                 members[i].global_admin = (members[i].global_admin === true);
                 members[i].locked = (members[i].locked === true);
                 members[i].created_at = members[i].created_at || 0;
@@ -828,8 +829,8 @@ usersApi.deleteUserNotes = async function(params) {
 usersApi.fetchUserAppIds = async function(params) {
     const query = {};
     const appIds = [];
-    const adminApps = getAdminApps();
-    const userApps = getUserApps();
+    const adminApps = getAdminApps(params.member);
+    const userApps = getUserApps(params.member);
     if (!params.member.global_admin) {
         if (adminApps.length > 0) {
             for (let i = 0; i < adminApps.length ;i++) {
