@@ -4,7 +4,7 @@ var common = require('../../../api/utils/common.js'),
     moment = require('moment-timezone'),
     log = require('../../../api/utils/log')('reports:api'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps, getAdminApps } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'reports';
 
@@ -112,28 +112,30 @@ const FEATURE_NAME = 'reports';
 
                 convertToTimezone(props);
 
-                var reportType = props.report_type || "core";
-                var validationFn = validateCoreUser;
-                if (reportType !== "core") {
-                    validationFn = validateNonCoreUser;
+                // TODO: handle report type check
+
+                let userApps = getUserApps(params.member);
+                let notPermitted = false;
+                for (var i = 0; i < props.apps.length; i++) {
+                    if (userApps.indexOf(props.apps[i]) === -1) {
+                        notPermitted = true;
+                    }
                 }
 
-                validationFn(params, props, function(err, authorized) {
-                    if (err || !authorized) {
-                        return common.returnMessage(params, 401, 'User does not have right to access this information');
-                    }
+                if (notPermitted) {
+                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                }
 
-                    common.db.collection('reports').insert(props, function(err0, result) {
-                        result = result.ops;
-                        if (err0) {
-                            err0 = err0.err;
-                            common.returnMessage(params, 200, err0);
-                        }
-                        else {
-                            plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result[0]});
-                            common.returnMessage(params, 200, "Success");
-                        }
-                    });
+                common.db.collection('reports').insert(props, function(err0, result) {
+                    result = result.ops;
+                    if (err0) {
+                        err0 = err0.err;
+                        common.returnMessage(params, 200, err0);
+                    }
+                    else {
+                        plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result[0]});
+                        common.returnMessage(params, 200, "Success");
+                    }
                 });
             });
             break;
@@ -161,31 +163,33 @@ const FEATURE_NAME = 'reports';
 
                 convertToTimezone(props);
 
-                var reportType = props.report_type || "core";
-                var validationFn = validateCoreUser;
-                if (reportType !== "core") {
-                    validationFn = validateNonCoreUser;
+                // TODO: Handle report type check
+                const userApps = getUserApps(params.member);
+                let notPermitted = false;
+
+                for (var i = 0; i < props.apps.length; i++) {
+                    if (userApps.indexOf(props.apps[i]) === -1) {
+                        notPermitted = true;
+                    }
                 }
 
-                validationFn(params, props, function(err, authorized) {
-                    if (err || !authorized) {
-                        return common.returnMessage(params, 401, 'User does not have right to access this information');
-                    }
+                if (notPermitted) {
+                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                }
 
-                    common.db.collection('reports').findOne({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, function(err_update, report) {
-                        if (err_update) {
-                            console.log(err_update);
+                common.db.collection('reports').findOne({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, function(err_update, report) {
+                    if (err_update) {
+                        console.log(err_update);
+                    }
+                    common.db.collection('reports').update({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, {$set: props}, function(err_update2) {
+                        if (err_update2) {
+                            err_update2 = err_update2.err;
+                            common.returnMessage(params, 200, err_update2);
                         }
-                        common.db.collection('reports').update({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, {$set: props}, function(err_update2) {
-                            if (err_update2) {
-                                err_update2 = err_update2.err;
-                                common.returnMessage(params, 200, err_update2);
-                            }
-                            else {
-                                plugins.dispatch("/systemlogs", {params: params, action: "reports_edited", data: {_id: id, before: report, update: props}});
-                                common.returnMessage(params, 200, "Success");
-                            }
-                        });
+                        else {
+                            plugins.dispatch("/systemlogs", {params: params, action: "reports_edited", data: {_id: id, before: report, update: props}});
+                            common.returnMessage(params, 200, "Success");
+                        }
                     });
                 });
             });
@@ -202,6 +206,14 @@ const FEATURE_NAME = 'reports';
                     common.returnMessage(params, 200, 'Not enough args');
                     return false;
                 }
+
+                const adminApps = getAdminApps(params.member);
+                const notPermitted = adminApps.indexOf(id) === -1;
+
+                if (notPermitted) {
+                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                }
+
                 common.db.collection('reports').findOne({'_id': common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, function(err, props) {
                     common.db.collection('reports').remove({'_id': common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, {safe: true}, function(err_del) {
                         if (err_del) {
@@ -235,25 +247,21 @@ const FEATURE_NAME = 'reports';
                         return false;
                     }
 
-                    var reportType = result.report_type || "core";
-                    var validationFn = validateCoreUser;
-                    if (reportType !== "core") {
-                        validationFn = validateNonCoreUser;
-                    }
-                    validationFn(params, result, function(err1, authorized) {
-                        if (err1 || !authorized) {
-                            return common.returnMessage(params, 401, 'User does not have right to access this information');
-                        }
+                    const adminApps = getAdminApps(params.member);
+                    const notPermitted = adminApps.indexOf(id) === -1;
 
-                        reports.sendReport(common.db, id, function(err2) {
-                            if (err2) {
-                                log.d("Error occurred while sending out report.", err);
-                                common.returnMessage(params, 200, err2);
-                            }
-                            else {
-                                common.returnMessage(params, 200, "Success");
-                            }
-                        });
+                    if (notPermitted) {
+                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    }
+
+                    reports.sendReport(common.db, id, function(err2) {
+                        if (err2) {
+                            log.d("Error occurred while sending out report.", err);
+                            common.returnMessage(params, 200, err2);
+                        }
+                        else {
+                            common.returnMessage(params, 200, "Success");
+                        }
                     });
                 });
             });
@@ -275,26 +283,24 @@ const FEATURE_NAME = 'reports';
                         common.returnMessage(params, 200, 'Report not found');
                         return false;
                     }
-                    var reportType = result.report_type || "core";
-                    var validationFn = validateCoreUser;
-                    if (reportType !== "core") {
-                        validationFn = validateNonCoreUser;
-                    }
-                    validationFn(params, result, function(err1, authorized) {
-                        if (err1 || !authorized) {
-                            return common.returnMessage(params, 401, 'User does not have right to access this information');
-                        }
 
-                        reports.getReport(common.db, result, function(err2, res) {
-                            if (err2) {
-                                common.returnMessage(params, 200, err2);
+                    // TODO: Handle report type check
+                    const userApps = getUserApps(params.member);
+                    const notPermitted = userApps.indexOf(id) === -1;
+
+                    if (notPermitted) {
+                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    }
+
+                    reports.getReport(common.db, result, function(err2, res) {
+                        if (err2) {
+                            common.returnMessage(params, 200, err2);
+                        }
+                        else {
+                            if (params && params.res) {
+                                common.returnRaw(params, 200, res.message, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
                             }
-                            else {
-                                if (params && params.res) {
-                                    common.returnRaw(params, 200, res.message, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
-                                }
-                            }
-                        });
+                        }
                     });
                 });
             });
@@ -303,6 +309,8 @@ const FEATURE_NAME = 'reports';
             validateUpdate(paramsInstance, FEATURE_NAME, function() {
                 var params = paramsInstance;
                 const statusList = params.qstring.args;
+
+                console.log(statusList, 'status-list');
 
                 var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
                 for (const id in statusList) {
