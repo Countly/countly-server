@@ -192,7 +192,7 @@ const FEATURE_NAME = 'times_of_day';
 
             var collectionName = "timesofday" + appId;
 
-            validateRead(params, FEAUTURE_NAME, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 fetchTodData(collectionName, criteria, function(err, result) {
                     if (err) {
                         console.log("Error while fetching times of day data: ", err.message);
