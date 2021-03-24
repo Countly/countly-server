@@ -227,7 +227,12 @@
   padding: 0px 24px;
   margin: 0;
 }
-.cly-vue-theme-clydef .section:not(:last-child) {
+.cly-vue-theme-clydef .cly-vue-section__content {
+  background-color: white;
+  border-top: 1px solid #ECECEC;
+  border-bottom: 2px solid #ECECEC;
+}
+.cly-vue-theme-clydef .cly-vue-section:not(:last-child) {
   margin-bottom: 32px;
 }
 .cly-vue-theme-clydef .header {

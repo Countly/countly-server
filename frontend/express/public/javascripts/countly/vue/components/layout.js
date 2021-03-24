@@ -108,8 +108,12 @@
 
     //Each cly-section should mark a different component within the cly-main component
     Vue.component("cly-section", countlyBaseComponent.extend({
-        template: '<div class="bu-columns bu-is-gapless section">\
-                        <div class="bu-column bu-is-full">\
+        props: {
+            title: String
+        },
+        template: '<div class="cly-vue-section bu-columns bu-is-gapless bu-is-multiline">\
+                        <div class="bu-column bu-is-full"><h4>{{title}}</h4></div>\
+                        <div class="bu-column bu-is-full cly-vue-section__content">\
                             <slot></slot>\
                         </div>\
                     </div>'

@@ -16,6 +16,15 @@
 	margin: 0;
 }
 
-.section:not(:last-child) {
-	margin-bottom: 32px;
+.cly-vue-section{
+	&__content {
+		background-color:white;
+		border-top:1px solid #ECECEC;
+		border-bottom:2px solid #ECECEC;
+	}
+
+	&:not(:last-child) {
+		margin-bottom: 32px;
+	}
+
 }
