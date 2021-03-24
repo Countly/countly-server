@@ -47,7 +47,7 @@
                 currentStepIndex: 0,
                 stepContents: [],
                 isMounted: false,
-                isSubmissionAllowed: false
+                isSubmissionAllowed: true
             };
         },
         computed: {
@@ -90,7 +90,7 @@
                 }, true);
             },
             passedScope: function() {
-                var defaultKeys = ["editedObject", "currentStepId", "isSubmissionAllowed"],
+                var defaultKeys = ["editedObject", "currentStepId", "isSubmissionAllowed", "submit"],
                     self = this;
 
                 var passed = defaultKeys.reduce(function(acc, val) {
@@ -134,9 +134,9 @@
                 this.callValidators("reset");
                 this.setStep(0);
             },
-            submit: function() {
+            submit: function(force) {
                 this.beforeLeavingStep();
-                if (this.isSubmissionAllowed) {
+                if (this.isSubmissionAllowed || force === true) {
                     this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
                     if (this.doClose) {
                         this.doClose();
@@ -184,7 +184,10 @@
     }));
 
     Vue.component("cly-form", countlyBaseComponent.extend({
-        mixins: [MultiStepFormMixin]
+        mixins: [MultiStepFormMixin],
+        template: '<div class="cly-vue-form"><slot name="default"\n' +
+                    'v-bind="passedScope">\n' +
+                '</slot></div>\n'
     }));
 
     Vue.component("cly-form-step", BaseStep.extend({

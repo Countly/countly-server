@@ -66,6 +66,28 @@
                 Selected value: {{selectedCheck}}
             </div>
         </cly-section>
+        <cly-section title="Form">
+            <div class="example-cell">
+                <cly-form 
+                    :initial-edited-object="submittedForm"
+                    @submit="onFormSubmit">
+                    <template v-slot="formScope">
+                        <cly-form-step>
+                            <validation-provider rules="required" v-slot="v">
+                                <el-input v-model="formScope.editedObject.name"></el-input>
+                            </validation-provider>
+                            <validation-provider rules="required" v-slot="v">
+                                <el-input v-model="formScope.editedObject.surname"></el-input>
+                            </validation-provider>
+                        </cly-form-step>
+                        <el-button :disabled="!formScope.isSubmissionAllowed" @click="formScope.submit()">Submit</el-button>
+                    </template>
+                </cly-form>
+            </div>
+            <div class="example-cell">
+                Form value: {{submittedForm}}
+            </div>
+        </cly-section>
     </div>
 </script>
 <script type="text/x-template" id="form-dropdown-template">

@@ -71,6 +71,7 @@
                 manyItems.push({name: "Type " + i, value: i});
             }
             return {
+                submittedForm: {name: 'John', surname: 'Doe'},
                 listBoxOptions: [
                     {"label": "hello0", "value": 0},
                     {"label": "hello1", "value": 1},
@@ -127,6 +128,11 @@
                 selectDWModel: null,
                 selectDWItems: manyItems
             };
+        },
+        methods: {
+            onFormSubmit: function(submitted) {
+                this.submittedForm = submitted;
+            }
         }
     });
     var FormDropdown = countlyVue.views.BaseView.extend({
