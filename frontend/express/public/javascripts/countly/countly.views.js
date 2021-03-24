@@ -2280,7 +2280,8 @@ window.ManageAppsView = countlyView.extend({
                     type: "GET",
                     url: countlyCommon.API_PARTS.apps.w + '/update',
                     data: {
-                        args: JSON.stringify(args)
+                        args: JSON.stringify(args),
+                        app_id: args.app_id
                     },
                     dataType: "json",
                     success: function(data) {
@@ -2927,7 +2928,8 @@ window.ManageAppsView = countlyView.extend({
                         args: JSON.stringify({
                             app_id: appId2,
                             period: period
-                        })
+                        }),
+                        app_id: appId2
                     },
                     dataType: "json",
                     success: function(result1) {
@@ -2976,7 +2978,8 @@ window.ManageAppsView = countlyView.extend({
                         data: {
                             args: JSON.stringify({
                                 app_id: app_id
-                            })
+                            }),
+                            app_id: app_id
                         },
                         dataType: "json",
                         success: function() {
@@ -3102,7 +3105,8 @@ window.ManageAppsView = countlyView.extend({
                     type: "GET",
                     url: countlyCommon.API_PARTS.apps.w + '/update',
                     data: {
-                        args: JSON.stringify(args)
+                        args: JSON.stringify(args),
+                        app_id: args.app_id
                     },
                     dataType: "json",
                     success: function(data) {

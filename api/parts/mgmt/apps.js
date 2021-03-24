@@ -532,7 +532,6 @@ appsApi.updateAppPlugins = function(params) {
 * @returns {boolean} true if operation successful
 **/
 appsApi.deleteApp = function(params) {
-
     var argProps = {
             'app_id': {
                 'required': true,
@@ -557,8 +556,8 @@ appsApi.deleteApp = function(params) {
                 removeApp(app);
             }
             else {
-                common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err2, member) {
-                    if (hasDeleteRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
+                common.db.collection('members').findOne({'_id': params.member._id}, function(err2, member) {
+                    if (hasDeleteRight(FEATURE_NAME, params.qstring.args.app_id, member)) {
                         removeApp(app);
                     }
                     else {

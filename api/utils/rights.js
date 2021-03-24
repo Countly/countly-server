@@ -861,19 +861,19 @@ exports.hasAdminAccess = function(member, app_id) {
 };
 
 exports.hasCreateRight = function(feature, app_id, member) {
-    return member.permission.c[app_id].feature;
+    return member.global_admin || member.permission.c[app_id].feature;
 };
 
 exports.hasReadRight = function(feature, app_id, member) {
-    return member.permission.r[app_id].feature;
+    return member.global_admin || member.permission.r[app_id].feature;
 };
 
 exports.hasUpdateRight = function(feature, app_id, member) {
-    return member.permission.u[app_id].feature;
+    return member.global_admin || member.permission.u[app_id].feature;
 };
 
 exports.hasDeleteRight = function(feature, app_id, member) {
-    return member.permission.d[app_id].feature;
+    return member.global_admin || member.permission.d[app_id].feature;
 };
 
 /* not tested yet */
