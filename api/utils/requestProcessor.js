@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete } = require('./rights.js');
+const { validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -572,13 +572,13 @@ const processRequest = (params) => {
             case '/i/event_groups':
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.create);
+                    validateCreate(params, 'core', countlyApi.mgmt.eventGroups.create);
                     break;
                 case 'update':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.update);
+                    validateUpdate(params, 'core', countlyApi.mgmt.eventGroups.update);
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.remove);
+                    validateDelete(params, 'core', countlyApi.mgmt.eventGroups.remove);
                     break;
                 default:
                     break;
@@ -739,7 +739,7 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "app_id"');
                         return false;
                     }
-                    validateUserForWrite(params, function() {
+                    validateUpdate(params, 'core', function() {
                         common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
@@ -1000,7 +1000,7 @@ const processRequest = (params) => {
                 }
                 case 'delete_events':
                 {
-                    validateUserForWrite(params, function() {
+                    validateDelete(params, 'core', function() {
                         var idss = [];
                         try {
                             idss = JSON.parse(params.qstring.events);
@@ -1122,7 +1122,7 @@ const processRequest = (params) => {
                 }
                 case 'change_visibility':
                 {
-                    validateUserForWrite(params, function() {
+                    validateUpdate(params, 'core', function() {
                         common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
@@ -1405,7 +1405,7 @@ const processRequest = (params) => {
             case '/o/tasks': {
                 switch (paths[3]) {
                 case 'all':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1442,10 +1442,10 @@ const processRequest = (params) => {
                         }, (err, res) => {
                             common.returnOutput(params, res || []);
                         });
-                    }, params);
+                    });
                     break;
                 case 'count':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1474,10 +1474,10 @@ const processRequest = (params) => {
                         }, (err, res) => {
                             common.returnOutput(params, res || []);
                         });
-                    }, params);
+                    });
                     break;
                 case 'list':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1522,10 +1522,10 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 500, '"Query failed"');
                             }
                         });
-                    }, params);
+                    });
                     break;
                 case 'task':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (!params.qstring.task_id) {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
@@ -1542,10 +1542,10 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'Task does not exist');
                             }
                         });
-                    }, params);
+                    });
                     break;
                 case 'check':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (!params.qstring.task_id) {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
@@ -1561,7 +1561,7 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'Task does not exist');
                             }
                         });
-                    }, params);
+                    });
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1926,10 +1926,10 @@ const processRequest = (params) => {
                     }
                     break;
                 case 'get_event_groups':
-                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchEventGroups);
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchEventGroups);
                     break;
                 case 'get_event_group':
-                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchEventGroupById);
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchEventGroupById);
                     break;
                 case 'events':
                     if (params.qstring.events) {
@@ -1945,30 +1945,30 @@ const processRequest = (params) => {
                         }
                         else {
                             // TODO: handle here what permission should be required for here?
-                            validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchMergedEventData);
+                            validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventData);
                         }
                     }
                     else {
                         if (params.qstring.event && params.qstring.event.startsWith('[CLY]_group_')) {
-                            validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchMergedEventGroups, params.qstring.method);
+                            validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventGroups, params.qstring.method);
                         }
                         else {
                             params.truncateEventValuesList = true;
-                            validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                            validateRead(params, 'core', countlyApi.data.fetch.prefetchEventData, params.qstring.method);
                         }
                     }
                     break;
                 case 'get_events':
-                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
                     break;
                 case 'top_events':
-                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDataTopEvents);
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchDataTopEvents);
                     break;
                 case 'all_apps':
-                    validateUserForDataReadAPI(params, 'global_applications', countlyApi.data.fetch.fetchAllApps);
+                    validateRead(params, 'global_applications', countlyApi.data.fetch.fetchAllApps);
                     break;
                 case 'notes':
-                    validateUserForDataReadAPI(params, 'core', countlyApi.mgmt.users.fetchNotes);
+                    validateRead(params, 'core', countlyApi.mgmt.users.fetchNotes);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
