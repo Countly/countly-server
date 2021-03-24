@@ -3582,7 +3582,7 @@ window.ManageUsersView = countlyView.extend({
         if (!countlyAuth.validateCreate(this.featureName)) {
             $('#add-user-mgmt').hide();
         }
-
+        
         app.addDataExport("userinfo", function() {
             var ret = [];
             var elem;
@@ -3644,7 +3644,7 @@ window.ManageUsersView = countlyView.extend({
             }
             return ret;
         });
-
+       
         if (self._id) {
             $(self.el).prepend('<a class="back back-link"><span>' + jQuery.i18n.map["common.back"] + '</span></a>');
             $(self.el).find(".back").click(function() {

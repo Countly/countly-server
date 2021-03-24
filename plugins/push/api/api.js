@@ -485,7 +485,7 @@ const PUSH_CACHE_GROUP = 'P';
             }
         }
 
-        validateRead(params, FEATURE_NAME, push.getAllMessages, params);
+        validateRead(params, FEATURE_NAME, push.getAllMessages);
         return true;
     });
 
