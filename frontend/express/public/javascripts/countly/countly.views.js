@@ -3498,12 +3498,16 @@ window.ManageUsersView = countlyView.extend({
                             var apps = [];
 
                             for (var i = 0; i < row.permission._.a.length; i++) {
-                                apps.push('<b>' + countlyGlobal.apps[row.permission._.a[i]].name + '</b>');
+                                if (countlyGlobal.apps[row.permission._.a[i]]) {
+                                    apps.push('<b>' + countlyGlobal.apps[row.permission._.a[i]].name + '</b>');
+                                }
                             }
 
                             for (var i = 0; i < row.permission._.u.length; i++) {
                                 for (var j = 0; j < row.permission._.u[i].length; j++) {
-                                    apps.push(countlyGlobal.apps[row.permission._.u[i][j]].name);
+                                    if (countlyGlobal.apps[row.permission._.u[i][j]]) {
+                                        apps.push(countlyGlobal.apps[row.permission._.u[i][j]].name);
+                                    }
                                 }
                             }
 
