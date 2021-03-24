@@ -723,6 +723,8 @@ window.CrashesView = countlyView.extend({
             "active-filter": jQuery.i18n.map["crashes.all"],
             "active-action": jQuery.i18n.map["crashes.make-action"]
         };
+        var self = this;
+
         if (crashData.loss) {
             this.templateData.loss = true;
             this.templateData["big-numbers"].items.push({
@@ -731,7 +733,7 @@ window.CrashesView = countlyView.extend({
                 "help": "crashes.help-loss"
             });
         }
-        var self = this;
+        
         if (!isRefresh) {
             countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
             chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric], self.showOnGraph);
@@ -820,6 +822,17 @@ window.CrashesView = countlyView.extend({
             });
         }
 
+        if (!countlyAuth.validateDelete(self.featureName)) {
+            $('.delete-action').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(self.featureName)) {
+            $('.update-action').hide();
+        }
+
+        if (!countlyAuth.validateDelete(self.featureName) && !countlyAuth.validateUpdate(self.featureName)) {
+            $('.action-segmentation').hide();
+        }
     },
     buildQuery: function() {
         var self = this;
@@ -1257,6 +1270,7 @@ window.CrashesView = countlyView.extend({
 });
 
 window.CrashgroupView = countlyView.extend({
+    featureName: 'crashes',
     initialize: function() {
         this.loaded = true;
     },
@@ -1275,7 +1289,7 @@ window.CrashgroupView = countlyView.extend({
             url += crashData.url;
         }
         crashData.latest_version = (crashData.latest_version + "").replace(/:/g, '.');
-
+        
         if (this.old) {
             crashData.reserved_error = crashData.reserved_error || crashData.error;
             crashData.reserved_threads = crashData.reserved_threads || crashData.threads;
@@ -1950,6 +1964,31 @@ window.CrashgroupView = countlyView.extend({
             if (crashData.native_cpp) {
                 $(".error-download-binary").show();
             }
+        }
+
+        if (!countlyAuth.validateCreate(this.featureName)) {
+            $('#add_comment').hide();
+            $('#comment').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(this.featureName)) {
+            $('.crash-comment-edit').hide();
+        }
+
+        if (!countlyAuth.validateDelete(this.featureName)) {
+            $('.crash-comment-delete').hide();
+        }
+
+        if (!countlyAuth.validateDelete(self.featureName)) {
+            $('.delete-action').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(self.featureName)) {
+            $('.update-action').hide();
+        }
+
+        if (!countlyAuth.validateDelete(self.featureName) && !countlyAuth.validateUpdate(self.featureName)) {
+            $('#crashgroup-manipulation-trigger').hide();
         }
     },
     highlightStacktrace: function(code, callback) {
