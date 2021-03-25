@@ -295,9 +295,7 @@
                     else {
                         for (var feature in permission_object[countlyAuth.types[j]][user_apps[i][0]].allowed) {
                             permission_sets[i] = countlyAuth.giveFeaturePermission(countlyAuth.types[j], feature, permission_sets[i]);
-                            if (feature !== 'core') {
-                                $('#' + countlyAuth.types[j] + '-' + feature + '-' + i).countlyCheckbox().set(true);
-                            }
+                            $('#' + countlyAuth.types[j] + '-' + feature + '-' + i).countlyCheckbox().set(true);
                         }
                     }
                 }
