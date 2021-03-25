@@ -2046,12 +2046,17 @@ window.ManageAppsView = countlyView.extend({
     },
     renderCommon: function() {
         var appTypes = {}, self = this;
+        var adminApps = countlyAuth.getAdminApps();
+        var oAdminApps = [];
+        for (var i = 0; i < adminApps.length; i++) {
+            oAdminApps.push(countlyGlobal.apps[adminApps[i]]);
+        }
         var j = 0;
         for (j in app.appTypes) {
             appTypes[j] = jQuery.i18n.map["management-applications.types." + j] || j;
         }
         $(this.el).html(this.template({
-            admin_apps: countlyGlobal.admin_apps,
+            admin_apps: oAdminApps,
             app_types: appTypes
         }));
 
@@ -2059,9 +2064,9 @@ window.ManageAppsView = countlyView.extend({
         var timezones = this.getTimeZones();
 
         var appId = countlyCommon.ACTIVE_APP_ID;
-        if (!countlyGlobal.admin_apps[appId]) {
-            for (j in countlyGlobal.admin_apps) {
-                appId = j;
+        if (!adminApps[appId]) {
+            for (j in adminApps) {
+                appId = adminApps[j];
                 break;
             }
         }
@@ -2194,7 +2199,9 @@ window.ManageAppsView = countlyView.extend({
          * @returns {boolean} false - if no apps
          */
         function initAppManagement(app_id) {
-            if (jQuery.isEmptyObject(countlyGlobal.apps)) {
+            var adminApps = countlyAuth.getAdminApps();
+            var userApps = countlyAuth.getUserApps();
+            if (userApps.length === 0) {
                 showAdd();
                 firstApp();
                 $("body").off("click", "#save-first-app-add").on("click", "#save-first-app-add", function() {
@@ -2202,7 +2209,7 @@ window.ManageAppsView = countlyView.extend({
                 });
                 return false;
             }
-            else if (jQuery.isEmptyObject(countlyGlobal.admin_apps)) {
+            else if (countlyAuth.validateCreate('global_applications')) {
                 showAdd();
                 $("body").off("click", "#save-app-add").on("click", "#save-app-add", function() {
                     saveApp();
@@ -2224,7 +2231,7 @@ window.ManageAppsView = countlyView.extend({
                     });
                 }
 
-                if (countlyGlobal.admin_apps[app_id]) {
+                if (adminApps.indexOf(app_id) !== -1) {
                     $("#app-delete-button").addClass("inactive");
                 }
                 else {
@@ -2249,7 +2256,7 @@ window.ManageAppsView = countlyView.extend({
             if (countlyGlobal.config && countlyGlobal.config.code && $("#code-countly").length) {
                 $("#code-countly").show();
             }
-
+            
             app.onAppManagementSwitch(app_id);
 
             $("#app-edit-id").val(app_id);
@@ -2286,8 +2293,12 @@ window.ManageAppsView = countlyView.extend({
                     dataType: "json",
                     success: function(data) {
                         for (var modAttr in data) {
-                            countlyGlobal.apps[app_id][modAttr] = data[modAttr];
-                            countlyGlobal.admin_apps[app_id][modAttr] = data[modAttr];
+                            if (countlyGlobal.apps[app_id]) {
+                                countlyGlobal.apps[app_id][modAttr] = data[modAttr];
+                            }
+                            if (countlyGlobal.admin_apps[app_id]) {
+                                countlyGlobal.admin_apps[app_id][modAttr] = data[modAttr];
+                            }
                         }
 
                         initAppManagement(app_id);
@@ -2386,7 +2397,6 @@ window.ManageAppsView = countlyView.extend({
                     self.appManagementViews[index].beforeExpand();
                 }
             });
-
             /*
                 Accordion needs overflow auto during animation in order to keep contents intact.
                 We are adding overflow-visible class with a delay so that the dropdown elements
@@ -3111,9 +3121,14 @@ window.ManageAppsView = countlyView.extend({
                     dataType: "json",
                     success: function(data) {
                         for (var modAttr in data) {
-                            countlyGlobal.apps[app_id][modAttr] = data[modAttr];
-                            countlyGlobal.admin_apps[app_id][modAttr] = data[modAttr];
+                            if (countlyGlobal.apps[app_id]) {
+                                countlyGlobal.apps[app_id][modAttr] = data[modAttr];
+                            }
+                            if (countlyGlobal.admin_apps[app_id]) {
+                                countlyGlobal.admin_apps[app_id][modAttr] = data[modAttr];
+                            }
                         }
+                        
 
                         if (!ext) {
                             $("#save-app-edit").removeClass("disabled");
@@ -3817,11 +3832,11 @@ window.ManageUsersView = countlyView.extend({
         	$('.create-user-drawer').addClass('open');
 
             // step2: set local variables, drawer specific dom elements, strings etc.
-            var data = {};
+        	var data = {};
             var id = $(this).data('id');
             var url = countlyCommon.API_PARTS.users.r + '/id';
             data.id = id;
-
+            data.app_id = countlyCommon.ACTIVE_APP_ID;
             self.drawerMode = 'u';
             self.selectedMemberId = id;
             self.renderPermissionsTable();
@@ -3846,7 +3861,7 @@ window.ManageUsersView = countlyView.extend({
                     $('#new-user-group-select').remove();
                     $('.user-group-label').remove();
                     $(self).trigger('user-mgmt.user-selected', memberData);
-
+                    
                     // step5: fill form inputs with member values
                     $('.create-user-drawer').find('.full-name-text').val(memberData.full_name);
                     $('.create-user-drawer').find('.username-text').val(memberData.username);
@@ -3964,7 +3979,8 @@ window.ManageUsersView = countlyView.extend({
                     type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/delete',
                     data: {
-                        args: JSON.stringify(data)
+                        args: JSON.stringify(data),
+                        app_id: countlyCommon.ACTIVE_APP_ID
                     },
                     dataType: "json",
                     success: function() {
@@ -4142,7 +4158,8 @@ window.ManageUsersView = countlyView.extend({
                     type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/create',
                     data: {
-                        args: JSON.stringify(self.memberModel)
+                        args: JSON.stringify(self.memberModel),
+                        app_id: countlyCommon.ACTIVE_APP_ID
                     },
                     dataType: "json",
                     success: function(member) {
@@ -4182,7 +4199,8 @@ window.ManageUsersView = countlyView.extend({
                     type: "POST",
                     url: countlyCommon.API_PARTS.users.w + '/update',
                     data: {
-                        args: JSON.stringify(self.memberModel)
+                        args: JSON.stringify(self.memberModel),
+                        app_id: countlyCommon.ACTIVE_APP_ID
                     },
                     dataType: "json",
                     success: function() {
@@ -4355,6 +4373,7 @@ window.ManageUsersView = countlyView.extend({
     renderCommon: function() {
         var url = countlyCommon.API_PARTS.users.r + '/all';
         var data = {};
+        data.app_id = countlyCommon.ACTIVE_APP_ID;
         if (this._id) {
             url = countlyCommon.API_PARTS.users.r + '/id';
             data.id = this._id;
@@ -4618,7 +4637,8 @@ window.ManageUsersView = countlyView.extend({
             var currUserDetails = $(".user-details:visible");
             var url = countlyCommon.API_PARTS.users.r + '/reset_timeban';
             var data = {
-                username: currUserDetails.find(".username-text").val()
+                username: currUserDetails.find(".username-text").val(),
+                app_id: countlyCommon.ACTIVE_APP_ID
             };
             $.ajax({
                 url: url,
@@ -8777,20 +8797,28 @@ app.route("/analytics/device_type", "device_type", function() {
 app.route("/analytics/durations", "durations", function() {
     this.renderWhenReady(this.durationView);
 });
-app.route("/manage/apps", "manageApps", function() {
-    this.renderWhenReady(this.manageAppsView);
-});
-app.route("/manage/users", "manageUsers", function() {
-    this.manageUsersView._id = null;
-    this.renderWhenReady(this.manageUsersView);
-});
-app.route('/manage/users/:id', 'manageUsersId', function(id) {
-    this.manageUsersView._id = id;
-    this.renderWhenReady(this.manageUsersView);
-});
+if (countlyAuth.validateRead('global_applications')) {
+    app.route("/manage/apps", "manageApps", function() {
+        this.renderWhenReady(this.manageAppsView);
+    });
+}
+
+if (countlyAuth.validateRead('global_users')) {
+    app.route("/manage/users", "manageUsers", function() {
+        this.manageUsersView._id = null;
+        this.renderWhenReady(this.manageUsersView);
+    });
+
+    app.route('/manage/users/:id', 'manageUsersId', function(id) {
+        this.manageUsersView._id = id;
+        this.renderWhenReady(this.manageUsersView);
+    });
+}
+
 app.route("/manage/tasks", "longTasks", function() {
     this.renderWhenReady(this.longTaskView);
 });
+
 app.route("/analytics/events", "events", function() {
     this.renderWhenReady(this.eventsView);
 });
@@ -8836,13 +8864,18 @@ app.route('/analytics/manage-events/:tab', 'event-groups', function(tab) {
         app.navigate("/analytics/events", true);
     }
 });
-app.route("/manage/jobs", "manageJobs", function() {
-    this.renderWhenReady(this.jobsView);
-});
-app.route("/manage/jobs/:name", "manageJobName", function(name) {
-    this.jobDetailView.name = name;
-    this.renderWhenReady(this.jobDetailView);
-});
+
+if (countlyAuth.validateRead('global_jobs')) {
+    app.route("/manage/jobs", "manageJobs", function() {
+        this.renderWhenReady(this.jobsView);
+    });
+
+    app.route("/manage/jobs/:name", "manageJobName", function(name) {
+        this.jobDetailView.name = name;
+        this.renderWhenReady(this.jobDetailView);
+    });
+}
+
 
 app.addAppSwitchCallback(function() {
     if (countlyAuth.validateDelete('core') && countlyAuth.validateUpdate('core')) {

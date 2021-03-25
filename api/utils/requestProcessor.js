@@ -232,16 +232,16 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForGlobalAdmin(params, countlyApi.mgmt.users.createUser);
+                    validateCreate(params, 'global_users', countlyApi.mgmt.users.createUser);
                     break;
                 case 'update':
-                    validateUserForGlobalAdmin(params, countlyApi.mgmt.users.updateUser);
+                    validateUpdate(params, 'global_users', countlyApi.mgmt.users.updateUser);
                     break;
                 case 'delete':
-                    validateUserForGlobalAdmin(params, countlyApi.mgmt.users.deleteUser);
+                    validateDelete(params, 'global_users', countlyApi.mgmt.users.deleteUser);
                     break;
                 case 'deleteOwnAccount':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.deleteOwnAccount, params);
+                    validateDelete(params, 'global_users', countlyApi.mgmt.users.deleteOwnAccount);
                     break;
                 case 'ack':
                     validateUserForWriteAPI(countlyApi.mgmt.users.ackNotification, params);
@@ -273,12 +273,12 @@ const processRequest = (params) => {
                 }
                 switch (paths[3]) {
                 case 'save':
-                    validateUserForWriteAPI(params, () => {
+                    validateCreate(params, 'core', () => {
                         countlyApi.mgmt.users.saveNote(params);
                     });
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(params, () => {
+                    validateDelete(params, 'core', () => {
                         countlyApi.mgmt.users.deleteNote(params);
                     });
                     break;
@@ -1280,16 +1280,16 @@ const processRequest = (params) => {
             case '/o/users': {
                 switch (paths[3]) {
                 case 'all':
-                    validateUserForGlobalAdmin(params, countlyApi.mgmt.users.getAllUsers);
+                    validateRead(params, 'global_users', countlyApi.mgmt.users.getAllUsers);
                     break;
                 case 'me':
                     validateUserForMgmtReadAPI(countlyApi.mgmt.users.getCurrentUser, params);
                     break;
                 case 'id':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.getUserById, params);
+                    validateRead(params, 'global_users', countlyApi.mgmt.users.getUserById);
                     break;
                 case 'reset_timeban':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.resetTimeBan, params);
+                    validateUpdate(params, 'global_users', countlyApi.mgmt.users.resetTimeBan);
                     break;
                 case 'permissions':
                     validateRead(params, 'core', function() {
@@ -1896,7 +1896,7 @@ const processRequest = (params) => {
 
                 switch (params.qstring.method) {
                 case 'jobs':
-                    validateRead(params, "global_jobs", countlyApi.data.fetch.fetchJobs);
+                    validateRead(params, "global_jobs", countlyApi.data.fetch.fetchJobs('jobs', params));
                     break;
                 case 'total_users':
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');

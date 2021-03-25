@@ -375,25 +375,23 @@ appsApi.updateApp = function(params) {
                 });
             }
             else {
-                common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err2, member) {
-                    if (hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
-                        common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function() {
-                            plugins.dispatch("/i/apps/update", {
-                                params: params,
-                                appId: params.qstring.args.app_id,
-                                data: {
-                                    app: appBefore,
-                                    update: updatedApp
-                                }
-                            });
-                            iconUpload(params);
-                            common.returnOutput(params, updatedApp);
+                if (hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
+                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function() {
+                        plugins.dispatch("/i/apps/update", {
+                            params: params,
+                            appId: params.qstring.args.app_id,
+                            data: {
+                                app: appBefore,
+                                update: updatedApp
+                            }
                         });
-                    }
-                    else {
-                        common.returnMessage(params, 401, 'User does not have admin rights for this app');
-                    }
-                });
+                        iconUpload(params);
+                        common.returnOutput(params, updatedApp);
+                    });
+                }
+                else {
+                    common.returnMessage(params, 401, 'User does not have admin rights for this app');
+                }
             }
         }
     });
@@ -556,14 +554,12 @@ appsApi.deleteApp = function(params) {
                 removeApp(app);
             }
             else {
-                common.db.collection('members').findOne({'_id': params.member._id}, function(err2, member) {
-                    if (hasDeleteRight(FEATURE_NAME, params.qstring.args.app_id, member)) {
-                        removeApp(app);
-                    }
-                    else {
-                        common.returnMessage(params, 401, 'User does not have admin rights for this app');
-                    }
-                });
+                if (hasDeleteRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
+                    removeApp(app);
+                }
+                else {
+                    common.returnMessage(params, 401, 'User does not have admin rights for this app');
+                }
             }
         }
         else {
@@ -642,18 +638,13 @@ appsApi.resetApp = function(params) {
                 common.returnMessage(params, 200, 'Success');
             }
             else {
-                common.db.collection('members').findOne({
-                    admin_of: appId,
-                    api_key: params.member.api_key
-                }, function(err2, member) {
-                    if (!err2 && member) {
-                        deleteAppData(appId, false, params, app);
-                        common.returnMessage(params, 200, 'Success');
-                    }
-                    else {
-                        common.returnMessage(params, 401, 'User does not have admin rights for this app');
-                    }
-                });
+                if (hasDeleteRight(FEATURE_NAME, appId, params.member)) {
+                    deleteAppData(appId, false, params, app);
+                    common.returnMessage(params, 200, 'Success');
+                }
+                else {
+                    common.returnMessage(params, 401, 'User does not have admin rights for this app');
+                }
             }
         }
         else {

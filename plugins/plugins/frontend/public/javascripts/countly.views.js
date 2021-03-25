@@ -59,7 +59,7 @@ window.PluginsView = countlyView.extend({
                     {
                         "mData": function(row, type) {
                             if (type === "display") {
-                                var disabled = (row.prepackaged) ? 'disabled' : '';
+                                var disabled = (row.prepackaged || !countlyAuth.validateUpdate(self.featureName)) ? 'disabled' : '';
                                 var input = '<div data-initial="' + row.enabled + '" class="on-off-switch ' + disabled + '">';
 
                                 if (row.enabled) {

@@ -56,13 +56,15 @@
         }
 
         if (!member.global_admin) {
+            /*
             if (typeof feature !== 'undefined' && feature.substr(0, 7) === 'global_') {
                 feature = feature.split('_')[1];
                 if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType].global === "object") && (member.permission[accessType].global.all || member.permission[accessType].global.allowed[feature]))) {
                     return false;
                 }
             }
-            else if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][app_id] === "object") && (member.permission[accessType][app_id].all || member.permission[accessType][app_id].allowed[feature]))) {
+            */
+            if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][app_id] === "object") && (member.permission[accessType][app_id].all || member.permission[accessType][app_id].allowed[feature]))) {
                 return false;
             }
             else {
@@ -98,7 +100,6 @@
         if (member.locked) {
             return false;
         }
-
         if (!member.global_admin) {
             /*
             if (typeof feature !== 'undefined' && feature.substr(0, 7) === 'global_') {
@@ -304,5 +305,36 @@
 
         return permission_sets;
     }
+
+    countlyAuth.getUserApps = function() {
+        var member = countlyGlobal.member;
+        var userApps = [];
+        if (member.global_admin) {
+            for (var app in countlyGlobal.apps) {
+                userApps.push(app);
+            }
+            return userApps;
+        }
+        else {
+            for (var i = 0; i < member.permission._.u.length; i++) {
+                userApps = userApps.concat(member.permission._.u[i]);
+            }
+            return userApps.concat(member.permission._.a);
+        }
+    };
+
+    countlyAuth.getAdminApps = function() {
+        var member = countlyGlobal.member;
+        var adminApps = [];
+        if (member.global_admin) {
+            for (var app in countlyGlobal.apps) {
+                adminApps.push(app);
+            }
+            return adminApps;
+        }
+        else {
+            return member.permission._.a;
+        }
+    };
 
 })(window.countlyAuth = window.countlyAuth || {});

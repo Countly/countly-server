@@ -37,10 +37,6 @@ usersApi.getCurrentUser = function(params) {
 * @returns {boolean} true if fetched data from db
 **/
 usersApi.getUserById = function(params) {
-    if (!params.member.global_admin) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
     if (!params.qstring.id || params.qstring.id.length !== 24) {
         common.returnMessage(params, 401, 'Missing or incorrect user id parameter');
         return false;
@@ -75,10 +71,6 @@ usersApi.getUserById = function(params) {
 * @returns {boolean} true if fetched data from db
 **/
 usersApi.getAllUsers = function(params) {
-    if (!params.member.global_admin) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
     common.db.collection('members').find({}, {
         password: 0,
         appSortList: 0
@@ -146,11 +138,6 @@ usersApi.getAllUsers = function(params) {
 * @returns {boolean} true if timeban reseted
 **/
 usersApi.resetTimeBan = function(params) {
-    if (!params.member.global_admin) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
-
     common.db.collection('failed_logins').remove({_id: JSON.stringify(["login", params.qstring.username])}, (err) => {
         if (err) {
             common.returnMessage(params, 500, 'Remove from collection failed.');
@@ -170,11 +157,6 @@ usersApi.resetTimeBan = function(params) {
 * @returns {boolean} true if user created
 **/
 usersApi.createUser = function(params) {
-    if (!params.member.global_admin) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
-
     var argProps = {
             'full_name': {
                 'required': true,
@@ -390,11 +372,6 @@ usersApi.updateUser = async function(params) {
         return false;
     }
 
-    if (!(params.member.global_admin || params.member._id === params.qstring.args.user_id)) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
-
     if (updatedMember.password) {
         var secret = countlyConfig.passwordSecret || "";
         passwordNoHash = updatedMember.password;
@@ -461,11 +438,6 @@ usersApi.deleteUser = function(params) {
             }
         },
         userIds = [];
-
-    if (!params.member.global_admin) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
 
     var deleteUserValidation = common.validateArgs(params.qstring.args, argProps, true);
     if (!(deleteUserValidation.obj && (userIds = deleteUserValidation.obj.user_ids))) {

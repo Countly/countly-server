@@ -5,7 +5,7 @@ var plugin = {},
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
-    { validateRead, validateUpdate } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateCreate } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'global_plugins';
 
@@ -21,10 +21,7 @@ const FEATURE_NAME = 'global_plugins';
                 common.returnMessage(params, 400, 'Not allowed in containerized environment');
                 return false;
             }
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
+
             if (typeof params.qstring.plugin !== 'undefined' && params.qstring.plugin !== 'plugins') {
                 try {
                     params.qstring.plugin = JSON.parse(params.qstring.plugin);
@@ -178,12 +175,8 @@ const FEATURE_NAME = 'global_plugins';
                 });
             });
         };
-        var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
-        validateUserForMgmtReadAPI(function() {
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
+        
+        validateRead(params, FEATURE_NAME, function() {
             var dir = path.resolve(__dirname, "../../");
             walk(dir, function(err, results) {
                 if (err) {
@@ -191,7 +184,7 @@ const FEATURE_NAME = 'global_plugins';
                 }
                 common.returnOutput(params, results || {});
             });
-        }, params);
+        });
         return true;
     });
 
@@ -210,10 +203,6 @@ const FEATURE_NAME = 'global_plugins';
         var params = ob.params;
 
         validateUpdate(params, FEATURE_NAME, function() {
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
             var data = {};
             if (params.qstring.configs) {
                 try {
@@ -255,18 +244,13 @@ const FEATURE_NAME = 'global_plugins';
 
     plugins.register("/o/configs", function(ob) {
         var params = ob.params;
-        var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
-        validateUserForMgmtReadAPI(function() {
-            if (!params.member.global_admin) {
-                common.returnMessage(params, 401, 'User is not a global administrator');
-                return false;
-            }
+        validateRead(params, FEATURE_NAME, function() {
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getAllConfigs();
                 delete confs.services;
                 common.returnOutput(params, confs);
             });
-        }, params);
+        });
         return true;
     });
 
@@ -309,13 +293,12 @@ const FEATURE_NAME = 'global_plugins';
 
     plugins.register("/o/userconfigs", function(ob) {
         var params = ob.params;
-        var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
-        validateUserForMgmtReadAPI(function() {
+        validateRead(params, FEATURE_NAME, function() {
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getUserConfigs(params.member.settings);
                 common.returnOutput(params, confs);
             });
-        }, params);
+        });
         return true;
     });
 
@@ -354,13 +337,9 @@ const FEATURE_NAME = 'global_plugins';
 
     plugins.register("/o/email_test", function(ob) {
         // check if global admin
-        ob.validateUserForGlobalAdmin(ob.params, function(params) {
+        validateCreate(ob.params, FEATURE_NAME, function(params) {
             const member = ob.params.member || {};
-            if (!member.global_admin || !member.email) {
-                common.returnMessage(params, 401, 'User is not a global administrator or no valid email address');
-                return true;
-            }
-
+            
             var fullpath = path.resolve(__dirname, "../");
             var local_path = fullpath + "/frontend/public/localization/plugins.properties";
             if (params.member.lang && params.member.lang !== "en") {

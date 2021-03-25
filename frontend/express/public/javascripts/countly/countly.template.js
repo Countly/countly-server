@@ -4120,6 +4120,7 @@ Backbone.history.checkUrl = function() {
     }
 };
 
+/*
 var checkGlobalAdminOnlyPermission = function() {
     var userCheckList = [
         "/manage/users",
@@ -4131,10 +4132,9 @@ var checkGlobalAdminOnlyPermission = function() {
     ];
 
     if (!countlyGlobal.member.global_admin && !countlyGlobal.config.autonomous) {
-
         var existed = false;
         var checkList = userCheckList;
-        if (countlyGlobal.admin_apps && Object.keys(countlyGlobal.admin_apps).length) {
+        if (countlyAuth.getAdminApps(countlyGlobal.member) && countlyAuth.getAdminApps(countlyGlobal.member).length) {
             checkList = adminCheckList;
         }
         checkList.forEach(function(item) {
@@ -4142,16 +4142,15 @@ var checkGlobalAdminOnlyPermission = function() {
                 existed = true;
             }
         });
-
         if (existed === true) {
-
             window.location.hash = "/";
             return false;
         }
     }
     return true;
 };
-Backbone.history.urlChecks.push(checkGlobalAdminOnlyPermission);
+*/
+//Backbone.history.urlChecks.push(checkGlobalAdminOnlyPermission);
 
 
 //initial hash check
