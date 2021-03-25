@@ -339,8 +339,10 @@ app.addRefreshScript('/users#', modifyUserDetailsForPush);
 app.addPageScript('/users#', modifyUserDetailsForPush);
 
 $(document).ready(function() {
-    app.addMenuForType("mobile", "reach", {code: "push", text: "push.sidebar.section", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
-    app.addSubMenuForType("mobile", "push", {code: "messaging", url: "#/messaging", text: "push.sidebar.overview", priority: 10});
+    if (countlyAuth.validateRead('push')) {
+        app.addMenuForType("mobile", "reach", {code: "push", text: "push.sidebar.section", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+        app.addSubMenuForType("mobile", "push", {code: "messaging", url: "#/messaging", text: "push.sidebar.overview", priority: 10});
+    }
 
     if (app.configurationsView) {
         app.configurationsView.registerLabel("push", "push.plugin-title");
