@@ -3817,11 +3817,11 @@ window.ManageUsersView = countlyView.extend({
         	$('.create-user-drawer').addClass('open');
 
             // step2: set local variables, drawer specific dom elements, strings etc.
-        	var data = {};
+            var data = {};
             var id = $(this).data('id');
             var url = countlyCommon.API_PARTS.users.r + '/id';
             data.id = id;
-                
+
             self.drawerMode = 'u';
             self.selectedMemberId = id;
             self.renderPermissionsTable();
@@ -3831,7 +3831,7 @@ window.ManageUsersView = countlyView.extend({
             $('.create-user-drawer .discard-changes').show();
             $('.create-user-drawer .create-user-drawer-detail').hide();
             $('.create-user-drawer .drawer-loading').show();
-            $('.create-user-drawer #create-user-button').html($.i18n.map['common.save']);
+            $('.create-user-drawer #create-user-button').html($.i18n.map['management-users.save-changes']);
 
             // step3: get member data
             $.ajax({
@@ -3846,7 +3846,7 @@ window.ManageUsersView = countlyView.extend({
                     $('#new-user-group-select').remove();
                     $('.user-group-label').remove();
                     $(self).trigger('user-mgmt.user-selected', memberData);
-                    
+
                     // step5: fill form inputs with member values
                     $('.create-user-drawer').find('.full-name-text').val(memberData.full_name);
                     $('.create-user-drawer').find('.username-text').val(memberData.username);
