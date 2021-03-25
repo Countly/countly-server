@@ -2482,6 +2482,9 @@ var AppRouter = Backbone.Router.extend({
                         self.activeAppName = appName;
                         self.activeAppKey = appKey;
                         self.switchApp(appId);
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1000);
                     }
                 }
                 else {
@@ -2557,6 +2560,9 @@ var AppRouter = Backbone.Router.extend({
                     self.activeAppName = appName;
                     self.activeAppKey = appKey;
                     self.switchApp(appId);
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1000);
                 }
             });
 
