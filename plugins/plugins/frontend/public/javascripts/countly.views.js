@@ -301,7 +301,7 @@ window.ConfigurationsView = countlyView.extend({
 
         this.registerInput("apps.country", function(value) {
             var zones = app.manageAppsView.getTimeZones();
-            var select = '<div class="cly-select" id="apps.country">' +
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + '" id="apps.country">' +
                 '<div class="select-inner">' +
                 '<div class="text-container">';
             if (!zones[value]) {
@@ -329,7 +329,7 @@ window.ConfigurationsView = countlyView.extend({
 
         this.registerInput("frontend.theme", function(value) {
             var themes = countlyPlugins.getThemeList();
-            var select = '<div class="cly-select" id="frontend.theme">' +
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + '" id="frontend.theme">' +
                 '<div class="select-inner">' +
                 '<div class="text-container">';
             if (value && value.length) {
@@ -363,7 +363,7 @@ window.ConfigurationsView = countlyView.extend({
         //register some common system config inputs
         this.registerInput("logs.default", function(value) {
             var categories = ['debug', 'info', 'warn', 'error'];
-            var select = '<div class="cly-select" id="logs.default">' +
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + '" id="logs.default">' +
                 '<div class="select-inner">' +
                 '<div class="text-container">';
             if (value && value.length) {
@@ -389,11 +389,11 @@ window.ConfigurationsView = countlyView.extend({
         });
 
         this.registerInput("security.dashboard_additional_headers", function(value) {
-            return '<textarea rows="5" style="width:100%" id="security.dashboard_additional_headers">' + (value || "") + '</textarea>';
+            return '<textarea rows="5" ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' style="width:100%" id="security.dashboard_additional_headers">' + (value || "") + '</textarea>';
         });
 
         this.registerInput("security.api_additional_headers", function(value) {
-            return '<textarea rows="5" style="width:100%" id="security.api_additional_headers">' + (value || "") + '</textarea>';
+            return '<textarea rows="5" ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' style="width:100%" id="security.api_additional_headers">' + (value || "") + '</textarea>';
         });
 
         this.registerInput("apps.timezone", function() {
@@ -401,7 +401,7 @@ window.ConfigurationsView = countlyView.extend({
         });
 
         this.registerInput("push.proxypass", function(value) {
-            return '<input type="password" id="push.proxypass" value="' + (value || '') + '"/>';
+            return '<input type="password" ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' id="push.proxypass" value="' + (value || '') + '"/>';
         });
 
         this.registerLabel("frontend.google_maps_api_key", "configs.frontend-google_maps_api_key");
@@ -416,7 +416,7 @@ window.ConfigurationsView = countlyView.extend({
                 43200: jQuery.i18n.prop("common.every.hours", 12),
                 86400: jQuery.i18n.prop("common.every.hours", 24)
             };
-            var select = '<div class="cly-select" id="api.reports_regenerate_interval">' +
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + '" id="api.reports_regenerate_interval">' +
                 '<div class="select-inner">' +
                 '<div class="text-container">';
             if (!values[value]) {
@@ -446,7 +446,7 @@ window.ConfigurationsView = countlyView.extend({
         this.registerLabel("api.google_maps_api_key", "configs.frontend-google_maps_api_key");
 
         this.registerInput("api.send_test_email", function() {
-            return '<div id="send_test_email" style="margin-left: 0px;" class="icon-button green">Send</div>';
+            return '<div id="send_test_email" style="margin-left: 0px;" class="icon-button green ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + '">Send</div>';
         });
     },
     beforeRender: function() {
@@ -1237,8 +1237,7 @@ window.ConfigurationsView = countlyView.extend({
                     return configsData[i][key];
                 });
                 var userLevelLabel = '<div data-localize="' + jQuery.i18n.map["configs.user-level-configuration"] + '">' + jQuery.i18n.map["configs.user-level-configuration"] + '</div><span class="config-help" data-localize="' + jQuery.i18n.map["configs.help.user-level-configuration"] + '">' + jQuery.i18n.map["configs.help.user-level-configuration"] + '</span>';
-
-                var userLevelInput = '<div class="cly-multi-select user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">';
+                var userLevelInput = '<div class="cly-multi-select ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">';
                 userLevelInput += '<div class="select-inner">';
                 userLevelInput += '<div class="text-container">';
                 userLevelInput += '<div class="text">';
@@ -1272,9 +1271,6 @@ window.ConfigurationsView = countlyView.extend({
         if (!first) {
             configsHTML += "</table>";
         }
-
-
-
         return configsHTML;
     },
     getLabelName: function(id, value) {
@@ -1331,10 +1327,10 @@ window.ConfigurationsView = countlyView.extend({
             var input = '<div class="on-off-switch">';
 
             if (value) {
-                input += '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '" checked>';
+                input += '<input type="checkbox" ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '" checked>';
             }
             else {
-                input += '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '">';
+                input += '<input type="checkbox" ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '">';
             }
 
             input += '<label class="on-off-switch-label" for="' + id + '"></label>';
@@ -1343,10 +1339,10 @@ window.ConfigurationsView = countlyView.extend({
             return input;
         }
         else if (typeof value === "number") {
-            return "<input type='number' id='" + id + "' value='" + value + "' max='2147483647' min='0' onkeyup='this.value= (parseInt(this.value) > 2147483647) ? 2147483647 : this.value;'/>";
+            return "<input type='number' " + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + " id='" + id + "' value='" + value + "' max='2147483647' min='0' onkeyup='this.value= (parseInt(this.value) > 2147483647) ? 2147483647 : this.value;'/>";
         }
         else {
-            return "<input type='text' id='" + id + "' value='" + value + "' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\"/>";
+            return "<input type='text' " + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + " id='" + id + "' value='" + value + "' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\"/>";
         }
     },
     getLabel: function(id) {
