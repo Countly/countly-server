@@ -3717,7 +3717,7 @@ $(document).ready(function() {
         app.configurationsView.registerLabel("crashes", "crashes.title");
         app.configurationsView.registerInput("crashes.grouping_strategy", function(value) {
             var categories = ['error_and_file', 'stacktrace'];
-            var select = '<div class="cly-select crashes-group-input" id="crashes.grouping_strategy">' +
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate(app.crashesView.featureName) ? '' : 'disabled') + '" crashes-group-input" id="crashes.grouping_strategy">' +
                 '<div class="select-inner">' +
                 '<div class="text-container">';
             if (value && value.length) {
