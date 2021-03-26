@@ -330,7 +330,7 @@ window.SystemLogsView = countlyView.extend({
 
 //register views
 app.systemLogsView = new SystemLogsView();
-if (countlyGlobal.member.global_admin) {
+if (countlyAuth.validateRead(app.systemLogsView.featureName)) {
     app.route('/manage/systemlogs', 'systemlogs', function() {
         this.systemLogsView._query = null;
         this.renderWhenReady(this.systemLogsView);
