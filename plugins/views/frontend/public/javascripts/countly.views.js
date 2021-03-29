@@ -1084,18 +1084,13 @@ app.addPageScript("/drill#", function() {
 
             $("#drill-navigation").find(".menu[data-open=table-view]").hide();
 
-            self.resetResults(currEvent, drillClone, false, function() {
+            $.when(countlySegmentation.initialize(currEvent)).then(function() {
+                $("#drill-filter-view").replaceWith(drillClone.clone(true));
+                self.adjustFilters();
                 if (!self.keepQueryTillExec) {
                     self.draw(true, false);
                 }
             });
-            // $.when(countlySegmentation.initialize(currEvent)).then(function() {
-            //     $("#drill").replaceWith(drillClone.clone(true));
-            //     self.adjustFilters();
-            //     if (!self.keepQueryTillExec) {
-            //         self.draw(true, false);
-            //     }
-            // });
         });
         setTimeout(function() {
             // drillClone = $("#drill").clone(true);
