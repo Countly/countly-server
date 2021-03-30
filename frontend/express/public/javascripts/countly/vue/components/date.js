@@ -113,7 +113,8 @@
         globalDaysRange.push({
             date: daysCursor.toDate(),
             title: daysCursor.format("MMMM YYYY"),
-            key: daysCursor.unix()
+            key: daysCursor.unix(),
+            anchorClass: "anchor-" + daysCursor.unix(),
         });
         daysCursor = daysCursor.add(1, "M");
     }
@@ -122,10 +123,14 @@
         globalMonthsRange.push({
             date: monthsCursor.toDate(),
             title: monthsCursor.format("YYYY"),
-            key: monthsCursor.unix()
+            key: monthsCursor.unix(),
+            anchorClass: "anchor-" + monthsCursor.unix(),
         });
         monthsCursor = monthsCursor.add(1, "Y");
     }
+
+    Object.freeze(globalDaysRange);
+    Object.freeze(globalMonthsRange);
 
     function getInitialState(instance) {
         var formatter = null,
@@ -202,7 +207,7 @@
                 this.visible = visible;
             }
         },
-        template: '<div class="cly-vue-daterp__date-table-wrapper" :class="[\'anchor-\' + dateMeta.key]">\
+        template: '<div class="cly-vue-daterp__date-table-wrapper" :class="dateMeta.anchorClass">\
                         <span class="text-medium">{{ dateMeta.title }}</span>\
                         <table-component v-if="visible" v-bind="$attrs" v-on="$listeners">\
                         </table-component>\
