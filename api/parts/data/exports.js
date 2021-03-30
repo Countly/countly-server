@@ -71,10 +71,28 @@ function flattenObject(ob, fields) {
             }
         }
         else if (type === "[object Array]") {
-            if (fields) {
-                fields[i] = true;
+            var is_complex = false;
+            for (let p = 0; p < ob[i].length; p++) { //check if entities are complex.
+                let type1 = Object.prototype.toString.call(ob[i][p]);
+                if (ob[i][p] && (type1 === "[object Object]" || type1 === "[object Array]")) {
+                    is_complex = true;
+                }
             }
-            toReturn[i] = ob[i].map(preventCSVInjection).join(", ");
+            if (!is_complex) {
+                if (fields) {
+                    fields[i] = true;
+                }
+                toReturn[i] = ob[i].map(preventCSVInjection).join(", "); //just join values
+            }
+            else {
+                for (let p = 0; p < ob[i].length; p++) {
+                    if (fields) {
+                        fields[i + delimiter + p] = true;
+                    }
+                    toReturn[i + delimiter + p] = preventCSVInjection(JSON.stringify(ob[i][p])); //stringify values
+                }
+            }
+
         }
         else {
             if (fields) {
