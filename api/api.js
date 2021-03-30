@@ -95,8 +95,12 @@ plugins.connectToAllDatabases().then(function() {
         password_number: true,
         password_symbol: true,
         password_expiration: 0,
-        dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
-        api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*"
+        password_rotation: 3,
+        password_autocomplete: true,
+        dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
+        api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
+        dashboard_rate_limit_window: 60,
+        dashboard_rate_limit_requests: 500
     });
 
     /**

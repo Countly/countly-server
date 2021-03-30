@@ -287,6 +287,9 @@
     line-height: 29px;
     color: #6d6d6d;
 }
+#alert-view .alert-compare-value-class.datapoint:after {
+    content: "" !important;
+}
 #alert-view .alert-compare-value-class2:after {
     right: 30px !important;
 }
