@@ -102,37 +102,45 @@
         };
     }
 
+    var globalDaysRange = [],
+        globalMonthsRange = [],
+        globalMin = moment([2010, 0, 1]),
+        globalMax = moment(),
+        daysCursor = moment(globalMin.toDate()),
+        monthsCursor = moment(globalMin.toDate());
+
+    while (daysCursor < globalMax) {
+        globalDaysRange.push({
+            date: daysCursor.toDate(),
+            title: daysCursor.format("MMMM YYYY"),
+            key: daysCursor.unix()
+        });
+        daysCursor = daysCursor.add(1, "M");
+    }
+
+    while (monthsCursor < globalMax) {
+        globalMonthsRange.push({
+            date: monthsCursor.toDate(),
+            title: monthsCursor.format("YYYY"),
+            key: monthsCursor.unix()
+        });
+        monthsCursor = monthsCursor.add(1, "Y");
+    }
+
     function getInitialState(instance) {
-        var globalRange = [],
-            globalMin = moment([2010, 0, 1]),
-            globalMax = moment(),
-            cursor = moment(globalMin.toDate()),
-            formatter = null,
-            tableType = "";
+        var formatter = null,
+            tableType = "",
+            globalRange = null;
 
         if (instance.type === "monthrange") {
             formatter = "YYYY-MM";
             tableType = "month";
-            while (cursor < globalMax) {
-                globalRange.push({
-                    date: cursor.toDate(),
-                    title: cursor.format("YYYY"),
-                    key: cursor.unix()
-                });
-                cursor = cursor.add(1, "Y");
-            }
+            globalRange = globalMonthsRange;
         }
         else {
             formatter = "YYYY-MM-DD";
             tableType = "date";
-            while (cursor < globalMax) {
-                globalRange.push({
-                    date: cursor.toDate(),
-                    title: cursor.format("MMMM YYYY"),
-                    key: cursor.unix()
-                });
-                cursor = cursor.add(1, "M");
-            }
+            globalRange = globalDaysRange;
         }
 
         var state = {
