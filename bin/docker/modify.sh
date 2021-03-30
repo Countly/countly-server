@@ -20,17 +20,13 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 	if [ -d /opt/countly/plugins/ab-testing ]; then
 		if [ "${ID}" == "debian" ] || [ "${ID}" == "ubuntu" ]; then
 			apt-get -y install python3-pip
-			python3 -m pip install pandas
-			python3 -m pip install pystan
-			cd /opt/countly/plugins/ab-testing/api/bayesian && python3 model.py
 		else
 			yum install -y python36 python36-libs python36-devel python36-pip
-            # shellcheck disable=SC1091
-			python3 -m pip install pandas pystan
-			cd /opt/countly/plugins/ab-testing/api/bayesian && python3 model.py
-			python3 -m pip uninstall -qy pystan
-			# yum remove -y python36-devel centos-release-scl devtoolset-7-gcc-c++
 		fi
+		# shellcheck disable=SC1091
+		python3 -m pip install pandas pystan
+		cd /opt/countly/plugins/ab-testing/api/bayesian && python3 model.py
+		python3 -m pip uninstall -qy pystan
 	fi
 fi
 

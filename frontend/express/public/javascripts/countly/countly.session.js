@@ -401,8 +401,7 @@
     countlySession.getTopUserBars = function() {
 
         var barData = [],
-            maxItems = 3,
-            totalSum = 0;
+            maxItems = 3;
 
         var chartData = [
                 { data: [], label: jQuery.i18n.map["common.table.total-users"] }
@@ -416,23 +415,23 @@
                 }
             ];
 
-        var totalUserData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps),
+        var _db = countlySession.getDb(),
+            dashboardData = countlyCommon.getDashboardData(_db, ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u: "users"}, countlySession.clearObject),
+            totalUserData = countlyCommon.extractChartData(_db, countlySession.clearObject, chartData, dataProps),
             topUsers = _.sortBy(_.reject(totalUserData.chartData, function(obj) {
                 return parseInt(obj.t) === 0;
             }), function(obj) {
                 return -obj.t;
             });
 
-        totalUserData.chartData.forEach(function(t) {
-            totalSum += t.t;
-        });
-
         if (topUsers.length < 3) {
             maxItems = topUsers.length;
         }
 
+        var totalUsers = (dashboardData && dashboardData.u && dashboardData.u.total);
+
         for (var i = 0; i < maxItems; i++) {
-            var percent = Math.floor((topUsers[i].t / totalSum) * 100);
+            var percent = Math.floor((topUsers[i].t / totalUsers) * 100);
             barData[i] = { "name": topUsers[i].date, "count": topUsers[i].t, "type": "user", "percent": percent, "unit": jQuery.i18n.map["sidebar.analytics.users"] };
         }
 

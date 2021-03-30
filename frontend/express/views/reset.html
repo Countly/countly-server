@@ -58,10 +58,10 @@
 		<div id="create-account">
 			<form id="reset-password-form" method="POST" action="../reset">
 				<div>
-					<input type="password" name="password" placeholder="Password" data-localize="placeholder.password"/>
+					<input type="password" name="password" placeholder="Password" data-localize="placeholder.password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
 				</div>
 				<div>
-					<input type="password" name="again" placeholder="Again" data-localize="placeholder.again"/>
+					<input type="password" name="again" placeholder="Again" data-localize="placeholder.again" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
 				</div>
                 <% if (typeof inject_template.form != "undefined") { %>
                     <%- inject_template.form %>

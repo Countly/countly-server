@@ -107,9 +107,8 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
     });
     plugins.register("/sdk", function(ob) {
         var params = ob.params;
-        var user = ob.params.app_user;
 
-        if (params.qstring.metrics && (!user || typeof user[common.dbUserMap.source] === "undefined")) {
+        if (params.qstring.metrics) {
             if (typeof params.qstring.metrics._store === "undefined" && params.qstring.metrics._os) {
                 params.qstring.metrics._store = params.qstring.metrics._os;
                 if (!params.qstring.metrics._source_channel) {
