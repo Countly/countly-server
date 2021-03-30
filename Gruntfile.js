@@ -191,12 +191,12 @@ module.exports = function(grunt) {
                 }
             }
         },
-        sass: {                              // Task
-            dist: {                            // Target
-                options: {                       // Target options
+        sass: { // Task
+            dist: { // Target
+                options: { // Target options
                     style: 'expanded'
                 },
-                files: {                         // Dictionary of files
+                files: { // Dictionary of files
                     'frontend/express/public/stylesheets/vue/clyvue.css': 'frontend/express/public/stylesheets/vue/clyvue.scss',
                 }
             }
