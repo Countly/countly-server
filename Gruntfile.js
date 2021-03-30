@@ -190,6 +190,16 @@ module.exports = function(grunt) {
                     }
                 }
             }
+        },
+        sass: {                              // Task
+            dist: {                            // Target
+                options: {                       // Target options
+                    style: 'expanded'
+                },
+                files: {                         // Dictionary of files
+                    'frontend/express/public/stylesheets/vue/clyvue.css': 'frontend/express/public/stylesheets/vue/clyvue.scss',
+                }
+            }
         }
     });
 
@@ -202,6 +212,7 @@ module.exports = function(grunt) {
     grunt.registerTask('coverage', ['mocha_nyc:coverage']);
     //-----------code coverage-----------
 
+    grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
@@ -211,7 +222,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['eslint', 'mochaTest']);
 
-    grunt.registerTask('dist', ['concat', 'uglify', 'cssmin']);
+    grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'cssmin']);
 
     grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
         var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');

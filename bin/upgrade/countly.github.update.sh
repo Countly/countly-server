@@ -55,7 +55,7 @@ rsync -rvc --exclude='.git/' --exclude='log/' /tmp/countly-github/ "$DIR/../../"
 
 rm -rf /tmp/countly-github
 
-( cd "$DIR/../.." ; npm install -g grunt-cli --unsafe-perm ; npm install ) || (echo "Failed to install Node.js dependencies" ; exit)
+( cd "$DIR/../.." ; npm install ) || (echo "Failed to install Node.js dependencies" ; exit)
 
 if [ ! -f "$DIR/../../plugins/plugins.json" ]; then
 	cp "$DIR/../../plugins/plugins.default.json" "$DIR/../../plugins/plugins.json"
@@ -63,7 +63,7 @@ fi
 
 bash "$DIR/../scripts/countly.install.plugins.sh"
 
-cd "$DIR/../.." && grunt dist-all
+countly task dist-all
 
 if [ "$(getent passwd countly)x" != 'x' ]; then
   chown -R countly:countly "$DIR/../.."
