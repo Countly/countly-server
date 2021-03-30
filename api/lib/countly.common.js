@@ -32,7 +32,7 @@ function getTicksBetween(startTimestamp, endTimestamp) {
             dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
         }
         else if (daysLeft >= (7 - dayIt.day()) && dayIt.day() === 1) {
-            ticks.push(dayIt.format("gggg.[w]w"));
+            ticks.push(dayIt.format("YYYY.[w]W"));
             dayIt.add(8 - dayIt.day(), "days");
         }
         else {
@@ -61,7 +61,7 @@ function getTicksCheckBetween(startTimestamp, endTimestamp) {
             dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
         }
         else {
-            ticks.push(dayIt.format("gggg.[w]w"));
+            ticks.push(dayIt.format("YYYY.[w]W"));
             dayIt.add(8 - dayIt.day(), "days");
         }
     }

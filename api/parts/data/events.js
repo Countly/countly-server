@@ -265,7 +265,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
             for (let segKey in currEvent.segmentation) {
                 var tmpSegKey = "";
                 if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
-                    tmpSegKey = segKey.replace(/^\$|\./g, "");
+                    tmpSegKey = segKey.replace(/^\$+|\./g, "");
                     currEvent.segmentation[tmpSegKey] = currEvent.segmentation[segKey];
                     delete currEvent.segmentation[segKey];
                 }
@@ -311,7 +311,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 }
 
                 // Mongodb field names can't start with $ or contain .
-                tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
+                tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
 
                 if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
                     tmpSegVal = "[CLY]" + tmpSegVal;
