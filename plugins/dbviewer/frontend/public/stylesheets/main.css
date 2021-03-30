@@ -1002,3 +1002,52 @@ a.json-placeholder:hover {
 .dbviewer-indexes {
   margin-right: 4px !important;
 }
+
+.mongostat-mongotop-table-title {
+  font: 19px Ubuntu,Helvetica,sans-serif;
+  background-color: #f7f7f7;
+  color:#424242;
+  padding: 15px;
+  border-top-right-radius:2px;
+  border-top-left-radius:2px;
+  margin-top:40px;
+  border-top:1px solid #DBDBDB;
+  border-right:1px solid #DBDBDB;
+  border-left:1px solid #DBDBDB;
+}
+
+.mongostat-mongotop-table-heading {
+  padding: 10px 20px;;
+  color: #484848;
+  font-weight: normal;
+  font-size: 11px;
+  text-transform: uppercase;
+  line-height: 12px;
+  text-align: left;
+  border-bottom: 1px solid #E2E2E2;
+  background-color: #F3F3F3;
+  border-top: 1px solid #D0D0D0;
+}
+.mongostat-mongotop-table {
+  width: 100%;
+  border-radius: 2px;
+}
+
+.mongostat-mongotop-table-data {
+  font-family: Ubuntu,Helvetica,sans-serif;
+  font-size: 12px;
+  line-height: 15px;
+  padding: 10px 20px;
+  color: #6B6B6B
+}
+
+.mongotop-mongostat-table-area {
+  margin-left: 8px;
+}
+
+.mongotop-mongostat-table-wrapper {
+  overflow-x: auto;
+  border-left: 1px solid #D0D0D0;
+  border-right: 1px solid #D0D0D0;
+  border-bottom: 1px solid #D0D0D0;
+}
