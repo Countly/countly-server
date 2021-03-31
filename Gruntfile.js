@@ -197,8 +197,7 @@ module.exports = function(grunt) {
                     style: 'expanded'
                 },
                 files: { // Dictionary of files
-                    'frontend/express/public/stylesheets/vue/clyvue.css': 'frontend/express/public/stylesheets/vue/clyvue.scss',
-                    'plugins/**/frontend/public/stylesheets*.css': 'plugins/**/frontend/public/stylesheets/*.scss'
+                    'frontend/express/public/stylesheets/vue/clyvue.css': 'frontend/express/public/stylesheets/vue/clyvue.scss'
                 }
             }
         }
