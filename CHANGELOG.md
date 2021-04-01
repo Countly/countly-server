@@ -73,6 +73,7 @@
 * [surveys] allow text customizations
 * [symbolication] do not display very long error names in full
 * [views] correctly postprocess views in Drill
+* [whitelabelring] override logo in email template too
 
 **Development related**
 * [api] count all merges
