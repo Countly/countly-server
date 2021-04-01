@@ -7,6 +7,7 @@
 * [configs] fix refreshing value when updating config
 * [config] subdirectory cases for localhost calls
 * [crashes] updated app version column header
+* [export] use internal request processor instead of localhost for request exports
 * [logger] remove sdk mismatch warning as they should be fully cross compatible
 * [populator] add populator tag to all generated users
 * [push] batched sent messages deletion
@@ -22,6 +23,7 @@
 * [sources] fixed direct calculation logic
 * [star-rating] feedback sticker style bug fixed
 * [views] fix view postprocessing with dots in names
+* [views] fixed view export file name
 * [views] show view names in graph tooltips
 
 **Enterprise fixes**

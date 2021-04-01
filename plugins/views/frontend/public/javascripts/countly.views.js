@@ -55,7 +55,7 @@ window.ViewsView = countlyView.extend({
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 path: requestPath,
                 method: "GET",
-                filename: "Systemlogs_on_" + moment().format("DD-MMM-YYYY"),
+                filename: "Views_on_" + moment().format("DD-MMM-YYYY"),
                 prop: ['aaData']
             };
             return apiQueryData;
