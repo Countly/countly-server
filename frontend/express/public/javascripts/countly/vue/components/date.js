@@ -132,6 +132,11 @@
     Object.freeze(globalDaysRange);
     Object.freeze(globalMonthsRange);
 
+    /**
+     * Creates an initial state object 
+     * @param {Object} instance Instance configuration
+     * @returns {Object} Initial state object for datepicker
+     */
     function getInitialState(instance) {
         var formatter = null,
             tableType = "",
@@ -179,6 +184,11 @@
         return _.extend(state, getDefaultInputState(formatter));
     }
 
+    /**
+     * Returns the range label for a given date array
+     * @param {Array} value Array of dates (2 values; start, end)
+     * @returns {String} Range label
+     */
     function getRangeLabel(value) {
         var effectiveRange = [moment(value[0]), moment(value[1])];
         if (effectiveRange[1] - effectiveRange[0] > 86400000) {

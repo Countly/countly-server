@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon */
+/*global app, countlyVue, countlyVueExample, countlyCommon, VueECharts, echarts */
 
 (function() {
     var TableView = countlyVue.views.BaseView.extend({

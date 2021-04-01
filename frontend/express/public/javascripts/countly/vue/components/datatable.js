@@ -409,11 +409,47 @@
         }
     };
 
+    var DEFAULT_ROW = {
+        rowspan: 1,
+        colspan: 1
+    };
+
+    var NO_COL_ROW = {
+        rowspan: 1,
+        colspan: 0
+    };
+
+    var OverlayRowMixin = {
+        props: {
+            isOverlayActiveFn: {
+                type: Function,
+                default: null
+            },
+        },
+        methods: {
+            tableSpanMethod: function(obj) {
+                if (this.isOverlayActiveFn && this.isOverlayActiveFn(obj)) {
+                    if (obj.column.type !== "overlay") {
+                        return NO_COL_ROW;
+                    }
+                    else {
+                        return {
+                            rowspan: 1,
+                            colspan: this.$refs.elTable.columns.length
+                        };
+                    }
+                }
+                return DEFAULT_ROW;
+            }
+        }
+    };
+
     Vue.component("cly-datatable-n", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n,
             TableExtensionsMixin,
-            MutationTrackerMixin
+            MutationTrackerMixin,
+            OverlayRowMixin
         ],
         props: {
             keyFn: {
@@ -526,6 +562,7 @@
                                 :border="border"\
                                 :row-key="keyFn"\
                                 :data="mutatedRows"\
+                                :span-method="tableSpanMethod"\
                                 v-bind="$attrs"\
                                 v-on="$listeners"\
                                 @sort-change="onSortChange"\
