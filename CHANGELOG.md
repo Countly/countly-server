@@ -1,3 +1,89 @@
+## Version 20.11.2
+
+**Fixes**
+* [analytics] fixed top calculation to be the same in all places
+* [api] more aggregated data checks for merging metrics
+* [api] remove all trailing $ symbols in events
+* [configs] fix refreshing value when updating config
+* [config] subdirectory cases for localhost calls
+* [crashes] updated app version column header
+* [export] use internal request processor instead of localhost for request exports
+* [logger] remove sdk mismatch warning as they should be fully cross compatible
+* [populator] add populator tag to all generated users
+* [push] batched sent messages deletion
+* [push] dealing with autocompletion for other credentials
+* [push] extra check on multiple “send” button clicks in a row
+* [push] fixing unsuccessfull message compilation for highly-concurrent cases
+* [push] full support for transactional notifications
+* [push] missing notification header in some cases
+* [push] missing personalization tooltips on preview
+* [push] wording fix for expiration description
+* [reports] fixing link when countly works from subdirectory
+* [server-stats] changed format of dp reports
+* [sources] fixed direct calculation logic
+* [star-rating] feedback sticker style bug fixed
+* [views] fix view postprocessing with dots in names
+* [views] fixed view export file name
+* [views] show view names in graph tooltips
+
+**Enterprise fixes**
+* [active_users] emphasize that Active user totals are average
+* [attribution] fix fetching data on period change in campaign details
+* [block] fix displaying internal event names
+* [cohorts] fixed limit of 800K users
+* [cohorts] less memory usage for cohort calculation
+* [cohorts] run tasks in series
+* [concurrent-users] fixed on data breakdown in the view
+* [dashboards] allow single app, multi event, single metric
+* [drill] allow selecting OR for numbers and dates
+* [drill] change user property view name to last view
+* [drill] fixed week 53 problem
+* [drill] unique user count fixed in multi BY queries
+* [formulas] fixed visual bug for no buckets case
+* [funnels] fixed "times" number not displayed properly
+* [populator] heat map fixed
+* [retention_segments] user merge sharding fix
+* [survers] fixed bug when survey becomes visible again
+* [surveys] fixed exporting surveys data appear as [object Object]
+* [users] changed "fac" column as "First seen on" and "fs" as "First session"
+* [users] correctly display purchase data
+* [users] fix cohorts queries for export
+
+**Improvements**
+* [alerts] add support for Data Point alerts
+* [api] add new metric, manufacturer
+* [crashes] added binary images view to CE
+* [populator] allow overriding
+* [push] added search to select lists
+* [push] proxy support for attachment HEADing
+* [security] add enabling/disabling autocomplete on login forms
+* [server-stats] added command line support
+
+**Enterprise Improvements**
+* [crashes] automatic crash symbolication
+* [dashboards] changed selected event limit from 3 to 5
+* [flows] add configuration for maxSampleSize
+* [formulas] allow selecting numerical user properties too
+* [groups] allow multi group assignment to users
+* [hooks] add processing of some internal events like views, crashes, performance, etc
+* [ldap] separate ldap plugin
+* [performance-monitoring] allow custom time filtering in performance monitoring
+* [push] add event segmentation to push personalisation options
+* [retention_segments] added minimal weighted calculation method
+* [surveys] allow custom logo upload
+* [surveys] allow duplicating surveys
+* [surveys] allow text customizations
+* [symbolication] do not display very long error names in full
+* [views] correctly postprocess views in Drill
+* [whitelabelring] override logo in email template too
+
+**Development related**
+* [api] count all merges
+* [api] refactored versionCompare and added unit tests for it
+* [docker] Adding which to CentOS API image & removing pystan in debian image
+* [reportmanager] debbug logs for rerunning tasks
+* [scripts] getting rid of global grunt and adding sass to build steps
+
 ## Version 20.11.1
 
 **Fixes**

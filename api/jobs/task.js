@@ -2,7 +2,7 @@
 
 const job = require('../parts/jobs/job.js'),
     log = require('../utils/log.js')('api:task'),
-    Promise = require("bluebird"),
+    asyncjs = require("async"),
     plugins = require('../../plugins/pluginManager.js');
 const common = require('../utils/common.js');
 const taskmanager = require('../utils/taskmanager.js');
@@ -67,22 +67,24 @@ class MonitorJob extends job.Job {
                 log.d("job info:", self._json, tasks);
                 if (tasks) {
                     const filteredTasks = tasks.filter(tasksFilter);
-                    filteredTasks.forEach((task) => {
-                        return Promise.coroutine(function *() { // eslint-disable-line require-yield
-                            try {
-                                taskmanager.rerunTask({
-                                    db: common.db,
-                                    id: task._id,
-                                    autoUpdate: true
-                                }, () => {});
-                            }
-                            catch (e) {
+                    asyncjs.eachSeries(filteredTasks, function(task, next) {
+                        taskmanager.rerunTask({
+                            db: common.db,
+                            id: task._id,
+                            autoUpdate: true
+                        }, function(e) {
+                            if (e) {
                                 log.e(e, e.stack);
                             }
-                        })();
+                            next();
+                        });
+                    }, function() {
+                        done();
                     });
                 }
-                done();
+                else {
+                    done();
+                }
             });
         });
     }
