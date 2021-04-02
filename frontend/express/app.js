@@ -1025,7 +1025,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                             var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
                             var preparedAppIds = [];
                             for (let i = 0; i < readableAppIds.length; i++) {
-                                if (readableAppIds[i] !== 'undefined' && (member.permission.r[readableAppIds[i]].all || Object.keys(member.permission.r[readableAppIds[i]].allowed).length > 1)) {
+                                if (readableAppIds[i] !== 'undefined' && (member.permission.r[readableAppIds[i]].all || Object.keys(member.permission.r[readableAppIds[i]].allowed).length > 0)) {
                                     preparedAppIds.push(countlyDb.ObjectID(readableAppIds[i]));
                                 }
                             }
