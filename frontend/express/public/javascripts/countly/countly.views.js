@@ -4365,7 +4365,7 @@ window.ManageUsersView = countlyView.extend({
 
         $('body').off('click', '.create-user-drawer .add-new-permission-set').on('click', '.create-user-drawer .add-new-permission-set', function() {
             self.userApps.push([]);
-            self.permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+            self.permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
             // pass count - 1 because we'll use it as array index in logic
             self.renderPermissionsTable(self.permissionSets.length - 1);
         });
