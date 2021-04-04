@@ -229,7 +229,13 @@
             obj[VueECharts.THEME_KEY] = "white";
             return obj;
         },
-        template: '<echarts v-bind="$attrs" v-on="$listeners"></echarts>'
+        props: {
+            autoresize: {
+                type: Boolean,
+                default: true
+            }
+        },
+        template: '<echarts v-bind="$attrs" v-on="$listeners" :autoresize="autoresize"></echarts>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));
