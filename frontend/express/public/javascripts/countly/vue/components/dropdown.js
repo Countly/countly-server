@@ -297,4 +297,22 @@
         }
     }));
 
+    Vue.component("cly-more-options", countlyBaseComponent.extend({
+        template:'<el-dropdown trigger="click" v-on="$listeners">\
+                    <el-button :size="size" icon="el-icon-more"></el-button>\
+                    <el-dropdown-menu slot="dropdown">\
+                        <template v-slot>\
+                            <slot>\
+                            </slot>\
+                        </template>\
+                    </el-dropdown-menu>\
+                </el-dropdown>',
+        props: {
+            size: {
+                type: String,
+                default: 'small'
+            }
+        }
+    }));
+
 }(window.countlyVue = window.countlyVue || {}, jQuery));
