@@ -1,4 +1,4 @@
-/* global jQuery, Vue, countlyCommon, _ */
+/* global jQuery, Vue, countlyCommon, _, VueECharts */
 
 (function(countlyVue, $) {
 
@@ -222,5 +222,14 @@
                         '</div>'
         }
     ));
+
+    Vue.component("cly-chart", countlyBaseComponent.extend({
+        provide: function() {
+            var obj = {};
+            obj[VueECharts.THEME_KEY] = "white";
+            return obj;
+        },
+        template: '<echarts v-bind="$attrs" v-on="$listeners"></echarts>'
+    }));
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));

@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, VueECharts, echarts */
+/*global app, countlyVue, countlyVueExample, countlyCommon, echarts */
 
 (function() {
     var TableView = countlyVue.views.BaseView.extend({
@@ -223,11 +223,6 @@
 
     var TimeGraphView = countlyVue.views.BaseView.extend({
         template: '#vue-example-tg-template',
-        provide: function() {
-            var obj = {};
-            obj[VueECharts.THEME_KEY] = "white";
-            return obj;
-        },
         data: function() {
             var base = +new Date(1968, 9, 3);
             var oneDay = 24 * 3600 * 1000;
