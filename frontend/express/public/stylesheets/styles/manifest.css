@@ -236,7 +236,7 @@
   margin-bottom: 32px;
 }
 .cly-vue-theme-clydef .header {
-  padding: 0px 24px 24px;
+  padding: 12px 0px 12px;
   border-bottom: 1px solid #ECECEC;
 }
 .cly-vue-theme-clydef .header:not(:last-child) {
@@ -247,6 +247,9 @@
 }
 .cly-vue-theme-clydef .header--no-bg {
   background-color: none;
+}
+.cly-vue-theme-clydef .header .bu-level {
+  padding: 0px 24px 12px;
 }
 .cly-vue-theme-clydef .cly-vue-eldatatable.silent-loading .el-loading-spinner {
   visibility: hidden;

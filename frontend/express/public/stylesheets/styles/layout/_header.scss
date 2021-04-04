@@ -1,5 +1,5 @@
 .header {
-    padding: 0px 24px 24px;
+    padding: 12px 0px 12px;
     border-bottom: $--border-base;
 
     &:not(:last-child) {
@@ -12,5 +12,9 @@
 
     &--no-bg {
         background-color: none;
+    }
+    
+    .bu-level {
+        padding: 0px 24px 12px;
     }
 }

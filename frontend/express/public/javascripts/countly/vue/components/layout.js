@@ -79,7 +79,15 @@
         props: {
             title: String
         },
-        template: '<div class="bu-level bu-is-mobile header header--white">\
+        template: '<div class="header header--white">\
+                    <div class="bu-level bu-is-mobile">\
+                        <div class="bu-level-left">\
+                            <div class="bu-level-item">\
+                                <slot name="header-top"></slot>\
+                            </div>\
+                        </div>\
+                    </div>\
+                    <div class="bu-level bu-is-mobile">\
                         <div class="bu-level-left">\
                             <slot name="header-left">\
                                 <div class="bu-level-item">\
@@ -92,7 +100,15 @@
                             <slot name="header-right">\
                             </slot>\
                         </div>\
-                    </div>'
+                    </div>\
+                    <div class="bu-level bu-is-mobile">\
+                        <div class="bu-level-left">\
+                            <div class="bu-level-item">\
+                                <slot name="header-bottom"></slot>\
+                            </div>\
+                        </div>\
+                    </div>\
+                </div>'
     }));
 
     //Every view has a single cly-main component which encapsulates all other components/dom elements
