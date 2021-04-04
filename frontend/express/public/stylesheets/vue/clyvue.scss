@@ -943,18 +943,15 @@
 
     //drawer
     .cly-vue-drawer {
-        $drawer-width: 600px;
 
         position: fixed;
-        width: #{$drawer-width};
         height: 100%;
-        transform: translateX(#{$drawer-width * 2});
         transition: transform 0.3s;
         right: 0;
         top: 0;
-         background-color: #fcfcfc;
+        background-color: #fcfcfc;
         border-left: 1px solid #d0d0d0;
-        z-index: 10001;
+        z-index: 1000;
 
         .sidecars-view {
             background-color: #f3f3f3;
@@ -970,6 +967,13 @@
         .sidecars-view {
             height: 100%;
         }
+
+
+        $drawer-width: 100%; //600px
+
+        width: #{$drawer-width};
+
+        transform: translateX(#{$drawer-width * 2});
 
         &.mounted {
             transform: translateX(#{$drawer-width});
