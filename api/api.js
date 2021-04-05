@@ -14,6 +14,7 @@ const {WriteBatcher, ReadBatcher} = require('./parts/data/batcher.js');
 const pack = require('../package.json');
 
 var t = ["countly:", "api"];
+common.processRequest = processRequest;
 
 if (cluster.isMaster) {
     console.log("Starting master", "version", pack.version);
