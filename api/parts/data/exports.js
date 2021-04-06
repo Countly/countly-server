@@ -181,15 +181,12 @@ exports.convertData = function(data, type) {
 * @param {string} type - type to be used in content type
 * @param {object} mark - object to mark when data available for downolad(to stop sending reminders);
 */
-exports.output = function(params, data, filename, type, mark) {
+exports.output = function(params, data, filename, type) {
     var headers = {};
     if (type && contents[type]) {
         headers["Content-Type"] = contents[type];
     }
     headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename) + "." + type;
-    if (mark && typeof mark.started !== 'undefined') {
-        mark.started = true;
-    }
 
     if (type === "xlsx" || type === "xls") {
         common.returnRaw(params, 200, new Buffer(data, 'binary'), headers);
@@ -487,20 +484,19 @@ exports.fromRequest = function(options) {
         options.path = "/" + options.path;
     }
     options.filename = options.filename || options.path.replace(/\//g, "_") + "_on_" + moment().format("DD-MMM-YYYY");
-
-    //end outputting headers
-    var settings = {started: false};
     /**
 	* Reminds to not close connection each 55 seconds(in case it takes lonk to get data)
 	*/
     function keepAlive() {
-        if (!settings.started) { //Unless output started - remind after 55 seconds, that something is still processing
-            options.params.res.writeProcessing();
-            setTimeout(keepAlive, 55 * 1000);
+        if (options.params && options.params.res && !options.params.res.finished) { //Unless output started - remind after 55 seconds, that something is still processing
+            if (options && options.params && options.params.res && options.params.res.writeProcessing && typeof options.params.res.writeProcessing === "function") {
+                options.params.res.writeProcessing();
+            }
+            setTimeout(keepAlive, 20 * 1000);
         }
 
     }
-    setTimeout(keepAlive, 55 * 1000);
+    setTimeout(keepAlive, 20 * 1000);
 
     //creating request context
     var params = {
@@ -526,7 +522,6 @@ exports.fromRequest = function(options) {
                 data = [];
             }
             //"stream all data"
-            options.markMeWhenDone = settings;
             exports.fromData(data, options);
         }
     };
@@ -548,7 +543,7 @@ exports.fromData = function(data, options) {
     options.type = options.type || "json";
     options.filename = options.filename || "Data_export_on_" + moment().format("DD-MMM-YYYY");
     options.output = options.output || function(odata) {
-        exports.output(options.params, odata, options.filename, options.type, options.markMeWhenDone);
+        exports.output(options.params, odata, options.filename, options.type);
     };
     if (!data) {
         data = [];
