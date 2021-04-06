@@ -128,7 +128,11 @@
             title: String
         },
         template: '<div class="cly-vue-section bu-columns bu-is-gapless bu-is-multiline">\
-                        <div class="bu-column bu-is-full"><h4>{{title}}</h4></div>\
+                        <div class="bu-column bu-is-full">\
+                            <slot name="header">\
+                                <h4>{{title}}</h4>\
+                            </slot>\
+                        </div>\
                         <div class="bu-column bu-is-full cly-vue-section__content">\
                             <slot></slot>\
                         </div>\
