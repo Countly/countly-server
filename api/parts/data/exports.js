@@ -179,7 +179,6 @@ exports.convertData = function(data, type) {
 * @param {string} data - data to output
 * @param {string} filename - name of the file to output to browser
 * @param {string} type - type to be used in content type
-* @param {object} mark - object to mark when data available for downolad(to stop sending reminders);
 */
 exports.output = function(params, data, filename, type) {
     var headers = {};
@@ -488,8 +487,8 @@ exports.fromRequest = function(options) {
 	* Reminds to not close connection each 55 seconds(in case it takes lonk to get data)
 	*/
     function keepAlive() {
-        if (options.params && options.params.res && !options.params.res.finished) { //Unless output started - remind after 55 seconds, that something is still processing
-            if (options && options.params && options.params.res && options.params.res.writeProcessing && typeof options.params.res.writeProcessing === "function") {
+        if (options.params && options.params.res && !options.params.res.finished) { //Unless output started - remind after 20 seconds, that something is still processing
+            if (options.params.res.writeProcessing && typeof options.params.res.writeProcessing === "function") {
                 options.params.res.writeProcessing();
             }
             setTimeout(keepAlive, 20 * 1000);
