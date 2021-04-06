@@ -168,7 +168,8 @@
     };
 
     countlyAuth.clearDrawer = function(parent_el, sets) {
-        $(parent_el + ' #manage-users-admin-app-selector')[0].selectize.setValue([]);
+        var selector = parent_el.indexOf('group') ? 'groups' : 'users';
+        $('#manage-' + selector + '-admin-app-selector')[0].selectize.setValue([]);
         for (var i = 0; i < sets.length; i++) {
             $(parent_el + ' #user-app-selector-' + i)[0].selectize.setValue([]);
         }
@@ -199,22 +200,14 @@
                 permissionObject[accessType][countlyApp] = {};
                 permissionObject[accessType][countlyApp].all = false;
                 permissionObject[accessType][countlyApp].allowed = {};
-                if (accessType === "r") {
-                    permissionObject[accessType][countlyApp].allowed.core = true;
-                }
                 permissionObject[accessType].global = {};
                 permissionObject[accessType].global.all = false;
                 permissionObject[accessType].global.allowed = {};
             }
         }
 
-        if (permissionSets.length === 0) {
-            permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
-        }
-        else if (permissionSets.length > 0) {
-            permissionSets = [];
-            permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
-        }
+        permissionSets = [];
+        permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
 
         return {
             permissionObject: permissionObject,
@@ -288,7 +281,7 @@
                         $('#mark-all-' + countlyAuth.typeNames[j] + '-' + i).countlyCheckbox().set(true);
     
                         for (var k = 0; k < countlyAuth.features.length; k++) {
-                            $('#' + countlyAuth.types[j] + '-' + countlyAuth.features[k] + '-' + i).countlyCheckbox().set(true).setDisabled();
+                            $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features[k] + '-' + i).countlyCheckbox().set(true).setDisabled();
                         }
     
                         permission_sets[i][countlyAuth.types[j]].all = true;
@@ -296,7 +289,7 @@
                     else {
                         for (var feature in permission_object[countlyAuth.types[j]][user_apps[i][0]].allowed) {
                             permission_sets[i] = countlyAuth.giveFeaturePermission(countlyAuth.types[j], feature, permission_sets[i]);
-                            $('#' + countlyAuth.types[j] + '-' + feature + '-' + i).countlyCheckbox().set(true);
+                            $(parent_el + ' #' + countlyAuth.types[j] + '-' + feature + '-' + i).countlyCheckbox().set(true);
                         }
                     }
                 }

@@ -175,7 +175,6 @@ const FEATURE_NAME = 'global_plugins';
                 });
             });
         };
-        
         validateRead(params, FEATURE_NAME, function() {
             var dir = path.resolve(__dirname, "../../");
             walk(dir, function(err, results) {

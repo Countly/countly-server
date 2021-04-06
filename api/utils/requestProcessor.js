@@ -1293,7 +1293,7 @@ const processRequest = (params) => {
                     break;
                 case 'permissions':
                     validateRead(params, 'core', function() {
-                        var features = ["core", "events", "global_configurations", "global_plugins", "global_applications", "global_users", "global_jobs"];
+                        var features = ["core", "events", "global_configurations", "global_applications", "global_users", "global_jobs"];
                         plugins.dispatch("/permissions/features", {params: params, features: features}, function() {
                             common.returnOutput(params, features);
                         });

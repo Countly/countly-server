@@ -3377,7 +3377,7 @@ window.ManageUsersView = countlyView.extend({
         
         // link checkboxes after dom injection
         for (var i in types) {
-            $('#mark-all-' + types[i] + '-' + index).countlyCheckbox();
+            $('.create-user-drawer #mark-all-' + types[i] + '-' + index).countlyCheckbox();
         }
 
         // jQuery selectize handler for projection input
@@ -3420,7 +3420,7 @@ window.ManageUsersView = countlyView.extend({
         self.features.forEach(function(feature) {
             $('#permission-table-' + index).append(countlyAuth.renderFeatureTemplate(feature, index));
             for (var i in types) {
-                $('#' + types[i][0] + '-' + feature + '-' + index).countlyCheckbox();
+                $('.create-user-drawer #' + types[i][0] + '-' + feature + '-' + index).countlyCheckbox();
             }
         });
     },
@@ -3680,6 +3680,11 @@ window.ManageUsersView = countlyView.extend({
             $('.create-user-drawer .discard-changes').hide();
             $('#create-user-drawer-title').html($.i18n.map['management-users.create-new-user']);
             $('.create-user-drawer #create-user-button').html($.i18n.map['management-users.create-user']);
+            $('.access-area').show();
+            $('#sub-header-1th').show();
+            $('.add-new-permission-set').show();
+            $('.create-user-drawer #manage-users-admin-app-selector')[0].selectize.setValue([]);
+            
             // clean inputs
             userCreateDrawer.addClass("open");
             userCreateDrawer.find('.full-name-text').val('');
@@ -4036,16 +4041,16 @@ window.ManageUsersView = countlyView.extend({
             
             if ($('.create-user-drawer #mark-all-' + type + '-' + index).countlyCheckbox().get()) {
                 for (var i = 0; i < self.features.length; i++) {
-                   $('#' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
-                   $('#' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().setDisabled();
+                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
+                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().setDisabled();
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], true);
             }
             else {
                 for (var j = 0; j < self.features.length; j++) {
-                   $('#' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().set(false);
-                   $('#' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().unsetDisabled();
+                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().set(false);
+                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().unsetDisabled();
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], false);
