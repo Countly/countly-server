@@ -186,6 +186,7 @@ exports.output = function(params, data, filename, type) {
         headers["Content-Type"] = contents[type];
     }
     headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename) + "." + type;
+
     if (type === "xlsx" || type === "xls") {
         common.returnRaw(params, 200, new Buffer(data, 'binary'), headers);
     }
@@ -482,6 +483,19 @@ exports.fromRequest = function(options) {
         options.path = "/" + options.path;
     }
     options.filename = options.filename || options.path.replace(/\//g, "_") + "_on_" + moment().format("DD-MMM-YYYY");
+    /**
+	* Reminds to not close connection each 55 seconds(in case it takes lonk to get data)
+	*/
+    function keepAlive() {
+        if (options.params && options.params.res && !options.params.res.finished) { //Unless output started - remind after 20 seconds, that something is still processing
+            if (options.params.res.writeProcessing && typeof options.params.res.writeProcessing === "function") {
+                options.params.res.writeProcessing();
+            }
+            setTimeout(keepAlive, 20 * 1000);
+        }
+
+    }
+    setTimeout(keepAlive, 20 * 1000);
 
     //creating request context
     var params = {
@@ -506,6 +520,7 @@ exports.fromRequest = function(options) {
             catch (ex) {
                 data = [];
             }
+            //"stream all data"
             exports.fromData(data, options);
         }
     };
