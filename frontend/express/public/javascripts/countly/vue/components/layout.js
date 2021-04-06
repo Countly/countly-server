@@ -89,11 +89,11 @@
                     </div>\
                     <div class="bu-level bu-is-mobile">\
                         <div class="bu-level-left">\
-                            <slot name="header-left">\
-                                <div class="bu-level-item">\
+                            <div class="bu-level-item">\
+                                <slot name="header-left">\
                                     <h2>{{title}}</h2>\
-                                </div>\
-                            </slot>\
+                                </slot>\
+                            </div>\
                         </div>\
                         <slot></slot>\
                         <div class="bu-level-right">\
