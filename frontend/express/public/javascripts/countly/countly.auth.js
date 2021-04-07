@@ -191,7 +191,7 @@
             d: {},
             _: {
                 a: [],
-                u: []
+                u: [[]]
             }
         };
 
@@ -271,14 +271,14 @@
                     checked_user_apps.push(user_apps[i][j]);
                 }
             }
-            
-            $('#user-app-selector-' + i)[0].selectize.setValue(checked_user_apps);
+
+            $(parent_el + ' #user-app-selector-' + i)[0].selectize.setValue(checked_user_apps);
 
             for (var j = 0; j < countlyAuth.types.length; j++) {
                 if (user_apps[i].length > 0) {
                     if (permission_object[countlyAuth.types[j]][user_apps[i][0]].all) {
 
-                        $('#mark-all-' + countlyAuth.typeNames[j] + '-' + i).countlyCheckbox().set(true);
+                        $(parent_el + ' #mark-all-' + countlyAuth.typeNames[j] + '-' + i).countlyCheckbox().set(true);
     
                         for (var k = 0; k < countlyAuth.features.length; k++) {
                             $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features[k] + '-' + i).countlyCheckbox().set(true).setDisabled();

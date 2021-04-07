@@ -3525,7 +3525,7 @@ window.ManageUsersView = countlyView.extend({
                                     }
                                 }
                             }
-
+                            
                             if (apps.length === 0) return jQuery.i18n.map["management-users.no-role"];
                             return apps.join(", ");
                         }
@@ -3881,7 +3881,6 @@ window.ManageUsersView = countlyView.extend({
                         $('.create-user-drawer .admin-access').hide();
                         $('.create-user-drawer .user-access').hide();
                         $('.create-user-drawer .add-new-permission-set').hide();
-
                     }
                     else {
                         // set checkbox manually
@@ -3912,17 +3911,6 @@ window.ManageUsersView = countlyView.extend({
                     self.accessibleApps = CountlyHelpers.arrayUnique(self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.adminApps)));
                     $('.create-user-drawer #accesible-app-count').html(self.accessibleApps.length);
 
-                    // step10: render user permission boxes if member has more than one user permission box, we have only 1 as default on drawer initialization
-                    // length - 1, bcz we already have one permission set as default in drawer
-                    /*
-                    for (var i = 0; i < memberData.permission._.u.length - 1; i++) {
-                        self.permissionSets.push({c: {all: false, allowed: {}}, r: {all: false, allowed: {}}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
-                        // remove if exist, just in case
-                        $('.create-user-drawer #user-access-' + self.permissionSets.length).remove();
-                        self.renderPermissionsTable(self.permissionSets.length);
-                    }
-                    */
-
                     if (memberData.global_admin) {
                         // clear drawer permission tables
                         var permissionTables = $('.create-user-drawer .user-access');
@@ -3942,7 +3930,6 @@ window.ManageUsersView = countlyView.extend({
 
                         self.permissionSets = countlyAuth.permissionParser('.create-user-drawer', self.memberPermission, countlyAuth.permissionSetGenerator(self.userApps.length));
                     }
-
                     // check is group plugin enabled?
                     if ($('#user-group-container').length > 0) {
                         var groupValue = $('#selected-user-group').val();
