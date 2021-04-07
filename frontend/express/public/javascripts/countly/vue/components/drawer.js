@@ -18,7 +18,8 @@
                 name: {type: String, required: true},
                 title: {type: String, required: true},
                 saveButtonLabel: {type: String, required: true, default: ""},
-                closeFn: {type: Function}
+                closeFn: {type: Function},
+                width: {type: String, default: "1000px"}
             },
             data: function() {
                 return {
@@ -51,7 +52,8 @@
                 }
             },
             template: '<div class="cly-vue-drawer"\n' +
-                            'v-bind:class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}">\n' +
+                            ':class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}"\n' +
+                            ':style="{width: width}">\n'+
                             '<div class="title">\n' +
                                 '<span>{{title}}</span>\n' +
                                 '<span class="close" v-on:click="doClose">\n' +

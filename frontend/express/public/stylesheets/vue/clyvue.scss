@@ -969,19 +969,19 @@
         }
 
 
-        $drawer-width: 100%; //600px
+        //$drawer-width: 600px;
 
-        width: #{$drawer-width};
+        //width: #{$drawer-width};
 
-        transform: translateX(#{$drawer-width * 2});
+        transform: translateX(100%); // translateX(#{$drawer-width * 2});
 
         &.mounted {
-            transform: translateX(#{$drawer-width});
+            transform: translateX(100%); // translateX(#{$drawer-width});
         }
 
         &.has-sidecars {
-            width: #{$drawer-width * 2};
-            transform: translateX(#{$drawer-width * 2});
+            width: 100%; //#{$drawer-width * 2};
+            transform: translateX(100%); //translateX(#{$drawer-width * 2});
             .steps-view,
             .sidecars-view {
                 width: 50%;
