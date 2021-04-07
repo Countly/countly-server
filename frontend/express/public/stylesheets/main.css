@@ -104,7 +104,7 @@ body { margin:0; padding:0; overflow:auto; background-color:#F9F9F9; user-select
 #content-container #event-nav,
 #content-container #app-management-bar,
 #content-container #configs-title-bar { transition: left 0.55s, width 200ms; will-change: left; border-radius:2px; }
-#content-container.cover-left { margin-left:0; transition: margin-left 0.55s; will-change: margin-left; }
+#content-container.cover-left { margin-left: 0!important; transition: margin-left 0.55s; will-change: margin-left; }
 #content-container.cover-left #event-nav,
 #content-container.cover-left #app-management-bar,
 #content-container.cover-left #configs-title-bar { left:18px; transition: left 0.55s, width 200ms; will-change: left; }
