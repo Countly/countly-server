@@ -668,12 +668,8 @@ app.addAppManagementSwitchCallback(function() {
 });
 
 $(document).ready(function() {
-    var style = "display:none;";
-    if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
-        style = "";
-    }
     if (countlyAuth.validateRead(app.populatorView.featureName)) {
-        app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.title", priority: 70, classes: "populator-menu", style: style});
+        app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.title", priority: 70, classes: "populator-menu"});
     }
     //listen for UI app change
     app.addAppSwitchCallback(function(appId) {
