@@ -102,7 +102,7 @@
                                     <div class="cly-vue-breakdown-tile__item bu-level bu-is-mobile">\
                                         <div class="bu-level-left">\
                                             <div class="bu-level-item text-medium">\
-                                                {{item.name}}\
+                                                <img v-if="item.icon" :src="item.icon"/>{{item.name}}\
                                             </div>\
                                         </div>\
                                         <div class="bu-level-right">\
