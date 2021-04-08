@@ -226,6 +226,7 @@
     countlyAuth.updatePermissionByType = function(permissionType, permissionObject, processFlag) {
         permissionObject[permissionType].all = processFlag;
         for (var i = 0; i < countlyAuth.features.length; i++) {
+            if (countlyAuth.features[i] === 'core') continue;
             permissionObject[permissionType].allowed[countlyAuth.features[i]] = processFlag;
         }
         return permissionObject;
@@ -234,6 +235,7 @@
     countlyAuth.giveFeaturePermission = function(permissionType, feature, permissionObject) {
         var allCheck = true;
         for (var i = 0; i < countlyAuth.features.length; i++) {
+            if (countlyAuth.features[i] === 'core') continue;
             if (!permissionObject[permissionType].allowed[countlyAuth.features[i]]) allCheck = false;
         }
         permissionObject[permissionType].all = allCheck;
@@ -290,6 +292,7 @@
                         $(parent_el + ' #mark-all-' + countlyAuth.typeNames[j] + '-' + i).countlyCheckbox().set(true);
     
                         for (var k = 0; k < countlyAuth.features.length; k++) {
+                            if (countlyAuth.features[k] === 'core') continue;
                             $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features[k] + '-' + i).countlyCheckbox().set(true);
                         }
     
@@ -297,6 +300,7 @@
                     }
                     else {
                         for (var feature in permission_object[countlyAuth.types[j]][user_apps[i][0]].allowed) {
+                            if (feature === 'core') continue;
                             permission_sets[i] = countlyAuth.giveFeaturePermission(countlyAuth.types[j], feature, permission_sets[i]);
                             $(parent_el + ' #' + countlyAuth.types[j] + '-' + feature + '-' + i).countlyCheckbox().set(true);
                         }

@@ -4030,6 +4030,7 @@ window.ManageUsersView = countlyView.extend({
             
             if ($('.create-user-drawer #mark-all-' + type + '-' + index).countlyCheckbox().get()) {
                 for (var i = 0; i < self.features.length; i++) {
+                   if (self.features[i] === 'core') continue;
                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
                    //$('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().setDisabled();
                 }
@@ -4038,6 +4039,7 @@ window.ManageUsersView = countlyView.extend({
             }
             else {
                 for (var j = 0; j < self.features.length; j++) {
+                   if (self.features[j] === 'core') continue;
                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().set(false);
                    //$('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().unsetDisabled();
                 }

@@ -1694,35 +1694,35 @@ if (countlyAuth.validateRead(app.configurationsView.featureName)) {
             this.renderWhenReady(this.configurationsView);
         }
     });
-
-    app.route('/manage/user-settings', 'user-settings', function() {
-        this.configurationsView.namespace = null;
-        this.configurationsView.reset = false;
-        this.configurationsView.userConfig = true;
-        this.configurationsView.success = false;
-        this.renderWhenReady(this.configurationsView);
-    });
-
-    app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function(namespace) {
-        if (namespace === "reset") {
-            this.configurationsView.reset = true;
-            this.configurationsView.success = false;
-            this.configurationsView.namespace = null;
-        }
-        else if (namespace === "success") {
-            this.configurationsView.reset = false;
-            this.configurationsView.success = true;
-            this.configurationsView.namespace = null;
-        }
-        else {
-            this.configurationsView.reset = false;
-            this.configurationsView.success = false;
-            this.configurationsView.namespace = namespace;
-        }
-        this.configurationsView.userConfig = true;
-        this.renderWhenReady(this.configurationsView);
-    });
 }
+
+app.route('/manage/user-settings', 'user-settings', function() {
+    this.configurationsView.namespace = null;
+    this.configurationsView.reset = false;
+    this.configurationsView.userConfig = true;
+    this.configurationsView.success = false;
+    this.renderWhenReady(this.configurationsView);
+});
+
+app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function(namespace) {
+    if (namespace === "reset") {
+        this.configurationsView.reset = true;
+        this.configurationsView.success = false;
+        this.configurationsView.namespace = null;
+    }
+    else if (namespace === "success") {
+        this.configurationsView.reset = false;
+        this.configurationsView.success = true;
+        this.configurationsView.namespace = null;
+    }
+    else {
+        this.configurationsView.reset = false;
+        this.configurationsView.success = false;
+        this.configurationsView.namespace = namespace;
+    }
+    this.configurationsView.userConfig = true;
+    this.renderWhenReady(this.configurationsView);
+});
 
 $(document).ready(function() {
     if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateRead(app.pluginsView.featureName)) {
