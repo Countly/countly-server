@@ -4013,11 +4013,13 @@ window.ManageUsersView = countlyView.extend({
             var permission_type = selector[0];
             var feature = selector[1];
             var index = selector[2];
+            var mapTypes = {c: 'create', r: 'read', u: 'update', d: 'delete'};
             
             if ($('.create-user-drawer #' + $(this).attr('id')).countlyCheckbox().get()) {
                 self.permissionSets[index] = countlyAuth.giveFeaturePermission(permission_type, feature, self.permissionSets[index]);
             }
             else {
+                $('.create-user-drawer #mark-all-' + mapTypes[permission_type] + '-' + index).countlyCheckbox().set(false);
                 self.permissionSets[index] = countlyAuth.removeFeaturePermission(permission_type, feature, self.permissionSets[index]);
             }
         });
@@ -4029,7 +4031,7 @@ window.ManageUsersView = countlyView.extend({
             if ($('.create-user-drawer #mark-all-' + type + '-' + index).countlyCheckbox().get()) {
                 for (var i = 0; i < self.features.length; i++) {
                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
-                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().setDisabled();
+                   //$('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().setDisabled();
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], true);
@@ -4037,7 +4039,7 @@ window.ManageUsersView = countlyView.extend({
             else {
                 for (var j = 0; j < self.features.length; j++) {
                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().set(false);
-                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().unsetDisabled();
+                   //$('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().unsetDisabled();
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], false);

@@ -223,17 +223,25 @@
     };
 
     countlyAuth.updatePermissionByType = function(permissionType, permissionObject, processFlag) {
-        permissionObject[permissionType] = {all: processFlag, allowed: {}};
+        permissionObject[permissionType].all = processFlag;
+        for (var i = 0; i < countlyAuth.features.length; i++) {
+            permissionObject[permissionType].allowed[countlyAuth.features[i]] = processFlag;
+        }
         return permissionObject;
     };
 
     countlyAuth.giveFeaturePermission = function(permissionType, feature, permissionObject) {
-        permissionObject[permissionType].all = false;
+        var allCheck = true;
+        for (var i = 0; i < countlyAuth.features.length; i++) {
+            if (!permissionObject[permissionType].allowed[countlyAuth.features[i]]) allCheck = false;
+        }
+        permissionObject[permissionType].all = allCheck;
         permissionObject[permissionType].allowed[feature] = true;
         return permissionObject;
     };
 
     countlyAuth.removeFeaturePermission = function(permissionType, feature, permissionObject) {
+        permissionObject[permissionType].all = false;
         delete permissionObject[permissionType].allowed[feature];
         return permissionObject;
     };
@@ -281,7 +289,7 @@
                         $(parent_el + ' #mark-all-' + countlyAuth.typeNames[j] + '-' + i).countlyCheckbox().set(true);
     
                         for (var k = 0; k < countlyAuth.features.length; k++) {
-                            $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features[k] + '-' + i).countlyCheckbox().set(true).setDisabled();
+                            $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features[k] + '-' + i).countlyCheckbox().set(true);
                         }
     
                         permission_sets[i][countlyAuth.types[j]].all = true;
