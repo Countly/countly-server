@@ -2854,6 +2854,26 @@
         }
     }
 
+    .cly-vue-breakdown-tile {
+        &__wrapper {
+            height: 239px; 
+            border-right: 1px solid #DBDBDB; 
+            border-bottom: 1px solid #DBDBDB;
+           
+        }
+        &:nth-of-type(3n) {
+            .cly-vue-breakdown-tile__wrapper {
+                border-right: 0;
+            }
+        }
+        &__values-list {
+            height: 100%;
+        }
+        &__item {
+            height: 100%;
+        }
+    }
+
     .dropzone,
     .dropzone * {
         box-sizing: border-box;

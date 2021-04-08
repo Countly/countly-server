@@ -76,4 +76,45 @@
                     '</div>'
     }));
 
+
+
+    Vue.component("cly-breakdown-tile", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            name: {
+                type: String
+            },
+            type: {
+                default: 'multi',
+                type: String
+            },
+            values: {
+                type: Array
+            }
+        },
+        template: '<div class="cly-vue-breakdown-tile bu-column bu-is-4">\
+                        <div class="cly-vue-breakdown-tile__wrapper bu-p-5">\
+                            <h4 class="text-uppercase text-small font-weight-bold">{{name}}</h4>\
+                            <div class="cly-vue-breakdown-tile__values-list bu-columns bu-is-gapless bu-is-multiline bu-is-mobile" v-if="type === \'multi\'">\
+                                <div v-for="item in values" class="bu-column bu-is-12">\
+                                    <div class="cly-vue-breakdown-tile__item bu-level bu-is-mobile">\
+                                        <div class="bu-level-left">\
+                                            <div class="bu-level-item text-medium">\
+                                                {{item.name}}\
+                                            </div>\
+                                        </div>\
+                                        <div class="bu-level-right">\
+                                            <div class="bu-level-item text-medium">\
+                                                <a :href="item.link">{{item.description}} ({{item.percent}}%)</a>\
+                                            </div>\
+                                        </div>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                        </div>\
+                    </div>'
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));
