@@ -144,6 +144,7 @@
     };
 
     countlyAuth.renderFeatureTemplate = function(featureName, index) {
+        if (featureName === 'core') return '';
         var odd = countlyAuth.odd;
         countlyAuth.odd = !countlyAuth.odd;
         var beautifiedFeatureName = featureBeautifier(featureName);
