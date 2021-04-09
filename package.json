@@ -67,7 +67,7 @@
     "moment": "2.29.1",
     "moment-timezone": "0.5.33",
     "mongodb": "3.6.6",
-    "nginx-conf": "1.5.0",
+    "nginx-conf": "2.0.0",
     "node-xlsx-stream": "^0.1.8",
     "nodemailer": "6.5.0",
     "nodemailer-sendmail-transport": "1.0.2",
