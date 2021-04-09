@@ -10,7 +10,7 @@ var Promise = require("bluebird");
 const _ = require("lodash");
 const log = require('../../../../api/utils/log.js')('alert:utils');
 
-const utils = {_apps:{}};
+const utils = {_apps: {}};
 utils.sendEmail = function(to, subject, message, callback) {
     log.d('will send Alert email:', to, subject, message);
     return mail.sendMessage(to, subject, message, callback);
@@ -42,7 +42,7 @@ utils.getDatesValue = function(alertConfig, data, keyPath, appTimezone) {
     const lYear = lastDay.year();
     const lMonth = lastDay.month() + 1;
     const lDate = lastDay.date();
-    log.d("[alert utils.getDatesValue]:", data, alertConfig,tYear,tMonth, tDate, lYear,lMonth,lDate);
+    log.d("[alert utils.getDatesValue]:", data, alertConfig, tYear, tMonth, tDate, lYear, lMonth, lDate);
     let lastDateValue = data[lYear] && data[lYear][lMonth] && data[lYear][lMonth][lDate] && data[lYear][lMonth][lDate][keyName] || 0;
 
     if (subKeyName) {
