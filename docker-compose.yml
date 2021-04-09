@@ -26,7 +26,7 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
-        window: 120s
+        window: 400s
     networks:
       countly:
     depends_on:
@@ -53,7 +53,7 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
-        window: 120s
+        window: 400s
 
   nginx:
     image: 'bitnami/nginx'
