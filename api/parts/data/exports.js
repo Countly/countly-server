@@ -8,10 +8,8 @@ var exports = {},
     common = require('./../../utils/common.js'),
     moment = require('moment-timezone'),
     plugin = require('./../../../plugins/pluginManager.js'),
-    countlyConfig = require("../../../frontend/express/config.js"),
     json2csv = require('json2csv'),
-    json2xls = require('json2xls'),
-    request = require("request");
+    json2xls = require('json2xls');
 
 //npm install node-xlsx-stream !!!!!
 var xlsx = require("node-xlsx-stream");
@@ -71,10 +69,28 @@ function flattenObject(ob, fields) {
             }
         }
         else if (type === "[object Array]") {
-            if (fields) {
-                fields[i] = true;
+            var is_complex = false;
+            for (let p = 0; p < ob[i].length; p++) { //check if entities are complex.
+                let type1 = Object.prototype.toString.call(ob[i][p]);
+                if (ob[i][p] && (type1 === "[object Object]" || type1 === "[object Array]")) {
+                    is_complex = true;
+                }
             }
-            toReturn[i] = ob[i].map(preventCSVInjection).join(", ");
+            if (!is_complex) {
+                if (fields) {
+                    fields[i] = true;
+                }
+                toReturn[i] = ob[i].map(preventCSVInjection).join(", "); //just join values
+            }
+            else {
+                for (let p = 0; p < ob[i].length; p++) {
+                    if (fields) {
+                        fields[i + delimiter + p] = true;
+                    }
+                    toReturn[i + delimiter + p] = preventCSVInjection(JSON.stringify(ob[i][p])); //stringify values
+                }
+            }
+
         }
         else {
             if (fields) {
@@ -170,6 +186,7 @@ exports.output = function(params, data, filename, type) {
         headers["Content-Type"] = contents[type];
     }
     headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename) + "." + type;
+
     if (type === "xlsx" || type === "xls") {
         common.returnRaw(params, 200, new Buffer(data, 'binary'), headers);
     }
@@ -465,44 +482,51 @@ exports.fromRequest = function(options) {
     if (!options.path.startsWith("/")) {
         options.path = "/" + options.path;
     }
-    var opts = {
-        uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + options.path,
-        method: options.method || 'POST',
-        json: options.data || {},
-        strictSSL: false
-    };
     options.filename = options.filename || options.path.replace(/\//g, "_") + "_on_" + moment().format("DD-MMM-YYYY");
-
     /**
-     *  Make request to get data
-     */
-    function makeRequest() {
-        request(opts, function(error, response, body) {
-            //we got a redirect, we need to follow it
-            if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-                opts.uri = response.headers.location;
-                makeRequest();
+	* Reminds to not close connection each 55 seconds(in case it takes lonk to get data)
+	*/
+    function keepAlive() {
+        if (options.params && options.params.res && !options.params.res.finished) { //Unless output started - remind after 20 seconds, that something is still processing
+            if (options.params.res.writeProcessing && typeof options.params.res.writeProcessing === "function") {
+                options.params.res.writeProcessing();
             }
-            else {
-                var data = [];
-                try {
-                    if (options.prop) {
-                        var path = options.prop.split(".");
-                        for (var i = 0; i < path.length; i++) {
-                            body = body[path[i]];
-                        }
-                    }
-                    data = body;
-                }
-                catch (ex) {
-                    data = [];
-                }
-                exports.fromData(data, options);
-            }
-        });
-    }
+            setTimeout(keepAlive, 20 * 1000);
+        }
 
-    makeRequest();
+    }
+    setTimeout(keepAlive, 20 * 1000);
+
+    //creating request context
+    var params = {
+        //providing data in request object
+        'req': {
+            url: options.path,
+            body: options.data || {},
+            method: "export"
+        },
+        //adding custom processing for API responses
+        'APICallback': function(err, body) {
+            var data = [];
+            try {
+                if (options.prop) {
+                    var path = options.prop.split(".");
+                    for (var i = 0; i < path.length; i++) {
+                        body = body[path[i]];
+                    }
+                }
+                data = body;
+            }
+            catch (ex) {
+                data = [];
+            }
+            //"stream all data"
+            exports.fromData(data, options);
+        }
+    };
+
+    //processing request
+    common.processRequest(params);
 };
 
 /**

@@ -96,8 +96,8 @@ fi
 yum -y install sendmail
 service sendmail start
 
-#install grunt & npm modules
-( cd "$DIR/..";  sudo npm install -g grunt-cli --unsafe-perm; sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
+#install npm modules
+( cd "$DIR/..";  sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
 
 #install numactl
 yum install numactl -y
@@ -161,7 +161,7 @@ else
 fi
 
 #compile scripts for production
-cd "$DIR/.." && grunt dist-all
+countly task dist-all
 
 # disable transparent huge pages
 #countly thp

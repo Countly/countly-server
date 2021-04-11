@@ -1198,7 +1198,12 @@ function cachedData(note) {
         log.d('going to delete message %j', _id);
 
         let note = await N.Note.load(common.db, _id),
+            apps = await common.db.collection('apps').find({_id: {$in: note.apps}}).toArray(),
             sg = new S.StoreGroup(common.db);
+
+        if (!adminOfApps(params.member, apps)) {
+            return common.returnMessage(params, 403, 'Only app / global admins are allowed to delete');
+        }
 
         await note.update(common.db, {$bit: {'result.status': {or: N.Status.Deleted}}});
         api.cache.remove(_id);

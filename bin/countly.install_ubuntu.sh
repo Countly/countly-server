@@ -78,8 +78,8 @@ apt-get -y install numactl
 #install sendmail
 apt-get -y install sendmail
 
-#install grunt & npm modules
-( cd "$DIR/..";  sudo npm install -g grunt-cli --unsafe-perm; sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
+#install npm modules
+( cd "$DIR/.."; sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
 
 #install mongodb
 bash "$DIR/scripts/mongodb.install.sh"
@@ -136,7 +136,7 @@ if [ "$INSIDE_DOCKER" != "1" ]; then
 fi
 
 #compile scripts for production
-cd "$DIR" && grunt dist-all
+countly task dist-all
 
 # after install call
 countly check after install

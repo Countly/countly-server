@@ -9,6 +9,7 @@ pluginManager.dbConnection().then((countlyDb) => {
             console.log("Upgrading app_users for " + app.name);
             var cursor = countlyDb.collection('app_users' + app._id).find({}, {projection:{_id:1, fac:1, lac:1, last_sync:1}});
             var requests = [];
+            var promises = [];
             cursor.forEach(function(user) {
                 var update = {};
                 if (user.lac && (user.lac + "").length === 13) {
@@ -30,25 +31,24 @@ pluginManager.dbConnection().then((countlyDb) => {
                 }
                 if (requests.length === 500) {
                     //Execute per 500 operations and re-init
-                    countlyDb.collection('app_users' + app._id).bulkWrite(requests, function(err){
-                        if (err) {
-                            console.error(err);
-                        }
-                    });
+                    try {
+                        promises.push(countlyDb.collection('app_users' + app._id).bulkWrite(requests, {ordered: false}));
+                    }
+                    catch (ex) {
+                        console.error(ex);
+                    }
                     requests = [];
                 }
             }, function(){
                 if(requests.length > 0) {
-                    countlyDb.collection('app_users' + app._id).bulkWrite(requests, function(err){
-                        if (err) {
-                            console.error(err);
-                        }
-                        done();
-                    });
+                    try {
+                        promises.push(countlyDb.collection('app_users' + app._id).bulkWrite(requests, {ordered: false}));
+                    }
+                    catch (ex) {
+                        console.error(ex);
+                    }
                 }
-                else {
-                    done();
-                }
+                Promise.all(promises).finally(done);
             });
         }
         asyncjs.eachSeries(apps, upgrade, function() {
