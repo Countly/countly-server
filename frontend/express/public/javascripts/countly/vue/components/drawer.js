@@ -53,7 +53,7 @@
             },
             template: '<div class="cly-vue-drawer"\n' +
                             ':class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}"\n' +
-                            ':style="{width: width}">\n'+
+                            ':style="{width: width}">\n' +
                             '<div class="title">\n' +
                                 '<span>{{title}}</span>\n' +
                                 '<span class="close" v-on:click="doClose">\n' +
