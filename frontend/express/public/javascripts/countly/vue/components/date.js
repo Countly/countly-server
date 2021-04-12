@@ -613,7 +613,7 @@
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
                 if (value) {
-                    this.doCommit(value);
+                    this.doCommit(value, true);
                 }
             },
             handleTabChange: function() {
@@ -622,13 +622,13 @@
             },
             handleConfirmClick: function() {
                 if (this.rangeMode === 'inBetween') {
-                    this.doCommit([Math.floor(this.minDate.valueOf() / 1000), Math.floor(this.maxDate.valueOf() / 1000)]);
+                    this.doCommit([Math.floor(this.minDate.valueOf() / 1000), Math.floor(this.maxDate.valueOf() / 1000)], false);
                 }
                 else if (this.rangeMode === 'since') {
-                    this.doCommit({ since: Math.floor(this.minDate.valueOf() / 1000) });
+                    this.doCommit({ since: Math.floor(this.minDate.valueOf() / 1000) }, false);
                 }
                 else if (this.rangeMode === 'inTheLast') {
-                    this.doCommit(this.inTheLastInput.raw.text + this.inTheLastInput.raw.level);
+                    this.doCommit(this.inTheLastInput.raw.text + this.inTheLastInput.raw.level, false);
                 }
             },
             handleDiscardClick: function() {
@@ -640,9 +640,14 @@
             doDiscard: function() {
                 this.doClose();
             },
-            doCommit: function(value) {
+            doCommit: function(value, isShortcut) {
                 if (this.value) {
                     this.$emit("input", value);
+                    this.$emit("change", {
+                        effectiveRange: [Math.floor(this.minDate.valueOf() / 1000), Math.floor(this.maxDate.valueOf() / 1000)],
+                        isShortcut: isShortcut,
+                        value: value
+                    });
                     this.doClose();
                 }
             }
@@ -766,33 +771,34 @@
 
     Vue.component("cly-daterangepicker-g", countlyBaseComponent.extend({
         computed: {
-            globalDate: {
-                get: function() {
-                    var value = this.$store.getters["countlyCommon/period"],
-                        convertedValue = value;
+            globalDate: function() {
+                var value = this.$store.getters["countlyCommon/period"],
+                    convertedValue = value;
 
-                    if (Object.prototype.toString.call(value) === '[object Array]' && value.length === 2) { //range
-                        convertedValue = [
-                            value[0] / 1000 + countlyCommon.getOffsetCorrectionForTimestamp(value[0] / 1000),
-                            value[1] / 1000 + countlyCommon.getOffsetCorrectionForTimestamp(value[1] / 1000)
-                        ];
-                    }
-                    return convertedValue;
-                },
-                set: function(value) {
-                    var convertedValue = value;
-                    if (Object.prototype.toString.call(value) === '[object Array]' && value.length === 2) { //range
-                        convertedValue = [
-                            value[0] - countlyCommon.getOffsetCorrectionForTimestamp(value[0]),
-                            value[1] - countlyCommon.getOffsetCorrectionForTimestamp(value[1])
-                        ];
-                    }
-                    countlyCommon.setPeriod(convertedValue);
-                    this.$root.$emit("cly-date-change");
+                if (Object.prototype.toString.call(value) === '[object Array]' && value.length === 2) { //range
+                    convertedValue = [
+                        value[0] / 1000 + countlyCommon.getOffsetCorrectionForTimestamp(value[0] / 1000),
+                        value[1] / 1000 + countlyCommon.getOffsetCorrectionForTimestamp(value[1] / 1000)
+                    ];
                 }
+                return convertedValue;
             }
         },
-        template: '<cly-daterangepicker v-model="globalDate"></cly-daterangepicker>'
+        methods: {
+            onChange: function(newVal) {
+                if (newVal.isShortcut) {
+                    countlyCommon.setPeriod(newVal.value); // shortcut
+                }
+                else {
+                    countlyCommon.setPeriod([
+                        newVal.effectiveRange[0] - countlyCommon.getOffsetCorrectionForTimestamp(newVal.effectiveRange[0]),
+                        newVal.effectiveRange[1] - countlyCommon.getOffsetCorrectionForTimestamp(newVal.effectiveRange[1])
+                    ]);
+                }
+                this.$root.$emit("cly-date-change");
+            }
+        },
+        template: '<cly-daterangepicker :value="globalDate" @change="onChange"></cly-daterangepicker>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
