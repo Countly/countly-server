@@ -8,6 +8,10 @@
         padding:59px 0 35px 0;
     }
 
+    #top-bar {
+        z-index: 2000;
+    }
+
     font-family: $--font-family !important;
 
     // tabs component
@@ -951,7 +955,7 @@
         top: 0;
         background-color: #fcfcfc;
         border-left: 1px solid #d0d0d0;
-        z-index: 1000;
+        z-index: 2000;
 
         .sidecars-view {
             background-color: #f3f3f3;

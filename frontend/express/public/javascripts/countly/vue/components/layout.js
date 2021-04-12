@@ -125,9 +125,13 @@
     //Each cly-section should mark a different component within the cly-main component
     Vue.component("cly-section", countlyBaseComponent.extend({
         props: {
-            title: String
+            title: String,
+            autoGap: {
+                type: Boolean,
+                default: false
+            }
         },
-        template: '<div class="cly-vue-section bu-columns bu-is-gapless bu-is-multiline">\
+        template: '<div class="cly-vue-section bu-columns bu-is-multiline" :class="{\' bu-is-gapless\': !autoGap}">\
                         <div class="bu-column bu-is-full">\
                             <slot name="header">\
                                 <h4>{{title}}</h4>\
