@@ -739,7 +739,7 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "app_id"');
                         return false;
                     }
-                    validateUpdate(params, 'core', function() {
+                    validateUpdate(params, 'events', function() {
                         common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
@@ -1000,7 +1000,7 @@ const processRequest = (params) => {
                 }
                 case 'delete_events':
                 {
-                    validateDelete(params, 'core', function() {
+                    validateDelete(params, 'events', function() {
                         var idss = [];
                         try {
                             idss = JSON.parse(params.qstring.events);
@@ -1122,7 +1122,7 @@ const processRequest = (params) => {
                 }
                 case 'change_visibility':
                 {
-                    validateUpdate(params, 'core', function() {
+                    validateUpdate(params, 'events', function() {
                         common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
@@ -1954,6 +1954,7 @@ const processRequest = (params) => {
                         }
                         else {
                             params.truncateEventValuesList = true;
+                            
                             validateRead(params, 'core', countlyApi.data.fetch.prefetchEventData, params.qstring.method);
                         }
                     }

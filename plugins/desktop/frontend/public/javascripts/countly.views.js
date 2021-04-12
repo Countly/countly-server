@@ -319,7 +319,7 @@ app.addAppType("desktop", DesktopDashboardView);
 app.desktopDashboardView = new DesktopDashboardView();
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(app.desktopDashboardView.featureName)) {
+    if (countlyAuth.validateRead('core')) {
         app.addSubMenuForType("desktop", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
         app.addSubMenuForType("desktop", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
         app.addSubMenuForType("desktop", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});

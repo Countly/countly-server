@@ -2021,6 +2021,7 @@ window.DurationView = countlyView.extend({
 });
 
 window.ManageAppsView = countlyView.extend({
+    featureName: 'global_applications',
     initialize: function() {
         this.template = Handlebars.compile($("#template-management-applications").html());
         this.templatePlugins = Handlebars.compile($("#template-management-plugins").html());
@@ -2047,9 +2048,10 @@ window.ManageAppsView = countlyView.extend({
     renderCommon: function() {
         var appTypes = {}, self = this;
         var adminApps = countlyAuth.getAdminApps();
+        var userApps = countlyAuth.getUserApps();
         var oAdminApps = [];
-        for (var i = 0; i < adminApps.length; i++) {
-            oAdminApps.push(countlyGlobal.apps[adminApps[i]]);
+        for (var j = 0; j < userApps.length; j++) {
+            oAdminApps.push(countlyGlobal.apps[userApps[j]]);
         }
         var j = 0;
         for (j in app.appTypes) {
@@ -2201,20 +2203,12 @@ window.ManageAppsView = countlyView.extend({
         function initAppManagement(app_id) {
             var adminApps = countlyAuth.getAdminApps();
             var userApps = countlyAuth.getUserApps();
+
             if (userApps.length === 0) {
-                showAdd();
                 firstApp();
                 $("body").off("click", "#save-first-app-add").on("click", "#save-first-app-add", function() {
                     saveApp();
                 });
-                return false;
-            }
-            else if (countlyAuth.validateCreate('global_applications')) {
-                showAdd();
-                $("body").off("click", "#save-app-add").on("click", "#save-app-add", function() {
-                    saveApp();
-                });
-                store.set('first_app', false);
                 return false;
             }
             else {
@@ -2229,13 +2223,6 @@ window.ManageAppsView = countlyView.extend({
                         view.setAppId(countlyCommon.ACTIVE_APP_ID);
                         self.appManagementViews.push(view);
                     });
-                }
-
-                if (adminApps.indexOf(app_id) !== -1) {
-                    $("#app-delete-button").addClass("inactive");
-                }
-                else {
-                    $("#app-delete-button").removeClass("inactive");
                 }
 
                 $("body").off("click", "#save-app-add").on("click", "#save-app-add", function() {
@@ -2480,6 +2467,34 @@ window.ManageAppsView = countlyView.extend({
                 });
             });
             app.localize($("#content"));
+
+            var hasDeleteRight = countlyAuth.validateDelete(self.featureName, countlyGlobal.member, app_id);
+            var hasUpdateRight = countlyAuth.validateUpdate(self.featureName, countlyGlobal.member, app_id);
+            
+            if (hasDeleteRight) {
+                $("#app-delete-button").show();
+                $('#app-clear-button').show();
+                $('#app-reset-button').show();
+            }
+            else {
+                $("#app-delete-button").hide();
+                $('#app-clear-button').hide();
+                $('#app-reset-button').hide();
+            }
+
+            if (hasUpdateRight) {
+                $("#app-edit-button").show();
+                $('#app-lock-button').show();
+            }
+            else {
+                $("#app-edit-button").show();
+                $('#app-lock-button').show();
+            }
+
+            if (!hasDeleteRight && !hasUpdateRight) {
+                $('#view-app .cly-button-menu-trigger').hide();
+            }
+
         }
         /** initializes country select
          * @param {object} parent - select parent element
@@ -2861,6 +2876,7 @@ window.ManageAppsView = countlyView.extend({
         }
 
         if (!countlyGlobal.member.global_admin && $.isEmptyObject(countlyGlobal.apps) && $.isEmptyObject(countlyGlobal.admin_apps) && !countlyGlobal.config.autonomous) {
+            console.log('no auth for app manage screen');
             prepareUnauthorizeScreen();
         }
         else {
@@ -3808,6 +3824,7 @@ window.ManageUsersView = countlyView.extend({
         // Events handlers
         $('body').off('click', '.manage-users-options-item .show-edit-menu').on('click', '.manage-users-options-item .show-edit-menu', function() {
             var that = this;
+            $('.edit-menu').hide();
             $('.manage-users-menu-' + $(this).data('id')).show();
             setTimeout(function() {
             	$('.manage-users-menu-' + $(that).data('id')).fadeOut();
@@ -4032,7 +4049,6 @@ window.ManageUsersView = countlyView.extend({
                 for (var i = 0; i < self.features.length; i++) {
                    if (self.features[i] === 'core') continue;
                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
-                   //$('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().setDisabled();
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], true);
@@ -4041,7 +4057,6 @@ window.ManageUsersView = countlyView.extend({
                 for (var j = 0; j < self.features.length; j++) {
                    if (self.features[j] === 'core') continue;
                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().set(false);
-                   //$('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().unsetDisabled();
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], false);
@@ -4140,6 +4155,16 @@ window.ManageUsersView = countlyView.extend({
                     delay: 3000,
                     title: 'Validation error',
                     message: $.i18n.map['management-users.email-invalid-format']
+                });
+                return;
+            }
+
+            if (self.memberModel.permission._.u[0].length === 0 && self.memberModel.permission._.a.length === 0) {
+                CountlyHelpers.notify({
+                    type: 'warning',
+                    delay: 3000,
+                    title: 'Validation error',
+                    message: $.i18n.map['management-users.at-least-one-app-required']
                 });
                 return;
             }

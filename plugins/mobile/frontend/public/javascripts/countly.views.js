@@ -334,7 +334,7 @@ app.addAppManagementSwitchCallback(function(appId, type) {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(app.mobileDashboardView.featureName)) {
+    if (countlyAuth.validateRead('core')) {
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-carriers", url: "#/analytics/carriers", text: "sidebar.analytics.carriers", priority: 70});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});

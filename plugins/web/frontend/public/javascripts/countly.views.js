@@ -508,7 +508,7 @@ app.addAppManagementSwitchCallback(function(appId, type) {
 app.webDashboardView = new WebDashboardView();
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(app.webDashboardView.featureName)) {
+    if (countlyAuth.validateRead('core')) {
         app.addSubMenuForType("web", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
         app.addSubMenuForType("web", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
         app.addSubMenuForType("web", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
