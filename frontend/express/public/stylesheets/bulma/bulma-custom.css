@@ -17,7 +17,8 @@ To customize and namespace classes follow -
 https://github.com/itsiprikshit/custom-bulma
 */
 
-.bu-level:not(:last-child) {
+.bu-level:not(:last-child),
+.bu-progress:not(:last-child) {
     margin-bottom: 1.5rem;
 }
 
@@ -2574,4 +2575,187 @@ https://github.com/itsiprikshit/custom-bulma
 .bu-py-6 {
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
+}
+
+.bu-progress {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    border-radius: 290486px;
+    display: block;
+    height: 1rem;
+    overflow: hidden;
+    padding: 0;
+    width: 100%;
+}
+.bu-progress::-webkit-progress-bar {
+    background-color: #ededed;
+}
+.bu-progress::-webkit-progress-value {
+    background-color: #4a4a4a;
+}
+.bu-progress::-moz-progress-bar {
+    background-color: #4a4a4a;
+}
+.bu-progress::-ms-fill {
+    background-color: #4a4a4a;
+    border: none;
+}
+.bu-progress.bu-is-white::-webkit-progress-value {
+    background-color: white;
+}
+.bu-progress.bu-is-white::-moz-progress-bar {
+    background-color: white;
+}
+.bu-progress.bu-is-white::-ms-fill {
+    background-color: white;
+}
+.bu-progress.bu-is-white:indeterminate {
+    background-image: linear-gradient(to right, white 30%, #ededed 30%);
+}
+.bu-progress.bu-is-black::-webkit-progress-value {
+    background-color: #0a0a0a;
+}
+.bu-progress.bu-is-black::-moz-progress-bar {
+    background-color: #0a0a0a;
+}
+.bu-progress.bu-is-black::-ms-fill {
+    background-color: #0a0a0a;
+}
+.bu-progress.bu-is-black:indeterminate {
+    background-image: linear-gradient(to right, #0a0a0a 30%, #ededed 30%);
+}
+.bu-progress.bu-is-light::-webkit-progress-value {
+    background-color: whitesmoke;
+}
+.bu-progress.bu-is-light::-moz-progress-bar {
+    background-color: whitesmoke;
+}
+.bu-progress.bu-is-light::-ms-fill {
+    background-color: whitesmoke;
+}
+.bu-progress.bu-is-light:indeterminate {
+    background-image: linear-gradient(to right, whitesmoke 30%, #ededed 30%);
+}
+.bu-progress.bu-is-dark::-webkit-progress-value {
+    background-color: #363636;
+}
+.bu-progress.bu-is-dark::-moz-progress-bar {
+    background-color: #363636;
+}
+.bu-progress.bu-is-dark::-ms-fill {
+    background-color: #363636;
+}
+.bu-progress.bu-is-dark:indeterminate {
+    background-image: linear-gradient(to right, #363636 30%, #ededed 30%);
+}
+.bu-progress.bu-is-primary::-webkit-progress-value {
+    background-color: #00d1b2;
+}
+.bu-progress.bu-is-primary::-moz-progress-bar {
+    background-color: #00d1b2;
+}
+.bu-progress.bu-is-primary::-ms-fill {
+    background-color: #00d1b2;
+}
+.bu-progress.bu-is-primary:indeterminate {
+    background-image: linear-gradient(to right, #00d1b2 30%, #ededed 30%);
+}
+.bu-progress.bu-is-link::-webkit-progress-value {
+    background-color: #3273dc;
+}
+.bu-progress.bu-is-link::-moz-progress-bar {
+    background-color: #3273dc;
+}
+.bu-progress.bu-is-link::-ms-fill {
+    background-color: #3273dc;
+}
+.bu-progress.bu-is-link:indeterminate {
+    background-image: linear-gradient(to right, #3273dc 30%, #ededed 30%);
+}
+.bu-progress.bu-is-info::-webkit-progress-value {
+    background-color: #3298dc;
+}
+.bu-progress.bu-is-info::-moz-progress-bar {
+    background-color: #3298dc;
+}
+.bu-progress.bu-is-info::-ms-fill {
+    background-color: #3298dc;
+}
+.bu-progress.bu-is-info:indeterminate {
+    background-image: linear-gradient(to right, #3298dc 30%, #ededed 30%);
+}
+.bu-progress.bu-is-success::-webkit-progress-value {
+    background-color: #48c774;
+}
+.bu-progress.bu-is-success::-moz-progress-bar {
+    background-color: #48c774;
+}
+.bu-progress.bu-is-success::-ms-fill {
+    background-color: #48c774;
+}
+.bu-progress.bu-is-success:indeterminate {
+    background-image: linear-gradient(to right, #48c774 30%, #ededed 30%);
+}
+.bu-progress.bu-is-warning::-webkit-progress-value {
+    background-color: #ffdd57;
+}
+.bu-progress.bu-is-warning::-moz-progress-bar {
+    background-color: #ffdd57;
+}
+.bu-progress.bu-is-warning::-ms-fill {
+    background-color: #ffdd57;
+}
+.bu-progress.bu-is-warning:indeterminate {
+    background-image: linear-gradient(to right, #ffdd57 30%, #ededed 30%);
+}
+.bu-progress.bu-is-danger::-webkit-progress-value {
+    background-color: #f14668;
+}
+.bu-progress.bu-is-danger::-moz-progress-bar {
+    background-color: #f14668;
+}
+.bu-progress.bu-is-danger::-ms-fill {
+    background-color: #f14668;
+}
+.bu-progress.bu-is-danger:indeterminate {
+    background-image: linear-gradient(to right, #f14668 30%, #ededed 30%);
+}
+.bu-progress:indeterminate {
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    animation-name: moveIndeterminate;
+    animation-timing-function: linear;
+    background-color: #ededed;
+    background-image: linear-gradient(to right, #4a4a4a 30%, #ededed 30%);
+    background-position: top left;
+    background-repeat: no-repeat;
+    background-size: 150% 150%;
+}
+.bu-progress:indeterminate::-webkit-progress-bar {
+    background-color: transparent;
+}
+.bu-progress:indeterminate::-moz-progress-bar {
+    background-color: transparent;
+}
+.bu-progress:indeterminate::-ms-fill {
+    animation-name: none;
+}
+.bu-progress.bu-is-small {
+    height: 0.75rem;
+}
+.bu-progress.bu-is-medium {
+    height: 1.25rem;
+}
+.bu-progress.bu-is-large {
+    height: 1.5rem;
+}
+
+@keyframes moveIndeterminate {
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: -200% 0;
+    }
 }
