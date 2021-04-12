@@ -573,7 +573,7 @@
                 }
                 else if (availableShortcuts[value]) {
                     /*
-                        Shortcuts values should be mapped to a real date range if shortcuts are disabled. 
+                        Shortcuts values should be mapped to a real date range for the cases shortcuts are disabled. 
                     */
                     var effectiveShortcutRange = availableShortcuts[value].getRange();
                     state.rangeMode = 'inBetween';
@@ -762,6 +762,37 @@
                             </div>\
                         </div>\
                     </cly-dropdown>',
+    }));
+
+    Vue.component("cly-daterangepicker-g", countlyBaseComponent.extend({
+        computed: {
+            globalDate: {
+                get: function() {
+                    var value = this.$store.getters["countlyCommon/period"],
+                        convertedValue = value;
+
+                    if (Object.prototype.toString.call(value) === '[object Array]' && value.length === 2) { //range
+                        convertedValue = [
+                            value[0] / 1000 + countlyCommon.getOffsetCorrectionForTimestamp(value[0] / 1000),
+                            value[1] / 1000 + countlyCommon.getOffsetCorrectionForTimestamp(value[1] / 1000)
+                        ];
+                    }
+                    return convertedValue;
+                },
+                set: function(value) {
+                    var convertedValue = value;
+                    if (Object.prototype.toString.call(value) === '[object Array]' && value.length === 2) { //range
+                        convertedValue = [
+                            value[0] - countlyCommon.getOffsetCorrectionForTimestamp(value[0]),
+                            value[1] - countlyCommon.getOffsetCorrectionForTimestamp(value[1])
+                        ];
+                    }
+                    countlyCommon.setPeriod(convertedValue);
+                    this.$root.$emit("cly-date-change");
+                }
+            }
+        },
+        template: '<cly-daterangepicker v-model="globalDate"></cly-daterangepicker>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
