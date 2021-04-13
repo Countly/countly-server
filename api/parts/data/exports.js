@@ -415,6 +415,7 @@ exports.fromDatabase = function(options) {
     options.db = options.db || common.db;
     options.query = options.query || {};
     options.projection = options.projection || {};
+    options.writeHeaders = true;
 
     if (options.params && options.params.qstring && options.params.qstring.formatFields) {
         options.mapper = options.params.qstring.formatFields;
