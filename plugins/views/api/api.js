@@ -644,10 +644,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         }
                         else if (sortcol === "u") {
                             if (params.qstring.sSortDir_0 === "asc") {
-                                sortby.$sort.uvalue = 1;
+                                sortby.$sort.u = 1;
                             }
                             else {
-                                sortby.$sort.uvalue = -1;
+                                sortby.$sort.u = -1;
                             }
                         }
                         else if (sortcol === "name") {
