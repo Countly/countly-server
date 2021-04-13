@@ -2629,9 +2629,9 @@
                         start.add(1, 'days');
 
                         for (var j = 0; j < 24; j++) {
-                            if (j === 0) {
-                                ticks.push([((24 * i) + j), countlyCommon.formatDate(start, "D MMM") + " 0:00"]);
-                            }
+                            //if (j === 0) {
+                            ticks.push([((24 * i) + j), countlyCommon.formatDate(start, "D MMM") + " 0:00"]);
+                            //}
 
                             tickTexts.push(countlyCommon.formatDate(start, "D MMM, ") + j + ":00");
                         }
