@@ -29,7 +29,7 @@ describe('Reseting app', function() {
     });
     describe('without permission', function() {
         it('should not authorized', function(done) {
-            var params = {app_id: APP_ID};
+            var params = {app_id: APP_ID, "period": "reset"};
             request
                 .get('/i/apps/reset?api_key=' + API_KEY_USER + "&args=" + JSON.stringify(params))
                 .expect(401)
@@ -45,7 +45,7 @@ describe('Reseting app', function() {
     });
     describe('reseting app', function() {
         it('should reset data', function(done) {
-            var params = {app_id: APP_ID};
+            var params = {app_id: APP_ID, "period": "reset"};
             request
                 .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)

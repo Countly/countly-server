@@ -640,6 +640,9 @@ appsApi.resetApp = function(params) {
                 'type': 'String',
                 'min-length': 24,
                 'max-length': 24
+            },
+            period: {
+                required: true
             }
         },
         appId = '';
@@ -688,7 +691,7 @@ appsApi.resetApp = function(params) {
 * @param {object} app - app document
 **/
 function deleteAppData(appId, fromAppDelete, params, app) {
-    if (fromAppDelete || !params.qstring.args.period || params.qstring.args.period === "all" || params.qstring.args.period === "reset") {
+    if (fromAppDelete || params.qstring.args.period === "all" || params.qstring.args.period === "reset") {
         deleteAllAppData(appId, fromAppDelete, params, app);
     }
     else {
