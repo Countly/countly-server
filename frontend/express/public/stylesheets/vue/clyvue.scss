@@ -2872,9 +2872,14 @@
         }
         &__values-list {
             height: 100%;
+            align-items: center;
         }
         &__item {
-            height: 100%;
+            height: 33.3333333%;
+            padding: 15px 0px;
+        }
+        &__item-title {
+            padding: 5px 0px;
         }
     }
 
