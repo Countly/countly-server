@@ -6817,26 +6817,41 @@ window.DownloadView = countlyView.extend({
             $(this.el).html('<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-not-available-title"] + '</h1><p>' + jQuery.i18n.map["downloading-view.download-not-available-text"] + '</p></div>');
             return;
         }
+        this.path = this.path || "/app_users/download/";
+        var myhtml;
+        if (this.path) {
+            myhtml = '<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-title"] + '</h1>';
+            self.link = countlyCommon.API_PARTS.data.r + self.path + self.task_id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+            window.location = self.link;
 
-        countlyTaskManager.fetchResult(this.task_id, function(res) {
-            var myhtml = '<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-title"] + '</h1>';
-            if (res && res.data) {
-                res.data = res.data.replace(new RegExp("&quot;", 'g'), "");
-                self.link = countlyCommon.API_PARTS.data.r + "/app_users/download/" + res.data + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
-                window.location = self.link;
-
-
-                if (self.link) {
-                    myhtml += '<p><a href="' + self.link + '">' + jQuery.i18n.map["downloading-view.if-not-start"] + '</a></p>';
-                }
-                myhtml += "</div>";
+            if (self.link) {
+                myhtml += '<p><a href="' + self.link + '">' + jQuery.i18n.map["downloading-view.if-not-start"] + '</a></p>';
             }
-            else {
-                myhtml = '<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-not-available-title"] + '</h1><p>' + jQuery.i18n.map["downloading-view.download-not-available-text"] + '</p></div>';
-            }
+            myhtml += "</div>";
             $(self.el).html(myhtml);
+        }
+        else {
+            this.path = "/app_users/download/";
+            countlyTaskManager.fetchResult(this.task_id, function(res) {
+                myhtml = '<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-title"] + '</h1>';
+                if (res && res.data) {
+                    res.data = res.data.replace(new RegExp("&quot;", 'g'), "");
+                    self.link = countlyCommon.API_PARTS.data.r + self.path + res.data + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+                    window.location = self.link;
 
-        });
+
+                    if (self.link) {
+                        myhtml += '<p><a href="' + self.link + '">' + jQuery.i18n.map["downloading-view.if-not-start"] + '</a></p>';
+                    }
+                    myhtml += "</div>";
+                }
+                else {
+                    myhtml = '<div id="no-app-type"><h1>' + jQuery.i18n.map["downloading-view.download-not-available-title"] + '</h1><p>' + jQuery.i18n.map["downloading-view.download-not-available-text"] + '</p></div>';
+                }
+                $(self.el).html(myhtml);
+
+            });
+        }
     }
 });
 
@@ -7106,7 +7121,12 @@ window.LongTaskView = countlyView.extend({
             },
             {
                 "mData": function(row) {
-                    return row.name || row.meta || "";
+                    if (row.type === 'tableExport') {
+                        return row.report_name;
+                    }
+                    else {
+                        return row.name || row.meta || "";
+                    }
                 },
                 "sType": "string",
                 "sTitle": jQuery.i18n.map["report-manager.data"],
@@ -8389,6 +8409,12 @@ app.route("/analytics/events", "events", function() {
 
 app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function(task_id) {
     this.DownloadView.task_id = task_id;
+    this.renderWhenReady(this.DownloadView);
+});
+
+app.route('/exportedData/tableExport/:task_id', 'userExportTask', function(task_id) {
+    this.DownloadView.task_id = task_id;
+    this.DownloadView.path = "/export/download/";
     this.renderWhenReady(this.DownloadView);
 });
 
