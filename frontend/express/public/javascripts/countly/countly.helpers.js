@@ -1015,7 +1015,7 @@
                             countlyTaskManager.monitor(task_id);
                             CountlyHelpers.displayExportStatus(null, fileid, task_id);
                         }
-						$(".save-table-data").click();
+                        $(".save-table-data").click();
 
                     },
                     error: function(xhr, status, error) {

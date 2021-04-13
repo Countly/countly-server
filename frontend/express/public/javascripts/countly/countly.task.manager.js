@@ -359,7 +359,7 @@
                     //notify task completed
                     if (res && res.result === "completed") {
                         countlyTaskManager.fetchTaskInfo(id, function(res1) {
-                            if (res1.type === "tableExport") {
+                            if (res1 && res1.type === "tableExport") {
                                 if (res1.report_name) {
                                     res1.name = "<span style='overflow-wrap: break-word;'>" + res1.report_name + "</span>";
                                 }
@@ -393,13 +393,13 @@
                     }
                     else if (res && res.result === "errored") {
                         countlyTaskManager.fetchTaskInfo(id, function(res1) {
-                            if (res1.type === "tableExport") {
+                            if (res1 && res1.type === "tableExport") {
                                 if (res1.report_name) {
                                     res1.name = "<span style='overflow-wrap: break-word;'>" + res1.report_name + "</span>";
                                 }
                             }
                             if (res1 && res1.view) {
-                                if (res1 && res1.manually_create === false) {
+                                if (res1.manually_create === false) {
                                     $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
                                     app.haveUnreadReports = true;
                                     app.updateLongTaskViewsNofification();

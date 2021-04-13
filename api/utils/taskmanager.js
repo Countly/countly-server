@@ -245,6 +245,7 @@ taskmanager.createTask = function(options, callback) {
 * @param {function=} callback - callback when data is stored
 */
 taskmanager.saveResult = function(options, data, callback) {
+    options = options || {};
     options.db = options.db || common.db;
     var update = {
         end: new Date().getTime(),
@@ -266,7 +267,8 @@ taskmanager.saveResult = function(options, data, callback) {
     else {
         update.errormsg = "";//rewrite any old error message
     }
-
+    /** function to update subtasks
+	**/
     function updateSubtasks() {
         var updateObj = {$set: {}};
         updateObj.$set["subtasks." + options.id + ".status"] = options.errored ? "errored" : "completed";
@@ -279,9 +281,7 @@ taskmanager.saveResult = function(options, data, callback) {
             updateObj.$unset = {};
             updateObj.$unset["subtasks." + options.id + ".errormsg"] = "";
         }
-
         options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
-
     }
 
     options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
