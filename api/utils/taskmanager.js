@@ -845,7 +845,7 @@ taskmanager.rerunTask = function(options, callback) {
 function getResult(callback, options) {
     return function(err, data) {
         if (!err) {
-            if (options.only_info) {
+            if (options && options.only_info) {
                 callback(err, data);
             }
             else if (data && options && options.subtask_key && data.taskgroup === true) {

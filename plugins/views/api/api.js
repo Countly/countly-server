@@ -218,7 +218,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     });
 
     /** function returns aggregation pipeline
-     * @param {string} collectionName - collection name from where to select
      * @param {object} params  -  params object(passed from request).
      * @param {string} params.qstring.app_id - app id
      * @param {string} params.qstring.period - period
@@ -226,7 +225,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      * @param {string} settings.segmentVal - segment value. (Segment key is set by collection name)
 	 * @returns {object} pipeline
     */
-    function createAggregatePipeline(collectionName, params, settings) {
+    function createAggregatePipeline(params, settings) {
         settings = settings || {};
         var pipeline = [];
         var period = params.qstring.period || '30days';
@@ -528,7 +527,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     function getAggregatedData(collectionName, params, settings, callback) {
         settings = settings || {};
         var app_id = settings.app_id;
-        var pipeline = createAggregatePipeline(collectionName, params, settings);
+        var pipeline = createAggregatePipeline(params, settings);
 
         if (settings.sortcol !== 'name') {
 
@@ -669,7 +668,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         }
                     }
 
-                    var pipeline = createAggregatePipeline(colName, params, selOptions);
+                    var pipeline = createAggregatePipeline(params, selOptions);
                     pipeline.push({
                         $lookup: {
                             from: "app_viewsmeta" + params.qstring.app_id,
