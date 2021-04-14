@@ -2369,6 +2369,19 @@ window.ManageAppsView = countlyView.extend({
                 view.setAppId(app_id);
                 $.when(view.beforeRender()).always(function() {
                     view.render(view);
+                    if (!countlyAuth.validateUpdate('global_configurations')) {
+                        if (!countlyAuth.validateUpdate('global_configuratison')) {
+                            $('.mgmt-plugins input').addClass('disabled');
+                            $('.mgmt-plugins input').attr('disabled', 'disabled');
+                            $('.mgmt-plugins .cly-select').addClass('disabled');
+                            for (var selectizeIndex = 0; selectizeIndex < $('.mgmt-plugins .selectized').length; selectizeIndex++) {
+                                $('.selectized')[selectizeIndex].selectize.disable();
+                            }
+                            $('.mgmt-plugins .on-off-switch').addClass('disabled');
+                            $('.mgmt-plugins .on-off-switch input').attr('disabled', 'disabled');
+                            $('.mgmt-plugins .icon-button').addClass('disabled');
+                        }
+                    }
                 });
             });
             self.el.find('.app-details-plugins > div').accordion({active: false, collapsible: true, autoHeight: false, heightStyle: "content" });
@@ -2487,8 +2500,8 @@ window.ManageAppsView = countlyView.extend({
                 $('#app-lock-button').show();
             }
             else {
-                $("#app-edit-button").show();
-                $('#app-lock-button').show();
+                $("#app-edit-button").hide();
+                $('#app-lock-button').hide();
             }
 
             if (!hasDeleteRight && !hasUpdateRight) {
