@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, moment, countlyCommon, _ */
+/* global Vue, ELEMENT, moment, countlyCommon, _, CV */
 
 (function(countlyVue) {
 
@@ -70,7 +70,7 @@
             maxDateMM = now,
             maxDate = maxDateMM.toDate();
 
-        return {
+        var state = {
             // User input
             now: now,
             selectedShortcut: null,
@@ -78,7 +78,6 @@
             rangeMode: 'inBetween',
             minDate: minDate,
             maxDate: maxDate,
-            label: getRangeLabel([minDate, maxDate]),
             inBetweenInput: {
                 raw: {
                     textStart: minDateText,
@@ -100,6 +99,8 @@
                 parsed: [minDate, maxDate]
             },
         };
+        state.label = getRangeLabel(state);
+        return state;
     }
 
     var globalDaysRange = [],
@@ -185,17 +186,32 @@
     }
 
     /**
-     * Returns the range label for a given date array
-     * @param {Array} value Array of dates (2 values; start, end)
+     * Returns the range label for a given state object
+     * @param {Object} state Current state of datepicker
      * @returns {String} Range label
      */
-    function getRangeLabel(value) {
-        var effectiveRange = [moment(value[0]), moment(value[1])];
-        if (effectiveRange[1] - effectiveRange[0] > 86400000) {
-            return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
+    function getRangeLabel(state) {
+
+        if (!state.rangeMode || state.rangeMode === 'inBetween') {
+            var effectiveRange = [moment(state.minDate), moment(state.maxDate)];
+            if (effectiveRange[1] - effectiveRange[0] > 86400000) {
+                return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
+            }
+            else {
+                return effectiveRange[0].format("lll") + " - " + effectiveRange[1].format("lll");
+            }
         }
-        else {
-            return effectiveRange[0].format("lll") + " - " + effectiveRange[1].format("lll");
+        else if (state.rangeMode === 'since') {
+            return CV.i18n('common.time-period-name.since', moment(state.minDate).format("ll"));
+        }
+        else if (state.rangeMode === 'inTheLast') {
+            var num = parseInt(state.inTheLastInput.raw.text, 10),
+                suffix = '';
+
+            if (num > 1) {
+                suffix = "-plural";
+            }
+            return CV.i18n('common.in-last-' + state.inTheLastInput.raw.level + suffix, num);
         }
     }
 
@@ -507,7 +523,7 @@
                 var changes = this.valueToInputState(value),
                     self = this;
 
-                changes.label = getRangeLabel([changes.minDate, changes.maxDate]);
+                changes.label = getRangeLabel(changes);
 
                 Object.keys(changes).forEach(function(fieldKey) {
                     self[fieldKey] = changes[fieldKey];
