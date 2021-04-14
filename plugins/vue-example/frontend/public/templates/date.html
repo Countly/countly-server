@@ -1,17 +1,17 @@
 <div>
     <cly-section title="Global picker (countlyCommon/period)">
-        <cly-daterangepicker-g></cly-daterangepicker-g>
+        <cly-datepicker-g></cly-datepicker-g>
     </cly-section>
     <cly-section title="Date range">
-        <cly-daterangepicker v-model="selectedDateRange"></cly-daterangepicker>
+        <cly-datepicker v-model="selectedDateRange"></cly-datepicker>
         <pre>{{selectedDateRange}}</pre>
     </cly-section>
     <cly-section title="Month range">
-        <cly-daterangepicker v-model="selectedMonthRange" type="monthrange"></cly-daterangepicker>
+        <cly-datepicker v-model="selectedMonthRange" type="monthrange"></cly-datepicker>
         <pre>{{selectedMonthRange}}</pre>
     </cly-section>
     <cly-section title="Date range (no shortcuts)">
-        <cly-daterangepicker v-model="selectedDateRange" :display-shortcuts="false"></cly-daterangepicker>
+        <cly-datepicker v-model="selectedDateRange" :display-shortcuts="false"></cly-datepicker>
         <pre>{{selectedDateRange}}</pre>
     </cly-section>
     <cly-section title="Dynamic type">
@@ -19,7 +19,7 @@
             <el-option label="Date range" value="daterange"></el-option>
             <el-option label="Month range" value="monthrange"></el-option>
         </el-select>
-        <cly-daterangepicker v-model="selectedDynamicRange" :type="selectedDynamicType"></cly-daterangepicker>
+        <cly-datepicker v-model="selectedDynamicRange" :type="selectedDynamicType"></cly-datepicker>
         <pre>{{selectedDynamicRange}}</pre>
     </cly-section>
 </div>

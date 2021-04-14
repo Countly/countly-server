@@ -459,7 +459,7 @@
         }
     };
 
-    Vue.component("cly-daterangepicker", countlyBaseComponent.extend({
+    Vue.component("cly-datepicker", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n,
             InputControlsMixin,
@@ -785,7 +785,7 @@
                     </cly-dropdown>',
     }));
 
-    Vue.component("cly-daterangepicker-g", countlyBaseComponent.extend({
+    Vue.component("cly-datepicker-g", countlyBaseComponent.extend({
         computed: {
             globalDate: function() {
                 var value = this.$store.getters["countlyCommon/period"],
@@ -814,7 +814,7 @@
                 this.$root.$emit("cly-date-change");
             }
         },
-        template: '<cly-daterangepicker :value="globalDate" @change="onChange"></cly-daterangepicker>'
+        template: '<cly-datepicker :value="globalDate" @change="onChange"></cly-datepicker>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
