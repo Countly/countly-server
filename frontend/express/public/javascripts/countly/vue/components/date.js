@@ -657,7 +657,7 @@
                 this.doClose();
             },
             doCommit: function(value, isShortcut) {
-                if (this.value) {
+                if (value) {
                     this.$emit("input", value);
                     this.$emit("change", {
                         effectiveRange: [Math.floor(this.minDate.valueOf() / 1000), Math.floor(this.maxDate.valueOf() / 1000)],
