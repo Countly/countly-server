@@ -498,8 +498,9 @@
             placeholder: {type: String, default: 'Select'},
             disabled: { type: Boolean, default: false},
             size: {type: String, default: 'small'},
-            allowRelativeRanges: {type: Boolean, default: true },
+            showRelativeModes: {type: Boolean, default: true },
             offsetCorrection: {type: Boolean, default: true},
+            modelMode: {type: String, default: "mixed"},
             timestampFormat: {type: String, default: 's'}
         },
         data: function() {
@@ -666,7 +667,7 @@
                 return newValue;
             },
             handleConfirmClick: function() {
-                if (this.rangeMode === 'inBetween') {
+                if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
                     this.doCommit([
                         this.fixTimestamp(this.minDate.valueOf(), "output"),
                         this.fixTimestamp(this.maxDate.valueOf(), "output")
@@ -739,7 +740,7 @@
                                 </div>\
                             </div>\
                             <div class="cly-vue-daterp__calendars-col" v-if="customRangeSelection">\
-                                <div class="cly-vue-daterp__input-methods" :class="{\'cly-vue-daterp__hidden-tabs\': !allowRelativeRanges}">\
+                                <div class="cly-vue-daterp__input-methods" :class="{\'cly-vue-daterp__hidden-tabs\': !showRelativeModes}">\
                                     <el-tabs v-model="rangeMode" @tab-click="handleTabChange">\
                                         <el-tab-pane name="inBetween">\
                                             <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
@@ -822,22 +823,22 @@
 
     Vue.component("cly-datepicker-g", countlyBaseComponent.extend({
         computed: {
-            globalDate: function() {
-                return this.$store.getters["countlyCommon/period"];
+            globalDate:
+            {
+                get: function() {
+                    return this.$store.getters["countlyCommon/period"];
+                },
+                set: function(newVal) {
+                    countlyCommon.setPeriod(newVal);
+                }
             }
         },
         methods: {
-            onChange: function(newVal) {
-                if (newVal.isShortcut) {
-                    countlyCommon.setPeriod(newVal.value);
-                }
-                else {
-                    countlyCommon.setPeriod([newVal.effectiveRange[0], newVal.effectiveRange[1]]);
-                }
+            onChange: function() {
                 this.$root.$emit("cly-date-change");
             }
         },
-        template: '<cly-datepicker :value="globalDate" timestampFormat="ms" @change="onChange"></cly-datepicker>'
+        template: '<cly-datepicker timestampFormat="ms" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-datepicker>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
