@@ -498,7 +498,9 @@
             placeholder: {type: String, default: 'Select'},
             disabled: { type: Boolean, default: false},
             size: {type: String, default: 'small'},
-            allowRelativeRanges: {type: Boolean, default: true }
+            allowRelativeRanges: {type: Boolean, default: true },
+            offsetCorrection: {type: Boolean, default: true},
+            timestampFormat: {type: String, default: 's'}
         },
         data: function() {
             return getInitialState(this);
@@ -555,8 +557,8 @@
 
                 if (meta.type === "range") {
                     state.rangeMode = 'inBetween';
-                    state.minDate = new Date(meta.value[0] * 1000);
-                    state.maxDate = new Date(meta.value[1] * 1000);
+                    state.minDate = new Date(this.fixTimestamp(meta.value[0], "input"));
+                    state.maxDate = new Date(this.fixTimestamp(meta.value[1], "input"));
                     state.inBetweenInput = {
                         raw: {
                             textStart: moment(state.minDate).format(this.formatter),
@@ -567,7 +569,7 @@
                 }
                 else if (meta.type === "since") {
                     state.rangeMode = 'since';
-                    state.minDate = new Date(meta.value.since * 1000);
+                    state.minDate = new Date(this.fixTimestamp(meta.value.since, "input"));
                     state.maxDate = now;
                     state.sinceInput = {
                         raw: {
@@ -637,12 +639,41 @@
                 this.abortPicking();
                 this.handleUserInputUpdate();
             },
+            fixTimestamp: function(value, mode) {
+                if (!this.offsetCorrection && this.timestampFormat === "ms") {
+                    return value;
+                }
+
+                var newValue = value;
+
+                if (this.timestampFormat === "s") {
+                    if (mode === "output") {
+                        newValue = Math.floor(value / 1000);
+                    }
+                    else { // mode === "input"
+                        newValue = value * 1000;
+                    }
+                }
+
+                if (this.offsetCorrection) {
+                    if (mode === "output") {
+                        newValue = newValue - countlyCommon.getOffsetCorrectionForTimestamp(newValue);
+                    }
+                    else { // mode === "input" 
+                        newValue = newValue + countlyCommon.getOffsetCorrectionForTimestamp(newValue);
+                    }
+                }
+                return newValue;
+            },
             handleConfirmClick: function() {
                 if (this.rangeMode === 'inBetween') {
-                    this.doCommit([Math.floor(this.minDate.valueOf() / 1000), Math.floor(this.maxDate.valueOf() / 1000)], false);
+                    this.doCommit([
+                        this.fixTimestamp(this.minDate.valueOf(), "output"),
+                        this.fixTimestamp(this.maxDate.valueOf(), "output")
+                    ], false);
                 }
                 else if (this.rangeMode === 'since') {
-                    this.doCommit({ since: Math.floor(this.minDate.valueOf() / 1000) }, false);
+                    this.doCommit({ since: this.fixTimestamp(this.minDate.valueOf(), "output") }, false);
                 }
                 else if (this.rangeMode === 'inTheLast') {
                     this.doCommit(this.inTheLastInput.raw.text + this.inTheLastInput.raw.level, false);
@@ -661,7 +692,10 @@
                 if (value) {
                     this.$emit("input", value);
                     this.$emit("change", {
-                        effectiveRange: [Math.floor(this.minDate.valueOf() / 1000), Math.floor(this.maxDate.valueOf() / 1000)],
+                        effectiveRange: [
+                            this.fixTimestamp(this.minDate.valueOf(), "output"),
+                            this.fixTimestamp(this.maxDate.valueOf(), "output")
+                        ],
                         isShortcut: isShortcut,
                         value: value
                     });
@@ -789,33 +823,21 @@
     Vue.component("cly-datepicker-g", countlyBaseComponent.extend({
         computed: {
             globalDate: function() {
-                var value = this.$store.getters["countlyCommon/period"],
-                    convertedValue = value;
-
-                if (Object.prototype.toString.call(value) === '[object Array]' && value.length === 2) { //range
-                    convertedValue = [
-                        value[0] / 1000 + countlyCommon.getOffsetCorrectionForTimestamp(value[0] / 1000),
-                        value[1] / 1000 + countlyCommon.getOffsetCorrectionForTimestamp(value[1] / 1000)
-                    ];
-                }
-                return convertedValue;
+                return this.$store.getters["countlyCommon/period"];
             }
         },
         methods: {
             onChange: function(newVal) {
                 if (newVal.isShortcut) {
-                    countlyCommon.setPeriod(newVal.value); // shortcut
+                    countlyCommon.setPeriod(newVal.value);
                 }
                 else {
-                    countlyCommon.setPeriod([
-                        newVal.effectiveRange[0] - countlyCommon.getOffsetCorrectionForTimestamp(newVal.effectiveRange[0]),
-                        newVal.effectiveRange[1] - countlyCommon.getOffsetCorrectionForTimestamp(newVal.effectiveRange[1])
-                    ]);
+                    countlyCommon.setPeriod([newVal.effectiveRange[0], newVal.effectiveRange[1]]);
                 }
                 this.$root.$emit("cly-date-change");
             }
         },
-        template: '<cly-datepicker :value="globalDate" @change="onChange"></cly-datepicker>'
+        template: '<cly-datepicker :value="globalDate" timestampFormat="ms" @change="onChange"></cly-datepicker>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));

@@ -3,15 +3,19 @@
         <cly-datepicker-g></cly-datepicker-g>
     </cly-section>
     <cly-section title="Date range">
-        <cly-datepicker v-model="selectedDateRange"></cly-datepicker>
+        <cly-datepicker v-model="selectedDateRange" timestampFormat="ms"></cly-datepicker>
         <pre>{{selectedDateRange}}</pre>
     </cly-section>
+    <cly-section title="Date range">
+        <cly-datepicker v-model="selectedDateRangeWithoutOffsetCorr" :offset-correction="false" timestampFormat="ms"></cly-datepicker>
+        <pre>{{selectedDateRangeWithoutOffsetCorr}}</pre>
+    </cly-section>
     <cly-section title="Month range">
-        <cly-datepicker v-model="selectedMonthRange" type="monthrange"></cly-datepicker>
+        <cly-datepicker v-model="selectedMonthRange" timestampFormat="ms" type="monthrange"></cly-datepicker>
         <pre>{{selectedMonthRange}}</pre>
     </cly-section>
     <cly-section title="Date range (no shortcuts)">
-        <cly-datepicker v-model="selectedDateRange" :display-shortcuts="false"></cly-datepicker>
+        <cly-datepicker v-model="selectedDateRange" timestampFormat="ms" :display-shortcuts="false"></cly-datepicker>
         <pre>{{selectedDateRange}}</pre>
     </cly-section>
     <cly-section title="Dynamic type">
