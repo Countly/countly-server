@@ -78,7 +78,7 @@
     "puppeteer": "^5.5.0",
     "request": "2.88.2",
     "underscore": "1.13.1",
-    "uglify-js": "3.10.4",
+    "uglify-js": "3.13.4",
     "yamljs": "0.3.0"
   },
   "jshintConfig": {
