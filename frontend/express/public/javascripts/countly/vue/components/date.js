@@ -54,6 +54,13 @@
             getRange: function() {
                 return [moment().startOf("year"), moment().endOf("year")];
             }
+        },
+        "0days": {
+            label: countlyVue.i18n("common.all-time"),
+            value: "0days",
+            getRange: function() {
+                return [moment([2010, 0, 1]), moment().endOf("year")];
+            }
         }
     };
 
@@ -478,9 +485,20 @@
             },
             shortcuts: function() {
                 if (this.type === "daterange" && this.displayShortcuts) {
-                    return Object.keys(availableShortcuts).map(function(shortcutKey) {
-                        return availableShortcuts[shortcutKey];
-                    });
+                    var self = this;
+                    return Object.keys(availableShortcuts).reduce(function(acc, shortcutKey) {
+                        if (self.enabledShortcuts !== false) {
+                            if (self.enabledShortcuts.indexOf(shortcutKey) !== -1) {
+                                acc.push(availableShortcuts[shortcutKey]);
+                            }
+                        }
+                        else if (self.disabledShortcuts !== false) {
+                            if (self.disabledShortcuts.indexOf(shortcutKey) === -1) {
+                                acc.push(availableShortcuts[shortcutKey]);
+                            }
+                        }
+                        return acc;
+                    }, []);
                 }
                 return [];
             }
@@ -497,6 +515,14 @@
             displayShortcuts: {
                 type: Boolean,
                 default: true
+            },
+            disabledShortcuts: {
+                type: [Array, Boolean],
+                default: false
+            },
+            enabledShortcuts: {
+                type: [Array, Boolean],
+                default: false
             },
             placeholder: {type: String, default: 'Select'},
             disabled: { type: Boolean, default: false},
@@ -853,7 +879,7 @@
                 this.$root.$emit("cly-date-change");
             }
         },
-        template: '<cly-datepicker timestampFormat="ms" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-datepicker>'
+        template: '<cly-datepicker timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-datepicker>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
