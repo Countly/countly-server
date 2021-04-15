@@ -487,7 +487,10 @@
                 if (this.type === "daterange" && this.displayShortcuts) {
                     var self = this;
                     return Object.keys(availableShortcuts).reduce(function(acc, shortcutKey) {
-                        if (self.enabledShortcuts !== false) {
+                        if (self.enabledShortcuts === false && self.disabledShortcuts === false) {
+                            acc.push(availableShortcuts[shortcutKey]);
+                        }
+                        else if (self.enabledShortcuts !== false) {
                             if (self.enabledShortcuts.indexOf(shortcutKey) !== -1) {
                                 acc.push(availableShortcuts[shortcutKey]);
                             }
