@@ -489,7 +489,10 @@
             value: [Object, String, Array],
             type: {
                 type: String,
-                default: "daterange"
+                default: "daterange",
+                validator: function(value) {
+                    return ['daterange', 'monthrange'].indexOf(value) !== -1;
+                }
             },
             displayShortcuts: {
                 type: Boolean,
