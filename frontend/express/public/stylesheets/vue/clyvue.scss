@@ -501,6 +501,12 @@
             }
         }
 
+        &__hidden-tabs {
+            .el-tabs__header {
+                display: none;
+            }
+        }
+
         .el-date-table {
             margin-top: 2px;
             tr:first-of-type {

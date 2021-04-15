@@ -497,7 +497,8 @@
             },
             placeholder: {type: String, default: 'Select'},
             disabled: { type: Boolean, default: false},
-            size: {type: String, default: 'small'}
+            size: {type: String, default: 'small'},
+            allowRelativeRanges: {type: Boolean, default: true }
         },
         data: function() {
             return getInitialState(this);
@@ -704,7 +705,7 @@
                                 </div>\
                             </div>\
                             <div class="cly-vue-daterp__calendars-col" v-if="customRangeSelection">\
-                                <div class="cly-vue-daterp__input-methods">\
+                                <div class="cly-vue-daterp__input-methods" :class="{\'cly-vue-daterp__hidden-tabs\': !allowRelativeRanges}">\
                                     <el-tabs v-model="rangeMode" @tab-click="handleTabChange">\
                                         <el-tab-pane name="inBetween">\
                                             <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
