@@ -500,8 +500,20 @@
             size: {type: String, default: 'small'},
             showRelativeModes: {type: Boolean, default: true },
             offsetCorrection: {type: Boolean, default: true},
-            modelMode: {type: String, default: "mixed"},
-            timestampFormat: {type: String, default: 's'}
+            modelMode: {
+                type: String,
+                default: "mixed",
+                validator: function(value) {
+                    return ['mixed', 'absolute'].indexOf(value) !== -1;
+                }
+            },
+            timestampFormat: {
+                type: String,
+                default: 's',
+                validator: function(value) {
+                    return ['s', 'ms'].indexOf(value) !== -1;
+                }
+            }
         },
         data: function() {
             return getInitialState(this);
