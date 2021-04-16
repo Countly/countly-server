@@ -22,10 +22,8 @@ const localize = require('../../../api/utils/localization.js');
             countlyDb.collection("plugins").findOne({_id: "whitelabeling"}, function(err, result) {
                 let css ="";
                 if (!err) {
-                    if (res) {
-                        if (result.prelogo && result.prelogo !== "") {
-                            css = " .logo{background-image: url(" + result.prelogo + ") !important;}";
-                        }
+                    if (result && result.prelogo && result.prelogo !== "") {
+                        css = " .logo{background-image: url(" + result.prelogo + ") !important;}";
                     }
                 }
                 countlyDb.collection('members').findOne({_id: report.user}, function(err1, member) {
