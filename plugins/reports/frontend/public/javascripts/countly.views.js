@@ -239,7 +239,7 @@ window.ReportingView = countlyView.extend({
                     },
                     {
                         "mData": function(row) {
-                            let createdByMe = true;
+                            var createdByMe = true;
                             if (countlyGlobal.member.global_admin === true ||  row.user === countlyGlobal.member._id) {
                                 createdByMe = false;
                             }
@@ -250,7 +250,7 @@ window.ReportingView = countlyView.extend({
                     },
                     {
                         "mData": function(row) {
-                            let viewOnly = true;
+                            var viewOnly = true;
                             if (countlyGlobal.member.global_admin === true ||  row.user === countlyGlobal.member._id) {
                                 viewOnly = false;
                             }

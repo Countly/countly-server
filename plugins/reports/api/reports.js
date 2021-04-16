@@ -13,9 +13,7 @@ var reportsInstance = {},
     localize = require('../../../api/utils/localization.js'),
     common = require('../../../api/utils/common.js'),
     log = require('../../../api/utils/log')('reports:reports'),
-    utils = require('../../../api/utils/utils'),
     versionInfo = require('../../../frontend/express/version.info'),
-    crypto = require('crypto'),
     countlyConfig = require('../../../frontend/express/config.js');
 
 countlyConfig.passwordSecret || "";
@@ -548,7 +546,7 @@ var metricProps = {
                                         props["reports.sent-by"] = localize.format(props["reports.sent-by"]);
                                         props["reports.view-in-browser"] = localize.format(props["reports.view-in-browser"]);
                                         props["reports.get-help"] = localize.format(props["reports.get-help"]);
-                                        report.unsubscribe_local_string = props["reports.unsubscribe"] 
+                                        report.unsubscribe_local_string = props["reports.unsubscribe"];
 
                                         const metricPropsString = {};
                                         for (let k in metricProps) {
@@ -558,30 +556,31 @@ var metricProps = {
                                         }
                                         report.properties = props;
                                         var allowedMetrics = {};
-                                        for (var i in report.metrics) {
-                                            if (metrics[i]) {
-                                                for (var j in metrics[i]) {
+                                        for (var k in report.metrics) {
+                                            if (metrics[k]) {
+                                                for (var j in metrics[k]) {
                                                     allowedMetrics[j] = true;
                                                 }
                                             }
                                         }
                                         const messages = [];
-                                        try{
+                                        try {
                                             for (let i = 0; i < report.emails.length; i++) {
                                                 const msg = reports.genUnsubscribeCode(report, report.emails[i]);
-                                                const unsubscribeLink = host + "/unsubscribe_report?data=" +  encodeURIComponent(msg);
+                                                const unsubscribeLink = host + "/unsubscribe_report?data=" + encodeURIComponent(msg);
                                                 const html = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics, metricProps: metricPropsString, "unsubscribe_link": unsubscribeLink});
                                                 messages.push({html, unsubscribeLink});
                                             }
-                                        } catch(e) {
-                                                log.e(e);
+                                        }
+                                        catch (e) {
+                                            log.e(e);
                                         }
                                         report.subject = versionInfo.title + ': ' + localize.format(
                                             (
                                                 (report.frequency === "weekly") ? report.properties["reports.subject-week"] :
                                                     ((report.frequency === "monthly") ? report.properties["reports.subject-month"] : report.properties["reports.subject-day"])
                                             ), report.total_new);
-                                        report.messages =  messages;
+                                        report.messages = messages;
 
                                         const message = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics, metricProps: metricPropsString, "unsubscribe_link": ""});
                                         if (callback) {
@@ -601,7 +600,7 @@ var metricProps = {
         }
     };
 
-    reports.decryptUnsubscribeCode = function (data) {
+    reports.decryptUnsubscribeCode = function(data) {
         try {
             const reportConfig = plugins.getConfig("reports", null, true);
             const key = reportConfig.secretKey;
@@ -609,15 +608,16 @@ var metricProps = {
             const decrpyted = Buffer.concat([decipher.update(Buffer.from(data.content, 'hex')), decipher.final()]);
             const result = JSON.parse(decrpyted.toString());
             return result;
-        } catch (e) {
+        }
+        catch (e) {
             log.e("decrypt unsubscribe code err", e);
         }
-    }
+    };
 
-    reports.genUnsubscribeCode = function (report, email) {
+    reports.genUnsubscribeCode = function(report, email) {
         try {
             const reportConfig = plugins.getConfig("reports", null, true);
- 
+
             const iv = crypto.randomBytes(16);
             const key = reportConfig.secretKey;
             const cipher = crypto.createCipheriv('aes-256-ctr', key, iv);
@@ -632,10 +632,11 @@ var metricProps = {
                 content: encrypted.toString('hex')
             };
             return JSON.stringify(result);
-        } catch (e) {
+        }
+        catch (e) {
             console.log(e, "[report subscription encode]");
         }
-    }
+    };
 
     reports.send = function(report, message, callback) {
         if (report.emails) {
@@ -651,12 +652,12 @@ var metricProps = {
                 if (report.messages && report.messages[i]) {
                     msg.list = {
                         unsubscribe: {
-                            url: report.messages[i].unsubscribeLink, 
+                            url: report.messages[i].unsubscribeLink,
                             comment: report.unsubscribe_local_string || 'Unsubscribe'
                         }
-                    }
+                    };
                 }
-                
+
                 if (mail.sendPoolMail) {
                     mail.sendPoolMail(msg);
                 }
