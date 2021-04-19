@@ -865,7 +865,7 @@
                     </cly-dropdown>',
     }));
 
-    Vue.component("cly-datepicker-g", countlyBaseComponent.extend({
+    var globalDatepicker = countlyBaseComponent.extend({
         computed: {
             globalDate:
             {
@@ -883,6 +883,10 @@
             }
         },
         template: '<cly-datepicker timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-datepicker>'
-    }));
+    });
+
+    Vue.component("cly-datepicker-g", globalDatepicker);
+
+    Vue.component("cly-global-date-selector-w", globalDatepicker);
 
 }(window.countlyVue = window.countlyVue || {}));
