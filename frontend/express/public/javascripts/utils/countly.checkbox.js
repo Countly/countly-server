@@ -1,4 +1,6 @@
-$.fn.countlyCheckbox = function(options) {
+// countly checkbox jQuery plugin
+(function($){	
+    $.fn.countlyCheckbox = function(options) {
   // support multiple elements
   if (this.length > 1){
       this.each(function() { $(this).countlyCheckbox(options) });
@@ -79,4 +81,5 @@ $.fn.countlyCheckbox = function(options) {
   }
 
   return this.initialize();
-};
+    };
+})(jQuery);
