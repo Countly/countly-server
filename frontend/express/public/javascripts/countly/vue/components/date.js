@@ -545,6 +545,10 @@
                 validator: function(value) {
                     return ['s', 'ms'].indexOf(value) !== -1;
                 }
+            },
+            placement: {
+                type: String,
+                default: 'bottom-start'
             }
         },
         data: function() {
@@ -752,6 +756,7 @@
                         ref="dropdown"\
                         @hide="handleDropdownHide"\
                         @show="handleDropdownShow"\
+                        :placement="placement"\
                         :placeholder="placeholder"\
                         :disabled="disabled">\
                         <template v-slot:trigger="dropdown">\
