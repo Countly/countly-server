@@ -454,6 +454,12 @@ var testUtils = function testUtils() {
         }
         done();
     };
+
+    this.sleep = function(timeToSleepInMs = 5000) {
+        return new Promise(function(resolve) {
+            setTimeout(resolve, timeToSleepInMs);
+        });
+    };
 };
 
 module.exports = new testUtils();
