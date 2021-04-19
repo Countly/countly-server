@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI */
 
 (function(countlyVue, $) {
 
@@ -132,6 +132,12 @@
 
     Vue.prototype.$route = new BackboneRouteAdapter();
 
+    var DummyCompAPI = VueCompositionAPI.defineComponent({
+        name: "DummyCompAPI",
+        template: '<div></div>',
+        setup: function() {}
+    });
+
     var countlyVueWrapperView = countlyView.extend({
         constructor: function(opts) {
             this.component = opts.component;
@@ -199,20 +205,34 @@
                 });
             }
 
+            /*
+                Some 3rd party components such as echarts, use Composition API.
+                It is not clear why, but when a view with those components destroyed,
+                they leave some memory leaks. Instantiating DummyCompAPI triggers memory cleanups. 
+            */
+
             self.vm = new Vue({
                 el: el,
                 store: _vuex.getGlobalStore(),
+                components: {
+                    DummyCompAPI: DummyCompAPI,
+                    MainView: self.component
+                },
+                template: '<div>\
+                                <MainView></MainView>\
+                                <DummyCompAPI></DummyCompAPI>\
+                            </div>',
                 beforeCreate: function() {
                     this.$route.params = self.params;
                 },
-                render: function(h) {
-                    if (self.defaultArgs) {
-                        return h(self.component, { attrs: self.defaultArgs });
-                    }
-                    else {
-                        return h(self.component);
-                    }
-                }
+                // render: function(h) {
+                //     if (self.defaultArgs) {
+                //         return h(self.component, { attrs: self.defaultArgs });
+                //     }
+                //     else {
+                //         return h(self.component);
+                //     }
+                // }
             });
 
             self.vm.$on("cly-date-change", function() {
