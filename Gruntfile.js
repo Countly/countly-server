@@ -99,6 +99,7 @@ module.exports = function(grunt) {
             },
             lib: {
                 src: [
+                    'frontend/express/public/javascripts/countly/countly.auth.js',
                     'frontend/express/public/javascripts/countly/countly.helpers.js',
                     'frontend/express/public/javascripts/countly/countly.map.helper.js',
                     'frontend/express/public/javascripts/countly/countly.event.js',
@@ -119,8 +120,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.vue.components.js',
                     'frontend/express/public/javascripts/countly/countly.token.manager.js',
                     'frontend/express/public/javascripts/countly/countly.version.history.js',
-                    'frontend/express/public/javascripts/countly/countly.analytics.js',
-                    'frontend/express/public/javascripts/countly/countly.auth.js'
+                    'frontend/express/public/javascripts/countly/countly.analytics.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }
