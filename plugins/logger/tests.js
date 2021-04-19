@@ -3,15 +3,19 @@ var should = require('should');
 var testUtils = require("../../test/testUtils");
 request = request(testUtils.url);
 
+
 var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var APP_ID = "";
-var DEVICE_ID = "1234567890";
+var DEVICE_ID = "cd25cdda-7450-0595-d7c4-b0596f911fdc";
 var expectedServerTimeToFinishPrevRequest = 2500;
 
+function keepDeviceLog(logItem) {
+    return logItem.q && logItem.q === JSON.stringify({device_id: DEVICE_ID, app_key: APP_KEY});
+}
 
-function fetchRemoteConfig() {
-    return request.get('/o/sdk?method=fetch_remote_config&app_id=' + APP_ID + '&app_key=' + APP_KEY + '&device_id=' + DEVICE_ID);
+function writeRequestLog() {
+    return request.get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY).expect(200);
 }
 
 function setRequestLoggerPluginStateToOff() {
@@ -22,7 +26,8 @@ function setRequestLoggerPluginStateToOff() {
             args: JSON.stringify({
                 logger: {state: "off"}
             })
-        });
+        })
+        .expect(200);
 }
 
 
@@ -49,12 +54,10 @@ describe("Request Logger Plugin", function() {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
-            fetchRemoteConfig()
-                .then(function(response) {
-                    console.log(response);
+            writeRequestLog()
+                .then(function() {
                     done();
                 }).catch(function(error) {
-                    console.error(error);
                     done(error);
                 });
         });
@@ -64,12 +67,11 @@ describe("Request Logger Plugin", function() {
                 request.get('/o?method=logs&app_id=' + APP_ID + '&app_key=' + APP_KEY + '&api_key=' + API_KEY_ADMIN)
                     .end(function(error, fetchLogsResponse) {
                         if (error) {
-                            console.error(error);
                             return done(error);
                         }
                         var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
-                        fetchLogsJsonResponse.should.not.be.empty;
-                        fetchLogsJsonResponse.should.have.length(1);
+                        const filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
+                        filteredDeviceLogs.should.have.length(1);
                         done();
                     });
             });
@@ -79,17 +81,14 @@ describe("Request Logger Plugin", function() {
     describe("State is off", function() {
         before(function(done) {
             setRequestLoggerPluginStateToOff()
-                .then(function(response) {
-                    console.log(response);
+                .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
-                }).then(function(response) {
-                    console.log(response);
-                    return fetchRemoteConfig();
+                }).then(function() {
+                    return writeRequestLog();
                 }).then(function() {
                     done();
                 })
                 .catch(function(error) {
-                    console.error(error);
                     done(error);
                 });
         });
@@ -102,9 +101,9 @@ describe("Request Logger Plugin", function() {
                             console.error(error);
                             return done(error);
                         }
-                        var expectedNumberOfRequestsFromPreviousTestCases = 1;
                         var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
-                        fetchLogsJsonResponse.should.have.length(expectedNumberOfRequestsFromPreviousTestCases);
+                        const filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
+                        filteredDeviceLogs.should.have.length(1);
                         done();
                     });
             });
