@@ -269,6 +269,7 @@ window.LoggerView = countlyView.extend({
             this.dtable.fnSort([ [2, 'desc'] ]);
             CountlyHelpers.expandRows(this.dtable, this.requestInfo);
             this.refreshLoggerDropdown(this.filter);
+            this.displayLoggerStateWarningAlertIfNecessary();
         }
     },
     refresh: function() {
@@ -369,6 +370,28 @@ window.LoggerView = countlyView.extend({
             currentLogItem = currentLogItem[0];
             $("#logger-selector").clySelectSetSelection(currentLogItem.value, currentLogItem.name);
         }
+    },
+    renderPageWarningAlert: function(message) {
+        $(".routename-logger #logger-alert").html("");
+        var warningAlertContainer = '<div class="event-remind-tooltip" style="display: block;">' +
+                    '<div class="content">' +
+                            '<span class="prefix"></span>' +
+                            '<span class="remind-context">' + message + '</span>' +
+                            '<i class="fas fa-times"></i>' +
+                    '</div>' +
+                '</div>';
+        setTimeout(function() {
+            $(".routename-logger #logger-alert").append(warningAlertContainer);
+            $(".event-remind-tooltip .fa-times").off("click").on("click", function(e) {
+                $(e.currentTarget.parentElement.parentElement).remove();
+            });
+        }, 0);
+    },
+    displayLoggerStateWarningAlertIfNecessary: function() {
+        var loggerRequestAppState = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.logger.state;
+        if (loggerRequestAppState === 'off') {
+            this.renderPageWarningAlert(jQuery.i18n.prop("logger.state-off-warning", countlyCommon.ACTIVE_APP_ID));
+        }
     }
 });
 
@@ -381,4 +404,33 @@ app.route('/manage/logger', 'logger', function() {
 
 $(document).ready(function() {
     app.addSubMenu("management", {code: "logger", url: "#/manage/logger", text: "logger.title", priority: 60});
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("logger", "logger.title");
+        app.configurationsView.registerLabel("logger.state", "logger.state");
+        app.configurationsView.registerInput("logger.state", function(value) {
+            var loggerStates = ['on', 'off'];
+            var selectLoggerStatesElement = '<div class="cly-select" id="logger.state">' +
+            '<div class="select-inner">' +
+            '<div class="text-container">';
+            if (loggerStates.includes(value)) {
+                selectLoggerStatesElement += '<div class="text">' + jQuery.i18n.map["logger.state-" + value] + '</div>';
+            }
+            else {
+                selectLoggerStatesElement += '<div class="text"></div>';
+            }
+            selectLoggerStatesElement += '</div>' +
+              '<div class="right combo"></div>' +
+              '</div>' +
+              '<div class="select-items square">' +
+              '<div>';
+            selectLoggerStatesElement = loggerStates.reduce(function(allLogStates, logStateItem) {
+                allLogStates += '<div data-value="' + logStateItem + '" class="segmentation-option item">' + jQuery.i18n.map["logger.state-" + logStateItem] + '</div>';
+                return allLogStates;
+            }, selectLoggerStatesElement);
+            selectLoggerStatesElement += '</div>' +
+              '</div>' +
+              '</div>';
+            return selectLoggerStatesElement;
+        });
+    }
 });

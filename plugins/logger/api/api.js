@@ -2,9 +2,22 @@ var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js');
 
+plugins.setConfigs("logger", {
+    state: "on"
+});
+
 (function() {
+
+    var shouldLogRequest = function(state) {
+        return state === "on";
+    };
+
+    var getRequestLoggerState = function(params) {
+        return plugins.getConfig("logger", params.app && params.app.plugins, true).state;
+    };
+
     var processSDKRequest = function(params) {
-        if (params.logging_is_allowed) {
+        if (params.logging_is_allowed && shouldLogRequest(getRequestLoggerState(params))) {
             params.log_processed = true;
             var now = new Date().getTime();
             var ts = common.initTimeObj(null, params.qstring.timestamp || now).mstimestamp;
