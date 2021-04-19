@@ -11,7 +11,7 @@ var expectedServerTimeToFinishPrevRequest = 2500;
 
 
 function fetchRemoteConfig() {
-    return request.get('/o/sdk?method=fetch_remote_config&app_id' + APP_ID + '&app_key' + APP_KEY + '&device_id=' + DEVICE_ID);
+    return request.get('/o/sdk?method=fetch_remote_config&app_id=' + APP_ID + '&app_key=' + APP_KEY + '&device_id=' + DEVICE_ID);
 }
 
 function setRequestLoggerPluginStateToOff() {
