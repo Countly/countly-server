@@ -11,7 +11,7 @@ var expectedServerTimeToFinishPrevRequest = 2500;
 
 
 function fetchRemoteConfig() {
-    return request.get('/o/sdk?method=fetch_remote_config&app_id=' + APP_ID + '&app_key=' + APP_KEY + '&device_id=' + DEVICE_ID).expect(200);
+    return request.get('/o/sdk?method=fetch_remote_config&app_id' + APP_ID + '&app_key' + APP_KEY + '&device_id=' + DEVICE_ID);
 }
 
 function setRequestLoggerPluginStateToOff() {
@@ -22,8 +22,7 @@ function setRequestLoggerPluginStateToOff() {
             args: JSON.stringify({
                 logger: {state: "off"}
             })
-        })
-        .expect(200);
+        });
 }
 
 
@@ -51,7 +50,8 @@ describe("Request Logger Plugin", function() {
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
             fetchRemoteConfig()
-                .then(function() {
+                .then(function(response) {
+                    console.log(response);
                     done();
                 }).catch(function(error) {
                     console.error(error);
@@ -79,9 +79,11 @@ describe("Request Logger Plugin", function() {
     describe("State is off", function() {
         before(function(done) {
             setRequestLoggerPluginStateToOff()
-                .then(function() {
+                .then(function(response) {
+                    console.log(response);
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
-                }).then(function() {
+                }).then(function(response) {
+                    console.log(response);
                     return fetchRemoteConfig();
                 }).then(function() {
                     done();
