@@ -194,24 +194,6 @@ var pluginOb = {},
         recordAction(ob.params, ob.params.member, "user_deleted", ob.data);
     });
 
-    plugins.register("/i/app_users/create", function(ob) {
-        ob.params = ob.params || {};
-        var data = {app_id: ob.app_id, user: ob.user, uids: ob.user.uid || "", res: ob.res};
-        recordAction(ob.params, ob.params.member || {_id: "", username: "[code]"}, "app_user_created", data);
-    });
-
-    plugins.register("/i/app_users/update", function(ob) {
-        ob.params = ob.params || {};
-        var data = {app_id: ob.app_id, query: ob.query, update: JSON.stringify(ob.update), result: ob.user};
-        recordAction(ob.params, ob.params.member || {_id: "", username: "[code]"}, "app_user_updated", data);
-    });
-
-    plugins.register("/i/app_users/delete", function(ob) {
-        ob.params = ob.params || {};
-        var data = {app_id: ob.app_id, query: ob.query, uids: ob.uids};
-        recordAction(ob.params, ob.params.member || {_id: "", username: "[code]"}, "app_user_deleted", data);
-    });
-
     plugins.register("/systemlogs", function(ob) {
         processRecording(ob);
     });

@@ -13,7 +13,7 @@ var exports = {},
 
 //npm install node-xlsx-stream !!!!!
 var xlsx = require("node-xlsx-stream");
-
+const Transform = require('stream').Transform;
 var contents = {
     "json": "application/json",
     "csv": "text/csv",
@@ -173,6 +173,14 @@ exports.convertData = function(data, type) {
     }
 };
 
+exports.getType = function(key) {
+    if (contents[key]) {
+        return contents[key];
+    }
+    else {
+        return key;
+    }
+};
 /**
 * Output data as response
 * @param {params} params - params object
@@ -284,14 +292,20 @@ function getValues(values, valuesMap, paramList, doc, options) {
 /**
 * Stream data as response
 * @param {params} params - params object
-* @param {Stream} stream - stream to output
-* @param {string} filename - name of the file to output to browser
-* @param {string} type - type to be used in content type
-* @param {object} projection - object of field projection
-* @param {object} mapper - object of mapping if need to transform data(for example timestamp to date string)
+* @param {Stream} stream - cursor stream
+* @param {string} options - options object 
+		options.filename - name of the file to output to browser
+		options.type - type to be used in content type
+		options.projection - object of field projection
+		options.mapper - object of mapping if need to transform data(for example timestamp to date string)
 */
-exports.stream = function(params, stream, filename, type, projection, mapper) {
+exports.stream = function(params, stream, options) {
     var headers = {};
+
+    var filename = options.filename;
+    var type = options.type;
+    var projection = options.projection;
+    var mapper = options.mapper;
     var listAtEnd = true;
     if (type && contents[type]) {
         headers["Content-Type"] = contents[type];
@@ -301,84 +315,86 @@ exports.stream = function(params, stream, filename, type, projection, mapper) {
     if (projection) {
         for (var k in projection) { //keep order as in projection if given
             paramList.push(k);
-
             listAtEnd = false;
         }
     }
-    if (params.res.writeHead) {
+    if (options.writeHeaders && params.res.writeHead) {
         params.res.writeHead(200, headers);
-        if (type === "csv") {
-            var head = [];
-            if (listAtEnd === false) {
-                for (let p = 0; p < paramList.length; p++) {
+    }
+    if (type === "csv") {
+        var head = [];
+        if (listAtEnd === false) {
+            for (let p = 0; p < paramList.length; p++) {
+                head.push(processCSVvalue(paramList[p]));
+            }
+            params.res.write(head.join(',') + '\r\n');
+        }
+
+        stream.on('data', function(doc) {
+            var values = [];
+            var valuesMap = {};
+            getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd}); // if we have list at end - then we don'thave projection
+
+            for (let p = 0; p < values.length; p++) {
+                values[p] = processCSVvalue(values[p]);
+            }
+            params.res.write(values.join(',') + '\r\n');
+        });
+
+        stream.once('close', function() {
+            if (listAtEnd) {
+                for (var p = 0; p < paramList.length; p++) {
                     head.push(processCSVvalue(paramList[p]));
                 }
                 params.res.write(head.join(',') + '\r\n');
             }
-
-            stream.on('data', function(doc) {
-                var values = [];
-                var valuesMap = {};
-                getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd}); // if we have list at end - then we don'thave projection
-
-                for (let p = 0; p < values.length; p++) {
-                    values[p] = processCSVvalue(values[p]);
-                }
-                params.res.write(values.join(',') + '\r\n');
-            });
-
-            stream.once('close', function() {
-                if (listAtEnd) {
-                    for (var p = 0; p < paramList.length; p++) {
-                        head.push(processCSVvalue(paramList[p]));
-                    }
-                    params.res.write(head.join(',') + '\r\n');
-                }
-                params.res.end();
-            });
+            params.res.end();
+        });
+    }
+    else if (type === 'xlsx' || type === 'xls') {
+        var xc = xlsx();
+        xc.pipe(params.res);
+        var sheet = xc.sheet("Countly export");
+        if (listAtEnd === false) {
+            sheet.write(paramList);
         }
-        else if (type === 'xlsx' || type === 'xls') {
-            var xc = xlsx();
-            xc.pipe(params.res);
-            var sheet = xc.sheet("Countly export");
-            if (listAtEnd === false) {
+        stream.on('data', function(doc) {
+            var values = [];
+            var valuesMap = {};
+            getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
+            sheet.write(values);
+        });
+
+        stream.once('close', function() {
+            if (listAtEnd) {
                 sheet.write(paramList);
             }
-            stream.on('data', function(doc) {
-                var values = [];
-                var valuesMap = {};
-                getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
-                sheet.write(values);
-            });
+            sheet.end();
+            xc.finalize();
+        });
+    }
+    else {
+        params.res.write("[");
+        var first = false;
+        stream.on('data', function(doc) {
+            if (!first) {
+                first = true;
+                params.res.write(doc);
+            }
+            else {
+                params.res.write("," + doc);
+            }
+        });
 
-            stream.once('close', function() {
-                if (listAtEnd) {
-                    sheet.write(paramList);
-                }
-                sheet.end();
-                xc.finalize();
-            });
-        }
-        else {
-            params.res.write("[");
-            var first = false;
-            stream.on('data', function(doc) {
-                if (!first) {
-                    first = true;
-                    params.res.write(doc);
-                }
-                else {
-                    params.res.write("," + doc);
-                }
-            });
-
-            stream.once('close', function() {
-                params.res.write("]");
-                params.res.end();
-            });
-        }
+        stream.once('close', function() {
+            params.res.write("]");
+            params.res.end();
+        });
     }
 };
+
+
+
 
 /**
 * Export data from database
@@ -399,6 +415,7 @@ exports.fromDatabase = function(options) {
     options.db = options.db || common.db;
     options.query = options.query || {};
     options.projection = options.projection || {};
+    options.writeHeaders = true;
 
     if (options.params && options.params.qstring && options.params.qstring.formatFields) {
         options.mapper = options.params.qstring.formatFields;
@@ -441,7 +458,7 @@ exports.fromDatabase = function(options) {
 
     if (options.type === "stream" || options.type === "json") {
         options.output = options.output || function(stream) {
-            exports.stream(options.params, stream, options.filename, "json", options.projection, options.mapper);
+            exports.stream(options.params, stream, options);
         };
         cursor.stream({
             transform: function(doc) {
@@ -453,7 +470,7 @@ exports.fromDatabase = function(options) {
     }
     else if (options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
         options.output = options.output || function(stream) {
-            exports.stream(options.params, stream, options.filename, options.type, options.projection, options.mapper);
+            exports.stream(options.params, stream, options);
         };
         cursor.stream();
         options.output(cursor);
@@ -483,19 +500,7 @@ exports.fromRequest = function(options) {
         options.path = "/" + options.path;
     }
     options.filename = options.filename || options.path.replace(/\//g, "_") + "_on_" + moment().format("DD-MMM-YYYY");
-    /**
-	* Reminds to not close connection each 55 seconds(in case it takes lonk to get data)
-	*/
-    function keepAlive() {
-        if (options.params && options.params.res && !options.params.res.finished) { //Unless output started - remind after 20 seconds, that something is still processing
-            if (options.params.res.writeProcessing && typeof options.params.res.writeProcessing === "function") {
-                options.params.res.writeProcessing();
-            }
-            setTimeout(keepAlive, 20 * 1000);
-        }
 
-    }
-    setTimeout(keepAlive, 20 * 1000);
 
     //creating request context
     var params = {
@@ -522,6 +527,56 @@ exports.fromRequest = function(options) {
             }
             //"stream all data"
             exports.fromData(data, options);
+        }
+    };
+
+    //processing request
+    common.processRequest(params);
+};
+
+
+exports.fromRequestQuery = function(options) {
+    options.path = options.path || "/";
+    if (!options.path.startsWith("/")) {
+        options.path = "/" + options.path;
+    }
+    options.filename = options.filename || options.path.replace(/\//g, "_") + "_on_" + moment().format("DD-MMM-YYYY");
+
+
+    //creating request context
+    var params = {
+        //providing data in request object
+        'req': {
+            url: options.path,
+            body: options.data || {},
+            method: "export"
+        },
+        //adding custom processing for API responses
+        'APICallback': function(err, body) {
+            if (body) {
+                var cursor = common.db.collection(body.collection).aggregate(body.pipeline);
+                options.projection = body.projection;
+                var outputStream = new Transform({
+                    objectMode: true,
+                    transform: (data, _, done) => {
+                        done(null, data);
+                    }
+                });
+                if (options.type === "stream" || options.type === "json") {
+                    cursor.stream({
+                        transform: function(doc) {
+                            doc = transformValuesInObject(doc, options.mapper);
+                            return JSON.stringify(doc);
+                        }
+                    });
+                    exports.stream({res: outputStream}, cursor, options);
+                }
+                else if (options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
+                    cursor.stream();
+                    exports.stream({res: outputStream}, cursor, options);
+                }
+                options.output(outputStream);
+            }
         }
     };
 
