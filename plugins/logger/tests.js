@@ -33,6 +33,13 @@ function setRequestLoggerPluginStateToOff() {
 
 describe("Request Logger Plugin", function() {
 
+    before(function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_ID = testUtils.get("APP_ID");
+        APP_KEY = testUtils.get("APP_KEY");
+        done();
+    });
+
     after(function(done) {
         var params = {app_id: APP_ID, "period": "reset"};
         request
@@ -50,31 +57,28 @@ describe("Request Logger Plugin", function() {
     });
 
     describe("State is on", function() {
-        before(function(done) {
-            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-            APP_ID = testUtils.get("APP_ID");
-            APP_KEY = testUtils.get("APP_KEY");
+        it("should log request", function(done) {
             writeRequestLog()
                 .then(function() {
-                    done();
+                    return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
+                })
+                .then(function() {
+                    request.get('/o?method=logs&app_id=' + APP_ID + '&app_key=' + APP_KEY + '&api_key=' + API_KEY_ADMIN)
+                        .expect(200)
+                        .end(function(error, fetchLogsResponse) {
+                            if (error) {
+                                return done(error);
+                            }
+                            var expectedNumberOfLogs = 1;
+                            var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
+                            const filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
+                            filteredDeviceLogs.should.have.length(expectedNumberOfLogs);
+                            done();
+                        });
                 }).catch(function(error) {
+                    console.error(error);
                     done(error);
                 });
-        });
-
-        it("should log request", function(done) {
-            testUtils.sleep(expectedServerTimeToFinishPrevRequest).then(function() {
-                request.get('/o?method=logs&app_id=' + APP_ID + '&app_key=' + APP_KEY + '&api_key=' + API_KEY_ADMIN)
-                    .end(function(error, fetchLogsResponse) {
-                        if (error) {
-                            return done(error);
-                        }
-                        var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
-                        const filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
-                        filteredDeviceLogs.should.have.length(1);
-                        done();
-                    });
-            });
         });
     });
 
@@ -84,29 +88,37 @@ describe("Request Logger Plugin", function() {
                 .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 }).then(function() {
-                    return writeRequestLog();
-                }).then(function() {
                     done();
                 })
                 .catch(function(error) {
+                    console.error(error);
                     done(error);
                 });
         });
 
         it("should not log request", function(done) {
-            testUtils.sleep(expectedServerTimeToFinishPrevRequest).then(function() {
-                request.get('/o?method=logs&app_id=' + APP_ID + '&app_key=' + APP_KEY + '&api_key=' + API_KEY_ADMIN)
-                    .end(function(error, fetchLogsResponse) {
-                        if (error) {
-                            console.error(error);
-                            return done(error);
-                        }
-                        var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
-                        const filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
-                        filteredDeviceLogs.should.have.length(1);
-                        done();
-                    });
-            });
+            writeRequestLog()
+                .then(function() {
+                    return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
+                })
+                .then(function() {
+                    request.get('/o?method=logs&app_id=' + APP_ID + '&app_key=' + APP_KEY + '&api_key=' + API_KEY_ADMIN)
+                        .expect(200)
+                        .end(function(error, fetchLogsResponse) {
+                            if (error) {
+                                console.error(error);
+                                return done(error);
+                            }
+                            var expectedNumberOfLogs = 1;
+                            var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
+                            const filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
+                            filteredDeviceLogs.should.have.length(expectedNumberOfLogs);
+                            done();
+                        });
+                }).catch(function(error) {
+                    console.error(error);
+                    done(error);
+                });
         });
     });
 });
