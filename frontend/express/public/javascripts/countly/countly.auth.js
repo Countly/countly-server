@@ -168,7 +168,7 @@
     };
 
     countlyAuth.clearDrawer = function(parent_el, sets) {
-        var selector = parent_el.indexOf('group') ? 'groups' : 'users';
+        var selector = parent_el.indexOf('group') !== -1 ? 'groups' : 'users';
         $('#manage-' + selector + '-admin-app-selector')[0].selectize.setValue([]);
         for (var i = 0; i < sets.length; i++) {
             $(parent_el + ' #user-app-selector-' + i)[0].selectize.setValue([]);
