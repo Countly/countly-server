@@ -389,7 +389,7 @@ window.LoggerView = countlyView.extend({
     },
     displayLoggerStateWarningAlertIfNecessary: function() {
         var activeAppPlugins = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins;
-        if (activeAppPlugins && activeAppPlugins.logger.state === 'off') {
+        if (activeAppPlugins && activeAppPlugins.logger && activeAppPlugins.logger.state === 'off') {
             this.renderPageWarningAlert(jQuery.i18n.prop("logger.state-off-warning", countlyCommon.ACTIVE_APP_ID));
         }
     }
