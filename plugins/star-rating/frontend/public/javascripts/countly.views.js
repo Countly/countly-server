@@ -2455,12 +2455,12 @@ $(document).ready(function() {
             app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
         }
 
-        app.addMenu("reach", {
+        app.addSubMenu("feedback", {
             code: "star-rating",
             url: "#/analytics/star-rating",
             text: "star.menu-title",
             icon: '<div class="logo ion-android-star-half"></div>',
-            priority: 20
+            priority: 30
         });
     }
 });
