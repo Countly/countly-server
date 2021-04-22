@@ -75,7 +75,7 @@
     "nodemailer-smtp-transport": "2.7.4",
     "offline-geocoder": "github:iartem/offline-geocoder",
     "properties-parser": "0.3.1",
-    "puppeteer": "^5.5.0",
+    "puppeteer": "^9.0.0",
     "request": "2.88.2",
     "underscore": "1.13.1",
     "uglify-js": "3.10.4",
