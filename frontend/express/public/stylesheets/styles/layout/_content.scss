@@ -11,12 +11,12 @@
 	}
 }
 
-.main {
+.cly-vue-main {
 	padding: 0px 24px;
 	margin: 0;
 }
 
-.cly-vue-section{
+.cly-vue-section {
 	&__content {
 		background-color:white;
 		border-top:1px solid #ECECEC;
@@ -26,5 +26,4 @@
 	&:not(:last-child) {
 		margin-bottom: 32px;
 	}
-
 }
