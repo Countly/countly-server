@@ -2,7 +2,7 @@
 if [ -f /etc/redhat-release ]; then
 	if grep -q -i "release 8" /etc/redhat-release ; then
 		#Install raven-release for ipa-gothic-fonts required by puppeteer
-    	yum -i install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-1.el8.noarch.rpm
+		yum -i install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-1.el8.noarch.rpm
 	fi
 
 	#Install dependancies required by the puppeteer
