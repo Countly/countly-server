@@ -12,7 +12,7 @@ var fs = require("fs");
 var path = require("path");
 var config = require("../config.js");
 var db;
-var log = require('./utils/log.js')('core:fs');
+var log = require('./log.js')('core:fs');
 
 /**
 * Direct GridFS methods
