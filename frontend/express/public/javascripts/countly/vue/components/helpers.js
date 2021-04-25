@@ -76,7 +76,25 @@
                     '</div>'
     }));
 
-
+    Vue.component("cly-empty-home", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-empty-home">\n' +
+                    '<div class="info">\n' +
+                        '<div class="title">{{title}}</div>\n' +
+                        '<div class="text">\n' +
+                            '{{body}}\n' +
+                        '</div>\n' +
+                    '</div>\n' +
+                    '<div v-if="image">\n' +
+                        '<img :src="image">\n' +
+                    '</div>\n' +
+                '</div>',
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            title: { required: true, type: String },
+            body: { required: true, type: String },
+            image: { type: String, default: null }
+        }
+    }));
 
     Vue.component("cly-breakdown-tile", countlyBaseComponent.extend({
         mixins: [

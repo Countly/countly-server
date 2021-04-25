@@ -2889,6 +2889,38 @@
         }
     }
 
+    .cly-vue-empty-home {
+        height: 430px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+
+        .info {
+            width: 250px;
+            margin-right: 40px;
+
+            .title {
+                color: #3a3a3a;
+                font-size: 18px;
+                margin-bottom: 15px;
+                font-weight: 500;
+            }
+
+            .text {
+                font-size: 13px;
+                line-height: 20px;
+            }
+        }
+
+        .circle {
+            width: 250px;
+            height: 250px;
+            border-radius: 125px;
+            background-color: #e8e8e8;
+        }
+    }
+
     .dropzone,
     .dropzone * {
         box-sizing: border-box;
