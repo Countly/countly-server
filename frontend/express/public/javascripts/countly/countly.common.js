@@ -4501,6 +4501,21 @@
 
             return "rgba(" + +r + "," + +g + "," + +b + "," + a + ")";
         };
+
+        /**
+		 * Unescapes provided string.
+         * -- Please use carefully --
+         * Mainly for rendering purposes.
+		 * @param {String} text - Arbitrary string
+         * @param {String} df - Default value
+		 * @returns {String} rgba string
+		 */
+        countlyCommon.unescapeString = function(text, df) {
+            if (text === undefined && df === undefined) {
+                return undefined;
+            }
+            return _.unescape(text || df).replace(/&#39;/g, "'");
+        };
     };
 
     window.CommonConstructor = CommonConstructor;
