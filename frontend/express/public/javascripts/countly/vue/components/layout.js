@@ -137,7 +137,7 @@
                                 <h4>{{title}}</h4>\
                             </slot>\
                         </div>\
-                        <div class="bu-column bu-is-full cly-vue-section__content">\
+                        <div class="bu-column bu-is-full cly-vue-section__content white-bg">\
                             <slot></slot>\
                         </div>\
                     </div>'

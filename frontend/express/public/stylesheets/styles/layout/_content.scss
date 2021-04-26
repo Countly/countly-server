@@ -18,9 +18,8 @@
 
 .cly-vue-section {
 	&__content {
-		background-color:white;
-		border-top:1px solid #ECECEC;
-		border-bottom:2px solid #ECECEC;
+		border-top: $--border-base;
+		border-bottom: $--border-base;
 	}
 
 	&:not(:last-child) {

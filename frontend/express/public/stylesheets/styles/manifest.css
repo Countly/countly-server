@@ -243,9 +243,8 @@
   margin: 0;
 }
 .cly-vue-theme-clydef .cly-vue-section__content {
-  background-color: white;
   border-top: 1px solid #ECECEC;
-  border-bottom: 2px solid #ECECEC;
+  border-bottom: 1px solid #ECECEC;
 }
 .cly-vue-theme-clydef .cly-vue-section:not(:last-child) {
   margin-bottom: 32px;
