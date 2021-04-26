@@ -1085,6 +1085,7 @@
                                     ref="trigger"\
                                     :size="size"\
                                     :disabled="disabled"\
+                                    :adaptive-length="adaptiveLength"\
                                     :focused="dropdown.focused"\
                                     :opened="dropdown.visible"\
                                     :placeholder="placeholder"\
@@ -1154,7 +1155,8 @@
             autoCommit: {type: Boolean, default: true},
             disabled: { type: Boolean, default: false},
             width: { type: [Number, Object], default: 400},
-            size: {type: String, default: ''}
+            size: {type: String, default: ''},
+            adaptiveLength: {type: Boolean, default: false}
         },
         data: function() {
             return {
