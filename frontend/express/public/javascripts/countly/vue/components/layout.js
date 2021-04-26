@@ -79,7 +79,7 @@
         props: {
             title: String
         },
-        template: '<div class="header header--white">\
+        template: '<div class="cly-vue-header white-bg">\
                     <div class="bu-level bu-is-mobile">\
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
@@ -115,7 +115,7 @@
     //This component is a single column full width component
     //A main component can have multiple sections
     Vue.component("cly-main", countlyBaseComponent.extend({
-        template: '<div class="bu-columns bu-is-gapless main">\
+        template: '<div class="cly-vue-main bu-columns bu-is-gapless">\
                         <div class="bu-column bu-is-full">\
                             <slot></slot>\
                         </div>\
@@ -137,7 +137,7 @@
                                 <h4>{{title}}</h4>\
                             </slot>\
                         </div>\
-                        <div class="bu-column bu-is-full cly-vue-section__content">\
+                        <div class="bu-column bu-is-full cly-vue-section__content white-bg">\
                             <slot></slot>\
                         </div>\
                     </div>'

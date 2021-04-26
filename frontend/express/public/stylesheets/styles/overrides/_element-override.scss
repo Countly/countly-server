@@ -1,58 +1,62 @@
+/*
+    This file contains CSS overrides for elements CSS
+*/
+
 //Element Table overrides
 .el-table {
-	color: $--table-text-color;
+    color: $--table-text-color;
 }
 
 .el-table th {
-	padding: 10px 0px;
-	box-sizing: border-box;
-	text-transform: uppercase;
-	font-size: $--text-sm-size;
+    padding: 10px 0px;
+    box-sizing: border-box;
+    text-transform: uppercase;
+    font-size: $--text-sm-size;
     font-style: normal;
     font-weight: 500;
-	background-color: $--table-th-bgcolor;
-	border-bottom-width: 2px;
+    background-color: $--table-th-bgcolor;
+    border-bottom-width: 2px;
 }
 
 .el-table th .cell {
-	line-height: 15px;
-	letter-spacing: 0.5px;
+    line-height: 15px;
+    letter-spacing: 0.5px;
 }
 
 .el-table td {
-	padding: 14px 0px;
-	font-style: normal;
+    padding: 14px 0px;
+    font-style: normal;
     font-weight: normal;
     font-size: $--text-md-size;
-	box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 .el-table td .cell {
-	line-height: 20px;
+    line-height: 20px;
 }
 
 .el-table th:first-child .cell,
 .el-table td:first-child .cell {
-	padding-left: 23px;
+    padding-left: 23px;
 }
 
 .el-table th:last-child .cell,
 .el-table td:last-child .cell {
-	padding-right: 23px;
+    padding-right: 23px;
 }
 
 .el-table .caret-wrapper {
-	height: 15px;
+    height: 15px;
 }
 
 .el-table .sort-caret {
-	border-width: 4px;
+    border-width: 4px;
 }
 
 .el-table .sort-caret.ascending {
-	top: -2px;
+    top: -2px;
 }
 
 .el-table .sort-caret.descending {
-	bottom: -1px;
+    bottom: -1px;
 }

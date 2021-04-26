@@ -1,3 +1,7 @@
+/*
+    Contains global state classes for DOM elements
+*/
+
 .font-weight-bold {
     font-weight: $--font-weight-bold !important;
 }
@@ -43,4 +47,12 @@
     &.font-weight-bold {
         font-weight: $--font-weight-primary !important;
     }
+}
+
+.white-bg {
+    background-color: $--color-white;
+}
+
+.no-bg {
+    background-color: none;
 }
