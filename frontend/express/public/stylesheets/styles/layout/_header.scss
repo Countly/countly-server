@@ -1,4 +1,4 @@
-.header {
+.cly-vue-header {
     padding: 12px 0px 12px;
     border-bottom: $--border-base;
 
@@ -6,14 +6,6 @@
         margin-bottom: 32px;
     }
 
-    &--white {
-        background-color: $--color-white;
-    }
-
-    &--no-bg {
-        background-color: none;
-    }
-    
     .bu-level {
         padding: 0px 24px 12px;
     }

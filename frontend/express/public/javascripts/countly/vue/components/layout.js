@@ -79,7 +79,7 @@
         props: {
             title: String
         },
-        template: '<div class="header header--white">\
+        template: '<div class="cly-vue-header white-bg">\
                     <div class="bu-level bu-is-mobile">\
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\

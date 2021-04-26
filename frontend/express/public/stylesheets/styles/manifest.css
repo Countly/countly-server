@@ -1,3 +1,9 @@
+/*
+    File : main.scss (Default Theme)
+    All "Base" specific SASS partials
+    To create a different theme, create a different manifest-theme-A.scss
+    Include /theme/_colors-theme-A.scss and /theme/_variables-theme-A.scss files in the manifest-theme-A.scss
+*/
 .cly-vue-theme-clydef {
   /* Element Chalk Variables */
   /* Transition
@@ -119,6 +125,15 @@
   --------------------------*/
   /* Break-point
   --------------------------*/
+  /*
+      This file contains CSS overrides for elements CSS
+  */
+  /*
+      This file contains CSS overrides for Bulms's CSS
+  */
+  /*
+      Contains global state classes for DOM elements
+  */
 }
 .cly-vue-theme-clydef button {
   font-family: Inter !important;
@@ -223,7 +238,7 @@
   transition: margin-left 0.55s;
   will-change: margin-left;
 }
-.cly-vue-theme-clydef .main {
+.cly-vue-theme-clydef .cly-vue-main {
   padding: 0px 24px;
   margin: 0;
 }
@@ -235,20 +250,14 @@
 .cly-vue-theme-clydef .cly-vue-section:not(:last-child) {
   margin-bottom: 32px;
 }
-.cly-vue-theme-clydef .header {
+.cly-vue-theme-clydef .cly-vue-header {
   padding: 12px 0px 12px;
   border-bottom: 1px solid #ECECEC;
 }
-.cly-vue-theme-clydef .header:not(:last-child) {
+.cly-vue-theme-clydef .cly-vue-header:not(:last-child) {
   margin-bottom: 32px;
 }
-.cly-vue-theme-clydef .header--white {
-  background-color: #FFFFFF;
-}
-.cly-vue-theme-clydef .header--no-bg {
-  background-color: none;
-}
-.cly-vue-theme-clydef .header .bu-level {
+.cly-vue-theme-clydef .cly-vue-header .bu-level {
   padding: 0px 24px 12px;
 }
 .cly-vue-theme-clydef .cly-vue-eldatatable.silent-loading .el-loading-spinner {
@@ -347,4 +356,10 @@
 }
 .cly-vue-theme-clydef .text-small.font-weight-bold {
   font-weight: 500 !important;
+}
+.cly-vue-theme-clydef .white-bg {
+  background-color: #FFFFFF;
+}
+.cly-vue-theme-clydef .no-bg {
+  background-color: none;
 }
