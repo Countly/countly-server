@@ -450,7 +450,7 @@ window.PopulatorView = countlyView.extend({
                     eventData.sum = [parseFloat($(row).find(".sum-start").val()) || 0, parseFloat($(row).find(".sum-end").val()) || 0];
                 }
 
-                if (!templateData.events.hasOwnProperty(eventKey)) {
+                if (!Object.prototype.hasOwnProperty.call(templateData.events, eventKey)) {
                     templateData.events[eventKey] = [];
                 }
 
