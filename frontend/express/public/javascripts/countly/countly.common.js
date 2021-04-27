@@ -2567,7 +2567,13 @@
                 limitAdjustment = 0;
 
             if (overrideBucket) {
-                var thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
+                var thisDay;
+                if (countlyCommon.periodObj.activePeriod) {
+                    thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
+                }
+                else {
+                    thisDay = moment(countlyCommon.periodObj.currentPeriodArr, "YYYY.M.D");
+                }
                 ticks.push([0, countlyCommon.formatDate(thisDay, "D MMM")]);
                 tickTexts[0] = countlyCommon.formatDate(thisDay, "D MMM, dddd");
             }
