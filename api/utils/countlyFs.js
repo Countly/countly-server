@@ -12,6 +12,7 @@ var fs = require("fs");
 var path = require("path");
 var config = require("../config.js");
 var db;
+var log = require('./log.js')('core:fs');
 
 /**
 * Direct GridFS methods
@@ -29,6 +30,7 @@ countlyFs.gridfs = {};
     * @param {function} callback - function called when we have result, providing error object as first param and id as second
     **/
     function save(category, filename, readStream, options, callback) {
+        log.d("saving file", filename);
         var bucket = new GridFSBucket(db, { bucketName: category });
         var uploadStream;
         var id = options.id;
@@ -41,11 +43,13 @@ countlyFs.gridfs = {};
             uploadStream = bucket.openUploadStream(filename, options);
         }
         uploadStream.once('finish', function() {
+            log.d("file saved", filename);
             if (callback) {
                 callback(null);
             }
         });
         uploadStream.on('error', function(error) {
+            log.d("error saving file", filename, error);
             if (callback) {
                 callback(error);
             }
@@ -63,14 +67,21 @@ countlyFs.gridfs = {};
     * @param {function} done - function called hook is done
     **/
     function beforeSave(category, filename, options, callback, done) {
+        log.d("checking file", filename);
         ob.getId(category, filename, function(err, res) {
-            if (!err) {
+            log.d("file state", filename, err, res);
+            if (options.forceClean) {
+                ob.clearFile(category, filename, done);
+            }
+            else if (!err) {
                 if (!res || options.writeMode === "version") {
                     done();
                 }
                 else if (options.writeMode === "overwrite") {
                     var bucket = new GridFSBucket(db, { bucketName: category });
+                    log.d("deleting file", filename);
                     bucket.delete(res, function(error) {
+                        log.d("deleted", filename, error);
                         if (!error) {
                             setTimeout(done, 1);
                         }
@@ -596,6 +607,28 @@ countlyFs.gridfs = {};
             if (callback) {
                 callback(error);
             }
+        });
+    };
+
+    /**
+    * Force clean file if there were errors inserting or deleting previously
+    * @param {string} category - collection where to store data
+    * @param {string} filename - filename
+    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.clearFile("test", "AGPLv3", function(err){
+    *   console.log("Finished", err);
+    * });
+    */
+    ob.clearFile = function(category, filename, callback) {
+        db.collection(category + ".files").deleteMany({ filename: filename }, function(err1, res1) {
+            log.d("deleting files", category, { filename: filename }, err1, res1 && res1.result);
+            db.collection(category + ".chunks").deleteMany({ files_id: filename }, function(err2, res2) {
+                log.d("deleting chunks", category, { files_id: filename }, err1, res2 && res2.result);
+                if (callback) {
+                    callback(err1 || err2);
+                }
+            });
         });
     };
 
