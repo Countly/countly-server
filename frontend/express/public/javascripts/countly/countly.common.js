@@ -2572,7 +2572,7 @@
                     thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
                 }
                 else {
-                    thisDay = moment(countlyCommon.periodObj.currentPeriodArr, "YYYY.M.D");
+                    thisDay = moment(countlyCommon.periodObj.currentPeriodArr[0], "YYYY.M.D");
                 }
                 ticks.push([0, countlyCommon.formatDate(thisDay, "D MMM")]);
                 tickTexts[0] = countlyCommon.formatDate(thisDay, "D MMM, dddd");
