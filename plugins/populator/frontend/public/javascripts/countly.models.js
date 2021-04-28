@@ -518,7 +518,7 @@
             return trace;
         };
 
-        this.getEvent = function(id, eventTemplate) {
+        this.getEvent = function(id, eventTemplates) {
             this.stats.e++;
 
             var event = {
@@ -530,6 +530,13 @@
             };
 
             this.ts += 1000;
+
+            if (Array.isArray(eventTemplates)) {
+                var eventTemplate = eventTemplates[getRandomInt(0, eventTemplates.length - 1)];
+            }
+            else {
+                eventTemplate = eventTemplates;
+            }
 
             if (eventTemplate && eventTemplate.duration) {
                 event.dur = getRandomInt(eventTemplate.duration[0], eventTemplate.duration[1] || 10);
