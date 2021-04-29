@@ -340,7 +340,6 @@ var pluginManager = function pluginManager() {
             if (error) {
                 log.e('Error updating application level %s plugin configuration.Got error:%j', namespace, error);
             }
-            this.setConfigs;
             if (callback) {
                 if (error) {
                     callback(error, null);
