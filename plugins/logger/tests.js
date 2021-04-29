@@ -122,7 +122,7 @@ describe("Request Logger Plugin", function() {
     });
 
     describe("State is automatic", function() {
-        var loggedRequestsLimitPerMinute = 2;
+        var loggedRequestsLimitPerMinute = 1;
         before(function(done) {
             setRequestLoggerPluginConfiguration({state: 'automatic', limit: loggedRequestsLimitPerMinute})
                 .then(function() {
@@ -137,7 +137,13 @@ describe("Request Logger Plugin", function() {
         });
 
         it("should turn off request logger when limit of requests per minute is reached", function(done) {
-            Promise.all([writeRequestLog(), writeRequestLog(), writeRequestLog()])
+            writeRequestLog()
+                .then(function() {
+                    return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
+                })
+                .then(function() {
+                    return writeRequestLog();
+                })
                 .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 })
