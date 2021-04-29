@@ -1,23 +1,97 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    pluginManager = require('../../pluginManager.js');
+
+
+var RequestLoggerStateEnum = {
+    on: "on",
+    off: "off",
+    automatic: "automatic"
+};
+Object.freeze(RequestLoggerStateEnum);
 
 plugins.setConfigs("logger", {
-    state: "on"
+    state: RequestLoggerStateEnum.automatic,
+    limit: 1000,
 });
 
 (function() {
 
-    var shouldLogRequest = function(state) {
-        return state === "on";
+    var requestWatcher = {
+        count: 0,
+        lastMinuteTime: Date.now(),
+        incrementCount() {
+            this.count += 1;
+        },
+        resetCount() {
+            this.count = 0;
+        },
+        resetTime() {
+            this.lastMinuteTime = Date.now();
+        },
+        reset() {
+            this.resetCount();
+            this.resetTime();
+        }
     };
 
-    var getRequestLoggerState = function(params) {
-        return plugins.getConfig("logger", params.app && params.app.plugins, true).state;
+    var automaticStateRequestLoggerManager = {
+        MAX_ELAPSED_TIME_IN_SECONDS: 60,
+        SECONDS_TO_MS_RATIO: 1000,
+        lastIncomingRequestTime: null,
+        hasTimeExpired: false,
+        setHasTimeExpired(value) {
+            this.hasTimeExpired = value;
+        },
+        findHasTimeExpired() {
+            var timeDifferenceInMs = this.lastIncomingRequestTime - requestWatcher.lastMinuteTime;
+            return Math.floor(timeDifferenceInMs / this.SECONDS_TO_MS_RATIO) > this.MAX_ELAPSED_TIME_IN_SECONDS;
+        },
+        hasRequestNumberExceeded(limit) {
+            return requestWatcher.count >= limit;
+        },
+        shouldTurnOffRequestLogger(limit) {
+            if (limit === 0) {
+                return true;
+            }
+            return !this.hasTimeExpired && this.hasRequestNumberExceeded(limit);
+        },
+        updateOnIncomingRequest() {
+            this.lastIncomingRequestTime = Date.now();
+            this.setHasTimeExpired(this.findHasTimeExpired());
+            if (this.hasTimeExpired) {
+                requestWatcher.reset();
+            }
+            requestWatcher.incrementCount();
+        },
+    };
+
+    var shouldLogRequest = function(requestLoggerConfiguration) {
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.on) {
+            return true;
+        }
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.automatic) {
+            automaticStateRequestLoggerManager.updateOnIncomingRequest();
+            return !automaticStateRequestLoggerManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit);
+        }
+        return false;
+    };
+
+    var getRequestLoggerConfiguration = function(params) {
+        return plugins.getConfig("logger", params.app && params.app.plugins, true);
+    };
+
+    var turnRequestLoggerOffIfNecessary = function(params, requestLoggerConfiguration) {
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.automatic && automaticStateRequestLoggerManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit)) {
+            pluginManager.updateApplicationConfigs(common.db, params.app._id, "logger", Object.assign(requestLoggerConfiguration, {state: RequestLoggerStateEnum.off}));
+        }
     };
 
     var processSDKRequest = function(params) {
-        if (params.logging_is_allowed && shouldLogRequest(getRequestLoggerState(params))) {
+        const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
+        var shouldLogRequestResult = shouldLogRequest(requestLoggerConfiguration);
+        if (params.logging_is_allowed && shouldLogRequestResult) {
             params.log_processed = true;
             var now = new Date().getTime();
             var ts = common.initTimeObj(null, params.qstring.timestamp || now).mstimestamp;
@@ -231,7 +305,11 @@ plugins.setConfigs("logger", {
                 }, 1000);
             });
         }
+        else {
+            turnRequestLoggerOffIfNecessary(params, requestLoggerConfiguration);
+        }
     };
+
     //write api call
     plugins.register("/sdk/log", function(ob) {
         ob.params.logging_is_allowed = !ob.params.retry_request && !ob.params.log_processed;

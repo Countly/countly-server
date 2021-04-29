@@ -408,7 +408,7 @@ $(document).ready(function() {
         app.configurationsView.registerLabel("logger", "logger.title");
         app.configurationsView.registerLabel("logger.state", "logger.state");
         app.configurationsView.registerInput("logger.state", function(value) {
-            var loggerStates = ['on', 'off'];
+            var loggerStates = ['on', 'off', 'automatic'];
             var selectLoggerStatesElement = '<div class="cly-select" id="logger.state">' +
             '<div class="select-inner">' +
             '<div class="text-container">';
@@ -432,5 +432,6 @@ $(document).ready(function() {
               '</div>';
             return selectLoggerStatesElement;
         });
+        app.configurationsView.registerLabel("logger.limit", "logger.limit");
     }
 });

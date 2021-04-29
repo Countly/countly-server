@@ -1,5 +1,4 @@
 var request = require('supertest');
-var should = require('should');
 var testUtils = require("../../test/testUtils");
 request = request(testUtils.url);
 
@@ -18,13 +17,13 @@ function writeRequestLog() {
     return request.get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY).expect(200);
 }
 
-function setRequestLoggerPluginStateToOff() {
+function setRequestLoggerPluginConfiguration(config) {
     return request
         .post('/i/apps/update/plugins?api_key=' + API_KEY_ADMIN)
         .send({
             app_id: APP_ID,
             args: JSON.stringify({
-                logger: {state: "off"}
+                logger: config
             })
         })
         .expect(200);
@@ -40,7 +39,7 @@ describe("Request Logger Plugin", function() {
         done();
     });
 
-    after(function(done) {
+    afterEach(function(done) {
         var params = {app_id: APP_ID, "period": "reset"};
         request
             .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
@@ -84,7 +83,7 @@ describe("Request Logger Plugin", function() {
 
     describe("State is off", function() {
         before(function(done) {
-            setRequestLoggerPluginStateToOff()
+            setRequestLoggerPluginConfiguration({state: 'off'})
                 .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 }).then(function() {
@@ -109,7 +108,7 @@ describe("Request Logger Plugin", function() {
                                 console.error(error);
                                 return done(error);
                             }
-                            var expectedNumberOfLogs = 1;
+                            var expectedNumberOfLogs = 0;
                             var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
                             const filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
                             filteredDeviceLogs.should.have.length(expectedNumberOfLogs);
@@ -120,5 +119,50 @@ describe("Request Logger Plugin", function() {
                     done(error);
                 });
         });
+    });
+
+    describe("State is automatic", function() {
+        var loggedRequestsLimitPerMinute = 2;
+        before(function(done) {
+            setRequestLoggerPluginConfiguration({state: 'automatic', limit: loggedRequestsLimitPerMinute})
+                .then(function() {
+                    return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
+                }).then(function() {
+                    done();
+                })
+                .catch(function(error) {
+                    console.error(error);
+                    done(error);
+                });
+        });
+
+        it("should turn off request logger when limit of requests per minute is reached", function(done) {
+            Promise.all([writeRequestLog(), writeRequestLog(), writeRequestLog()])
+                .then(function() {
+                    return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
+                })
+                .then(function() {
+                    request.get('/o?method=logs&app_id=' + APP_ID + '&app_key=' + APP_KEY + '&api_key=' + API_KEY_ADMIN)
+                        .expect(200)
+                        .end(function(error, fetchLogsResponse) {
+                            if (error) {
+                                console.error(error);
+                                return done(error);
+                            }
+                            var expectedNumberOfLogs = loggedRequestsLimitPerMinute;
+                            var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
+                            const filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
+                            filteredDeviceLogs.should.have.length(expectedNumberOfLogs);
+                            //TODO-LA: Get application level configuration of request logger plugin and make state assertion
+                            done();
+                        });
+                }).catch(function(error) {
+                    console.error(error);
+                    done(error);
+                });
+        });
+
+        //TODO-LA
+        //it("should not turn off request logger when limit of requests per minute is not reached", function(done) {});
     });
 });
