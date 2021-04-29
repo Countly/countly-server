@@ -56,6 +56,18 @@ describe("Request Logger Plugin", function() {
     });
 
     describe("State is on", function() {
+        before(function(done) {
+            setRequestLoggerPluginConfiguration({state: 'on'})
+                .then(function() {
+                    return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
+                }).then(function() {
+                    done();
+                })
+                .catch(function(error) {
+                    console.error(error);
+                    done(error);
+                });
+        });
         it("should log request", function(done) {
             writeRequestLog()
                 .then(function() {
