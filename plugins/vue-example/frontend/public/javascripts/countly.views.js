@@ -523,7 +523,12 @@
 
     var MainView = countlyVue.views.BaseView.extend({
         template: '#vue-example-main-template',
-        mixins: [countlyVue.mixins.hasDrawers("main")],
+        mixins: [
+            countlyVue.mixins.hasDrawers("main"),
+            countlyVue.container.componentUses({
+                "externalTabs": "/vueExample/externalTabs"
+            })
+        ],
         components: {
             "table-view": TableView,
             "form-basics": FormBasics,
@@ -585,6 +590,34 @@
         };
         exampleView.params = params;
         this.renderWhenReady(exampleView);
+    });
+
+    countlyVue.container.register("/vueExample/externalTabs", {
+        priority: 2,
+        title: 'Dummy tab 2',
+        name: 'dummy2',
+        component: {
+            data: function() {
+                return {
+                    message: 'Bye.'
+                };
+            },
+            template: '<a>{{message}}</a>'
+        }
+    });
+
+    countlyVue.container.register("/vueExample/externalTabs", {
+        priority: 1,
+        title: 'Dummy tab 1',
+        name: 'dummy1',
+        component: {
+            data: function() {
+                return {
+                    message: 'Hello.'
+                };
+            },
+            template: '<a>{{message}}</a>'
+        }
     });
 
 })();

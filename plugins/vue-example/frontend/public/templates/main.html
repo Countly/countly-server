@@ -41,6 +41,17 @@
                 <date-view></date-view>
             </cly-main>
         </el-tab-pane>
+        <el-tab-pane
+            v-for="(xtab, idx) in externalTabs"
+            :key="idx"
+            :name="xtab.name"
+            lazy>
+            <span slot="label">{{xtab.title}}</span>
+            <cly-header :title="xtab.title"></cly-header>
+            <cly-main>
+                <component :is="xtab.component"></component>
+            </cly-main>
+        </el-tab-pane>
     </cly-tabs>
     <drawer @close="closeDrawer" :controls="drawers.main"></drawer>
 </div>

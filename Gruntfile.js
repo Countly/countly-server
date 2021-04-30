@@ -122,6 +122,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.template.js',
                     'frontend/express/public/javascripts/countly/countly.views.js',
                     'frontend/express/public/javascripts/countly/vue/core.js',
+                    'frontend/express/public/javascripts/countly/vue/container.js',
                     'frontend/express/public/javascripts/countly/vue/helpers.js',
                     'frontend/express/public/javascripts/countly/vue/data/vuex.js',
                     'frontend/express/public/javascripts/countly/vue/imports.js',
