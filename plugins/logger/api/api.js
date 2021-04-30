@@ -1,8 +1,6 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js'),
-    pluginManager = require('../../pluginManager.js');
-
+    plugins = require('../../pluginManager.js');
 
 var RequestLoggerStateEnum = {
     on: "on",
@@ -84,7 +82,7 @@ plugins.setConfigs("logger", {
 
     var turnRequestLoggerOffIfNecessary = function(params, requestLoggerConfiguration) {
         if (requestLoggerConfiguration.state === RequestLoggerStateEnum.automatic && automaticStateRequestLoggerManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit)) {
-            pluginManager.updateApplicationConfigs(common.db, params.app._id, "logger", Object.assign(requestLoggerConfiguration, {state: RequestLoggerStateEnum.off}));
+            plugins.updateApplicationConfigs(common.db, params.app._id, "logger", Object.assign(requestLoggerConfiguration, {state: RequestLoggerStateEnum.off}));
         }
     };
 
