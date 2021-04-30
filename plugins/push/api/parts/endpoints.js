@@ -246,7 +246,7 @@ function cachedData(note) {
             args = {};
 
         if (!(args = common.validateArgs(params.qstring.args, argProps))) {
-            log.d('Not enough params to create message: %j', params.qstring.args);
+            log.w('Not enough params to create message: %j', params.qstring.args);
             common.returnMessage(params, 400, 'Not enough args');
             return;
         }
@@ -398,7 +398,7 @@ function cachedData(note) {
             data = common.validateArgs(params.qstring.args, argProps, true);
 
         if (!data.result) {
-            log.d('Not enough params to create message: %j / %j', params.qstring.args, data.errors);
+            log.w('Not enough params to create message: %j / %j', params.qstring.args, data.errors);
             return [{error: 'Not enough args', errors: data.errors}];
         }
 
