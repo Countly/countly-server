@@ -140,6 +140,7 @@ appsApi.getAppsDetails = function(params) {
                                 owner_id: params.app.owner_id || "",
                                 created_at: params.app.created_at || 0,
                                 edited_at: params.app.edited_at || 0,
+                                plugins: params.app.plugins,
                                 last_data: (typeof last !== "undefined" && last.length) ? last[0].lac : 0,
                             },
                             global_admin: global_admins || [],

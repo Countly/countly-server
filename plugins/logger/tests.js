@@ -17,6 +17,10 @@ function writeRequestLog() {
     return request.get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY).expect(200);
 }
 
+function getAppDetails() {
+    return request.get('/o/apps/details?app_key=' + APP_KEY + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID);
+}
+
 function setRequestLoggerPluginConfiguration(config) {
     return request
         .post('/i/apps/update/plugins?api_key=' + API_KEY_ADMIN)
@@ -69,7 +73,11 @@ describe("Request Logger Plugin", function() {
                 });
         });
         it("should log request", function(done) {
-            writeRequestLog()
+            getAppDetails().then(function(response) {
+                const jsonResponse = JSON.parse(response.text);
+                console.log(jsonResponse.app.plugins);
+                return writeRequestLog();
+            })
                 .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 })
@@ -108,7 +116,11 @@ describe("Request Logger Plugin", function() {
         });
 
         it("should not log request", function(done) {
-            writeRequestLog()
+            getAppDetails().then(function(response) {
+                const jsonResponse = JSON.parse(response.text);
+                console.log(jsonResponse.app.plugins);
+                return writeRequestLog();
+            })
                 .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 })
@@ -149,7 +161,11 @@ describe("Request Logger Plugin", function() {
         });
 
         it("should turn off request logger when limit of requests per minute is reached", function(done) {
-            writeRequestLog()
+            getAppDetails().then(function(response) {
+                const jsonResponse = JSON.parse(response.text);
+                console.log(jsonResponse.app.plugins);
+                return writeRequestLog();
+            })
                 .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 })
@@ -183,4 +199,5 @@ describe("Request Logger Plugin", function() {
         //TODO-LA
         //it("should not turn off request logger when limit of requests per minute is not reached", function(done) {});
     });
+
 });
