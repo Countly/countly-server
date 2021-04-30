@@ -73,11 +73,7 @@ describe("Request Logger Plugin", function() {
                 });
         });
         it("should log request", function(done) {
-            getAppDetails().then(function(response) {
-                const jsonResponse = JSON.parse(response.text);
-                console.log(jsonResponse.app.plugins);
-                return writeRequestLog();
-            })
+            writeRequestLog()
                 .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 })
@@ -90,7 +86,7 @@ describe("Request Logger Plugin", function() {
                             }
                             var expectedNumberOfLogs = 1;
                             var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
-                            const filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
+                            var filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
                             filteredDeviceLogs.should.have.length(expectedNumberOfLogs);
                             done();
                         });
@@ -116,11 +112,7 @@ describe("Request Logger Plugin", function() {
         });
 
         it("should not log request", function(done) {
-            getAppDetails().then(function(response) {
-                const jsonResponse = JSON.parse(response.text);
-                console.log(jsonResponse.app.plugins);
-                return writeRequestLog();
-            })
+            writeRequestLog()
                 .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 })
@@ -134,7 +126,7 @@ describe("Request Logger Plugin", function() {
                             }
                             var expectedNumberOfLogs = 0;
                             var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
-                            const filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
+                            var filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
                             filteredDeviceLogs.should.have.length(expectedNumberOfLogs);
                             done();
                         });
@@ -162,8 +154,8 @@ describe("Request Logger Plugin", function() {
 
         it("should turn off request logger when limit of requests per minute is reached", function(done) {
             getAppDetails().then(function(response) {
-                const jsonResponse = JSON.parse(response.text);
-                console.log(jsonResponse.app.plugins);
+                var jsonResponse = JSON.parse(response.text);
+                jsonResponse.app.plugins.logger.state.should.equal('automatic');
                 return writeRequestLog();
             })
                 .then(function() {
@@ -176,18 +168,17 @@ describe("Request Logger Plugin", function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 })
                 .then(function() {
-                    getAppDetails().then(function(response) {
-                        const jsonResponse = JSON.parse(response.text);
-                        jsonResponse.app.plugins.logger.state.should.equal('off');
-                        done();
-                    });
+                    return getAppDetails();
+                })
+                .then(function(response) {
+                    var jsonResponse = JSON.parse(response.text);
+                    jsonResponse.app.plugins.logger.state.should.equal('off');
+                    done();
                 }).catch(function(error) {
                     console.error(error);
                     done(error);
                 });
         });
 
-        //TODO-LA
-        //it("should not turn off request logger when limit of requests per minute is not reached", function(done) {});
     });
 });

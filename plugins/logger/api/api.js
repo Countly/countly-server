@@ -1,11 +1,12 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    automaticStateManager = require('./helpers/automaticStateManager');
 
 var RequestLoggerStateEnum = {
-    on: "on",
-    off: "off",
-    automatic: "automatic"
+    ON: "on",
+    OFF: "off",
+    AUTOMATIC: "automatic"
 };
 Object.freeze(RequestLoggerStateEnum);
 
@@ -16,62 +17,13 @@ plugins.setConfigs("logger", {
 
 (function() {
 
-    var requestWatcher = {
-        count: 0,
-        lastMinuteTime: Date.now(),
-        incrementCount() {
-            this.count += 1;
-        },
-        resetCount() {
-            this.count = 0;
-        },
-        resetTime() {
-            this.lastMinuteTime = Date.now();
-        },
-        reset() {
-            this.resetCount();
-            this.resetTime();
-        }
-    };
-
-    var automaticStateRequestLoggerManager = {
-        MAX_ELAPSED_TIME_IN_SECONDS: 60,
-        SECONDS_TO_MS_RATIO: 1000,
-        lastIncomingRequestTime: null,
-        hasTimeExpired: false,
-        setHasTimeExpired(value) {
-            this.hasTimeExpired = value;
-        },
-        findHasTimeExpired() {
-            var timeDifferenceInMs = this.lastIncomingRequestTime - requestWatcher.lastMinuteTime;
-            return Math.floor(timeDifferenceInMs / this.SECONDS_TO_MS_RATIO) > this.MAX_ELAPSED_TIME_IN_SECONDS;
-        },
-        hasRequestNumberExceeded(limit) {
-            return requestWatcher.count > limit;
-        },
-        shouldTurnOffRequestLogger(limit) {
-            if (limit === 0) {
-                return true;
-            }
-            return !this.hasTimeExpired && this.hasRequestNumberExceeded(limit);
-        },
-        updateOnIncomingRequest() {
-            this.lastIncomingRequestTime = Date.now();
-            this.setHasTimeExpired(this.findHasTimeExpired());
-            if (this.hasTimeExpired) {
-                requestWatcher.reset();
-            }
-            requestWatcher.incrementCount();
-        },
-    };
-
     var shouldLogRequest = function(requestLoggerConfiguration) {
-        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.on) {
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.ON) {
             return true;
         }
-        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.automatic) {
-            automaticStateRequestLoggerManager.updateOnIncomingRequest();
-            return !automaticStateRequestLoggerManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit);
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.AUTOMATIC) {
+            automaticStateManager.updateOnIncomingRequest();
+            return !automaticStateManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit);
         }
         return false;
     };
@@ -81,15 +33,14 @@ plugins.setConfigs("logger", {
     };
 
     var turnRequestLoggerOffIfNecessary = function(params, requestLoggerConfiguration) {
-        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.automatic && automaticStateRequestLoggerManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit)) {
-            plugins.updateApplicationConfigs(common.db, params.app._id, "logger", Object.assign(requestLoggerConfiguration, {state: RequestLoggerStateEnum.off}));
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.AUTOMATIC && automaticStateManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit)) {
+            plugins.updateApplicationConfigs(common.db, params.app._id, "logger", Object.assign(requestLoggerConfiguration, {state: RequestLoggerStateEnum.OFF}));
         }
     };
 
     var processSDKRequest = function(params) {
         const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
-        var shouldLogRequestResult = shouldLogRequest(requestLoggerConfiguration);
-        if (params.logging_is_allowed && shouldLogRequestResult) {
+        if (params.logging_is_allowed && shouldLogRequest(requestLoggerConfiguration)) {
             params.log_processed = true;
             var now = new Date().getTime();
             var ts = common.initTimeObj(null, params.qstring.timestamp || now).mstimestamp;
