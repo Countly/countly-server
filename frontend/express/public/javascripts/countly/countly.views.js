@@ -4178,7 +4178,7 @@ window.ManageUsersView = countlyView.extend({
                 return;
             }
 
-            if (self.memberModel.permission._.u[0].length === 0 && self.memberModel.permission._.a.length === 0) {
+            if (!self.memberModel.global_admin && (self.memberModel.permission._.u[0].length === 0 && self.memberModel.permission._.a.length === 0)) {
                 CountlyHelpers.notify({
                     type: 'warning',
                     delay: 3000,
