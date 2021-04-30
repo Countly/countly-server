@@ -11,7 +11,7 @@ var RequestLoggerStateEnum = {
 Object.freeze(RequestLoggerStateEnum);
 
 plugins.setConfigs("logger", {
-    state: RequestLoggerStateEnum.automatic,
+    state: RequestLoggerStateEnum.AUTOMATIC,
     limit: 1000,
 });
 
