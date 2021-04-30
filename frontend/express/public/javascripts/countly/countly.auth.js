@@ -225,7 +225,7 @@
     countlyAuth.updatePermissionByType = function(permissionType, permissionObject, processFlag) {
         permissionObject[permissionType].all = processFlag;
         for (var i = 0; i < countlyAuth.features.length; i++) {
-            if (countlyAuth.features[i] === 'core') continue;
+            if (permissionType === 'r' && countlyAuth.features[i] === 'core') continue;
             if (processFlag) {
                 permissionObject[permissionType].allowed[countlyAuth.features[i]] = processFlag;
             }
@@ -239,7 +239,7 @@
     countlyAuth.giveFeaturePermission = function(permissionType, feature, permissionObject) {
         var allCheck = true;
         for (var i = 0; i < countlyAuth.features.length; i++) {
-            if (countlyAuth.features[i] === 'core') continue;
+            if (permissionType === 'r' && countlyAuth.features[i] === 'core') continue;
             if (!permissionObject[permissionType].allowed[countlyAuth.features[i]]) allCheck = false;
         }
         permissionObject[permissionType].all = allCheck;
@@ -270,7 +270,7 @@
         var user_apps = permission_object._.u;
         var checked_admin_apps = [];
         var checked_user_apps = [];
-        
+
         for (var i = 0; i < admin_apps.length; i++) {
             if (countlyGlobal.apps[admin_apps[i]]) {
                 checked_admin_apps.push(admin_apps[i]);
@@ -278,7 +278,7 @@
         }
 
         $('#manage-users-admin-app-selector')[0].selectize.setValue(checked_admin_apps);
-        
+
         for (var i = 0; i < user_apps.length; i++) {
             checked_user_apps = [];
             for (var j = 0; j < user_apps[i].length; j++) {
@@ -294,21 +294,22 @@
                     if (permission_object[countlyAuth.types[j]][user_apps[i][0]].all) {
 
                         $(parent_el + ' #mark-all-' + countlyAuth.typeNames[j] + '-' + i).countlyCheckbox().set(true);
-    
+
                         for (var k = 0; k < countlyAuth.features.length; k++) {
                             $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features[k] + '-' + i).countlyCheckbox().set(true);
-                            if (countlyAuth.features[k] === 'core') {
+                            if (countlyAuth.types[j] === "r" && countlyAuth.features[k] === 'core') {
                                 $(parent_el + ' #' + countlyAuth.types[j] + '-' + countlyAuth.features[k] + '-' + i).countlyCheckbox().setDisabled();
-                            }     
+                            }
                         }
-    
+
                         permission_sets[i][countlyAuth.types[j]].all = true;
+                        permission_sets[i][countlyAuth.types[j]].allowed = permission_object[countlyAuth.types[j]][user_apps[i][0]].allowed;
                     }
                     else {
                         for (var feature in permission_object[countlyAuth.types[j]][user_apps[i][0]].allowed) {
                             permission_sets[i] = countlyAuth.giveFeaturePermission(countlyAuth.types[j], feature, permission_sets[i]);
                             $(parent_el + ' #' + countlyAuth.types[j] + '-' + feature + '-' + i).countlyCheckbox().set(true);
-                            if (feature === 'core') {
+                            if (countlyAuth.types[j] === "r" && feature === 'core') {
                                 $(parent_el + ' #' + countlyAuth.types[j] + '-' + feature + '-' + i).countlyCheckbox().setDisabled();
                             }
                         }
@@ -318,7 +319,7 @@
         }
 
         return permission_sets;
-    }
+    };
 
     countlyAuth.getUserApps = function() {
         var member = countlyGlobal.member;

@@ -2370,17 +2370,15 @@ window.ManageAppsView = countlyView.extend({
                 $.when(view.beforeRender()).always(function() {
                     view.render(view);
                     if (!countlyAuth.validateUpdate('global_configurations')) {
-                        if (!countlyAuth.validateUpdate('global_configuratison')) {
-                            $('.mgmt-plugins input').addClass('disabled');
-                            $('.mgmt-plugins input').attr('disabled', 'disabled');
-                            $('.mgmt-plugins .cly-select').addClass('disabled');
-                            for (var selectizeIndex = 0; selectizeIndex < $('.mgmt-plugins .selectized').length; selectizeIndex++) {
-                                $('.selectized')[selectizeIndex].selectize.disable();
-                            }
-                            $('.mgmt-plugins .on-off-switch').addClass('disabled');
-                            $('.mgmt-plugins .on-off-switch input').attr('disabled', 'disabled');
-                            $('.mgmt-plugins .icon-button').addClass('disabled');
+                        $('.mgmt-plugins input').addClass('disabled');
+                        $('.mgmt-plugins input').attr('disabled', 'disabled');
+                        $('.mgmt-plugins .cly-select').addClass('disabled');
+                        for (var selectizeIndex = 0; selectizeIndex < $('.mgmt-plugins .selectized').length; selectizeIndex++) {
+                            $('.selectized')[selectizeIndex].selectize.disable();
                         }
+                        $('.mgmt-plugins .on-off-switch').addClass('disabled');
+                        $('.mgmt-plugins .on-off-switch input').attr('disabled', 'disabled');
+                        $('.mgmt-plugins .icon-button').addClass('disabled');
                     }
                 });
             });
@@ -3450,6 +3448,10 @@ window.ManageUsersView = countlyView.extend({
             $('#permission-table-' + index).append(countlyAuth.renderFeatureTemplate(feature, index));
             for (var i in types) {
                 $('.create-user-drawer #' + types[i][0] + '-' + feature + '-' + index).countlyCheckbox();
+                if (types[i][0] === 'r' && feature === 'core') {
+                    $('.create-user-drawer #' + types[i][0] + '-' + feature + '-' + index).countlyCheckbox().set(true);
+                    $('.create-user-drawer #' + types[i][0] + '-' + feature + '-' + index).countlyCheckbox().setDisabled();
+                }
             }
         });
     },
@@ -3736,6 +3738,7 @@ window.ManageUsersView = countlyView.extend({
             var initializedPermissions = countlyAuth.initializePermissions(self.permissionSets);
             self.memberModel.permission = initializedPermissions.permissionObject;
             self.permissionSets = initializedPermissions.permissionSets;
+
             // clear drawer permission tables
             $('.create-user-drawer .user-access').remove();
             // render permission table
@@ -3890,7 +3893,7 @@ window.ManageUsersView = countlyView.extend({
                 dataType: "json",
                 success: function(response) {
                     var memberData = response[id];
-
+                    
                     // step4: remove existing group input if exist and render again with correct data
                     $('#user-group-container').remove();
                     $('#new-user-group-select').remove();
@@ -3932,6 +3935,7 @@ window.ManageUsersView = countlyView.extend({
                     self.userApps = memberData.permission._.u;
                     self.adminApps = memberData.permission._.a;
                     self.memberPermission = memberData.permission;
+                    
 
                     // step9: set accessible apps for drawer indicator
                     self.accessibleApps = [];
@@ -3944,7 +3948,7 @@ window.ManageUsersView = countlyView.extend({
                     if (memberData.global_admin) {
                         // clear drawer permission tables
                         var permissionTables = $('.create-user-drawer .user-access');
-                        
+
                         for (var i = 0; i < permissionTables.length; i++) {
                             if (i >= memberData.permission._.u.length + 1) {
                                 $(permissionTables[i]).remove();
@@ -3952,13 +3956,13 @@ window.ManageUsersView = countlyView.extend({
                         }
                     }
                     else {
-                        $('.create-user-drawer .user-access').remove();                        
+                        $('.create-user-drawer .user-access').remove();
                         // render new clean tables
                         for (var i = 0; i < self.userApps.length; i++) {
                             self.renderPermissionsTable(i);
                         }
-
                         self.permissionSets = countlyAuth.permissionParser('.create-user-drawer', self.memberPermission, countlyAuth.permissionSetGenerator(self.userApps.length));
+
                     }
                     // check is group plugin enabled?
                     if ($('#user-group-container').length > 0) {
@@ -3971,9 +3975,9 @@ window.ManageUsersView = countlyView.extend({
                             $('.add-new-permission-set').hide();
                         }
                     }
-                    
+
                 	$('.create-user-drawer .create-user-drawer-detail').show();
-        			$('.create-user-drawer .drawer-loading').hide();	
+        			$('.create-user-drawer .drawer-loading').hide();
                 },
                 error: function() {
                     $(".create-user-drawer").removeClass('open');
@@ -4044,7 +4048,7 @@ window.ManageUsersView = countlyView.extend({
             var feature = selector[1];
             var index = selector[2];
             var mapTypes = {c: 'create', r: 'read', u: 'update', d: 'delete'};
-            
+
             if ($('.create-user-drawer #' + $(this).attr('id')).countlyCheckbox().get()) {
                 self.permissionSets[index] = countlyAuth.giveFeaturePermission(permission_type, feature, self.permissionSets[index]);
             }
@@ -4052,6 +4056,7 @@ window.ManageUsersView = countlyView.extend({
                 $('.create-user-drawer #mark-all-' + mapTypes[permission_type] + '-' + index).countlyCheckbox().set(false);
                 self.permissionSets[index] = countlyAuth.removeFeaturePermission(permission_type, feature, self.permissionSets[index]);
             }
+
         });
 
         $('body').off('click', '.create-user-drawer .mark-all').on('click', '.create-user-drawer .mark-all', function() {
@@ -4060,7 +4065,7 @@ window.ManageUsersView = countlyView.extend({
             
             if ($('.create-user-drawer #mark-all-' + type + '-' + index).countlyCheckbox().get()) {
                 for (var i = 0; i < self.features.length; i++) {
-                   if (self.features[i] === 'core') continue;
+                   if (type === 'read' && self.features[i] === 'core') continue;
                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
                 }
 
@@ -4068,12 +4073,13 @@ window.ManageUsersView = countlyView.extend({
             }
             else {
                 for (var j = 0; j < self.features.length; j++) {
-                   if (self.features[j] === 'core') continue;
+                   if (type === 'read' && self.features[j] === 'core') continue;
                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().set(false);
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], false);
             }
+
         });
 
         $("#create-user-button").on("click", function() {
@@ -4172,7 +4178,7 @@ window.ManageUsersView = countlyView.extend({
                 return;
             }
 
-            if (!self.memberModel.global_admin && (self.memberModel.permission._.u[0].length === 0 && self.memberModel.permission._.a.length === 0)) {
+            if (self.memberModel.permission._.u[0].length === 0 && self.memberModel.permission._.a.length === 0) {
                 CountlyHelpers.notify({
                     type: 'warning',
                     delay: 3000,
@@ -4185,6 +4191,13 @@ window.ManageUsersView = countlyView.extend({
             if (!self.memberModel.global_admin) {
                 //self.memberModel.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
                 //self.memberModel.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
+            }
+
+            // set core read selected as default for all user apps
+            for (var i = 0; i < self.memberModel.permission._.u.length; i++) {
+                for (var j = 0; j < self.memberModel.permission._.u[i].length; j++) {
+                    self.memberModel.permission.r[self.memberModel.permission._.u[i][j]].allowed.core = true;
+                }
             }
 
             if (self.drawerMode === 'c') {
