@@ -18,7 +18,7 @@ function writeRequestLog() {
 }
 
 function getAppDetails() {
-    return request.get('/o/apps/details?app_key=' + APP_KEY + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID);
+    return request.get('/o/apps/details?app_key=' + APP_KEY + '&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID).expect(200);
 }
 
 function setRequestLoggerPluginConfiguration(config) {
@@ -153,17 +153,7 @@ describe("Request Logger Plugin", function() {
         });
 
         it("should turn off request logger when limit of requests per minute is reached", function(done) {
-            getAppDetails().then(function(response) {
-                var jsonResponse = JSON.parse(response.text);
-                jsonResponse.app.plugins.logger.state.should.equal('automatic');
-                return writeRequestLog();
-            })
-                .then(function() {
-                    return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
-                })
-                .then(function() {
-                    return writeRequestLog();
-                })
+            Promise.all([writeRequestLog(), writeRequestLog(), writeRequestLog(), writeRequestLog()])
                 .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 })
