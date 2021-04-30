@@ -49,7 +49,7 @@ plugins.setConfigs("logger", {
             return Math.floor(timeDifferenceInMs / this.SECONDS_TO_MS_RATIO) > this.MAX_ELAPSED_TIME_IN_SECONDS;
         },
         hasRequestNumberExceeded(limit) {
-            return requestWatcher.count >= limit;
+            return requestWatcher.count > limit;
         },
         shouldTurnOffRequestLogger(limit) {
             if (limit === 0) {
