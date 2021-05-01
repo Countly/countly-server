@@ -138,55 +138,73 @@
         setup: function() {}
     });
 
+    var TemplateLoader = function(templates) {
+        this.templates = templates;
+        this.elementsToBeRendered = [];
+    };
+
+    TemplateLoader.prototype.load = function() {
+        var self = this;
+
+        var getDeferred = function(fName, elId) {
+            if (!elId) {
+                return T.get(fName, function(src) {
+                    self.elementsToBeRendered.push(src);
+                });
+            }
+            else {
+                return T.get(fName, function(src) {
+                    self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
+                });
+            }
+        };
+
+        if (this.templates) {
+            var templatesDeferred = [];
+            this.templates.forEach(function(item) {
+                if (typeof item === "string") {
+                    templatesDeferred.push(getDeferred(item));
+                    return;
+                }
+                for (var name in item.mapping) {
+                    var fileName = item.mapping[name];
+                    var elementId = item.namespace + "-" + name;
+                    templatesDeferred.push(getDeferred(fileName, elementId));
+                }
+            });
+
+            return $.when.apply(null, templatesDeferred);
+        }
+        return true;
+    };
+
+    TemplateLoader.prototype.mount = function(parentSelector) {
+        parentSelector = parentSelector || "#vue-templates";
+        this.elementsToBeRendered.forEach(function(el) {
+            $(parentSelector).append(el);
+        });
+    };
+
+    TemplateLoader.prototype.destroy = function() {
+        this.elementsToBeRendered = [];
+    };
+
     var countlyVueWrapperView = countlyView.extend({
         constructor: function(opts) {
             this.component = opts.component;
             this.defaultArgs = opts.defaultArgs;
             this.vuex = opts.vuex;
             this.templates = opts.templates;
-            this.elementsToBeRendered = [];
+            this.templateLoader = new TemplateLoader(this.templates);
         },
         beforeRender: function() {
-            var self = this;
-
-            var getDeferred = function(fName, elId) {
-                if (!elId) {
-                    return T.get(fName, function(src) {
-                        self.elementsToBeRendered.push(src);
-                    });
-                }
-                else {
-                    return T.get(fName, function(src) {
-                        self.elementsToBeRendered.push("<script type='text/x-template' id='" + elId + "'>" + src + "</script>");
-                    });
-                }
-            };
-
-            if (this.templates) {
-                var templatesDeferred = [];
-                this.templates.forEach(function(item) {
-                    if (typeof item === "string") {
-                        templatesDeferred.push(getDeferred(item));
-                        return;
-                    }
-                    for (var name in item.mapping) {
-                        var fileName = item.mapping[name];
-                        var elementId = item.namespace + "-" + name;
-                        templatesDeferred.push(getDeferred(fileName, elementId));
-                    }
-                });
-
-                return $.when.apply(null, templatesDeferred);
-            }
-            return true;
+            return this.templateLoader.load();
         },
         renderCommon: function(isRefresh) {
             if (!isRefresh) {
                 $(this.el).html("<div><div class='vue-wrapper'></div><div id='vue-templates'></div></div>");
                 $("body").addClass("cly-vue-theme-clydef");
-                this.elementsToBeRendered.forEach(function(el) {
-                    $("#vue-templates").append(el);
-                });
+                this.templateLoader.mount();
             }
         },
         refresh: function() {
@@ -241,7 +259,7 @@
         },
         destroy: function() {
             var self = this;
-            self.elementsToBeRendered = [];
+            this.templateLoader.destroy();
             if (self.vm) {
                 $("body").removeClass("cly-vue-theme-clydef");
                 self.vm.$destroy();
