@@ -596,28 +596,34 @@
         priority: 2,
         title: 'External tab 2',
         name: 'external2',
-        component: {
-            data: function() {
-                return {
-                    message: 'Bye.'
-                };
+        component: countlyVue.components.create({
+            component: {
+                data: function() {
+                    return {
+                        message: 'Bye.'
+                    };
+                },
+                template: '#external-tab-template'
             },
-            template: '<a>{{message}}</a>'
-        }
+            templates: ["/vue-example/templates/external-tab.html"]
+        })
     });
 
     countlyVue.container.register("/vueExample/externalTabs", {
         priority: 1,
         title: 'External tab 1',
         name: 'external1',
-        component: {
-            data: function() {
-                return {
-                    message: 'Hello.'
-                };
+        component: countlyVue.components.create({
+            component: {
+                data: function() {
+                    return {
+                        message: 'Hello.'
+                    };
+                },
+                template: '#external-tab-template'
             },
-            template: '<a>{{message}}</a>'
-        }
+            templates: ["/vue-example/templates/external-tab.html"]
+        })
     });
 
 })();

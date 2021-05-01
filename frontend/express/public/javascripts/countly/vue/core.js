@@ -284,6 +284,23 @@
         }
     });
 
+    var countlyCreateComponent = function(opts) {
+        if (opts.templates) {
+            return function() {
+                var templateLoader = new TemplateLoader(opts.templates);
+                return new Promise(function(resolve) {
+                    templateLoader.load().then(function() {
+                        templateLoader.mount();
+                        resolve(opts.component);
+                    }).fail(function() {
+                        resolve(opts.component);
+                    });
+                });
+            };
+        }
+        return opts.component;
+    };
+
     var countlyBaseView = countlyBaseComponent.extend(
         // @vue/component
         {
@@ -311,7 +328,8 @@
     );
 
     var _components = {
-        BaseComponent: countlyBaseComponent
+        BaseComponent: countlyBaseComponent,
+        create: countlyCreateComponent
     };
 
     var _views = {
