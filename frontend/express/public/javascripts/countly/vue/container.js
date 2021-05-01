@@ -13,10 +13,10 @@
         if (!Object.prototype.hasOwnProperty.call(this._records, id)) {
             this._records[id] = [];
         }
-        this._records[id].push(value);
+        this._records[id].push(Object.freeze(value));
     };
 
-    Container.prototype.componentUses = function(mapping) {
+    Container.prototype.mixin = function(mapping) {
         var self = this;
         var mixin = {
             data: function() {

@@ -525,7 +525,7 @@
         template: '#vue-example-main-template',
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.componentUses({
+            countlyVue.container.mixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
         ],
@@ -594,8 +594,8 @@
 
     countlyVue.container.register("/vueExample/externalTabs", {
         priority: 2,
-        title: 'Dummy tab 2',
-        name: 'dummy2',
+        title: 'External tab 2',
+        name: 'external2',
         component: {
             data: function() {
                 return {
@@ -608,8 +608,8 @@
 
     countlyVue.container.register("/vueExample/externalTabs", {
         priority: 1,
-        title: 'Dummy tab 1',
-        name: 'dummy1',
+        title: 'External tab 1',
+        name: 'external1',
         component: {
             data: function() {
                 return {
