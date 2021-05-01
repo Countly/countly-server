@@ -236,9 +236,9 @@
             },
             preset: {
                 type: String,
-                default: "manual",
+                default: "none",
                 validator: function(value) {
-                    return ['manual', 'timeSeries'].indexOf(value) !== -1;
+                    return ['none', 'timeSeries'].indexOf(value) !== -1;
                 }
             },
             series: {
@@ -259,8 +259,8 @@
                 // TODO : This might be a memory-intensive action.
                 // We should reconsider using it.
 
-                if (this.preset === "manual") {
-                    return Object.freeze(_.extend({}, this.internalOption, this.option));
+                if (this.preset === "none") {
+                    return this.option;
                 }
                 else if (this.preset === "timeSeries") {
                     var tickObj = countlyCommon.getTickObj();
