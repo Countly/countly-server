@@ -181,7 +181,11 @@
     TemplateLoader.prototype.mount = function(parentSelector) {
         parentSelector = parentSelector || "#vue-templates";
         this.elementsToBeRendered.forEach(function(el) {
-            $(parentSelector).append(el);
+            var jqEl = $(el);
+            var elId = jqEl.get(0).id;
+            if ($(parentSelector).find("#" + elId).length === 0) {
+                $(parentSelector).append(jqEl);
+            }
         });
     };
 
@@ -292,7 +296,9 @@
                     templateLoader.load().then(function() {
                         templateLoader.mount();
                         resolve(opts.component);
-                    }).fail(function() {
+                    }).fail(function(err) {
+                        // eslint-disable-next-line no-console
+                        console.log("Async component template load error:", err);
                         resolve(opts.component);
                     });
                 });
