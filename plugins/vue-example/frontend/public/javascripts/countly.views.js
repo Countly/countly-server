@@ -15,11 +15,29 @@
                     return this.$store.getters["countlyVueExample/myRecords/all"];
                 },
                 rTableData: function() {
-                    return this.$store.getters["countlyVueExample/tooManyRecords"];
+                    return this.tableStore.getters["tooManyRecords"];
                 }
             },
             data: function() {
+                var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("tooManyRecords", {
+                    columns: ['_id', "name"],
+                    onRequest: function(context) {
+                        return {
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                method: 'large-col',
+                                visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols)
+                            }
+                        };
+                    },
+                    onReady: function(context, rows) {
+                        return rows;
+                    }
+                }));
                 return {
+                    tableStore: tableStore,
                     tableDynamicCols: [{
                         value: "name",
                         label: "Name",
@@ -45,7 +63,7 @@
                         default: true
                     }],
                     localTableTrackedFields: ['status'],
-                    remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyVueExample", "tooManyRecords"),
+                    remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "tooManyRecords"),
                     tablePersistKey: "vueExample_localTable_" + countlyCommon.ACTIVE_APP_ID,
                     remoteTablePersistKey: "vueExample_remoteTable_" + countlyCommon.ACTIVE_APP_ID,
                 };
@@ -53,7 +71,7 @@
             methods: {
                 refresh: function() {
                     this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
-                    this.$store.dispatch("countlyVueExample/fetchTooManyRecords");
+                    this.tableStore.dispatch("fetchTooManyRecords");
                 },
                 onEditRecord: function(row) {
                     var self = this;

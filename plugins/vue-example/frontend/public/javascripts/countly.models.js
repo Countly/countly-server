@@ -93,24 +93,6 @@
 
         // Paged Resource
 
-        var tooManyRecordsResource = countlyVue.vuex.ServerDataTable("tooManyRecords", {
-            columns: ['_id', "name"],
-            onRequest: function(context) {
-                return {
-                    type: "GET",
-                    url: countlyCommon.API_URL + "/o",
-                    data: {
-                        app_id: countlyCommon.ACTIVE_APP_ID,
-                        method: 'large-col',
-                        visibleColumns: JSON.stringify(context.state.params.selectedDynamicCols)
-                    }
-                };
-            },
-            onReady: function(context, rows) {
-                return rows;
-            }
-        });
-
         var recordsResource = countlyVue.vuex.Module("myRecords", {
             state: function() {
                 return {
@@ -194,7 +176,7 @@
             getters: getters,
             actions: actions,
             mutations: mutations,
-            submodules: [recordsResource, tooManyRecordsResource]
+            submodules: [recordsResource]
         });
     };
 
