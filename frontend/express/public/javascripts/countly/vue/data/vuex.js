@@ -1,4 +1,4 @@
-/* global Vue, _, countlyGlobal, CV, Promise */
+/* global Vue, Vuex, _, countlyGlobal, CV, Promise */
 
 (function(countlyVue) {
 
@@ -378,9 +378,22 @@
     };
 
     var getServerDataSource = function(storeInstance, path, resourceName) {
-        var statusPath = path + "/" + _capitalized(resourceName, 'status'),
-            actionPath = path + "/" + _capitalized("pasteAndFetch", resourceName),
+
+        var statusPath = null,
+            actionPath = null,
+            resourcePath = null;
+
+        if (arguments.length === 3 && path) {
+            statusPath = path + "/" + _capitalized(resourceName, 'status');
+            actionPath = path + "/" + _capitalized("pasteAndFetch", resourceName);
             resourcePath = path + "/" + resourceName;
+        }
+        else {
+            resourceName = path;
+            statusPath = _capitalized(resourceName, 'status');
+            actionPath = _capitalized("pasteAndFetch", resourceName);
+            resourcePath = resourceName;
+        }
 
         return {
             fetch: function(params) {
@@ -399,9 +412,16 @@
         };
     };
 
+    var getLocalStore = function(wrapper) {
+        var storeConfig = { modules: {} };
+        storeConfig.modules[wrapper.name] = wrapper.module;
+        return new Vuex.Store(storeConfig);
+    };
+
     countlyVue.vuex.Module = VuexModule;
     countlyVue.vuex.MutableTable = MutableTable;
     countlyVue.vuex.ServerDataTable = ServerDataTable;
     countlyVue.vuex.getServerDataSource = getServerDataSource;
+    countlyVue.vuex.getLocalStore = getLocalStore;
 
 }(window.countlyVue = window.countlyVue || {}));
