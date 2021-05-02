@@ -1,100 +1,98 @@
-<script type="text/x-template" id="drawer-template">
-    <cly-drawer 
-		@submit="onSubmit"
-		@close="onClose"
-		@copy="onCopy"
-		:title="title"
-		:saveButtonLabel="saveButtonLabel"
-		v-bind="$props.controls">
-        <template v-slot:sidecars="drawerScope">
-			<cly-content id="mainSidecar" role="sidecar" :always-active="true">
-                <pre>
-                    {{drawerScope.editedObject}}
-                </pre>
-            </cly-content>
-        </template>
-        <template v-slot:default="drawerScope">
-            <cly-form-step id="step1" name="First Step">
-                <div class="section">
-                    <div class="label">Name</div> 
-                    <div>
-                        <validation-provider name="name" rules="required" v-slot="v">
-                            <cly-text-field v-model="drawerScope.editedObject.name" placeholder="Some required value"></cly-text-field>
-                            <div class="validation-error" v-if="v.errors.length > 0">
-                                Name is required.
-                            </div>
-                        </validation-provider>
-                    </div>
-                </div>
-                <div class="section">
-                    <div class="panel">
-                        <div class="panel-heading">Fields</div>
-                        <div class="panel-body">
-                            <div class="label">Field 1</div> 
-                            <div>
-                                <validation-provider name="field1" rules="required" v-slot="v">
-                                    <cly-text-field v-model="drawerScope.editedObject.field1" placeholder="Some required value"></cly-text-field>
-                                    <div class="validation-error" v-if="v.errors.length > 0">
-                                        Field 1 is required.
-                                    </div>
-                                </validation-provider>
-                            </div>
-                            <br>
-                            <div class="label">Field 2</div> 
-                            <div>
-                                <validation-provider name="field2" rules="required" v-slot="v">
-                                    <cly-text-field v-model="drawerScope.editedObject.field2" placeholder="Some required value"></cly-text-field>
-                                    <div class="validation-error" v-if="v.errors.length > 0">
-                                        Field 2 is required.
-                                    </div>
-                                </validation-provider>
-                            </div>
+<cly-drawer 
+    @submit="onSubmit"
+    @close="onClose"
+    @copy="onCopy"
+    :title="title"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="$props.controls">
+    <template v-slot:sidecars="drawerScope">
+        <cly-content id="mainSidecar" role="sidecar" :always-active="true">
+            <pre>
+                {{drawerScope.editedObject}}
+            </pre>
+        </cly-content>
+    </template>
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="step1" name="First Step">
+            <div class="section">
+                <div class="label">Name</div> 
+                <div>
+                    <validation-provider name="name" rules="required" v-slot="v">
+                        <cly-text-field v-model="drawerScope.editedObject.name" placeholder="Some required value"></cly-text-field>
+                        <div class="validation-error" v-if="v.errors.length > 0">
+                            Name is required.
                         </div>
-                    </div>
+                    </validation-provider>
                 </div>
-            </cly-form-step>
-            <cly-form-step id="step2" name="Second Step">
-                <div class="section">
-                    <div class="label">Description</div> 
-                    <div>
-                        <cly-text-area v-model="drawerScope.editedObject.description" placeholder="A brief description (optional)"></cly-text-area>
-                    </div>
-                </div>
-                <div class="section">
-                    <pre>
-                        {{drawerScope.editedObject}}
-                    </pre>
-                </div>
-            </cly-form-step>
-            <cly-form-step id="step3" name="Final Step">
-                <div class="section">
-                    <div class="panel">
-                        <div class="panel-heading">Allowed Props</div>
-                        <div class="panel-body">
-                            <validation-provider name="selectedProps" rules="required|arrmin:2" v-slot="v">
-                                <cly-check-list v-model="drawerScope.editedObject.selectedProps" :items="constants.availableProps"></cly-check-list>
+            </div>
+            <div class="section">
+                <div class="panel">
+                    <div class="panel-heading">Fields</div>
+                    <div class="panel-body">
+                        <div class="label">Field 1</div> 
+                        <div>
+                            <validation-provider name="field1" rules="required" v-slot="v">
+                                <cly-text-field v-model="drawerScope.editedObject.field1" placeholder="Some required value"></cly-text-field>
                                 <div class="validation-error" v-if="v.errors.length > 0">
-                                    You must select at least 2 props.
+                                    Field 1 is required.
+                                </div>
+                            </validation-provider>
+                        </div>
+                        <br>
+                        <div class="label">Field 2</div> 
+                        <div>
+                            <validation-provider name="field2" rules="required" v-slot="v">
+                                <cly-text-field v-model="drawerScope.editedObject.field2" placeholder="Some required value"></cly-text-field>
+                                <div class="validation-error" v-if="v.errors.length > 0">
+                                    Field 2 is required.
                                 </div>
                             </validation-provider>
                         </div>
                     </div>
                 </div>
-                <div class="section">
-                    <div class="label">Visibility</div> 
-                    <div>
-                        <cly-radio v-model="drawerScope.editedObject.visibility" :items="constants.visibilityOptions"></cly-radio>
+            </div>
+        </cly-form-step>
+        <cly-form-step id="step2" name="Second Step">
+            <div class="section">
+                <div class="label">Description</div> 
+                <div>
+                    <cly-text-area v-model="drawerScope.editedObject.description" placeholder="A brief description (optional)"></cly-text-area>
+                </div>
+            </div>
+            <div class="section">
+                <pre>
+                    {{drawerScope.editedObject}}
+                </pre>
+            </div>
+        </cly-form-step>
+        <cly-form-step id="step3" name="Final Step">
+            <div class="section">
+                <div class="panel">
+                    <div class="panel-heading">Allowed Props</div>
+                    <div class="panel-body">
+                        <validation-provider name="selectedProps" rules="required|arrmin:2" v-slot="v">
+                            <cly-check-list v-model="drawerScope.editedObject.selectedProps" :items="constants.availableProps"></cly-check-list>
+                            <div class="validation-error" v-if="v.errors.length > 0">
+                                You must select at least 2 props.
+                            </div>
+                        </validation-provider>
                     </div>
                 </div>
-                <div class="section">
-                    <cly-check v-model="drawerScope.editedObject.status" skin="tick" label="Set as active"></cly-check>
+            </div>
+            <div class="section">
+                <div class="label">Visibility</div> 
+                <div>
+                    <cly-radio v-model="drawerScope.editedObject.visibility" :items="constants.visibilityOptions"></cly-radio>
                 </div>
-                <div class="section">
-                    <pre>
-                        {{drawerScope.editedObject}}
-                    </pre>
-                </div>
-            </cly-form-step>
-        </template>
-    </cly-drawer>
-</script>
+            </div>
+            <div class="section">
+                <cly-check v-model="drawerScope.editedObject.status" skin="tick" label="Set as active"></cly-check>
+            </div>
+            <div class="section">
+                <pre>
+                    {{drawerScope.editedObject}}
+                </pre>
+            </div>
+        </cly-form-step>
+    </template>
+</cly-drawer>

@@ -218,7 +218,6 @@
         this.loadedModuleIds = [];
     };
 
-
     var countlyVueWrapperView = countlyView.extend({
         constructor: function(opts) {
             this.component = opts.component;
@@ -306,25 +305,6 @@
         }
     });
 
-    var countlyCreateComponent = function(opts) {
-        if (opts.templates) {
-            return function() {
-                var templateLoader = new TemplateLoader(opts.templates);
-                return new Promise(function(resolve) {
-                    templateLoader.load().then(function() {
-                        templateLoader.mount();
-                        resolve(opts.component);
-                    }).fail(function(err) {
-                        // eslint-disable-next-line no-console
-                        console.log("Async component template load error:", err);
-                        resolve(opts.component);
-                    });
-                });
-            };
-        }
-        return opts.component;
-    };
-
     var countlyBaseView = countlyBaseComponent.extend(
         // @vue/component
         {
@@ -351,14 +331,49 @@
         }
     );
 
+    var templateUtil = {
+        stage: function(fileName) {
+            return {
+                fileName: fileName
+            };
+        },
+        load: function(fileName) {
+            return new Promise(function(resolve) {
+                T.get(fileName, function(src) {
+                    resolve(src);
+                });
+                /*
+                    // eslint-disable-next-line no-console
+                    console.log("Async component template load error:", err);
+                    resolve(opts.component);
+                */
+            });
+        }
+    };
+
+    var asyncCreate = function(base) {
+        return function(opts) {
+            if (typeof opts.template === "string") {
+                return base.extend(opts);
+            }
+            return function() {
+                return templateUtil.load(opts.template.fileName).then(function(template) {
+                    opts.template = template;
+                    return base.extend(opts);
+                });
+            };
+        };
+    };
+
     var _components = {
         BaseComponent: countlyBaseComponent,
-        create: countlyCreateComponent
+        create: asyncCreate(countlyBaseComponent)
     };
 
     var _views = {
         BackboneWrapper: countlyVueWrapperView,
-        BaseView: countlyBaseView
+        BaseView: countlyBaseView,
+        create: asyncCreate(countlyBaseView)
     };
 
     var rootElements = {
@@ -367,7 +382,8 @@
         mixins: _mixins,
         views: _views,
         components: _components,
-        vuex: _vuex
+        vuex: _vuex,
+        T: templateUtil.stage
     };
 
     for (var key in rootElements) {
