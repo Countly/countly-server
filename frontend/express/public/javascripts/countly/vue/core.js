@@ -197,6 +197,28 @@
         this.elementsToBeRendered = [];
     };
 
+    var VuexLoader = function(vuex) {
+        this.vuex = vuex;
+        this.loadedModuleIds = [];
+    };
+
+    VuexLoader.prototype.load = function() {
+        var self = this;
+        this.vuex.forEach(function(item) {
+            var module = item.clyModel.getVuexModule();
+            _vuex.registerGlobally(module);
+            self.loadedModuleIds.push(module.name);
+        });
+    };
+
+    VuexLoader.prototype.destroy = function() {
+        this.loadedModuleIds.forEach(function(mid) {
+            _vuex.unregister(mid);
+        });
+        this.loadedModuleIds = [];
+    };
+
+
     var countlyVueWrapperView = countlyView.extend({
         constructor: function(opts) {
             this.component = opts.component;
@@ -204,6 +226,7 @@
             this.vuex = opts.vuex;
             this.templates = opts.templates;
             this.templateLoader = new TemplateLoader(this.templates);
+            this.vuexLoader = new VuexLoader(this.vuex);
         },
         beforeRender: function() {
             return this.templateLoader.load();
@@ -226,9 +249,7 @@
                 self = this;
 
             if (self.vuex) {
-                self.vuex.forEach(function(item) {
-                    _vuex.registerGlobally(item.clyModel.getVuexModule());
-                });
+                self.vuexLoader.load();
             }
 
             /*
@@ -250,15 +271,7 @@
                             </div>',
                 beforeCreate: function() {
                     this.$route.params = self.params;
-                },
-                // render: function(h) {
-                //     if (self.defaultArgs) {
-                //         return h(self.component, { attrs: self.defaultArgs });
-                //     }
-                //     else {
-                //         return h(self.component);
-                //     }
-                // }
+                }
             });
 
             self.vm.$on("cly-date-change", function() {
@@ -275,6 +288,7 @@
                 $(self.vm.$el).remove();
                 self.vm = null;
             }
+            this.vuexLoader.destroy();
         }
     });
 
