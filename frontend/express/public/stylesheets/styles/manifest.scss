@@ -17,15 +17,12 @@
 @use "overrides/element-override";
 @use "overrides/bulma-overrides";
 
-// All "Layout" specific SASS partials
+// All "Blocks" SASS partials
 
-@use "layout/content";
-@use "layout/header";
-
-// All "Module" specific SASS partials
-
-@use "modules/dropdown";
-@use "modules/table";
+@use "blocks/content";
+@use "blocks/header";
+@use "blocks/dropdown";
+@use "blocks/table";
 
 // All "States" specific SASS partials
 // Defined at the last to increase specificity
