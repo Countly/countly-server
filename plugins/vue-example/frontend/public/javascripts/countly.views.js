@@ -30,6 +30,7 @@
                 }
             }));
             return {
+                isTablePaused: true,
                 tableStore: tableStore,
                 tableDynamicCols: [{
                     value: "name",

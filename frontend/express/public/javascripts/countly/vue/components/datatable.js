@@ -28,6 +28,10 @@
                 default: function() {
                     return [];
                 }
+            },
+            paused: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
@@ -143,6 +147,13 @@
                 var addr = this.dataSource.statusAddress;
                 return addr.store.getters[addr.path];
             },
+            externalParams: function() {
+                if (!this.dataSource) {
+                    return undefined;
+                }
+                var addr = this.dataSource.paramsAddress;
+                return addr.store.getters[addr.path];
+            },
             availablePages: function() {
                 var pages = [];
                 for (var i = this.firstPage, I = Math.min(this.lastPage, 10000); i <= I; i++) {
@@ -167,6 +178,16 @@
             },
             lastPage: function() {
                 this.checkPageBoundaries();
+            },
+            paused: function(newVal) {
+                if (newVal) {
+                    this.dataSource.updateParams({
+                        ready: false
+                    });
+                }
+                else {
+                    this.triggerExternalSource();
+                }
             }
         },
         data: function() {
@@ -230,7 +251,7 @@
                 }
             },
             triggerExternalSource: function() {
-                if (!this.dataSource) {
+                if (!this.dataSource || this.paused) {
                     return;
                 }
                 if (this.dataSource.fetch) {
@@ -506,7 +527,7 @@
                 if (!this.dataSource) {
                     return false;
                 }
-                return this.externalStatus !== 'ready';
+                return this.externalStatus !== 'ready' || (this.externalParams && !this.externalParams.ready);
             },
             classes: function() {
                 if (this.dataSource && this.externalStatus === 'silent-pending') {
