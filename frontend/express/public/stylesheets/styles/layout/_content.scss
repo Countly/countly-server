@@ -1,4 +1,4 @@
-@use "../base/element-variables" as e;
+@use "../base/variables" as v;
 
 #analytics-main-view {
 	//There is a rule corresponding to the following rule in the main.css file - #content-container
@@ -20,8 +20,8 @@
 
 .cly-vue-section {
 	&__content {
-		border-top: e.$border-base;
-		border-bottom: e.$border-base;
+		border-top: v.$border-base;
+		border-bottom: v.$border-base;
 	}
 
 	&:not(:last-child) {

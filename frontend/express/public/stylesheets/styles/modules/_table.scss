@@ -1,6 +1,6 @@
-@use "../base/element-variables" as e;
 @use "../base/colors" as c;
 @use "../base/typography-variables" as t;
+@use "../base/variables" as v;
 
 .cly-vue-eldatatable {
 	&.silent-loading {
@@ -11,14 +11,14 @@
 
 	&__header {
 		height: 56px;
-		border: e.$border-base;
+		border: v.$border-base;
 		border-left: none;
 		border-right: none;
 		box-sizing: border-box;
 		padding: 12px;
 
 		&--white {
-			background-color: e.$color-white;
+			background-color: c.$color-white;
 			color: c.$table-text-color;
 			font-size: t.$text-smd-size;
 		}
@@ -34,14 +34,14 @@
 
 	&__footer {
 		height: 40px;
-		border: e.$border-base;
+		border: v.$border-base;
 		border-left: none;
 		border-right: none;
 		box-sizing: border-box;
 		padding: 0px 12px;
 
 		&--white {
-			background-color: e.$color-white;
+			background-color: c.$color-white;
 			color: c.$table-footer-text-color;
 			font-size: t.$text-smd-size;
 		}
@@ -52,7 +52,7 @@
 	}
 
 	&__vertical-divider {
-		border: e.$border-base;
+		border: v.$border-base;
 		height: 38px;
 	}
 

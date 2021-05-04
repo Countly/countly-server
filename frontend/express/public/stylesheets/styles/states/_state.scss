@@ -3,7 +3,7 @@
 */
 
 @use "../base/typography-variables" as t;
-@use "../base/element-variables" as e;
+@use "../base/colors" as c;
 
 .font-weight-bold {
     font-weight: t.$font-weight-bold !important;
@@ -53,7 +53,7 @@
 }
 
 .white-bg {
-    background-color: e.$color-white;
+    background-color: c.$color-white;
 }
 
 .no-bg {
