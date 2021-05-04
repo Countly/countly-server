@@ -4,6 +4,7 @@
     //Private Properties
     var _data = {};
     var _collection_info = {};
+    var _state = "";
     //Public Methods
     countlyLogger.initialize = function(query) {
         if (!query) {
@@ -19,7 +20,8 @@
                 "filter": JSON.stringify(query)
             },
             success: function(json) {
-                _data = json;
+                _data = json.logs;
+                _state = json.state;
             }
         });
     };
@@ -46,6 +48,10 @@
 
     countlyLogger.getCollectionInfo = function() {
         return _collection_info;
+    };
+
+    countlyLogger.isTurnedOff = function() {
+        return _state === "off";
     };
 
 }(window.countlyLogger = window.countlyLogger || {}, jQuery));

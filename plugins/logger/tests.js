@@ -85,7 +85,7 @@ describe("Request Logger Plugin", function() {
                                 return done(error);
                             }
                             var expectedNumberOfLogs = 1;
-                            var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
+                            var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text).logs;
                             var filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
                             filteredDeviceLogs.should.have.length(expectedNumberOfLogs);
                             done();
@@ -125,7 +125,7 @@ describe("Request Logger Plugin", function() {
                                 return done(error);
                             }
                             var expectedNumberOfLogs = 0;
-                            var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text);
+                            var fetchLogsJsonResponse = JSON.parse(fetchLogsResponse.text).logs;
                             var filteredDeviceLogs = fetchLogsJsonResponse.filter(keepDeviceLog);
                             filteredDeviceLogs.should.have.length(expectedNumberOfLogs);
                             done();

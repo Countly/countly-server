@@ -1503,7 +1503,7 @@ if (countlyGlobal.member.global_admin) {
             beforeRender: function() { // eslint-disable-line no-loop-func
                 var self = this;
                 if (!configManagementPromise) {
-                    configManagementPromise = $.when(countlyPlugins.initializeConfigs());
+                    configManagementPromise = $.when(countlyPlugins.initializeConfigs(), countlyPlugins.initializeActiveAppConfigs());
                 }
                 return $.when(configManagementPromise).then(function() {
                     configManagementPromise = null;
