@@ -25,6 +25,7 @@ if [ "${COUNTLY_CONTAINER}" != "frontend" ]; then
 		fi
 		# shellcheck disable=SC1091
 		python3 -m pip install pandas pystan
+		python3 -m pip install -r /opt/countly/plugins/ab-testing/api/bayesian/requirements.txt
 		cd /opt/countly/plugins/ab-testing/api/bayesian && python3 model.py
 	fi
 fi
