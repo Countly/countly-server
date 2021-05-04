@@ -1,10 +1,8 @@
 /*
-    File : main.scss (Default Theme)
-    All "Base" specific SASS partials
-    To create a different theme, create a different manifest-theme-A.scss
-    Include /theme/_colors-theme-A.scss and /theme/_variables-theme-A.scss files in the manifest-theme-A.scss
+    File : manifest.scss
 */
 
+// All "Global" sass partials
 @use "base/typography-variables";
 @use "base/element-variables";
 @use "base/colors";
@@ -13,12 +11,10 @@
 @use "base/base";
 
 // All "Overrides" specific SASS partials
-
 @use "overrides/element-override";
 @use "overrides/bulma-overrides";
 
 // All "Blocks" SASS partials
-
 @use "blocks/content";
 @use "blocks/header";
 @use "blocks/dropdown";
