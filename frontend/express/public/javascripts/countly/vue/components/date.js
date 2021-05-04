@@ -466,7 +466,7 @@
         }
     };
 
-    Vue.component("cly-datepicker", countlyBaseComponent.extend({
+    Vue.component("cly-date-picker", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n,
             InputControlsMixin,
@@ -887,10 +887,10 @@
                 this.$root.$emit("cly-date-change");
             }
         },
-        template: '<cly-datepicker timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-datepicker>'
+        template: '<cly-date-picker timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-date-picker>'
     });
 
-    Vue.component("cly-datepicker-g", globalDatepicker);
+    Vue.component("cly-date-picker-g", globalDatepicker);
 
     Vue.component("cly-global-date-selector-w", globalDatepicker);
 
