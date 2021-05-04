@@ -1,4 +1,16 @@
+$color-primary: #017AFF !default;
+
 //Data table colors
-$--table-th-bgcolor: #F6F6F6;
-$--table-text-color: #333C48;
-$--table-footer-text-color: #81868D;
+$table-th-bgcolor: #F6F6F6;
+$table-text-color: #333C48;
+$table-footer-text-color: #81868D;
+
+//Text colors
+$color-text-secondary: #81868D !default;
+$color-text-custom-1-active: #333C48 !default;
+
+//Border colors
+$border-color-base: #ECECEC !default;
+
+//Action colors
+$color-action-blue: #0166D6 !default;

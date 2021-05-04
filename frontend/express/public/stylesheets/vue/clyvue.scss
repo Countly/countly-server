@@ -1,5 +1,5 @@
-@import "../styles/base/typography-variables";
-@import "../styles/base/element-variables";
+@use "../styles/base/typography-variables" as t;
+@use "../styles/base/colors" as c;
 
 .cly-vue-theme-clydef {
 
@@ -12,7 +12,7 @@
         z-index: 2000;
     }
 
-    font-family: $--font-family !important;
+    font-family: t.$font-family !important;
 
     // tabs component
     .cly-vue-tabs {
@@ -376,7 +376,7 @@
     .cly-vue-daterp {
         background: #FFFFFF;
         border-radius: 4px;
-        color: $--color-text-custom-1-active;
+        color: c.$color-text-custom-1-active;
         display: inline-block;
 
         &__shortcuts-col {
@@ -442,7 +442,7 @@
             &--active {
                 background: #F9F9F9;
                 border-radius: 4px;
-                color: $--color-primary;
+                color: c.$color-primary;
             }
 
             &--custom {
@@ -592,14 +592,14 @@
                 > div span {
                     background: #FFFFFF;
                     border: 2px solid #0166D6;
-                    color: $--color-text-custom-1-active;
+                    color: c.$color-text-custom-1-active;
                 }
             }
             .el-month-table .start-date {
                 > div a {
                     background: #FFFFFF;
                     border: 2px solid #0166D6;
-                    color: $--color-text-custom-1-active;
+                    color: c.$color-text-custom-1-active;
                 }
             }
         }
@@ -609,14 +609,14 @@
                 > div span {
                     background: #FFFFFF;
                     border: 2px solid #0166D6;
-                    color: $--color-text-custom-1-active;
+                    color: c.$color-text-custom-1-active;
                 }
             }
             .el-month-table .end-date {
                 > div a {
                     background: #FFFFFF;
                     border: 2px solid #0166D6;
-                    color: $--color-text-custom-1-active;
+                    color: c.$color-text-custom-1-active;
                 }
             }
         }
@@ -3208,10 +3208,10 @@
 
     &--bordered {
         border-radius: 7px;
-        border: 1px solid $--border-color-base;
+        border: 1px solid c.$border-color-base;
         &.is-focus,
         &:focus-within {
-            border-color: $--color-primary;
+            border-color: c.$color-primary;
         }
     }
 
@@ -3231,7 +3231,7 @@
 
 .cly-text-button,
 .cly-icon-button {
-    color: $--color-action-blue;
+    color: c.$color-action-blue;
     cursor: pointer;
     display: inline-block;
     white-space: nowrap;
@@ -3242,11 +3242,11 @@
     margin: 0;
     padding: 7px;
     &--gray {
-        color: $--color-text-secondary;
+        color: c.$color-text-secondary;
     }
     &--disabled {
         cursor: default;
-        color: $--color-text-secondary;
+        color: c.$color-text-secondary;
         opacity: 0.7;
     }
 }

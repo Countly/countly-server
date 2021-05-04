@@ -1,6 +1,8 @@
+@use "../base/element-variables" as e;
+
 .cly-vue-header {
     padding: 12px 0px 12px;
-    border-bottom: $--border-base;
+    border-bottom: e.$border-base;
 
     &:not(:last-child) {
         margin-bottom: 32px;

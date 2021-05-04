@@ -2,19 +2,22 @@
     This file contains CSS overrides for elements CSS
 */
 
+@use "../base/typography-variables" as t;
+@use "../base/colors" as c;
+
 //Element Table overrides
 .el-table {
-    color: $--table-text-color;
+    color: c.$table-text-color;
 }
 
 .el-table th {
     padding: 10px 0px;
     box-sizing: border-box;
     text-transform: uppercase;
-    font-size: $--text-sm-size;
+    font-size: t.$text-sm-size;
     font-style: normal;
     font-weight: 500;
-    background-color: $--table-th-bgcolor;
+    background-color: c.$table-th-bgcolor;
     border-bottom-width: 2px;
 }
 
@@ -27,7 +30,7 @@
     padding: 14px 0px;
     font-style: normal;
     font-weight: normal;
-    font-size: $--text-md-size;
+    font-size: t.$text-md-size;
     box-sizing: border-box;
 }
 
