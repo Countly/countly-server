@@ -27,11 +27,11 @@ $--color-transition-base: none !default;
 -------------------------- */
 /// color|1|Brand Color|0
 $--color-primary: c.$color-primary;
-$--color-primary-green: #12AF51 !default;
+$--color-primary-green: c.$color-primary-green;
 /// color|1|Background Color|4
 $--color-white: c.$color-white;
 /// color|1|Background Color|4
-$--color-black: #000000 !default;
+$--color-black: c.$color-black;
 $--color-primary-light-1: mix($--color-white, $--color-primary, 10%) !default; /* 53a8ff */
 $--color-primary-light-2: mix($--color-white, $--color-primary, 20%) !default; /* 66b1ff */
 $--color-primary-light-3: mix($--color-white, $--color-primary, 30%) !default; /* 79bbff */
@@ -42,13 +42,13 @@ $--color-primary-light-7: mix($--color-white, $--color-primary, 70%) !default; /
 $--color-primary-light-8: mix($--color-white, $--color-primary, 80%) !default; /* d9ecff */
 $--color-primary-light-9: mix($--color-white, $--color-primary, 90%) !default; /* ecf5ff */
 /// color|1|Functional Color|1
-$--color-success: #67C23A !default;
+$--color-success: c.$color-success;
 /// color|1|Functional Color|1
-$--color-warning: #E6A23C !default;
+$--color-warning: c.$color-warning;
 /// color|1|Functional Color|1
-$--color-danger: #F56C6C !default;
+$--color-danger: c.$color-danger;
 /// color|1|Functional Color|1
-$--color-info: #909399 !default;
+$--color-info: c.$color-info;
 /// color|1|Functional Color|1
 $--color-action-blue: c.$color-action-blue;
 
@@ -62,9 +62,9 @@ $--color-warning-lighter: mix($--color-white, $--color-warning, 90%) !default;
 $--color-danger-lighter: mix($--color-white, $--color-danger, 90%) !default;
 $--color-info-lighter: mix($--color-white, $--color-info, 90%) !default;
 /// color|1|Font Color|2
-$--color-text-primary: #303133 !default;
+$--color-text-primary: c.$color-text-primary;
 /// color|1|Font Color|2
-$--color-text-regular: #03060C !default;
+$--color-text-regular: c.$color-text-regular;
 /// color|1|Font Color|2
 $--color-text-secondary: c.$color-text-secondary;// #909399 !default;
 /// color|1|Font Color|2
@@ -72,18 +72,18 @@ $--color-text-placeholder: c.$color-text-placeholder;
 /// color|1|Border Color|3
 $--border-color-base: c.$border-color-base;
 /// color|1|Border Color|3
-$--border-color-light: #EBEBEF !default;
+$--border-color-light: c.$border-color-light;
 /// color|1|Border Color|3
-$--border-color-lighter: #ECECEC !default;
+$--border-color-lighter: c.$border-color-lighter;
 /// color|1|Border Color|3
-$--border-color-extra-light: #F2F6FC !default;
+$--border-color-extra-light: c.$border-color-extra-light;
 
 $--color-text-custom-1-active: c.$color-text-custom-1-active;
-$--color-text-custom-1-passive: #858A91 !default;
+$--color-text-custom-1-passive: c.$color-text-custom-1-passive;
 
 // Background
 /// color|1|Background Color|4
-$--background-color-base: #F5F7FA !default;
+$--background-color-base: c.$background-color-base;
 
 /* Link
 -------------------------- */
