@@ -312,7 +312,7 @@ plugins.setConfigs("logger", {
                     if (err) {
                         console.log(err);
                     }
-                    common.returnOutput(parameters, items || []);
+                    common.returnOutput(parameters, {logs: items || [], state: getRequestLoggerConfiguration(params).state});
                 });
             });
             return true;

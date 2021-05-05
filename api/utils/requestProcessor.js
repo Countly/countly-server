@@ -1384,6 +1384,9 @@ const processRequest = (params) => {
                 case 'details':
                     validateUserForDataReadAPI(params, countlyApi.mgmt.apps.getAppsDetails);
                     break;
+                case 'plugins':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getAppPlugins, params);
+                    break;
                 default:
                     if (!plugins.dispatch(apiPath, {
                         params: params,
@@ -1393,7 +1396,7 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /all, /mine, /details or /plugins');
                     }
                     break;
                 }
