@@ -115,8 +115,9 @@ describe('Create app', function() {
         });
     });
 
-    describe("GET /i/apps/plugins fetches application level plugins configurations", () => {
-        const loggerPluginAppConfig = { state: 'on', limit: 100};
+    describe("GET /i/apps/plugins application level plugins configurations", () => {
+        const loggerPluginAppConfig = { state: 'automatic', limit: 1000};
+        const apiPluginAppConfig = { session_cooldown_period: 15 };
 
         before((done) => {
             request
@@ -125,6 +126,7 @@ describe('Create app', function() {
                     app_id: APP_ID,
                     args: JSON.stringify({
                         logger: loggerPluginAppConfig,
+                        api: apiPluginAppConfig
                     })
                 })
                 .expect(200)
@@ -142,7 +144,7 @@ describe('Create app', function() {
                     }
                     const responseJson = JSON.parse(response.text);
                     responseJson.should.have.property('plugins');
-                    responseJson.plugins.should.eql({logger: loggerPluginAppConfig});
+                    responseJson.plugins.should.eql({logger: loggerPluginAppConfig, api: apiPluginAppConfig});
                     done();
                 });
         });
@@ -156,6 +158,7 @@ describe('Create app', function() {
                     }
                     const responseJson = JSON.parse(response.text);
                     responseJson.plugins.should.have.property('logger');
+                    responseJson.plugins.should.not.have.property('api');
                     responseJson.plugins.logger.should.eql(loggerPluginAppConfig);
                     done();
                 });
@@ -170,7 +173,7 @@ describe('Create app', function() {
                     }
                     const responseJson = JSON.parse(response.text);
                     responseJson.should.have.property('plugins');
-                    responseJson.plugins.should.eql({logger: loggerPluginAppConfig});
+                    responseJson.plugins.should.eql({logger: loggerPluginAppConfig, api: apiPluginAppConfig});
                     done();
                 });
         });
