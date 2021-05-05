@@ -1,0 +1,10 @@
+/*
+    All countly specific sass variables are in this file
+*/
+
+@use "./colors" as c;
+
+$border-width-base: 1px !default;
+$border-style-base: solid !default;
+
+$border-base: $border-width-base $border-style-base c.$border-color-base !default;

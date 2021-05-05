@@ -133,9 +133,15 @@
         },
         template: '<div class="cly-vue-section bu-columns bu-is-multiline" :class="{\' bu-is-gapless\': !autoGap}">\
                         <div class="bu-column bu-is-full">\
-                            <slot name="header">\
-                                <h4>{{title}}</h4>\
-                            </slot>\
+                            <div class="bu-level">\
+                                <div class="bu-level-left">\
+                                    <slot name="header">\
+                                        <div class="bu-level-item">\
+                                            <h4>{{title}}</h4>\
+                                        </div>\
+                                    </slot>\
+                                </div>\
+                            </div>\
                         </div>\
                         <div class="bu-column bu-is-full cly-vue-section__content white-bg">\
                             <slot></slot>\

@@ -1,3 +1,7 @@
+@use "./typography-variables" as t;
+@use "./variables" as v;
+@use "./colors" as c;
+
 /* Element Chalk Variables */
 
 // Special comment for theme configurator
@@ -22,12 +26,12 @@ $--color-transition-base: none !default;
 /* Color
 -------------------------- */
 /// color|1|Brand Color|0
-$--color-primary: #017AFF !default;
-$--color-primary-green: #12AF51 !default;
+$--color-primary: c.$color-primary;
+$--color-primary-green: c.$color-primary-green;
 /// color|1|Background Color|4
-$--color-white: #FFFFFF !default;
+$--color-white: c.$color-white;
 /// color|1|Background Color|4
-$--color-black: #000000 !default;
+$--color-black: c.$color-black;
 $--color-primary-light-1: mix($--color-white, $--color-primary, 10%) !default; /* 53a8ff */
 $--color-primary-light-2: mix($--color-white, $--color-primary, 20%) !default; /* 66b1ff */
 $--color-primary-light-3: mix($--color-white, $--color-primary, 30%) !default; /* 79bbff */
@@ -38,15 +42,15 @@ $--color-primary-light-7: mix($--color-white, $--color-primary, 70%) !default; /
 $--color-primary-light-8: mix($--color-white, $--color-primary, 80%) !default; /* d9ecff */
 $--color-primary-light-9: mix($--color-white, $--color-primary, 90%) !default; /* ecf5ff */
 /// color|1|Functional Color|1
-$--color-success: #67C23A !default;
+$--color-success: c.$color-success;
 /// color|1|Functional Color|1
-$--color-warning: #E6A23C !default;
+$--color-warning: c.$color-warning;
 /// color|1|Functional Color|1
-$--color-danger: #F56C6C !default;
+$--color-danger: c.$color-danger;
 /// color|1|Functional Color|1
-$--color-info: #909399 !default;
+$--color-info: c.$color-info;
 /// color|1|Functional Color|1
-$--color-action-blue: #0166D6 !default;
+$--color-action-blue: c.$color-action-blue;
 
 $--color-success-light: mix($--color-white, $--color-success, 80%) !default;
 $--color-warning-light: mix($--color-white, $--color-warning, 80%) !default;
@@ -58,28 +62,28 @@ $--color-warning-lighter: mix($--color-white, $--color-warning, 90%) !default;
 $--color-danger-lighter: mix($--color-white, $--color-danger, 90%) !default;
 $--color-info-lighter: mix($--color-white, $--color-info, 90%) !default;
 /// color|1|Font Color|2
-$--color-text-primary: #303133 !default;
+$--color-text-primary: c.$color-text-primary;
 /// color|1|Font Color|2
-$--color-text-regular: #03060C !default;
+$--color-text-regular: c.$color-text-regular;
 /// color|1|Font Color|2
-$--color-text-secondary: #81868D !default;// #909399 !default;
+$--color-text-secondary: c.$color-text-secondary;// #909399 !default;
 /// color|1|Font Color|2
-$--color-text-placeholder: #969FAD !default;
+$--color-text-placeholder: c.$color-text-placeholder;
 /// color|1|Border Color|3
-$--border-color-base: #ECECEC !default;
+$--border-color-base: c.$border-color-base;
 /// color|1|Border Color|3
-$--border-color-light: #EBEBEF !default;
+$--border-color-light: c.$border-color-light;
 /// color|1|Border Color|3
-$--border-color-lighter: #ECECEC !default;
+$--border-color-lighter: c.$border-color-lighter;
 /// color|1|Border Color|3
-$--border-color-extra-light: #F2F6FC !default;
+$--border-color-extra-light: c.$border-color-extra-light;
 
-$--color-text-custom-1-active: #333C48 !default;
-$--color-text-custom-1-passive: #858A91 !default;
+$--color-text-custom-1-active: c.$color-text-custom-1-active;
+$--color-text-custom-1-passive: c.$color-text-custom-1-passive;
 
 // Background
 /// color|1|Background Color|4
-$--background-color-base: #F5F7FA !default;
+$--background-color-base: c.$background-color-base;
 
 /* Link
 -------------------------- */
@@ -88,10 +92,7 @@ $--link-hover-color: $--color-primary !default;
 
 /* Border
 -------------------------- */
-$--border-width-base: 1px !default;
-$--border-style-base: solid !default;
 $--border-color-hover: $--color-text-placeholder !default;
-$--border-base: $--border-width-base $--border-style-base $--border-color-base !default;
 /// borderRadius|1|Radius|0
 $--border-radius-base: 4px !default;
 /// borderRadius|1|Radius|0
@@ -118,21 +119,21 @@ $--fill-base: $--color-white !default;
 $--font-path: 'fonts' !default;
 $--font-display: 'auto' !default;
 /// fontSize|1|Font Size|0
-$--font-size-extra-large: $--text-2xl-size !default;
+$--font-size-extra-large: t.$text-2xl-size !default;
 /// fontSize|1|Font Size|0
-$--font-size-large: $--text-xl-size !default;
+$--font-size-large: t.$text-xl-size !default;
 /// fontSize|1|Font Size|0
-$--font-size-medium: $--text-lg-size !default;
+$--font-size-medium: t.$text-lg-size !default;
 /// fontSize|1|Font Size|0
-$--font-size-base: $--text-md-size !default;
+$--font-size-base: t.$text-md-size !default;
 /// fontSize|1|Font Size|0
-$--font-size-small: $--text-sm-size !default;
+$--font-size-small: t.$text-sm-size !default;
 /// fontSize|1|Font Size|0
-$--font-size-extra-small: $--text-xs-size !default;
+$--font-size-extra-small: t.$text-xs-size !default;
 /// fontWeight|1|Font Weight|1
-//$--font-weight-primary: 500 !default;
+//t.$font-weight-primary: 500 !default;
 /// fontWeight|1|Font Weight|1
-//$--font-weight-secondary: 100 !default;
+//t.$font-weight-secondary: 100 !default;
 /// fontLineHeight|1|Line Height|2
 $--font-line-height-primary: 24px !default;
 /// fontLineHeight|1|Line Height|2
@@ -164,7 +165,7 @@ $--icon-color-base: $--color-info !default;
 /// fontSize||Font|1
 $--checkbox-font-size: 14px !default;
 /// fontWeight||Font|1
-$--checkbox-font-weight: $--font-weight-primary !default;
+$--checkbox-font-weight: t.$font-weight-primary !default;
 /// color||Color|0
 $--checkbox-font-color: $--color-text-regular !default;
 $--checkbox-input-height: 14px !default;
@@ -173,7 +174,7 @@ $--checkbox-input-width: 14px !default;
 $--checkbox-border-radius: $--border-radius-small !default;
 /// color||Color|0
 $--checkbox-background-color: $--color-white !default;
-$--checkbox-input-border: $--border-base !default;
+$--checkbox-input-border: v.$border-base !default;
 
 /// color||Color|0
 $--checkbox-disabled-border-color: $--border-color-base !default;
@@ -229,7 +230,7 @@ $--checkbox-button-checked-border-color: $--color-primary !default;
 /// fontSize||Font|1
 $--radio-font-size: $--font-size-base !default;
 /// fontWeight||Font|1
-$--radio-font-weight: $--font-weight-primary !default;
+$--radio-font-weight: t.$font-weight-primary !default;
 /// color||Color|0
 $--radio-font-color: $--color-text-regular !default;
 $--radio-input-height: 14px !default;
@@ -238,7 +239,7 @@ $--radio-input-width: 14px !default;
 $--radio-input-border-radius: $--border-radius-circle !default;
 /// color||Color|0
 $--radio-input-background-color: $--color-white !default;
-$--radio-input-border: $--border-base !default;
+$--radio-input-border: v.$border-base !default;
 /// color||Color|0
 $--radio-input-border-color: $--border-color-base !default;
 /// color||Color|0
@@ -279,7 +280,7 @@ $--radio-bordered-mini-input-width: 12px !default;
 $--radio-bordered-mini-height: 28px !default;
 
 /// fontSize||Font|1
-$--radio-button-font-size: $--text-button-size !default;
+$--radio-button-font-size: t.$text-button-size !default;
 /// color||Color|0
 $--radio-button-checked-background-color: $--color-primary !default;
 /// color||Color|0
@@ -441,7 +442,7 @@ $--input-font-color: $--color-text-regular !default;
 $--input-width: 140px !default;
 /// height||Other|4
 $--input-height: 32px !default;
-$--input-border: $--border-base !default;
+$--input-border: v.$border-base !default;
 $--input-border-color: $--border-color-base !default;
 /// borderRadius||Border|2
 $--input-border-radius: $--border-radius-base !default;
@@ -525,7 +526,7 @@ $--tab-vertical-header-count-fill: $--color-text-secondary !default;
 /// fontSize||Font|1
 $--button-font-size: $--font-size-base !default;
 /// fontWeight||Font|1
-$--button-font-weight: $--font-weight-primary !default;
+$--button-font-weight: t.$font-weight-primary !default;
 /// borderRadius||Border|2
 $--button-border-radius: $--border-radius-base !default;
 /// padding||Spacing|3
@@ -929,7 +930,7 @@ $--backtop-hover-background-color: $--border-color-extra-light !default;
 /// fontSize||Font|1
 $--link-font-size: $--font-size-base !default;
 /// fontWeight||Font|1
-$--link-font-weight: $--font-weight-primary !default;
+$--link-font-weight: t.$font-weight-primary !default;
 /// color||Color|0
 $--link-default-font-color: $--color-text-regular !default;
 /// color||Color|0

@@ -1,4 +1,38 @@
+/*
+    All countly color sass variables are in this file
+*/
+
+$color-white: #FFFFFF !default;
+$color-black: #000000 !default;
+
+$color-primary: #017AFF !default;
+$color-primary-green: #12AF51 !default;
+$color-success: #67C23A !default;
+$color-warning: #E6A23C !default;
+$color-danger: #F56C6C !default;
+$color-info: #909399 !default;
+
 //Data table colors
-$--table-th-bgcolor: #F6F6F6;
-$--table-text-color: #333C48;
-$--table-footer-text-color: #81868D;
+$table-th-bgcolor: #F6F6F6;
+$table-text-color: #333C48;
+$table-footer-text-color: #81868D;
+
+//Text colors
+$color-text-secondary: #81868D !default;
+$color-text-custom-1-active: #333C48 !default;
+$color-text-placeholder: #969FAD !default;
+$color-text-primary: #303133 !default;
+$color-text-regular: #03060C !default;
+$border-color-light: #EBEBEF !default;
+$border-color-lighter: #ECECEC !default;
+$border-color-extra-light: #F2F6FC !default;
+$color-text-custom-1-passive: #858A91 !default;
+
+// Background
+$background-color-base: #F5F7FA !default;
+
+//Border colors
+$border-color-base: #ECECEC !default;
+
+//Action colors
+$color-action-blue: #0166D6 !default;

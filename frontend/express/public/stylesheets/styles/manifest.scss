@@ -1,35 +1,26 @@
 /*
-    File : main.scss (Default Theme)
-    All "Base" specific SASS partials
-    To create a different theme, create a different manifest-theme-A.scss
-    Include /theme/_colors-theme-A.scss and /theme/_variables-theme-A.scss files in the manifest-theme-A.scss
+    File : manifest.scss
 */
 
-.cly-vue-theme-clydef {
-    @import "base/typography-variables";
-    @import "base/element-variables";
-    @import "base/colors";
-    @import "base/variables";
-    @import "base/mixins";
-    @import "base/base";
+// All "Global" sass partials
+@use "base/typography-variables";
+@use "base/element-variables";
+@use "base/colors";
+@use "base/variables";
+@use "base/mixins";
+@use "base/base";
 
-    // All "Overrides" specific SASS partials
+// All "Overrides" specific SASS partials
+@use "overrides/element-override";
+@use "overrides/bulma-overrides";
 
-    @import "overrides/element-override";
-    @import "overrides/bulma-overrides";
+// All "Blocks" SASS partials
+@use "blocks/content";
+@use "blocks/header";
+@use "blocks/dropdown";
+@use "blocks/table";
 
-    // All "Layout" specific SASS partials
+// All "States" specific SASS partials
+// Defined at the last to increase specificity
 
-    @import "layout/content";
-    @import "layout/header";
-
-    // All "Module" specific SASS partials
-
-    @import "modules/dropdown";
-    @import "modules/table";
-
-    // All "States" specific SASS partials
-    // Defined at the last to increase specificity
-
-    @import "states/state";
-}
+@use "states/state";

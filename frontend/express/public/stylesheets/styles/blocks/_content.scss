@@ -1,3 +1,11 @@
+/*
+    Contains CSS for the following components
+    - cly-main
+    - cly-section
+*/
+
+@use "../base/variables" as v;
+
 #analytics-main-view {
 	//There is a rule corresponding to the following rule in the main.css file - #content-container
 	//Remove that once everything is moved to vue
@@ -18,8 +26,8 @@
 
 .cly-vue-section {
 	&__content {
-		border-top: $--border-base;
-		border-bottom: $--border-base;
+		border-top: v.$border-base;
+		border-bottom: v.$border-base;
 	}
 
 	&:not(:last-child) {
