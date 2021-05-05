@@ -1,10 +1,46 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    automaticStateManager = require('./helpers/automaticStateManager');
+
+var RequestLoggerStateEnum = {
+    ON: "on",
+    OFF: "off",
+    AUTOMATIC: "automatic"
+};
+Object.freeze(RequestLoggerStateEnum);
+
+plugins.setConfigs("logger", {
+    state: RequestLoggerStateEnum.AUTOMATIC,
+    limit: 1000,
+});
 
 (function() {
+
+    var shouldLogRequest = function(requestLoggerConfiguration) {
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.ON) {
+            return true;
+        }
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.AUTOMATIC) {
+            automaticStateManager.updateOnIncomingRequest();
+            return !automaticStateManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit);
+        }
+        return false;
+    };
+
+    var getRequestLoggerConfiguration = function(params) {
+        return plugins.getConfig("logger", params.app && params.app.plugins, true);
+    };
+
+    var turnRequestLoggerOffIfNecessary = function(params, requestLoggerConfiguration) {
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.AUTOMATIC && automaticStateManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit)) {
+            plugins.updateApplicationConfigs(common.db, params.app._id, "logger", Object.assign(requestLoggerConfiguration, {state: RequestLoggerStateEnum.OFF}));
+        }
+    };
+
     var processSDKRequest = function(params) {
-        if (params.logging_is_allowed) {
+        const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
+        if (params.logging_is_allowed && shouldLogRequest(requestLoggerConfiguration)) {
             params.log_processed = true;
             var now = new Date().getTime();
             var ts = common.initTimeObj(null, params.qstring.timestamp || now).mstimestamp;
@@ -218,7 +254,11 @@ var exported = {},
                 }, 1000);
             });
         }
+        else {
+            turnRequestLoggerOffIfNecessary(params, requestLoggerConfiguration);
+        }
     };
+
     //write api call
     plugins.register("/sdk/log", function(ob) {
         ob.params.logging_is_allowed = !ob.params.retry_request && !ob.params.log_processed;
