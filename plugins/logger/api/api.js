@@ -308,7 +308,7 @@ plugins.setConfigs("logger", {
                 }
             }
             validate(params, function(parameters) {
-                common.db.collection('logs' + parameters.app_id).find(filter).toArray(function(err, items) {
+                common.db.collection('logs' + parameters.app_id).find(filter).limit(1000).toArray(function(err, items) {
                     if (err) {
                         console.log(err);
                     }
