@@ -64,7 +64,7 @@ window.component('singleselect', function (sselect) {
                 m('.right combo')
             ]),
             m('.srch', {onclick: function(ev){ ev.stopPropagation(); }, style: {display: ctrl.isOpen ? 'block' : 'none'}}, m('.inner', [
-                m('input[type=search]', {value: ctrl.filter() || '', oninput: m.withAttr('value', ctrl.filter)}),
+                m('input[type=search]', {placeholder: t('push.search'), value: ctrl.filter() || '', oninput: m.withAttr('value', ctrl.filter)}),
                 m('i.fa.fa-search')
             ])),
             m('.select-items square', {
