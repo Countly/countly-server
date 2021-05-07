@@ -726,7 +726,7 @@ input:disabled + label {
 .comp-push-extra-value > input:focus + .error { opacity: 0.3; }
 .comp-push-extra-value > input:focus + .error:hover  { opacity: 1; }
 
-.comp-push-extra .select-items { z-index: 1000000; }
+.comp-push .select-items { z-index: 1000000; }
 .comp-push-extra-value .cly-multi-select {
     border: none;
     height: 34px;
