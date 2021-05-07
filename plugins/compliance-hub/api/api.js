@@ -166,7 +166,7 @@ var plugin = {},
                             params.qstring.query.device_id = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                         }
 
-                        var columns = ["device_id", "uid", "type", "after", "ts"];
+                        var columns = ["device_id", "device_id", "uid", "type", "after", "ts"];
                         var checkOb;
                         if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
                             checkOb = {};
