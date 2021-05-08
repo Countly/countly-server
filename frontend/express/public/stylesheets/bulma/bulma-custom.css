@@ -3,13 +3,6 @@ This css file is built with default bulma variable values
 https://bulma.io/documentation/customize/variables/
 $gap: 32px;
 
-Imported modules are:
-- Columns
-- Tiles
-- Level
-- Container
-- Flexbox
-
 Customization guide:
 https://bulma.io/documentation/customize/with-node-sass/
 
@@ -20,6 +13,45 @@ https://github.com/itsiprikshit/custom-bulma
 .bu-level:not(:last-child),
 .bu-progress:not(:last-child) {
     margin-bottom: 1.5rem;
+}
+
+.bu-image.bu-is-square img,
+.bu-image.bu-is-square .bu-has-ratio,
+.bu-image.bu-is-1by1 img,
+.bu-image.bu-is-1by1 .bu-has-ratio,
+.bu-image.bu-is-5by4 img,
+.bu-image.bu-is-5by4 .bu-has-ratio,
+.bu-image.bu-is-4by3 img,
+.bu-image.bu-is-4by3 .bu-has-ratio,
+.bu-image.bu-is-3by2 img,
+.bu-image.bu-is-3by2 .bu-has-ratio,
+.bu-image.bu-is-5by3 img,
+.bu-image.bu-is-5by3 .bu-has-ratio,
+.bu-image.bu-is-16by9 img,
+.bu-image.bu-is-16by9 .bu-has-ratio,
+.bu-image.bu-is-2by1 img,
+.bu-image.bu-is-2by1 .bu-has-ratio,
+.bu-image.bu-is-3by1 img,
+.bu-image.bu-is-3by1 .bu-has-ratio,
+.bu-image.bu-is-4by5 img,
+.bu-image.bu-is-4by5 .bu-has-ratio,
+.bu-image.bu-is-3by4 img,
+.bu-image.bu-is-3by4 .bu-has-ratio,
+.bu-image.bu-is-2by3 img,
+.bu-image.bu-is-2by3 .bu-has-ratio,
+.bu-image.bu-is-3by5 img,
+.bu-image.bu-is-3by5 .bu-has-ratio,
+.bu-image.bu-is-9by16 img,
+.bu-image.bu-is-9by16 .bu-has-ratio,
+.bu-image.bu-is-1by2 img,
+.bu-image.bu-is-1by2 .bu-has-ratio,
+.bu-image.bu-is-1by3 img,
+.bu-image.bu-is-1by3 .bu-has-ratio {
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
 }
 
 .bu-column {
@@ -2758,4 +2790,282 @@ https://github.com/itsiprikshit/custom-bulma
     to {
         background-position: -200% 0;
     }
+}
+
+.bu-card {
+    background-color: white;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1), 0 0px 0 1px rgba(10, 10, 10, 0.02);
+    color: #4a4a4a;
+    max-width: 100%;
+    position: relative;
+}
+
+.bu-card-header:first-child,
+.bu-card-content:first-child,
+.bu-card-footer:first-child {
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+}
+
+.bu-card-header:last-child,
+.bu-card-content:last-child,
+.bu-card-footer:last-child {
+    border-bottom-left-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.bu-card-header {
+    background-color: transparent;
+    align-items: stretch;
+    box-shadow: 0 0.125em 0.25em rgba(10, 10, 10, 0.1);
+    display: flex;
+}
+
+.bu-card-header-title {
+    align-items: center;
+    color: #363636;
+    display: flex;
+    flex-grow: 1;
+    font-weight: 700;
+    padding: 0.75rem 1rem;
+}
+.bu-card-header-title.bu-is-centered {
+    justify-content: center;
+}
+
+.bu-card-header-icon {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+}
+
+.bu-card-image {
+    display: block;
+    position: relative;
+}
+.bu-card-image:first-child img {
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+}
+.bu-card-image:last-child img {
+    border-bottom-left-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.bu-card-content {
+    background-color: transparent;
+    padding: 1.5rem;
+}
+
+.bu-card-footer {
+    background-color: transparent;
+    border-top: 1px solid #ededed;
+    align-items: stretch;
+    display: flex;
+}
+
+.bu-card-footer-item {
+    align-items: center;
+    display: flex;
+    flex-basis: 0;
+    flex-grow: 1;
+    flex-shrink: 0;
+    justify-content: center;
+    padding: 0.75rem;
+}
+.bu-card-footer-item:not(:last-child) {
+    border-right: 1px solid #ededed;
+}
+
+.bu-card .bu-media:not(:last-child) {
+    margin-bottom: 1.5rem;
+}
+
+.bu-media {
+    align-items: flex-start;
+    display: flex;
+    text-align: inherit;
+}
+.bu-media .bu-content:not(:last-child) {
+    margin-bottom: 0.75rem;
+}
+.bu-media .bu-media {
+    border-top: 1px solid rgba(219, 219, 219, 0.5);
+    display: flex;
+    padding-top: 0.75rem;
+}
+.bu-media .bu-media .bu-content:not(:last-child),
+.bu-media .bu-media .bu-control:not(:last-child) {
+    margin-bottom: 0.5rem;
+}
+.bu-media .bu-media .bu-media {
+    padding-top: 0.5rem;
+}
+.bu-media .bu-media .bu-media + .bu-media {
+    margin-top: 0.5rem;
+}
+.bu-media + .bu-media {
+    border-top: 1px solid rgba(219, 219, 219, 0.5);
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+.bu-media.bu-is-large + .bu-media {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+}
+
+.bu-media-left,
+.bu-media-right {
+    flex-basis: auto;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.bu-media-left {
+    margin-right: 1rem;
+}
+
+.bu-media-right {
+    margin-left: 1rem;
+}
+
+.bu-media-content {
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    text-align: inherit;
+}
+
+@media screen and (max-width: 768px) {
+    .bu-media-content {
+        overflow-x: auto;
+    }
+}
+
+.bu-image {
+    display: block;
+    position: relative;
+}
+.bu-image img {
+    display: block;
+    height: auto;
+    width: 100%;
+}
+.bu-image img.bu-is-rounded {
+    border-radius: 290486px;
+}
+.bu-image.bu-is-fullwidth {
+    width: 100%;
+}
+.bu-image.bu-is-square img,
+.bu-image.bu-is-square .bu-has-ratio,
+.bu-image.bu-is-1by1 img,
+.bu-image.bu-is-1by1 .bu-has-ratio,
+.bu-image.bu-is-5by4 img,
+.bu-image.bu-is-5by4 .bu-has-ratio,
+.bu-image.bu-is-4by3 img,
+.bu-image.bu-is-4by3 .bu-has-ratio,
+.bu-image.bu-is-3by2 img,
+.bu-image.bu-is-3by2 .bu-has-ratio,
+.bu-image.bu-is-5by3 img,
+.bu-image.bu-is-5by3 .bu-has-ratio,
+.bu-image.bu-is-16by9 img,
+.bu-image.bu-is-16by9 .bu-has-ratio,
+.bu-image.bu-is-2by1 img,
+.bu-image.bu-is-2by1 .bu-has-ratio,
+.bu-image.bu-is-3by1 img,
+.bu-image.bu-is-3by1 .bu-has-ratio,
+.bu-image.bu-is-4by5 img,
+.bu-image.bu-is-4by5 .bu-has-ratio,
+.bu-image.bu-is-3by4 img,
+.bu-image.bu-is-3by4 .bu-has-ratio,
+.bu-image.bu-is-2by3 img,
+.bu-image.bu-is-2by3 .bu-has-ratio,
+.bu-image.bu-is-3by5 img,
+.bu-image.bu-is-3by5 .bu-has-ratio,
+.bu-image.bu-is-9by16 img,
+.bu-image.bu-is-9by16 .bu-has-ratio,
+.bu-image.bu-is-1by2 img,
+.bu-image.bu-is-1by2 .bu-has-ratio,
+.bu-image.bu-is-1by3 img,
+.bu-image.bu-is-1by3 .bu-has-ratio {
+    height: 100%;
+    width: 100%;
+}
+.bu-image.bu-is-square,
+.bu-image.bu-is-1by1 {
+    padding-top: 100%;
+}
+.bu-image.bu-is-5by4 {
+    padding-top: 80%;
+}
+.bu-image.bu-is-4by3 {
+    padding-top: 75%;
+}
+.bu-image.bu-is-3by2 {
+    padding-top: 66.6666%;
+}
+.bu-image.bu-is-5by3 {
+    padding-top: 60%;
+}
+.bu-image.bu-is-16by9 {
+    padding-top: 56.25%;
+}
+.bu-image.bu-is-2by1 {
+    padding-top: 50%;
+}
+.bu-image.bu-is-3by1 {
+    padding-top: 33.3333%;
+}
+.bu-image.bu-is-4by5 {
+    padding-top: 125%;
+}
+.bu-image.bu-is-3by4 {
+    padding-top: 133.3333%;
+}
+.bu-image.bu-is-2by3 {
+    padding-top: 150%;
+}
+.bu-image.bu-is-3by5 {
+    padding-top: 166.6666%;
+}
+.bu-image.bu-is-9by16 {
+    padding-top: 177.7777%;
+}
+.bu-image.bu-is-1by2 {
+    padding-top: 200%;
+}
+.bu-image.bu-is-1by3 {
+    padding-top: 300%;
+}
+.bu-image.bu-is-16x16 {
+    height: 16px;
+    width: 16px;
+}
+.bu-image.bu-is-24x24 {
+    height: 24px;
+    width: 24px;
+}
+.bu-image.bu-is-32x32 {
+    height: 32px;
+    width: 32px;
+}
+.bu-image.bu-is-48x48 {
+    height: 48px;
+    width: 48px;
+}
+.bu-image.bu-is-64x64 {
+    height: 64px;
+    width: 64px;
+}
+.bu-image.bu-is-96x96 {
+    height: 96px;
+    width: 96px;
+}
+.bu-image.bu-is-128x128 {
+    height: 128px;
+    width: 128px;
 }
