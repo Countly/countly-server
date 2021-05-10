@@ -1377,7 +1377,7 @@ function initializeViewsWidget() {
         var viewsData = [];
         for (i = 0; i < data.chartData.length; i++) {
             viewsData.push({
-                views: data.chartData[i].views,
+                views: data.chartData[i].display,
                 data: []
             });
             for (var j = 0; j < viewsValueNames.length; j++) {
