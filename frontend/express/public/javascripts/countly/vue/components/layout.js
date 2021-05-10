@@ -1,4 +1,4 @@
-/* global Vue */
+/* global Vue, window */
 
 (function(countlyVue) {
 
@@ -40,40 +40,6 @@
             }
         }
     );
-
-    Vue.component("cly-panel", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            props: {
-                title: { type: String, required: false },
-                dateSelector: { type: Boolean, required: false, default: true },
-                hasLeftBottom: { type: Boolean, required: false, default: false },
-                onlyHead: { type: Boolean, required: false, default: false }
-            },
-            template: '<div class="cly-vue-panel widget">\n' +
-                            '<div class="widget-header">\n' +
-                                '<div class="left">\n' +
-                                    '<div style="margin-left: 3px;">\n' +
-                                        '<slot name="left-top">\n' +
-                                            '<div class="title" :class="{small: hasLeftBottom}">{{title}}</div>\n' +
-                                        '</slot>\n' +
-                                        '<div v-if="hasLeftBottom">\n' +
-                                            '<slot name="left-bottom"></slot>\n' +
-                                        '</div>\n' +
-                                    '</div>\n' +
-                                '</div>\n' +
-                                '<div class="right">\n' +
-                                    '<slot name="right-top">\n' +
-                                        '<cly-global-date-selector-w v-once v-if="dateSelector"></cly-global-date-selector-w>\n' +
-                                    '</slot>\n' +
-                                '</div>\n' +
-                            '</div>\n' +
-                            '<div class="widget-content help-zone-vb" :class="{\'no-border\': onlyHead}">\n' +
-                                '<slot/>\n' +
-                            '</div>\n' +
-                        '</div>',
-        }
-    ));
 
     Vue.component("cly-header", countlyBaseComponent.extend({
         props: {

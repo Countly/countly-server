@@ -1,4 +1,4 @@
-/* global jQuery, Vue, moment, countlyCommon, countlyGlobal, CountlyHelpers, _ */
+/* global jQuery, Vue, moment, countlyCommon, countlyGlobal, CountlyHelpers, _, window */
 
 (function(countlyVue, $) {
 
@@ -644,18 +644,6 @@
                             '<a class="cly-row-options-trigger" @click.stop="scope.fns.showRowOptions($event, scope.props.column.items, scope.props.row)"></a>\n' +
                         '</span>\n' +
                     '</div>'
-    }));
-
-    Vue.component("cly-datatable-undo-row", countlyBaseComponent.extend({
-        props: {
-            delayedAction: {
-                type: Object
-            },
-        },
-        template: '<div @click.stop v-if="delayedAction" class="undo-row">\n' +
-                        '<slot></slot>\n' +
-                        '<a @click.stop="delayedAction.abort()">Undo.</a>\n' +
-                    '</div>\n'
     }));
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));

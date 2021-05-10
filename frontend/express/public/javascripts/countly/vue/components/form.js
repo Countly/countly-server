@@ -1,4 +1,4 @@
-/* global Vue */
+/* global Vue, window */
 
 (function(countlyVue) {
 
@@ -165,23 +165,6 @@
             };
         }
     });
-
-    Vue.component("cly-content", _mixins.BaseContent.extend({
-        template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
-                        '<div v-show="isActive"><slot/></div>\n' +
-                    '</div>'
-    }));
-
-    Vue.component("cly-step", BaseStep.extend({
-        methods: {
-            setValid: function(valid) {
-                this.isValid = valid;
-            }
-        },
-        template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
-                        '<div v-show="isActive"><slot :setValid="setValid"/></div>\n' +
-                    '</div>'
-    }));
 
     Vue.component("cly-form", countlyBaseComponent.extend({
         mixins: [MultiStepFormMixin],

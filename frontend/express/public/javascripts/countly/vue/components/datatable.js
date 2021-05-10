@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _ */
+/* global jQuery, Vue, _, window, localStorage */
 
 (function(countlyVue) {
 
@@ -642,5 +642,16 @@
                     </div>'
     }));
 
+    Vue.component("cly-datatable-undo-row", countlyBaseComponent.extend({
+        props: {
+            delayedAction: {
+                type: Object
+            },
+        },
+        template: '<div @click.stop v-if="delayedAction" class="undo-row">\n' +
+                        '<slot></slot>\n' +
+                        '<a @click.stop="delayedAction.abort()">Undo.</a>\n' +
+                    '</div>\n'
+    }));
 
 }(window.countlyVue = window.countlyVue || {}, jQuery));
