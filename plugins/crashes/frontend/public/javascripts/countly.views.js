@@ -733,7 +733,7 @@ window.CrashesView = countlyView.extend({
                 "help": "crashes.help-loss"
             });
         }
-        
+
         if (!isRefresh) {
             countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
             chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric], self.showOnGraph);
@@ -1289,7 +1289,7 @@ window.CrashgroupView = countlyView.extend({
             url += crashData.url;
         }
         crashData.latest_version = (crashData.latest_version + "").replace(/:/g, '.');
-        
+
         if (this.old) {
             crashData.reserved_error = crashData.reserved_error || crashData.error;
             crashData.reserved_threads = crashData.reserved_threads || crashData.threads;
@@ -3543,29 +3543,38 @@ window.CrashBinaryView = countlyView.extend({
 
 app.crashesView = new CrashesView();
 app.crashgroupView = new CrashgroupView();
+app.crashBinaryView = new CrashBinaryView();
 
-app.route('/crashes', 'crashes', function() {
-    this.crashesView._filter = false;
-    this.crashesView._query = null;
-    this.renderWhenReady(this.crashesView);
-});
+if (countlyAuth.validateRead(app.crashesView.featureName)) {
+    app.route('/crashes', 'crashes', function() {
+        this.crashesView._filter = false;
+        this.crashesView._query = null;
+        this.renderWhenReady(this.crashesView);
+    });
 
-app.route('/crashes/filter/*query', 'userdata', function(query) {
-    try {
-        query = JSON.parse(query);
-    }
-    catch (ex) {
-        query = null;
-    }
-    this.crashesView._query = query;
-    this.crashesView._filter = true;
-    this.renderWhenReady(this.crashesView);
-});
+    app.route('/crashes/filter/*query', 'userdata', function(query) {
+        try {
+            query = JSON.parse(query);
+        }
+        catch (ex) {
+            query = null;
+        }
+        this.crashesView._query = query;
+        this.crashesView._filter = true;
+        this.renderWhenReady(this.crashesView);
+    });
 
-app.route('/crashes/:group', 'crashgroup', function(group) {
-    this.crashgroupView.id = group;
-    this.renderWhenReady(this.crashgroupView);
-});
+    app.route('/crashes/:group', 'crashgroup', function(group) {
+        this.crashgroupView.id = group;
+        this.renderWhenReady(this.crashgroupView);
+    });
+
+    app.route('/crash/symbols/:group/:id', 'binary_images', function(group, id) {
+        this.crashBinaryView.group = group;
+        this.crashBinaryView.id = id;
+        this.renderWhenReady(this.crashBinaryView);
+    });
+}
 
 app.addPageScript("/drill#", function() {
     if (!countlyAuth.validateRead(app.crashesView.featureName)) {
@@ -3744,10 +3753,3 @@ $(document).ready(function() {
     }
 });
 
-app.crashBinaryView = new CrashBinaryView();
-
-app.route('/crash/symbols/:group/:id', 'binary_images', function(group, id) {
-    this.crashBinaryView.group = group;
-    this.crashBinaryView.id = id;
-    this.renderWhenReady(this.crashBinaryView);
-});

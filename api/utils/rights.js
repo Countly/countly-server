@@ -870,7 +870,7 @@ exports.hasCreateRight = function(feature, app_id, member) {
 };
 
 exports.hasReadRight = function(feature, app_id, member) {
-    return member.global_admin || member.permission.r[app_id].allowed[feature] || member.permission.r[app_id].all;
+    return member.global_admin || member.permission.r[app_id].allowed[feature] || member.permission.r[app_id].all;
 };
 
 exports.hasUpdateRight = function(feature, app_id, member) {

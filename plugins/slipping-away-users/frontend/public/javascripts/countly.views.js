@@ -277,14 +277,17 @@ window.slippingView = countlyView.extend({
 //register views
 app.slippingView = new slippingView();
 
-app.route("/analytics/slipping-away", 'slipping-away', function() {
-    this.slippingView._query = undefined;
-    this.renderWhenReady(this.slippingView);
-});
-app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
-    this.slippingView._query = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
-    this.renderWhenReady(this.slippingView);
-});
+if (countlyAuth.validateRead(app.slippingView.featureName)) {
+    app.route("/analytics/slipping-away", 'slipping-away', function() {
+        this.slippingView._query = undefined;
+        this.renderWhenReady(this.slippingView);
+    });
+    app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
+        this.slippingView._query = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
+        this.renderWhenReady(this.slippingView);
+    });
+}
+
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.slippingView.featureName)) {
         if (typeof extendViewWithFilter === "function") {

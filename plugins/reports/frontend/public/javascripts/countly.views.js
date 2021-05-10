@@ -1013,9 +1013,11 @@ app.addReportsCallbacks("reports", {
 //register views
 app.reportingView = new ReportingView();
 
-app.route('/manage/reports', 'reports', function() {
-    this.renderWhenReady(this.reportingView);
-});
+if (countlyAuth.validateRead(app.reportingView.featureName)) {
+    app.route('/manage/reports', 'reports', function() {
+        this.renderWhenReady(this.reportingView);
+    });
+}
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.reportingView.featureName)) {

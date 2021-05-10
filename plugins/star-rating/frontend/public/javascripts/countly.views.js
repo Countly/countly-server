@@ -2315,11 +2315,11 @@ if (countlyAuth.validateRead(app.starView.featureName)) {
         }
         this.renderWhenReady(this.starView);
     });
-}
 
-app.addPageScript("/manage/reports", function() {
-    countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
-});
+    app.addPageScript("/manage/reports", function() {
+        countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
+    });
+}
 
 app.addPageScript("/drill#", function() {
     var drillClone;

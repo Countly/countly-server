@@ -2050,8 +2050,8 @@ window.ManageAppsView = countlyView.extend({
         var adminApps = countlyAuth.getAdminApps();
         var userApps = countlyAuth.getUserApps();
         var oAdminApps = [];
-        for (var j = 0; j < userApps.length; j++) {
-            oAdminApps.push(countlyGlobal.apps[userApps[j]]);
+        for (var k = 0; j < userApps.length; k++) {
+            oAdminApps.push(countlyGlobal.apps[userApps[k]]);
         }
         var j = 0;
         for (j in app.appTypes) {
@@ -2201,10 +2201,9 @@ window.ManageAppsView = countlyView.extend({
          * @returns {boolean} false - if no apps
          */
         function initAppManagement(app_id) {
-            var adminApps = countlyAuth.getAdminApps();
-            var userApps = countlyAuth.getUserApps();
+            var userApps_ = countlyAuth.getUserApps();
 
-            if (userApps.length === 0) {
+            if (userApps_.length === 0) {
                 firstApp();
                 $("body").off("click", "#save-first-app-add").on("click", "#save-first-app-add", function() {
                     saveApp();
@@ -2243,7 +2242,7 @@ window.ManageAppsView = countlyView.extend({
             if (countlyGlobal.config && countlyGlobal.config.code && $("#code-countly").length) {
                 $("#code-countly").show();
             }
-            
+
             app.onAppManagementSwitch(app_id);
 
             $("#app-edit-id").val(app_id);
@@ -2481,7 +2480,7 @@ window.ManageAppsView = countlyView.extend({
 
             var hasDeleteRight = countlyAuth.validateDelete(self.featureName, countlyGlobal.member, app_id);
             var hasUpdateRight = countlyAuth.validateUpdate(self.featureName, countlyGlobal.member, app_id);
-            
+
             if (hasDeleteRight) {
                 $("#app-delete-button").show();
                 $('#app-clear-button').show();
@@ -2862,9 +2861,9 @@ window.ManageAppsView = countlyView.extend({
         function initCountlyCode(app_id, server) {
             if (app_id && app_id !== "" && countlyGlobal.apps[app_id]) {
                 $("#code-countly .sdks").empty();
-                for (var k in sdks) {
-                    if (sdks[k].integration) {
-                        $("#code-countly .sdks").append("<a href='http://code.count.ly/integration-" + k + ".html?server=" + server + "&app_key=" + countlyGlobal.apps[app_id].key + "' target='_blank'>" + sdks[k].name.replace("SDK", "") + "</a>");
+                for (var sdkIndex in sdks) {
+                    if (sdks[sdkIndex].integration) {
+                        $("#code-countly .sdks").append("<a href='http://code.count.ly/integration-" + sdkIndex + ".html?server=" + server + "&app_key=" + countlyGlobal.apps[app_id].key + "' target='_blank'>" + sdks[sdkIndex].name.replace("SDK", "") + "</a>");
                     }
                 }
             }
@@ -2887,7 +2886,6 @@ window.ManageAppsView = countlyView.extend({
         }
 
         if (!countlyGlobal.member.global_admin && $.isEmptyObject(countlyGlobal.apps) && $.isEmptyObject(countlyGlobal.admin_apps) && !countlyGlobal.config.autonomous) {
-            console.log('no auth for app manage screen');
             prepareUnauthorizeScreen();
         }
         else {
@@ -3155,7 +3153,6 @@ window.ManageAppsView = countlyView.extend({
                                 countlyGlobal.admin_apps[app_id][modAttr] = data[modAttr];
                             }
                         }
-                        
 
                         if (!ext) {
                             $("#save-app-edit").removeClass("disabled");
@@ -3309,7 +3306,6 @@ window.ManageUsersView = countlyView.extend({
 
         var isEditMode = $('.cly-drawer').hasClass("editing");
         var isFallbackMode = $('.fallback').length > 0;
-        var platformName = $('.cly-drawer').find('.cly-select').clySelectGetSelection();
         var filename = "";
 
         //first we assume that we we are adding a new file
@@ -3356,55 +3352,51 @@ window.ManageUsersView = countlyView.extend({
 
         $('.left-area').append('user creation in progress...');
         $("#create-user-button").addClass("disabled");
-
-        var args = {
-            full_name: $('#full-name-text').val(),
-            username: $('#full-name-text').val(),
-            email: $('#full-name-text').val()
-        }
     },
     renderPermissionsTable: function(index) {
-        if (!index) index = 0;
+        if (!index) {
+            index = 0;
+        }
         var self = this;
-        
+
         var types = ['create', 'read', 'update', 'delete'];
 
-        var permissionTable =  '<div class="user-access access-area" id="user-access-' + index + '">';
-            permissionTable +=      '<div class="header">';
-            permissionTable +=          '<div class="section-title">' + $.i18n.map['management-users.grant-user-access-to-apps'] + '</div>';
-            if (index !== 0) {
-            permissionTable +=          '<div class="section-close-icon" data-index="' + index + '"><a href="javascript:void(0)" class="remove-row text-light-gray"><i class="material-icons">highlight_off</i></a></div>';
-            }
-            permissionTable +=      '</div>';
-            permissionTable +=      '<div class="app-selector access-area">';
-            permissionTable +=          '<div class="selector-label">' + $.i18n.map['management-users.apps'] + '</div>';
-            permissionTable +=          '<div class="selector-wrapper">';
-            permissionTable +=              '<input type="text" class="user-app-selector" data-index="' + index + '" id="user-app-selector-' + index + '">';
-            permissionTable +=          '</div>';
-            permissionTable +=          '<div style="clear:both"></div>';
-            permissionTable +=      '</div>';
-            permissionTable +=      '<div class="permission-header">';
-            permissionTable +=          '<div class="table-description first-description">' + $.i18n.map['management-users.feature'] + '</div>';
-            
+        var permissionTable = '<div class="user-access access-area" id="user-access-' + index + '">';
+        permissionTable += '<div class="header">';
+        permissionTable += '<div class="section-title">' + $.i18n.map['management-users.grant-user-access-to-apps'] + '</div>';
+        if (index !== 0) {
+            permissionTable += '<div class="section-close-icon" data-index="' + index + '"><a href="javascript:void(0)" class="remove-row text-light-gray"><i class="material-icons">highlight_off</i></a></div>';
+        }
+        permissionTable += '</div>';
+        permissionTable += '<div class="app-selector access-area">';
+        permissionTable += '<div class="selector-label">' + $.i18n.map['management-users.apps'] + '</div>';
+        permissionTable += '<div class="selector-wrapper">';
+        permissionTable += '<input type="text" class="user-app-selector" data-index="' + index + '" id="user-app-selector-' + index + '">';
+        permissionTable += '</div>';
+        permissionTable += '<div style="clear:both"></div>';
+        permissionTable += '</div>';
+        permissionTable += '<div class="permission-header">';
+        permissionTable += '<div class="table-description first-description">' + $.i18n.map['management-users.feature'] + '</div>';
+
         for (var i in types) {
             if (types[i] === 'read') {
-                permissionTable +=          '<div class="table-description read-all">';
+                permissionTable += '<div class="table-description read-all">';
             }
             else {
-                permissionTable +=          '<div class="table-description">';
+                permissionTable += '<div class="table-description">';
             }
-            permissionTable +=              '<div data-label="' + $.i18n.map['management-users.' + types[i]] + '" class="mark-all permission-table-header-checkbox" id="mark-all-' + types[i] + '-' + index + '"></div>';
-            permissionTable +=          '</div>';
+            permissionTable += '<div data-label="' + $.i18n.map['management-users.' + types[i]] + '" class="mark-all permission-table-header-checkbox" id="mark-all-' + types[i] + '-' + index + '"></div>';
+            permissionTable += '</div>';
         }
 
-        permissionTable +=     '</div>';
+        permissionTable += '</div>';
         permissionTable += '<div class="permission-table" id="permission-table-' + index + '"></div>';
-        
+
         $('.add-new-permission-set').before(permissionTable);
-        
+
         // link checkboxes after dom injection
-        for (var i in types) {
-            $('.create-user-drawer #mark-all-' + types[i] + '-' + index).countlyCheckbox();
+        for (var typeIndex in types) {
+            $('.create-user-drawer #mark-all-' + types[typeIndex] + '-' + index).countlyCheckbox();
         }
 
         // jQuery selectize handler for projection input
@@ -3446,11 +3438,11 @@ window.ManageUsersView = countlyView.extend({
         // render permission checkboxes for features/plugins
         self.features.forEach(function(feature) {
             $('#permission-table-' + index).append(countlyAuth.renderFeatureTemplate(feature, index));
-            for (var i in types) {
-                $('.create-user-drawer #' + types[i][0] + '-' + feature + '-' + index).countlyCheckbox();
-                if (types[i][0] === 'r' && feature === 'core') {
-                    $('.create-user-drawer #' + types[i][0] + '-' + feature + '-' + index).countlyCheckbox().set(true);
-                    $('.create-user-drawer #' + types[i][0] + '-' + feature + '-' + index).countlyCheckbox().setDisabled();
+            for (var i0 in types) {
+                $('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index).countlyCheckbox();
+                if (types[i0][0] === 'r' && feature === 'core') {
+                    $('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index).countlyCheckbox().set(true);
+                    $('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index).countlyCheckbox().setDisabled();
                 }
             }
         });
@@ -3478,7 +3470,6 @@ window.ManageUsersView = countlyView.extend({
             return true;
         }
         else {
-            var self = this;
             return $.when(T.render('/templates/users.html', function(src) {
                 self.template = src;
             })).then(function() {});
@@ -3549,15 +3540,17 @@ window.ManageUsersView = countlyView.extend({
                                 }
                             }
 
-                            for (var i = 0; i < row.permission._.u.length; i++) {
-                                for (var j = 0; j < row.permission._.u[i].length; j++) {
-                                    if (countlyGlobal.apps[row.permission._.u[i][j]]) {
-                                        apps.push(countlyGlobal.apps[row.permission._.u[i][j]].name);
+                            for (var i0 = 0; i0 < row.permission._.u.length; i0++) {
+                                for (var j = 0; j < row.permission._.u[i0].length; j++) {
+                                    if (countlyGlobal.apps[row.permission._.u[i0][j]]) {
+                                        apps.push(countlyGlobal.apps[row.permission._.u[i0][j]].name);
                                     }
                                 }
                             }
-                            
-                            if (apps.length === 0) return jQuery.i18n.map["management-users.no-role"];
+
+                            if (apps.length === 0) {
+                                return jQuery.i18n.map["management-users.no-role"];
+                            }
                             return apps.join(", ");
                         }
                     },
@@ -3615,20 +3608,13 @@ window.ManageUsersView = countlyView.extend({
         $('#user-table .expand-row-icon').hide();
 
         // CRUD validations
-        // TODO: update these again
-        if (countlyAuth.validateUpdate(this.featureName)) {
-            //CountlyHelpers.expandRows(self.dtable, self.editUser, self);
-        }
-        else {
-            
-        }
         if (!countlyAuth.validateDelete(this.featureName)) {
             $('.delete-user').hide();
         }
         if (!countlyAuth.validateCreate(this.featureName)) {
             $('#add-user-mgmt').hide();
         }
-        
+
         app.addDataExport("userinfo", function() {
             var ret = [];
             var elem;
@@ -3690,7 +3676,7 @@ window.ManageUsersView = countlyView.extend({
             }
             return ret;
         });
-       
+
         if (self._id) {
             $(self.el).prepend('<a class="back back-link"><span>' + jQuery.i18n.map["common.back"] + '</span></a>');
             $(self.el).find(".back").click(function() {
@@ -3715,7 +3701,7 @@ window.ManageUsersView = countlyView.extend({
             $('#sub-header-1th').show();
             $('.add-new-permission-set').show();
             $('.create-user-drawer #manage-users-admin-app-selector')[0].selectize.setValue([]);
-            
+
             // clean inputs
             userCreateDrawer.addClass("open");
             userCreateDrawer.find('.full-name-text').val('');
@@ -3794,13 +3780,13 @@ window.ManageUsersView = countlyView.extend({
             }
         });
 
-        var memberImageDropzone = new Dropzone("#user-avatar-upload-drop", { 
+        var memberImageDropzone = new Dropzone("#user-avatar-upload-drop", {
             member: null,
             addRemoveLinks: true,
-            url: "/member/icon", 
+            url: "/member/icon",
             paramName: "member_image",
             params: { _csrf: countlyGlobal.csrf_token },
-            thumbnailWidth: 190, 
+            thumbnailWidth: 190,
             thumbnailHeight: 232,
             autoProcessQueue: false,
             clickable: ['.upload-message', '.img-upload'],
@@ -3814,7 +3800,7 @@ window.ManageUsersView = countlyView.extend({
             }
         });
 
-        memberImageDropzone.on("addedfile", function(file) {
+        memberImageDropzone.on("addedfile", function() {
             $('.upload-message').hide();
         });
 
@@ -3827,7 +3813,6 @@ window.ManageUsersView = countlyView.extend({
             this.member.member_image = '/memberimages/' + this.member.user_id + '.png';
             $('.create-user-drawer .img-preview').css({'background-image': 'url(' + this.member.member_image + '?t=' + Date.now() + ')' });
         });
-
 
         tippy('.show-tooltip', {
             'theme': 'custom',
@@ -3843,7 +3828,7 @@ window.ManageUsersView = countlyView.extend({
             $('.edit-menu').hide();
             $('.manage-users-menu-' + $(this).data('id')).show();
             setTimeout(function() {
-            	$('.manage-users-menu-' + $(that).data('id')).fadeOut();
+                $('.manage-users-menu-' + $(that).data('id')).fadeOut();
             }, 3000);
         });
 
@@ -3867,10 +3852,10 @@ window.ManageUsersView = countlyView.extend({
         // user edit drawer opener
         $('body').off('click', '.edit-user').on('click', '.edit-user', function() {
             // step1: open drawer
-        	$('.create-user-drawer').addClass('open');
+            $('.create-user-drawer').addClass('open');
 
             // step2: set local variables, drawer specific dom elements, strings etc.
-        	var data = {};
+            var data = {};
             var id = $(this).data('id');
             var url = countlyCommon.API_PARTS.users.r + '/id';
             data.id = id;
@@ -3893,13 +3878,13 @@ window.ManageUsersView = countlyView.extend({
                 dataType: "json",
                 success: function(response) {
                     var memberData = response[id];
-                    
+
                     // step4: remove existing group input if exist and render again with correct data
                     $('#user-group-container').remove();
                     $('#new-user-group-select').remove();
                     $('.user-group-label').remove();
                     $(self).trigger('user-mgmt.user-selected', memberData);
-                    
+
                     // step5: fill form inputs with member values
                     $('.create-user-drawer').find('.full-name-text').val(memberData.full_name);
                     $('.create-user-drawer').find('.username-text').val(memberData.username);
@@ -3925,7 +3910,7 @@ window.ManageUsersView = countlyView.extend({
                         $('.create-user-drawer .add-new-permission-set').show();
                         $('.create-user-drawer .admin-access .app-selector').show();
                     }
-                    
+
                     // step7: show member image in drawer
                     $('#user-avatar-upload-drop').hide();
                     $('.create-user-drawer .img-preview').show();
@@ -3935,7 +3920,6 @@ window.ManageUsersView = countlyView.extend({
                     self.userApps = memberData.permission._.u;
                     self.adminApps = memberData.permission._.a;
                     self.memberPermission = memberData.permission;
-                    
 
                     // step9: set accessible apps for drawer indicator
                     self.accessibleApps = [];
@@ -3949,20 +3933,19 @@ window.ManageUsersView = countlyView.extend({
                         // clear drawer permission tables
                         var permissionTables = $('.create-user-drawer .user-access');
 
-                        for (var i = 0; i < permissionTables.length; i++) {
-                            if (i >= memberData.permission._.u.length + 1) {
-                                $(permissionTables[i]).remove();
+                        for (var i0 = 0; i0 < permissionTables.length; i0++) {
+                            if (i0 >= memberData.permission._.u.length + 1) {
+                                $(permissionTables[i0]).remove();
                             }
                         }
                     }
                     else {
                         $('.create-user-drawer .user-access').remove();
                         // render new clean tables
-                        for (var i = 0; i < self.userApps.length; i++) {
-                            self.renderPermissionsTable(i);
+                        for (var i1 = 0; i1 < self.userApps.length; i1++) {
+                            self.renderPermissionsTable(i1);
                         }
                         self.permissionSets = countlyAuth.permissionParser('.create-user-drawer', self.memberPermission, countlyAuth.permissionSetGenerator(self.userApps.length));
-
                     }
                     // check is group plugin enabled?
                     if ($('#user-group-container').length > 0) {
@@ -3976,8 +3959,8 @@ window.ManageUsersView = countlyView.extend({
                         }
                     }
 
-                	$('.create-user-drawer .create-user-drawer-detail').show();
-        			$('.create-user-drawer .drawer-loading').hide();
+                    $('.create-user-drawer .create-user-drawer-detail').show();
+                    $('.create-user-drawer .drawer-loading').hide();
                 },
                 error: function() {
                     $(".create-user-drawer").removeClass('open');
@@ -3989,7 +3972,7 @@ window.ManageUsersView = countlyView.extend({
                 }
             });
         });
-    
+
         $('body').off('click', '.delete-user').on('click', '.delete-user', function() {
             var self2 = $(this);
             CountlyHelpers.confirm(jQuery.i18n.prop('management-users.delete-confirm', "<b>" + self2.data('fullname') + "</b>"), "popStyleGreen", function(result) {
@@ -4010,7 +3993,7 @@ window.ManageUsersView = countlyView.extend({
                     },
                     dataType: "json",
                     success: function() {
-                    	CountlyHelpers.notify({
+                        CountlyHelpers.notify({
                             type: 'green',
                             delay: 3000,
                             title: jQuery.i18n.map['management-users.removed'],
@@ -4062,24 +4045,27 @@ window.ManageUsersView = countlyView.extend({
         $('body').off('click', '.create-user-drawer .mark-all').on('click', '.create-user-drawer .mark-all', function() {
             var index = $(this).attr('id').split('-')[3];
             var type = $(this).attr('id').split('-')[2];
-            
+
             if ($('.create-user-drawer #mark-all-' + type + '-' + index).countlyCheckbox().get()) {
                 for (var i = 0; i < self.features.length; i++) {
-                   if (type === 'read' && self.features[i] === 'core') continue;
-                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
+                    if (type === 'read' && self.features[i] === 'core') {
+                        continue;
+                    }
+                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[i] + '-' + index).countlyCheckbox().set(true);
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], true);
             }
             else {
                 for (var j = 0; j < self.features.length; j++) {
-                   if (type === 'read' && self.features[j] === 'core') continue;
-                   $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().set(false);
+                    if (type === 'read' && self.features[j] === 'core') {
+                        continue;
+                    }
+                    $('.create-user-drawer #' + type.substr(0, 1) + '-' + self.features[j] + '-' + index).countlyCheckbox().set(false);
                 }
 
                 self.permissionSets[index] = countlyAuth.updatePermissionByType(type.substr(0, 1), self.permissionSets[index], false);
             }
-
         });
 
         $("#create-user-button").on("click", function() {
@@ -4113,7 +4099,6 @@ window.ManageUsersView = countlyView.extend({
                 }
 
                 var groups = groupsModel.data();
-                var groupPermission = {};
 
                 for (var i = 0; i < groups.length; i++) {
                     if (groups[i]._id === selectedGroup) {
@@ -4127,9 +4112,9 @@ window.ManageUsersView = countlyView.extend({
                     self.memberModel.permission = countlyAuth.initializePermissions(self.permissionSets).permissionObject;
                 }
                 else {
-                    for (var i = 0; i < self.userApps.length; i++) {
-                        if (self.userApps[i].length === 0) {
-                            self.userApps = self.userApps.splice(i, 1);
+                    for (var i0 = 0; i0 < self.userApps.length; i0++) {
+                        if (self.userApps[i0].length === 0) {
+                            self.userApps = self.userApps.splice(i0, 1);
                         }
                     }
 
@@ -4138,7 +4123,7 @@ window.ManageUsersView = countlyView.extend({
                     self.memberModel.permission._.a = self.adminApps;
                 }
             }
-            
+
             if (!self.memberModel.full_name.length) {
                 CountlyHelpers.notify({
                     type: 'warning',
@@ -4188,15 +4173,10 @@ window.ManageUsersView = countlyView.extend({
                 return;
             }
 
-            if (!self.memberModel.global_admin) {
-                //self.memberModel.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
-                //self.memberModel.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
-            }
-
             // set core read selected as default for all user apps
-            for (var i = 0; i < self.memberModel.permission._.u.length; i++) {
-                for (var j = 0; j < self.memberModel.permission._.u[i].length; j++) {
-                    self.memberModel.permission.r[self.memberModel.permission._.u[i][j]].allowed.core = true;
+            for (var i1 = 0; i1 < self.memberModel.permission._.u.length; i1++) {
+                for (var j = 0; j < self.memberModel.permission._.u[i1].length; j++) {
+                    self.memberModel.permission.r[self.memberModel.permission._.u[i1][j]].allowed.core = true;
                 }
             }
 
@@ -4221,9 +4201,8 @@ window.ManageUsersView = countlyView.extend({
                         // because upload request requires member_id as param.
                         memberImageDropzone.member = member;
                         memberImageDropzone.processQueue();
-                        alert('parola: ' + self.memberModel.password);
                         if (isGroupSelected) {
-                            groupsModel.saveUserGroup({ email: member.email, group_id: $('#selected-new-user-group').val() }, function(response) {
+                            groupsModel.saveUserGroup({ email: member.email, group_id: $('#selected-new-user-group').val() }, function() {
                                 app.activeView.render();
                             });
                         }
@@ -4233,12 +4212,12 @@ window.ManageUsersView = countlyView.extend({
                     },
                     error: function() {
                         CountlyHelpers.notify({
-                        	type: "error",
+                            type: "error",
                             title: "Somethings went wrong",
                             message: "Server doesn't respond, please try again later"
                         });
                     }
-                }); 
+                });
             }
             else {
                 self.memberModel.user_id = self.selectedMemberId;
@@ -4251,7 +4230,7 @@ window.ManageUsersView = countlyView.extend({
                     },
                     dataType: "json",
                     success: function() {
-                    	CountlyHelpers.notify({
+                        CountlyHelpers.notify({
                             type: 'green',
                             delay: 3000,
                             title: jQuery.i18n.map['management-users.updated'],
@@ -4265,7 +4244,7 @@ window.ManageUsersView = countlyView.extend({
                     },
                     error: function() {
                         CountlyHelpers.notify({
-                        	type: "error",
+                            type: "error",
                             title: "Somethings went wrong",
                             message: "Server doesn't respond, please try again later"
                         });
@@ -4287,7 +4266,7 @@ window.ManageUsersView = countlyView.extend({
                     conflictIndex = i;
                 }
             }
-            
+
             // remove related app from other user app selectors if already added
             if (is_already_added) {
                 var userApps = CountlyHelpers.removeItemFromArray(affectedApp, self.userAppSelectors[conflictIndex][0].selectize.getValue().split(","));
@@ -4305,8 +4284,8 @@ window.ManageUsersView = countlyView.extend({
             self.adminApps = adminApps;
             self.accessibleApps = [];
 
-            for (var i = 0; i < self.userApps.length; i++) {
-                self.accessibleApps = self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.userApps[i]));
+            for (var i0 = 0; i0 < self.userApps.length; i0++) {
+                self.accessibleApps = self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.userApps[i0]));
             }
             self.accessibleApps = CountlyHelpers.arrayUnique(self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.adminApps)));
             $('.create-user-drawer #accessible-app-count').html(self.accessibleApps.length);
@@ -4318,13 +4297,13 @@ window.ManageUsersView = countlyView.extend({
                 if (!result) {
                     return true;
                 }
-                
+
                 var index = $(that).data('index');
                 self.userApps.splice(index, 1);
                 self.permissionSets.splice(index, 1);
                 $('#user-access-' + index).remove();
             },
-            null, 
+            null,
             {
                 title: $.i18n.map['management-users.permission-set-will-be-removed'],
                 image: "delete-an-app"
@@ -4377,11 +4356,10 @@ window.ManageUsersView = countlyView.extend({
             // remove from admin apps list if already exist
             if (isAlreadyAddedToAdmin) {
                 self.adminApps = CountlyHelpers.removeItemFromArray(affectedApp, self.adminApps);
-                
                 var selectize = adminAppSelector[0].selectize;
                 selectize.setValue(self.adminApps);
             }
-            
+
             // check is already exist in user apps lists
             if (!isAlreadyAddedToAdmin) {
                 for (var i = 0; i < self.userAppSelectors.length; i++) {
@@ -4389,22 +4367,21 @@ window.ManageUsersView = countlyView.extend({
                         isAlreadyAddedToOtherUsers = true;
                         conflictIndex = i;
                     }
-                }    
+                }
             }
 
             // remove from user apps list if already exist
             if (isAlreadyAddedToOtherUsers) {
                 var updated_userApps = CountlyHelpers.removeItemFromArray(affectedApp, self.userAppSelectors[conflictIndex][0].selectize.getValue().split(","));
-                
-                var selectize = self.userAppSelectors[conflictIndex][0].selectize;
-                selectize.setValue(updated_userApps);
+                var selectize0 = self.userAppSelectors[conflictIndex][0].selectize;
+                selectize0.setValue(updated_userApps);
             }
 
             // update model
             self.userApps[index] = userApps;
             self.accessibleApps = [];
-            for (var i = 0; i < self.userApps.length; i++) {
-                self.accessibleApps = self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.userApps[i]));
+            for (var i0 = 0; i0 < self.userApps.length; i0++) {
+                self.accessibleApps = self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.userApps[i0]));
             }
             self.accessibleApps = CountlyHelpers.arrayUnique(self.accessibleApps.concat(CountlyHelpers.removeEmptyValues(self.adminApps)));
             $('.create-user-drawer #accessible-app-count').html(self.accessibleApps.length);

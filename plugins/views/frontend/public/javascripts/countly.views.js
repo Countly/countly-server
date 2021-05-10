@@ -537,7 +537,7 @@ window.ViewsView = countlyView.extend({
             }
         }
 
-        if(!countlyAuth.validateUpdate(self.featureName)) {
+        if (!countlyAuth.validateUpdate(self.featureName)) {
             $('#manage-views-button').hide();
         }
     },
@@ -1041,16 +1041,15 @@ if (countlyAuth.validateRead(app.viewsView.featureName)) {
     app.route("/analytics/views", 'views', function() {
         this.renderWhenReady(this.viewsView);
     });
-    
+
     app.route("/analytics/views/manage", 'views', function() {
         this.renderWhenReady(this.viewManageView);
     });
-    
-    
+
     app.route("/analytics/view-frequency", 'views', function() {
         this.renderWhenReady(this.viewFrequencyView);
     });
-    
+
     app.route("/analytics/views/action-map/*view", 'views', function(view) {
         this.actionMapView.view = view;
         this.renderWhenReady(this.actionMapView);
@@ -1064,22 +1063,22 @@ if (countlyAuth.validateRead(app.viewsView.featureName)) {
             record_views = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views;
         }
         if (record_views) {
-    
+
             $("#drill-types").append('<div id="drill-type-views" class="item"><div class="inner"><span class="icon views"></span><span class="text">' + jQuery.i18n.map["views.title"] + '</span></div></div>');
             $("#drill-type-views").on("click", function() {
                 if ($(this).hasClass("active")) {
                     return true;
                 }
-    
+
                 $("#drill-types").find(".item").removeClass("active");
                 $(this).addClass("active");
                 $("#event-selector").hide();
-    
+
                 $("#drill-no-event").fadeOut();
                 $("#segmentation-start").fadeOut().remove();
-    
+
                 var currEvent = "[CLY]_view";
-    
+
                 self.graphType = "line";
                 self.graphVal = "times";
                 self.filterObj = {};
@@ -1088,9 +1087,9 @@ if (countlyAuth.validateRead(app.viewsView.featureName)) {
                 self.drillChartData = {};
                 self.activeSegmentForTable = "";
                 countlySegmentation.reset();
-    
+
                 $("#drill-navigation").find(".menu[data-open=table-view]").hide();
-    
+
                 $.when(countlySegmentation.initialize(currEvent)).then(function() {
                     $("#drill").replaceWith(drillClone.clone(true));
                     self.adjustFilters();
@@ -1117,10 +1116,10 @@ if (countlyAuth.validateRead(app.viewsView.featureName)) {
                                 '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
                                 '    </div>' +
                                 '</div>';
-    
+
             $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
         }
-    
+
         /**
          * Function to add setting section
          */
@@ -1139,20 +1138,15 @@ if (countlyAuth.validateRead(app.viewsView.featureName)) {
                             '        <div class="select-items square" style="width: 100%;"></div>' +
                             '    </div>' +
                             '</div>';
-    
+
             $(setting).insertAfter(".cly-drawer .details .settings:last");
         }
-    
+
         $("#multi-views-dropdown").on("cly-multi-select-change", function() {
             $("#widget-drawer").trigger("cly-widget-section-complete");
         });
     });
 }
-
-
-
-
-
 
 $(document).ready(function() {
     jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
@@ -1179,7 +1173,7 @@ $(document).ready(function() {
         app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
         app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
     }
-    
+
     //check if configuration view exists
     if (app.configurationsView) {
         app.configurationsView.registerLabel("views", "views.title");

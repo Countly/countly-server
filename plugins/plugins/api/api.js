@@ -338,7 +338,7 @@ const FEATURE_NAME = 'global_plugins';
         // check if global admin
         validateCreate(ob.params, FEATURE_NAME, function(params) {
             const member = ob.params.member || {};
-            
+
             var fullpath = path.resolve(__dirname, "../");
             var local_path = fullpath + "/frontend/public/localization/plugins.properties";
             if (params.member.lang && params.member.lang !== "en") {

@@ -391,7 +391,7 @@ const FEATURE_NAME = 'reports';
      * @param {object} props  - report related props
      * @param {func} cb - callback function
      * @return {func} cb - callback function
-     */
+    
     function validateCoreUser(params, props, cb) {
         var userApps = getUserApps(params.member);
         var apps = props.apps;
@@ -407,17 +407,19 @@ const FEATURE_NAME = 'reports';
         }
 
     }
+    */
 
     /**
      * validation function for verifing user have permission to access infomation or not for not core type of report
      * @param {object} params - request params object
      * @param {object} props  - report related props
      * @param {func} cb - callback function
-     */
+     
     function validateNonCoreUser(params, props, cb) {
         plugins.dispatch("/report/authorize", { params: params, report: props }, function() {
             var authorized = props.authorized || false;
             cb(null, authorized);
         });
     }
+    */
 }());

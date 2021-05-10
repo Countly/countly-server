@@ -1525,13 +1525,13 @@ if (countlyAuth.validateRead(app.pluginsView.featureName)) {
             if ($(this).hasClass("selected")) {
                 return true;
             }
-    
+
             $(".plugins-selector").removeClass("selected").removeClass("active");
             var filter = $(this).attr("id");
-    
+
             app.activeView.filterPlugins(filter);
         });
-    
+
         var pluginsData = countlyPlugins.getData();
         var plugins = [];
         var dirtyPlugins = {};
@@ -1540,7 +1540,7 @@ if (countlyAuth.validateRead(app.pluginsView.featureName)) {
                 plugins.push(pluginsData[i].code);
             }
         }
-    
+
         /**
          *  Change state of plugins
          *  @param {Array} pluginList - list of plugins to change state for
@@ -1558,11 +1558,11 @@ if (countlyAuth.validateRead(app.pluginsView.featureName)) {
                 }
             });
         }
-    
+
         $("#plugins-table").on("change", ".on-off-switch input", function() {
             var $checkBox = $(this),
                 plugin = $checkBox.attr("id").replace(/^plugin-/, '');
-    
+
             var defaultAction = function(affected) {
                 if ($checkBox.is(":checked")) {
                     plugins.push(plugin);
@@ -1571,14 +1571,14 @@ if (countlyAuth.validateRead(app.pluginsView.featureName)) {
                 else {
                     plugins = _.without(plugins, plugin);
                 }
-    
+
                 if (!affected) {
                     affected = [plugin];
                 }
                 else {
                     affected = [plugin].concat(affected);
                 }
-    
+
                 affected.forEach(function(item) {
                     var itemCb = $("#plugin-" + item);
                     if (itemCb.length > 0 && itemCb.is(":checked") !== itemCb.parent().data("initial")) {
@@ -1590,9 +1590,9 @@ if (countlyAuth.validateRead(app.pluginsView.featureName)) {
                         delete dirtyPlugins[item];
                     }
                 });
-    
+
                 var isDirty = Object.keys(dirtyPlugins).length > 0;
-    
+
                 if (isDirty) {
                     $(".btn-plugin-enabler").show();
                 }
@@ -1600,10 +1600,10 @@ if (countlyAuth.validateRead(app.pluginsView.featureName)) {
                     $(".btn-plugin-enabler").hide();
                 }
             };
-    
+
             var enabledDescendants = _.intersection(countlyPlugins.getRelativePlugins(plugin, "down"), plugins),
                 disabledAncestors = _.difference(countlyPlugins.getRelativePlugins(plugin, "up"), plugins);
-    
+
             if (!$checkBox.is(":checked") && enabledDescendants.length > 0) {
                 CountlyHelpers.confirm(jQuery.i18n.prop("plugins.disable-descendants", countlyPlugins.getTitle(plugin), enabledDescendants.map(function(item) {
                     return countlyPlugins.getTitle(item);
@@ -1633,19 +1633,17 @@ if (countlyAuth.validateRead(app.pluginsView.featureName)) {
             else {
                 defaultAction();
             }
-    
         });
-    
+
         $(document).on("click", ".btn-plugin-enabler", function() {
             var pluginsEnabler = {};
-    
+
             $("#plugins-table").find(".on-off-switch input").each(function() {
                 var plugin = this.id.toString().replace(/^plugin-/, ''),
                     state = ($(this).is(":checked")) ? true : false;
-    
                 pluginsEnabler[plugin] = state;
             });
-    
+
             var text = jQuery.i18n.map["plugins.confirm"];
             var msg = { title: jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info: jQuery.i18n.map["plugins.hold-on"], sticky: true };
             CountlyHelpers.confirm(text, "popStyleGreen popStyleGreenWide", function(result) {

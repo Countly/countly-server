@@ -607,7 +607,7 @@ window.PopulatorView = countlyView.extend({
 app.populatorView = new PopulatorView();
 
 app.route('/manage/populate*state', 'populate', function(state) {
-    if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
+    if (countlyAuth.validateRead(app.populatorView.featureName)) {
         this.populatorView.state = state;
         this.renderWhenReady(this.populatorView);
     }

@@ -331,6 +331,7 @@
 /*eslint-enable*/
 
 window.ChinaView = countlyView.extend({
+    featureName: 'echartmap',
     cityView: (store.get("countly_location_city")) ? store.get("countly_active_app") : false,
     initialize: function() {
         this.curMap = "map-list-sessions";
@@ -703,7 +704,7 @@ window.ChinaView = countlyView.extend({
 
 
 app.ChinaView = new window.ChinaView();
-if (countlyAuth.validateRead('echartmap')) {
+if (countlyAuth.validateRead(app.ChinaView.featureName)) {
     app.route('/analytics/EChartMap', 'EChartMap', function() {
         if (window.echarts) {
             this.renderWhenReady(this.ChinaView);

@@ -839,7 +839,7 @@ window.DataMigrationView = countlyView.extend({
 //create view
 app.DataMigrationView = new DataMigrationView();
 
-if (countlyGlobal.member.global_admin || countlyAuth.validateRead(app.DataMigrationView.featureName)) {
+if (countlyAuth.validateRead(app.DataMigrationView.featureName)) {
     //register route
     app.route('/manage/data-migration', 'datamigration', function() {
         this.renderWhenReady(this.DataMigrationView);

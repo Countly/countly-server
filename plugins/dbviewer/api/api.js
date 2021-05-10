@@ -4,7 +4,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, validateRead, getUserApps } = require('../../../api/utils/rights.js'),
+    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps } = require('../../../api/utils/rights.js'),
     exported = {};
 
 const FEATURE_NAME = 'dbviewer';

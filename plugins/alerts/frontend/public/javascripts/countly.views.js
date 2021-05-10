@@ -775,11 +775,13 @@ window.AlertsView = countlyView.extend({
 
 app.alertsView = new window.AlertsView();
 
+
 if (countlyAuth.validateRead(app.alertsView.featureName)) {
     app.route('/manage/alerts', 'alerts', function() {
         this.renderWhenReady(this.alertsView);
     });
 }
+
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.alertsView.featureName)) {

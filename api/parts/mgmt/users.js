@@ -9,12 +9,11 @@ var usersApi = {},
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
     plugins = require('../../../plugins/pluginManager.js'),
-    { hasUpdateRight, hasDeleteRight, hasAdminAccess, getUserApps, getAdminApps } = require('./../../utils/rights.js');
+    { hasAdminAccess, getUserApps, getAdminApps } = require('./../../utils/rights.js');
 
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
 const _ = require('lodash');
-const FEATURE_NAME = 'global_users';
 
 //for password checking when deleting own account. Could be removed after merging with next
 var argon2 = require('argon2');

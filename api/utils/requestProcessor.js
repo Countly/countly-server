@@ -1954,7 +1954,6 @@ const processRequest = (params) => {
                         }
                         else {
                             params.truncateEventValuesList = true;
-                            
                             validateRead(params, 'core', countlyApi.data.fetch.prefetchEventData, params.qstring.method);
                         }
                     }

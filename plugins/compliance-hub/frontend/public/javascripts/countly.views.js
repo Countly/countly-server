@@ -598,14 +598,17 @@ window.ConsentManagementView = countlyView.extend({
 
 app.consentManagementView = new ConsentManagementView();
 
-app.route('/manage/compliance/:tab', 'compliance', function(tab) {
-    this.consentManagementView._tab = tab;
-    this.renderWhenReady(this.consentManagementView);
-});
-app.route("/manage/compliance", "compliance", function() {
-    this.consentManagementView._tab = null;
-    this.renderWhenReady(this.consentManagementView);
-});
+if (countlyAuth.validateRead(app.consentManagementView.featureName)) {
+    app.route('/manage/compliance/:tab', 'compliance', function(tab) {
+        this.consentManagementView._tab = tab;
+        this.renderWhenReady(this.consentManagementView);
+    });
+    app.route("/manage/compliance", "compliance", function() {
+        this.consentManagementView._tab = null;
+        this.renderWhenReady(this.consentManagementView);
+    });
+}
+
 
 app.addPageScript("/users/#", function() {
     if (app.activeView && app.activeView.tabs && countlyAuth.validateRead(self.featureName)) {
@@ -765,8 +768,7 @@ app.addPageScript("/users/#", function() {
 });
 
 $(document).ready(function() {
-    if (countlyAuth.validateRead(self.featureName)) {
+    if (countlyAuth.validateRead(app.consentManagementView.featureName)) {
         app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 20});
     }
-
 });
