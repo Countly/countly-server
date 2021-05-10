@@ -1384,6 +1384,9 @@ const processRequest = (params) => {
                 case 'details':
                     validateUserForDataReadAPI(params, countlyApi.mgmt.apps.getAppsDetails);
                     break;
+                case 'plugins':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getAppPlugins, params);
+                    break;
                 default:
                     if (!plugins.dispatch(apiPath, {
                         params: params,
@@ -1393,7 +1396,7 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /all, /mine, /details or /plugins');
                     }
                     break;
                 }
@@ -1710,6 +1713,110 @@ const processRequest = (params) => {
                         });
                     }, params);
                     break;
+                case 'requestQuery':
+                    validateUserForMgmtReadAPI(() => {
+                        if (!params.qstring.path) {
+                            common.returnMessage(params, 400, 'Missing parameter "path"');
+                            return false;
+                        }
+                        if (typeof params.qstring.data === "string") {
+                            try {
+                                params.qstring.data = JSON.parse(params.qstring.data);
+                            }
+                            catch (ex) {
+                                console.log("Error parsing export request data", params.qstring.data, ex);
+                                params.qstring.data = {};
+                            }
+                        }
+                        var my_name = JSON.stringify(params.qstring);
+
+                        var ff = taskmanager.longtask({
+                            db: common.db,
+                            threshold: plugins.getConfig("api").request_threshold,
+                            force: true,
+                            gridfs: true,
+                            binary: true,
+                            app_id: params.qstring.app_id,
+                            params: params,
+                            type: "tableExport",
+                            report_name: params.qstring.filename + "." + params.qstring.type,
+                            meta: JSON.stringify({
+                                "app_id": params.qstring.app_id,
+                                "query": params.qstring.query || {}
+                            }),
+                            name: my_name,
+                            view: "#/exportedData/tableExport/",
+                            processData: function(err, res, callback) {
+                                if (!err) {
+                                    callback(null, res);
+                                }
+                                else {
+                                    callback(err, '');
+                                }
+                            },
+                            outputData: function(err, data) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
+                                }
+                                else {
+                                    common.returnMessage(params, 200, data);
+                                }
+                            }
+                        });
+
+                        countlyApi.data.exports.fromRequestQuery({
+                            params: params,
+                            path: params.qstring.path,
+                            data: params.qstring.data,
+                            method: params.qstring.method,
+                            prop: params.qstring.prop,
+                            type: params.qstring.type,
+                            filename: params.qstring.filename + "." + params.qstring.type,
+                            output: function(data) {
+                                ff(null, data);
+                            }
+                        });
+                    }, params);
+                    break;
+                case 'download': {
+                    if (paths[4] && paths[4] !== '') {
+                        common.db.collection("long_tasks").findOne({_id: paths[4]}, function(err, data) {
+
+                            var filename = data.report_name;
+                            var type = filename.split(".");
+                            type = type[type.length - 1];
+                            var myfile = paths[4];
+
+                            countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(error, size) {
+                                if (error) {
+                                    common.returnMessage(params, 400, error);
+                                }
+                                else if (parseInt(size) === 0) {
+                                    common.returnMessage(params, 400, "Export size is 0");
+                                }
+                                else {
+                                    countlyFs.gridfs.getStream("task_results", myfile, {id: paths[4]}, function(err5, stream) {
+                                        if (err5) {
+                                            common.returnMessage(params, 400, "Export strem does not exist");
+                                        }
+                                        else {
+                                            var headers = {};
+                                            headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                            headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                            params.res.writeHead(200, headers);
+                                            stream.pipe(params.res);
+                                        }
+                                    });
+                                }
+                            });
+
+                        });
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing filename');
+                    }
+                    break;
+                }
                 case 'data':
                     validateUserForMgmtReadAPI(() => {
                         if (!params.qstring.data) {

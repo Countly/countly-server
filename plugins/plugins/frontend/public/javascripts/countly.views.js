@@ -1440,6 +1440,9 @@ if (countlyGlobal.member.global_admin) {
     if (countlyGlobal.plugins.indexOf("drill") !== -1) {
         showInAppManagment.drill = {"big_list_limit": true, "record_big_list": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_apm": true, "record_views": true};
     }
+    if (countlyGlobal.plugins.includes("logger")) {
+        showInAppManagment.logger = {"state": true, "limit": true};
+    }
 
     var configManagementPromise = null;
     for (var key in showInAppManagment) {
@@ -1500,7 +1503,7 @@ if (countlyGlobal.member.global_admin) {
             beforeRender: function() { // eslint-disable-line no-loop-func
                 var self = this;
                 if (!configManagementPromise) {
-                    configManagementPromise = $.when(countlyPlugins.initializeConfigs());
+                    configManagementPromise = $.when(countlyPlugins.initializeConfigs(), countlyPlugins.initializeActiveAppConfigs());
                 }
                 return $.when(configManagementPromise).then(function() {
                     configManagementPromise = null;

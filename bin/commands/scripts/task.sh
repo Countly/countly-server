@@ -9,12 +9,5 @@ if [ -z "$1" ]
 then
     usage ;
 else
-    (cd "$DIR/../../.." ;
-        if [ -f "$DIR/../../../node_modules/grunt/bin/grunt" ]; then
-            "$DIR/../../../node_modules/grunt/bin/grunt" "$1";
-        else
-            #fallback to global grunt command
-            grunt "$1";
-        fi
-    )
+    (cd "$DIR/../../.." ; npx grunt "$1";)
 fi

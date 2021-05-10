@@ -11,85 +11,81 @@ $(document).ready(function() {
 });
 
 app.addPageScript("/manage/users", function() {
-    setTimeout(function() {
-        $("#user-table tr").on("click", function(event) {
-            setTimeout(function() {
-                var $userRow = $(event.target).closest("tr"),
-                    userId = $userRow.attr("id"),
-                    $userDetails = $(event.target).closest("tr").next();
+    $("#content").on("click", "#user-table tr", function(event) {
+        var $userRow = $(event.target).closest("tr"),
+            userId = $userRow.attr("id"),
+            $userDetails = $(event.target).closest("tr").next();
 
-                if ($userDetails.attr("id") === undefined && countlyGlobal.member.global_admin) {
-                    $.ajax({
-                        type: "GET",
-                        url: countlyGlobal.path + "/i/two-factor-auth",
-                        data: {
-                            method: "admin_check",
-                            uid: userId
-                        },
-                        success: function(data) {
-                            var has2FA = JSON.parse(data.result);
+        if ($userDetails.attr("id") === undefined && countlyGlobal.member.global_admin) {
+            $.ajax({
+                type: "GET",
+                url: countlyGlobal.path + "/i/two-factor-auth",
+                data: {
+                    method: "admin_check",
+                    uid: userId
+                },
+                success: function(data) {
+                    var has2FA = JSON.parse(data.result);
 
-                            if (has2FA) {
-                                $userDetails.find(".button-container a.delete-user").after('<a class="icon-button red disable-2fa-user" data-localize="two-factor-auth.disable_2fa"></a>');
-                                app.localize();
-                                $userDetails.find(".button-container a.disable-2fa-user").off("click").on("click", function() {
-                                    CountlyHelpers.confirm(
-                                        $.i18n.prop("two-factor-auth.confirm_disable_admin", $userDetails.find("input.username-text").val()),
-                                        "popStyleGreen",
-                                        function(result) {
-                                            if (!result) {
-                                                return;
+                    if (has2FA) {
+                        $userDetails.find(".button-container a.delete-user").after('<a class="icon-button red disable-2fa-user" data-localize="two-factor-auth.disable_2fa"></a>');
+                        app.localize();
+                        $userDetails.find(".button-container a.disable-2fa-user").off("click").on("click", function() {
+                            CountlyHelpers.confirm(
+                                $.i18n.prop("two-factor-auth.confirm_disable_admin", $userDetails.find("input.username-text").val()),
+                                "popStyleGreen",
+                                function(result) {
+                                    if (!result) {
+                                        return;
+                                    }
+
+                                    $.ajax({
+                                        type: "GET",
+                                        url: countlyGlobal.path + "/i/two-factor-auth",
+                                        data: {
+                                            method: "admin_disable",
+                                            uid: userId
+                                        },
+                                        success: function() {
+                                            CountlyHelpers.notify({
+                                                title: $.i18n.map["two-factor-auth.disable_title"],
+                                                message: $.i18n.map["two-factor-auth.disable_user_message"],
+                                                type: "ok"
+                                            });
+
+                                            $userDetails.find(".button-container a.disable-2fa-user").remove();
+                                        },
+                                        error: function(xhr) {
+                                            var errMessage = "";
+
+                                            try {
+                                                var response = JSON.parse(xhr.responseText);
+                                                errMessage = response.result || xhr.statusText;
+                                            }
+                                            catch (err) {
+                                                errMessage = xhr.statusText;
                                             }
 
-                                            $.ajax({
-                                                type: "GET",
-                                                url: countlyGlobal.path + "/i/two-factor-auth",
-                                                data: {
-                                                    method: "admin_disable",
-                                                    uid: userId
-                                                },
-                                                success: function() {
-                                                    CountlyHelpers.notify({
-                                                        title: $.i18n.map["two-factor-auth.disable_title"],
-                                                        message: $.i18n.map["two-factor-auth.disable_user_message"],
-                                                        type: "ok"
-                                                    });
-
-                                                    $userDetails.find(".button-container a.disable-2fa-user").remove();
-                                                },
-                                                error: function(xhr) {
-                                                    var errMessage = "";
-
-                                                    try {
-                                                        var response = JSON.parse(xhr.responseText);
-                                                        errMessage = response.result || xhr.statusText;
-                                                    }
-                                                    catch (err) {
-                                                        errMessage = xhr.statusText;
-                                                    }
-
-                                                    CountlyHelpers.notify({
-                                                        title: $.i18n.map["two-factor-auth.faildisable_title"],
-                                                        message: $.i18n.prop("two-factor-auth.faildisable_message", errMessage),
-                                                        type: "error"
-                                                    });
-                                                }
+                                            CountlyHelpers.notify({
+                                                title: $.i18n.map["two-factor-auth.faildisable_title"],
+                                                message: $.i18n.prop("two-factor-auth.faildisable_message", errMessage),
+                                                type: "error"
                                             });
-                                        },
-                                        [$.i18n.map["common.cancel"], $.i18n.map["common.continue"]],
-                                        {
-                                            title: $.i18n.map["two-factor-auth.confirm_disable_title"],
-                                            image: "delete-user"
                                         }
-                                    );
-                                });
-                            }
-                        }
-                    });
+                                    });
+                                },
+                                [$.i18n.map["common.cancel"], $.i18n.map["common.continue"]],
+                                {
+                                    title: $.i18n.map["two-factor-auth.confirm_disable_title"],
+                                    image: "delete-user"
+                                }
+                            );
+                        });
+                    }
                 }
-            }, 250);
-        });
-    }, 250);
+            });
+        }
+    });
 });
 
 app.addPageScript("/manage/user-settings", function() {

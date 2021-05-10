@@ -790,7 +790,7 @@ describe('Testing views plugin', function() {
 
     describe('reset app', function() {
         it('should reset data', function(done) {
-            var params = {app_id: APP_ID};
+            var params = {app_id: APP_ID, "period": "reset"};
             request
                 .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)

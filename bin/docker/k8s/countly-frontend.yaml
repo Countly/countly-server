@@ -47,7 +47,7 @@ spec:
           httpGet:
             path: /ping
             port: 6001
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           periodSeconds: 10
           timeoutSeconds: 3
         env:

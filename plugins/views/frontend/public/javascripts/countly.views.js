@@ -36,7 +36,7 @@ window.ViewsView = countlyView.extend({
     getExportAPI: function(tableID) {
         if (tableID === 'ViewsDataTableOne') {
             var set = this.dtable.fnSettings();
-            var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getTable&seeMee=1" + "&period=" + countlyCommon.getPeriodForAjax() + "&iDisplayStart=0&app_id=" + countlyCommon.ACTIVE_APP_ID + '&api_key=' + countlyGlobal.member.api_key;
+            var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getExportQuery" + "&period=" + countlyCommon.getPeriodForAjax() + "&iDisplayStart=0&app_id=" + countlyCommon.ACTIVE_APP_ID + '&api_key=' + countlyGlobal.member.api_key;
             if (self.selectedSegment && self.selectedSegment.segmentKey !== "" && self.selectedSegment.segmentValue !== "") {
                 requestPath += "&segment=" + self.selectedSegment.segmentKey;
                 requestPath += "&segmentVal=" + self.selectedSegment.segmentKey;
@@ -55,8 +55,9 @@ window.ViewsView = countlyView.extend({
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 path: requestPath,
                 method: "GET",
-                filename: "Systemlogs_on_" + moment().format("DD-MMM-YYYY"),
-                prop: ['aaData']
+                filename: "Views" + countlyCommon.ACTIVE_APP_ID + "_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData'],
+                "url": "/o/export/requestQuery"
             };
             return apiQueryData;
         }

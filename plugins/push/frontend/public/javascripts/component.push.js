@@ -109,6 +109,7 @@ window.component('push', function(push) {
                 return false;
             }
         }, t('pu.po.tab2.extras.data.invalid'));
+        this.userProps = m.prop(data.userProps);
         this.test = buildClearingProp(typeof data.test === 'undefined' ? false : data.test);
 
         this.userConditions = buildClearingProp(data.userConditions === '{}' ? undefined : typeof data.userConditions === 'string' ? JSON.parse(data.userConditions) : data.userConditions);
@@ -415,6 +416,7 @@ window.component('push', function(push) {
                 obj.autoCapMessages = this.autoCapMessages();
                 obj.autoCapSleep = this.autoCapSleep();
                 obj.actualDates = this.actualDates();
+                obj.userProps = this.userProps();
 
                 if (this.data()) {
                     obj.data = typeof this.data() === 'string' ? JSON.parse(this.data()) : this.data();

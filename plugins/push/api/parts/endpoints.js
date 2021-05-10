@@ -246,7 +246,7 @@ function cachedData(note) {
             args = {};
 
         if (!(args = common.validateArgs(params.qstring.args, argProps))) {
-            log.d('Not enough params to create message: %j', params.qstring.args);
+            log.w('Not enough params to create message: %j', params.qstring.args);
             common.returnMessage(params, 400, 'Not enough args');
             return;
         }
@@ -381,6 +381,7 @@ function cachedData(note) {
                 'collapseKey': { 'required': false, 'type': 'String' },
                 'delayWhileIdle': { 'required': false, 'type': 'Boolean' },
                 'data': { 'required': false, 'type': 'Object' },
+                'userProps': { 'required': false, 'type': 'Array' },
                 'source': { 'required': false, 'type': 'String' },
                 'test': { 'required': false, 'type': 'Boolean' },
                 'tx': { 'required': false, 'type': 'Boolean' },
@@ -398,7 +399,7 @@ function cachedData(note) {
             data = common.validateArgs(params.qstring.args, argProps, true);
 
         if (!data.result) {
-            log.d('Not enough params to create message: %j / %j', params.qstring.args, data.errors);
+            log.w('Not enough params to create message: %j / %j', params.qstring.args, data.errors);
             return [{error: 'Not enough args', errors: data.errors}];
         }
 
@@ -614,6 +615,7 @@ function cachedData(note) {
             collapseKey: data.collapseKey,
             delayWhileIdle: data.delayWhileIdle,
             data: data.data,
+            userProps: data.userProps && data.userProps.length ? data.userProps : undefined,
             userConditions: data.userConditions && Object.keys(data.userConditions).length ? data.userConditions : undefined,
             drillConditions: data.drillConditions && Object.keys(data.drillConditions).length ? data.drillConditions : undefined,
             geos: geos && geos.length ? data.geos : undefined,
@@ -1198,7 +1200,12 @@ function cachedData(note) {
         log.d('going to delete message %j', _id);
 
         let note = await N.Note.load(common.db, _id),
+            apps = await common.db.collection('apps').find({_id: {$in: note.apps}}).toArray(),
             sg = new S.StoreGroup(common.db);
+
+        if (!adminOfApps(params.member, apps)) {
+            return common.returnMessage(params, 403, 'Only app / global admins are allowed to delete');
+        }
 
         await note.update(common.db, {$bit: {'result.status': {or: N.Status.Deleted}}});
         api.cache.remove(_id);

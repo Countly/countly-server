@@ -60,10 +60,10 @@ apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 #install sendmail
 #apt-get -y install sendmail
 
-#install grunt & npm modules
+#install npm modules
 node --version
 npm --version
-(  npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
+( sudo npm install --unsafe-perm )
 
 GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
 if [[ "$GLIBC_VERSION" != "2.25" ]]; then
@@ -118,7 +118,7 @@ bash "$DIR/scripts/install.nghttp2.sh"
 bash "$DIR/scripts/countly.install.plugins.sh"
 
 #compile scripts for production
-cd "$DIR" && grunt dist-all
+countly task dist-all
 
 # after install call
 countly check after install

@@ -217,18 +217,16 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         });
     });
 
-    /** function return calculated totals for given period. Used in table tata
-     * @param {string} collectionName - collection name from where to select
+    /** function returns aggregation pipeline
      * @param {object} params  -  params object(passed from request).
      * @param {string} params.qstring.app_id - app id
      * @param {string} params.qstring.period - period
      * @param {object} settings - settings for select
      * @param {string} settings.segmentVal - segment value. (Segment key is set by collection name)
-     * @param {@function} callback - callback function
+	 * @returns {object} pipeline
     */
-    function getAggregatedData(collectionName, params, settings, callback) {
+    function createAggregatePipeline(params, settings) {
         settings = settings || {};
-        var app_id = settings.app_id;
         var pipeline = [];
         var period = params.qstring.period || '30days';
 
@@ -503,7 +501,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             if (settings.levels.daily[i] === 'd' || settings.levels.daily[i] === "scr") {
                 pulling_attributes[settings.levels.daily[i] + "-calc"] = { $cond: [ { $or: [{$eq: ["$t", 0]}, {$eq: ['$' + settings.levels.daily[i], 0]}]}, 0, {'$divide': ['$' + settings.levels.daily[i], "$t"]}] } ;
             }
-            pulling_attributes[settings.levels.daily[i]] = "$" + settings.levels.daily[i];
+            pulling_attributes[settings.levels.daily[i]] = {"$ifNull": ["$" + settings.levels.daily[i], 0]};
         }
         if (calcUvalue.length > 0 && calcUvalue2.length > 0) {
             pulling_attributes.uvalue = {$max: ["$n", {$min: [calcUvalue[0], calcUvalue2[0], "$t"]}]};
@@ -513,6 +511,23 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         pipeline.push({$project: pulling_attributes});
 
+        return pipeline;
+    }
+
+
+    /** function return calculated totals for given period. Used in table tata
+     * @param {string} collectionName - collection name from where to select
+     * @param {object} params  -  params object(passed from request).
+     * @param {string} params.qstring.app_id - app id
+     * @param {string} params.qstring.period - period
+     * @param {object} settings - settings for select
+     * @param {string} settings.segmentVal - segment value. (Segment key is set by collection name)
+     * @param {@function} callback - callback function
+    */
+    function getAggregatedData(collectionName, params, settings, callback) {
+        settings = settings || {};
+        var app_id = settings.app_id;
+        var pipeline = createAggregatePipeline(params, settings);
 
         if (settings.sortcol !== 'name') {
 
@@ -533,8 +548,31 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     as: "view_meta"
                 }
             });
-            pipeline.push({$facet: {data: facetLine, count: [{$count: 'count'}]}});
+            var project2 = {vw: true, uvalue: true, "view_meta": {"$first": "$view_meta"}};
+            for (let i = 0; i < settings.levels.daily.length; i++) {
+                project2[settings.levels.daily[i]] = "$" + settings.levels.daily[i];
+            }
 
+            facetLine.push({
+                "$project": project2
+            });
+
+
+            var project3 = {vw: true, uvalue: true};
+            for (let i = 0; i < settings.levels.daily.length; i++) {
+                project3[settings.levels.daily[i]] = "$" + settings.levels.daily[i];
+            }
+            project3.view = "$view_meta.view";
+            project3.display = {"$ifNull": ["$view_meta.display", "$view_meta.view"]};
+            project3.url = "$view_meta.url";
+
+
+            facetLine.push({
+                "$project": project3
+            });
+
+
+            pipeline.push({$facet: {data: facetLine, count: [{$count: 'count'}]}});
             common.db.collection(collectionName).aggregate(pipeline, {allowDiskUse: true}, function(err, res) {
                 var cn = 0;
                 var data = [];
@@ -582,13 +620,105 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 var sortby;
                 var startPos = 0;
                 var dataLength = 0;
-                var sortcol = "";
+                var sortcol = "t";
+                var selOptions;
+                var columns;
                 var query = [];
+                if (params.qstring.action === "getExportQuery") {
+                    colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
+                    var settingsList = [ 'u', 'n', 't', 'd', 's', 'e', 'b', 'scr'];
+                    columns = ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'scr'];
+                    selOptions = {app_id: params.qstring.app_id, sortby: sortby, sortcol: sortcol, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "scr"], monthly: ["u", "t", "s", "b", "e", "d", "n", "scr"]}};
+                    sortby = {$sort: {"t": -1}};
+                    if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
+                        sortby.$sort = {};
+                        sortcol = columns[parseInt(params.qstring.iSortCol_0, 10)];
+
+                        if (sortcol === "d" || sortcol === "scr") {
+                            if (params.qstring.sSortDir_0 === "asc") {
+                                sortby.$sort[sortcol + "-calc"] = 1;
+                            }
+                            else {
+                                sortby.$sort[sortcol + "-calc"] = -1;
+                            }
+                        }
+                        else if (sortcol === "u") {
+                            if (params.qstring.sSortDir_0 === "asc") {
+                                sortby.$sort.u = 1;
+                            }
+                            else {
+                                sortby.$sort.u = -1;
+                            }
+                        }
+                        else if (sortcol === "name") {
+                            if (params.qstring.sSortDir_0 === "asc") {
+                                sortby.$sort.display = 1;
+                            }
+                            else {
+                                sortby.$sort.display = -1;
+                            }
+                        }
+                        else {
+                            if (params.qstring.sSortDir_0 === "asc") {
+                                sortby.$sort[sortcol] = 1;
+                            }
+                            else {
+                                sortby.$sort[sortcol] = -1;
+                            }
+                        }
+                    }
+
+                    var pipeline = createAggregatePipeline(params, selOptions);
+                    pipeline.push({
+                        $lookup: {
+                            from: "app_viewsmeta" + params.qstring.app_id,
+                            localField: "_id",
+                            foreignField: "_id",
+                            as: "view_meta"
+                        }
+                    });
+                    var project2 = {_id: {"$toString": "$_id"}, uvalue: true, "view_meta": {"$first": "$view_meta"}};
+                    for (let i = 0; i < settingsList.length; i++) {
+                        if (settingsList[i] === "scr") {
+                            project2[settingsList[i]] = "$" + settingsList[i] + "-calc";
+                        }
+                        else if (settingsList[i] === "u") {
+                            project2[settingsList[i]] = "$uvalue";
+                        }
+                        else {
+                            project2[settingsList[i]] = "$" + settingsList[i];
+                        }
+                    }
+
+
+                    pipeline.push({"$project": project2});
+
+                    var project3 = {};
+                    for (let i = 0; i < settingsList.length; i++) {
+                        project3[settingsList[i]] = "$" + settingsList[i];
+                    }
+                    project3.view = "$view_meta.view";
+                    project3.display = {"$ifNull": ["$view_meta.display", "$view_meta.view"]};
+                    project3.url = "$view_meta.url";
+
+
+                    pipeline.push({
+                        "$project": project3
+                    });
+                    pipeline.push(sortby);
+
+                    var pp = {"_id": true, "view": true, "url": true, "display": true};
+                    for (let i = 0; i < settingsList.length; i++) {
+                        pp[settingsList[i]] = true;
+                    }
+
+                    common.returnOutput(params, {db: "countly", "pipeline": pipeline, "collection": colName, "projection": pp});
+
+                }
                 if (params.qstring.action === 'getTable') {
                     colName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
-                    var columns = ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'scr'];
+                    columns = ['name', 'u', 'n', 't', 'd', 's', 'e', 'b', 'scr'];
                     sortby = {$sort: {"t": -1}};
-                    sortcol = "t";
                     if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0) {
                         sortby.$sort = {};
                         sortcol = columns[parseInt(params.qstring.iSortCol_0, 10)];
@@ -635,7 +765,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     }
                     //var rightNow = Date.now();
 
-                    var selOptions = {app_id: params.qstring.app_id, startPos: startPos, dataLength: dataLength, sortby: sortby, sortcol: sortcol, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "scr"], monthly: ["u", "t", "s", "b", "e", "d", "n", "scr"]}};
+                    selOptions = {app_id: params.qstring.app_id, startPos: startPos, dataLength: dataLength, sortby: sortby, sortcol: sortcol, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["u", "t", "s", "b", "e", "d", "n", "scr"], monthly: ["u", "t", "s", "b", "e", "d", "n", "scr"]}};
 
                     if (sortcol === 'name' || (params.qstring.sSearch && params.qstring.sSearch !== "")) {
                         selOptions.count_query = {};
@@ -1930,8 +2060,14 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         }
                         dati[z].u = dati[z].uvalue || dati[z].u;
                         dati[z].views = dati[z]._id;
-                        if (dati[z].view_meta && dati[z].view_meta[0] && dati[z].view_meta[0].view) {
-                            dati[z].views = dati[z].view_meta[0].display || dati[z].view_meta[0].view;
+                        if (dati[z].view_meta && dati[z].view_meta[0]) {
+                            if (dati[z].view_meta[0].view) {
+                                dati[z].views = dati[z].view_meta[0].view;
+                            }
+
+                            if (dati[z].view_meta[0].display) {
+                                dati[z].views = dati[z].view_meta[0].display;
+                            }
                         }
                     }
                     if (dati) {
