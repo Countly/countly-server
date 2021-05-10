@@ -15,7 +15,7 @@ class PingJob extends job.Job {
      * @param {done} done callback
      */
     run(db, done) {
-        request({strictSSL: false, uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + "/configs"}, function() {});
+        request({strictSSL: false, uri: (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + "/configs"}, function() {});
         var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
         var url = "https://count.ly/configurations/ce/tracking";
         if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
