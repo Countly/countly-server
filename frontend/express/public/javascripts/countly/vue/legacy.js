@@ -17,8 +17,6 @@
         }, {});
     };
 
-    var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6})$', 'i');
-
     /*
         Legacy layout components start here
     */
@@ -64,70 +62,6 @@
     /*
         Legacy input components start here
     */
-
-    Vue.component("cly-colorpicker", countlyBaseComponent.extend({
-        mixins: [
-            _mixins.i18n
-        ],
-        props: {
-            value: {type: [String, Object], default: "#FFFFFF"},
-            resetValue: { type: [String, Object], default: "#FFFFFF"}
-        },
-        data: function() {
-            return {
-                isOpened: false
-            };
-        },
-        computed: {
-            previewStyle: function() {
-                return {
-                    "background-color": this.value
-                };
-            },
-            localValue: {
-                get: function() {
-                    return this.value.replace("#", "");
-                },
-                set: function(value) {
-                    var colorValue = "#" + value.replace("#", "");
-                    if (colorValue.match(HEX_COLOR_REGEX)) {
-                        this.setColor({hex: colorValue});
-                    }
-                }
-            }
-        },
-        methods: {
-            setColor: function(color) {
-                this.$emit("input", color.hex);
-            },
-            reset: function() {
-                this.setColor({hex: this.resetValue});
-            },
-            open: function() {
-                this.isOpened = true;
-            },
-            close: function() {
-                this.isOpened = false;
-            }
-        },
-        components: {
-            picker: window.VueColor.Sketch
-        },
-        template: '<div class="cly-vue-colorpicker">\n' +
-                        '<div @click.stop="open">\n' +
-                            '<div class="preview-box" :style="previewStyle"></div>\n' +
-                            '<input class="preview-input" type="text" v-model="localValue" />\n' +
-                        '</div>\n' +
-                        '<div class="picker-body" v-if="isOpened" v-click-outside="close">\n' +
-                            '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
-                            '<div class="button-controls">\n' +
-                                '<cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
-                                '<cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
-                                '<cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green"></cly-button>\n' +
-                            '</div>\n' +
-                        '</div>\n' +
-                      '</div>'
-    }));
 
     Vue.component("cly-radio", countlyBaseComponent.extend(
         // @vue/component
@@ -706,51 +640,6 @@
 
     /*
         Legacy input components end here
-    */
-
-    /*
-        Legacy helper components start here
-    */
-
-    Vue.component("cly-diff-helper", countlyBaseComponent.extend({
-        mixins: [
-            _mixins.i18n
-        ],
-        props: {
-            diff: {
-                type: Array
-            },
-        },
-        computed: {
-            hasDiff: function() {
-                return this.diff.length > 0;
-            },
-            madeChanges: function() {
-                return this.i18n("common.diff-helper.changes", this.diff.length);
-            }
-        },
-        methods: {
-            save: function() {
-                this.$emit("save");
-            },
-            discard: function() {
-                this.$emit("discard");
-            }
-        },
-        template: '<div class="cly-vue-diff-helper" v-if="hasDiff">\n' +
-                            '<div class="message">\n' +
-                                '<span class="text-dark">{{madeChanges}}</span>\n' +
-                                '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\n' +
-                            '</div>\n' +
-                            '<div class="buttons">\n' +
-                                '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
-                               '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>\n' +
-                            '</div>\n' +
-                        '</div>'
-    }));
-
-    /*
-        Legacy helper components end here
     */
 
     /*

@@ -3,6 +3,71 @@
 (function(countlyVue) {
 
     var _mixins = countlyVue.mixins;
+    var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6})$', 'i');
+
+    Vue.component("cly-colorpicker", countlyVue.components.BaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            value: {type: [String, Object], default: "#FFFFFF"},
+            resetValue: { type: [String, Object], default: "#FFFFFF"}
+        },
+        data: function() {
+            return {
+                isOpened: false
+            };
+        },
+        computed: {
+            previewStyle: function() {
+                return {
+                    "background-color": this.value
+                };
+            },
+            localValue: {
+                get: function() {
+                    return this.value.replace("#", "");
+                },
+                set: function(value) {
+                    var colorValue = "#" + value.replace("#", "");
+                    if (colorValue.match(HEX_COLOR_REGEX)) {
+                        this.setColor({hex: colorValue});
+                    }
+                }
+            }
+        },
+        methods: {
+            setColor: function(color) {
+                this.$emit("input", color.hex);
+            },
+            reset: function() {
+                this.setColor({hex: this.resetValue});
+            },
+            open: function() {
+                this.isOpened = true;
+            },
+            close: function() {
+                this.isOpened = false;
+            }
+        },
+        components: {
+            picker: window.VueColor.Sketch
+        },
+        template: '<div class="cly-vue-colorpicker">\n' +
+                        '<div @click.stop="open">\n' +
+                            '<div class="preview-box" :style="previewStyle"></div>\n' +
+                            '<input class="preview-input" type="text" v-model="localValue" />\n' +
+                        '</div>\n' +
+                        '<div class="picker-body" v-if="isOpened" v-click-outside="close">\n' +
+                            '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
+                            '<div class="button-controls">\n' +
+                                '<cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
+                                '<cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
+                                '<cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green"></cly-button>\n' +
+                            '</div>\n' +
+                        '</div>\n' +
+                      '</div>'
+    }));
 
     Vue.component("cly-dropzone", window.vue2Dropzone);
 
