@@ -1,4 +1,4 @@
-/* global window, Vue, countlyCommon, _, VueECharts */
+/* global Vue, countlyCommon, _, VueECharts */
 
 (function(countlyVue) {
 

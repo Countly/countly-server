@@ -1,4 +1,4 @@
-/* global jQuery, Vue, ELEMENT, window */
+/* global jQuery, Vue, ELEMENT */
 
 (function(countlyVue) {
 

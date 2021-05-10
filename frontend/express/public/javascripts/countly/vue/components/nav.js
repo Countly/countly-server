@@ -1,4 +1,4 @@
-/* global Vue, Backbone, window */
+/* global Vue, Backbone */
 
 (function(countlyVue) {
 

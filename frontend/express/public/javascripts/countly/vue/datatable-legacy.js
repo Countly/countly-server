@@ -1,4 +1,4 @@
-/* global jQuery, Vue, moment, countlyCommon, countlyGlobal, CountlyHelpers, _, window */
+/* global jQuery, Vue, moment, countlyCommon, countlyGlobal, CountlyHelpers, _ */
 
 (function(countlyVue, $) {
 

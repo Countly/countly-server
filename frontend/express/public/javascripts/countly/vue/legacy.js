@@ -1,4 +1,4 @@
-/* global Vue, window, jQuery, _, countlyCommon, setTimeout*/
+/* global Vue, jQuery, _, countlyCommon*/
 
 (function(countlyVue, $) {
 

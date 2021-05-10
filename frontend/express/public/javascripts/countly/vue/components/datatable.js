@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _, window, localStorage */
+/* global jQuery, Vue, _ */
 
 (function(countlyVue) {
 

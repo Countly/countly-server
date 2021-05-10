@@ -1,4 +1,4 @@
-/* global Vue, ELEMENT, moment, countlyCommon, _, CV, window */
+/* global Vue, ELEMENT, moment, countlyCommon, _, CV */
 
 (function(countlyVue) {
 
