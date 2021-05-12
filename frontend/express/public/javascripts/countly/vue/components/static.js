@@ -9,9 +9,19 @@
             template: CV.T('/javascripts/countly/vue/templates/sidebar.html'),
             mixins: [
                 countlyVue.container.mixin({
-                    "categories": "/sidebar/menuCategory"
+                    "categories": "/sidebar/menuCategory",
+                    "menus": "/sidebar/menu",
+                    // "submenus": "/sidebar/submenu"
                 })
-            ]
+            ],
+            computed: {
+                categorizedMenus: function() {
+                    return this.menus.reduce(function(acc, val) {
+                        (acc[val.category] = acc[val.category] || []).push(val);
+                        return acc;
+                    }, {});
+                }
+            }
         });
 
         new Vue({

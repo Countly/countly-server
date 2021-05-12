@@ -1,3 +1,12 @@
 <div>
-    <a style="color:red" href="#" v-for="(item, idx) in categories">{{item.title}}</a>
+    <a style="color:red" href="#" v-for="(cat, idx) in categories">
+        {{cat.title}}
+        <ul>
+            <li v-for="(menu, idx) in categorizedMenus[cat.name]">
+                <a style="color:red" href="#">
+                    {{menu.title}}
+                </a>
+            </li>
+        </ul>
+    </a>
 </div>
