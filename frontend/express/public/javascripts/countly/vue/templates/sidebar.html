@@ -1,4 +1,4 @@
-<div class="sidebar-x">
+<div class="sidebar-x" style="position: fixed;left: 0;width: 224px;background-color: #0B131A;height: 100%;z-index: 998;user-select: none;color: white;overflow-y: scroll;top: 59px;">
     <ul>
         <li v-for="(cat, idx) in categories">
             <a href="#">
@@ -9,7 +9,7 @@
                             {{menu.title}}
                         </a>
                         <ul>
-                            <li v-for="(submenu, idx) in categorizedSubmenus[menu.code]">
+                            <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
                                 <a :href="submenu.url">
                                     {{submenu.title}}
                                 </a>
