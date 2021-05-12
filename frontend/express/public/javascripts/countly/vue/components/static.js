@@ -15,15 +15,30 @@
                 })
             ],
             computed: {
+                activeApp: function() {
+                    return this.$store.state.countlyCommon.activeApp;
+                },
                 categorizedMenus: function() {
+                    if (!this.activeApp) {
+                        return {};
+                    }
+                    var self = this;
                     return this.menus.reduce(function(acc, val) {
-                        (acc[val.category] = acc[val.category] || []).push(val);
+                        if (val.app_type === self.activeApp.type) {
+                            (acc[val.category] = acc[val.category] || []).push(val);
+                        }
                         return acc;
                     }, {});
                 },
                 categorizedSubmenus: function() {
+                    if (!this.activeApp) {
+                        return {};
+                    }
+                    var self = this;
                     return this.submenus.reduce(function(acc, val) {
-                        (acc[val.parent_code] = acc[val.parent_code] || []).push(val);
+                        if (val.app_type === self.activeApp.type) {
+                            (acc[val.parent_code] = acc[val.parent_code] || []).push(val);
+                        }
                         return acc;
                     }, {});
                 }
