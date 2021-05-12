@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal */
 
 (function(countlyVue, $) {
 
@@ -77,7 +77,8 @@
                 namespaced: true,
                 state: {
                     period: countlyCommon.getPeriod(),
-                    periodLabel: countlyCommon.getDateRangeForCalendar()
+                    periodLabel: countlyCommon.getDateRangeForCalendar(),
+                    activeApp: null
                 },
                 getters: {
                     period: function(state) {
@@ -93,16 +94,31 @@
                     },
                     setPeriodLabel: function(state, periodLabel) {
                         state.periodLabel = periodLabel;
+                    },
+                    setActiveApp: function(state, activeApp) {
+                        state.activeApp = activeApp;
                     }
                 },
                 actions: {
                     updatePeriod: function(context, obj) {
                         context.commit("setPeriod", obj.period);
                         context.commit("setPeriodLabel", obj.label);
+                    },
+                    updateActiveApp: function(context, id) {
+                        var appObj = countlyGlobal.apps[id];
+                        if (appObj) {
+                            context.commit("setActiveApp", Object.freeze(JSON.parse(JSON.stringify(appObj))));
+                        }
                     }
                 }
             }
         }
+    });
+
+    $(document).ready(function() {
+        app.addAppSwitchCallback(function(appId) {
+            _globalVuexStore.dispatch("countlyCommon/updateActiveApp", appId);
+        });
     });
 
     var _uniqueCopiedStoreId = 0;
