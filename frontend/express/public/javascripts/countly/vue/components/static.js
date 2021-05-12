@@ -11,13 +11,19 @@
                 countlyVue.container.mixin({
                     "categories": "/sidebar/menuCategory",
                     "menus": "/sidebar/menu",
-                    // "submenus": "/sidebar/submenu"
+                    "submenus": "/sidebar/submenu"
                 })
             ],
             computed: {
                 categorizedMenus: function() {
                     return this.menus.reduce(function(acc, val) {
                         (acc[val.category] = acc[val.category] || []).push(val);
+                        return acc;
+                    }, {});
+                },
+                categorizedSubmenus: function() {
+                    return this.submenus.reduce(function(acc, val) {
+                        (acc[val.parent_code] = acc[val.parent_code] || []).push(val);
                         return acc;
                     }, {});
                 }

@@ -1028,6 +1028,24 @@ var AppRouter = Backbone.Router.extend({
             node.callback(app_type, parent_code, node, menu);
         }
 
+        //New sidebar container hook
+        countlyVue.container.register("/sidebar/submenu", {
+            app_type: app_type,
+            parent_code: parent_code,
+            name: node.code,
+            priority: node.priority,
+            title: jQuery.i18n.map[node.text] || node.text,
+            url: node.url,
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
+
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback
+            */
+        });
     },
     /**
     * Add first level menu element for all app types and special categories. 
