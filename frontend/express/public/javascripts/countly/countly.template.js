@@ -1,4 +1,4 @@
-/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyTaskManager*/
+/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyTaskManager, countlyVue*/
 /**
 * Default Backbone View template from which all countly views should inherit.
 * A countly view is defined as a page corresponding to a url fragment such
@@ -742,6 +742,22 @@ var AppRouter = Backbone.Router.extend({
         if (typeof node.callback === "function") {
             node.callback(category, node, menu);
         }
+
+        //New sidebar container hook
+        countlyVue.container.register("/sidebar/menuCategory", {
+            name: category,
+            priority: node.priority,
+            title: node.text || countlyVue.i18n("sidebar.category." + category),
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
+
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback 
+            */
+        });
     },
     updateLongTaskViewsNofification: function(appChanged) {
         countlyTaskManager.getLastReports(function(data) {
