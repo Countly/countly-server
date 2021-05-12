@@ -1,19 +1,23 @@
-<div>
-    <a href="#" v-for="(cat, idx) in categories">
-        {{cat.title}}
-        <ul>
-            <li v-for="(menu, idx) in categorizedMenus[cat.name]">
-                <a :href="menu.url">
-                    {{menu.title}}
-                </a>
+<div class="sidebar-x">
+    <ul>
+        <li v-for="(cat, idx) in categories">
+            <a href="#">
+                {{cat.title}}
                 <ul>
-                    <li v-for="(submenu, idx) in categorizedSubmenus[menu.code]">
-                        <a :href="submenu.url">
-                            {{submenu.title}}
+                    <li v-for="(menu, idx) in categorizedMenus[cat.name]">
+                        <a :href="menu.url">
+                            {{menu.title}}
                         </a>
+                        <ul>
+                            <li v-for="(submenu, idx) in categorizedSubmenus[menu.code]">
+                                <a :href="submenu.url">
+                                    {{submenu.title}}
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
-            </li>
-        </ul>
-    </a>
+            </a>
+        </li>
+    </ul>
 </div>
