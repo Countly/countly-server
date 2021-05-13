@@ -4,10 +4,10 @@
             <a href="#">{{cat.title}}
                 <ul>
                     <li v-for="(menu, idx) in categorizedMenus[cat.name]">
-                        <a :href="menu.url">{{menu.title}}</a>
+                        <a :href="menu.url">{{i18n(menu.title)}}</a>
                         <ul>
                             <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
-                                <a :href="submenu.url">{{submenu.title}}</a>
+                                <a :href="submenu.url">{{i18n(submenu.title)}}</a>
                             </li>
                         </ul>
                     </li>
