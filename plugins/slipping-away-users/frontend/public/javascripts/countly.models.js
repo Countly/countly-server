@@ -53,13 +53,13 @@
                     });
             },
             onFetchInit: function(context) {
-                context.commit('fetchInit');
+                context.commit('setFetchInit');
             },
             onFetchError: function(context, error) {
-                context.commit('fetchError', error);
+                context.commit('setFetchError', error);
             },
             onFetchSuccess: function(context) {
-                context.commit('fetchSuccess');
+                context.commit('setFetchSuccess');
             },
             onSetSlippingAwayUsersFilters: function(context, filters) {
                 context.commit('setSlippingAwayUsersFilters', filters);
@@ -73,17 +73,17 @@
             setSlippingAwayUsersFilters: function(state, value) {
                 state.slippingAwayUsersFilters = value;
             },
-            fetchInit: function(state) {
+            setFetchInit: function(state) {
                 state.isLoading = true;
                 state.hasError = false;
                 state.error = null;
             },
-            fetchError: function(state, error) {
+            setFetchError: function(state, error) {
                 state.isLoading = false;
                 state.hasError = true;
                 state.error = error;
             },
-            fetchSuccess: function(state) {
+            setFetchSuccess: function(state) {
                 state.isLoading = false;
                 state.hasError = false;
                 state.error = null;
