@@ -64,48 +64,11 @@
         }
     };
 
-    var BaseContentMixin = countlyBaseComponent.extend(
-        // @vue/component
-        {
-            inheritAttrs: false,
-            mixins: [
-                _mixins.i18n
-            ],
-            props: {
-                name: { type: String, default: null},
-                id: { type: String, default: null },
-                alwaysMounted: { type: Boolean, default: true },
-                alwaysActive: { type: Boolean, default: false },
-                role: { type: String, default: "default" }
-            },
-            data: function() {
-                return {
-                    isContent: true
-                };
-            },
-            computed: {
-                isActive: function() {
-                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
-                },
-                tName: function() {
-                    return this.name;
-                },
-                tId: function() {
-                    return this.id;
-                },
-                elementId: function() {
-                    return this.componentId + "-" + this.id;
-                }
-            }
-        }
-    );
-
     var _mixins = {
         'autoRefresh': autoRefreshMixin,
         'refreshOnParentActive': refreshOnParentActiveMixin,
         'i18n': i18nMixin,
-        'commonFormatters': commonFormattersMixin,
-        'BaseContent': BaseContentMixin
+        'commonFormatters': commonFormattersMixin
     };
 
     var _globalVuexStore = new Vuex.Store({
@@ -384,6 +347,42 @@
         }
     );
 
+    var BaseContentMixin = countlyBaseComponent.extend(
+        // @vue/component
+        {
+            inheritAttrs: false,
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                name: { type: String, default: null},
+                id: { type: String, default: null },
+                alwaysMounted: { type: Boolean, default: true },
+                alwaysActive: { type: Boolean, default: false },
+                role: { type: String, default: "default" }
+            },
+            data: function() {
+                return {
+                    isContent: true
+                };
+            },
+            computed: {
+                isActive: function() {
+                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
+                },
+                tName: function() {
+                    return this.name;
+                },
+                tId: function() {
+                    return this.id;
+                },
+                elementId: function() {
+                    return this.componentId + "-" + this.id;
+                }
+            }
+        }
+    );
+
     var templateUtil = {
         stage: function(fileName) {
             return {
@@ -417,6 +416,8 @@
             };
         };
     };
+
+    _mixins.BaseContent = BaseContentMixin;
 
     var _components = {
         BaseComponent: countlyBaseComponent,
