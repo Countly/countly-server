@@ -2,44 +2,7 @@
 
 (function(countlyVue) {
 
-    var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins;
-
-    var BaseContentMixin = countlyBaseComponent.extend(
-        // @vue/component
-        {
-            inheritAttrs: false,
-            mixins: [
-                _mixins.i18n
-            ],
-            props: {
-                name: { type: String, default: null},
-                id: { type: String, default: null },
-                alwaysMounted: { type: Boolean, default: true },
-                alwaysActive: { type: Boolean, default: false },
-                role: { type: String, default: "default" }
-            },
-            data: function() {
-                return {
-                    isContent: true
-                };
-            },
-            computed: {
-                isActive: function() {
-                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
-                },
-                tName: function() {
-                    return this.name;
-                },
-                tId: function() {
-                    return this.id;
-                },
-                elementId: function() {
-                    return this.componentId + "-" + this.id;
-                }
-            }
-        }
-    );
+    var countlyBaseComponent = countlyVue.components.BaseComponent;
 
     Vue.component("cly-header", countlyBaseComponent.extend({
         props: {
@@ -114,7 +77,5 @@
                         </div>\
                     </div>'
     }));
-
-    countlyVue.mixins.BaseContent = BaseContentMixin;
 
 }(window.countlyVue = window.countlyVue || {}));
