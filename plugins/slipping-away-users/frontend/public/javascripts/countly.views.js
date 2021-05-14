@@ -1,6 +1,6 @@
 /*global app, countlySlippingAwayUsers, countlyVue, $, CV */
 //TODO-LA: Use query builder component with modal when it becomes available
-var SlippingAwayUsersFilter = countlyVue.components.BaseComponent.extend({
+var SlippingAwayUsersFilter = countlyVue.views.BaseView.extend({
     template: "#slipping-away-users-filter",
     computed: {
         slippingAwayUsersFilters: {
@@ -19,7 +19,7 @@ var SlippingAwayUsersFilter = countlyVue.components.BaseComponent.extend({
     }
 });
 
-var SlippingAwayUsersBarChart = countlyVue.components.BaseComponent.extend({
+var SlippingAwayUsersBarChart = countlyVue.views.BaseView.extend({
     template: "#slipping-away-users-bar-chart",
     data: function() {
         return {};
@@ -77,9 +77,8 @@ var SlippingAwayUsersBarChart = countlyVue.components.BaseComponent.extend({
     }
 });
 
-var SlippingAwayUsersTable = countlyVue.components.BaseComponent.extend({
+var SlippingAwayUsersTable = countlyVue.views.BaseView.extend({
     template: "#slipping-away-users-table",
-    mixins: [countlyVue.mixins.i18n],
     data: function() {
         return {
             progressbarColor: "#F96300",
@@ -107,9 +106,8 @@ var SlippingAwayUsersTable = countlyVue.components.BaseComponent.extend({
     }
 });
 
-var SlippingAwayUsersPage = countlyVue.components.BaseComponent.extend({
-    mixins: [countlyVue.mixins.i18n],
-    template: "#slipping-away-users-page",
+var SlippingAwayUsersView = countlyVue.views.BaseView.extend({
+    template: "#slipping-away-users",
     components: {
         "slipping-away-users-filter": SlippingAwayUsersFilter,
         "slipping-away-users-bar-chart": SlippingAwayUsersBarChart,
@@ -131,10 +129,10 @@ var vuex = [{
 
 app.route("/analytics/slipping-away", "slipping-away", function() {
     var slippingAwayUsersView = new countlyVue.views.BackboneWrapper({
-        component: SlippingAwayUsersPage,
+        component: SlippingAwayUsersView,
         vuex: vuex,
         templates: [
-            "/slipping-away-users/templates/SlippingAwayUsersPage.html",
+            "/slipping-away-users/templates/SlippingAwayUsers.html",
             "/drill/templates/query.builder.v2.html"
         ]
     });

@@ -1,6 +1,7 @@
-/*global countlyCommon,jQuery,countlyVue*/
-(function(countlySlippingAwayUsers, $) {
+/*global countlyCommon,countlyVue,CV*/
+(function(countlySlippingAwayUsers) {
 
+    //TODO:move buildFilters inside query builder component
     countlySlippingAwayUsers.helpers = {
         buildFilters: function(filters) {
             var newQuery = {};
@@ -16,22 +17,16 @@
     };
 
     countlySlippingAwayUsers.service = {
-        fetchSlippingAwayUsers: function(filters, callback) {
-            $.ajax({
+        fetchSlippingAwayUsers: function(filters) {
+            return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/slipping",
                 data: {
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     method: 'slipping',
                     query: JSON.stringify(countlySlippingAwayUsers.helpers.buildFilters(filters))
-                },
-                success: function(json) {
-                    callback(null, json);
-                },
-                error: function(error) {
-                    callback(error, null);
                 }
-            });
+            }, {disableAutoCatch: true});
         }
     };
 
@@ -49,15 +44,13 @@
         var slippingAwayUsersActions = {
             fetchSlippingAwayUsers: function(context) {
                 context.dispatch('onFetchInit');
-                countlySlippingAwayUsers.service.fetchSlippingAwayUsers(context.state.slippingAwayUsersFilters, function(error, response) {
-                    if (error) {
-                        context.dispatch('onFetchError', error);
-                    }
-                    else {
+                countlySlippingAwayUsers.service.fetchSlippingAwayUsers(context.state.slippingAwayUsersFilters)
+                    .then(function(response) {
                         context.commit('setSlippingAwayUsers', response);
                         context.dispatch('onFetchSuccess');
-                    }
-                });
+                    }).catch(function(error) {
+                        context.dispatch('onFetchError', error);
+                    });
             },
             onFetchInit: function(context) {
                 context.commit('fetchInit');
@@ -103,4 +96,4 @@
             mutations: slippingAwayUsersMutations,
         });
     };
-}(window.countlySlippingAwayUsers = window.countlySlippingAwayUsers || {}, jQuery));
+}(window.countlySlippingAwayUsers = window.countlySlippingAwayUsers || {}));
