@@ -42,7 +42,7 @@
         };
 
         var slippingAwayUsersActions = {
-            fetchSlippingAwayUsers: function(context) {
+            fetchAll: function(context) {
                 context.dispatch('onFetchInit');
                 countlySlippingAwayUsers.service.fetchSlippingAwayUsers(context.state.slippingAwayUsersFilters)
                     .then(function(response) {

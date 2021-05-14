@@ -14,7 +14,7 @@ var SlippingAwayUsersFilter = countlyVue.views.BaseView.extend({
     },
     methods: {
         onApplyFilter: function() {
-            this.$store.dispatch("countlySlippingAwayUsers/fetchSlippingAwayUsers");
+            this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
         },
     }
 });
@@ -119,7 +119,7 @@ var SlippingAwayUsersView = countlyVue.views.BaseView.extend({
         };
     },
     mounted: function() {
-        this.$store.dispatch("countlySlippingAwayUsers/fetchSlippingAwayUsers");
+        this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
     }
 });
 
