@@ -857,7 +857,7 @@ var AppRouter = Backbone.Router.extend({
             category: category,
             name: node.code,
             priority: node.priority,
-            title: jQuery.i18n.map[node.text] || node.text,
+            title: node.text,
             url: node.url,
             icon: node.icon,
             node: node
@@ -975,7 +975,7 @@ var AppRouter = Backbone.Router.extend({
             parent_code: parent_code,
             name: node.code,
             priority: node.priority,
-            title: jQuery.i18n.map[node.text] || node.text,
+            title: node.text,
             url: node.url,
             node: node
             /*
