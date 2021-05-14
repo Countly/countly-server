@@ -14,14 +14,6 @@
                     "submenus": "/sidebar/submenu"
                 })
             ],
-            watch: {
-                'activeApp.type': function() {
-                    var self = this;
-                    this.$nextTick(function() {
-                        self.$forceUpdate();
-                    });
-                }
-            },
             computed: {
                 activeApp: function() {
                     return this.$store.state.countlyCommon.activeApp;

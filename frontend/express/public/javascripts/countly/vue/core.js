@@ -38,7 +38,10 @@
     // @vue/component
     var i18nMixin = {
         methods: {
-            i18n: _i18n
+            i18n: _i18n,
+            i18nM: function(key) {
+                return jQuery.i18n.map[key];
+            }
         }
     };
 
