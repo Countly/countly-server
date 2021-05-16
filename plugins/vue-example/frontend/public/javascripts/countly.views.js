@@ -377,20 +377,8 @@
                     ]
                 },
                 lineOptions: {
-                    title: {
-                        text: 'Lines'
-                    },
                     tooltip: {
                         trigger: 'axis'
-                    },
-                    legend: {
-                        data: ['A', 'B', 'C', 'D', 'E']
-                    },
-                    grid: {
-                        left: '3%',
-                        right: '4%',
-                        bottom: '3%',
-                        containLabel: true
                     },
                     toolbox: {
                         feature: {
@@ -401,44 +389,29 @@
                             saveAsImage: { show: true }
                         }
                     },
-                    xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        data: [0, 1, 3, 4, 5, 6]
-                    },
-                    yAxis: {
-                        type: 'value'
-                    },
+                    // xAxis: {
+                    //     data: [0, 1, 3, 4, 5, 6]
+                    // },
                     series: [
                         {
-                            name: 'A',
-                            type: 'line',
-                            stack: 'Value',
-                            data: [120, 132, 101, 134, 90, 230, 210]
+                            name: 'Series A',
+                            data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]]
                         },
                         {
-                            name: 'B',
-                            type: 'line',
-                            stack: 'Value',
-                            data: [220, 182, 191, 234, 290, 330, 310]
+                            name: 'Series B',
+                            data: [[0, 220], [1, 182], [2, 191], [3, 234], [4, 290], [5, 330], [6, 310]]
                         },
                         {
-                            name: 'C',
-                            type: 'line',
-                            stack: 'Value',
-                            data: [150, 232, 201, 154, 190, 330, 410]
+                            name: 'Series C',
+                            data: [[0, 150], [1, 232], [2, 201], [3, 154], [4, 190], [5, 330], [6, 410]]
                         },
                         {
-                            name: 'D',
-                            type: 'line',
-                            stack: 'Value',
-                            data: [320, 332, 301, 334, 390, 330, 320]
+                            name: 'Series D',
+                            data: [[0, 320], [1, 332], [2, 301], [3, 334], [4, 390], [5, 330], [6, 320]]
                         },
                         {
-                            name: 'E',
-                            type: 'line',
-                            stack: 'Value',
-                            data: [820, 932, 901, 934, 1290, 1330, 1320]
+                            name: 'Series E',
+                            data: [[0, 820], [1, 932], [2, 901], [3, 934], [4, 1290], [5, 1330], [6, 1320]]
                         }
                     ]
                 },
