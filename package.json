@@ -57,7 +57,7 @@
     "grunt-contrib-sass": "^2.0.0",
     "grunt-contrib-uglify": "5.0.0",
     "jimp": "0.16.1",
-    "jsdoc": "3.6.6",
+    "jsdoc": "3.6.7",
     "json2csv": "5.0.6",
     "json2xls": "^0.1.2",
     "later": "^1.2.0",
