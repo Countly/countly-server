@@ -113,6 +113,7 @@
         - series-line. sampling : To improve performance
         - series-line. dimensions : Used in tooltips
         - series-line. encode
+        - series-line. areaStyle : Will simply create an area chart
         - series-line. data
             Example - Sample data -
                         [
@@ -155,6 +156,9 @@
                             showMaxLabel: false,
                             fontSize: 14,
                             fontFamily: "Inter"
+                        },
+                        splitLine: {
+                            show: false
                         }
                     },
                     yAxis: {
@@ -425,31 +429,8 @@
                         If xAxis.data is not provided,
                         create xAxis.data automatically
                     */
-                    var xAxisData = [];
-                    var seriesData = opt.series[0].data; //Since all series will have same xAxis
-                    var dataIsObject = typeof seriesData === "object" && !Array.isArray(seriesData);
-                    var dataItems = dataIsObject ? seriesData.value : seriesData;
 
-                    if ((Array.isArray(dataItems[0]) || typeof dataItems[0] === "object")) {
-                        /*
-                            Enter this conidtion only if series data is array of array or it is an object
-                            -   Push the first entry from each item the series data array to xAxis.data
-                            -   Or push the first entry from each item of the series data.value
-                        */
-
-                        for (var j = 0; j < seriesData.length; j++) {
-                            if (Array.isArray(seriesData[j])) {
-                                //dataItem is an array
-                                xAxisData.push(seriesData[j][0]);
-                            }
-                            else {
-                                //dataItem is an object, hence its values are in 'value' stored in array
-                                xAxisData.push(seriesData[j].value[0]);
-                            }
-                        }
-
-                        opt.xAxis.data = xAxisData;
-                    }
+                    opt.xAxis.data = [];
                 }
 
                 return opt;
