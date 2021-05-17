@@ -3,19 +3,19 @@
         <!-- <cly-chart class="chart" :option="pieOptions" style="height: 400px;" :autoresize="true"></cly-chart> -->
     </cly-section>
     <cly-section title="Time Graph">
-        <!-- <cly-chart-time class="chart" :option="largeScaleOptions" :height="500" :autoresize="true"></cly-chart-time> -->
+        <cly-chart-time :option="largeScaleOptions" :height="500"></cly-chart-time>
     </cly-section>
     <cly-section title="Bar Chart">
         <!-- <cly-chart class="chart" :option="barOptions" style="height: 400px;" :autoresize="true"></cly-chart> -->
     </cly-section>
     <cly-section title="Line Chart">
-        <cly-chart-line :option="lineOptions" :height="500" :showZoom="true">
-            <template v-slot:chart-left>
+        <cly-chart-line :option="lineOptions" :height="500">
+            <!-- <template v-slot:chart-left>
                 <el-select>
                     <el-option :key="item.value" :value="item.value" :label="item.name"
                         v-for="item in []"></el-option>
                 </el-select>
-            </template>
+            </template> -->
         </cly-chart-line>
     </cly-section>
 </div>

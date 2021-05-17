@@ -215,7 +215,82 @@
                     smooth: false
                 }
             };
-        }
+        },
+        computed: {
+            mergedOption: function() {
+                var opt = _merge({}, this.baseOptions, this.baseLineOptions, this.option);
+
+                var xAxisData = [];
+                var legendData = [];
+
+                var series = JSON.parse(JSON.stringify(opt.series || []));
+                for (var i = 0; i < series.length; i++) {
+                    series[i] = _merge({}, this.seriesOptions, series[i]);
+                    var seriesData = series[i].data;
+                    var dataIsObject = typeof seriesData === "object" && !Array.isArray(seriesData);
+                    var dataItems = dataIsObject ? seriesData.value : seriesData;
+
+                    if (!opt.xAxis.data && (Array.isArray(dataItems[0]) || typeof dataItems[0] === "object")) {
+                        /*
+                            If xAxis.data is not provided and
+                            series data is array of array or it is an object
+                            -   Push the first entry from each item the series data array to xAxis.data
+                            -   Or push the first entry from each item of the series data.value
+                            -   P.S. This loop only runs once and thats what we want,
+                                because x-axis will be same for all series
+                        */
+
+                        for (var j = 0; j < series[i].data.length; j++) {
+                            if (Array.isArray(series[i].data[j])) {
+                                //dataItem is an array
+                                xAxisData.push(series[i].data[j][0]);
+                            }
+                            else {
+                                //dataItem is an object, hence its values are in 'value' stored in array
+                                xAxisData.push(series[i].data[j].value[0]);
+                            }
+                        }
+
+                        opt.xAxis.data = xAxisData;
+                    }
+
+                    legendData.push(series[i].name);
+                }
+
+                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                opt.series = series;
+
+                return opt;
+            }
+        },
+        template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
+                        <div class="bu-column bu-is-10 cly-vue-line-chart__header-left">\
+                            <div class="bu-level">\
+                                <div class="bu-level-left">\
+                                    <div class="bu-level-item">\
+                                        <slot name="chart-left">\
+                                        </slot>\
+                                    </div>\
+                                    <div class="bu-level-item" v-if="showZoom">\
+                                        <cly-vue-chart-zoom-dropdown :echart="echart"></cly-vue-chart-zoom-dropdown>\
+                                    </div>\
+                                </div>\
+                                <div class="bu-level-right">\
+                                    <slot name="chart-right">\
+                                    </slot>\
+                                </div>\
+                            </div>\
+                        </div>\
+                        <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
+                            <echarts\
+                                ref="echarts"\
+                                v-bind="$attrs"\
+                                v-on="$listeners"\
+                                :option="mergedOption"\
+                                :autoresize="autoresize">\
+                            </echarts>\
+                        </div>\
+                    </div>'
     });
 
     Vue.component("cly-vue-chart-zoom-dropdown", countlyBaseComponent.extend({
@@ -300,143 +375,25 @@
     }));
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
-        computed: {
-            mergedOption: function() {
-                var opt = _merge({}, this.baseOptions, this.baseLineOptions, this.internalOption, this.option);
-
-                var xAxisData = [];
-                var legendData = [];
-
-                var series = JSON.parse(JSON.stringify(opt.series || []));
-                for (var i = 0; i < series.length; i++) {
-                    series[i] = _merge({}, this.seriesOptions, series[i]);
-                    var seriesData = series[i].data;
-                    var dataIsObject = typeof seriesData === "object" && !Array.isArray(seriesData);
-                    var dataItems = dataIsObject ? seriesData.value : seriesData;
-
-                    if (!opt.xAxis.data && (Array.isArray(dataItems[0]) || typeof dataItems[0] === "object")) {
-                        /*
-                            If xAxis.data is not provided and
-                            series data is array of array or it is an object
-                            -   Push the first entry from each item the series data array to xAxis.data
-                            -   Or push the first entry from each item of the series data.value
-                            -   P.S. This loop only runs once and thats what we want,
-                                because x-axis will be same for all series
-                        */
-
-                        for (var j = 0; j < series[i].data.length; j++) {
-                            if (Array.isArray(series[i].data[j])) {
-                                //dataItem is an array
-                                xAxisData.push(series[i].data[j][0]);
-                            }
-                            else {
-                                //dataItem is an object, hence its values are in 'value' stored in array
-                                xAxisData.push(series[i].data[j].value[0]);
-                            }
-                        }
-
-                        opt.xAxis.data = xAxisData;
-                    }
-
-                    legendData.push(series[i].name);
-                }
-
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
-                opt.series = series;
-
-                return opt;
-            }
-        },
         data: function() {
             return {
-                internalOption: {},
                 echart: {}
             };
         },
         mounted: function() {
             this.echart = this.$refs.echarts;
-        },
-        template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
-                    <div class="bu-column bu-is-10 cly-vue-line-chart__header-left">\
-                        <div class="bu-level">\
-                            <div class="bu-level-left">\
-                                <div class="bu-level-item">\
-                                    <slot name="chart-left">\
-                                    </slot>\
-                                </div>\
-                                <div class="bu-level-item" v-if="showZoom">\
-                                    <cly-vue-chart-zoom-dropdown :echart="echart"></cly-vue-chart-zoom-dropdown>\
-                                </div>\
-                            </div>\
-                            <div class="bu-level-right">\
-                                <slot name="chart-right">\
-                                </slot>\
-                            </div>\
-                        </div>\
-                    </div>\
-                    <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
-                        <echarts\
-                            ref="echarts"\
-                            v-bind="$attrs"\
-                            v-on="$listeners"\
-                            :option="mergedOption"\
-                            :autoresize="autoresize">\
-                        </echarts>\
-                    </div>\
-                </div>'
+        }
     }));
 
     Vue.component("cly-chart-time", BaseLineChart.extend({
-        props: {
-            autoresize: {
-                type: Boolean,
-                default: true
-            },
-            option: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            },
-        },
-        computed: {
-            mergedOption: function() {
-                var tickObj = countlyCommon.getTickObj();
-                var opt = _merge(this.baseOptions, this.internalOption, this.option);
-
-                opt.xAxis.data = tickObj;
-                return opt;
-            }
-        },
         data: function() {
             return {
-                internalOption: {}
+                echart: {}
             };
         },
-        template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
-                    <div class="bu-column bu-is-full">\
-                        <div class="bu-level">\
-                            <div class="bu-level-left">\
-                                <div class="bu-level-item">\
-                                    <slot name="chart-left">\
-                                    </slot>\
-                                </div>\
-                            </div>\
-                            <div class="bu-level-right">\
-                                <slot name="chart-right">\
-                                </slot>\
-                            </div>\
-                        </div>\
-                    </div>\
-                    <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
-                        <echarts\
-                            v-bind="$attrs"\
-                            v-on="$listeners"\
-                            :option="mergedOption"\
-                            :autoresize="autoresize">\
-                        </echarts>\
-                    </div>\
-                </div>'
+        mounted: function() {
+            this.echart = this.$refs.echarts;
+        }
     }));
 
 }(window.countlyVue = window.countlyVue || {}));

@@ -264,17 +264,6 @@
                             return [pt[0], '10%'];
                         }
                     },
-                    title: {
-                        left: 'center',
-                        text: 'Some random data',
-                    },
-                    toolbox: {
-                        feature: {
-                            dataZoom: {},
-                            restore: {},
-                            saveAsImage: { show: true }
-                        }
-                    },
                     xAxis: {
                         type: 'category',
                         boundaryGap: false,
@@ -282,48 +271,10 @@
                     },
                     yAxis: {
                         type: 'value',
-                        boundaryGap: [0, '100%']
                     },
-                    dataZoom: [
-                        {
-                            type: 'slider',
-                            xAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'slider',
-                            yAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'inside',
-                            xAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'inside',
-                            yAxisIndex: 0,
-                            filterMode: 'none'
-                        }
-                    ],
                     series: [
                         {
                             name: 'Random',
-                            type: 'line',
-                            symbol: 'none',
-                            sampling: 'lttb',
-                            itemStyle: {
-                                color: 'rgb(255, 70, 131)'
-                            },
-                            areaStyle: {
-                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-                                    offset: 0,
-                                    color: 'rgb(255, 158, 68)'
-                                }, {
-                                    offset: 1,
-                                    color: 'rgb(255, 70, 131)'
-                                }])
-                            },
                             data: data
                         }
                     ]
