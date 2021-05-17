@@ -2547,6 +2547,7 @@
         * @memberof countlyCommon
         * @param {string} bucket - time bucket, accepted values, hourly, weekly, monthly
         * @param {boolean} overrideBucket - override existing bucket logic and simply use current date for generating ticks
+        * @param {boolean} newChart - new chart implementation
         * @returns {object} object containing tick texts and ticks to use on time graphs
         * @example <caption>Example output</caption>
         *{
@@ -2559,7 +2560,7 @@
         *   "ticks":[[1,"23 Dec"],[4,"26 Dec"],[7,"29 Dec"],[10,"1 Jan"],[13,"4 Jan"],[16,"7 Jan"],[19,"10 Jan"],[22,"13 Jan"],[25,"16 Jan"],[28,"19 Jan"]]
         *}
         */
-        countlyCommon.getTickObj = function(bucket, overrideBucket) {
+        countlyCommon.getTickObj = function(bucket, overrideBucket, newChart) {
             var days = parseInt(countlyCommon.periodObj.numberOfDays, 10),
                 ticks = [],
                 tickTexts = [],
@@ -2667,42 +2668,44 @@
             }
 
             var labelCn = ticks.length;
-            if (ticks.length <= 2) {
-                limitAdjustment = 0.02;
-                var tmpTicks = [],
-                    tmpTickTexts = [];
+            if (!newChart) {
+                if (ticks.length <= 2) {
+                    limitAdjustment = 0.02;
+                    var tmpTicks = [],
+                        tmpTickTexts = [];
 
-                tmpTickTexts[0] = "";
-                tmpTicks[0] = [-0.02, ""];
+                    tmpTickTexts[0] = "";
+                    tmpTicks[0] = [-0.02, ""];
 
-                for (var m = 0; m < ticks.length; m++) {
-                    tmpTicks[m + 1] = [m, ticks[m][1]];
-                    tmpTickTexts[m + 1] = tickTexts[m];
+                    for (var m = 0; m < ticks.length; m++) {
+                        tmpTicks[m + 1] = [m, ticks[m][1]];
+                        tmpTickTexts[m + 1] = tickTexts[m];
+                    }
+
+                    tmpTickTexts.push("");
+                    tmpTicks.push([tmpTicks.length - 1 - 0.98, ""]);
+
+                    ticks = tmpTicks;
+                    tickTexts = tmpTickTexts;
                 }
+                else if (!skipReduction && ticks.length > 10) {
+                    var reducedTicks = [],
+                        step = (Math.floor(ticks.length / 10) < 1) ? 1 : Math.floor(ticks.length / 10),
+                        pickStartIndex = (Math.floor(ticks.length / 30) < 1) ? 1 : Math.floor(ticks.length / 30);
 
-                tmpTickTexts.push("");
-                tmpTicks.push([tmpTicks.length - 1 - 0.98, ""]);
+                    for (var l = pickStartIndex; l < (ticks.length - 1); l = l + step) {
+                        reducedTicks.push(ticks[l]);
+                    }
 
-                ticks = tmpTicks;
-                tickTexts = tmpTickTexts;
-            }
-            else if (!skipReduction && ticks.length > 10) {
-                var reducedTicks = [],
-                    step = (Math.floor(ticks.length / 10) < 1) ? 1 : Math.floor(ticks.length / 10),
-                    pickStartIndex = (Math.floor(ticks.length / 30) < 1) ? 1 : Math.floor(ticks.length / 30);
-
-                for (var l = pickStartIndex; l < (ticks.length - 1); l = l + step) {
-                    reducedTicks.push(ticks[l]);
+                    ticks = reducedTicks;
                 }
+                else {
+                    ticks[0] = null;
 
-                ticks = reducedTicks;
-            }
-            else {
-                ticks[0] = null;
-
-                // Hourly ticks already contain 23 empty slots at the end
-                if (!(bucket === "hourly" && days !== 1)) {
-                    ticks[ticks.length - 1] = null;
+                    // Hourly ticks already contain 23 empty slots at the end
+                    if (!(bucket === "hourly" && days !== 1)) {
+                        ticks[ticks.length - 1] = null;
+                    }
                 }
             }
 

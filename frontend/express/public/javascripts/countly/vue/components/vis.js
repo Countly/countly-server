@@ -237,6 +237,9 @@
                 for (var i = 0; i < series.length; i++) {
                     var seriesLineStyle = {};
                     if (series[i].color) {
+                        /*
+                            Colors abstraction for series line
+                        */
                         seriesLineStyle.itemStyle = {
                             color: series[i].color
                         };
@@ -428,6 +431,14 @@
     }));
 
     Vue.component("cly-chart-time", BaseLineChart.extend({
+        props: {
+            bucket: {
+                type: String,
+            },
+            dummy: {
+                type: Boolean
+            }
+        },
         mounted: function() {
             this.echartRef = this.$refs.echarts;
         },
@@ -438,13 +449,52 @@
             chartOptions: function() {
                 var opt = this.mergedOptions;
 
+                var xAxisData = [];
                 if (!opt.xAxis.data) {
                     /*
                         If xAxis.data is not provided,
                         create xAxis.data automatically
                     */
 
-                    opt.xAxis.data = [];
+                    var period = countlyCommon.getPeriod();
+                    var tickObj = {};
+
+                    if (period === "month" && !this.bucket) {
+                        tickObj = countlyCommon.getTickObj("monthly", false, true);
+                    }
+                    else {
+                        tickObj = countlyCommon.getTickObj(this.bucket, false, true);
+                    }
+
+                    var ticks = tickObj.ticks;
+                    for (var i = 0; i < ticks.length; i++) {
+                        var tick = ticks[i];
+                        var tickIndex = tick[0];
+                        var tickValue = tick[1];
+                        while (xAxisData.length < tickIndex) {
+                            /*
+                                tickIndex is the array index
+                                Although ticks should be continuous, but they might not be
+                            */
+                            xAxisData.push("");
+                        }
+                        xAxisData.push(tickValue);
+                    }
+
+                    opt.xAxis.data = xAxisData;
+                }
+
+                if (this.dummy) {
+                    //Adding dummy data start
+                    var dummyData = [];
+                    for (var j = 0; j < xAxisData.length; j++) {
+                        dummyData.push(parseInt(Math.random() * 100));
+                    }
+
+                    for (var k = 0; k < opt.series.length; k++) {
+                        opt.series[k].data = dummyData;
+                    }
+                    //Adding dummy data end
                 }
 
                 return opt;

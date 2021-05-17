@@ -245,17 +245,6 @@
     var TimeGraphView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/tg.html'),
         data: function() {
-            var base = +new Date(1968, 9, 3);
-            var oneDay = 24 * 3600 * 1000;
-            var date = [];
-
-            var data = [Math.random() * 300];
-
-            for (var i = 1; i < 20000; i++) {
-                var now = new Date(base += oneDay);
-                date.push([now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/'));
-                data.push(Math.round((Math.random() - 0.5) * 20 + data[i - 1]));
-            }
             return {
                 largeScaleOptions: {
                     tooltip: {
@@ -264,13 +253,10 @@
                             return [pt[0], '10%'];
                         }
                     },
-                    xAxis: {
-                        data: date
-                    },
                     series: [
                         {
                             name: 'Random',
-                            data: data
+                            data: []
                         }
                     ]
                 },
