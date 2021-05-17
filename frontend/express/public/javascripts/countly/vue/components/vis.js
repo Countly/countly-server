@@ -25,6 +25,10 @@
                 default: function() {
                     return {};
                 }
+            },
+            showZoom: {
+                type: Boolean,
+                default: true
             }
         },
         data: function() {
@@ -357,13 +361,15 @@
                         <div class="bu-level">\
                             <div class="bu-level-left">\
                                 <div class="bu-level-item">\
-                                    <slot name="header-left">\
-                                        <cly-vue-chart-zoom-dropdown :echart="echart"></cly-vue-chart-zoom-dropdown>\
+                                    <slot name="chart-left">\
                                     </slot>\
+                                </div>\
+                                <div class="bu-level-item" v-if="showZoom">\
+                                    <cly-vue-chart-zoom-dropdown :echart="echart"></cly-vue-chart-zoom-dropdown>\
                                 </div>\
                             </div>\
                             <div class="bu-level-right">\
-                                <slot name="header-right">\
+                                <slot name="chart-right">\
                                 </slot>\
                             </div>\
                         </div>\
@@ -412,12 +418,12 @@
                         <div class="bu-level">\
                             <div class="bu-level-left">\
                                 <div class="bu-level-item">\
-                                    <slot name="header-left">\
+                                    <slot name="chart-left">\
                                     </slot>\
                                 </div>\
                             </div>\
                             <div class="bu-level-right">\
-                                <slot name="header-right">\
+                                <slot name="chart-right">\
                                 </slot>\
                             </div>\
                         </div>\
