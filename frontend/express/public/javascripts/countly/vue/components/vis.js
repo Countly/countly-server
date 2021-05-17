@@ -237,7 +237,7 @@
         }
     });
 
-    Vue.component("cly-vue-chart-zoom-dropdown", countlyBaseComponent.extend({
+    var ZoomDropdown = countlyBaseComponent.extend({
         props: {
             echartRef: {
                 type: Object
@@ -316,7 +316,7 @@
                                 v-for='item in zoomNumbers'></el-option>\
                         </el-select>\
                     </div>"
-    }));
+    });
 
     var ChartHeader = countlyBaseComponent.extend({
         props: {
@@ -327,6 +327,9 @@
                 type: Boolean
             }
         },
+        components: {
+            "zoom-dropdown": ZoomDropdown
+        },
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
@@ -334,7 +337,7 @@
                                 </slot>\
                             </div>\
                             <div class="bu-level-item" v-if="showZoom">\
-                                <cly-vue-chart-zoom-dropdown :echartRef="echartRef"></cly-vue-chart-zoom-dropdown>\
+                                <zoom-dropdown :echartRef="echartRef"></zoom-dropdown>\
                             </div>\
                         </div>\
                         <div class="bu-level-right">\
