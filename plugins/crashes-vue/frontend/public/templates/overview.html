@@ -1,0 +1,82 @@
+<div>
+    <cly-tabs v-model="currentTab">
+        <el-tab-pane name="crash-groups">
+            <span slot="label">Crash Groups</span>
+            <cly-header title="Crash Groups"></cly-header>
+            <cly-main>
+            </cly-main>
+        </el-tab-pane>
+        <el-tab-pane name="crash-statistics">
+            <span slot="label">Crash Statistics</span>
+            <cly-header title="Crash Statistics"></cly-header>
+            <cly-main>
+                <cly-section class="crashes-statistics-dashboard">
+                    <div class="bu-columns bu-is-gapless bu-is-mobile">
+                        <div class="bu-column bu-is-4 crashes-tile crashes-tile--horizontal">
+                            <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
+                                <div class="bu-column bu-is-full crashes-tile crashes-tile--vertical">
+                                    1
+                                </div>
+                                <div class="bu-column bu-is-full crashes-tile crashes-tile--vertical">
+                                    2
+                                </div>
+                                <div class="bu-column bu-is-full crashes-tile crashes-tile--vertical">
+                                    3
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bu-column bu-is-4 crashes-tile crashes-tile--horizontal">
+                            B
+                        </div>
+                        <div class="bu-column bu-is-4 crashes-tile crashes-tile--horizontal">
+                            <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
+                                <div class="bu-column bu-is-full crashes-tile crashes-tile--vertical">
+                                    1
+                                </div>
+                                <div class="bu-column bu-is-full crashes-tile crashes-tile--vertical">
+                                    2
+                                </div>
+                                <div class="bu-column bu-is-full crashes-tile crashes-tile--vertical">
+                                    3
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </cly-section>
+                <div class="bu-mt-5 bu-mb-4">
+                    <cly-datepicker-g>
+                    </cly-datepicker-g>
+                </div>
+                <cly-section class="crashes-statistics-graph">
+                    <el-tabs v-model="statisticsGraphTab" type="card" stretch>
+                        <el-tab-pane name="total-occurances">
+                            <div slot="label">
+                                Total Occurances
+                            </div>
+                        </el-tab-pane>
+                        <el-tab-pane name="unique-crashes">
+                            <div slot="label">
+                                Unique Crashes
+                            </div>
+                        </el-tab-pane>
+                        <el-tab-pane name="crashes-per-session">
+                            <div slot="label">
+                                Crashes/Sessions
+                            </div>
+                        </el-tab-pane>
+                        <el-tab-pane name="crashfree-users">
+                            <div slot="label">
+                                Crash Free Users
+                            </div>
+                        </el-tab-pane>
+                        <el-tab-pane name="crashfree-sessions">
+                            <div slot="label">
+                                Crash Free Sessions
+                            </div>
+                        </el-tab-pane>
+                    </el-tabs>
+                </cly-section>
+            </cly-main>
+        </el-tab-pane>
+    </cly-tabs>
+</div>

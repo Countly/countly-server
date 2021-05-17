@@ -1,0 +1,26 @@
+.cly-vue-theme-clydef .crashes-statistics-breakdown {
+  margin-bottom: 0 !important; }
+.cly-vue-theme-clydef .crashes-tile--horizontal {
+  border-right: 1px solid #ECECEC; }
+.cly-vue-theme-clydef .crashes-tile--vertical {
+  border-bottom: 1px solid #ECECEC; }
+.cly-vue-theme-clydef .crashes-tile:last-of-type {
+  border-right: 0;
+  border-bottom: 0; }
+.cly-vue-theme-clydef .crashes-statistics-graph .cly-vue-section__content {
+  border-bottom-width: 1px !important; }
+.cly-vue-theme-clydef .crashes-statistics-graph .el-tabs--card > .el-tabs__header {
+  border-bottom: 2px solid #ECECEC; }
+.cly-vue-theme-clydef .crashes-statistics-graph .el-tabs--card > .el-tabs__header .el-tabs__item {
+  border-bottom-width: 2px !important; }
+.cly-vue-theme-clydef .crashes-statistics-graph .el-tabs--card > .el-tabs__header .el-tabs__nav {
+  border: none; }
+.cly-vue-theme-clydef .crashes-statistics-graph .el-tabs__header .el-tabs__item.is-active {
+  border-bottom-color: #0166D6;
+  border-bottom-width: 2px; }
+.cly-vue-theme-clydef .crashes-statistics-graph .el-tabs__item {
+  border-left: 1px solid #ECECEC !important; }
+.cly-vue-theme-clydef .crashes-statistics-graph .el-tabs__item:last-of-type {
+  border-right: 1px solid #ECECEC; }
+
+/*# sourceMappingURL=crashes.css.map */
