@@ -265,12 +265,7 @@
                         }
                     },
                     xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
                         data: date
-                    },
-                    yAxis: {
-                        type: 'value',
                     },
                     series: [
                         {
