@@ -91,6 +91,22 @@
                     color: countlyCommon.GRAPH_COLORS
                 }
             };
+        },
+        computed: {
+            mergedOptions: function() {
+                var opt = _merge({}, this.baseOptions, this.internalOptions, this.option);
+                var series = JSON.parse(JSON.stringify(opt.series || []));
+                var legendData = [];
+
+                for (var i = 0; i < series.length; i++) {
+                    series[i] = _merge({}, this.seriesOptions, series[i]);
+                    legendData.push(series[i].name);
+                }
+
+                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                opt.series = series;
+                return opt;
+            }
         }
     });
 
@@ -112,6 +128,7 @@
 
         - series-line. name - Series name used for displaying in tooltip and filtering with legend, or updating data and configuration with setOption.
         - series-line. emphasis
+        - series-line. color - To change the series color
         - series-line. sampling : To improve performance
         - series-line. dimensions : Used in tooltips
         - series-line. encode
@@ -135,11 +152,9 @@
         - toolbox. feature - Besides the tools we provide, user-defined toolbox is also supported.
     */
     var BaseLineChart = BaseChart.extend({
-        props: {
-        },
         data: function() {
             return {
-                baseLineOptions: {
+                internalOptions: {
                     xAxis: {
                         boundaryGap: false,
                         offset: 10,
@@ -227,34 +242,100 @@
                     smooth: false
                 }
             };
-        },
-        computed: {
-            mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.baseLineOptions, this.option);
-                var series = JSON.parse(JSON.stringify(opt.series || []));
-                var legendData = [];
+        }
+    });
 
-                for (var i = 0; i < series.length; i++) {
-                    var seriesLineStyle = {};
-                    if (series[i].color) {
-                        /*
-                            Colors abstraction for series line
-                        */
-                        seriesLineStyle.itemStyle = {
-                            color: series[i].color
-                        };
-
-                        delete series[i].color;
-                    }
-
-                    series[i] = _merge({}, this.seriesOptions, seriesLineStyle, series[i]);
-                    legendData.push(series[i].name);
+    var BaseBarChart = BaseChart.extend({
+        data: function() {
+            return {
+                internalOptions: {
+                    xAxis: {
+                        boundaryGap: false,
+                        offset: 10,
+                        type: 'category',
+                        axisLine: {
+                            show: true,
+                            lineStyle: {
+                                type: "solid",
+                                color: "#ECECEC"
+                            }
+                        },
+                        axisTick: {
+                            show: false
+                        },
+                        axisLabel: {
+                            show: true,
+                            color: "#A7AEB8",
+                            showMinLabel: false,
+                            showMaxLabel: false,
+                            fontSize: 14,
+                            fontFamily: "Inter"
+                        },
+                        splitLine: {
+                            show: false
+                        }
+                    },
+                    yAxis: {
+                        boundaryGap: false,
+                        offset: 10,
+                        type: 'value',
+                        axisLine: {
+                            show: false
+                        },
+                        axisTick: {
+                            show: false
+                        },
+                        axisLabel: {
+                            show: true,
+                            color: "#A7AEB8",
+                            fontSize: 12,
+                            fontFamily: "Inter"
+                        },
+                        splitLine: {
+                            show: true,
+                            lineStyle: {
+                                color: "#ECECEC",
+                                type: "dashed"
+                            }
+                        }
+                    },
+                    dataZoom: [
+                        {
+                            type: 'slider',
+                            show: false,
+                            xAxisIndex: 0,
+                            filterMode: 'none'
+                        },
+                        {
+                            type: 'slider',
+                            show: false,
+                            yAxisIndex: 0,
+                            filterMode: 'none'
+                        },
+                        {
+                            type: 'inside',
+                            xAxisIndex: 0,
+                            filterMode: 'none',
+                            zoomLock: true
+                        },
+                        {
+                            type: 'inside',
+                            yAxisIndex: 0,
+                            filterMode: 'none',
+                            zoomLock: true
+                        }
+                    ]
+                },
+                seriesOptions: {
+                    type: 'bar',
+                    showSymbol: false,
+                    lineStyle: {
+                        type: "solid",
+                        cap: "round",
+                    },
+                    smooth: false
                 }
-
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
-                opt.series = series;
-                return opt;
-            }
+            };
         }
     });
 
@@ -497,6 +578,35 @@
                     //Adding dummy data end
                 }
 
+                return opt;
+            }
+        },
+        template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
+                        <div class="bu-column bu-is-10 cly-vue-line-chart__header-left">\
+                            <chart-header :echartRef="echartRef" :showZoom="showZoom"></chart-header>\
+                        </div>\
+                        <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
+                            <echarts\
+                                ref="echarts"\
+                                v-bind="$attrs"\
+                                v-on="$listeners"\
+                                :option="chartOptions"\
+                                :autoresize="autoresize">\
+                            </echarts>\
+                        </div>\
+                    </div>'
+    }));
+
+    Vue.component("cly-chart-bar", BaseBarChart.extend({
+        mounted: function() {
+            this.echartRef = this.$refs.echarts;
+        },
+        components: {
+            'chart-header': ChartHeader
+        },
+        computed: {
+            chartOptions: function() {
+                var opt = this.mergedOptions;
                 return opt;
             }
         },
