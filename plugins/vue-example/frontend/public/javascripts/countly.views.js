@@ -380,15 +380,6 @@
                     tooltip: {
                         trigger: 'axis'
                     },
-                    toolbox: {
-                        feature: {
-                            dataZoom: {
-                                yAxisIndex: 'none'
-                            },
-                            restore: {},
-                            saveAsImage: { show: true }
-                        }
-                    },
                     // xAxis: {
                     //     data: [0, 1, 3, 4, 5, 6]
                     // },

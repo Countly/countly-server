@@ -1,0 +1,9 @@
+.cly-vue-line-chart {
+    position: relative;
+
+    &__header-left {
+        position: absolute;
+        top: 5px;
+        z-index: +1;
+    }
+}

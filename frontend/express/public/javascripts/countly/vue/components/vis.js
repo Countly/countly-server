@@ -2,7 +2,8 @@
 
 (function(countlyVue) {
 
-    var _mixins = countlyVue.mixins;
+    var countlyBaseComponent = countlyVue.components.BaseComponent,
+        _mixins = countlyVue.mixins;
 
     var BaseChart = _mixins.BaseContent.extend({
         provide: function() {
@@ -33,7 +34,7 @@
                         show: false
                     },
                     grid: {
-                        top: 45,
+                        top: 60,
                         bottom: 65,
                         left: 35,
                         right: 35,
@@ -56,6 +57,29 @@
                         icon: "roundRect",
                         itemHeight: 6,
                         itemWidth: 12
+                    },
+                    toolbox: {
+                        id: "toolbox",
+                        feature: {
+                            saveAsImage: {
+                                show: true
+                            },
+                            dataView: {
+                                show: false
+                            },
+                            restore: {
+                                show: false
+                            },
+                            dataZoom: {
+                                show: false
+                            },
+                            magicType: {
+                                show: true,
+                                type: ['line', 'bar']
+                            }
+                        },
+                        right: 15,
+                        top: 5
                     },
                     color: countlyCommon.GRAPH_COLORS
                 }
@@ -95,6 +119,7 @@
                             [2, 33]
                         ]
         - axisPointer - Automatically shown if tooltip.trigger = 'axis'
+        - toolbox. feature - Besides the tools we provide, user-defined toolbox is also supported.
     */
     var BaseLineChart = BaseChart.extend({
         props: {
@@ -148,7 +173,33 @@
                                 type: "dashed"
                             }
                         }
-                    }
+                    },
+                    dataZoom: [
+                        {
+                            type: 'slider',
+                            show: false,
+                            xAxisIndex: 0,
+                            filterMode: 'none'
+                        },
+                        {
+                            type: 'slider',
+                            show: false,
+                            yAxisIndex: 0,
+                            filterMode: 'none'
+                        },
+                        {
+                            type: 'inside',
+                            xAxisIndex: 0,
+                            filterMode: 'none',
+                            zoomLock: true
+                        },
+                        {
+                            type: 'inside',
+                            yAxisIndex: 0,
+                            filterMode: 'none',
+                            zoomLock: true
+                        }
+                    ]
                 },
                 seriesOptions: {
                     type: 'line',
@@ -162,6 +213,87 @@
             };
         }
     });
+
+    Vue.component("cly-vue-chart-zoom-dropdown", countlyBaseComponent.extend({
+        props: {
+            echart: {
+                type: Object
+            }
+        },
+        data: function() {
+            return {
+                zoomNumbers: [
+                    {
+                        value: 0,
+                        name: "Reset"
+                    },
+                    {
+                        value: 10,
+                        name: "10%"
+                    },
+                    {
+                        value: 20,
+                        name: "20%"
+                    },
+                    {
+                        value: 30,
+                        name: "30%"
+                    },
+                    {
+                        value: 40,
+                        name: "40%"
+                    },
+                    {
+                        value: 50,
+                        name: "50%"
+                    },
+                    {
+                        value: 60,
+                        name: "60%"
+                    },
+                    {
+                        value: 70,
+                        name: "70%"
+                    },
+                    {
+                        value: 80,
+                        name: "80%"
+                    },
+                    {
+                        value: 90,
+                        name: "90%"
+                    },
+                    {
+                        value: 100,
+                        name: "100%"
+                    },
+                ],
+                selZoomNumber: ""
+            };
+        },
+        computed: {
+            selZoom: {
+                get: function() {
+                    return this.selZoomNumber;
+                },
+                set: function(v) {
+                    this.echart.dispatchAction({
+                        type: "dataZoom",
+                        start: v / 2,
+                        end: 100 - v / 2
+                    });
+
+                    this.selZoomNumber = v;
+                }
+            }
+        },
+        template: "<div style='width: 94px'>\
+                        <el-select v-model='selZoom'>\
+                            <el-option :key='item.value' :value='item.value' :label='item.name'\
+                                v-for='item in zoomNumbers'></el-option>\
+                        </el-select>\
+                    </div>"
+    }));
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
         computed: {
@@ -213,15 +345,20 @@
         },
         data: function() {
             return {
-                internalOption: {}
+                internalOption: {},
+                echart: {}
             };
         },
+        mounted: function() {
+            this.echart = this.$refs.echarts;
+        },
         template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
-                    <div class="bu-column bu-is-full">\
+                    <div class="bu-column bu-is-10 cly-vue-line-chart__header-left">\
                         <div class="bu-level">\
                             <div class="bu-level-left">\
                                 <div class="bu-level-item">\
                                     <slot name="header-left">\
+                                        <cly-vue-chart-zoom-dropdown :echart="echart"></cly-vue-chart-zoom-dropdown>\
                                     </slot>\
                                 </div>\
                             </div>\
@@ -233,6 +370,7 @@
                     </div>\
                     <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
                         <echarts\
+                            ref="echarts"\
                             v-bind="$attrs"\
                             v-on="$listeners"\
                             :option="mergedOption"\
