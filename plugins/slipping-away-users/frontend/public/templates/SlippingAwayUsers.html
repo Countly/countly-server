@@ -1,0 +1,79 @@
+<script type="text/x-template" id="slipping-away-users">
+    <div v-bind:class="[componentId]">
+        <cly-header>
+            <template v-slot:header-left>
+                <h2> {{i18n('slipping-away-users.title')}} 
+                </h2>
+                <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description">
+                </span>
+            </template>
+        </cly-header>
+        <cly-main>
+            <slipping-away-users-filter> </slipping-away-users-filter>
+            <slipping-away-users-bar-chart> </slipping-away-users-bar-chart>
+            <slipping-away-users-table> </slipping-away-users-table>
+        </cly-main>
+    </div>
+</script>
+
+<!-- NOTE-LA: <slipping-away-users-filter> is a temporary created component until query filter with modal becomes available-->
+<script type="text/x-template" id="slipping-away-users-filter">
+    <cly-section style="min-height:150px">
+        <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered" style="padding-top:1%">
+            <div class="bu-column bu-is-12-tablet bu-is-9-desktop bu-is-7-widescreen bu-is-6-fullhd">
+                <cly-qb-segmentation
+                    :allow-breakdown="false"
+                    v-model="slippingAwayUsersFilters">
+                </cly-qb-segmentation>
+            </div>
+        </div>
+        <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered" style="padding-bottom:1%">
+            <div class="bu-column bu-is-12-tablet bu-is-9-desktop bu-is-7-widescreen bu-is-6-fullhd">
+                <div class="bu-columns">
+                    <div class="bu-column bu-is-1">
+                        <el-button type="info" plain>Cancel</el-button>
+                    </div>
+                    <div class="bu-column bu-is-1">
+                        <el-button type="success" @click="onApplyFilter">Apply filter</el-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </cly-section>
+</script>
+
+<script type="text/x-template" id="slipping-away-users-bar-chart">
+    <cly-section>
+        <cly-chart class="chart" :option="slippingAwayUsersOptions" style="height: 400px;" :autoresize="true" v-loading="isLoading"></cly-chart>
+    </cly-section>
+</script>
+
+<script type="text/x-template" id="slipping-away-users-table">
+    <cly-section>
+        <cly-datatable-n  :rows="slippingAwayUsers" :resizable="true" v-loading="isLoading">
+            <template v-slot="scope">
+                <el-table-column sortable="custom" prop="period" :label="i18n('slipping-away-users.table-period')">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="count" :label="i18n('slipping-away-users.table-count')">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
+                    <template slot-scope="scope">
+                        <div class="bu-columns bu-is-gapless">
+                            <div class="bu-column bu-is-2">
+                                <span>{{scope.row.percentage}}%</span>
+                            </div>
+                            <div class="bu-column bu-is-10">
+                                <el-progress :percentage="parseInt(scope.row.percentage)" class="slipping-away-users-td-progress-bar" :show-text="false" :color="progressbarColor"></el-progress>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="timeStamp" align="center">
+                    <template slot-scope="scope">
+                        <el-link type="primary" @click="onUserListClick(scope.row.timeStamp)" :underline="false"> {{i18n('slipping-away-users.table-user-list')}}<span class="el-icon-right"> </span></el-link>
+                    </template>
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+</script>
