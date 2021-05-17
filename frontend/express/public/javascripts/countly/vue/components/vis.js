@@ -101,6 +101,8 @@
 
         xAxis.data - https://echarts.apache.org/en/option.html#xAxis.data
         yAxis.data - https://echarts.apache.org/en/option.html#yAxis.data
+        xAxis.boundaryGap - Sets some gap from both the edges of the graph of the corresponding axis
+
         Category data, available in type: 'category' axis.
         If type is not specified, but axis.data is specified, the type is auto set as 'category'.
         should notice that axis.data provides then value range of the 'category' axis.
@@ -114,6 +116,7 @@
         - series-line. dimensions : Used in tooltips
         - series-line. encode
         - series-line. areaStyle : Will simply create an area chart
+        - series-line. itemStyle : To change line appearance like colors etc
         - series-line. data
             Example - Sample data -
                         [
@@ -126,6 +129,8 @@
                             },
                             [2, 33]
                         ]
+            Note: '-' or null or undefined or NaN can be used to describe that a data item does not exist
+                    (ps：not exist does not means its value is 0)
         - axisPointer - Automatically shown if tooltip.trigger = 'axis'
         - toolbox. feature - Besides the tools we provide, user-defined toolbox is also supported.
     */
@@ -230,7 +235,16 @@
                 var legendData = [];
 
                 for (var i = 0; i < series.length; i++) {
-                    series[i] = _merge({}, this.seriesOptions, series[i]);
+                    var seriesLineStyle = {};
+                    if (series[i].color) {
+                        seriesLineStyle.itemStyle = {
+                            color: series[i].color
+                        };
+
+                        delete series[i].color;
+                    }
+
+                    series[i] = _merge({}, this.seriesOptions, seriesLineStyle, series[i]);
                     legendData.push(series[i].name);
                 }
 
