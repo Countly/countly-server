@@ -246,6 +246,7 @@
         template: CV.T('/vue-example/templates/tg.html'),
         data: function() {
             return {
+                selBucket: "daily",
                 largeScaleOptions: {
                     tooltip: {
                         trigger: 'axis',

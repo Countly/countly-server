@@ -435,7 +435,7 @@
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
-                                <slot name="chart-left">\
+                                <slot name="chart-left" v-bind:echart="echartRef">\
                                 </slot>\
                             </div>\
                             <div class="bu-level-item" v-if="showZoom">\
@@ -443,13 +443,18 @@
                             </div>\
                         </div>\
                         <div class="bu-level-right">\
-                            <slot name="chart-right">\
+                            <slot name="chart-right" v-bind:echart="echartRef">\
                             </slot>\
                         </div>\
                     </div>'
     });
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
+        data: function() {
+            return {
+                forwardedSlots: ["chart-left", "chart-right"]
+            };
+        },
         mounted: function() {
             this.echartRef = this.$refs.echarts;
         },
@@ -458,7 +463,7 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = this.mergedOptions;
+                var opt = _merge({}, this.mergedOptions);
 
                 if (!opt.xAxis.data) {
                     /*
@@ -497,7 +502,11 @@
         },
         template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
                         <div class="bu-column bu-is-10 cly-vue-line-chart__header-left">\
-                            <chart-header :echartRef="echartRef" :showZoom="showZoom"></chart-header>\
+                            <chart-header :echartRef="echartRef" :showZoom="showZoom">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
                         </div>\
                         <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
                             <echarts\
@@ -512,6 +521,11 @@
     }));
 
     Vue.component("cly-chart-time", BaseLineChart.extend({
+        data: function() {
+            return {
+                forwardedSlots: ["chart-left", "chart-right"]
+            };
+        },
         props: {
             bucket: {
                 type: String,
@@ -528,7 +542,7 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = this.mergedOptions;
+                var opt = _merge({}, this.mergedOptions);
 
                 var xAxisData = [];
                 if (!opt.xAxis.data) {
@@ -583,7 +597,11 @@
         },
         template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
                         <div class="bu-column bu-is-10 cly-vue-line-chart__header-left">\
-                            <chart-header :echartRef="echartRef" :showZoom="showZoom"></chart-header>\
+                            <chart-header :echartRef="echartRef" :showZoom="showZoom">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
                         </div>\
                         <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
                             <echarts\
@@ -594,10 +612,16 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
+                        {{bucket}}\
                     </div>'
     }));
 
     Vue.component("cly-chart-bar", BaseBarChart.extend({
+        data: function() {
+            return {
+                forwardedSlots: ["chart-left", "chart-right"]
+            };
+        },
         mounted: function() {
             this.echartRef = this.$refs.echarts;
         },
@@ -606,13 +630,17 @@
         },
         computed: {
             chartOptions: function() {
-                var opt = this.mergedOptions;
+                var opt = _merge({}, this.mergedOptions);
                 return opt;
             }
         },
         template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
                         <div class="bu-column bu-is-10 cly-vue-line-chart__header-left">\
-                            <chart-header :echartRef="echartRef" :showZoom="showZoom"></chart-header>\
+                            <chart-header :echartRef="echartRef" :showZoom="showZoom">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
                         </div>\
                         <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
                             <echarts\
