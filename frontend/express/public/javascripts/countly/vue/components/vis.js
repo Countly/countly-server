@@ -156,7 +156,7 @@
             return {
                 internalOptions: {
                     xAxis: {
-                        boundaryGap: false,
+                        boundaryGap: true,
                         offset: 10,
                         type: 'category',
                         axisLine: {
@@ -172,8 +172,8 @@
                         axisLabel: {
                             show: true,
                             color: "#A7AEB8",
-                            showMinLabel: false,
-                            showMaxLabel: false,
+                            showMinLabel: true,
+                            showMaxLabel: true,
                             fontSize: 14,
                             fontFamily: "Inter"
                         },
@@ -250,7 +250,7 @@
             return {
                 internalOptions: {
                     xAxis: {
-                        boundaryGap: false,
+                        boundaryGap: true,
                         offset: 10,
                         type: 'category',
                         axisLine: {
@@ -266,8 +266,8 @@
                         axisLabel: {
                             show: true,
                             color: "#A7AEB8",
-                            showMinLabel: false,
-                            showMaxLabel: false,
+                            showMinLabel: true,
+                            showMaxLabel: true,
                             fontSize: 14,
                             fontFamily: "Inter"
                         },
