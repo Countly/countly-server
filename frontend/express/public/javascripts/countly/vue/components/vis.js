@@ -5,6 +5,52 @@
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
+    /*
+        Use xAxis.axisLabel.showMinLabel to change visibility of minimum label
+        Use xAxis.axisLabel.showMaxLabel to change visibility of maximum label
+        Use xAxis.inverse to inverse the labels
+
+        xAxis.data - https://echarts.apache.org/en/option.html#xAxis.data
+        yAxis.data - https://echarts.apache.org/en/option.html#yAxis.data
+        xAxis.boundaryGap - Sets some gap from both the edges of the graph of the corresponding axis
+
+        Category data, available in type: 'category' axis.
+        If type is not specified, but axis.data is specified, the type is auto set as 'category'.
+        should notice that axis.data provides then value range of the 'category' axis.
+
+        If it is auto collected from series.data, Only the values appearing in series.data can be collected.
+        For example, if series.data is empty, nothing will be collected.
+
+        - series-line. name - Series name used for displaying in tooltip and filtering with legend, or updating data and configuration with setOption.
+        - series-line. emphasis
+        - series-line. color - To change the series color
+        - series-line. sampling : To improve performance
+        - series-line. dimensions : Used in tooltips
+        - series-line. encode
+        - series-line. areaStyle : Will simply create an area chart
+        - series-line. itemStyle : To change line appearance like colors etc
+        - series-line. data
+            Example - Sample data -
+                        [
+                            [0, 12],
+                            {
+                                value: [1, 32],
+                                label: {},
+                                labelStyle: {},
+                                itemStyle:{}
+                            },
+                            [2, 33]
+                        ]
+            Note: '-' or null or undefined or NaN can be used to describe that a data item does not exist
+                    (ps：not exist does not means its value is 0)
+        - axisPointer - Automatically shown if tooltip.trigger = 'axis'
+        - toolbox. feature - Besides the tools we provide, user-defined toolbox is also supported.
+
+        - tooltip. trigger - Is item for charts that dont have category axis
+        - tooltip. confine, tooltip. appendToBody - Used when there is overflow
+        - tooltip. formatter - Tooltip content formatter
+    */
+
     var BaseChart = _mixins.BaseContent.extend({
         provide: function() {
             var obj = {};
@@ -88,6 +134,33 @@
                         right: 15,
                         top: 5
                     },
+                    tooltip: {
+                        show: true,
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: "line",
+                            label: {
+                                show: false
+                            },
+                            lineStyle: {
+                                color: "#A7AEB8",
+                                type: "dashed",
+                                cap: "round"
+                            }
+                        },
+                        showContent: true,
+                        alwaysShowContent: false,
+                        enterable: true,
+                        renderMode: 'html',
+                        position: function(pt) {
+                            return [pt[0], '10%'];
+                        },
+                        textStyle: {
+                            color: "#A7AEB8",
+                            fontFamily: "Inter",
+                            fontSize: 14
+                        }
+                    },
                     color: countlyCommon.GRAPH_COLORS
                 }
             };
@@ -110,47 +183,6 @@
         }
     });
 
-    /*
-        Use xAxis.axisLabel.showMinLabel to change visibility of minimum label
-        Use xAxis.axisLabel.showMaxLabel to change visibility of maximum label
-        Use xAxis.inverse to inverse the labels
-
-        xAxis.data - https://echarts.apache.org/en/option.html#xAxis.data
-        yAxis.data - https://echarts.apache.org/en/option.html#yAxis.data
-        xAxis.boundaryGap - Sets some gap from both the edges of the graph of the corresponding axis
-
-        Category data, available in type: 'category' axis.
-        If type is not specified, but axis.data is specified, the type is auto set as 'category'.
-        should notice that axis.data provides then value range of the 'category' axis.
-
-        If it is auto collected from series.data, Only the values appearing in series.data can be collected.
-        For example, if series.data is empty, nothing will be collected.
-
-        - series-line. name - Series name used for displaying in tooltip and filtering with legend, or updating data and configuration with setOption.
-        - series-line. emphasis
-        - series-line. color - To change the series color
-        - series-line. sampling : To improve performance
-        - series-line. dimensions : Used in tooltips
-        - series-line. encode
-        - series-line. areaStyle : Will simply create an area chart
-        - series-line. itemStyle : To change line appearance like colors etc
-        - series-line. data
-            Example - Sample data -
-                        [
-                            [0, 12],
-                            {
-                                value: [1, 32],
-                                label: {},
-                                labelStyle: {},
-                                itemStyle:{}
-                            },
-                            [2, 33]
-                        ]
-            Note: '-' or null or undefined or NaN can be used to describe that a data item does not exist
-                    (ps：not exist does not means its value is 0)
-        - axisPointer - Automatically shown if tooltip.trigger = 'axis'
-        - toolbox. feature - Besides the tools we provide, user-defined toolbox is also supported.
-    */
     var BaseLineChart = BaseChart.extend({
         data: function() {
             return {
@@ -328,6 +360,7 @@
                 },
                 seriesOptions: {
                     type: 'bar',
+                    legendHoverLink: true,
                     showSymbol: false,
                     lineStyle: {
                         type: "solid",
@@ -464,39 +497,6 @@
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
-
-                if (!opt.xAxis.data) {
-                    /*
-                        If xAxis.data is not provided,
-                        create xAxis.data automatically
-                    */
-                    var xAxisData = [];
-                    var seriesData = opt.series[0].data; //Since all series will have same xAxis
-                    var dataIsObject = typeof seriesData === "object" && !Array.isArray(seriesData);
-                    var dataItems = dataIsObject ? seriesData.value : seriesData;
-
-                    if ((Array.isArray(dataItems[0]) || typeof dataItems[0] === "object")) {
-                        /*
-                            Enter this conidtion only if series data is array of array or it is an object
-                            -   Push the first entry from each item the series data array to xAxis.data
-                            -   Or push the first entry from each item of the series data.value
-                        */
-
-                        for (var j = 0; j < seriesData.length; j++) {
-                            if (Array.isArray(seriesData[j])) {
-                                //dataItem is an array
-                                xAxisData.push(seriesData[j][0]);
-                            }
-                            else {
-                                //dataItem is an object, hence its values are in 'value' stored in array
-                                xAxisData.push(seriesData[j].value[0]);
-                            }
-                        }
-
-                        opt.xAxis.data = xAxisData;
-                    }
-                }
-
                 return opt;
             }
         },

@@ -248,12 +248,6 @@
             return {
                 selBucket: "daily",
                 largeScaleOptions: {
-                    tooltip: {
-                        trigger: 'axis',
-                        position: function(pt) {
-                            return [pt[0], '10%'];
-                        }
-                    },
                     series: [
                         {
                             name: 'Random',
@@ -310,16 +304,13 @@
                     ]
                 },
                 lineOptions: {
-                    tooltip: {
-                        trigger: 'axis'
-                    },
                     // xAxis: {
                     //     data: [10, 11, 13, 14, 15, 16, 17]
                     // },
                     series: [
                         {
                             name: 'Series A',
-                            color: "#333",
+                            color: "pink",
                             data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]]
                         },
                         {
