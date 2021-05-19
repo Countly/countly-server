@@ -335,9 +335,42 @@
                     xAxis: {
                         data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
                     },
-                    series: [{
-                        data: [120, 200, 150, 80, 70, 110, 130],
-                    }]
+                    series: [
+                        {
+                            name: "Weekly users",
+                            data: [120, 200, 150, 80, 70, 110, 130],
+                        },
+                        {
+                            name: "Weekly new users",
+                            data: [12, 90, 100, 50, 88, 110, 130],
+                        },
+                        {
+                            name: "Week old users",
+                            data: [12, 90, 100, 50, 88, 110, 130],
+                        }
+                    ]
+                },
+                stackedBarOptions: {
+                    xAxis: {
+                        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                    },
+                    series: [
+                        {
+                            name: "Weekly users",
+                            data: [120, 200, 150, 80, 70, 110, 130],
+                            stack: 'A'
+                        },
+                        {
+                            name: "Weekly new users",
+                            data: [12, 90, 100, 50, 88, 110, 130],
+                            stack: 'A'
+                        },
+                        {
+                            name: "Week old users",
+                            data: [12, 90, 100, 50, 88, 110, 130],
+                            stack: 'A'
+                        }
+                    ]
                 }
             };
         },

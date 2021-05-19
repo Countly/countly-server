@@ -5,6 +5,7 @@
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
+    var fontFamily = "Inter";
     /*
         Use xAxis.axisLabel.showMinLabel to change visibility of minimum label
         Use xAxis.axisLabel.showMaxLabel to change visibility of maximum label
@@ -21,29 +22,8 @@
         If it is auto collected from series.data, Only the values appearing in series.data can be collected.
         For example, if series.data is empty, nothing will be collected.
 
-        - series-line. name - Series name used for displaying in tooltip and filtering with legend, or updating data and configuration with setOption.
-        - series-line. emphasis
-        - series-line. color - To change the series color
-        - series-line. sampling : To improve performance
-        - series-line. dimensions : Used in tooltips
-        - series-line. encode
-        - series-line. areaStyle : Will simply create an area chart
-        - series-line. itemStyle : To change line appearance like colors etc
-        - series-line. data
-            Example - Sample data -
-                        [
-                            [0, 12],
-                            {
-                                value: [1, 32],
-                                label: {},
-                                labelStyle: {},
-                                itemStyle:{}
-                            },
-                            [2, 33]
-                        ]
-            Note: '-' or null or undefined or NaN can be used to describe that a data item does not exist
-                    (ps：not exist does not means its value is 0)
         - axisPointer - Automatically shown if tooltip.trigger = 'axis'
+
         - toolbox. feature - Besides the tools we provide, user-defined toolbox is also supported.
 
         - tooltip. trigger - Is item for charts that dont have category axis
@@ -104,7 +84,6 @@
                         textStyle: {
                             color: "#333C48",
                             fontSize: 12,
-                            fontFamily: "Inter",
                             overflow: "truncate",
                         },
                         icon: "roundRect",
@@ -157,17 +136,93 @@
                         },
                         textStyle: {
                             color: "#A7AEB8",
-                            fontFamily: "Inter",
                             fontSize: 14
                         }
                     },
-                    color: countlyCommon.GRAPH_COLORS
+                    xAxis: {
+                        boundaryGap: true,
+                        offset: 10,
+                        type: 'category',
+                        axisLine: {
+                            show: true,
+                            lineStyle: {
+                                type: "solid",
+                                color: "#ECECEC"
+                            }
+                        },
+                        axisTick: {
+                            show: false
+                        },
+                        axisLabel: {
+                            show: true,
+                            color: "#A7AEB8",
+                            showMinLabel: true,
+                            showMaxLabel: true,
+                            fontSize: 14
+                        },
+                        splitLine: {
+                            show: false
+                        }
+                    },
+                    yAxis: {
+                        boundaryGap: false,
+                        offset: 10,
+                        type: 'value',
+                        axisLine: {
+                            show: false
+                        },
+                        axisTick: {
+                            show: false
+                        },
+                        axisLabel: {
+                            show: true,
+                            color: "#A7AEB8",
+                            fontSize: 12
+                        },
+                        splitLine: {
+                            show: true,
+                            lineStyle: {
+                                color: "#ECECEC",
+                                type: "dashed"
+                            }
+                        }
+                    },
+                    dataZoom: [
+                        {
+                            type: 'slider',
+                            show: false,
+                            xAxisIndex: 0,
+                            filterMode: 'none'
+                        },
+                        {
+                            type: 'slider',
+                            show: false,
+                            yAxisIndex: 0,
+                            filterMode: 'none'
+                        },
+                        {
+                            type: 'inside',
+                            xAxisIndex: 0,
+                            filterMode: 'none',
+                            zoomLock: true
+                        },
+                        {
+                            type: 'inside',
+                            yAxisIndex: 0,
+                            filterMode: 'none',
+                            zoomLock: true
+                        }
+                    ],
+                    color: countlyCommon.GRAPH_COLORS,
+                    textStyle: {
+                        fontFamily: fontFamily
+                    }
                 }
             };
         },
         computed: {
             mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.internalOptions, this.option);
+                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.internalOptions, this.option);
                 var series = JSON.parse(JSON.stringify(opt.series || []));
                 var legendData = [];
 
@@ -183,87 +238,34 @@
         }
     });
 
+    /*
+        Some handy series option for line series
+
+        - series-line. name - Series name used for displaying in tooltip and filtering with legend, or updating data and configuration with setOption.
+        - series-line. color - To change the series color
+        - series-line. sampling : To improve performance
+        - series-line. dimensions : Used in tooltips
+        - series-line. encode
+        - series-line. areaStyle : Will simply create an area chart
+        - series-line. data
+            Example - Sample data -
+                        [
+                            [0, 12],
+                            {
+                                value: [1, 32],
+                                label: {},
+                                labelStyle: {},
+                            },
+                            [2, 33]
+                        ]
+            Note: '-' or null or undefined or NaN can be used to describe that a data item does not exist
+                    (ps：not exist does not means its value is 0)
+    */
+
     var BaseLineChart = BaseChart.extend({
         data: function() {
             return {
-                internalOptions: {
-                    xAxis: {
-                        boundaryGap: true,
-                        offset: 10,
-                        type: 'category',
-                        axisLine: {
-                            show: true,
-                            lineStyle: {
-                                type: "solid",
-                                color: "#ECECEC"
-                            }
-                        },
-                        axisTick: {
-                            show: false
-                        },
-                        axisLabel: {
-                            show: true,
-                            color: "#A7AEB8",
-                            showMinLabel: true,
-                            showMaxLabel: true,
-                            fontSize: 14,
-                            fontFamily: "Inter"
-                        },
-                        splitLine: {
-                            show: false
-                        }
-                    },
-                    yAxis: {
-                        boundaryGap: false,
-                        offset: 10,
-                        type: 'value',
-                        axisLine: {
-                            show: false
-                        },
-                        axisTick: {
-                            show: false
-                        },
-                        axisLabel: {
-                            show: true,
-                            color: "#A7AEB8",
-                            fontSize: 12,
-                            fontFamily: "Inter"
-                        },
-                        splitLine: {
-                            show: true,
-                            lineStyle: {
-                                color: "#ECECEC",
-                                type: "dashed"
-                            }
-                        }
-                    },
-                    dataZoom: [
-                        {
-                            type: 'slider',
-                            show: false,
-                            xAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'slider',
-                            show: false,
-                            yAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'inside',
-                            xAxisIndex: 0,
-                            filterMode: 'none',
-                            zoomLock: true
-                        },
-                        {
-                            type: 'inside',
-                            yAxisIndex: 0,
-                            filterMode: 'none',
-                            zoomLock: true
-                        }
-                    ]
-                },
+                mixinOptions: {},
                 seriesOptions: {
                     type: 'line',
                     showSymbol: false,
@@ -277,96 +279,34 @@
         }
     });
 
+    /*
+        Some handy series option for bar series
+
+        series-bar. stack - Name of stack. On the same category axis, the series with the same stack name would be put on top of each other.
+            - stack basic example - https://echarts.apache.org/examples/en/editor.html?c=bar-waterfall
+        series-bar. large - Whether to enable the optimization of large-scale data.
+        series-bar. barGap - The gap between bars between different series.
+
+        To make a horizontal bar chart, set xAxis.type = "value" and yAxis.type = "category"
+    */
     var BaseBarChart = BaseChart.extend({
         data: function() {
             return {
-                internalOptions: {
-                    xAxis: {
-                        boundaryGap: true,
-                        offset: 10,
-                        type: 'category',
-                        axisLine: {
-                            show: true,
-                            lineStyle: {
-                                type: "solid",
-                                color: "#ECECEC"
-                            }
-                        },
-                        axisTick: {
-                            show: false
-                        },
-                        axisLabel: {
-                            show: true,
-                            color: "#A7AEB8",
-                            showMinLabel: true,
-                            showMaxLabel: true,
-                            fontSize: 14,
-                            fontFamily: "Inter"
-                        },
-                        splitLine: {
-                            show: false
-                        }
-                    },
-                    yAxis: {
-                        boundaryGap: false,
-                        offset: 10,
-                        type: 'value',
-                        axisLine: {
-                            show: false
-                        },
-                        axisTick: {
-                            show: false
-                        },
-                        axisLabel: {
-                            show: true,
-                            color: "#A7AEB8",
-                            fontSize: 12,
-                            fontFamily: "Inter"
-                        },
-                        splitLine: {
-                            show: true,
-                            lineStyle: {
-                                color: "#ECECEC",
-                                type: "dashed"
-                            }
-                        }
-                    },
-                    dataZoom: [
-                        {
-                            type: 'slider',
-                            show: false,
-                            xAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'slider',
-                            show: false,
-                            yAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'inside',
-                            xAxisIndex: 0,
-                            filterMode: 'none',
-                            zoomLock: true
-                        },
-                        {
-                            type: 'inside',
-                            yAxisIndex: 0,
-                            filterMode: 'none',
-                            zoomLock: true
-                        }
-                    ]
-                },
+                mixinOptions: {},
                 seriesOptions: {
                     type: 'bar',
                     legendHoverLink: true,
-                    showSymbol: false,
-                    lineStyle: {
-                        type: "solid",
-                        cap: "round",
+                    showBackground: false,
+                    label: {
+                        show: false,
+                        fontSize: 12,
+                        color: "#fff"
                     },
-                    smooth: false
+                    selectedMode: false,
+                    progressive: true,
+                    emphasis: {
+                        focus: 'series'
+                    }
                 }
             };
         }
@@ -485,6 +425,7 @@
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
             return {
+                internalOptions: {},
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
@@ -523,6 +464,7 @@
     Vue.component("cly-chart-time", BaseLineChart.extend({
         data: function() {
             return {
+                internalOptions: {},
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
@@ -619,6 +561,7 @@
     Vue.component("cly-chart-bar", BaseBarChart.extend({
         data: function() {
             return {
+                internalOptions: {},
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
