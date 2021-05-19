@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge, document */
+/* global Vue, countlyCommon, VueECharts, _merge, document, MouseEvent */
 
 (function(countlyVue) {
 
@@ -11,8 +11,8 @@
         Use xAxis.axisLabel.showMaxLabel to change visibility of maximum label
         Use xAxis.inverse to inverse the labels
 
-        xAxis.data - https://echarts.apache.org/en/option.html#xAxis.data
-        yAxis.data - https://echarts.apache.org/en/option.html#yAxis.data
+        xAxis.data
+        yAxis.data
         xAxis.boundaryGap - Sets some gap from both the edges of the graph of the corresponding axis
 
         Category data, available in type: 'category' axis.
@@ -313,7 +313,6 @@
         Some handy series option for bar series
 
         series-bar. stack - Name of stack. On the same category axis, the series with the same stack name would be put on top of each other.
-            - stack basic example - https://echarts.apache.org/examples/en/editor.html?c=bar-waterfall
         series-bar. large - Whether to enable the optimization of large-scale data.
         series-bar. barGap - The gap between bars between different series.
 
@@ -475,15 +474,28 @@
         },
         methods: {
             downloadImage: function() {
+                /*
+                    Echarts does not provide an api to download the chart images.
+                    So I implemented the download myself.
+                    This resembles to the actual download handler of echarts.
+                    This does not support download in IE and older edge versions.
+                */
+
+                var chartOptions = this.echartRef.getOption();
                 var aTag = document.createElement('a');
                 aTag.setAttribute("download", "image.png");
                 aTag.setAttribute("href", this.echartRef.getDataURL({
                     type: 'png',
                     pixelRatio: 2,
-                    backgroundColor: "#fff"
+                    backgroundColor: chartOptions.backgroundColor || "#fff"
                 }));
 
-                aTag.click();
+                var evt = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: false
+                });
+
+                aTag.dispatchEvent(evt);
             }
         },
         template: '<div class="bu-level">\
