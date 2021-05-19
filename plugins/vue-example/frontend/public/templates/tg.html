@@ -1,6 +1,14 @@
 <div>
-    <cly-section title="Pie Chart">
-        <!-- <cly-chart class="chart" :option="pieOptions" style="height: 400px;" :autoresize="true"></cly-chart> -->
+    <button @click="refs"></button>
+    <cly-section title="Line Chart">
+        <cly-chart-line :option="lineOptions" :height="400">
+            <template v-slot:chart-right="scope">
+                <!-- <el-select>
+                    <el-option :key="item.value" :value="item.value" :label="item.name"
+                        v-for="item in []"></el-option>
+                </el-select> -->
+            </template>
+        </cly-chart-line>
     </cly-section>
     <cly-section title="Time Graph">
         <cly-chart-time :option="largeScaleOptions" :height="400" :bucket="selBucket" :dummy="true">
@@ -22,14 +30,7 @@
     <cly-section title="Stacked Bar Chart">
         <cly-chart-bar :option="stackedBarOptions" :height="400"></cly-chart-bar>
     </cly-section>
-    <cly-section title="Line Chart">
-        <cly-chart-line :option="lineOptions" :height="400">
-            <template v-slot:chart-right="scope">
-                <!-- <el-select>
-                    <el-option :key="item.value" :value="item.value" :label="item.name"
-                        v-for="item in []"></el-option>
-                </el-select> -->
-            </template>
-        </cly-chart-line>
+    <cly-section title="Pie Chart">
+        <!-- <cly-chart class="chart" :option="pieOptions" style="height: 400px;" :autoresize="true"></cly-chart> -->
     </cly-section>
 </div>
