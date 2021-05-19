@@ -480,7 +480,10 @@
                 aTag.setAttribute("href", this.echartRef.getDataURL({
                     type: 'png',
                     pixelRatio: 2,
+                    backgroundColor: "#fff"
                 }));
+
+                aTag.click();
             }
         },
         template: '<div class="bu-level">\

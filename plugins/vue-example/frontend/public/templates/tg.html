@@ -2,10 +2,12 @@
     <cly-section title="Line Chart">
         <cly-chart-line :option="lineOptions" :height="400">
             <template v-slot:chart-right="scope">
-                <el-select>
-                    <el-option :key="item.value" :value="item.value" :label="item.name"
-                        v-for="item in []"></el-option>
-                </el-select>
+                <!-- <div class="bu-level-item">
+                    <el-select>
+                        <el-option :key="item.value" :value="item.value" :label="item.name"
+                            v-for="item in [1,2]"></el-option>
+                    </el-select>
+                </div> -->
             </template>
         </cly-chart-line>
     </cly-section>
