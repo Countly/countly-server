@@ -273,7 +273,10 @@
                         type: "solid",
                         cap: "round",
                     },
-                    smooth: false
+                    smooth: false,
+                    emphasis: {
+                        focus: 'series'
+                    }
                 }
             };
         }
