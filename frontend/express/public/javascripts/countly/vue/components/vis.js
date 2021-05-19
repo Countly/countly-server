@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge */
+/* global Vue, countlyCommon, VueECharts, _merge, document */
 
 (function(countlyVue) {
 
@@ -55,6 +55,14 @@
             showZoom: {
                 type: Boolean,
                 default: true
+            },
+            showToggle: {
+                type: Boolean,
+                default: true
+            },
+            showDownload: {
+                type: Boolean,
+                default: true
             }
         },
         data: function() {
@@ -67,7 +75,7 @@
                         show: false
                     },
                     grid: {
-                        top: 60,
+                        top: 30,
                         bottom: 65,
                         left: 35,
                         right: 35,
@@ -94,7 +102,7 @@
                         id: "toolbox",
                         feature: {
                             saveAsImage: {
-                                show: true
+                                show: false
                             },
                             dataView: {
                                 show: false
@@ -106,7 +114,7 @@
                                 show: false
                             },
                             magicType: {
-                                show: true,
+                                show: false,
                                 type: ['line', 'bar']
                             }
                         },
@@ -131,9 +139,6 @@
                         alwaysShowContent: false,
                         enterable: true,
                         renderMode: 'html',
-                        position: function(pt) {
-                            return [pt[0], '10%'];
-                        },
                         textStyle: {
                             color: "#A7AEB8",
                             fontSize: 14
@@ -217,6 +222,31 @@
                     textStyle: {
                         fontFamily: fontFamily
                     }
+                },
+                baseSeriesOptions: {
+                    //Keeping series options global for magic type changing i.e. series toggle
+
+                    //Line chart options
+                    showSymbol: false,
+                    lineStyle: {
+                        type: "solid",
+                        cap: "round",
+                    },
+                    smooth: false,
+
+                    //Bar chart options
+                    legendHoverLink: true,
+                    showBackground: false,
+                    label: {
+                        show: false,
+                    },
+                    selectedMode: false,
+                    progressive: true,
+
+                    //Common options
+                    emphasis: {
+                        focus: 'series'
+                    }
                 }
             };
         },
@@ -227,13 +257,19 @@
                 var legendData = [];
 
                 for (var i = 0; i < series.length; i++) {
-                    series[i] = _merge({}, this.seriesOptions, series[i]);
+                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                     legendData.push(series[i].name);
                 }
 
                 opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
                 opt.series = series;
                 return opt;
+            }
+        },
+        methods: {
+            onSeriesChange: function(v) {
+                this.seriesOptions.type = v;
+                this.$emit("series-toggle", v);
             }
         }
     });
@@ -267,16 +303,7 @@
             return {
                 mixinOptions: {},
                 seriesOptions: {
-                    type: 'line',
-                    showSymbol: false,
-                    lineStyle: {
-                        type: "solid",
-                        cap: "round",
-                    },
-                    smooth: false,
-                    emphasis: {
-                        focus: 'series'
-                    }
+                    type: 'line'
                 }
             };
         }
@@ -291,25 +318,16 @@
         series-bar. barGap - The gap between bars between different series.
 
         To make a horizontal bar chart, set xAxis.type = "value" and yAxis.type = "category"
+
+        Stacked bar charts should not have series toggle option
+        because the y axis does not adjusts itself when the series changes
     */
     var BaseBarChart = BaseChart.extend({
         data: function() {
             return {
                 mixinOptions: {},
                 seriesOptions: {
-                    type: 'bar',
-                    legendHoverLink: true,
-                    showBackground: false,
-                    label: {
-                        show: false,
-                        fontSize: 12,
-                        color: "#fff"
-                    },
-                    selectedMode: false,
-                    progressive: true,
-                    emphasis: {
-                        focus: 'series'
-                    }
+                    type: 'bar'
                 }
             };
         }
@@ -378,11 +396,18 @@
                     return this.selZoomNumber;
                 },
                 set: function(v) {
-                    this.echartRef.dispatchAction({
-                        type: "dataZoom",
-                        start: v / 2,
-                        end: 100 - v / 2
-                    });
+                    if (!v) {
+                        this.echartRef.dispatchAction({
+                            type: "restore",
+                        });
+                    }
+                    else {
+                        this.echartRef.dispatchAction({
+                            type: "dataZoom",
+                            start: v / 2,
+                            end: 100 - v / 2
+                        });
+                    }
 
                     this.selZoomNumber = v;
                 }
@@ -396,31 +421,85 @@
                     </div>"
     });
 
+    var MagicSwitch = countlyBaseComponent.extend({
+        props: {
+            echartRef: {
+                type: Object
+            }
+        },
+        data: function() {
+            return {
+                selSwitchOption: ""
+            };
+        },
+        computed: {
+            selSwitch: {
+                get: function() {
+                    return this.selSwitchOption;
+                },
+                set: function(v) {
+                    this.$emit("series-toggle", v);
+                    this.selSwitchOption = v;
+                }
+            }
+        },
+        template: '<div style="width: 100px;">\
+                        <el-select v-model="selSwitch">\
+                            <el-option value="line" label="Line"></el-option>\
+                            <el-option value="bar" label="Bar"></el-option>\
+                        </el-select>\
+                    </div>'
+    });
+
     var ChartHeader = countlyBaseComponent.extend({
         props: {
             echartRef: {
                 type: Object
             },
             showZoom: {
-                type: Boolean
+                type: Boolean,
+                default: false
+            },
+            showToggle: {
+                type: Boolean,
+                default: false
+            },
+            showDownload: {
+                type: Boolean,
+                default: false
             }
         },
         components: {
-            "zoom-dropdown": ZoomDropdown
+            "zoom-dropdown": ZoomDropdown,
+            "chart-toggle": MagicSwitch
+        },
+        methods: {
+            downloadImage: function() {
+                var aTag = document.createElement('a');
+                aTag.setAttribute("download", "image.png");
+                aTag.setAttribute("href", this.echartRef.getDataURL({
+                    type: 'png',
+                    pixelRatio: 2,
+                }));
+            }
         },
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
-                                <slot name="chart-left" v-bind:echart="echartRef">\
-                                </slot>\
+                                <slot name="chart-left" v-bind:echart="echartRef"></slot>\
                             </div>\
                             <div class="bu-level-item" v-if="showZoom">\
                                 <zoom-dropdown :echartRef="echartRef"></zoom-dropdown>\
                             </div>\
                         </div>\
                         <div class="bu-level-right">\
-                            <slot name="chart-right" v-bind:echart="echartRef">\
-                            </slot>\
+                            <slot name="chart-right" v-bind:echart="echartRef"></slot>\
+                            <div class="bu-level-item" v-if="showDownload">\
+                                <el-button @click="downloadImage" size="small" icon="el-icon-download"></el-button>\
+                            </div>\
+                            <div class="bu-level-item" v-if="showToggle">\
+                                <chart-toggle v-on="$listeners"></chart-toggle>\
+                            </div>\
                         </div>\
                     </div>'
     });
@@ -444,9 +523,9 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
-                        <div class="bu-column bu-is-10 cly-vue-line-chart__header-left">\
-                            <chart-header :echartRef="echartRef" :showZoom="showZoom">\
+        template: '<div class="cly-vue-chart bu-columns bu-is-gapless bu-is-multiline">\
+                        <div class="bu-column bu-is-full">\
+                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -474,6 +553,9 @@
         props: {
             bucket: {
                 type: String,
+                validator: function(value) {
+                    return ['hourly', 'daily', 'weekly', 'montly'].indexOf(value) !== -1;
+                }
             },
             dummy: {
                 type: Boolean
@@ -540,9 +622,9 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
-                        <div class="bu-column bu-is-10 cly-vue-line-chart__header-left">\
-                            <chart-header :echartRef="echartRef" :showZoom="showZoom">\
+        template: '<div class="cly-vue-chart bu-columns bu-is-gapless bu-is-multiline">\
+                        <div class="bu-column bu-is-full">\
+                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -580,9 +662,9 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-line-chart bu-columns bu-is-gapless bu-is-multiline">\
-                        <div class="bu-column bu-is-10 cly-vue-line-chart__header-left">\
-                            <chart-header :echartRef="echartRef" :showZoom="showZoom">\
+        template: '<div class="cly-vue-chart bu-columns bu-is-gapless bu-is-multiline">\
+                        <div class="bu-column bu-is-full">\
+                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\

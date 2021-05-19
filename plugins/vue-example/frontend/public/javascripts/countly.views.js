@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, echarts, CV */
+/*global app, countlyVue, countlyVueExample, countlyCommon, CV */
 
 (function() {
     var TableView = countlyVue.views.create({
@@ -346,7 +346,7 @@
                         },
                         {
                             name: "Week old users",
-                            data: [12, 90, 100, 50, 88, 110, 130],
+                            data: [2, 90, 77, 50, 44, 110, 10],
                         }
                     ]
                 },
