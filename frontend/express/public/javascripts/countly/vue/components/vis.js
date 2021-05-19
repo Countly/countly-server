@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge, document, MouseEvent */
+/* global Vue, countlyCommon, VueECharts, _merge */
 
 (function(countlyVue) {
 
