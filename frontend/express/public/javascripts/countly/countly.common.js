@@ -2576,6 +2576,7 @@
                 tickTexts[0] = countlyCommon.formatDate(thisDay, "D MMM, dddd");
             }
             else if ((days === 1 && _period !== "month" && _period !== "day") || (days === 1 && bucket === "hourly")) {
+                //When period is an array or string like Xdays, Xweeks
                 for (var z = 0; z < 24; z++) {
                     ticks.push([z, (z + ":00")]);
                     tickTexts.push((z + ":00"));
