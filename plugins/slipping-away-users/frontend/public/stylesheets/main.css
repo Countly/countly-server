@@ -1,3 +1,1 @@
-.slipping-away-users-td-progress-bar .el-progress-bar {
-  display: inline-block;
-}
+.slipping-away-user-table-progress-bar-container{width:100%}.slipping-away-user-table-progress-bar-container progress::-webkit-progress-value{background-color:#f96300}
