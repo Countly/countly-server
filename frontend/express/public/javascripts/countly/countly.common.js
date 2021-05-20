@@ -3028,6 +3028,79 @@
         };
 
         /**
+        * Format timestamp to twitter like time ago format with real date as tooltip and hidden data for exporting
+        * @memberof countlyCommon
+        * @param {number} timestamp - timestamp in seconds or miliseconds
+        * @returns {string} formated time ago
+        * @example
+        * //outputs ago time without html tags
+        * countlyCommon.formatTimeAgo(1484654066);
+        */
+        countlyCommon.formatTimeAgoText = function(timestamp) {
+            if (Math.round(timestamp).toString().length === 10) {
+                timestamp *= 1000;
+            }
+            var target = new Date(timestamp);
+            var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
+            var now = new Date();
+            var diff = Math.floor((now - target) / 1000);
+            if (diff <= -2592000) {
+                return tooltip;
+            }
+            else if (diff < -86400) {
+                return jQuery.i18n.prop("common.in.days", Math.abs(Math.round(diff / 86400)));
+            }
+            else if (diff < -3600) {
+                return jQuery.i18n.prop("common.in.hours", Math.abs(Math.round(diff / 3600)));
+            }
+            else if (diff < -60) {
+                return jQuery.i18n.prop("common.in.minutes", Math.abs(Math.round(diff / 60)));
+            }
+            else if (diff <= -1) {
+                return (jQuery.i18n.prop("common.in.seconds", Math.abs(diff)));
+            }
+            else if (diff <= 1) {
+                return jQuery.i18n.map["common.ago.just-now"];
+            }
+            else if (diff < 20) {
+                return jQuery.i18n.prop("common.ago.seconds-ago", diff);
+            }
+            else if (diff < 40) {
+                return jQuery.i18n.map["common.ago.half-minute"];
+            }
+            else if (diff < 60) {
+                return jQuery.i18n.map["common.ago.less-minute"];
+            }
+            else if (diff <= 90) {
+                return jQuery.i18n.map["common.ago.one-minute"];
+            }
+            else if (diff <= 3540) {
+                return jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60));
+            }
+            else if (diff <= 5400) {
+                return jQuery.i18n.map["common.ago.one-hour"];
+            }
+            else if (diff <= 86400) {
+                return jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600));
+            }
+            else if (diff <= 129600) {
+                return jQuery.i18n.map["common.ago.one-day"];
+            }
+            else if (diff < 604800) {
+                return jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
+            }
+            else if (diff <= 777600) {
+                return jQuery.i18n.map["common.ago.one-week"];
+            }
+            else if (diff <= 2592000) {
+                return jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
+            }
+            else {
+                return tooltip;
+            }
+        };
+
+        /**
         * Format duration to units of how much time have passed
         * @memberof countlyCommon
         * @param {number} timestamp - amount in seconds passed since some reference point
