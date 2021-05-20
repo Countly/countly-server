@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, countlyGlobal, countlySession */
+/*global countlyVue, CV, countlyCommon, countlyGlobal, countlySession, countlyHelpers */
 (function(countlyUserActivity) {
 
     countlyUserActivity.helpers = {
@@ -24,19 +24,6 @@
                 return total;
             }, 0);
         },
-
-        //TODO:move buildFilters inside query builder component
-        buildFilters: function(filters) {
-            var newQuery = {};
-            if (filters.query) {
-                Object.keys(filters.query).forEach(function(queryItem) {
-                    var propertyValue = filters.query[queryItem];
-                    var propertyNameWithoutUp = queryItem.split('.')[1];
-                    newQuery[propertyNameWithoutUp] = propertyValue;
-                });
-            }
-            return newQuery;
-        }
     };
 
     countlyUserActivity.service = {
@@ -59,7 +46,7 @@
                 data: {
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     api_key: countlyGlobal.member.api_key,
-                    query: JSON.stringify(countlyUserActivity.helpers.buildFilters(filters))
+                    query: JSON.stringify(countlyHelpers.buildFilters(filters))
                 },
                 dataType: "json",
             });

@@ -3901,5 +3901,17 @@ $.widget("cly.datepickerExtended", {
             this.baseInstance.datepicker("setDate", date);
             this._syncWith("picker", 0);
         }
+    },
+    //TODO: move buildFilters inside query builder component
+    buildFilters: function(filters) {
+        var newQuery = {};
+        if (filters.query) {
+            Object.keys(filters.query).forEach(function(queryItem) {
+                var propertyValue = filters.query[queryItem];
+                var propertyNameWithoutUp = queryItem.split('.')[1];
+                newQuery[propertyNameWithoutUp] = propertyValue;
+            });
+        }
+        return newQuery;
     }
 });
