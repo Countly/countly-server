@@ -475,13 +475,14 @@
         methods: {
             downloadImage: function() {
                 /*
-                    Echarts does not provide an api to download the chart images.
+                    Echarts does not provide an api to download the chart images programmatically.
                     So I implemented the download myself.
                     This resembles to the actual download handler of echarts.
-                    This does not support download in IE and older edge versions.
+                    This does not support download in IE and older edge versions yet.
                 */
 
                 var chartOptions = this.echartRef.getOption();
+
                 var aTag = document.createElement('a');
                 aTag.setAttribute("download", "image.png");
                 aTag.setAttribute("href", this.echartRef.getDataURL({
