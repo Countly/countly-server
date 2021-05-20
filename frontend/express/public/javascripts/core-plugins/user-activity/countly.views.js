@@ -22,11 +22,6 @@ var UserActivityBarChart = countlyVue.views.BaseView.extend({
     template: "#user-activity-bar-chart",
     data: function() {
         return {
-            barChartItemsColors: {
-                all: "#017AFF",
-                sevenDays: "#F96300",
-                thirtyDays: "#39C0C8"
-            },
             barChartItemsLegends: {
                 all: CV.i18n('user-activity.barchart-all-users'),
                 sevenDays: CV.i18n('user-activity.barchart-seven-days'),
@@ -44,16 +39,8 @@ var UserActivityBarChart = countlyVue.views.BaseView.extend({
 
         userActivityOptions: function() {
             return {
-                legend: {
-                    top: "bottom",
-                    padding: [0, 0, 20, 0]
-                },
                 xAxis: {
-                    type: "category",
                     data: this.xAxisUserActivitySessionBuckets
-                },
-                yAxis: {
-                    type: "value",
                 },
                 series: this.yAxisUserActivityCountSeries
             };
@@ -70,10 +57,6 @@ var UserActivityBarChart = countlyVue.views.BaseView.extend({
                     }),
                     type: "bar",
                     name: self.barChartItemsLegends[userActivityKey],
-                    itemStyle: {
-                        borderRadius: [4, 4, 0, 0],
-                        color: self.barChartItemsColors[userActivityKey]
-                    },
                 };
             });
         },

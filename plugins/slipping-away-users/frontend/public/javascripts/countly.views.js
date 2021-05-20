@@ -35,25 +35,13 @@ var SlippingAwayUsersBarChart = countlyVue.views.BaseView.extend({
                         saveAsImage: { show: true }
                     }
                 },
-                legend: {
-                    top: 'bottom',
-                    padding: [0, 0, 20, 0]
-                },
                 xAxis: {
-                    type: "category",
                     data: this.xAxisSlippingAwayUsersPeriods
-                },
-                yAxis: {
-                    type: "value",
                 },
                 series: [{
                     data: this.yAxisSlippingAwayUsersCount,
                     name: CV.i18n('slipping-away-users.barchart-description'),
                     type: "bar",
-                    itemStyle: {
-                        color: "#F96300",
-                        borderRadius: [2, 2, 0, 0]
-                    },
                 }]
             };
         },
