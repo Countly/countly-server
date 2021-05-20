@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, countlyGlobal, countlySession, CountlyHelpers */
+/*global window, countlyVue, CV, countlyCommon, countlyGlobal, countlySession, CountlyHelpers */
 (function(countlyUserActivity) {
 
     countlyUserActivity.helpers = {
