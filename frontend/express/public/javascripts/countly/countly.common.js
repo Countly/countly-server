@@ -134,7 +134,7 @@
         * @memberof countlyCommon
         * @param {string|array} period - new period, supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
         * @param {int} timeStamp - timeStamp for the period based
-        * @param {boolean} noSet - if set  - updates countly_date
+        * @param {boolean} noSet - if false  - updates countly_date
         */
         countlyCommon.setPeriod = function(period, timeStamp, noSet) {
             _period = period;
@@ -153,15 +153,18 @@
                 });
             }
 
+            if (noSet) {
+                /*
+                    Dont update vuex or local storage if noSet is true
+                */
+                return;
+            }
+
             if (window.countlyVue && window.countlyVue.vuex) {
                 var currentStore = window.countlyVue.vuex.getGlobalStore();
                 if (currentStore) {
                     currentStore.dispatch("countlyCommon/updatePeriod", {period: period, label: countlyCommon.getDateRangeForCalendar()});
                 }
-            }
-
-            if (noSet) {
-                return;
             }
 
             store.set("countly_date", period);

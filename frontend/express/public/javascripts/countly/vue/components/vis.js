@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge */
+/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor */
 
 (function(countlyVue) {
 
@@ -475,13 +475,14 @@
         methods: {
             downloadImage: function() {
                 /*
-                    Echarts does not provide an api to download the chart images.
+                    Echarts does not provide an api to download the chart images programmatically.
                     So I implemented the download myself.
                     This resembles to the actual download handler of echarts.
-                    This does not support download in IE and older edge versions.
+                    This does not support download in IE and older edge versions yet.
                 */
 
                 var chartOptions = this.echartRef.getOption();
+
                 var aTag = document.createElement('a');
                 aTag.setAttribute("download", "image.png");
                 aTag.setAttribute("href", this.echartRef.getDataURL({
@@ -569,11 +570,14 @@
             bucket: {
                 type: String,
                 validator: function(value) {
-                    return ['hourly', 'daily', 'weekly', 'montly'].indexOf(value) !== -1;
+                    return ['hourly', 'daily', 'weekly', 'monthly'].indexOf(value) !== -1;
                 }
             },
             dummy: {
                 type: Boolean
+            },
+            period: {
+                type: [Array, String]
             }
         },
         mounted: function() {
@@ -593,14 +597,19 @@
                         create xAxis.data automatically
                     */
 
-                    var period = countlyCommon.getPeriod();
+                    var period = (this.period && this.period.length) ? this.period : countlyCommon.getPeriod();
+
+                    var chartsCommon = new CommonConstructor();
+                    //We wont change the global period state
+                    chartsCommon.setPeriod(period, undefined, true);
+
                     var tickObj = {};
 
                     if (period === "month" && !this.bucket) {
-                        tickObj = countlyCommon.getTickObj("monthly", false, true);
+                        tickObj = chartsCommon.getTickObj("monthly", false, true);
                     }
                     else {
-                        tickObj = countlyCommon.getTickObj(this.bucket, false, true);
+                        tickObj = chartsCommon.getTickObj(this.bucket, false, true);
                     }
 
                     var ticks = tickObj.ticks;
