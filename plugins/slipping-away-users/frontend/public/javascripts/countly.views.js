@@ -1,4 +1,4 @@
-/*global app, countlySlippingAwayUsers, countlyVue, $, CV */
+/*global app, countlySlippingAwayUsers, countlyVue, $, CV, CountlyHelpers */
 //TODO-LA: Use query builder component with modal when it becomes available
 var SlippingAwayUsersFilter = countlyVue.views.BaseView.extend({
     template: "#slipping-away-users-filter",
@@ -99,7 +99,7 @@ var SlippingAwayUsersTable = countlyVue.views.BaseView.extend({
             };
             var currentFilters = this.$store.state.countlySlippingAwayUsers.slippingAwayUsersFilters;
             if (currentFilters.query) {
-                Object.assign(data, countlySlippingAwayUsers.helpers.buildFilters(currentFilters));
+                Object.assign(data, CountlyHelpers.buildFilters(currentFilters));
             }
             window.location.hash = '/users/query/' + JSON.stringify(data);
         }
@@ -119,6 +119,9 @@ var SlippingAwayUsersView = countlyVue.views.BaseView.extend({
         };
     },
     mounted: function() {
+        if (this.$route.params) {
+            this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', {query: this.$route.params });
+        }
         this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
     }
 });
@@ -127,15 +130,22 @@ var vuex = [{
     clyModel: countlySlippingAwayUsers
 }];
 
+var slippingAwayUsersView = new countlyVue.views.BackboneWrapper({
+    component: SlippingAwayUsersView,
+    vuex: vuex,
+    templates: [
+        "/slipping-away-users/templates/SlippingAwayUsers.html",
+        "/drill/templates/query.builder.v2.html"
+    ]
+});
+
 app.route("/analytics/slipping-away", "slipping-away", function() {
-    var slippingAwayUsersView = new countlyVue.views.BackboneWrapper({
-        component: SlippingAwayUsersView,
-        vuex: vuex,
-        templates: [
-            "/slipping-away-users/templates/SlippingAwayUsers.html",
-            "/drill/templates/query.builder.v2.html"
-        ]
-    });
+    this.renderWhenReady(slippingAwayUsersView);
+});
+
+app.route("/analytics/slipping-away/*query", "slipping-away-query", function(query) {
+    var queryUrlParameter = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
+    slippingAwayUsersView.params = queryUrlParameter;
     this.renderWhenReady(slippingAwayUsersView);
 });
 

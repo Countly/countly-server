@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, countlyGlobal, countlySession, countlyHelpers */
+/*global countlyVue, CV, countlyCommon, countlyGlobal, countlySession, CountlyHelpers */
 (function(countlyUserActivity) {
 
     countlyUserActivity.helpers = {
@@ -46,7 +46,7 @@
                 data: {
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     api_key: countlyGlobal.member.api_key,
-                    query: JSON.stringify(countlyHelpers.buildFilters(filters))
+                    query: JSON.stringify(CountlyHelpers.buildFilters(filters))
                 },
                 dataType: "json",
             });

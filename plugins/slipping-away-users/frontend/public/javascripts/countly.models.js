@@ -1,4 +1,4 @@
-/*global countlyCommon,countlyVue,CV,countlyHelpers*/
+/*global countlyCommon,countlyVue,CV,CountlyHelpers*/
 (function(countlySlippingAwayUsers) {
 
     countlySlippingAwayUsers.service = {
@@ -9,7 +9,7 @@
                 data: {
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     method: 'slipping',
-                    query: JSON.stringify(countlyHelpers.buildFilters(filters))
+                    query: JSON.stringify(CountlyHelpers.buildFilters(filters))
                 }
             }, {disableAutoCatch: true});
         }
