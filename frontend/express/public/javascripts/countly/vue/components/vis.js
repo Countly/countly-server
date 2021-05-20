@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge */
+/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor */
 
 (function(countlyVue) {
 
@@ -575,6 +575,9 @@
             },
             dummy: {
                 type: Boolean
+            },
+            period: {
+                type: [Array, String]
             }
         },
         mounted: function() {
@@ -594,14 +597,19 @@
                         create xAxis.data automatically
                     */
 
-                    var period = countlyCommon.getPeriod();
+                    var period = (this.period && this.period.length) ? this.period : countlyCommon.getPeriod();
+
+                    var chartsCommon = new CommonConstructor();
+                    //We wont change the global period state
+                    chartsCommon.setPeriod(period, undefined, true);
+
                     var tickObj = {};
 
                     if (period === "month" && !this.bucket) {
-                        tickObj = countlyCommon.getTickObj("monthly", false, true);
+                        tickObj = chartsCommon.getTickObj("monthly", false, true);
                     }
                     else {
-                        tickObj = countlyCommon.getTickObj(this.bucket, false, true);
+                        tickObj = chartsCommon.getTickObj(this.bucket, false, true);
                     }
 
                     var ticks = tickObj.ticks;
