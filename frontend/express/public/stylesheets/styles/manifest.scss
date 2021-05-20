@@ -24,3 +24,6 @@
 // Defined at the last to increase specificity
 
 @use "states/state";
+
+// All core "Plugins" views specific SASS partials
+@use "coreviews/user-activity"
