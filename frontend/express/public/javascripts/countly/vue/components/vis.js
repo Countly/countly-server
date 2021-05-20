@@ -570,7 +570,7 @@
             bucket: {
                 type: String,
                 validator: function(value) {
-                    return ['hourly', 'daily', 'weekly', 'montly'].indexOf(value) !== -1;
+                    return ['hourly', 'daily', 'weekly', 'monthly'].indexOf(value) !== -1;
                 }
             },
             dummy: {
