@@ -3441,6 +3441,7 @@ window.ManageUsersView = countlyView.extend({
             for (var i0 in types) {
                 $('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index).countlyCheckbox();
                 if (types[i0][0] === 'r' && feature === 'core') {
+                    console.log('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index);
                     $('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index).countlyCheckbox().set(true);
                     $('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index).countlyCheckbox().setDisabled();
                 }
@@ -3862,7 +3863,6 @@ window.ManageUsersView = countlyView.extend({
             data.app_id = countlyCommon.ACTIVE_APP_ID;
             self.drawerMode = 'u';
             self.selectedMemberId = id;
-            self.renderPermissionsTable();
 
             $('.create-user-drawer .edit-picture').show();
             $('#create-user-drawer-title').html($.i18n.map['management-users.edit-user']);
