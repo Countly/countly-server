@@ -187,37 +187,6 @@
         }
     }));
 
-    Vue.component("cly-input-dropdown", countlyBaseComponent.extend({
-        template: '<cly-dropdown ref="dropdown" :disabled="disabled" v-on="$listeners" v-bind="$attrs">\
-                        <template v-slot:trigger="dropdown">\
-                            <cly-input-dropdown-trigger\
-                                :disabled="disabled"\
-                                :focused="dropdown.visible"\
-                                :opened="dropdown.visible"\
-                                :placeholder="placeholder"\
-                                :selected-options="selectedOptions">\
-                            </cly-input-dropdown-trigger>\
-                        </template>\
-                        <template v-slot :handleClose="handleClose">\
-                            <slot>\
-                            </slot>\
-                        </template>\
-                    </cly-dropdown>',
-        props: {
-            placeholder: {type: String, default: 'Select'},
-            selectedOptions: { type: [Object, Array, String] },
-            disabled: { type: Boolean, default: false}
-        },
-        methods: {
-            handleClose: function() {
-                this.$refs.dropdown.handleClose();
-            },
-            updateDropdown: function() {
-                this.$refs.dropdown.updateDropdown();
-            }
-        }
-    }));
-
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
