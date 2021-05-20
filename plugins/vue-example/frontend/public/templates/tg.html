@@ -1,6 +1,6 @@
 <div>
     <cly-section title="Line Chart">
-        <cly-chart-line :option="lineOptions" :height="400">
+        <cly-chart-line :option="lineOptions">
             <template v-slot:chart-right="scope">
                 <!-- <div class="bu-level-item">
                     <el-select>
@@ -12,7 +12,7 @@
         </cly-chart-line>
     </cly-section>
     <cly-section title="Time Graph">
-        <cly-chart-time :option="largeScaleOptions" :height="400" :bucket="selBucket" :dummy="true">
+        <cly-chart-time :option="largeScaleOptions" :bucket="selBucket" :dummy="true">
             <template v-slot:chart-left="scope">
                 <div style="width: 100px;">
                     <el-select v-model="selBucket">
@@ -21,15 +21,13 @@
                     </el-select>
                 </div>
             </template>
-            <template v-slot:chart-right="scope">
-            </template>
         </cly-chart-time>
     </cly-section>
     <cly-section title="Bar Chart">
-        <cly-chart-bar :option="barOptions" :height="400"></cly-chart-bar>
+        <cly-chart-bar :option="barOptions"></cly-chart-bar>
     </cly-section>
     <cly-section title="Stacked Bar Chart">
-        <cly-chart-bar :option="stackedBarOptions" :height="400" :showToggle="false"></cly-chart-bar>
+        <cly-chart-bar :option="stackedBarOptions" :showToggle="false"></cly-chart-bar>
     </cly-section>
     <cly-section title="Pie Chart">
         <!-- <cly-chart class="chart" :option="pieOptions" style="height: 400px;" :autoresize="true"></cly-chart> -->
