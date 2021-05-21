@@ -44,7 +44,7 @@
 
 <script type="text/x-template" id="slipping-away-users-bar-chart">
     <cly-section>
-        <cly-chart class="chart" :option="slippingAwayUsersOptions" style="height: 400px;" :autoresize="true" v-loading="isLoading"></cly-chart>
+        <cly-chart-bar :option="slippingAwayUsersOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
     </cly-section>
 </script>
 
@@ -58,12 +58,12 @@
                 </el-table-column>
                 <el-table-column sortable="custom" prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
                     <template slot-scope="scope">
-                        <div class="bu-columns bu-is-gapless">
-                            <div class="bu-column bu-is-2">
-                                <span>{{scope.row.percentage}}%</span>
+                        <div class="bu-level-left">
+                            <div class="bu-level-item">
+                                <span>{{scope.row.percentage}} %</span>
                             </div>
-                            <div class="bu-column bu-is-10">
-                                <el-progress :percentage="parseInt(scope.row.percentage)" class="slipping-away-users-td-progress-bar" :show-text="false" :color="progressbarColor"></el-progress>
+                            <div class="slipping-away-user-table-progress-bar-container">
+                                <progress class="bu-progress bu-is-small" :value="scope.row.percentage" max="100"></progress>
                             </div>
                         </div>
                     </template>

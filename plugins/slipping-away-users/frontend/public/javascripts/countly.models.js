@@ -1,20 +1,5 @@
-/*global countlyCommon,countlyVue,CV*/
+/*global countlyCommon,countlyVue,CV,CountlyHelpers*/
 (function(countlySlippingAwayUsers) {
-
-    //TODO:move buildFilters inside query builder component
-    countlySlippingAwayUsers.helpers = {
-        buildFilters: function(filters) {
-            var newQuery = {};
-            if (filters.query) {
-                Object.keys(filters.query).forEach(function(queryItem) {
-                    var propertyValue = filters.query[queryItem];
-                    var propertyNameWithoutUp = queryItem.split('.')[1];
-                    newQuery[propertyNameWithoutUp] = propertyValue;
-                });
-            }
-            return newQuery;
-        }
-    };
 
     countlySlippingAwayUsers.service = {
         fetchSlippingAwayUsers: function(filters) {
@@ -24,7 +9,7 @@
                 data: {
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     method: 'slipping',
-                    query: JSON.stringify(countlySlippingAwayUsers.helpers.buildFilters(filters))
+                    query: JSON.stringify(CountlyHelpers.buildFilters(filters))
                 }
             }, {disableAutoCatch: true});
         }

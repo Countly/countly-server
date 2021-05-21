@@ -3406,6 +3406,19 @@
         $(breadcrumbsEl).prependTo(el);
     };
 
+    //TODO: move buildFilters inside query builder component
+    CountlyHelpers.buildFilters = function(filters) {
+        var newQuery = {};
+        if (filters.query) {
+            Object.keys(filters.query).forEach(function(queryItem) {
+                var propertyValue = filters.query[queryItem];
+                var propertyNameWithoutUp = queryItem.split('.')[1];
+                newQuery[propertyNameWithoutUp] = propertyValue;
+            });
+        }
+        return newQuery;
+    };
+
     $(document).ready(function() {
         $("#overlay").click(function() {
             var dialog = $(".dialog:visible:not(.cly-loading)");
@@ -3901,5 +3914,5 @@ $.widget("cly.datepickerExtended", {
             this.baseInstance.datepicker("setDate", date);
             this._syncWith("picker", 0);
         }
-    }
+    },
 });
