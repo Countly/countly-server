@@ -145,7 +145,7 @@ var userActivityViewWrapper = new countlyVue.views.BackboneWrapper({
     component: UserActivityView,
     vuex: userActivityVuex,
     templates: [
-        "/templates/user-activity/UserActivity.html",
+        "/core/user-activity/templates/user-activity.html",
         "/drill/templates/query.builder.v2.html"
     ]
 });
