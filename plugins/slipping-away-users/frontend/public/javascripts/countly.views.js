@@ -41,7 +41,6 @@ var SlippingAwayUsersBarChart = countlyVue.views.BaseView.extend({
                 series: [{
                     data: this.yAxisSlippingAwayUsersCount,
                     name: CV.i18n('slipping-away-users.barchart-description'),
-                    type: "bar",
                 }]
             };
         },

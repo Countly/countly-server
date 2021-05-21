@@ -55,7 +55,6 @@ var UserActivityBarChart = countlyVue.views.BaseView.extend({
                     data: self.userActivity[userActivityKey].map(function(item) {
                         return item.count;
                     }),
-                    type: "bar",
                     name: self.barChartItemsLegends[userActivityKey],
                 };
             });
