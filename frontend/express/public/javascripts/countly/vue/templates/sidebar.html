@@ -1,0 +1,18 @@
+<div class="sidebar-x" style="position: fixed;left: 0;width: 224px;background-color: #0B131A;height: 100%;z-index: 998;user-select: none;color: white;overflow-y: scroll;top: 59px;">
+    <ul>
+        <li v-for="(cat, idx) in categories">
+            <a href="#">{{cat.title}}
+                <ul>
+                    <li v-for="(menu, idx) in categorizedMenus[cat.name]">
+                        <a :href="menu.url">{{i18nM(menu.title)}}</a>
+                        <ul>
+                            <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
+                                <a :href="submenu.url">{{i18nM(submenu.title)}}</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </a>
+        </li>
+    </ul>
+</div>

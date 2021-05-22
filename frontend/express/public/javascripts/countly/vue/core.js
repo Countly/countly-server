@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal */
 
 (function(countlyVue, $) {
 
@@ -38,7 +38,10 @@
     // @vue/component
     var i18nMixin = {
         methods: {
-            i18n: _i18n
+            i18n: _i18n,
+            i18nM: function(key) {
+                return jQuery.i18n.map[key];
+            }
         }
     };
 
@@ -77,7 +80,8 @@
                 namespaced: true,
                 state: {
                     period: countlyCommon.getPeriod(),
-                    periodLabel: countlyCommon.getDateRangeForCalendar()
+                    periodLabel: countlyCommon.getDateRangeForCalendar(),
+                    activeApp: null
                 },
                 getters: {
                     period: function(state) {
@@ -93,16 +97,31 @@
                     },
                     setPeriodLabel: function(state, periodLabel) {
                         state.periodLabel = periodLabel;
+                    },
+                    setActiveApp: function(state, activeApp) {
+                        state.activeApp = activeApp;
                     }
                 },
                 actions: {
                     updatePeriod: function(context, obj) {
                         context.commit("setPeriod", obj.period);
                         context.commit("setPeriodLabel", obj.label);
+                    },
+                    updateActiveApp: function(context, id) {
+                        var appObj = countlyGlobal.apps[id];
+                        if (appObj) {
+                            context.commit("setActiveApp", Object.freeze(JSON.parse(JSON.stringify(appObj))));
+                        }
                     }
                 }
             }
         }
+    });
+
+    $(document).ready(function() {
+        app.addAppSwitchCallback(function(appId) {
+            _globalVuexStore.dispatch("countlyCommon/updateActiveApp", appId);
+        });
     });
 
     var _uniqueCopiedStoreId = 0;
@@ -331,6 +350,42 @@
         }
     );
 
+    var BaseContentMixin = countlyBaseComponent.extend(
+        // @vue/component
+        {
+            inheritAttrs: false,
+            mixins: [
+                _mixins.i18n
+            ],
+            props: {
+                name: { type: String, default: null},
+                id: { type: String, default: null },
+                alwaysMounted: { type: Boolean, default: true },
+                alwaysActive: { type: Boolean, default: false },
+                role: { type: String, default: "default" }
+            },
+            data: function() {
+                return {
+                    isContent: true
+                };
+            },
+            computed: {
+                isActive: function() {
+                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
+                },
+                tName: function() {
+                    return this.name;
+                },
+                tId: function() {
+                    return this.id;
+                },
+                elementId: function() {
+                    return this.componentId + "-" + this.id;
+                }
+            }
+        }
+    );
+
     var templateUtil = {
         stage: function(fileName) {
             return {
@@ -364,6 +419,8 @@
             };
         };
     };
+
+    _mixins.BaseContent = BaseContentMixin;
 
     var _components = {
         BaseComponent: countlyBaseComponent,

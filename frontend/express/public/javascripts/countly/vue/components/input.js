@@ -1,25 +1,11 @@
-/* global jQuery, Vue, _ */
+/* global Vue */
 
-(function(countlyVue, $) {
+(function(countlyVue) {
 
-    var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins;
-
-    var objectWithoutProperties = function(obj, excluded) {
-        if (!obj || !excluded || excluded.length === 0) {
-            return obj;
-        }
-        return Object.keys(obj).reduce(function(acc, val) {
-            if (excluded.indexOf(val) === -1) {
-                acc[val] = obj[val];
-            }
-            return acc;
-        }, {});
-    };
-
+    var _mixins = countlyVue.mixins;
     var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6})$', 'i');
 
-    Vue.component("cly-colorpicker", countlyBaseComponent.extend({
+    Vue.component("cly-colorpicker", countlyVue.components.BaseComponent.extend({
         mixins: [
             _mixins.i18n
         ],
@@ -68,661 +54,20 @@
             picker: window.VueColor.Sketch
         },
         template: '<div class="cly-vue-colorpicker">\n' +
-                    '<div @click.stop="open">\n' +
-                        '<div class="preview-box" :style="previewStyle"></div>\n' +
-                        '<input class="preview-input" type="text" v-model="localValue" />\n' +
-                    '</div>\n' +
-                    '<div class="picker-body" v-if="isOpened" v-click-outside="close">\n' +
-                        '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
-                        '<div class="button-controls">\n' +
-                            '<cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
-                            '<cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
-                            '<cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green"></cly-button>\n' +
+                        '<div @click.stop="open">\n' +
+                            '<div class="preview-box" :style="previewStyle"></div>\n' +
+                            '<input class="preview-input" type="text" v-model="localValue" />\n' +
                         '</div>\n' +
-                    '</div>\n' +
-                  '</div>'
+                        '<div class="picker-body" v-if="isOpened" v-click-outside="close">\n' +
+                            '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
+                            '<div class="button-controls">\n' +
+                                '<cly-button :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
+                                '<cly-button :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
+                                '<cly-button :label="i18n(\'common.confirm\')" @click="close" skin="green"></cly-button>\n' +
+                            '</div>\n' +
+                        '</div>\n' +
+                      '</div>'
     }));
-
-    Vue.component("cly-radio", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            props: {
-                value: {required: true, default: -1, type: [ String, Number ]},
-                items: {
-                    required: true,
-                    type: Array,
-                    default: function() {
-                        return [];
-                    }
-                },
-                skin: { default: "main", type: String},
-                disabled: {type: Boolean, default: false}
-            },
-            computed: {
-                topClasses: function() {
-                    var classes = [];
-                    if (["main", "light"].indexOf(this.skin) > -1) {
-                        classes.push("radio-" + this.skin + "-skin");
-                    }
-                    else {
-                        classes.push("radio-main-skin");
-                    }
-                    if (this.disabled) {
-                        classes.push("disabled");
-                    }
-                    return classes;
-                }
-            },
-            methods: {
-                setValue: function(e) {
-                    if (!this.disabled) {
-                        this.$emit('input', e);
-                    }
-                }
-            },
-            template: '<div class="cly-vue-radio" v-bind:class="topClasses">\n' +
-                            '<div class="radio-wrapper">\n' +
-                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button">\n' +
-                                    '<div class="box"></div>\n' +
-                                    '<div class="text">{{item.label}}</div>\n' +
-                                    '<div class="description">{{item.description}}</div>\n' +
-                                '</div>\n' +
-                            '</div>\n' +
-                        '</div>'
-        }
-    ));
-
-    Vue.component("cly-generic-radio", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            props: {
-                value: {required: true, default: -1, type: [ String, Number ]},
-                items: {
-                    required: true,
-                    type: Array,
-                    default: function() {
-                        return [];
-                    }
-                },
-                skin: { default: "main", type: String},
-            },
-            computed: {
-                skinClass: function() {
-                    if (["main", "light"].indexOf(this.skin) > -1) {
-                        return "generic-radio-" + this.skin + "-skin";
-                    }
-                    return "generic-radio-main-skin";
-                }
-            },
-            methods: {
-                setValue: function(e) {
-                    this.$emit('input', e);
-                }
-            },
-            template: '<div class="cly-vue-generic-radio" v-bind:class="[skinClass]">\n' +
-                            '<div class="generic-radio-wrapper">\n' +
-                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}">\n' +
-                                    '<div class="button-area">\n' +
-                                        '<div class="component"><component :is="item.cmp" /></div>\n' +
-                                        '<div class="text">{{item.label}}</div>\n' +
-                                    '</div>\n' +
-                                '</div>\n' +
-                            '</div>\n' +
-                        '</div>'
-        }
-    ));
-
-    Vue.component("cly-text-field", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            mixins: [
-                _mixins.i18n
-            ],
-            props: {
-                value: {required: true, type: [ String, Number ], default: ''},
-                removable: {type: Boolean, default: false},
-                removeText: {type: String, default: ''},
-                disabled: {type: Boolean, default: false}
-            },
-            methods: {
-                setValue: function(e) {
-                    this.$emit('input', e);
-                },
-                removeMe: function() {
-                    this.$emit('remove-me');
-                }
-            },
-            computed: {
-                defaultListeners: function() {
-                    return objectWithoutProperties(this.$listeners, ["input"]);
-                },
-                innerRemoveText: function() {
-                    if (this.removeText) {
-                        return this.removeText;
-                    }
-                    return this.i18n("common.remove");
-                }
-            },
-            template: '<div class="cly-vue-text-field">\n' +
-                            '<div class="remove-button"\n' +
-                                'v-if="removable && !disabled"\n' +
-                                '@click="removeMe">\n' +
-                                '{{innerRemoveText}}\n' +
-                            '</div>\n' +
-                            '<input type="text" class="input"\n' +
-                                'v-on="defaultListeners" v-bind="$attrs"\n' +
-                                'v-bind:value="value"\n' +
-                                'v-bind:disabled="disabled"\n' +
-                                'v-on:input="setValue($event.target.value)">\n' +
-                        '</div>'
-        }
-    ));
-
-    Vue.component("cly-check", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            props: {
-                value: {default: false, type: Boolean},
-                label: {type: String, default: ''},
-                skin: { default: "switch", type: String},
-                disabled: {type: Boolean, default: false}
-            },
-            computed: {
-                topClasses: function() {
-                    var classes = [];
-                    if (["switch", "tick", "star"].indexOf(this.skin) > -1) {
-                        classes.push("check-" + this.skin + "-skin");
-                    }
-                    else {
-                        classes.push("check-switch-skin");
-                    }
-                    if (this.disabled) {
-                        classes.push("disabled");
-                    }
-                    return classes;
-                },
-                labelClass: function() {
-                    return this.getClass(this.value);
-                }
-            },
-            methods: {
-                setValue: function(e) {
-                    if (!this.disabled) {
-                        this.$emit('input', e);
-                    }
-                },
-                getClass: function(value) {
-                    var classes = ["check-label"];
-                    if (this.skin === "tick") {
-                        classes.push("fa");
-                        if (value) {
-                            classes.push("fa-check-square");
-                        }
-                        else {
-                            classes.push("fa-square-o");
-                        }
-                    }
-                    else if (this.skin === "star") {
-                        classes.push("ion-icons");
-                        if (value) {
-                            classes.push("ion-android-star");
-                        }
-                        else {
-                            classes.push("ion-android-star-outline");
-                        }
-                    }
-                    return classes;
-                }
-            },
-            template: '<div class="cly-vue-check" v-bind:class="topClasses">\n' +
-                            '<div class="check-wrapper">\n' +
-                                '<input type="checkbox" class="check-checkbox" :checked="value">\n' +
-                                '<div v-bind:class="labelClass" @click.stop="setValue(!value)"></div>\n' +
-                                '<span v-if="label" class="check-text" @click.stop="setValue(!value)">{{label}}</span>\n' +
-                            '</div>\n' +
-                        '</div>'
-        }
-    ));
-
-    Vue.component("cly-check-list", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            props: {
-                value: {
-                    default: function() {
-                        return [];
-                    },
-                    type: Array
-                },
-                items: {
-                    default: function() {
-                        return [];
-                    },
-                    type: Array
-                },
-                skin: { default: "switch", type: String}
-            },
-            computed: {
-                uncompressed: function() {
-                    return this.getUncompressed();
-                }
-            },
-            methods: {
-                getUncompressed: function() {
-                    var self = this;
-                    return this.items.map(function(item) {
-                        return self.value.indexOf(item.value) > -1;
-                    });
-                },
-                setValue: function(value, status) {
-                    var self = this;
-                    var newArray = null;
-                    if (status && self.value.indexOf(value) === -1) {
-                        newArray = self.value.slice();
-                        newArray.push(value);
-                    }
-                    else if (!status && self.value.indexOf(value) > -1) {
-                        newArray = self.value.slice().filter(function(item) {
-                            return item !== value;
-                        });
-                    }
-                    if (newArray) {
-                        this.$emit('input', newArray);
-                    }
-                }
-            },
-            template: '<div class="cly-vue-check-list">\n' +
-                            '<cly-check v-for="(item, i) in items" :key="i" v-bind:skin="skin" v-bind:label="item.label" v-bind:value="uncompressed[i]" v-on:input="setValue(item.value, $event)">\n' +
-                            '</cly-check>\n' +
-                        '</div>'
-        }
-    ));
-
-    Vue.component("cly-button", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            props: {
-                label: {type: String, default: ''},
-                skin: { default: "green", type: String},
-                disabled: {type: Boolean, default: false}
-            },
-            computed: {
-                activeClasses: function() {
-                    var classes = [this.skinClass];
-                    if (this.disabled) {
-                        classes.push("disabled");
-                    }
-                    return classes;
-                },
-                skinClass: function() {
-                    if (["green", "light", "orange"].indexOf(this.skin) > -1) {
-                        return "button-" + this.skin + "-skin";
-                    }
-                    return "button-light-skin";
-                }
-            },
-            template: '<div class="cly-vue-button" v-bind:class="activeClasses" v-on="$listeners">{{label}}</div>'
-        }
-    ));
-
-    Vue.component("cly-text-area", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            props: {
-                value: {required: true, type: [ String, Number ], default: ''}
-            },
-            methods: {
-                setValue: function(e) {
-                    this.$emit('input', e);
-                }
-            },
-            computed: {
-                defaultListeners: function() {
-                    return objectWithoutProperties(this.$listeners, ["input"]);
-                }
-            },
-            template: '<textarea class="cly-vue-text-area"\n' +
-                            'v-bind="$attrs"\n' +
-                            'v-on="defaultListeners"\n' +
-                            ':value="value"\n' +
-                            '@input="setValue($event.target.value)">\n' +
-                        '</textarea>'
-        }
-    ));
-
-    Vue.component("cly-select-n", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            mixins: [
-                _mixins.i18n
-            ],
-            props: {
-                value: {
-                    type: [Object, String, Number, Boolean],
-                    default: function() {
-                        return { name: "", value: null };
-                    }
-                },
-                items: {
-                    type: Array,
-                    default: function() {
-                        return [];
-                    }
-                },
-                placeholder: { type: String, default: '' },
-                dynamicItems: { type: Boolean, default: false },
-                disabled: { type: Boolean, default: false },
-                aligned: { type: String, default: "left" },
-                skin: { type: String, default: 'default' },
-                listDelayWarning: {type: String, default: null}
-            },
-            mounted: function() {
-                $(this.$refs.scrollable).slimScroll({
-                    height: '100%',
-                    start: 'top',
-                    wheelStep: 10,
-                    position: 'right',
-                    disableFadeOut: true
-                });
-            },
-            data: function() {
-                return {
-                    tempSearchQuery: "", // in-sync search query value
-                    searchQuery: "", // debounced search query value
-                    navigatedIndex: null,
-                    opened: false,
-                    waitingItems: false,
-                    hasFocus: false,
-                    scroller: null
-                };
-            },
-            computed: {
-                selectedItem: function() {
-                    return this.value;
-                },
-                searchable: function() {
-                    return this.items.length > 10 || this.dynamicItems;
-                },
-                containerClasses: function() {
-                    var classes = [];
-                    if (this.opened) {
-                        classes.push("active");
-                    }
-                    if (this.dynamicItems) {
-                        classes.push("dynamic-items");
-                    }
-                    if (this.disabled) {
-                        classes.push("disabled");
-                    }
-                    if (["default", "slim"].indexOf(this.skin) > -1) {
-                        classes.push("select-" + this.skin + "-skin");
-                    }
-                    else {
-                        classes.push("select-default-skin");
-                    }
-                    if (["left", "center", "right"].indexOf(this.aligned) > -1) {
-                        classes.push("select-aligned-" + this.aligned);
-                    }
-                    else {
-                        classes.push("select-aligned-left");
-                    }
-                    return classes;
-                },
-                dropClasses: function() {
-                    var classes = ["drop"];
-                    if (this.skin !== "slim") {
-                        classes.push("combo");
-                    }
-
-                    return classes;
-                },
-                visibleItems: function() {
-                    var self = this;
-                    if (!this.dynamicItems && this.tempSearchQuery && this.tempSearchQuery !== "") {
-                        var visible = this.items.map(function() {
-                            return false;
-                        });
-                        var loweredQuery = self.tempSearchQuery.toLowerCase();
-                        this.items.forEach(function(item, idx) {
-                            if (Object.prototype.hasOwnProperty.call(item, "value")) {
-                                if (item.name.toLowerCase().indexOf(loweredQuery) > -1) {
-                                    visible[idx] = true;
-                                    if (self.groupIndex[idx] > -1) {
-                                        visible[self.groupIndex[idx]] = true;
-                                    }
-                                }
-                            }
-                        });
-                        return this.items.filter(function(item, idx) {
-                            return visible[idx];
-                        });
-                    }
-                    else if (this.dynamicItems && this.waitingItems) {
-                        // blocked for search event to complete
-                        return [];
-                    }
-                    else {
-                        return this.items;
-                    }
-                },
-                groupIndex: function() {
-                    var index = [],
-                        currentGroup = -1,
-                        self = this;
-
-                    this.items.forEach(function(item, idx) {
-                        if (self.isItemGroup(item)) {
-                            currentGroup = idx;
-                            index.push(-1);
-                        }
-                        else {
-                            index.push(currentGroup);
-                        }
-                    });
-                    return index;
-                },
-                isKeyboardNavAvailable: function() {
-                    return this.opened && this.hasFocus;
-                }
-            },
-            methods: {
-                setItem: function(item) {
-                    if (!this.isItemGroup(item)) {
-                        this.$emit("input", item);
-                        this.opened = false;
-                    }
-                },
-                close: function() {
-                    this.opened = false;
-                },
-                fireDynamicSearch: function() {
-                    if (this.dynamicItems) {
-                        this.waitingItems = true;
-                        this.$emit("search", this.searchQuery);
-                    }
-                },
-                toggle: function() {
-                    if (!this.disabled) {
-                        this.opened = !this.opened;
-                    }
-                },
-                findItemByValue: function(value) {
-                    var found = this.items.filter(function(item) {
-                        return item.value === value;
-                    });
-                    if (found.length > 0) {
-                        return found[0];
-                    }
-                    return null;
-                },
-                selectNavigatedElement: function() {
-                    if (this.navigatedIndex !== null && this.navigatedIndex < this.visibleItems.length) {
-                        this.setItem(this.visibleItems[this.navigatedIndex]);
-                    }
-                },
-                setNavigatedIndex: function(navigatedIndex) {
-                    this.navigatedIndex = navigatedIndex;
-                },
-                scrollToNavigatedIndex: function() {
-                    var self = this,
-                        $scrollable = $(self.$refs.scrollable);
-
-                    if (self.navigatedIndex !== null && $scrollable) {
-                        var y = ($scrollable.scrollTop() + $(self.$refs["tmpItemRef_" + self.navigatedIndex]).position().top) + "px";
-                        $scrollable.slimScroll({scrollTo: y});
-                    }
-                },
-                isItemGroup: function(element) {
-                    if (!Object.prototype.hasOwnProperty.call(element, "value")) {
-                        return true;
-                    }
-                    if (element.group) {
-                        return true;
-                    }
-                    return false;
-                },
-                getNextNonGroupIndex: function(startFrom, direction) {
-                    for (var offset = 0; offset < this.visibleItems.length; offset++) {
-                        var current = (direction * offset + startFrom);
-                        if (current < 0) {
-                            current = this.visibleItems.length + current;
-                        }
-                        current = current % this.visibleItems.length;
-                        if (!this.isItemGroup(this.visibleItems[current])) {
-                            return current;
-                        }
-                    }
-                },
-                upKeyEvent: function() {
-                    if (!this.isKeyboardNavAvailable) {
-                        return;
-                    }
-
-                    if (this.navigatedIndex === null) {
-                        this.navigatedIndex = this.visibleItems.length - 1;
-                    }
-                    else {
-                        this.navigatedIndex = this.getNextNonGroupIndex(this.navigatedIndex - 1, -1);
-                    }
-
-                    this.scrollToNavigatedIndex();
-                },
-                downKeyEvent: function() {
-                    if (!this.isKeyboardNavAvailable) {
-                        return;
-                    }
-
-                    if (this.navigatedIndex === null) {
-                        this.navigatedIndex = 0;
-                    }
-                    else {
-                        this.navigatedIndex = this.getNextNonGroupIndex(this.navigatedIndex + 1, 1);
-                    }
-
-                    this.scrollToNavigatedIndex();
-                },
-                escKeyEvent: function() {
-                    if (this.navigatedIndex === null && this.opened) {
-                        this.close();
-                        return;
-                    }
-                    else if (this.navigatedIndex !== null) {
-                        this.navigatedIndex = null;
-                    }
-                },
-                enterKeyEvent: function() {
-                    if (this.navigatedIndex === null) {
-                        return;
-                    }
-
-                    this.selectNavigatedElement();
-                }
-            },
-            watch: {
-                value: {
-                    immediate: true,
-                    handler: function(passedValue) {
-                        if (typeof passedValue !== 'object') {
-                            var item = this.findItemByValue(passedValue);
-                            if (item) {
-                                this.setItem(item);
-                            }
-                            else {
-                                this.setItem({name: passedValue, value: passedValue});
-                            }
-                        }
-                    }
-                },
-                opened: function(newValue) {
-                    if (!newValue) {
-                        this.tempSearchQuery = "";
-                        this.searchQuery = "";
-                        this.navigatedIndex = null;
-                    }
-                },
-                tempSearchQuery: _.debounce(function(newVal) {
-                    this.searchQuery = newVal;
-                }, 500),
-                searchQuery: function() {
-                    this.fireDynamicSearch();
-                },
-                items: {
-                    immediate: true,
-                    handler: function() {
-                        this.waitingItems = false;
-                    }
-                },
-                visibleItems: function() {
-                    this.navigatedIndex = null; // reset navigation on visible items change
-                }
-            },
-            template: '<div class="cly-vue-select"\n' +
-                            'v-bind:class="containerClasses"\n' +
-                            'v-click-outside="close"\n' +
-                            '@keydown.up.prevent="upKeyEvent"\n' +
-                            '@keydown.down.prevent="downKeyEvent"\n' +
-                            '@keydown.esc="escKeyEvent"\n' +
-                            '@keydown.enter="enterKeyEvent">\n' +
-                            '<div class="select-inner" @click="toggle">\n' +
-                                '<div class="text-container">\n' +
-                                    '<div v-if="selectedItem" class="text">\n' +
-                                        '<span>{{selectedItem.name}}</span>\n' +
-                                    '</div>\n' +
-                                    '<div v-if="!selectedItem" class="text">\n' +
-                                        '<span class="text-light-gray">{{placeholder}}</span>\n' +
-                                    '</div>\n' +
-                                '</div>\n' +
-                                '<div :class="dropClasses"></div>\n' +
-                            '</div>\n' +
-                            '<div class="search" v-if="searchable" v-show="opened">\n' +
-                                '<div class="inner">\n' +
-                                '<input type="search"\n' +
-                                    '@focus="hasFocus = true"\n' +
-                                    'v-model="tempSearchQuery"/>\n' +
-                                '<i class="fa fa-search"></i>\n' +
-                                '</div>\n' +
-                            '</div>\n' +
-                            '<div class="items-list square" v-show="opened">\n' +
-                                '<div ref="scrollable" class="scrollable">\n' +
-                                    '<div class="warning" v-if="dynamicItems && listDelayWarning">{{ listDelayWarning }}</div>\n' +
-                                    '<div v-for="(item, i) in visibleItems" :key="i"\n' +
-                                        '@mouseover="setNavigatedIndex(i)"\n' +
-                                        '@mouseleave="setNavigatedIndex(null)"\n' +
-                                        '@click="setItem(item)"\n' +
-                                        ':ref="\'tmpItemRef_\' + i"\n' +
-                                        ':class="{item: !isItemGroup(item), group : isItemGroup(item), navigated: i === navigatedIndex}">\n' +
-                                        '<div v-if="isItemGroup(item)">\n' +
-                                            '<span v-text="item.name"></span>\n' +
-                                        '</div>\n' +
-                                        '<div v-else v-bind:data-value="item.value">\n' +
-                                            '<span v-text="item.name"></span>\n' +
-                                        '</div>\n' +
-                                    '</div>\n' +
-                                '</div>\n' +
-                            '</div>\n' +
-                        '</div>'
-        }
-    ));
 
     Vue.component("cly-dropzone", window.vue2Dropzone);
 
@@ -1242,4 +587,70 @@
         }
     }));
 
-}(window.countlyVue = window.countlyVue || {}, jQuery));
+    Vue.component("cly-check", countlyVue.components.BaseComponent.extend(
+        // @vue/component
+        {
+            props: {
+                value: {default: false, type: Boolean},
+                label: {type: String, default: ''},
+                skin: { default: "switch", type: String},
+                disabled: {type: Boolean, default: false}
+            },
+            computed: {
+                topClasses: function() {
+                    var classes = [];
+                    if (["switch", "tick", "star"].indexOf(this.skin) > -1) {
+                        classes.push("check-" + this.skin + "-skin");
+                    }
+                    else {
+                        classes.push("check-switch-skin");
+                    }
+                    if (this.disabled) {
+                        classes.push("disabled");
+                    }
+                    return classes;
+                },
+                labelClass: function() {
+                    return this.getClass(this.value);
+                }
+            },
+            methods: {
+                setValue: function(e) {
+                    if (!this.disabled) {
+                        this.$emit('input', e);
+                    }
+                },
+                getClass: function(value) {
+                    var classes = ["check-label"];
+                    if (this.skin === "tick") {
+                        classes.push("fa");
+                        if (value) {
+                            classes.push("fa-check-square");
+                        }
+                        else {
+                            classes.push("fa-square-o");
+                        }
+                    }
+                    else if (this.skin === "star") {
+                        classes.push("ion-icons");
+                        if (value) {
+                            classes.push("ion-android-star");
+                        }
+                        else {
+                            classes.push("ion-android-star-outline");
+                        }
+                    }
+                    return classes;
+                }
+            },
+            template: '<div class="cly-vue-check" v-bind:class="topClasses">\n' +
+                            '<div class="check-wrapper">\n' +
+                                '<input type="checkbox" class="check-checkbox" :checked="value">\n' +
+                                '<div v-bind:class="labelClass" @click.stop="setValue(!value)"></div>\n' +
+                                '<span v-if="label" class="check-text" @click.stop="setValue(!value)">{{label}}</span>\n' +
+                            '</div>\n' +
+                        '</div>'
+        }
+    ));
+
+}(window.countlyVue = window.countlyVue || {}));

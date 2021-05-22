@@ -39,6 +39,26 @@
         }
     ));
 
+    Vue.component("cly-empty-home", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-empty-home">\n' +
+                    '<div class="info">\n' +
+                        '<div class="title">{{title}}</div>\n' +
+                        '<div class="text">\n' +
+                            '{{body}}\n' +
+                        '</div>\n' +
+                    '</div>\n' +
+                    '<div v-if="image">\n' +
+                        '<img :src="image">\n' +
+                    '</div>\n' +
+                '</div>',
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            title: { required: true, type: String },
+            body: { required: true, type: String },
+            image: { type: String, default: null }
+        }
+    }));
+
     Vue.component("cly-diff-helper", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
@@ -65,35 +85,15 @@
             }
         },
         template: '<div class="cly-vue-diff-helper" v-if="hasDiff">\n' +
-                        '<div class="message">\n' +
-                            '<span class="text-dark">{{madeChanges}}</span>\n' +
-                            '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\n' +
-                        '</div>\n' +
-                        '<div class="buttons">\n' +
-                            '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
-                           '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>\n' +
-                        '</div>\n' +
-                    '</div>'
-    }));
-
-    Vue.component("cly-empty-home", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-empty-home">\n' +
-                    '<div class="info">\n' +
-                        '<div class="title">{{title}}</div>\n' +
-                        '<div class="text">\n' +
-                            '{{body}}\n' +
-                        '</div>\n' +
-                    '</div>\n' +
-                    '<div v-if="image">\n' +
-                        '<img :src="image">\n' +
-                    '</div>\n' +
-                '</div>',
-        mixins: [countlyVue.mixins.i18n],
-        props: {
-            title: { required: true, type: String },
-            body: { required: true, type: String },
-            image: { type: String, default: null }
-        }
+                            '<div class="message">\n' +
+                                '<span class="text-dark">{{madeChanges}}</span>\n' +
+                                '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+                            '</div>\n' +
+                            '<div class="buttons">\n' +
+                                '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
+                               '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>\n' +
+                            '</div>\n' +
+                        '</div>'
     }));
 
     Vue.component("cly-breakdown-tile", countlyBaseComponent.extend({

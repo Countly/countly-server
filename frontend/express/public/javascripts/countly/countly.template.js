@@ -1,4 +1,4 @@
-/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyTaskManager*/
+/* global Backbone, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyTaskManager, countlyVue*/
 /**
 * Default Backbone View template from which all countly views should inherit.
 * A countly view is defined as a page corresponding to a url fragment such
@@ -708,6 +708,23 @@ var AppRouter = Backbone.Router.extend({
         if (typeof node.priority === "undefined") {
             throw "Provide priority property for category element";
         }
+
+        //New sidebar container hook
+        countlyVue.container.register("/sidebar/menuCategory", {
+            name: category,
+            priority: node.priority,
+            title: node.text || countlyVue.i18n("sidebar.category." + category),
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
+
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback 
+            */
+        });
+
         var menu = $("<div></div>");
         menu.addClass("menu-category");
         menu.addClass(category + "-category");
@@ -833,6 +850,27 @@ var AppRouter = Backbone.Router.extend({
         if (!node.text || !node.code || !node.icon || typeof node.priority === "undefined") {
             throw "Provide code, text, icon and priority properties for menu element";
         }
+
+        //New sidebar container hook
+        countlyVue.container.register("/sidebar/menu", {
+            app_type: app_type,
+            category: category,
+            name: node.code,
+            priority: node.priority,
+            title: node.text,
+            url: node.url,
+            icon: node.icon,
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
+
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback
+            */
+        });
+
         if (!this.appTypes[app_type] && category !== "management" && category !== "users") {
             //app type not yet register, queue
             if (!this._menuForTypes[app_type]) {
@@ -930,6 +968,26 @@ var AppRouter = Backbone.Router.extend({
         if (!node.text || !node.code || !node.url || !node.priority) {
             throw "Provide text, code, url and priority for sub menu";
         }
+
+        //New sidebar container hook
+        countlyVue.container.register("/sidebar/submenu", {
+            app_type: app_type,
+            parent_code: parent_code,
+            name: node.code,
+            priority: node.priority,
+            title: node.text,
+            url: node.url,
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
+
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback
+            */
+        });
+
         if (!this.appTypes[app_type]) {
             //app type not yet register, queue
             if (!this._subMenuForTypes[app_type]) {
@@ -991,7 +1049,6 @@ var AppRouter = Backbone.Router.extend({
         if (typeof node.callback === "function") {
             node.callback(app_type, parent_code, node, menu);
         }
-
     },
     /**
     * Add first level menu element for all app types and special categories. 

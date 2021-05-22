@@ -2,78 +2,7 @@
 
 (function(countlyVue) {
 
-    var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins;
-
-    var BaseContentMixin = countlyBaseComponent.extend(
-        // @vue/component
-        {
-            inheritAttrs: false,
-            mixins: [
-                _mixins.i18n
-            ],
-            props: {
-                name: { type: String, default: null},
-                id: { type: String, default: null },
-                alwaysMounted: { type: Boolean, default: true },
-                alwaysActive: { type: Boolean, default: false },
-                role: { type: String, default: "default" }
-            },
-            data: function() {
-                return {
-                    isContent: true
-                };
-            },
-            computed: {
-                isActive: function() {
-                    return this.alwaysActive || (this.role === "default" && this.$parent.activeContentId === this.id);
-                },
-                tName: function() {
-                    return this.name;
-                },
-                tId: function() {
-                    return this.id;
-                },
-                elementId: function() {
-                    return this.componentId + "-" + this.id;
-                }
-            }
-        }
-    );
-
-    Vue.component("cly-panel", countlyBaseComponent.extend(
-        // @vue/component
-        {
-            props: {
-                title: { type: String, required: false },
-                dateSelector: { type: Boolean, required: false, default: true },
-                hasLeftBottom: { type: Boolean, required: false, default: false },
-                onlyHead: { type: Boolean, required: false, default: false }
-            },
-            template: '<div class="cly-vue-panel widget">\n' +
-                            '<div class="widget-header">\n' +
-                                '<div class="left">\n' +
-                                    '<div style="margin-left: 3px;">\n' +
-                                        '<slot name="left-top">\n' +
-                                            '<div class="title" :class="{small: hasLeftBottom}">{{title}}</div>\n' +
-                                        '</slot>\n' +
-                                        '<div v-if="hasLeftBottom">\n' +
-                                            '<slot name="left-bottom"></slot>\n' +
-                                        '</div>\n' +
-                                    '</div>\n' +
-                                '</div>\n' +
-                                '<div class="right">\n' +
-                                    '<slot name="right-top">\n' +
-                                        '<cly-global-date-selector-w v-once v-if="dateSelector"></cly-global-date-selector-w>\n' +
-                                    '</slot>\n' +
-                                '</div>\n' +
-                            '</div>\n' +
-                            '<div class="widget-content help-zone-vb" :class="{\'no-border\': onlyHead}">\n' +
-                                '<slot/>\n' +
-                            '</div>\n' +
-                        '</div>',
-        }
-    ));
+    var countlyBaseComponent = countlyVue.components.BaseComponent;
 
     Vue.component("cly-header", countlyBaseComponent.extend({
         props: {
@@ -89,11 +18,11 @@
                     </div>\
                     <div class="bu-level bu-is-mobile">\
                         <div class="bu-level-left">\
-                            <div class="bu-level-item">\
-                                <slot name="header-left">\
+                            <slot name="header-left">\
+                                <div class="bu-level-item">\
                                     <h2>{{title}}</h2>\
-                                </slot>\
-                            </div>\
+                                </div>\
+                            </slot>\
                         </div>\
                         <slot></slot>\
                         <div class="bu-level-right">\
@@ -148,7 +77,5 @@
                         </div>\
                     </div>'
     }));
-
-    countlyVue.mixins.BaseContent = BaseContentMixin;
 
 }(window.countlyVue = window.countlyVue || {}));

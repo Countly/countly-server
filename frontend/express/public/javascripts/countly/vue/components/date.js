@@ -892,6 +892,12 @@
 
     Vue.component("cly-date-picker-g", globalDatepicker);
 
+    /*
+        Remove the following component.
+        Its only used by
+        - surveys
+        - cly-panel (deprecated)
+    */
     Vue.component("cly-global-date-selector-w", globalDatepicker);
 
 }(window.countlyVue = window.countlyVue || {}));

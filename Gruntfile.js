@@ -35,6 +35,7 @@ module.exports = function(grunt) {
                 src: [
                     'frontend/express/public/javascripts/utils/polyfills.js',
                     'frontend/express/public/javascripts/utils/underscore-min.js',
+                    'frontend/express/public/javascripts/utils/lodash.merge.js',
                     'frontend/express/public/javascripts/utils/prefixfree.min.js',
                     'frontend/express/public/javascripts/utils/moment/moment-with-locales.min.js',
                     'frontend/express/public/javascripts/utils/handlebars.js',
@@ -120,7 +121,6 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.task.manager.js',
                     'frontend/express/public/javascripts/countly/countly.app.users.js',
                     'frontend/express/public/javascripts/countly/countly.template.js',
-                    'frontend/express/public/javascripts/countly/countly.views.js',
                     'frontend/express/public/javascripts/countly/vue/core.js',
                     'frontend/express/public/javascripts/countly/vue/container.js',
                     'frontend/express/public/javascripts/countly/vue/helpers.js',
@@ -132,15 +132,20 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/date.js',
                     'frontend/express/public/javascripts/countly/vue/components/dropdown.js',
                     'frontend/express/public/javascripts/countly/vue/components/input.js',
-                    'frontend/express/public/javascripts/countly/vue/components/datatable-legacy.js',
+                    'frontend/express/public/javascripts/countly/vue/datatable-legacy.js',
                     'frontend/express/public/javascripts/countly/vue/components/datatable.js',
                     'frontend/express/public/javascripts/countly/vue/components/drawer.js',
                     'frontend/express/public/javascripts/countly/vue/components/vis.js',
                     'frontend/express/public/javascripts/countly/vue/components/helpers.js',
+                    'frontend/express/public/javascripts/countly/vue/components/static.js',
+                    'frontend/express/public/javascripts/countly/vue/legacy.js',
                     'frontend/express/public/javascripts/countly/countly.vue.legacy.js',
                     'frontend/express/public/javascripts/countly/countly.token.manager.js',
                     'frontend/express/public/javascripts/countly/countly.version.history.js',
-                    'frontend/express/public/javascripts/countly/countly.analytics.js'
+                    'frontend/express/public/javascripts/countly/countly.analytics.js',
+                    'frontend/express/public/javascripts/countly/countly.views.js',
+                    'frontend/express/public/core/user-activity/javascripts/countly.models.js',
+                    'frontend/express/public/core/user-activity/javascripts/countly.views.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }

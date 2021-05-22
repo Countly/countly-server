@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, echarts, CV */
+/*global app, countlyVue, countlyVueExample, countlyCommon, CV */
 
 (function() {
     var TableView = countlyVue.views.create({
@@ -245,86 +245,13 @@
     var TimeGraphView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/tg.html'),
         data: function() {
-            var base = +new Date(1968, 9, 3);
-            var oneDay = 24 * 3600 * 1000;
-            var date = [];
-
-            var data = [Math.random() * 300];
-
-            for (var i = 1; i < 20000; i++) {
-                var now = new Date(base += oneDay);
-                date.push([now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/'));
-                data.push(Math.round((Math.random() - 0.5) * 20 + data[i - 1]));
-            }
             return {
+                selBucket: "daily",
                 largeScaleOptions: {
-                    tooltip: {
-                        trigger: 'axis',
-                        position: function(pt) {
-                            return [pt[0], '10%'];
-                        }
-                    },
-                    title: {
-                        left: 'center',
-                        text: 'Some random data',
-                    },
-                    toolbox: {
-                        feature: {
-                            dataZoom: {},
-                            restore: {},
-                            saveAsImage: { show: true }
-                        }
-                    },
-                    xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        data: date
-                    },
-                    yAxis: {
-                        type: 'value',
-                        boundaryGap: [0, '100%']
-                    },
-                    dataZoom: [
-                        {
-                            type: 'slider',
-                            xAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'slider',
-                            yAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'inside',
-                            xAxisIndex: 0,
-                            filterMode: 'none'
-                        },
-                        {
-                            type: 'inside',
-                            yAxisIndex: 0,
-                            filterMode: 'none'
-                        }
-                    ],
                     series: [
                         {
                             name: 'Random',
-                            type: 'line',
-                            symbol: 'none',
-                            sampling: 'lttb',
-                            itemStyle: {
-                                color: 'rgb(255, 70, 131)'
-                            },
-                            areaStyle: {
-                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-                                    offset: 0,
-                                    color: 'rgb(255, 158, 68)'
-                                }, {
-                                    offset: 1,
-                                    color: 'rgb(255, 70, 131)'
-                                }])
-                            },
-                            data: data
+                            data: []
                         }
                     ]
                 },
@@ -377,93 +304,73 @@
                     ]
                 },
                 lineOptions: {
-                    title: {
-                        text: 'Lines'
-                    },
-                    tooltip: {
-                        trigger: 'axis'
-                    },
-                    legend: {
-                        data: ['A', 'B', 'C', 'D', 'E']
-                    },
-                    grid: {
-                        left: '3%',
-                        right: '4%',
-                        bottom: '3%',
-                        containLabel: true
-                    },
-                    toolbox: {
-                        feature: {
-                            dataZoom: {
-                                yAxisIndex: 'none'
-                            },
-                            restore: {},
-                            saveAsImage: { show: true }
-                        }
-                    },
-                    xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        data: [0, 1, 3, 4, 5, 6]
-                    },
-                    yAxis: {
-                        type: 'value'
-                    },
+                    // xAxis: {
+                    //     data: [10, 11, 13, 14, 15, 16, 17]
+                    // },
                     series: [
                         {
-                            name: 'A',
-                            type: 'line',
-                            stack: 'Value',
-                            data: [120, 132, 101, 134, 90, 230, 210]
+                            name: 'Series A',
+                            color: "pink",
+                            data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]]
                         },
                         {
-                            name: 'B',
-                            type: 'line',
-                            stack: 'Value',
-                            data: [220, 182, 191, 234, 290, 330, 310]
+                            name: 'Series B',
+                            data: [[0, 220], [1, 182], [2, 191], [3, 234], [4, 290], [5, 330], [6, 310]]
                         },
                         {
-                            name: 'C',
-                            type: 'line',
-                            stack: 'Value',
-                            data: [150, 232, 201, 154, 190, 330, 410]
+                            name: 'Series C',
+                            data: [[0, 150], [1, 232], [2, 201], [3, 154], [4, 190], [5, 330], [6, 410]]
                         },
                         {
-                            name: 'D',
-                            type: 'line',
-                            stack: 'Value',
-                            data: [320, 332, 301, 334, 390, 330, 320]
+                            name: 'Series D',
+                            data: [[0, 320], [1, 332], [2, 301], [3, 334], [4, 390], [5, 330], [6, 320]]
                         },
                         {
-                            name: 'E',
-                            type: 'line',
-                            stack: 'Value',
-                            data: [820, 932, 901, 934, 1290, 1330, 1320]
+                            name: 'Series E',
+                            data: [[0, 820], [1, 932], [2, 901], [3, 934], [4, 1290], [5, 1330], [6, 1320]]
                         }
                     ]
                 },
                 barOptions: {
-                    toolbox: {
-                        feature: {
-                            saveAsImage: { show: true }
-                        }
-                    },
                     xAxis: {
-                        type: 'category',
                         data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
                     },
-                    yAxis: {
-                        type: 'value'
+                    series: [
+                        {
+                            name: "Weekly users",
+                            data: [120, 200, 150, 80, 70, 110, 130],
+                        },
+                        {
+                            name: "Weekly new users",
+                            data: [12, 90, 100, 50, 88, 110, 130],
+                        },
+                        {
+                            name: "Week old users",
+                            data: [2, 90, 77, 50, 44, 110, 10],
+                        }
+                    ]
+                },
+                stackedBarOptions: {
+                    xAxis: {
+                        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
                     },
-                    series: [{
-                        data: [120, {
-                            value: 200,
-                            itemStyle: {
-                                color: '#a90000'
-                            }
-                        }, 150, 80, 70, 110, 130],
-                        type: 'bar'
-                    }]
+                    series: [
+                        {
+                            name: "Weekly users",
+                            data: [120, 200, 150, 80, 70, 110, 130],
+                            stack: 'A'
+                        },
+                        {
+                            name: "Weekly new users",
+                            data: [12, 90, 100, 50, 88, 110, 130],
+                            stack: 'A'
+                        },
+                        {
+                            name: "Week old users",
+                            data: [12, 90, 100, 50, 88, 110, 130],
+                            stack: 'A'
+                        }
+                    ]
                 }
             };
         },
