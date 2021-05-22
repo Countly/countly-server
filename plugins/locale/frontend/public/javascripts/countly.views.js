@@ -64,6 +64,10 @@ window.LanguageView = countlyView.extend({
             }));
 
             $(".d-table").stickyTableHeaders();
+
+            if (!countlyAuth.validateRead('drill')) {
+                $('#drill-down-for-view').hide();
+            }
         }
     },
     refresh: function() {

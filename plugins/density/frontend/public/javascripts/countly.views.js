@@ -96,6 +96,10 @@ window.DensityView = countlyView.extend({
             }));
 
             $("#dataTableOne").stickyTableHeaders();
+
+            if (!countlyAuth.validateRead('drill')) {
+                $('#drill-down-for-view').hide();
+            }
         }
     },
     refresh: function() {

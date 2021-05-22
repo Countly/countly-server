@@ -900,6 +900,10 @@ window.LoyaltyView = countlyView.extend({
                     }, 500);
                 });
             }
+
+            if (!countlyAuth.validateRead('drill')) {
+                $('#toggle-filter').hide();
+            }
         }
     },
     setInput: function(inputs, subs, cur, sub, total) {
@@ -3441,7 +3445,6 @@ window.ManageUsersView = countlyView.extend({
             for (var i0 in types) {
                 $('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index).countlyCheckbox();
                 if (types[i0][0] === 'r' && feature === 'core') {
-                    console.log('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index);
                     $('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index).countlyCheckbox().set(true);
                     $('.create-user-drawer #' + types[i0][0] + '-' + feature + '-' + index).countlyCheckbox().setDisabled();
                 }
@@ -4190,6 +4193,7 @@ window.ManageUsersView = countlyView.extend({
                     },
                     dataType: "json",
                     success: function(member) {
+                        alert(self.memberModel.password);
                         CountlyHelpers.notify({
                             type: 'green',
                             delay: 3000,
