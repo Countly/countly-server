@@ -1,6 +1,6 @@
 /*global $,countlyView,countlyAuth,countlyGlobal,T,timesOfDayPlugin,countlyWidgets,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
 window.todview = countlyView.extend({
-    featureName: 'times-of-day',
+    featureName: 'times_of_day',
     initialize: function() {
     },
 
