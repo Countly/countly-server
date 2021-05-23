@@ -12,6 +12,9 @@
         },
         methods: {
             refresh: function() {}
+        },
+        beforeDestroy: function() {
+            this.$root.$off();
         }
     };
 
