@@ -1,5 +1,6 @@
 <script type="text/x-template" id="form-basics-template">
-    <div>
+    <cly-main>
+        <cly-header title="Basic Form components"></cly-header>
         <cly-section title="ListBox">
             <div class="example-cell">
                 <cly-listbox v-model="selectedLB" :options="listBoxOptions">
@@ -88,10 +89,11 @@
                 Form value: {{submittedForm}}
             </div>
         </cly-section>
-    </div>
+    </cly-main>
 </script>
 <script type="text/x-template" id="form-dropdown-template">
-    <div>
+    <cly-main>
+        <cly-header title="Dropdown components"></cly-header>
         <el-card class="box-card options-box" style="position:fixed; bottom:25px; right: 25px">
             <div slot="header" class="clearfix">
                 <span>Options</span>
@@ -264,5 +266,5 @@
                 {{selectX.currentVal}}
             </div>
         </cly-section>
-    </div>
+    </cly-main>
 </script>

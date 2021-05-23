@@ -75,6 +75,9 @@
             },
             onDelete: function(row) {
                 this.$store.dispatch("countlyVueExample/myRecords/remove", row._id);
+            },
+            add: function() {
+                this.openDrawer("main", countlyVueExample.factory.getEmpty());
             }
         }
     });
@@ -471,13 +474,57 @@
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
-                currentTab: (this.$route.params && this.$route.params.tab) || "tables"
+                currentTab: (this.$route.params && this.$route.params.tab) || "tables",
             };
+        }
+    });
+
+    var NewMainView = countlyVue.views.create({
+        template: CV.T('/vue-example/templates/newmain.html'),
+        mixins: [
+            countlyVue.mixins.hasDrawers("main"),
+            countlyVue.container.mixin({
+                "externalTabs": "/vueExample/externalTabs"
+            })
+        ],
+        components: {
+            "drawer": ExampleDrawer
         },
-        methods: {
-            add: function() {
-                this.openDrawer("main", countlyVueExample.factory.getEmpty());
-            }
+        beforeCreate: function() {
+            this.$store.dispatch("countlyVueExample/initialize");
+        },
+        data: function() {
+            return {
+                appId: countlyCommon.ACTIVE_APP_ID,
+                dynamicTab: "tables",
+                tabs: [
+                    {
+                        title: "Tables",
+                        name: "tables",
+                        component: TableView
+                    },
+                    {
+                        title: "Form: Basic",
+                        name: "form-basic",
+                        component: FormBasics
+                    },
+                    {
+                        title: "Form: Dropdown",
+                        name: "form-dropdown",
+                        component: FormDropdown
+                    },
+                    {
+                        title: "Charts",
+                        name: "charts",
+                        component: TimeGraphView
+                    },
+                    {
+                        title: "Date",
+                        name: "date",
+                        component: DateView
+                    }
+                ]
+            };
         }
     });
 
@@ -488,6 +535,21 @@
 
         return new countlyVue.views.BackboneWrapper({
             component: MainView,
+            vuex: vuex,
+            templates: [
+                "/vue-example/templates/empty.html",
+                "/vue-example/templates/form.html"
+            ]
+        });
+    };
+
+    var getNewMainView = function() {
+        var vuex = [{
+            clyModel: countlyVueExample
+        }];
+
+        return new countlyVue.views.BackboneWrapper({
+            component: NewMainView,
             vuex: vuex,
             templates: [
                 "/vue-example/templates/empty.html",
@@ -508,6 +570,11 @@
         };
         exampleView.params = params;
         this.renderWhenReady(exampleView);
+    });
+
+    app.route("/vue-new-example", 'vue-new-example', function() {
+        var newExampleView = getNewMainView();
+        this.renderWhenReady(newExampleView);
     });
 
     countlyVue.container.register("/vueExample/externalTabs", {

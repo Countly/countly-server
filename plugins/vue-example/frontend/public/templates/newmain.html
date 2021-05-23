@@ -1,0 +1,4 @@
+<div class="vue-example-wrapper" v-bind:class="[componentId]">
+    <cly-dynamic-tabs v-model="dynamicTab" :tabs="tabs"></cly-dynamic-tabs>
+    <drawer @close="closeDrawer" :controls="drawers.main"></drawer>
+</div>
