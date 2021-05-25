@@ -1,36 +1,38 @@
-<cly-main>
+<div>
     <cly-header title="Chart components"></cly-header>
-    <cly-section title="Line Chart">
-        <cly-chart-line :option="lineOptions">
-            <template v-slot:chart-right="scope">
-                <!-- <div class="bu-level-item">
-                    <el-select>
-                        <el-option :key="item.value" :value="item.value" :label="item.name"
-                            v-for="item in [1,2]"></el-option>
-                    </el-select>
-                </div> -->
-            </template>
-        </cly-chart-line>
-    </cly-section>
-    <cly-section title="Time Graph">
-        <cly-chart-time :option="largeScaleOptions" :bucket="selBucket" :dummy="true">
-            <template v-slot:chart-left="scope">
-                <div style="width: 100px;">
-                    <el-select v-model="selBucket">
-                        <el-option :key="item" :value="item" :label="item"
-                            v-for="item in ['daily', 'weekly', 'monthly', 'hourly']"></el-option>
-                    </el-select>
-                </div>
-            </template>
-        </cly-chart-time>
-    </cly-section>
-    <cly-section title="Bar Chart">
-        <cly-chart-bar :option="barOptions"></cly-chart-bar>
-    </cly-section>
-    <cly-section title="Stacked Bar Chart">
-        <cly-chart-bar :option="stackedBarOptions" :showToggle="false"></cly-chart-bar>
-    </cly-section>
-    <cly-section title="Pie Chart">
-        <!-- <cly-chart class="chart" :option="pieOptions" style="height: 400px;" :autoresize="true"></cly-chart> -->
-    </cly-section>
-</cly-main>
+    <cly-main>
+        <cly-section title="Line Chart">
+            <cly-chart-line :option="lineOptions">
+                <template v-slot:chart-right="scope">
+                    <!-- <div class="bu-level-item">
+                        <el-select>
+                            <el-option :key="item.value" :value="item.value" :label="item.name"
+                                v-for="item in [1,2]"></el-option>
+                        </el-select>
+                    </div> -->
+                </template>
+            </cly-chart-line>
+        </cly-section>
+        <cly-section title="Time Graph">
+            <cly-chart-time :option="largeScaleOptions" :bucket="selBucket" :dummy="true">
+                <template v-slot:chart-left="scope">
+                    <div style="width: 100px;">
+                        <el-select v-model="selBucket">
+                            <el-option :key="item" :value="item" :label="item"
+                                v-for="item in ['daily', 'weekly', 'monthly', 'hourly']"></el-option>
+                        </el-select>
+                    </div>
+                </template>
+            </cly-chart-time>
+        </cly-section>
+        <cly-section title="Bar Chart">
+            <cly-chart-bar :option="barOptions"></cly-chart-bar>
+        </cly-section>
+        <cly-section title="Stacked Bar Chart">
+            <cly-chart-bar :option="stackedBarOptions" :showToggle="false"></cly-chart-bar>
+        </cly-section>
+        <cly-section title="Pie Chart">
+            <!-- <cly-chart class="chart" :option="pieOptions" style="height: 400px;" :autoresize="true"></cly-chart> -->
+        </cly-section>
+    </cly-main>
+</div>

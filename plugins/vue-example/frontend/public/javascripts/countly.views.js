@@ -501,31 +501,31 @@
                         title: "Tables",
                         name: "tables",
                         component: TableView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-new-example/tables"
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/tables"
                     },
                     {
                         title: "Form: Basic",
                         name: "form-basic",
                         component: FormBasics,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-new-example/form-basic"
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/form-basic"
                     },
                     {
                         title: "Form: Dropdown",
                         name: "form-dropdown",
                         component: FormDropdown,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-new-example/form-dropdown"
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/form-dropdown"
                     },
                     {
                         title: "Charts",
                         name: "charts",
                         component: TimeGraphView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-new-example/charts"
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/charts"
                     },
                     {
                         title: "Date",
                         name: "date",
                         component: DateView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-new-example/date"
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/date"
                     }
                 ]
             };
@@ -576,12 +576,12 @@
         this.renderWhenReady(exampleView);
     });
 
-    app.route("/vue-new-example", 'vue-new-example', function() {
+    app.route("/vue-2", 'vue-2', function() {
         var newExampleView = getNewMainView();
         this.renderWhenReady(newExampleView);
     });
 
-    app.route("/vue-new-example/*tab", 'vue-new-example-tab', function(tab) {
+    app.route("/vue-2/*tab", 'vue-2-tab', function(tab) {
         var newExampleView = getNewMainView();
         var params = {
             tab: tab

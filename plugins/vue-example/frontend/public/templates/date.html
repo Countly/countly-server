@@ -1,30 +1,32 @@
-<cly-main>
+<div>
     <cly-header title="Date picking"></cly-header>
-    <cly-section title="Global picker (countlyCommon/period)">
-        <cly-date-picker-g></cly-date-picker-g>
-    </cly-section>
-    <cly-section title="Date range">
-        <cly-date-picker v-model="selectedDateRange" timestampFormat="ms"></cly-date-picker>
-        <pre>{{selectedDateRange}}</pre>
-    </cly-section>
-    <cly-section title="Date range">
-        <cly-date-picker v-model="selectedDateRangeWithoutOffsetCorr" :offset-correction="false" timestampFormat="ms"></cly-date-picker>
-        <pre>{{selectedDateRangeWithoutOffsetCorr}}</pre>
-    </cly-section>
-    <cly-section title="Month range">
-        <cly-date-picker v-model="selectedMonthRange" timestampFormat="ms" type="monthrange"></cly-date-picker>
-        <pre>{{selectedMonthRange}}</pre>
-    </cly-section>
-    <cly-section title="Date range (no shortcuts)">
-        <cly-date-picker v-model="selectedDateRange" timestampFormat="ms" :display-shortcuts="false"></cly-date-picker>
-        <pre>{{selectedDateRange}}</pre>
-    </cly-section>
-    <cly-section title="Dynamic type">
-        <el-select size="small" v-model="selectedDynamicType">
-            <el-option label="Date range" value="daterange"></el-option>
-            <el-option label="Month range" value="monthrange"></el-option>
-        </el-select>
-        <cly-date-picker v-model="selectedDynamicRange" :type="selectedDynamicType"></cly-date-picker>
-        <pre>{{selectedDynamicRange}}</pre>
-    </cly-section>
-</cly-main>
+    <cly-main>
+        <cly-section title="Global picker (countlyCommon/period)">
+            <cly-date-picker-g></cly-date-picker-g>
+        </cly-section>
+        <cly-section title="Date range">
+            <cly-date-picker v-model="selectedDateRange" timestampFormat="ms"></cly-date-picker>
+            <pre>{{selectedDateRange}}</pre>
+        </cly-section>
+        <cly-section title="Date range">
+            <cly-date-picker v-model="selectedDateRangeWithoutOffsetCorr" :offset-correction="false" timestampFormat="ms"></cly-date-picker>
+            <pre>{{selectedDateRangeWithoutOffsetCorr}}</pre>
+        </cly-section>
+        <cly-section title="Month range">
+            <cly-date-picker v-model="selectedMonthRange" timestampFormat="ms" type="monthrange"></cly-date-picker>
+            <pre>{{selectedMonthRange}}</pre>
+        </cly-section>
+        <cly-section title="Date range (no shortcuts)">
+            <cly-date-picker v-model="selectedDateRange" timestampFormat="ms" :display-shortcuts="false"></cly-date-picker>
+            <pre>{{selectedDateRange}}</pre>
+        </cly-section>
+        <cly-section title="Dynamic type">
+            <el-select size="small" v-model="selectedDynamicType">
+                <el-option label="Date range" value="daterange"></el-option>
+                <el-option label="Month range" value="monthrange"></el-option>
+            </el-select>
+            <cly-date-picker v-model="selectedDynamicRange" :type="selectedDynamicType"></cly-date-picker>
+            <pre>{{selectedDynamicRange}}</pre>
+        </cly-section>
+    </cly-main>
+</div>

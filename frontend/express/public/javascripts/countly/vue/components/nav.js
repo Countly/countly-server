@@ -58,6 +58,10 @@
                 type: Array,
                 default: []
             },
+            skin: {
+                type: String,
+                default: "primary"
+            }
         },
         computed: {
             currentTab: function() {
@@ -71,6 +75,14 @@
                 }
 
                 return;
+            },
+            tabClasses: function() {
+                return {
+                    'cly-vue-tabs__tab': true,
+                    'cly-vue-tabs__tab--default': true,
+                    'cly-vue-tabs__tab--primary': this.skin === "primary",
+                    'cly-vue-tabs__tab--secondary': this.skin === "secondary"
+                };
             }
         },
         methods: {
@@ -89,6 +101,21 @@
                 }
 
                 this.$emit("input", name);
+            },
+            activeClasses: function(tab) {
+                if (this.value === tab) {
+                    if (this.skin === "primary") {
+                        return {
+                            'cly-vue-tabs__tab--primary-active': true
+                        };
+                    }
+
+                    if (this.skin === "secondary") {
+                        return {
+                            'cly-vue-tabs__tab--secondary-active': true
+                        };
+                    }
+                }
             }
         },
         mounted: function() {
@@ -97,16 +124,18 @@
             }
         },
         template: '<div class="cly-vue-tabs">\
-                    <button\
-                    v-for="tab in tabs"\
-                    v-bind:key="tab.name"\
-                    v-bind:class="[{ active: value === tab.name }]"\
-                    v-on:click="setTab(tab.name)"\
-                    >\
-                        {{ tab.title }}\
-                    </button>\
-                    <component v-bind:is="currentTab" class="tab"></component>\
-                </div>'
+                        <div class="cly-vue-tabs__tab-list white-bg">\
+                            <div\
+                                v-for="tab in tabs"\
+                                v-bind:key="tab.name"\
+                                v-bind:class="[tabClasses, activeClasses(tab.name)]"\
+                                v-on:click="setTab(tab.name)"\
+                                >\
+                                    <span>{{ tab.title }}</span>\
+                            </div>\
+                        </div>\
+                        <component v-bind:is="currentTab" class="tab"></component>\
+                    </div>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
