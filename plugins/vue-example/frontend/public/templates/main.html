@@ -41,6 +41,13 @@
                 <date-view></date-view>
             </cly-main>
         </el-tab-pane>
+        <el-tab-pane name="progress-bars">
+            <span slot="label">Progress bars</span>
+            <cly-header title="Progress bars view"></cly-header>
+            <cly-main>
+                <progress-bars-view></progress-bars-view>
+            </cly-main>
+        </el-tab-pane>
         <el-tab-pane
             v-for="(xtab, idx) in externalTabs"
             :key="idx"
@@ -52,6 +59,7 @@
                 <component :is="xtab.component"></component>
             </cly-main>
         </el-tab-pane>
+
     </cly-tabs>
     <drawer @close="closeDrawer" :controls="drawers.main"></drawer>
 </div>
