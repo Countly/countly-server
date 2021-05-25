@@ -75,6 +75,19 @@
         },
         methods: {
             setTab: function(name) {
+                var tab = this.tabs.filter(function(t) {
+                    return t.name === name;
+                });
+
+                if (tab.length && tab[0].route) {
+                    if (this.noHistory) {
+                        Backbone.history.noHistory(tab[0].route);
+                    }
+                    else {
+                        window.location.hash = tab[0].route;
+                    }
+                }
+
                 this.$emit("input", name);
             }
         },
