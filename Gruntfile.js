@@ -145,8 +145,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.version.history.js',
                     'frontend/express/public/javascripts/countly/countly.analytics.js',
                     'frontend/express/public/javascripts/countly/countly.views.js',
-                    'frontend/express/public/javascripts/core-plugins/user-activity/countly.models.js',
-                    'frontend/express/public/javascripts/core-plugins/user-activity/countly.views.js'
+                    'frontend/express/public/core/user-activity/javascripts/countly.models.js',
+                    'frontend/express/public/core/user-activity/javascripts/countly.views.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }
