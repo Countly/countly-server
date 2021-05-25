@@ -307,6 +307,7 @@ window.AlertsView = countlyView.extend({
 
     },
     renderCommon: function(refresh) {
+        var self = this;
         $(this.el).html(this.template({"email-placeholder": jQuery.i18n.map["alert.email-place-holder"]}));
         if (!refresh) {
             var views = ["starView", "crashesView"];
@@ -324,8 +325,8 @@ window.AlertsView = countlyView.extend({
                 }
             });
         }
-        if (!countlyAuth.validateCreate(self.featureName)) {
-            $('#create-alert').hide();
+        if (countlyAuth.validateCreate(self.featureName)) {
+            $('#create-alert').show();
         }
         this.renderTable();
         this.prepareDrawer();
@@ -723,8 +724,8 @@ window.AlertsView = countlyView.extend({
             settings.selectedApps = selectedSingleAPP ? [selectedSingleAPP] : null;
 
             settings.compareDescribe = settings.alertDataSubType + (settings.alertDataSubType2 ? ' (' + document.querySelector('div[data-value="' + settings.alertDataSubType2 + '"]').textContent + ')' : '') +
-				' ' + settings.compareType +
-				' ' + settings.compareValue + "%";
+                ' ' + settings.compareType +
+                ' ' + settings.compareValue + "%";
 
             var dictObject = dict[settings.alertDataType] && dict[settings.alertDataType][settings.alertDataSubType];
             if (dictObject) {
