@@ -131,7 +131,9 @@
                                 v-bind:class="[tabClasses, activeClasses(tab.name)]"\
                                 v-on:click="setTab(tab.name)"\
                                 >\
-                                    <span>{{ tab.title }}</span>\
+                                    <slot :name="tab.name" :tab="tab">\
+                                        <span>{{ tab.title }}</span>\
+                                    </slot>\
                             </div>\
                         </div>\
                         <component v-bind:is="currentTab" class="tab"></component>\
