@@ -6,18 +6,18 @@
 
     Vue.component("cly-input-dropdown-trigger", countlyBaseComponent.extend({
         props: {
-            focused: {type: Boolean, default: false},
-            opened: {type: Boolean, default: false},
-            arrow: {type: Boolean, default: true},
+            focused: { type: Boolean, default: false },
+            opened: { type: Boolean, default: false },
+            arrow: { type: Boolean, default: true },
             selectedOptions: {
                 type: [Array, Object, String],
                 default: function() {
                     return {};
                 }
             },
-            placeholder: {type: String, default: ''},
-            disabled: {type: Boolean, default: false},
-            adaptiveLength: {type: Boolean, default: false},
+            placeholder: { type: String, default: '' },
+            disabled: { type: Boolean, default: false },
+            adaptiveLength: { type: Boolean, default: false },
         },
         computed: {
             iconClass: function() {
@@ -64,6 +64,36 @@
     var triggerProxy = countlyBaseComponent.extend({
         template: '<div style="width:100%"><slot v-slot></slot></div>'
     });
+
+    Vue.component("cly-vue-menubox", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-menubox-new menubox-default-skin el-select">\n' +
+            '<div :class="{active: isOpened}" @click="toggle">\n' +
+            '<div class="text-container el-input el-input--suffix">\n' +
+            '<input type="text" readonly="readonly" autocomplete="off" placeholder="Select" class="el-input__inner" :value="label">\n' +
+            '<span class="el-input__suffix"><span class="el-input__suffix-inner"><i class="el-select__caret el-input__icon el-icon-arrow-up"></i></span></span>\n' +
+            '</div>\n' +
+            '<div class="drop"></div>\n' +
+            '</div>\n' +
+            '<div class="menu-body" v-show="isOpened">\n' +
+            '<slot></slot>\n' +
+            '</div>\n' +
+            '</div>',
+        props: {
+            label: { type: String, default: '' },
+            isOpened: { type: Boolean, default: false }
+        },
+        methods: {
+            toggle: function() {
+                this.setStatus(!this.isOpened);
+            },
+            close: function() {
+                this.setStatus(false);
+            },
+            setStatus: function(targetState) {
+                this.$emit('status-changed', targetState);
+            }
+        }
+    }));
 
     Vue.component("cly-dropdown", countlyBaseComponent.extend({
         components: {
