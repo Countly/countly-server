@@ -62,10 +62,12 @@
                 remoteTablePersistKey: "vueExample_remoteTable_" + countlyCommon.ACTIVE_APP_ID,
             };
         },
+        beforeCreate: function() {
+            this.$store.dispatch("countlyVueExample/initializeTable");
+        },
         methods: {
             refresh: function() {
                 this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
-                this.tableStore.dispatch("fetchTooManyRecords");
             },
             onEditRecord: function(row) {
                 var self = this;
@@ -388,6 +390,9 @@
                 return this.$store.getters["countlyVueExample/lineData"];
             }
         },
+        beforeCreate: function() {
+            this.$store.dispatch("countlyVueExample/fetchGraphPoints");
+        },
         methods: {
             refresh: function() {
                 this.$store.dispatch("countlyVueExample/fetchGraphPoints");
@@ -468,9 +473,6 @@
             "date-view": DateView,
             "drawer": ExampleDrawer
         },
-        beforeCreate: function() {
-            this.$store.dispatch("countlyVueExample/initialize");
-        },
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
@@ -489,9 +491,6 @@
         ],
         components: {
             "drawer": ExampleDrawer
-        },
-        beforeCreate: function() {
-            this.$store.dispatch("countlyVueExample/initialize");
         },
         data: function() {
             return {
