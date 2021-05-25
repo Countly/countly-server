@@ -1,9 +1,8 @@
 .slipping-away-user-table-progress-bar-container {
   width: 100%;
+}
 
-  progress {
-      &::-webkit-progress-value{
-          background-color: #F96300;
-      }
-  }
+.slipping-away-users-table-data-item {
+  min-width: 4em;
+  margin-right: 0.25em;
 }
