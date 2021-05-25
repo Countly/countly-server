@@ -421,7 +421,7 @@ window.ViewsView = countlyView.extend({
                         countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
                             self.token = token && token.result;
                             if (self.token) {
-                                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, app_key: countlyCommon.ACTIVE_APP_KEY});
+                                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, app_key: countlyCommon.ACTIVE_APP_KEY, url: window.location.protocol + "//" + window.location.host});
                                 newWindow.location.href = url;
                             }
                         });
@@ -1377,7 +1377,7 @@ function initializeViewsWidget() {
         var viewsData = [];
         for (i = 0; i < data.chartData.length; i++) {
             viewsData.push({
-                views: data.chartData[i].views,
+                views: data.chartData[i].display,
                 data: []
             });
             for (var j = 0; j < viewsValueNames.length; j++) {

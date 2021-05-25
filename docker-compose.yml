@@ -15,7 +15,7 @@ services:
       countly:
 
   countly-api:
-    image: 'countly/api:20.04'
+    image: 'countly/api:20.11.2'
     # Enterprise Edition: image: 'gcr.io/countly-01/api:20.04'
     environment:
       - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate
@@ -33,7 +33,7 @@ services:
       - mongodb
 
   countly-frontend:
-    image: 'countly/frontend:20.04'
+    image: 'countly/frontend:20.11.2'
     # Enterprise Edition: image: 'gcr.io/countly-01/frontend:20.04'
     environment:
       - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate

@@ -338,6 +338,40 @@ module.exports = function(name) {
                     }
                 }
             };
+        },
+        /**
+         * Add one more level to the logging output while leaving loglevel the same
+         * @param {string} subname sublogger name
+         * @returns {object} new logger
+         */
+        sub: function(subname) {
+            let self = this;
+            return {
+                d: log('DEBUG', name + ':' + subname, getEnabledWithLevel(['debug'], name), this, console.log),
+                /**
+                * Logging information level messages
+                * @memberof module:api/utils/log~Logger
+                * @param {...*} var_args - string and values to format string with
+                **/
+                i: log('INFO', name + ':' + subname, getEnabledWithLevel(['debug', 'info'], name), this, console.info),
+                /**
+                * Logging warning level messages
+                * @memberof module:api/utils/log~Logger
+                * @param {...*} var_args - string and values to format string with
+                **/
+                w: log('WARN', name + ':' + subname, getEnabledWithLevel(['debug', 'info', 'warn'], name), this, console.warn, styles.stylers.warn),
+                /**
+                * Logging error level messages
+                * @memberof module:api/utils/log~Logger
+                * @param {...*} var_args - string and values to format string with
+                **/
+                e: log('ERROR', name + ':' + subname, getEnabledWithLevel(['debug', 'info', 'warn', 'error'], name), this, console.error, styles.stylers.error),
+
+                /**
+                 * Pass sub one level up
+                 */
+                sub: self.sub.bind(self)
+            };
         }
     };
     // return {

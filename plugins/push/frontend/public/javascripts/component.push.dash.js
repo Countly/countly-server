@@ -729,7 +729,15 @@ window.MessagingDashboardView = countlyView.extend({
         m.startComputation();
         components.slider.instance.close();
         m.endComputation();
-        if (callback) {
+        if (window.countlySegmentation) {
+            window.countlySegmentation.initialize("[CLY]_session").then(function(){
+                window.components.push.initPersOpts();
+                if (callback) {
+                    callback();
+                }
+            });
+        }
+        else if (callback) {
             callback();
         }
     }

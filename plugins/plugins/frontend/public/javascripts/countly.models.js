@@ -1,4 +1,4 @@
-/*global countlyCommon,jQuery */
+/*global countlyCommon,jQuery,countlyGlobal */
 (function(countlyPlugins, $) {
 
     //Private Properties
@@ -192,6 +192,19 @@
             })
         ).then(function() {
             return true;
+        });
+    };
+
+    countlyPlugins.initializeActiveAppConfigs = function() {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/apps/plugins",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+            },
+            success: function(appPluginsConfig) {
+                countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins = appPluginsConfig.plugins;
+            }
         });
     };
 
