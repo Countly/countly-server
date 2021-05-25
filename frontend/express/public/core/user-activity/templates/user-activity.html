@@ -65,36 +65,32 @@
                 <el-table-column sortable="custom" prop="all" :label="i18n('user-activity.table-all-users')">
                     <template slot-scope="scope">
                         <div class="bu-level-left">
-                            <div class="bu-level-item first-table-data-item">
+                            <div class="bu-level-item first-user-activity-table-data-item">
                                 <span>{{scope.row.all}}</span>
                             </div>
-                            <div class="bu-level-item table-data-item-divider">
+                            <div class="bu-level-item user-activity-table-data-item-divider">
                                 <span>|</span>
                             </div>
-                            <div class="bu-level-item table-data-item">
+                            <div class="bu-level-item user-activity-table-data-item">
                                 <span>{{formatPercentage(scope.row.all/seriesTotal.all)}} %</span>
                             </div>
-                            <div class="user-activity-table-progress-bar-container">
-                                <progress class="bu-progress bu-is-small" :value="formatPercentage(scope.row.all/seriesTotal.all)" max="100"></progress>
-                            </div>
+                            <cly-progress-bar :percentage="formatPercentage(scope.row.all/seriesTotal.all)" :color="progressBarColor"> </cly-progress-bar>
                         </div>
                     </template>
                 </el-table-column>
                 <el-table-column sortable="custom" prop="thirtyDays" :label="i18n('user-activity.table-thirty-days')">
                     <template slot-scope="scope">
                         <div class="bu-level-left">
-                            <div class="bu-level-item first-table-data-item">
+                            <div class="bu-level-item first-user-activity-table-data-item">
                                 <span>{{scope.row.thirtyDays}}</span>
                             </div>
-                            <div class="bu-level-item table-data-item-divider">
+                            <div class="bu-level-item user-activity-table-data-item-divider">
                                 <span>|</span>
                             </div>
-                            <div class="bu-level-item table-data-item">
+                            <div class="bu-level-item user-activity-table-data-item">
                                 <span>{{formatPercentage(scope.row.thirtyDays/seriesTotal.thirtyDays)}} %</span>
                             </div>
-                            <div class="user-activity-table-progress-bar-container">
-                                <progress class="bu-progress bu-is-small" :value="formatPercentage(scope.row.thirtyDays/seriesTotal.thirtyDays)" max="100"></progress>
-                            </div>
+                            <cly-progress-bar :percentage="formatPercentage(scope.row.thirtyDays/seriesTotal.thirtyDays)" :color="progressBarColor"> </cly-progress-bar>
                         </div>
                     </template>
                 </el-table-column>
@@ -102,18 +98,16 @@
                     <template slot-scope="scope">
                             <div class="bu-column">
                                 <div class="bu-level-left">
-                                    <div class="bu-level-item first-table-data-item">
+                                    <div class="bu-level-item first-user-activity-table-data-item">
                                         <span>{{scope.row.sevenDays}}</span>
                                     </div>
-                                    <div class="bu-level-item table-data-item-divider">
+                                    <div class="bu-level-item user-activity-table-data-item-divider">
                                         <span>|</span>
                                     </div>
-                                    <div class="bu-level-item  table-data-item">
+                                    <div class="bu-level-item  user-activity-table-data-item">
                                         <span>{{formatPercentage(scope.row.sevenDays/seriesTotal.sevenDays)}} %</span>
                                     </div>
-                                    <div class="user-activity-table-progress-bar-container">
-                                        <progress class="bu-progress bu-is-small" :value="formatPercentage(scope.row.sevenDays/seriesTotal.sevenDays)" max="100"></progress>
-                                    </div>
+                                    <cly-progress-bar :percentage="formatPercentage(scope.row.sevenDays/seriesTotal.sevenDays)" :color="progressBarColor"> </cly-progress-bar>
                                 </div>
                             </div>
                     </template>

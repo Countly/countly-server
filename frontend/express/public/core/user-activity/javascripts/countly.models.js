@@ -24,16 +24,44 @@
                 return total;
             }, 0);
         },
+
+        findNonEmptyBuckets: function(userActivityDto) {
+            var nonEmptybuckets = [];
+            Object.keys(userActivityDto).forEach(function(userActivityKey) {
+                var userActivitySerie = userActivityDto[userActivityKey];
+                userActivitySerie.forEach(function(serieItem) {
+                    if (serieItem._id && !countlyUserActivity.helpers.isBucketAdded(nonEmptybuckets, serieItem._id)) {
+                        nonEmptybuckets.push(serieItem._id);
+                    }
+                });
+            });
+            return nonEmptybuckets;
+        }
     };
 
     countlyUserActivity.service = {
 
-        mapUserActivityDtoToModel: function(data) {
+        mapUserActivityDtoToModel: function(data, nonEmptyBuckets) {
             var modelResult = {};
             Object.keys(data).forEach(function(key) {
                 var nonNumericSeriePropertyName = countlyUserActivity.helpers.getNonNumericSeriePropertyName(key);
-                modelResult[nonNumericSeriePropertyName] = data[key].filter(function(item) {
-                    return item._id;
+                modelResult[nonNumericSeriePropertyName] = [];
+                nonEmptyBuckets.forEach(function(nonEmptyBucket) {
+                    if (!data[key].length) {
+                        modelResult[nonNumericSeriePropertyName].push({_id: nonEmptyBucket, count: 0});
+                    }
+                    else {
+                        var seriesItemIndex = data[key].findIndex(function(item) {
+                            return item._id === nonEmptyBucket;
+                        });
+                        if (seriesItemIndex === -1) {
+                            modelResult[nonNumericSeriePropertyName].push({_id: nonEmptyBucket, count: 0 });
+                        }
+                        else {
+                            modelResult[nonNumericSeriePropertyName].push({_id: nonEmptyBucket, count: data[key][seriesItemIndex].count });
+
+                        }
+                    }
                 });
             });
             return modelResult;
@@ -73,9 +101,11 @@
                 context.dispatch('onFetchInit');
                 countlyUserActivity.service.fetchUserActivity(context.state.userActivityFilters)
                     .then(function(response) {
-                        var userActivityModel = countlyUserActivity.service.mapUserActivityDtoToModel(response);
+                        var nonEmptyBuckets = countlyUserActivity.helpers.findNonEmptyBuckets(response);
+                        var userActivityModel = countlyUserActivity.service.mapUserActivityDtoToModel(response, nonEmptyBuckets);
                         context.commit('setUserActivity', userActivityModel);
-                        context.dispatch('findNonEmptyBuckets', userActivityModel);
+                        context.commit('setNonEmptyBuckets', nonEmptyBuckets);
+                        context.commit('setMinNonEmptyBucketsLength', nonEmptyBuckets.length);
                         context.dispatch('findSeriesTotal', userActivityModel);
                         context.dispatch('onFetchSuccess');
                     }).catch(function(error) {
@@ -93,19 +123,6 @@
             },
             onSetUserActivityFilters: function(context, filters) {
                 context.commit('setUserActivityFilters', filters);
-            },
-            findNonEmptyBuckets: function(context, userActivity) {
-                var nonEmptybuckets = [];
-                Object.keys(userActivity).forEach(function(userActivityKey) {
-                    var userActivitySerie = userActivity[userActivityKey];
-                    userActivitySerie.forEach(function(serieItem) {
-                        if (!countlyUserActivity.helpers.isBucketAdded(nonEmptybuckets, serieItem._id)) {
-                            nonEmptybuckets.push(serieItem._id);
-                        }
-                    });
-                });
-                context.commit('setMinNonEmptyBucketsLength', nonEmptybuckets.length);
-                context.commit('setNonEmptyBuckets', nonEmptybuckets);
             },
             findSeriesTotal: function(context, userActivity) {
                 var result = {};
