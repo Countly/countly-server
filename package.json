@@ -50,7 +50,7 @@
     "fs-extra": "^10.0.0",
     "geoip-lite": "1.4.2",
     "grunt": "1.4.0",
-    "grunt-cli": "1.4.2",
+    "grunt-cli": "1.4.3",
     "grunt-contrib-concat": "1.0.1",
     "grunt-contrib-copy": "1.0.0",
     "grunt-contrib-cssmin": "4.0.0",
