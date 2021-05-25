@@ -653,4 +653,14 @@
         }
     ));
 
+    Vue.component('cly-dynamic-textarea', countlyVue.components.BaseComponent.extend({
+        template: '<div contenteditable="true" @input="update" v-html="content"></div>',
+        props: ['content'],
+        methods: {
+            update: function(event) {
+                this.$emit('update', event.target.innerText);
+            }
+        }
+    }));
+    
 }(window.countlyVue = window.countlyVue || {}));
