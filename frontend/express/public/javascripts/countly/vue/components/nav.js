@@ -91,6 +91,13 @@
                     return t.name === name;
                 });
 
+                /*
+                    So if we are changing the url location, we dont need to emit the input event.
+                    Because it will rerender the view with the updated tab info and value will be
+                    reset automatically.
+
+                    Only emit input event when no route provided
+                */
                 if (tab.length && tab[0].route) {
                     if (this.noHistory) {
                         Backbone.history.noHistory(tab[0].route);
@@ -99,8 +106,9 @@
                         window.location.hash = tab[0].route;
                     }
                 }
-
-                this.$emit("input", name);
+                else {
+                    this.$emit("input", name);
+                }
             },
             activeClasses: function(tab) {
                 if (this.value === tab) {
