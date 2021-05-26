@@ -367,6 +367,9 @@ window.component('push.popup', function(popup) {
                 k = (locale || activeLocale()) + (index === undefined ? (push.C.S + key) : (push.C.S + index + push.C.S + key));
 
                 if (arguments.length) {
+                    if (v && key === 'l') {
+                        v = v.trim();
+                    }
                     message.messagePerLocale()[k] = v;
                 }
 
