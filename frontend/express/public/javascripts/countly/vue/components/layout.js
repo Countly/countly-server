@@ -44,8 +44,8 @@
     //This component is a single column full width component
     //A main component can have multiple sections
     Vue.component("cly-main", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-main bu-columns bu-is-gapless">\
-                        <div class="bu-column bu-is-full">\
+        template: '<div class="cly-vue-main bu-columns bu-is-gapless bu-is-centered">\
+                        <div class="bu-column bu-is-full" style="max-width: 1920px">\
                             <slot></slot>\
                         </div>\
                     </div>'
