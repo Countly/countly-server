@@ -786,10 +786,18 @@ window.component('push.popup', function(popup) {
                             { value: true, title: t('pu.po.tab1.trigger-type.entry'), desc: t('pu.po.tab1.cohort-entry-desc') },
                             { value: false, title: t('pu.po.tab1.trigger-type.exit'), desc: t('pu.po.tab1.cohort-exit-desc') },
                             { value: 'events', title: t('pu.po.tab1.trigger-type.event'), desc: t('pu.po.tab1.cohort-event-desc') },
-                        ], value: message.autoOnEntry, onchange: function(){
-                            message.autoEvents([]);
-                            message.autoCohorts([]);
-                        }
+                        ], value: message.autoOnEntry, onchange: function(neo, old){
+                            neo = typeof neo === 'boolean';
+                            old = typeof old === 'boolean';
+                            if (neo ^ old) {
+                                message.autoEvents([]);
+                                message.autoCohorts([]);
+                                cohorts.forEach(function(c){ c.selected(false); });
+                                events.forEach(function(c){ c.selected(false); });
+                                this.selectCohorts.value([]);
+                                this.selectEvents.value([]);
+                            }
+                        }.bind(this)
                     });
                     this.selectEvents = new C.multiselect.controller({
                         placeholder: t('pu.po.tab1.select-event-placeholder'),
