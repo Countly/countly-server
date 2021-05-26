@@ -1207,7 +1207,7 @@ function cachedData(note) {
             return common.returnMessage(params, 403, 'Only app / global admins are allowed to delete');
         }
 
-        await note.update(common.db, {$bit: {'result.status': {or: N.Status.Deleted}}});
+        await note.update(common.db, {$bit: {'result.status': {or: N.Status.Deleted}}}).catch(log.w.bind(log, 'Error during message deletion'));
         api.cache.remove(_id);
         note.result.status |= N.Status.Deleted;
 
