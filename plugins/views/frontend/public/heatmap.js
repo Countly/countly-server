@@ -6,9 +6,11 @@
         showHeatMap = Countly.passed_data.showHeatMap == false ? false : true,
         clickMap,
         scrollMap;
+        
+    Countly.passed_data.url = Countly.passed_data.url || Countly.url;
 
-    Countly._internals.loadCSS(Countly.url + "/stylesheets/ionicons/css/ionicons.min.css", function() {
-        Countly._internals.loadCSS(Countly.url + "/views/stylesheets/heatmap.css", function() {
+    Countly._internals.loadCSS(Countly.passed_data.url + "/stylesheets/ionicons/css/ionicons.min.css", function() {
+        Countly._internals.loadCSS(Countly.passed_data.url + "/views/stylesheets/heatmap.css", function() {
             document.body.style.position = "relative";
             var origtop = document.body.style.top;
             var toppx = 59;
@@ -122,7 +124,7 @@
 
             //TOPBAR IMAGE
             var img = document.createElement('img');
-            img.src = Countly.url + "/images/dashboard/countly_logo.svg";
+            img.src = Countly.passed_data.url + "/images/dashboard/countly_logo.svg";
             img.setAttribute('class', 'cly-heatmap-logo');
             topbar.appendChild(img);
 
@@ -509,7 +511,7 @@
             period = Countly.passed_data.period || "30days",
             dataCache = {};
 
-        Countly._internals.loadJS(Countly.url + "/views/javascripts/simpleheat.js", function() {
+        Countly._internals.loadJS(Countly.passed_data.url + "/views/javascripts/simpleheat.js", function() {
             map = simpleheat("cly-heatmap-canvas-map");
             return cb(function(eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
@@ -573,7 +575,7 @@
             period = Countly.passed_data.period || "30days",
             dataCache = {};
 
-        Countly._internals.loadJS(Countly.url + "/views/javascripts/simpleheat.js", function() {
+        Countly._internals.loadJS(Countly.passed_data.url + "/views/javascripts/simpleheat.js", function() {
             map = simpleheat("cly-heatmap-canvas-map");
             return cb(function(eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
@@ -741,10 +743,10 @@
             }
 
             if (method === "GET") {
-                xhr.open('GET', Countly.url + apiPath + "?" + data, true);
+                xhr.open('GET', Countly.passed_data.url + apiPath + "?" + data, true);
             }
             else {
-                xhr.open('POST', Countly.url + apiPath, true);
+                xhr.open('POST', Countly.passed_data.url + apiPath, true);
                 xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             }
             xhr.setRequestHeader("countly-token", Countly._internals.getToken());
