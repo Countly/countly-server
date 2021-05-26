@@ -83,6 +83,13 @@
                     'cly-vue-tabs__tab--primary': this.skin === "primary",
                     'cly-vue-tabs__tab--secondary': this.skin === "secondary"
                 };
+            },
+            tabListClasses: function() {
+                return {
+                    'white-bg': this.skin === "primary",
+                    'cly-vue-tabs__primary-tab-list': this.skin === "primary",
+                    'cly-vue-tabs__secondary-tab-list': this.skin === "secondary"
+                };
             }
         },
         methods: {
@@ -132,7 +139,7 @@
             }
         },
         template: '<div class="cly-vue-tabs">\
-                        <div class="cly-vue-tabs__tab-list white-bg">\
+                        <div :class="tabListClasses">\
                             <div\
                                 v-for="tab in tabs"\
                                 v-bind:key="tab.name"\
