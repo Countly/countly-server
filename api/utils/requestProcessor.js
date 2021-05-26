@@ -2511,12 +2511,12 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         time = Math.round((time || 0) / 1000);
         if (params.app && (!params.app.last_data || params.app.last_data < time - 60 * 60 * 24)) { //update if more than day passed
             //set new value
-            common.db.collection("apps").update({"_id": common.db.ObjectID(params.app._id)}, {"$set": {"last_data": time}}, function(err1){
-				if(err1){
-					console.log("Failed to update apps collection "+err1)
-				}
-				common.readBatcher.invalidate("apps", {"key": params.app.key}, {}, false); //because we load app by key  on incoming requests. so invalidate also by key
-			});
+            common.db.collection("apps").update({"_id": common.db.ObjectID(params.app._id)}, {"$set": {"last_data": time}}, function(err1) {
+                if (err1) {
+                    console.log("Failed to update apps collection " + err1);
+                }
+                common.readBatcher.invalidate("apps", {"key": params.app.key}, {}, false); //because we load app by key  on incoming requests. so invalidate also by key
+            });
         }
 
         if (!checksumSaltVerification(params)) {
