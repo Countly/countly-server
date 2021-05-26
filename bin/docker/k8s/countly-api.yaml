@@ -38,8 +38,8 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       containers:
       - name: countly-api
-        image: countly/api:20.04
-#        image: gcr.io/countly-01/api:20.04     # Enterprise Edition
+        image: countly/api:20.11.2
+#        image: gcr.io/countly-01/api:20.11.2     # Enterprise Edition
         imagePullPolicy: Always
         ports:
         - containerPort: 3001
