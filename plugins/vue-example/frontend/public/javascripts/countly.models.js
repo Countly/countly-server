@@ -62,12 +62,8 @@
         };
 
         var actions = {
-            initialize: function(context) {
-                context.dispatch("refresh");
-            },
-            refresh: function(context) {
+            initializeTable: function(context) {
                 context.dispatch("countlyVueExample/myRecords/fetchAll", null, {root: true});
-                context.dispatch("fetchGraphPoints");
             },
             fetchGraphPoints: function(context) {
                 return CV.$.ajax({

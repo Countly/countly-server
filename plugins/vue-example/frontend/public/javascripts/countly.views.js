@@ -62,10 +62,12 @@
                 remoteTablePersistKey: "vueExample_remoteTable_" + countlyCommon.ACTIVE_APP_ID,
             };
         },
+        beforeCreate: function() {
+            this.$store.dispatch("countlyVueExample/initializeTable");
+        },
         methods: {
             refresh: function() {
                 this.$store.dispatch("countlyVueExample/myRecords/fetchAll");
-                this.tableStore.dispatch("fetchTooManyRecords");
             },
             onEditRecord: function(row) {
                 var self = this;
@@ -75,6 +77,9 @@
             },
             onDelete: function(row) {
                 this.$store.dispatch("countlyVueExample/myRecords/remove", row._id);
+            },
+            add: function() {
+                this.openDrawer("main", countlyVueExample.factory.getEmpty());
             }
         }
     });
@@ -385,6 +390,9 @@
                 return this.$store.getters["countlyVueExample/lineData"];
             }
         },
+        beforeCreate: function() {
+            this.$store.dispatch("countlyVueExample/fetchGraphPoints");
+        },
         methods: {
             refresh: function() {
                 this.$store.dispatch("countlyVueExample/fetchGraphPoints");
@@ -465,19 +473,62 @@
             "date-view": DateView,
             "drawer": ExampleDrawer
         },
-        beforeCreate: function() {
-            this.$store.dispatch("countlyVueExample/initialize");
+        data: function() {
+            return {
+                appId: countlyCommon.ACTIVE_APP_ID,
+                currentTab: (this.$route.params && this.$route.params.tab) || "tables",
+            };
+        }
+    });
+
+    var NewMainView = countlyVue.views.create({
+        template: CV.T('/vue-example/templates/newmain.html'),
+        mixins: [
+            countlyVue.mixins.hasDrawers("main"),
+            countlyVue.container.mixin({
+                "externalTabs": "/vueExample/externalTabs"
+            })
+        ],
+        components: {
+            "drawer": ExampleDrawer
         },
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
-                currentTab: (this.$route.params && this.$route.params.tab) || "tables"
+                dynamicTab: (this.$route.params && this.$route.params.tab) || "tables",
+                tabs: [
+                    {
+                        title: "Tables",
+                        name: "tables",
+                        component: TableView,
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/tables"
+                    },
+                    {
+                        title: "Form: Basic",
+                        name: "form-basic",
+                        component: FormBasics,
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/form-basic"
+                    },
+                    {
+                        title: "Form: Dropdown",
+                        name: "form-dropdown",
+                        component: FormDropdown,
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/form-dropdown"
+                    },
+                    {
+                        title: "Charts",
+                        name: "charts",
+                        component: TimeGraphView,
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/charts"
+                    },
+                    {
+                        title: "Date",
+                        name: "date",
+                        component: DateView,
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/date"
+                    }
+                ]
             };
-        },
-        methods: {
-            add: function() {
-                this.openDrawer("main", countlyVueExample.factory.getEmpty());
-            }
         }
     });
 
@@ -488,6 +539,21 @@
 
         return new countlyVue.views.BackboneWrapper({
             component: MainView,
+            vuex: vuex,
+            templates: [
+                "/vue-example/templates/empty.html",
+                "/vue-example/templates/form.html"
+            ]
+        });
+    };
+
+    var getNewMainView = function() {
+        var vuex = [{
+            clyModel: countlyVueExample
+        }];
+
+        return new countlyVue.views.BackboneWrapper({
+            component: NewMainView,
             vuex: vuex,
             templates: [
                 "/vue-example/templates/empty.html",
@@ -508,6 +574,20 @@
         };
         exampleView.params = params;
         this.renderWhenReady(exampleView);
+    });
+
+    app.route("/vue-2", 'vue-2', function() {
+        var newExampleView = getNewMainView();
+        this.renderWhenReady(newExampleView);
+    });
+
+    app.route("/vue-2/*tab", 'vue-2-tab', function(tab) {
+        var newExampleView = getNewMainView();
+        var params = {
+            tab: tab
+        };
+        newExampleView.params = params;
+        this.renderWhenReady(newExampleView);
     });
 
     countlyVue.container.register("/vueExample/externalTabs", {
