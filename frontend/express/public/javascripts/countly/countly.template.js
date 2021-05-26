@@ -2998,11 +2998,10 @@ var AppRouter = Backbone.Router.extend({
             }
         }
         /** gets page size
-        * @param {object} dtable  - data table
         * @param {object} settings  -data table settings
         * @returns {boolean} states if dtable is in active view
         */
-        function getPageSize(dtable, settings) {
+        function getPageSize(settings) {
             var pageSizeSettings = countlyCommon.getPersistentSettings().pageSizeSettings;
             if (!pageSizeSettings) {
                 pageSizeSettings = [];
@@ -3215,8 +3214,7 @@ var AppRouter = Backbone.Router.extend({
                     tableWrapper.show();
                 }
                 else {
-                    var dtable = $(oSettings.nTable).dataTable();
-                    oSettings._iDisplayLength = getPageSize(dtable, oSettings);
+                    oSettings._iDisplayLength = getPageSize(oSettings);
                     $('.dataTables_length').find('input[type=number]').val(oSettings._iDisplayLength);
                     tableWrapper.hide();
                 }

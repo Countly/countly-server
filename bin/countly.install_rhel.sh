@@ -37,6 +37,9 @@ if grep -q -i "release 8" /etc/redhat-release ; then
     if [ ! -x "$(command -v python)" ]; then
         ln -sf /usr/bin/python3 /usr/bin/python
     fi
+
+    #Install raven-release for ipa-gothic-fonts required by puppeteer
+    yum -i install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-1.el8.noarch.rpm
 elif grep -q -i "release 7" /etc/redhat-release ; then
     yum -y install policycoreutils-python
     #install nginx
@@ -45,8 +48,6 @@ name=nginx repo
 baseurl=http://nginx.org/packages/rhel/7/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
-    yum -y install pango.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXScrnSaver.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 ipa-gothic-fonts xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-utils xorg-x11-fonts-cyrillic xorg-x11-fonts-Type1 xorg-x11-fonts-misc
-
     yum -y install gcc-c++-4.8.5
 
     yum -y --enablerepo=extras install epel-release
@@ -62,6 +63,11 @@ else
     echo "Unsupported OS version, only support RHEL/Centos 8 and 7"
     exit 1
 fi
+
+#Install dependancies required by the puppeteer
+yum -y install alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXi.x86_64 libXrandr.x86_64 GConf2.x86_64 libXScrnSaver.x86_64 libXtst.x86_64 pango.x86_64 xorg-x11-fonts-100dpi xorg-x11-fonts-75dpi xorg-x11-fonts-cyrillic xorg-x11-fonts-misc xorg-x11-fonts-Type1 xorg-x11-utils ipa-gothic-fonts
+#Install nss after installing above dependencies
+yum update nss -y
 
 #install nodejs
 curl -sL https://rpm.nodesource.com/setup_14.x | bash -
@@ -90,8 +96,8 @@ fi
 yum -y install sendmail
 service sendmail start
 
-#install grunt & npm modules
-( cd "$DIR/..";  sudo npm install -g grunt-cli --unsafe-perm; sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
+#install npm modules
+( cd "$DIR/..";  sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
 
 #install numactl
 yum install numactl -y
@@ -155,7 +161,7 @@ else
 fi
 
 #compile scripts for production
-cd "$DIR/.." && grunt dist-all
+countly task dist-all
 
 # disable transparent huge pages
 #countly thp

@@ -37,7 +37,7 @@ window.ViewsView = countlyView.extend({
     getExportAPI: function(tableID) {
         if (tableID === 'ViewsDataTableOne') {
             var set = this.dtable.fnSettings();
-            var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getTable&seeMee=1" + "&period=" + countlyCommon.getPeriodForAjax() + "&iDisplayStart=0&app_id=" + countlyCommon.ACTIVE_APP_ID + '&api_key=' + countlyGlobal.member.api_key;
+            var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getExportQuery" + "&period=" + countlyCommon.getPeriodForAjax() + "&iDisplayStart=0&app_id=" + countlyCommon.ACTIVE_APP_ID + '&api_key=' + countlyGlobal.member.api_key;
             if (self.selectedSegment && self.selectedSegment.segmentKey !== "" && self.selectedSegment.segmentValue !== "") {
                 requestPath += "&segment=" + self.selectedSegment.segmentKey;
                 requestPath += "&segmentVal=" + self.selectedSegment.segmentKey;
@@ -56,8 +56,9 @@ window.ViewsView = countlyView.extend({
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 path: requestPath,
                 method: "GET",
-                filename: "Systemlogs_on_" + moment().format("DD-MMM-YYYY"),
-                prop: ['aaData']
+                filename: "Views" + countlyCommon.ACTIVE_APP_ID + "_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData'],
+                "url": "/o/export/requestQuery"
             };
             return apiQueryData;
         }
@@ -421,7 +422,7 @@ window.ViewsView = countlyView.extend({
                         countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
                             self.token = token && token.result;
                             if (self.token) {
-                                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, app_key: countlyCommon.ACTIVE_APP_KEY});
+                                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, app_key: countlyCommon.ACTIVE_APP_KEY, url: window.location.protocol + "//" + window.location.host});
                                 newWindow.location.href = url;
                             }
                         });
@@ -1091,7 +1092,7 @@ if (countlyAuth.validateRead(app.viewsView.featureName)) {
                 $("#drill-navigation").find(".menu[data-open=table-view]").hide();
 
                 $.when(countlySegmentation.initialize(currEvent)).then(function() {
-                    $("#drill").replaceWith(drillClone.clone(true));
+                    $("#drill-filter-view").replaceWith(drillClone.clone(true));
                     self.adjustFilters();
                     if (!self.keepQueryTillExec) {
                         self.draw(true, false);
@@ -1099,7 +1100,7 @@ if (countlyAuth.validateRead(app.viewsView.featureName)) {
                 });
             });
             setTimeout(function() {
-                drillClone = $("#drill").clone(true);
+                drillClone = $("#drill-filter-view").clone(true);
             }, 0);
         }
     });
@@ -1385,7 +1386,7 @@ function initializeViewsWidget() {
         var viewsData = [];
         for (i = 0; i < data.chartData.length; i++) {
             viewsData.push({
-                views: data.chartData[i].views,
+                views: data.chartData[i].display,
                 data: []
             });
             for (var j = 0; j < viewsValueNames.length; j++) {

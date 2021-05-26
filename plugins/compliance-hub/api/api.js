@@ -172,7 +172,7 @@ const FEATURE_NAME = 'compliance_hub';
                             params.qstring.query.device_id = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                         }
 
-                        var columns = ["device_id", "uid", "type", "after", "ts"];
+                        var columns = ["device_id", "device_id", "uid", "type", "after", "ts"];
                         var checkOb;
                         if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
                             checkOb = {};
@@ -295,6 +295,40 @@ const FEATURE_NAME = 'compliance_hub';
             });
             return true;
         }
+        }
+    });
+
+    plugins.register("/i/user_merge", function(ob) {
+        var newAppUser = ob.newAppUser;
+        var oldAppUser = ob.oldAppUser;
+        if (typeof oldAppUser.consent !== "undefined") {
+            if (typeof newAppUser.consent === "undefined") {
+                newAppUser.consent = oldAppUser.consent;
+            }
+            else {
+                for (var i in oldAppUser.consent) {
+                    if (typeof newAppUser.consent[i] === "undefined") {
+                        newAppUser.consent[i] = oldAppUser.consent[i];
+                    }
+                }
+            }
+        }
+    });
+
+    plugins.register("/i/device_id", function(ob) {
+        var appId = ob.app_id;
+        var oldUid = ob.oldUser.uid;
+        var newUid = ob.newUser.uid;
+        if (oldUid !== newUid) {
+            return new Promise(function(resolve, reject) {
+                common.db.collection('consent_history' + appId).update({uid: oldUid}, {'$set': {uid: newUid}}, {multi: true}, function(err) {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve();
+                });
+            });
         }
     });
 

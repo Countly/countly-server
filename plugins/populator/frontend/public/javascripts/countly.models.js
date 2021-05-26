@@ -518,7 +518,7 @@
             return trace;
         };
 
-        this.getEvent = function(id, eventTemplate) {
+        this.getEvent = function(id, eventTemplates) {
             this.stats.e++;
 
             var event = {
@@ -531,6 +531,13 @@
 
             this.ts += 1000;
 
+            if (Array.isArray(eventTemplates)) {
+                var eventTemplate = eventTemplates[getRandomInt(0, eventTemplates.length - 1)];
+            }
+            else {
+                eventTemplate = eventTemplates;
+            }
+
             if (eventTemplate && eventTemplate.duration) {
                 event.dur = getRandomInt(eventTemplate.duration[0], eventTemplate.duration[1] || 10);
             }
@@ -542,7 +549,14 @@
                 event.sum = getRandomInt(eventTemplate.sum[0], eventTemplate.sum[1] || 10);
             }
 
-            if (id === "[CLY]_view") {
+            if (eventTemplate && eventTemplate.segments) {
+                event.segmentation = {};
+                Object.keys(eventTemplate.segments).forEach(function(key) {
+                    var values = eventTemplate.segments[key];
+                    event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
+                });
+            }
+            else if (id === "[CLY]_view") {
                 event.segmentation = {};
                 var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
                 Object.keys(viewSegments).forEach(function(key) {
@@ -558,13 +572,6 @@
             }
             else if (id === "[CLY]_orientation") {
                 event.segmentation = {mode: (Math.random() > 0.5) ? "landscape" : "portrait"};
-            }
-            else if (eventTemplate && eventTemplate.segments) {
-                event.segmentation = {};
-                Object.keys(eventTemplate.segments).forEach(function(key) {
-                    var values = eventTemplate.segments[key];
-                    event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
-                });
             }
 
             return [event];
@@ -804,7 +811,7 @@
                 this.isRegistered = true;
                 this.stats.u++;
                 // note login event was here
-                events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(4, template && template.events));
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
                 req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.5) {
                     this.hasPush = true;
@@ -818,7 +825,7 @@
                 }
             }
             else {
-                events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(4, template && template.events));
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
                 req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
             }
 
@@ -846,7 +853,7 @@
                 this.ts = this.ts + 30;
                 this.stats.x++;
                 this.stats.d += 30;
-                var events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(2, template && template.events));
+                var events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(2, template && template.events));
                 req = {timestamp: this.ts, session_duration: 30, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.8) {
                     this.timer = setTimeout(function() {

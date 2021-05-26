@@ -458,36 +458,37 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
             }
             newAppUserP.merges++;
             //update new user
-            common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function(err) {
-                if (err) {
-                    return callback(err, newAppUserP);
-                }
+            common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function(/*err*/) {
+                //if (err) {
+                //return callback(err, newAppUserP);
+                //}
+                callback(null, newAppUserP);
                 //let plugins know they need to merge user data
                 common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}}, {multi: true}, function() {});
                 plugins.dispatch("/i/device_id", {
                     app_id: app_id,
                     oldUser: oldAppUser,
                     newUser: newAppUserP
-                }, function(result) {
-                    var retry = false;
-                    if (result && result.length) {
-                        for (let index = 0; index < result.length; index++) {
-                            if (result[index].status === "rejected") {
-                                retry = true;
-                                break;
-                            }
-                        }
-                    }
+                }, function(/*result*/) {
+                    //var retry = false;
+                    //if (result && result.length) {
+                    //    for (let index = 0; index < result.length; index++) {
+                    //        if (result[index].status === "rejected") {
+                    //           retry = true;
+                    //            break;
+                    //        }
+                    //    }
+                    //}
 
-                    if (retry) {
-                        //all plugins could not merge data, we should retry
-                        return callback(new Error("Could not merge data in all plugins"), newAppUserP);
-                    }
+                    //if (retry) {
+                    //all plugins could not merge data, we should retry
+                    //return callback(new Error("Could not merge data in all plugins"), newAppUserP);
+                    //}
                     //delete old user
-                    common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(errRemoving) {
-                        if (callback) {
-                            callback(errRemoving, newAppUserP);
-                        }
+                    common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(/*errRemoving*/) {
+                        //if (callback) {
+                        //callback(errRemoving, newAppUserP);
+                        //}
                     });
                 });
             });

@@ -202,40 +202,47 @@ window.PopulatorView = countlyView.extend({
         }
 
         Object.keys(templateData && templateData.events || {}).forEach(function(key) {
-            var event = templateData.events[key];
+            var eventVariants = templateData.events[key];
 
-            var row =
-                "<div class=\"populator-event-row\">" +
+            if (!Array.isArray(eventVariants)) {
+                eventVariants = [eventVariants];
+            }
+
+            eventVariants.forEach(function(event) {
+                var row =
+                    "<div class=\"populator-event-row\">" +
                     "<div class=\"populator-event-key-row\">" +
-                        "<div class=\"label\" data-localize=\"populator.event-key\"></div>" +
-                        "<input type=\"text\" class=\"input\" value=\"" + key + "\"/>" +
-                        "<div class=\"populator-template-remove-event text-link\" data-localize=\"populator.remove-event\"></div>" +
+                    "<div class=\"label\" data-localize=\"populator.event-key\"></div>" +
+                    "<input type=\"text\" class=\"input\" value=\"" + key + "\"/>" +
+                    "<div class=\"populator-template-remove-event text-link\" data-localize=\"populator.remove-event\"></div>" +
                     "</div>" +
                     "<div class=\"populator-event-segmentation-table\">" +
-                        "<div class=\"populator-event-segmentation-row header-row\">" +
-                            "<div class=\"label populator-event-segmentation-key\" data-localize=\"populator.segmentation-key\"></div>" +
-                            "<div class=\"label populator-event-segmentation-values\" data-localize=\"populator.segmentation-values\"></div>" +
-                        "</div>";
+                    "<div class=\"populator-event-segmentation-row header-row\">" +
+                    "<div class=\"label populator-event-segmentation-key\" data-localize=\"populator.segmentation-key\"></div>" +
+                    "<div class=\"label populator-event-segmentation-values\" data-localize=\"populator.segmentation-values\"></div>" +
+                    "</div>";
 
-            if (event.segments && Object.keys(event.segments).length > 0) {
-                Object.keys(event.segments).forEach(function(segmentationKey) {
-                    row +=
-                        "<div class=\"populator-event-segmentation-row\">" +
+                if (event.segments && Object.keys(event.segments).length > 0) {
+                    Object.keys(event.segments).forEach(function(segmentationKey) {
+                        row +=
+                            "<div class=\"populator-event-segmentation-row\">" +
                             "<input class=\"input populator-event-segmentation-key\" type=\"text\" class=\"input\"/ value=\"" + segmentationKey + "\">" +
                             "<input class=\"input populator-event-segmentation-values\" type=\"text\" class=\"input\"/ value=\"" + event.segments[segmentationKey].join(", ") + "\">" +
                             "<div class=\"icon-button remove text-light-gray\"><i class=\"material-icons\">highlight_off</i></div>" +
-                        "</div>";
-                });
-            }
+                            "</div>";
+                    });
+                }
 
-            row += "</div><div class=\"populator-event-add-segmentation text-link\" data-localize=\"populator.add-segmentation\"></div>";
-            row += "<div class=\"populator-event-property populator-template-event-duration\"><div class=\"fa check-green " + (event.duration ? "fa-check-square" : "fa-square-o") + "\"></div><div class=\"content\"><div class=\"help-title\" data-localize=\"populator.duration-help-title\"></div><div class=\"help-subtitle\" data-localize=\"populator.duration-help-subtitle\"></div><div class=\"event-property-inputs\"><input type=\"number\" class=\"input duration-start\" value=\"" + (event.duration && event.duration[0] || "") + "\"/><span> - </span><input type=\"number\" class=\"input duration-end\" value=\"" + (event.duration && event.duration[1] || "") + "\"/></div></div></div>";
-            row += "<div class=\"populator-event-property populator-template-event-sum\"><div class=\"fa check-green " + (event.sum ? "fa-check-square" : "fa-square-o") + "\"></div><div class=\"content\"><div class=\"help-title\" data-localize=\"populator.sum-help-title\"></div><div class=\"help-subtitle\" data-localize=\"populator.sum-help-subtitle\"></div><div class=\"event-property-inputs\"><input type=\"number\" class=\"input sum-start\" value=\"" + (event.sum && event.sum[0] || "") + "\"/><span> - </span><input type=\"number\" class=\"input sum-end\" value=\"" + (event.sum && event.sum[1] || "") + "\"/></div></div></div>";
+                row += "</div><div class=\"populator-event-add-segmentation text-link\" data-localize=\"populator.add-segmentation\"></div>";
+                row += "<div class=\"populator-event-property populator-template-event-duration\"><div class=\"fa check-green " + (event.duration ? "fa-check-square" : "fa-square-o") + "\"></div><div class=\"content\"><div class=\"help-title\" data-localize=\"populator.duration-help-title\"></div><div class=\"help-subtitle\" data-localize=\"populator.duration-help-subtitle\"></div><div class=\"event-property-inputs\"><input type=\"number\" class=\"input duration-start\" value=\"" + (event.duration && event.duration[0] || "") + "\"/><span> - </span><input type=\"number\" class=\"input duration-end\" value=\"" + (event.duration && event.duration[1] || "") + "\"/></div></div></div>";
+                row += "<div class=\"populator-event-property populator-template-event-sum\"><div class=\"fa check-green " + (event.sum ? "fa-check-square" : "fa-square-o") + "\"></div><div class=\"content\"><div class=\"help-title\" data-localize=\"populator.sum-help-title\"></div><div class=\"help-subtitle\" data-localize=\"populator.sum-help-subtitle\"></div><div class=\"event-property-inputs\"><input type=\"number\" class=\"input sum-start\" value=\"" + (event.sum && event.sum[0] || "") + "\"/><span> - </span><input type=\"number\" class=\"input sum-end\" value=\"" + (event.sum && event.sum[1] || "") + "\"/></div></div></div>";
 
-            $("#populator-template-add-event").before(row);
-            if (!(event.segments && Object.keys(event.segments).length > 0)) {
-                $("#populator-template-drawer .populator-event-row:last .populator-event-segmentation-table .header-row").hide();
-            }
+                $("#populator-template-add-event").before(row);
+
+                if (!(event.segments && Object.keys(event.segments).length > 0)) {
+                    $("#populator-template-drawer .populator-event-row:last .populator-event-segmentation-table .header-row").hide();
+                }
+            });
         });
         app.localize($("#populator-template-drawer"));
 
@@ -421,23 +428,29 @@ window.PopulatorView = countlyView.extend({
 
             $(".populator-event-row").each(function(index, row) {
                 var eventKey = $(row).find(".populator-event-key-row input").val();
-                templateData.events[eventKey] = {};
+                var eventData = {};
 
                 if ($(row).find(".populator-event-segmentation-row:not(.header-row)").length > 0) {
-                    templateData.events[eventKey].segments = {};
+                    eventData.segments = {};
 
                     $(row).find(".populator-event-segmentation-row:not(.header-row)").each(function(segmentationIndex, segmentationRow) {
-                        templateData.events[eventKey].segments[$(segmentationRow).find("input.populator-event-segmentation-key").val()] = processValues($(segmentationRow).find("input.populator-event-segmentation-values").val().split(/\s*,\s*/));
+                        eventData.segments[$(segmentationRow).find("input.populator-event-segmentation-key").val()] = processValues($(segmentationRow).find("input.populator-event-segmentation-values").val().split(/\s*,\s*/));
                     });
                 }
 
                 if ($(row).find(".populator-template-event-duration .check-green").hasClass("fa-check-square")) {
-                    templateData.events[eventKey].duration = [parseInt($(row).find(".duration-start").val()) || 0, parseInt($(row).find(".duration-end").val()) || 0];
+                    eventData.duration = [parseInt($(row).find(".duration-start").val()) || 0, parseInt($(row).find(".duration-end").val()) || 0];
                 }
 
                 if ($(row).find(".populator-template-event-sum .check-green").hasClass("fa-check-square")) {
-                    templateData.events[eventKey].sum = [parseFloat($(row).find(".sum-start").val()) || 0, parseFloat($(row).find(".sum-end").val()) || 0];
+                    eventData.sum = [parseFloat($(row).find(".sum-start").val()) || 0, parseFloat($(row).find(".sum-end").val()) || 0];
                 }
+
+                if (!Object.prototype.hasOwnProperty.call(templateData.events, eventKey)) {
+                    templateData.events[eventKey] = [];
+                }
+
+                templateData.events[eventKey].push(eventData);
             });
         }
 

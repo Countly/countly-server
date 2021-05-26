@@ -57,10 +57,9 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/vue/vue.min.js',
                     'frontend/express/public/javascripts/utils/vue/vuex.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue-color.min.js',
-                    'frontend/express/public/javascripts/utils/vue/vuelidate.min.js',
                     'frontend/express/public/javascripts/utils/vue/v-tooltip.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vee-validate.full.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue-good-table.min.js',
-                    'frontend/express/public/javascripts/utils/vue/validators.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue2Dropzone.min.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
@@ -117,7 +116,16 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.app.users.js',
                     'frontend/express/public/javascripts/countly/countly.template.js',
                     'frontend/express/public/javascripts/countly/countly.views.js',
-                    'frontend/express/public/javascripts/countly/countly.vue.components.js',
+                    'frontend/express/public/javascripts/countly/vue/core.js',
+                    'frontend/express/public/javascripts/countly/vue/helpers.js',
+                    'frontend/express/public/javascripts/countly/vue/data/vuex.js',
+                    'frontend/express/public/javascripts/countly/vue/components/layout.js',
+                    'frontend/express/public/javascripts/countly/vue/components/input.js',
+                    'frontend/express/public/javascripts/countly/vue/components/datatable.js',
+                    'frontend/express/public/javascripts/countly/vue/components/drawer.js',
+                    'frontend/express/public/javascripts/countly/vue/components/vis.js',
+                    'frontend/express/public/javascripts/countly/vue/components/helpers.js',
+                    'frontend/express/public/javascripts/countly/countly.vue.legacy.js',
                     'frontend/express/public/javascripts/countly/countly.token.manager.js',
                     'frontend/express/public/javascripts/countly/countly.version.history.js',
                     'frontend/express/public/javascripts/countly/countly.analytics.js'
@@ -193,6 +201,16 @@ module.exports = function(grunt) {
                     }
                 }
             }
+        },
+        sass: { // Task
+            dist: { // Target
+                options: { // Target options
+                    style: 'expanded'
+                },
+                files: { // Dictionary of files
+                    'frontend/express/public/stylesheets/vue/clyvue.css': 'frontend/express/public/stylesheets/vue/clyvue.scss'
+                }
+            }
         }
     });
 
@@ -205,6 +223,7 @@ module.exports = function(grunt) {
     grunt.registerTask('coverage', ['mocha_nyc:coverage']);
     //-----------code coverage-----------
 
+    grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
@@ -214,10 +233,10 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['eslint', 'mochaTest']);
 
-    grunt.registerTask('dist', ['concat', 'uglify', 'cssmin']);
+    grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'cssmin']);
 
     grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
-        var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');
+        var plugins = require('./plugins/plugins.json'), js = [], css = [], scss = {}, img = [], fs = require('fs'), path = require('path');
         console.log('Preparing production files for following plugins: %j', plugins);
 
         if (plugins.indexOf('push') !== -1) {
@@ -281,6 +300,9 @@ module.exports = function(grunt) {
                     if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0 && name.endsWith('.css')) {
                         css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
                     }
+                    else if (fs.statSync(file).isFile() && name.indexOf('.') !== 0 && name.endsWith('.scss')) {
+                        scss['plugins/' + plugin + '/frontend/public/stylesheets/' + name.replace(".scss", ".css")] = 'plugins/' + plugin + '/frontend/public/stylesheets/' + name;
+                    }
                 });
             }
 
@@ -304,10 +326,11 @@ module.exports = function(grunt) {
         grunt.config('uglify.plugins.files.frontend/express/public/javascripts/min/countly\\.plugins\\.js', 'frontend/express/public/javascripts/min/countly.plugins.concat.js');
 
         grunt.config('cssmin.plugins.files.frontend/express/public/stylesheets/plugins\\.min\\.css', css);
+        grunt.config('sass.plugins.files', scss);
 
         // grunt.task.loadTasks(['copy:plugins', 'concat:plugins', 'uglify:plugins']);
         // grunt.task.run(['concat', 'uglify']);
-        grunt.task.run(['concat:plugins', 'uglify:plugins', 'copy:plugins', 'cssmin:plugins']);
+        grunt.task.run(['concat:plugins', 'uglify:plugins', 'copy:plugins', 'sass:plugins', 'cssmin:plugins']);
 
         console.log('Done preparing production files');
     });

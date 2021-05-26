@@ -114,4 +114,82 @@ describe('Create app', function() {
                 });
         });
     });
+
+    describe("GET /i/apps/plugins application level plugins configurations", () => {
+        const loggerPluginAppConfig = { state: 'automatic', limit: 1000};
+        const apiPluginAppConfig = { session_cooldown_period: 15 };
+
+        before((done) => {
+            request
+                .post('/i/apps/update/plugins?api_key=' + API_KEY_ADMIN)
+                .send({
+                    app_id: APP_ID,
+                    args: JSON.stringify({
+                        logger: loggerPluginAppConfig,
+                        api: apiPluginAppConfig
+                    })
+                })
+                .expect(200)
+                .then(() => {
+                    done();
+                });
+        });
+
+        it('should return app level plugins configurations', (done) => {
+            request.get('/o/apps/plugins?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end((error, response) => {
+                    if (error) {
+                        return done(error);
+                    }
+                    const responseJson = JSON.parse(response.text);
+                    responseJson.should.have.property('plugins');
+                    responseJson.plugins.should.eql({logger: loggerPluginAppConfig, api: apiPluginAppConfig});
+                    done();
+                });
+        });
+
+        it('should return specific app level plugin configuration when plugin name is correct', (done) => {
+            request.get('/o/apps/plugins?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&name=logger')
+                .expect(200)
+                .end((error, response) => {
+                    if (error) {
+                        return done(error);
+                    }
+                    const responseJson = JSON.parse(response.text);
+                    responseJson.plugins.should.have.property('logger');
+                    responseJson.plugins.should.not.have.property('api');
+                    responseJson.plugins.logger.should.eql(loggerPluginAppConfig);
+                    done();
+                });
+        });
+
+        it('should return app level plugins configurations when plugin name is incorrect', (done) => {
+            request.get('/o/apps/plugins?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&name=invalidName')
+                .expect(200)
+                .end((error, response) => {
+                    if (error) {
+                        return done(error);
+                    }
+                    const responseJson = JSON.parse(response.text);
+                    responseJson.should.have.property('plugins');
+                    responseJson.plugins.should.eql({logger: loggerPluginAppConfig, api: apiPluginAppConfig});
+                    done();
+                });
+        });
+
+        it('should fail to return app level plugins configurations when app id is missing', (done) => {
+            request.get('/o/apps/plugins?api_key=' + API_KEY_ADMIN)
+                .expect(400)
+                .end((error, response) => {
+                    if (error) {
+                        return done(error);
+                    }
+                    const responseJson = JSON.parse(response.text);
+                    responseJson.should.have.property('result');
+                    responseJson.result.should.equal('Error: Missing app_id argument');
+                    done();
+                });
+        });
+    });
 });

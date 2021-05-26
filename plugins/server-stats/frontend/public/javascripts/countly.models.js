@@ -93,7 +93,8 @@
                 "app-name": getAppName(app),
                 "sessions": periodData.sessions,
                 "events": periodData.events,
-                "data-points": periodData["data-points"]
+                "data-points": periodData["data-points"],
+                "change": periodData.change
             });
         }
 
@@ -554,13 +555,19 @@
     **/
     function getAppName(appId) {
         if (appId === "all-apps") {
-            return jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
+            return "(" + (jQuery.i18n.map["server-stats.all-datapoints"] || "All Datapoints") + ")";
+        }
+        else if (appId === "[CLY]_consolidated") {
+            return "(" + (jQuery.i18n.map["server-stats.consolidated-datapoints"] || "Consolidated Datapoints") + ")";
+        }
+        else if (appId === "natural-dp") {
+            return "(" + (jQuery.i18n.map["server-stats.natural-datapoints"] || "Natural Datapoints") + ")";
         }
         else if (countlyGlobal.apps[appId]) {
             return countlyGlobal.apps[appId].name;
         }
         else {
-            return "Deleted app";
+            return "Deleted app (" + appId + ")";
         }
     }
 

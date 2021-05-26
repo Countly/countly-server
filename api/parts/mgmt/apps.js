@@ -125,7 +125,9 @@ appsApi.getAppsDetails = function(params) {
                                 owner_id: params.app.owner_id || "",
                                 created_at: params.app.created_at || 0,
                                 edited_at: params.app.edited_at || 0,
-                                last_data: (typeof last !== "undefined" && last.length) ? last[0].lac : 0,
+                                plugins: params.app.plugins,
+                                last_data: params.app.last_data,
+                                last_data_users: (typeof last !== "undefined" && last.length) ? last[0].lac : 0,
                             },
                             global_admin: global_admins || [],
                             admin: admins || [],
@@ -400,6 +402,46 @@ appsApi.updateApp = function(params) {
 };
 
 /**
+ * Returns application level configurations
+ * @param {params} params - params object with query parameters appId and name(optional parameter)
+ * @returns {boolean} returns true; 
+ */
+appsApi.getAppPlugins = async function(params) {
+    const queryParamsValidationSchema = {
+        'app_id': {
+            'required': true,
+            'type': 'String',
+            'min-length': 24,
+            'max-length': 24,
+        },
+        'name': {
+            'required': false,
+            'type': 'String',
+        }
+    };
+    const getAppPluginsQueryValidationResult = common.validateArgs(params.qstring, queryParamsValidationSchema, true);
+    if (!getAppPluginsQueryValidationResult.result) {
+        common.returnMessage(params, 400, 'Error: ' + getAppPluginsQueryValidationResult.errors);
+        return true;
+    }
+    try {
+        const appId = params.qstring.app_id;
+        const pluginName = params.qstring.name;
+        const appModel = await common.db.collection('apps').findOne(common.db.ObjectID(appId));
+        if (params.qstring.name && appModel.plugins[pluginName]) {
+            common.returnOutput(params, {plugins: {[pluginName]: appModel.plugins[pluginName] || {}}});
+        }
+        else {
+            common.returnOutput(params, {plugins: appModel.plugins});
+        }
+    }
+    catch (error) {
+        common.returnMessage(params, 400, 'Error getting app plugins:', error);
+    }
+    return true;
+};
+
+/**
 * Updates existing app's configurations and outputs result to browser
 * @param {params} params - params object with args to update app with
 * @returns {boolean} true if operation successful
@@ -620,6 +662,9 @@ appsApi.resetApp = function(params) {
                 'type': 'String',
                 'min-length': 24,
                 'max-length': 24
+            },
+            period: {
+                required: true
             }
         },
         appId = '';
@@ -663,7 +708,7 @@ appsApi.resetApp = function(params) {
 * @param {object} app - app document
 **/
 function deleteAppData(appId, fromAppDelete, params, app) {
-    if (fromAppDelete || !params.qstring.args.period || params.qstring.args.period === "all" || params.qstring.args.period === "reset") {
+    if (fromAppDelete || params.qstring.args.period === "all" || params.qstring.args.period === "reset") {
         deleteAllAppData(appId, fromAppDelete, params, app);
     }
     else {

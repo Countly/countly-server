@@ -57,6 +57,18 @@ var alertDefine = {
             { value: 'decreased by at least', name: 'decreased by at least' },
         ]
     },
+    dataPoint: {
+        target: [
+            { value: 'Number of daily DP', name: 'Daily data points' },
+            { value: 'Hourly data points', name: 'Hourly data points' },
+            { value: 'Monthly data points', name: 'Monthly data points' }
+        ],
+        condition: [
+            { value: 'increased by at least', name: 'increased by at least' },
+            { value: 'decreased by at least', name: 'decreased by at least' },
+        ]
+    },
+
 };
 
 // dynamic to get value for different settings properties.
@@ -138,6 +150,9 @@ window.AlertsView = countlyView.extend({
             var appNameList = [];
             if (alertsList[i].selectedApps) {
                 appNameList = _.map(alertsList[i].selectedApps, function(appID) {
+                    if (appID === "all-apps") {
+                        return "All apps";
+                    }
                     return countlyGlobal.apps[appID] && countlyGlobal.apps[appID].name;
                 });
             }
@@ -381,12 +396,9 @@ window.AlertsView = countlyView.extend({
                 $("#single-target2-dropdown").clySelectSetSelection("", "please select app first");
             }
             $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
-
         },
         init: function() {
             var self = this;
-            var apps = [];
-
             // clear alertName
             $("#alert-name-input").val('');
             $("#alert-name-input").off('input').on('input', function() {
@@ -421,9 +433,17 @@ window.AlertsView = countlyView.extend({
                         $("#single-target-condition-dropdown").css("visibility", "hidden");
                         $('#alert-compare-value').css("visibility", "hidden");
                     }
+                    else if (selected === 'Monthly data points' || selected === 'Hourly data points') {
+                        $("#single-target-condition-dropdown").clySelectSetSelection("reach threshold", "reach threshold");
+                        $("#alert-view .alert-compare-value-class").addClass("datapoint");
+                        setTimeout(function() {
+                            $("#single-target-condition-dropdown").clySelectSetItems([{value: 'reach threshold', name: 'reach threshold'}]);
+                        }, 10);
+                    }
                     else {
                         $("#single-target-condition-dropdown").css("visibility", "visible");
                         $('#alert-compare-value').css("visibility", "visible");
+
                     }
 
 
@@ -455,20 +475,19 @@ window.AlertsView = countlyView.extend({
                 $(this).addClass('selected');
 
                 $("#widget-section-single-app").show();
+
                 $("#single-app-dropdown").clySelectSetSelection("", "Select App");
 
                 var source = $("#" + dataType + "-condition-template").html();
                 $('.alert-condition-block').html(source);
 
-
                 $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
                 $("#single-target-condition-dropdown").clySelectSetItems(alertDefine[dataType].condition);
-
-                app.localize();
                 switch (dataType) {
                 case 'metric':
                 case 'crash':
                 case 'rating':
+                case 'dataPoint':
                     metricClickListner();
                     break;
                 case 'event':
@@ -476,17 +495,19 @@ window.AlertsView = countlyView.extend({
                 }
                 self.checkDisabled();
                 $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
+                var apps = [];
+                for (var appId in countlyGlobal.apps) {
+                    apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
+                }
+                if ($(($('#alert-data-types').find(".selected")[0])).data("dataType") === "dataPoint") {
+                    apps.unshift({value: "all-apps", name: "All apps"});
+                }
+                // $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
+                $("#single-app-dropdown").clySelectSetItems(apps);
+                app.localize();
             });
             // init content
             $(".alert-condition-block").html('');
-
-
-            for (var appId in countlyGlobal.apps) {
-                apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
-            }
-            // $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
-            $("#single-app-dropdown").clySelectSetItems(apps);
-
             $("#single-app-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
                 var dataType = $(($('#alert-data-types').find(".selected")[0])).data("dataType");
                 var dataSubType = $("#single-target-dropdown").clySelectGetSelection();
@@ -642,12 +663,15 @@ window.AlertsView = countlyView.extend({
             case 'metric':
             case 'crash':
             case 'rating':
+            case 'dataPoint':
                 var appSelected = [];
                 for (var index in data.selectedApps) {
                     var appId = data.selectedApps[index];
                     countlyGlobal.apps[appId] && appSelected.push({ value: appId, name: countlyGlobal.apps[appId].name });
                     countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
-
+                    if (appId === "all-apps") {
+                        $("#single-app-dropdown").clySelectSetSelection("all-apps", "All apps");
+                    }
                 }
                 var target = _.find(alertDefine[data.alertDataType].target, function(m) {
                     return m.value === data.alertDataSubType;
@@ -655,7 +679,6 @@ window.AlertsView = countlyView.extend({
                 if (target) {
                     $("#single-target-dropdown").clySelectSetSelection(target.value, target.name);
                 }
-
                 if (data.alertDataSubType2 && (data.alertDataSubType === 'Number of page views' || data.alertDataSubType === 'Bounce rate')) {
                     this.loadAppViewData(data.alertDataSubType2);
                 }
@@ -668,6 +691,12 @@ window.AlertsView = countlyView.extend({
                     $("#single-target-dropdown").off("cly-select-change");
                     $("#single-target-dropdown").clySelectSetSelection(data.alertDataSubType, data.alertDataSubType);
                 });
+                var targetEvent = _.find(alertDefine[data.alertDataType].target, function(m) {
+                    return m.value === data.alertDataSubType;
+                });
+                if (targetEvent) {
+                    $("#single-target-dropdown").clySelectSetSelection(targetEvent.value, targetEvent.name);
+                }
                 for (index in data.selectedApps) {
                     appId = data.selectedApps[index];
                     countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
@@ -686,7 +715,6 @@ window.AlertsView = countlyView.extend({
                     $("#" + dict[data.alertDataSubType][key]).val(data[key]);
                 }
             }
-
 
             $("#save-widget").removeClass("disabled");
         },
@@ -727,6 +755,9 @@ window.AlertsView = countlyView.extend({
                 ' ' + settings.compareType +
                 ' ' + settings.compareValue + "%";
 
+            if (dataType === 'dataPoint' && (settings.alertDataSubType === 'Monthly data points' || settings.alertDataSubType === 'Hourly data points')) {
+                settings.compareDescribe = settings.compareDescribe.substring(0, settings.compareDescribe.length - 1);
+            }
             var dictObject = dict[settings.alertDataType] && dict[settings.alertDataType][settings.alertDataSubType];
             if (dictObject) {
                 for (var key in dictObject) {

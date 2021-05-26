@@ -186,6 +186,7 @@ const FEATURE_NAME = 'alerts';
             }
             Promise.all(batch).then(function() {
                 log.d("alert all updated.");
+                common.readBatcher.invalidate("alerts", {}, {}, true);
                 plugins.dispatch("/updateAlert", { method: "alertTrigger" });
                 common.returnOutput(params, true);
             });

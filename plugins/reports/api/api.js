@@ -350,7 +350,7 @@ const FEATURE_NAME = 'reports';
         //convert time
         var serverOffset = moment().utcOffset();
         var clientOffset = moment().tz(props.timezone).utcOffset();
-        var diff = serverOffset - clientOffset;
+        var diff = clientOffset - serverOffset;
         var day = props.day;
         var hour = props.hour - Math.floor(diff / 60);
         var minute = props.minute - diff % 60;

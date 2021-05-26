@@ -3615,7 +3615,7 @@ app.addPageScript("/drill#", function() {
             $("#drill-navigation").find(".menu[data-open=table-view]").hide();
 
             $.when(countlySegmentation.initialize(currEvent)).then(function() {
-                $("#drill").replaceWith(drillClone.clone(true));
+                $("#drill-filter-view").replaceWith(drillClone.clone(true));
                 self.adjustFilters();
                 if (!self.keepQueryTillExec) {
                     self.draw(true, false);
@@ -3623,7 +3623,8 @@ app.addPageScript("/drill#", function() {
             });
         });
         setTimeout(function() {
-            drillClone = $("#drill").clone(true);
+            // drillClone = $("#drill").clone(true);
+            drillClone = $("#drill-filter-view").clone(true);
         }, 0);
     }
 });

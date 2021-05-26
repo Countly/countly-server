@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars*/
+/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars, countlyTaskManager*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -986,6 +986,10 @@
                 delete data.formatFields;
             }
             var url = countlyCommon.API_URL + (exportByAPI ? "/o/export/request" : "/o/export/db");
+            if (data.url) {
+                url = data.url;
+            }
+
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
                 if (CountlyHelpers.isJSON(v)) {
@@ -995,13 +999,77 @@
                     form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
                 }
             });
-            $('body').append(form);
-            form.submit();
+            if (exportByAPI && url === "/o/export/requestQuery") {
+                if (Array.isArray(data.prop)) {
+                    data.prop = data.prop.join(",");
+                }
+                $.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.data.r + "/export/requestQuery",
+                    data: data,
+                    success: function(result) {
+                        var task_id = null;
+                        var fileid = null;
+                        if (result && result.result && result.result.task_id) {
+                            task_id = result.result.task_id;
+                            countlyTaskManager.monitor(task_id);
+                            CountlyHelpers.displayExportStatus(null, fileid, task_id);
+                        }
+                        $(".save-table-data").click();
+
+                    },
+                    error: function(xhr, status, error) {
+                        var filename = null;
+                        if (xhr && xhr.responseText && xhr.responseText !== "") {
+                            var ob = JSON.parse(xhr.responseText);
+                            if (ob.result && ob.result.message) {
+                                error = ob.result.message;
+                            }
+                            if (ob.result && ob.result.filename) {
+                                filename = ob.result.filename;
+                            }
+                        }
+                        CountlyHelpers.displayExportStatus(error, filename, null);
+                    }
+                });
+            }
+            else {
+                $('body').append(form);
+                form.submit();
+            }
         });
         if (asDialog) {
             revealDialog(dialog);
         }
         return dialog;
+    };
+
+    CountlyHelpers.displayExportStatus = function(error, export_id, task_id) {
+        if (error) {
+            CountlyHelpers.alert(error, "red");
+        }
+        else if (export_id) {
+            CountlyHelpers.notify({
+                type: "ok",
+                title: jQuery.i18n.map["common.success"],
+                message: jQuery.i18n.map["export.export-finished"],
+                info: jQuery.i18n.map["app-users.export-finished-click"],
+                sticky: false,
+                clearAll: true,
+                onClick: function() {
+                    var win = window.open(countlyCommon.API_PARTS.data.r + "/export/download/" + task_id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID, '_blank');
+                    win.focus();
+                }
+            });
+            self.refresh();
+        }
+        else if (task_id) {
+            CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["export.export-started"], sticky: false, clearAll: false});
+            // self.refresh();
+        }
+        else {
+            CountlyHelpers.alert(jQuery.i18n.map["export.export-failed"], "red");
+        }
     };
 
     /**

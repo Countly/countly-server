@@ -100,7 +100,7 @@ window.component('push', function(push) {
         this.sent = m.prop(data.sent);
         this.sound = vprop(data.sound, function(v){ return !!v; }, t('pu.po.tab2.extras.sound.invalid'));
         this.badge = vprop(data.badge, function(v){ return v === undefined || ((v + '') === (parseInt(v) + '') && parseInt(v) >= 0); }, t('pu.po.tab2.extras.badge.invalid'));
-        this.url = vprop(data.url, function(v){ return v && URL_REGEXP.test(v); }, t('pu.po.tab2.extras.url.invalid'));
+        this.url = vprop(data.url, function(v){ return v && URL_REGEXP.test(v) && v[0] !== ' ' && v[v.length - 1] !== ' '; }, t('pu.po.tab2.extras.url.invalid'));
         this.data = vprop(typeof data.data === 'object' ? JSON.stringify(data.data) : data.data, function(v){
             try {
                 var o = window.jsonlite.parse(v);
@@ -109,6 +109,7 @@ window.component('push', function(push) {
                 return false;
             }
         }, t('pu.po.tab2.extras.data.invalid'));
+        this.userProps = m.prop(data.userProps);
         this.test = buildClearingProp(typeof data.test === 'undefined' ? false : data.test);
 
         this.userConditions = buildClearingProp(data.userConditions === '{}' ? undefined : typeof data.userConditions === 'string' ? JSON.parse(data.userConditions) : data.userConditions);
@@ -223,6 +224,9 @@ window.component('push', function(push) {
             var prop = m.prop(),
                 f = function(){
                     if (arguments.length) {
+                        if (arguments[0]) {
+                            arguments[0] = arguments[0].trim();
+                        }
                         f.valid = false;
                         prop(arguments[0]);
 						
@@ -402,9 +406,15 @@ window.component('push', function(push) {
                 obj.sound = this.sound();
                 obj.badge = this.badge();
                 obj.url = this.url();
+                if (obj.url) {
+                    obj.url = obj.url.trim();
+                }
                 obj.source = 'dash';
                 obj.buttons = parseInt(this.buttons());
                 obj.media = this.media();
+                if (obj.media) {
+                    obj.media = obj.media.trim();
+                }
                 obj.autoOnEntry = this.autoOnEntry();
                 obj.autoCancelTrigger = this.autoCancelTrigger();
                 obj.autoCohorts = this.autoCohorts();
@@ -415,6 +425,7 @@ window.component('push', function(push) {
                 obj.autoCapMessages = this.autoCapMessages();
                 obj.autoCapSleep = this.autoCapSleep();
                 obj.actualDates = this.actualDates();
+                obj.userProps = this.userProps();
 
                 if (this.data()) {
                     obj.data = typeof this.data() === 'string' ? JSON.parse(this.data()) : this.data();

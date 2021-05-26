@@ -207,7 +207,7 @@ describe("Testing checksum validations", function() {
 
     describe("Reseting app", function() {
         it("should successfully reset data", function(done) {
-            const args = {app_id: APP_ID};
+            const args = {app_id: APP_ID, "period": "reset"};
             request
                 .get("/i/apps/reset")
                 .query({api_key: API_KEY_ADMIN, args: JSON.stringify(args)})

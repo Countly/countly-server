@@ -137,6 +137,16 @@ window.DataPointsView = countlyView.extend({
                             return countlyCommon.formatNumber(row["data-points"] || 0);
                         },
                         "sTitle": jQuery.i18n.map["server-stats.data-points"]
+                    },
+                    {
+                        "sType": "formatted-num",
+                        "mData": function(row, type) {
+                            if (type !== "display") {
+                                return row.change || 0;
+                            }
+                            return (typeof row.change === "number") ? countlyCommon.formatNumber(row.change) : "";
+                        },
+                        "sTitle": jQuery.i18n.map["server-stats.datapoint-change"]
                     }
                 ]
             }));
