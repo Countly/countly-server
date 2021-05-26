@@ -2448,7 +2448,13 @@ window.ManageAppsView = countlyView.extend({
                             table += "<tr><td>" + jQuery.i18n.map["management-applications.app-creator"] + "</td><td class='details-value' colspan='2'>" + ((result.app.owner === "" || result.app.owner_id === "") ? jQuery.i18n.map["common.unknown"] : "<a href='#/manage/users/" + result.app.owner_id + "' class='table-link-user green'>" + result.app.owner + "</a>") + "</td></tr>";
                             table += "<tr><td>" + jQuery.i18n.map["management-applications.app-created-at"] + "</td><td class='details-value' colspan='2'>" + ((parseInt(result.app.created_at) === 0) ? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.created_at)) + "</td></tr>";
                             table += "<tr><td>" + jQuery.i18n.map["management-applications.app-edited-at"] + "</td><td class='details-value' colspan='2'>" + ((parseInt(result.app.edited_at) === 0) ? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.edited_at)) + "</td></tr>";
-                            table += "<tr><td>" + jQuery.i18n.map["management-applications.app-last-data"] + "</td><td class='details-value' colspan='2'>" + ((parseInt(result.app.last_data) === 0) ? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.last_data)) + "</td></tr>";
+
+                            var ts = result.app.last_data;
+                            if (Math.round(ts).toString().length === 10) {
+                                ts *= 1000;
+                            }
+
+                            table += "<tr><td>" + jQuery.i18n.map["management-applications.app-last-data"] + "</td><td class='details-value' colspan='2'>" + ((parseInt(result.app.last_data) === 0) ? jQuery.i18n.map["common.unknown"] : moment(new Date(ts)).format("ddd, D MMM YYYY")) + "</td></tr>";
                             table += "<tr><td rowspan='3'>" + jQuery.i18n.map["management-applications.app-users"] + "</td>";
                             table += "<td class='second-header'>" + jQuery.i18n.map["management-applications.global_admins"] + " (" + result.global_admin.length + ")</td><td class='details-value'>" + joinUsers(result.global_admin) + "</td></tr>";
                             table += "<tr><td class='second-header'>" + jQuery.i18n.map["management-applications.admins"] + " (" + result.admin.length + ")</td><td class='details-value'>" + joinUsers(result.admin) + "</td></tr>";
