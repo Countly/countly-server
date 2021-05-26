@@ -1,8 +1,0 @@
-<script type="text/x-template" id="cly-progress-bar">
-    <div class="cly-progress-bar-stacks">
-        <template v-for="(item,index) in barStacks">
-            <progress class="bu-progress bu-is-small" :value="100" max="100" style="{width:item.percentage}"></progress>
-            <span class="span" v-tooltip="getTooltip(item)" :key="'bar-' + i" v-bind:style="{width: item.percentage + '%', backgroundColor: item.color}"></span>
-        </template>
-    </div>
-</script>
