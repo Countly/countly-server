@@ -136,7 +136,7 @@
                                     </slot>\
                             </div>\
                         </div>\
-                        <component v-bind:is="currentTab" class="tab"></component>\
+                        <component v-bind:is="currentTab" class="cly-vue-tab"></component>\
                     </div>'
     }));
 
