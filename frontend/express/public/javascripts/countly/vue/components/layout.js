@@ -60,19 +60,17 @@
                 default: false
             }
         },
-        template: '<div class="cly-vue-section bu-columns bu-is-multiline" :class="{\' bu-is-gapless\': !autoGap}">\
-                        <div class="bu-column bu-is-full">\
-                            <div class="bu-level">\
-                                <div class="bu-level-left">\
-                                    <slot name="header">\
-                                        <div class="bu-level-item">\
-                                            <h4>{{title}}</h4>\
-                                        </div>\
-                                    </slot>\
-                                </div>\
+        template: '<div class="cly-vue-section">\
+                        <div class="bu-level">\
+                            <div class="bu-level-left">\
+                                <slot name="header" class="bu-mb-4">\
+                                    <div class="bu-level-item" v-if="title">\
+                                        <h4>{{title}}</h4>\
+                                    </div>\
+                                </slot>\
                             </div>\
                         </div>\
-                        <div class="bu-column bu-is-full cly-vue-section__content white-bg">\
+                        <div class="cly-vue-section__content white-bg">\
                             <slot></slot>\
                         </div>\
                     </div>'
