@@ -60,10 +60,18 @@
                 default: false
             }
         },
+        computed: {
+            levelClass: function() {
+                return {
+                    "bu-mb-4": this.$scopedSlots.header || this.$slots.header || (this.title && this.title.length),
+                    "bu-level": true
+                };
+            }
+        },
         template: '<div class="cly-vue-section">\
-                        <div class="bu-level">\
+                        <div :class="[levelClass]">\
                             <div class="bu-level-left">\
-                                <slot name="header" class="bu-mb-4">\
+                                <slot name="header">\
                                     <div class="bu-level-item" v-if="title">\
                                         <h4>{{title}}</h4>\
                                     </div>\
