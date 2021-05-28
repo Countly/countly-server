@@ -362,7 +362,8 @@
                 mixinOptions: {
                     legend: {
                         orient: 'vertical',
-                        right: 25,
+                        right: "25%",
+                        top: "25%",
                         bottom: 'auto'
                     },
                     tooltip: {
