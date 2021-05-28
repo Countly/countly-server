@@ -457,6 +457,45 @@
         }
     });
 
+    var ProgressBarsView = countlyVue.views.create({
+        template: CV.T('/vue-example/templates/progress-bars.html'),
+        data: function() {
+            return {
+                title: "Progress bars",
+                stackedProgressBar: [{
+                    percentage: 40,
+                    color: "lightblue",
+                    tooltip: "user session"
+                }, {
+                    percentage: 30,
+                    color: "magenta",
+                    tooltip: "second item"
+                },
+                {
+                    percentage: 20,
+                    color: "cyan",
+                    tooltip: "another session type here"
+                }],
+                singleProgressBar: [{
+                    percentage: 50,
+                    color: "#39C0C8",
+                }],
+                hundredPercentProgressBar: [
+                    {
+                        percentage: 100,
+                        color: "#39C0C8",
+                    }
+                ],
+                zeroPercentProgressBar: [
+                    {
+                        percentage: 0,
+                        color: "yellow"
+                    }
+                ]
+            };
+        }
+    });
+
     var MainView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/main.html'),
         mixins: [
@@ -471,7 +510,8 @@
             "form-dropdown": FormDropdown,
             "tg-view": TimeGraphView,
             "date-view": DateView,
-            "drawer": ExampleDrawer
+            "drawer": ExampleDrawer,
+            "progress-bars-view": ProgressBarsView
         },
         data: function() {
             return {
