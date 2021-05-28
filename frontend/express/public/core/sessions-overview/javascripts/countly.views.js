@@ -18,11 +18,6 @@ var SessionsOverviewLineChart = countlyVue.views.BaseView.extend({
     template: "#sessions-overview-line-chart",
     data: function() {
         return {
-            lineChartItemsLegends: {
-                newSessions: CV.i18n('common.new-sessions'),
-                totalSessions: CV.i18n('common.total-sessions'),
-                uniqueSessions: CV.i18n('common.unique-sessions')
-            },
         };
     },
     computed: {
@@ -43,11 +38,10 @@ var SessionsOverviewLineChart = countlyVue.views.BaseView.extend({
             });
         },
         yAxisSessionsOverviewCountSeries: function() {
-            var self = this;
-            return Object.keys(this.sessionsOverview.series).map(function(sessionsOverviewKey) {
+            return this.sessionsOverview.series.map(function(sessionsOverviewSerie) {
                 return {
-                    data: self.sessionsOverview.series[sessionsOverviewKey],
-                    name: self.lineChartItemsLegends[sessionsOverviewKey],
+                    data: sessionsOverviewSerie.data,
+                    name: sessionsOverviewSerie.label,
                 };
             });
         },

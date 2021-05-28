@@ -3,32 +3,14 @@
 
     countlySessionsOverview.service = {
 
-        extractSessionsData: function(dto) {
-            var chartData = [
-                    { data: [], label: 'totalSessions' },
-                    { data: [], label: 'newSessions' },
-                    { data: [], label: 'uniqueSessions' }
-                ],
-                dataProps = [
-                    { name: "t" },
-                    { name: "n" },
-                    { name: "u" }
-                ];
-
-            return countlyCommon.extractChartData(dto, countlySession.clearObject, chartData, dataProps);
-        },
-
         mapSessionsOverviewDtoToModel: function(dto) {
-            var sessionsData = this.extractSessionsData(dto);
+            countlySession.setDb(dto);
+            var sessionsData = countlySession.getSessionDP();
             var sessionsOverviewModel = {
-                series: {},
+                series: [],
                 rows: []
             };
-            sessionsData.chartDP.forEach(function(chartDPItem) {
-                sessionsOverviewModel.series[chartDPItem.label] = chartDPItem.data.map(function(chartDpItemSerie) {
-                    return chartDpItemSerie[1];
-                });
-            });
+            sessionsOverviewModel.series = sessionsData.chartDP;
             sessionsData.chartData.forEach(function(chartDataItem, index) {
                 sessionsOverviewModel.rows[index] = {
                     date: chartDataItem.date,
@@ -70,7 +52,7 @@
             return {
                 sessionsOverview: {
                     rows: [],
-                    series: {}
+                    series: []
                 },
                 selectedDatePeriod: "day",
                 sessionsOverviewDatePeriods: [],
