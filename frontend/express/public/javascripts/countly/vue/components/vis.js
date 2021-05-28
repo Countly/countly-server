@@ -539,15 +539,13 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart bu-columns bu-is-gapless bu-is-multiline">\
-                        <div class="bu-column bu-is-full">\
-                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                    <slot :name="item" v-bind="slotScope"></slot>\
-                                </template>\
-                            </chart-header>\
-                        </div>\
-                        <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
+        template: '<div class="cly-vue-chart">\
+                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                <slot :name="item" v-bind="slotScope"></slot>\
+                            </template>\
+                        </chart-header>\
+                        <div :style="{height: height + \'px\'}">\
                             <echarts\
                                 ref="echarts"\
                                 v-bind="$attrs"\
@@ -646,15 +644,13 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart bu-columns bu-is-gapless bu-is-multiline">\
-                        <div class="bu-column bu-is-full">\
-                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                    <slot :name="item" v-bind="slotScope"></slot>\
-                                </template>\
-                            </chart-header>\
-                        </div>\
-                        <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
+        template: '<div class="cly-vue-chart">\
+                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                <slot :name="item" v-bind="slotScope"></slot>\
+                            </template>\
+                        </chart-header>\
+                        <div :style="{height: height + \'px\'}">\
                             <echarts\
                                 ref="echarts"\
                                 v-bind="$attrs"\
@@ -686,15 +682,13 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart bu-columns bu-is-gapless bu-is-multiline">\
-                        <div class="bu-column bu-is-full">\
-                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                    <slot :name="item" v-bind="slotScope"></slot>\
-                                </template>\
-                            </chart-header>\
-                        </div>\
-                        <div class="bu-column bu-is-full" :style="{height: height + \'px\'}">\
+        template: '<div class="cly-vue-chart">\
+                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                <slot :name="item" v-bind="slotScope"></slot>\
+                            </template>\
+                        </chart-header>\
+                        <div :style="{height: height + \'px\'}">\
                             <echarts\
                                 ref="echarts"\
                                 v-bind="$attrs"\

@@ -40,7 +40,7 @@
         var mixin = {
             data: function() {
                 return Object.keys(mapping).reduce(function(acc, val) {
-                    acc[val] = self.dict[mapping[val]].items;
+                    acc[val] = self.dict[mapping[val]] ? self.dict[mapping[val]].items : [];
                     return acc;
                 }, {});
             }
