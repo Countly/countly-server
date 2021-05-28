@@ -129,6 +129,11 @@ var UserActivityView = countlyVue.views.BaseView.extend({
             description: CV.i18n('user-activity.decription')
         };
     },
+    methods: {
+        refresh: function() {
+            this.$store.dispatch('countlyUserActivity/fetchAll');
+        }
+    },
     mounted: function() {
         if (this.$route.params) {
             this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', {query: this.$route.params });
