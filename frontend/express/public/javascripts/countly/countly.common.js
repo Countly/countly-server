@@ -179,18 +179,9 @@
             return _period;
         };
 
-        /**
-        * Get currently selected period that can be used in ajax requests
-        * @memberof countlyCommon
-        * @returns {string} supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
-        */
+
         countlyCommon.getPeriodForAjax = function() {
-            if (Object.prototype.toString.call(_period) === '[object Array]') {
-                return JSON.stringify(_period);
-            }
-            else {
-                return _period;
-            }
+            return CountlyHelpers.getPeriodUrlQueryParameter(_period);
         };
 
         /**

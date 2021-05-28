@@ -3419,6 +3419,21 @@
         return newQuery;
     };
 
+    /**
+    * Get currently selected period that can be used in ajax requests
+    * @memberof CountlyHelpers
+    * @param {string} period selected date period    
+    * @returns {string} supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
+    */
+    CountlyHelpers.getPeriodUrlQueryParameter = function(period) {
+        if (Object.prototype.toString.call(period) === '[object Array]') {
+            return JSON.stringify(period);
+        }
+        else {
+            return period;
+        }
+    };
+
     $(document).ready(function() {
         $("#overlay").click(function() {
             var dialog = $(".dialog:visible:not(.cly-loading)");

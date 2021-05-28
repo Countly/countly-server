@@ -1,0 +1,46 @@
+<script type="text/x-template" id="sessions-overview">
+    <div v-bind:class="[componentId]">
+        <cly-header>
+            <template v-slot:header-left>
+                <h2> {{i18n('sessions-overview.title')}} 
+                </h2>
+                <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description">
+                </span>
+            </template>
+        </cly-header>
+        <cly-main>
+            <sessions-overview-date-picker></sessions-overview-date-picker>
+            <sessions-overview-line-chart> </sessions-overview-line-chart>
+            <sessions-overview-table> </sessions-overview-table>
+        </cly-main>
+    </div>
+</script>
+
+<script type="text/x-template" id="sessions-overview-date-picker">
+    <div class="sessions-overview-date-picker-container">
+        <cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker>
+    </div>
+</script>
+
+<script type="text/x-template" id="sessions-overview-line-chart">
+    <cly-section>
+        <cly-chart-line :option="sessionsOverviewOptions" :height="400" v-loading="isLoading"></cly-chart-line>
+    </cly-section>
+</script>
+
+<script type="text/x-template" id="sessions-overview-table">
+    <cly-section>
+        <cly-datatable-n  :rows="sessionsOverviewRows" :resizable="true" v-loading="isLoading">
+            <template v-slot="scope">
+                <el-table-column sortable="custom" prop="date" :label="i18n('common.date')">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="totalSessions" :label="i18n('common.total-sessions')">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="newSessions" :label="i18n('common.new-sessions')">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="uniqueSessions" :label="i18n('common.unique-sessions')">
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+</script>

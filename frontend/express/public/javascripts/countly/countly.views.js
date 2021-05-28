@@ -1,93 +1,5 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DeviceTypeView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $,JobsView, JobDetailView*/
-window.SessionView = countlyView.extend({
-    beforeRender: function() {
-        return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        var sessionData = countlySession.getSessionData(),
-            sessionDP = countlySession.getSessionDP();
-        this.templateData = {
-            "page-title": jQuery.i18n.map["sessions.title"],
-            "logo-class": "sessions",
-            "big-numbers": {
-                "count": 3,
-                "items": [
-                    {
-                        "title": jQuery.i18n.map["common.total-sessions"],
-                        "total": sessionData.usage["total-sessions"].total,
-                        "trend": sessionData.usage["total-sessions"].trend,
-                        "help": "sessions.total-sessions"
-                    },
-                    {
-                        "title": jQuery.i18n.map["common.new-sessions"],
-                        "total": sessionData.usage["new-users"].total,
-                        "trend": sessionData.usage["new-users"].trend,
-                        "help": "sessions.new-sessions"
-                    },
-                    {
-                        "title": jQuery.i18n.map["common.unique-sessions"],
-                        "total": sessionData.usage["total-users"].total,
-                        "trend": sessionData.usage["total-users"].trend,
-                        "help": "sessions.unique-sessions"
-                    }
-                ]
-            }
-        };
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, UserView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DeviceTypeView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $,JobsView, JobDetailView*/
 
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-            countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
-            CountlyHelpers.applyColors();
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": sessionDP.chartData,
-                "aoColumns": [
-                    { "mData": "date", "sType": "customDate", "sTitle": jQuery.i18n.map["common.date"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.new-sessions"]
-                    },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.unique-sessions"]
-                    }
-                ]
-            }));
-            $(".d-table").stickyTableHeaders();
-        }
-    },
-    refresh: function() {
-        var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-            self.renderCommon(true);
-            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            $(self.el).find("#big-numbers-container").html(newPage.find("#big-numbers-container").html());
-
-            var sessionDP = countlySession.getSessionDP();
-            countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
-            CountlyHelpers.refreshTable(self.dtable, sessionDP.chartData);
-            app.localize();
-        });
-    }
-});
 
 window.GraphNotesView = countlyView.extend({
     beforeRender: function() {
@@ -7914,7 +7826,6 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 });
 
 //register views
-app.sessionView = new SessionView();
 app.graphNotesView = new GraphNotesView();
 app.userView = new UserView();
 app.countriesView = new CountriesView();
@@ -7939,9 +7850,6 @@ app.VersionHistoryView = new VersionHistoryView();
 app.jobsView = new JobsView();
 app.jobDetailView = new JobDetailView();
 
-app.route("/analytics/sessions", "sessions", function() {
-    this.renderWhenReady(this.sessionView);
-});
 app.route("/analytics/graph-notes", "graphNotes", function() {
     this.renderWhenReady(this.graphNotesView);
 });

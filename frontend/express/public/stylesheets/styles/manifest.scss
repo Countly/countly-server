@@ -28,4 +28,5 @@
 @use "states/state";
 
 // All core "Plugins" views specific SASS partials
-@use "../../core/user-activity/stylesheets/main"
+@use "../../core/user-activity/stylesheets/main" as user-activity-main-style;
+@use "../../core/sessions-overview/stylesheets/main" as sessions-overview-main-style;
