@@ -1,5 +1,6 @@
 /*global 
     CountlyHelpers,
+    countlyAuth,
     countlyGlobal,
     countlyView,
     countlySources,

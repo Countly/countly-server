@@ -19,7 +19,7 @@ plugins.setConfigs("logger", {
 });
 
 (function() {
-  
+
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });

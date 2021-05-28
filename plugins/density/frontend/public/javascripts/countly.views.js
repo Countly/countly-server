@@ -1,4 +1,4 @@
-/*global $, jQuery, countlyCommon, countlyDeviceDetails, countlyView, countlyTotalUsers, countlyDensity, T, app, addDrill, CountlyHelpers, DensityView*/
+/*global $, jQuery, countlyAuth, countlyCommon, countlyDeviceDetails, countlyView, countlyTotalUsers, countlyDensity, T, app, addDrill, CountlyHelpers, DensityView*/
 window.DensityView = countlyView.extend({
     initialize: function() {
 

@@ -1194,7 +1194,7 @@ if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
         this.dbviewerView.indexes_mode = false;
         this.renderWhenReady(this.dbviewerView);
     });
-    
+
     app.route('/manage/db/:dbs', 'dbs', function(db) {
         this.dbviewerView.mongotop = false;
         this.dbviewerView.mongostat = false;
@@ -1206,7 +1206,7 @@ if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
         this.dbviewerView.indexes_mode = false;
         this.renderWhenReady(this.dbviewerView);
     });
-    
+
     app.route('/manage/db/:dbs/:collection', 'dbs', function(db, collection) {
         this.dbviewerView.mongotop = false;
         this.dbviewerView.mongostat = false;
@@ -1223,10 +1223,9 @@ if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
         }
         this.renderWhenReady(this.dbviewerView);
     });
-    
+
     app.route('/manage/db/:dbs/:collection/*document', 'dbs', function(db, collection, document) {
         this.dbviewerView.mongotop = false;
-        this.dbviewerView.mongostat = false;
         this.dbviewerView._task = null;
         this.dbviewerView.db = db;
         this.dbviewerView.collection = collection;
@@ -1234,7 +1233,8 @@ if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
         this.dbviewerView.indexes_mode = false;
         this.renderWhenReady(this.dbviewerView);
     });
-    
+
+    this.dbviewerView.mongostat = false;
     app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function(db, collection, page) {
         this.dbviewerView.mongotop = false;
         this.dbviewerView.mongostat = false;
@@ -1251,7 +1251,7 @@ if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
         }
         this.renderWhenReady(this.dbviewerView);
     });
-    
+
     app.route('/manage/db/aggregate/:dbs/:collection', 'dbs', function(db, collection) {
         this.dbviewerView.mongotop = false;
         this.dbviewerView.mongostat = false;
@@ -1275,14 +1275,14 @@ if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
             this.renderWhenReady(this.dbviewerView);
         }
     });
-    
+
     app.route('/manage/db/task/*task', 'task_id', function(task_id) {
         this.dbviewerView.mongotop = false;
         this.dbviewerView.mongostat = false;
         this.dbviewerView._task = task_id;
         this.renderWhenReady(this.dbviewerView);
     });
-    
+
     app.route('/manage/db/indexes/:dbs/:collection', 'dbs', function(db, collection) {
         this.dbviewerView.mongotop = false;
         this.dbviewerView.mongostat = false;

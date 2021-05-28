@@ -4199,7 +4199,6 @@ window.ManageUsersView = countlyView.extend({
                     },
                     dataType: "json",
                     success: function(member) {
-                        alert(self.memberModel.password);
                         CountlyHelpers.notify({
                             type: 'green',
                             delay: 3000,
