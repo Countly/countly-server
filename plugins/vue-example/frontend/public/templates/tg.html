@@ -32,7 +32,17 @@
             <cly-chart-bar :option="stackedBarOptions" :showToggle="false"></cly-chart-bar>
         </cly-section>
         <cly-section title="Pie Chart">
-            <!-- <cly-chart class="chart" :option="pieOptions" style="height: 400px;" :autoresize="true"></cly-chart> -->
+            <div class="bu-columns bu-is-gapless">
+                <div class="bu-column bu-is-6">
+                    <cly-chart-pie :option="pieOptions" :showToggle="false"></cly-chart-pie>
+                </div>
+                <div class="bu-column bu-is-6">
+                    <cly-chart-pie :option="pieOptions" :showToggle="false"></cly-chart-pie>
+                </div>
+            </div>
+            <br />
+            <br />
+            <cly-chart-pie :option="newPieOptions" :showToggle="false"></cly-chart-pie>
         </cly-section>
     </cly-main>
 </div>
