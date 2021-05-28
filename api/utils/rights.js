@@ -608,7 +608,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                     return false;
                 }
 
-                if (typeof params.qstring.app_id === "undefined") {
+                if (!member.global_admin && typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
                     return false;
@@ -653,20 +653,42 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                     return false;
                 }
 
-                common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
-                    if (!app) {
-                        common.returnMessage(params, 401, 'App does not exist');
-                        reject('App does not exist');
-                        return false;
-                    }
-                    else if (app) {
-                        params.app_id = app._id;
-                        params.app_cc = app.country;
-                        params.appTimezone = app.timezone;
-                        params.app = app;
-                        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                    }
+                if (params.qstring.app_id) {
+                    common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
+                        if (!app) {
+                            common.returnMessage(params, 401, 'App does not exist');
+                            reject('App does not exist');
+                            return false;
+                        }
+                        else if (app) {
+                            params.app_id = app._id;
+                            params.app_cc = app.country;
+                            params.appTimezone = app.timezone;
+                            params.app = app;
+                            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                        }
 
+                        params.member = member;
+
+                        if (plugins.dispatch("/validation/user", {params: params})) {
+                            if (!params.res.finished) {
+                                common.returnMessage(params, 401, 'User does not have permission');
+                                reject('User does not have permission');
+                            }
+                            return false;
+                        }
+
+                        if (app) {
+                            plugins.dispatch("/o/validate", {
+                                params: params,
+                                app: app
+                            });
+                        }
+
+                        resolve(callbackParam);
+                    });
+                }
+                else {
                     params.member = member;
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
@@ -677,15 +699,8 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                         return false;
                     }
 
-                    if (app) {
-                        plugins.dispatch("/o/validate", {
-                            params: params,
-                            app: app
-                        });
-                    }
-
                     resolve(callbackParam);
-                });
+                }
             });
         },
         function() {
@@ -737,7 +752,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                     return false;
                 }
 
-                if (typeof params.qstring.app_id === "undefined") {
+                if (!member.global_admin && typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
                     return false;
@@ -776,23 +791,38 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                     return false;
                 }
 
-                common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
-                    if (!app) {
-                        common.returnMessage(params, 401, 'App does not exist');
-                        reject('App does not exist');
-                        return false;
-                    }
-                    else if ((params.populator || params.qstring.populator) && app.locked) {
-                        common.returnMessage(params, 403, 'App is locked');
-                        reject('App is locked');
-                        return false;
-                    }
-                    else if (app) {
-                        params.app_id = app._id;
-                        params.appTimezone = app.timezone;
-                        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                    }
+                if (params.qstring.app_id) {
+                    common.db.collection('apps').findOne({'_id': common.db.ObjectID(params.qstring.app_id + "")}, function(err1, app) {
+                        if (!app) {
+                            common.returnMessage(params, 401, 'App does not exist');
+                            reject('App does not exist');
+                            return false;
+                        }
+                        else if ((params.populator || params.qstring.populator) && app.locked) {
+                            common.returnMessage(params, 403, 'App is locked');
+                            reject('App is locked');
+                            return false;
+                        }
+                        else if (app) {
+                            params.app_id = app._id;
+                            params.appTimezone = app.timezone;
+                            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                        }
 
+                        params.member = member;
+
+                        if (plugins.dispatch("/validation/user", {params: params})) {
+                            if (!params.res.finished) {
+                                common.returnMessage(params, 401, 'User does not have permission');
+                                reject('User does not have permission');
+                            }
+                            return false;
+                        }
+
+                        resolve(callbackParam);
+                    });
+                }
+                else {
                     params.member = member;
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
@@ -804,7 +834,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                     }
 
                     resolve(callbackParam);
-                });
+                }
             });
         },
         function() {
