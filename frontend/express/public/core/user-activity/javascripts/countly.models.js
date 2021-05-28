@@ -1,4 +1,4 @@
-/*global window, countlyVue, CV, countlyCommon, countlyGlobal, countlySession, CountlyHelpers */
+/*global window, countlyVue, CV, countlyCommon, countlyGlobal, countlySession, CountlyHelpers, Promise */
 (function(countlyUserActivity) {
 
     countlyUserActivity.helpers = {
@@ -40,15 +40,22 @@
         },
 
         fetchUserActivity: function(filters) {
-            return CV.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r + '/app_users/loyalty',
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    api_key: countlyGlobal.member.api_key,
-                    query: JSON.stringify(CountlyHelpers.buildFilters(filters))
-                },
-                dataType: "json",
+            var self = this;
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + '/app_users/loyalty',
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        api_key: countlyGlobal.member.api_key,
+                        query: JSON.stringify(CountlyHelpers.buildFilters(filters))
+                    },
+                    dataType: "json",
+                }).then(function(response) {
+                    resolve(self.mapUserActivityDtoToModel(response));
+                }).catch(function(error) {
+                    reject(error);
+                });
             });
         }
     };
@@ -73,10 +80,9 @@
                 context.dispatch('onFetchInit');
                 countlyUserActivity.service.fetchUserActivity(context.state.userActivityFilters)
                     .then(function(response) {
-                        var userActivityModel = countlyUserActivity.service.mapUserActivityDtoToModel(response);
-                        context.commit('setUserActivity', userActivityModel);
-                        context.dispatch('findNonEmptyBuckets', userActivityModel);
-                        context.dispatch('findSeriesTotal', userActivityModel);
+                        context.commit('setUserActivity', response);
+                        context.dispatch('findNonEmptyBuckets', response);
+                        context.dispatch('findSeriesTotal', response);
                         context.dispatch('onFetchSuccess');
                     }).catch(function(error) {
                         context.dispatch('onFetchError', error);
