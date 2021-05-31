@@ -492,11 +492,24 @@
             };
         },
         beforeCreate: function() {
+            var self = this;
             countlyVueExample.service.fetchRandomNumbers().then(function(data) {
                 console.log(data);
                 //Set data to your store here.
-                console.log(this.$store);
+                console.log(self.$store);
             });
+        }
+    });
+
+    countlyVue.container.registerMixin("/vueExample/externalTabs", {
+        data: function() {
+            return {
+                myname: "pts"
+            };
+        },
+        beforeCreate: function() {
+            //server request here
+            console.log(this.myname);
         }
     });
 
