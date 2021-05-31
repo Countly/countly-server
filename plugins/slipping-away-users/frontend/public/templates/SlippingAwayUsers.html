@@ -59,12 +59,10 @@
                 <el-table-column sortable="custom" prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
                     <template slot-scope="scope">
                         <div class="bu-level-left">
-                            <div class="bu-level-item">
+                            <div class="bu-level-item slipping-away-users-table-data-item">
                                 <span>{{scope.row.percentage}} %</span>
                             </div>
-                            <div class="slipping-away-user-table-progress-bar-container">
-                                <progress class="bu-progress bu-is-small" :value="scope.row.percentage" max="100"></progress>
-                            </div>
+                            <cly-progress-bar  :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
                         </div>
                     </template>
                 </el-table-column>

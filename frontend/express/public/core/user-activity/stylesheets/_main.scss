@@ -1,18 +1,18 @@
-$table-data-item-margin-right: 0.25em;
+$user-activity-table-data-item-margin-right: 0.25em;
 $user-activity-progress-bar-background-color: #39C0C8;
 
-.first-table-data-item {
+.first-user-activity-table-data-item {
     min-width: 2em;
-    margin-right:$table-data-item-margin-right !important;
+    margin-right:$user-activity-table-data-item-margin-right !important;
 }
 
-.table-data-item-divider {
+.user-activity-table-data-item-divider {
     margin-right: 0.25em !important;
 }
 
-.table-data-item {
+.user-activity-table-data-item {
     min-width: 3em;
-    margin-right: $table-data-item-margin-right !important;
+    margin-right: $user-activity-table-data-item-margin-right !important;
 }
 
 .user-activity-table-progress-bar-container {
