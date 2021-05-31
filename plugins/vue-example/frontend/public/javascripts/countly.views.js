@@ -288,12 +288,10 @@
                                 { value: 335, name: "Direct" },
                                 { value: 310, name: "Email" },
                                 { value: 234, name: "Ad Networks" },
-                                { value: 135, name: "Video Ads" },
-                                { value: 1548, name: "Search Engines" }
                             ],
                             label: {
                                 formatter: function() {
-                                    return "New users \n 12k";
+                                    return "Total users \n 12k";
                                 }
                             },
                         }
@@ -527,7 +525,7 @@
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
                 dynamicTab: (this.$route.params && this.$route.params.tab) || "tables",
-                tabs: [
+                localTabs: [
                     {
                         title: "Tables",
                         name: "tables",
@@ -560,6 +558,12 @@
                     }
                 ]
             };
+        },
+        computed: {
+            tabs: function() {
+                var allTabs = this.localTabs.concat(this.externalTabs);
+                return allTabs;
+            }
         }
     });
 
