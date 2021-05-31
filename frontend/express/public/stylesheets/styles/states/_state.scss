@@ -4,6 +4,7 @@
 
 @use "../base/typography-variables" as t;
 @use "../base/colors" as c;
+@use "sass:map";
 
 .font-weight-bold {
     font-weight: t.$font-weight-bold !important;
@@ -61,192 +62,18 @@
     }
 }
 
-.color-warm-gray-100 {
-    color: c.$color-warm-gray-100
-}
+@each $name, $value in c.$colors {
+    .color-#{$name} {
+        color: $value;
+    }
 
-.color-warm-gray-90 {
-    color: c.$color-warm-gray-90
-}
-
-.color-warm-gray-80 {
-    color: c.$color-warm-gray-80
-}
-
-.color-warm-gray-70 {
-    color: c.$color-warm-gray-70
-}
-
-.color-warm-gray-60 {
-    color: c.$color-warm-gray-60
-}
-
-.color-warm-gray-40 {
-    color: c.$color-warm-gray-40
-}
-
-.color-warm-gray-30 {
-    color: c.$color-warm-gray-30
-}
-
-.color-warm-gray-20 {
-    color: c.$color-warm-gray-20
-}
-
-.color-warm-gray-10 {
-    color: c.$color-warm-gray-10
-}
-
-.color-cool-gray-100 {
-    color: c.$color-cool-gray-100
-}
-
-.color-cool-gray-50 {
-    color: c.$color-cool-gray-50
-}
-
-.color-cool-gray-40 {
-    color: c.$color-cool-gray-40
-}
-
-.color-cool-gray-20 {
-    color: c.$color-cool-gray-20
-}
-
-.color-charts-blue {
-    color: c.$color-charts-blue
-}
-
-.color-charts-turquoise {
-    color: c.$color-charts-turquoise
-}
-
-.color-charts-amber {
-    color: c.$color-charts-amber
-}
-
-.color-charts-orange {
-    color: c.$color-charts-orange
-}
-
-.color-charts-magenta {
-    color: c.$color-charts-magenta
-}
-
-.color-charts-coral {
-    color: c.$color-charts-coral
-}
-
-.color-charts-violet {
-    color: c.$color-charts-violet
-}
-
-.color-charts-purple {
-    color: c.$color-charts-purple
-}
-
-.color-charts-tan {
-    color: c.$color-charts-tan
-}
-
-.color-charts-olive {
-    color: c.$color-charts-olive
-}
-
-.color-charts-scarlet {
-    color: c.$color-charts-scarlet
-}
-
-.color-charts-pink {
-    color: c.$color-charts-pink
-}
-
-.color-yellow-100 {
-    color: c.$color-yellow-100
-}
-
-.color-yellow-70 {
-    color: c.$color-yellow-70
-}
-
-.color-yellow-20 {
-    color: c.$color-yellow-20
-}
-
-.color-yellow-10 {
-    color: c.$color-yellow-10
-}
-
-.color-blue-100 {
-    color: c.$color-blue-100
-}
-
-.color-blue-90 {
-    color: c.$color-blue-90
-}
-
-.color-blue-80 {
-    color: c.$color-blue-80
-}
-
-.color-blue-70 {
-    color: c.$color-blue-70
-}
-
-.color-blue-60 {
-    color: c.$color-blue-60
-}
-
-.color-blue-50 {
-    color: c.$color-blue-50
-}
-
-.color-blue-40 {
-    color: c.$color-blue-40
-}
-
-.color-blue-30 {
-    color: c.$color-blue-30
-}
-
-.color-blue-20 {
-    color: c.$color-blue-20
-}
-
-.color-blue-10 {
-    color: c.$color-blue-10
-}
-
-.color-sky-blue-100 {
-    color: c.$color-sky-blue-100
-}
-
-.color-sky-blue-10 {
-    color: c.$color-sky-blue-10
-}
-
-.color-red-100 {
-    color: c.$color-red-100
-}
-
-.color-red-10 {
-    color: c.$color-red-10
-}
-
-.color-green-100 {
-    color: c.$color-green-100
-}
-
-.color-green-80 {
-    color: c.$color-green-80
-}
-
-.color-green-10 {
-    color: c.$color-green-10
+    .bg-#{$name} {
+        background-color: $value;
+    }
 }
 
 .white-bg {
-    background-color: c.$color-white;
+    background-color: map.get(c.$colors, "white");
 }
 
 .no-bg {

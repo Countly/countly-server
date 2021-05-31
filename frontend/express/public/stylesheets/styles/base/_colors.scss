@@ -2,69 +2,80 @@
     All countly color sass variables are in this file
 */
 
-$color-white: #FFFFFF !default;
-$color-black: #000000 !default;
+$colors: (
+    "white": #FFFFFF,
+    "black": #000000,
 
-$color-warm-gray-100: #24292E !default;
-$color-warm-gray-90: #24292E !default;
-$color-warm-gray-80: #383A3F !default;
-$color-warm-gray-70: #424243 !default;
-$color-warm-gray-60: #616165 !default;
-$color-warm-gray-40: #D6D6D6 !default;
-$color-warm-gray-30: #ECECEC !default;
-$color-warm-gray-20: #F6F6F6 !default;
-$color-warm-gray-10: #FCFCFC !default;
+    "warm-gray-100": #24292E,
+    "warm-gray-90": #24292E,
+    "warm-gray-80": #383A3F,
+    "warm-gray-70": #424243,
+    "warm-gray-60": #616165,
+    "warm-gray-40": #D6D6D6,
+    "warm-gray-30": #ECECEC,
+    "warm-gray-20": #F6F6F6,
+    "warm-gray-10": #FCFCFC,
 
-$color-cool-gray-100: #333C48 !default;
-$color-cool-gray-50: #81868D !default;
-$color-cool-gray-40: #A7AEB8 !default;
-$color-cool-gray-20: #E2E4E8 !default;
+    "cool-gray-100": #333C48,
+    "cool-gray-50": #81868D,
+    "cool-gray-40": #A7AEB8,
+    "cool-gray-20": #E2E4E8,
 
-$color-charts-blue: #017AFF !default;
-$color-charts-turquoise: #39C0C8 !default;
-$color-charts-amber: #F5C900 !default;
-$color-charts-orange: #F96300 !default;
-$color-charts-magenta: #F34971 !default;
-$color-charts-coral: #FF9382 !default;
-$color-charts-violet: #DA6EFC !default;
-$color-charts-purple: #6C47FF !default;
-$color-charts-tan: #CDAD7A !default;
-$color-charts-olive: #AABB5D !default;
-$color-charts-scarlet: #F62404 !default;
-$color-charts-pink: #FFB6F5 !default;
+    "charts-blue": #017AFF,
+    "charts-turquoise": #39C0C8,
+    "charts-amber": #F5C900,
+    "charts-orange": #F96300,
+    "charts-magenta": #F34971,
+    "charts-coral": #FF9382,
+    "charts-violet": #DA6EFC,
+    "charts-purple": #6C47FF,
+    "charts-tan": #CDAD7A,
+    "charts-olive": #AABB5D,
+    "charts-scarlet": #F62404,
+    "charts-pink": #FFB6F5,
 
-$color-yellow-100: #E49700 !default;
-$color-yellow-70: #FFC760 !default;
-$color-yellow-20: #FFF4CE !default;
-$color-yellow-10: #FCF5E5 !default;
+    "yellow-100": #E49700,
+    "yellow-70": #FFC760,
+    "yellow-20": #FFF4CE,
+    "yellow-10": #FCF5E5,
 
-$color-blue-100: #0166D6 !default;
-$color-blue-90: #1A75DA !default;
-$color-blue-80: #3485DE !default;
-$color-blue-70: #4D94E2 !default;
-$color-blue-60: #67A3E6 !default;
-$color-blue-50: #80B3EB !default;
-$color-blue-40: #99C2EF !default;
-$color-blue-30: #B3D1F3 !default;
-$color-blue-20: #CCE0F7 !default;
-$color-blue-10: #E6F0FB !default;
+    "blue-100": #0166D6,
+    "blue-90": #1A75DA,
+    "blue-80": #3485DE,
+    "blue-70": #4D94E2,
+    "blue-60": #67A3E6,
+    "blue-50": #80B3EB,
+    "blue-40": #99C2EF,
+    "blue-30": #B3D1F3,
+    "blue-20": #CCE0F7,
+    "blue-10": #E6F0FB,
 
-$color-sky-blue-100: #3F9AFF !default;
-$color-sky-blue-10: #E1EFFF !default;
+    "sky-blue-100": #3F9AFF,
+    "sky-blue-10": #E1EFFF,
 
-$color-red-100: #D23F00 !default;
-$color-red-10: #FBECE5 !default;
+    "red-100": #D23F00,
+    "red-10": #FBECE5,
 
-$color-green-100: #10A14A !default;
-$color-green-80: #12AF51 !default;
-$color-green-10: #EBFAEE !default;
+    "green-100": #10A14A,
+    "green-80": #12AF51,
+    "green-10": #EBFAEE,
 
-$color-primary: #017AFF !default;
-$color-primary-green: #12AF51 !default;
-$color-success: #67C23A !default;
-$color-warning: #E6A23C !default;
-$color-danger: #F56C6C !default;
-$color-info: #909399 !default;
+    "primary": #017AFF,
+    "primary-green": #12AF51,
+    "success": #67C23A,
+    "warning": #E6A23C,
+    "danger": #F56C6C,
+    "info": #909399,
+
+    "text-secondary": #81868D,
+    "text-custom-1-active": #333C48,
+    "text-placeholder": #969FAD,
+    "text-primary": #303133,
+    "text-regular": #03060C,
+    "text-custom-1-passive": #858A91,
+
+    "action-blue": #0166D6
+);
 
 //Data table colors
 $table-th-bgcolor: #F6F6F6;
@@ -72,21 +83,12 @@ $table-text-color: #333C48;
 $table-footer-text-color: #81868D;
 
 //Text colors
-$color-text-secondary: #81868D !default;
-$color-text-custom-1-active: #333C48 !default;
-$color-text-placeholder: #969FAD !default;
-$color-text-primary: #303133 !default;
-$color-text-regular: #03060C !default;
 $border-color-light: #EBEBEF !default;
 $border-color-lighter: #ECECEC !default;
 $border-color-extra-light: #F2F6FC !default;
-$color-text-custom-1-passive: #858A91 !default;
 
 // Background
 $background-color-base: #F5F7FA !default;
 
 //Border colors
 $border-color-base: #ECECEC !default;
-
-//Action colors
-$color-action-blue: #0166D6 !default;
