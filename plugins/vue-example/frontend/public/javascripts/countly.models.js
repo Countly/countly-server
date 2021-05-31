@@ -176,4 +176,62 @@
         });
     };
 
+    window.foo = {};
+    window.foo.getVuexModule = function() {
+        var getEmptyState = function() {
+            return {
+                name: "foo"
+            };
+        };
+
+        var getters = {
+            getName: function(state) {
+                return state.name;
+            }
+        };
+
+        var actions = {
+            modifyName: function(context) {
+                context.commit("setName", "newFoo");
+            }
+        };
+
+        var mutations = {
+            setName: function(state, val) {
+                state.name = val;
+            }
+        };
+
+        var bar = countlyVue.vuex.Module("bar", {
+            state: function() {
+                return {
+                    name: "bar"
+                };
+            },
+            getters: {
+                getName: function(state) {
+                    return state.name;
+                }
+            },
+            actions: {
+                modifyName: function(context) {
+                    context.commit("setName", "newBar");
+                }
+            },
+            mutations: {
+                setName: function(state, val) {
+                    state.name = val;
+                }
+            }
+        });
+
+        return countlyVue.vuex.Module("foo", {
+            state: getEmptyState,
+            getters: getters,
+            actions: actions,
+            mutations: mutations,
+            submodules: [bar]
+        });
+    };
+
 })(window.countlyVueExample = window.countlyVueExample || {});
