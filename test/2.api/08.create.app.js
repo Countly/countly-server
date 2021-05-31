@@ -21,7 +21,7 @@ describe('Create app', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'User does not have write right for this process');
+                    ob.should.have.property('result', 'User does not have right');
                     done();
                 });
         });

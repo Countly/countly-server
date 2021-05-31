@@ -1378,16 +1378,16 @@ const processRequest = (params) => {
             case '/o/apps': {
                 switch (paths[3]) {
                 case 'all':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getAllApps, params);
+                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAllApps);
                     break;
                 case 'mine':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getCurrentUserApps, params);
+                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getCurrentUserApps);
                     break;
                 case 'details':
-                    validateUserForDataReadAPI(params, 'global_applications', countlyApi.mgmt.apps.getAppsDetails);
+                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAppsDetails);
                     break;
                 case 'plugins':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getAppPlugins, params);
+                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAppPlugins);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {

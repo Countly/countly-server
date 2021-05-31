@@ -93,8 +93,8 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                 const userApps = module.exports.getUserApps(member);
 
                 if (!((userApps.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
-                    common.returnMessage(params, 401, 'User does not have view right for this application');
-                    reject('User does not have view right for this application');
+                    common.returnMessage(params, 401, 'User does not have right');
+                    reject('User does not have right');
                     return false;
                 }
 
@@ -119,8 +119,8 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
                         if (!params.res.finished) {
-                            common.returnMessage(params, 401, 'User does not have permission');
-                            reject('User does not have permission');
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
                         }
                         return false;
                     }
@@ -182,8 +182,8 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                 }
 
                 if (!(this.hasAdminAccess(member, params.qstring.app_id))) {
-                    common.returnMessage(params, 401, 'User does not have write right for this application');
-                    reject('User does not have write right for this application');
+                    common.returnMessage(params, 401, 'User does not have right');
+                    reject('User does not have right');
                     return false;
                 }
 
@@ -213,8 +213,8 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
                         if (!params.res.finished) {
-                            common.returnMessage(params, 401, 'User does not have permission');
-                            reject('User does not have permission');
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
                         }
                         return false;
                     }
@@ -271,8 +271,8 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
                 }
 
                 if (!member.global_admin) {
-                    common.returnMessage(params, 401, 'User does not have global admin right');
-                    reject('User does not have global admin right');
+                    common.returnMessage(params, 401, 'User does not have right');
+                    reject('User does not have right');
                     return false;
                 }
 
@@ -286,8 +286,8 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
 
                 if (plugins.dispatch("/validation/user", {params: params})) {
                     if (!params.res.finished) {
-                        common.returnMessage(params, 401, 'User does not have permission');
-                        reject('User does not have permission');
+                        common.returnMessage(params, 401, 'User does not have right');
+                        reject('User does not have right');
                     }
                     return false;
                 }
@@ -358,8 +358,8 @@ exports.validateUser = function(params, callback, callbackParam) {
 
                 if (plugins.dispatch("/validation/user", {params: params})) {
                     if (!params.res.finished) {
-                        common.returnMessage(params, 401, 'User does not have permission');
-                        reject('User does not have permission');
+                        common.returnMessage(params, 401, 'User does not have right');
+                        reject('User does not have right');
                     }
                     return false;
                 }
@@ -633,16 +633,16 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                         }
                         */
                         if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object") && (member.permission.r[params.qstring.app_id].all || member.permission.r[params.qstring.app_id].allowed[feature]))) {
-                            common.returnMessage(params, 401, 'User does not have view right for this process');
-                            reject('User does not have view right for this process');
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
                             return false;
                         }
                     }
                     else {
                         // check for legacy auth
                         if (!((member.user_of && Array.isArray(member.user_of) && member.user_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
-                            common.returnMessage(params, 401, 'User does not have view right for this process');
-                            reject('User does not have view right for this process');
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
                             return false;
                         }
                     }
@@ -673,8 +673,8 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
 
                         if (plugins.dispatch("/validation/user", {params: params})) {
                             if (!params.res.finished) {
-                                common.returnMessage(params, 401, 'User does not have permission');
-                                reject('User does not have permission');
+                                common.returnMessage(params, 401, 'User does not have right');
+                                reject('User does not have right');
                             }
                             return false;
                         }
@@ -694,8 +694,8 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
                         if (!params.res.finished) {
-                            common.returnMessage(params, 401, 'User does not have permission');
-                            reject('User does not have permission');
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
                         }
                         return false;
                     }
@@ -773,15 +773,15 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                         }
                         */
                         if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object") && (member.permission[accessType][params.qstring.app_id].all || member.permission[accessType][params.qstring.app_id].allowed[feature]))) {
-                            common.returnMessage(params, 401, 'User does not have view right for this process');
-                            reject('User does not have view right for this process');
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
                             return false;
                         }
                     }
                     else {
                         if (!this.hasAdminAccess(member, params.qstring.app_id)) {
-                            common.returnMessage(params, 401, 'User does not have write right for this process');
-                            reject('User does not have write right for this process');
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
                             return false;
                         }
                     }
@@ -815,8 +815,8 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
 
                         if (plugins.dispatch("/validation/user", {params: params})) {
                             if (!params.res.finished) {
-                                common.returnMessage(params, 401, 'User does not have permission');
-                                reject('User does not have permission');
+                                common.returnMessage(params, 401, 'User does not have right');
+                                reject('User does not have right');
                             }
                             return false;
                         }
@@ -829,8 +829,8 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
 
                     if (plugins.dispatch("/validation/user", {params: params})) {
                         if (!params.res.finished) {
-                            common.returnMessage(params, 401, 'User does not have permission');
-                            reject('User does not have permission');
+                            common.returnMessage(params, 401, 'User does not have right');
+                            reject('User does not have right');
                         }
                         return false;
                     }

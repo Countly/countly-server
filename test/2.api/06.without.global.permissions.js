@@ -17,7 +17,7 @@ describe('Without global permission', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', "User does not have view right for this process");
+                    ob.should.have.property('result', "User does not have right");
                     done();
                 });
         });
@@ -32,7 +32,7 @@ describe('Without global permission', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', "User does not have write right for this process");
+                    ob.should.have.property('result', "User does not have right");
                     done();
                 });
         });
@@ -48,7 +48,7 @@ describe('Without global permission', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', "User does not have write right for this process");
+                    ob.should.have.property('result', "User does not have right");
                     done();
                 });
         });
@@ -64,7 +64,7 @@ describe('Without global permission', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', "User does not have write right for this process");
+                    ob.should.have.property('result', "User does not have right");
                     done();
                 });
         });

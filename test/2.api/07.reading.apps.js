@@ -64,7 +64,7 @@ describe('Reading apps', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.length.should.be(0);
+                    ob.user_of.should.be({});
                     done();
                 });
         });
@@ -79,7 +79,7 @@ describe('Reading apps', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.length.should.be(0);
+                    ob.user_of.should.be({});
                     done();
                 });
         });
