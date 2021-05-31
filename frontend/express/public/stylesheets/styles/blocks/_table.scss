@@ -1,6 +1,7 @@
 @use "../base/colors" as c;
 @use "../base/typography-variables" as t;
 @use "../base/variables" as v;
+@use "sass:map";
 
 .cly-vue-eldatatable {
 	&.silent-loading {
@@ -18,7 +19,7 @@
 		padding: 12px;
 
 		&--white {
-			background-color: c.$color-white;
+			background-color: map.get(c.$colors, "white");
 			color: c.$table-text-color;
 			font-size: t.$text-smd-size;
 		}
@@ -41,7 +42,7 @@
 		padding: 0px 12px;
 
 		&--white {
-			background-color: c.$color-white;
+			background-color: map.get(c.$colors, "white");
 			color: c.$table-footer-text-color;
 			font-size: t.$text-smd-size;
 		}
