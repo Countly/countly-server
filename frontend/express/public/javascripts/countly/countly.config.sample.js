@@ -58,6 +58,11 @@
     */
     countlyCommon.GRAPH_COLORS = ["#52A3EF", "#FF8700", "#0EC1B9", "#ed6262", "#edb762", "#ede262", "#62edb0", "#62beed", "#6279ed", "#c162ed", "#ed62c7", "#9A1B2F"];
     /**
+    * Array of colors to be used on graphs for the new UI.
+    * @type {array}
+    */
+    countlyCommon.NEW_GRAPH_COLORS = ["#017AFF", "#39C0C8", "#F5C900", "#F96300", "#F34971", "#FF9382", "#DA6EFC", "#6C47FF", "#CDAD7A", "#AABB5D", "#F62404", "#FFB6F5"];
+    /**
     * Enable/disable displaying city level information on dashboard. default value is true or enabled. Similarly recording of city level data can be enabled/disabled on server side. This value only controls displaying data. This value is configured in countly.config.js or over written through theme.
     * @type {boolean} 
     */
