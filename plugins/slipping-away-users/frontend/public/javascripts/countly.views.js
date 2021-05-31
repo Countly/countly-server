@@ -68,7 +68,7 @@ var SlippingAwayUsersTable = countlyVue.views.BaseView.extend({
     template: "#slipping-away-users-table",
     data: function() {
         return {
-            progressbarColor: "#F96300",
+            progressBarColor: "#F96300",
         };
     },
     computed: {

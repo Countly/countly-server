@@ -24,16 +24,45 @@
                 return total;
             }, 0);
         },
+
+        findNonEmptyBuckets: function(userActivityDto) {
+            var nonEmptybuckets = [];
+            Object.keys(userActivityDto).forEach(function(userActivityKey) {
+                var userActivitySerie = userActivityDto[userActivityKey];
+                userActivitySerie.forEach(function(serieItem) {
+                    if (serieItem._id && !countlyUserActivity.helpers.isBucketAdded(nonEmptybuckets, serieItem._id)) {
+                        nonEmptybuckets.push(serieItem._id);
+                    }
+                });
+            });
+            return nonEmptybuckets;
+        }
     };
 
     countlyUserActivity.service = {
 
-        mapUserActivityDtoToModel: function(data) {
+
+        mapUserActivityDtoToModel: function(responseDto, nonEmptyBuckets) {
             var modelResult = {};
-            Object.keys(data).forEach(function(key) {
+            Object.keys(responseDto).forEach(function(key) {
                 var nonNumericSeriePropertyName = countlyUserActivity.helpers.getNonNumericSeriePropertyName(key);
-                modelResult[nonNumericSeriePropertyName] = data[key].filter(function(item) {
-                    return item._id;
+                modelResult[nonNumericSeriePropertyName] = [];
+                nonEmptyBuckets.forEach(function(nonEmptyBucket) {
+                    if (!responseDto[key].length) {
+                        modelResult[nonNumericSeriePropertyName].push({_id: nonEmptyBucket, count: 0});
+                    }
+                    else {
+                        var seriesItemIndex = responseDto[key].findIndex(function(item) {
+                            return item._id === nonEmptyBucket;
+                        });
+                        if (seriesItemIndex === -1) {
+                            modelResult[nonNumericSeriePropertyName].push({_id: nonEmptyBucket, count: 0 });
+                        }
+                        else {
+                            modelResult[nonNumericSeriePropertyName].push({_id: nonEmptyBucket, count: responseDto[key][seriesItemIndex].count });
+
+                        }
+                    }
                 });
             });
             return modelResult;
@@ -52,7 +81,8 @@
                     },
                     dataType: "json",
                 }).then(function(response) {
-                    resolve(self.mapUserActivityDtoToModel(response));
+                    var nonEmptyBuckets = countlyUserActivity.helpers.findNonEmptyBuckets(response);
+                    resolve({model: self.mapUserActivityDtoToModel(response, nonEmptyBuckets), nonEmptyBuckets: nonEmptyBuckets});
                 }).catch(function(error) {
                     reject(error);
                 });
@@ -66,7 +96,6 @@
             return {
                 userActivity: {},
                 seriesTotal: {},
-                minNonEmptyBucketsLength: 0,
                 nonEmptyBuckets: countlySession.getLoyalityRange(),
                 userActivityFilters: {query: {}, byVal: []},
                 isLoading: false,
@@ -80,9 +109,9 @@
                 context.dispatch('onFetchInit');
                 countlyUserActivity.service.fetchUserActivity(context.state.userActivityFilters)
                     .then(function(response) {
-                        context.commit('setUserActivity', response);
-                        context.dispatch('findNonEmptyBuckets', response);
-                        context.dispatch('findSeriesTotal', response);
+                        context.commit('setUserActivity', response.model);
+                        context.commit('setNonEmptyBuckets', response.nonEmptyBuckets);
+                        context.dispatch('findSeriesTotal', response.model);
                         context.dispatch('onFetchSuccess');
                     }).catch(function(error) {
                         context.dispatch('onFetchError', error);
@@ -100,19 +129,6 @@
             onSetUserActivityFilters: function(context, filters) {
                 context.commit('setUserActivityFilters', filters);
             },
-            findNonEmptyBuckets: function(context, userActivity) {
-                var nonEmptybuckets = [];
-                Object.keys(userActivity).forEach(function(userActivityKey) {
-                    var userActivitySerie = userActivity[userActivityKey];
-                    userActivitySerie.forEach(function(serieItem) {
-                        if (!countlyUserActivity.helpers.isBucketAdded(nonEmptybuckets, serieItem._id)) {
-                            nonEmptybuckets.push(serieItem._id);
-                        }
-                    });
-                });
-                context.commit('setMinNonEmptyBucketsLength', nonEmptybuckets.length);
-                context.commit('setNonEmptyBuckets', nonEmptybuckets);
-            },
             findSeriesTotal: function(context, userActivity) {
                 var result = {};
                 Object.keys(userActivity).forEach(function(userActivityKey) {
@@ -128,9 +144,6 @@
             },
             setUserActivityFilters: function(state, value) {
                 state.userActivityFilters = value;
-            },
-            setMinNonEmptyBucketsLength: function(state, result) {
-                state.minNonEmptyBucketsLength = result;
             },
             setNonEmptyBuckets: function(state, value) {
                 state.nonEmptyBuckets = value;

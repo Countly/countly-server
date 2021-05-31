@@ -138,6 +138,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/vis.js',
                     'frontend/express/public/javascripts/countly/vue/components/helpers.js',
                     'frontend/express/public/javascripts/countly/vue/components/static.js',
+                    'frontend/express/public/javascripts/countly/vue/components/progress.js',
                     'frontend/express/public/javascripts/countly/vue/legacy.js',
                     'frontend/express/public/javascripts/countly/countly.vue.legacy.js',
                     'frontend/express/public/javascripts/countly/countly.token.manager.js',

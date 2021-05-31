@@ -1,0 +1,33 @@
+.cly-progress-bar-container {
+    width: 100%;
+}
+
+.cly-progress-bar-stack-container {
+    float:left;
+}
+
+.progress-bar-stack {
+    & .el-progress-bar__inner {
+        border-radius: 0px;
+    }
+}
+
+.first-progress-bar-stack {
+    & .el-progress-bar__outer {
+        border-bottom-right-radius: 0px;
+        border-top-right-radius: 0px;
+    }
+}
+
+.middle-progress-bar-stack {
+    & .el-progress-bar__outer {
+        border-radius: 0px;
+    }
+}
+
+.last-progress-bar-stack {
+    & .el-progress-bar__outer {
+        border-bottom-left-radius: 0px;
+        border-top-left-radius: 0px;
+    }
+}
