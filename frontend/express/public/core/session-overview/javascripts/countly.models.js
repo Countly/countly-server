@@ -1,28 +1,29 @@
 /*global window, countlyVue, CV, countlyCommon, countlySession, CountlyHelpers, Promise*/
-(function(countlySessionsOverview) {
+(function(countlySessionOverview) {
 
-    countlySessionsOverview.service = {
+    countlySessionOverview.service = {
 
-        mapSessionsOverviewDtoToModel: function(dto) {
+        mapSessionOverviewDtoToModel: function(dto, period) {
             countlySession.setDb(dto);
-            var sessionsData = countlySession.getSessionDP();
-            var sessionsOverviewModel = {
+            countlyCommon.setPeriod(period);
+            var sessionData = countlySession.getSessionDP();
+            var sessionOverviewModel = {
                 series: [],
                 rows: []
             };
-            sessionsOverviewModel.series = sessionsData.chartDP;
-            sessionsData.chartData.forEach(function(chartDataItem, index) {
-                sessionsOverviewModel.rows[index] = {
+            sessionOverviewModel.series = sessionData.chartDP;
+            sessionData.chartData.forEach(function(chartDataItem, index) {
+                sessionOverviewModel.rows[index] = {
                     date: chartDataItem.date,
                     totalSessions: chartDataItem.t,
                     newSessions: chartDataItem.n,
                     uniqueSessions: chartDataItem.u
                 };
             });
-            return sessionsOverviewModel;
+            return sessionOverviewModel;
         },
 
-        fetchSessions: function(period) {
+        fetchSessionOverview: function(period) {
             var self = this;
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
@@ -38,7 +39,7 @@
                     data: data,
                     dataType: "json",
                 }).then(function(response) {
-                    resolve(self.mapSessionsOverviewDtoToModel(response));
+                    resolve(self.mapSessionOverviewDtoToModel(response, period));
                 }).catch(function(error) {
                     reject(error);
                 });
@@ -46,29 +47,28 @@
         }
     };
 
-    countlySessionsOverview.getVuexModule = function() {
+    countlySessionOverview.getVuexModule = function() {
 
         var getInitialState = function() {
             return {
-                sessionsOverview: {
+                sessionOverview: {
                     rows: [],
                     series: []
                 },
                 selectedDatePeriod: "day",
-                sessionsOverviewDatePeriods: [],
+                sessionOverviewDatePeriods: [],
                 isLoading: false,
                 hasError: false,
                 error: null
             };
         };
 
-        var sessionsOverviewActions = {
+        var sessionOverviewActions = {
             fetchAll: function(context) {
                 context.dispatch('onFetchInit');
-                countlyCommon.setPeriod(context.state.selectedDatePeriod);
-                countlySessionsOverview.service.fetchSessions(context.state.selectedDatePeriod)
+                countlySessionOverview.service.fetchSessionOverview(context.state.selectedDatePeriod)
                     .then(function(response) {
-                        context.commit('setSessionsOverview', response);
+                        context.commit('setSessionOverview', response);
                         context.dispatch('onFetchSuccess');
                     }).catch(function(error) {
                         context.dispatch('onFetchError', error);
@@ -88,9 +88,9 @@
             },
         };
 
-        var sessionsOverviewMutations = {
-            setSessionsOverview: function(state, value) {
-                state.sessionsOverview = value;
+        var sessionOverviewMutations = {
+            setSessionOverview: function(state, value) {
+                state.sessionOverview = value;
             },
             setSelectedDatePeriod: function(state, value) {
                 state.selectedDatePeriod = value;
@@ -112,10 +112,10 @@
             }
         };
 
-        return countlyVue.vuex.Module("countlySessionsOverview", {
+        return countlyVue.vuex.Module("countlySessionOverview", {
             state: getInitialState,
-            actions: sessionsOverviewActions,
-            mutations: sessionsOverviewMutations
+            actions: sessionOverviewActions,
+            mutations: sessionOverviewMutations
         });
     };
-}(window.countlySessionsOverview = window.countlySessionsOverview || {}));
+}(window.countlySessionOverview = window.countlySessionOverview || {}));

@@ -1,36 +1,36 @@
-<script type="text/x-template" id="sessions-overview">
+<script type="text/x-template" id="session-overview">
     <div v-bind:class="[componentId]">
         <cly-header>
             <template v-slot:header-left>
-                <h2> {{i18n('sessions-overview.title')}} 
+                <h2> {{i18n('session-overview.title')}} 
                 </h2>
                 <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description">
                 </span>
             </template>
         </cly-header>
         <cly-main>
-            <sessions-overview-date-picker></sessions-overview-date-picker>
-            <sessions-overview-line-chart> </sessions-overview-line-chart>
-            <sessions-overview-table> </sessions-overview-table>
+            <session-overview-date-picker></session-overview-date-picker>
+            <session-overview-line-chart> </session-overview-line-chart>
+            <session-overview-table> </session-overview-table>
         </cly-main>
     </div>
 </script>
 
-<script type="text/x-template" id="sessions-overview-date-picker">
-    <div class="sessions-overview-date-picker-container">
+<script type="text/x-template" id="session-overview-date-picker">
+    <div class="session-overview-date-picker-container">
         <cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker>
     </div>
 </script>
 
-<script type="text/x-template" id="sessions-overview-line-chart">
+<script type="text/x-template" id="session-overview-line-chart">
     <cly-section>
-        <cly-chart-line :option="sessionsOverviewOptions" :height="400" v-loading="isLoading"></cly-chart-line>
+        <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading"></cly-chart-line>
     </cly-section>
 </script>
 
-<script type="text/x-template" id="sessions-overview-table">
+<script type="text/x-template" id="session-overview-table">
     <cly-section>
-        <cly-datatable-n  :rows="sessionsOverviewRows" :resizable="true" v-loading="isLoading">
+        <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" v-loading="isLoading">
             <template v-slot="scope">
                 <el-table-column sortable="custom" prop="date" :label="i18n('common.date')">
                 </el-table-column>
