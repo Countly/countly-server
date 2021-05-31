@@ -24,7 +24,7 @@ describe('Creating user', function() {
     });
     describe('without name', function() {
         it('should bad request', function(done) {
-            var params = {username: testUtils.username, password: testUtils.password, email: testUtils.email};
+            var params = {username: testUtils.username, permission: testUtils.permission, password: testUtils.password, email: testUtils.email};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(400)
@@ -40,7 +40,7 @@ describe('Creating user', function() {
     });
     describe('without username', function() {
         it('should bad request', function(done) {
-            var params = {full_name: testUtils.name, password: testUtils.password, email: testUtils.email};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, password: testUtils.password, email: testUtils.email};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(400)
@@ -56,7 +56,7 @@ describe('Creating user', function() {
     });
     describe('without password', function() {
         it('should bad request', function(done) {
-            var params = {full_name: testUtils.name, username: testUtils.username, email: testUtils.email};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username, email: testUtils.email};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(400)
@@ -72,7 +72,7 @@ describe('Creating user', function() {
     });
     describe('without email', function() {
         it('should bad request', function(done) {
-            var params = {full_name: testUtils.name, username: testUtils.username, password: testUtils.password};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username, password: testUtils.password};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(400)
@@ -88,7 +88,7 @@ describe('Creating user', function() {
     });
     describe('with same username', function() {
         it('should bad request', function(done) {
-            var params = {full_name: testUtils.name, username: testUtils.username, password: testUtils.password, email: testUtils.email + ".test"};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username, password: testUtils.password, email: testUtils.email + ".test"};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)
@@ -104,7 +104,7 @@ describe('Creating user', function() {
     });
     describe('with same username', function() {
         it('should bad request', function(done) {
-            var params = {full_name: testUtils.name, username: testUtils.username + "1", password: testUtils.password, email: testUtils.email};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username + "1", password: testUtils.password, email: testUtils.email};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)
@@ -120,7 +120,7 @@ describe('Creating user', function() {
     });
     describe('successfully create', function() {
         it('should create user', function(done) {
-            var params = {full_name: testUtils.name, username: testUtils.username + "1", password: testUtils.password, email: testUtils.email + ".test"};
+            var params = {full_name: testUtils.name, permission: testUtils.permission, username: testUtils.username + "1", password: testUtils.password, email: testUtils.email + ".test"};
             request
                 .get('/i/users/create?&api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)

@@ -583,6 +583,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
+            var appIdExceptions = ['global_users', 'global_applications'];
             // then result is owner id
             if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
@@ -608,7 +609,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                     return false;
                 }
 
-                if (!member.global_admin && typeof params.qstring.app_id === "undefined") {
+                if (!member.global_admin && appIdExceptions.indexOf(feature) === -1 && typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
                     return false;
@@ -632,16 +633,16 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                         }
                         */
                         if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object") && (member.permission.r[params.qstring.app_id].all || member.permission.r[params.qstring.app_id].allowed[feature]))) {
-                            common.returnMessage(params, 401, 'User does not have view right for this application');
-                            reject('User does not have view right for this application');
+                            common.returnMessage(params, 401, 'User does not have view right for this process');
+                            reject('User does not have view right for this process');
                             return false;
                         }
                     }
                     else {
                         // check for legacy auth
                         if (!((member.user_of && Array.isArray(member.user_of) && member.user_of.indexOf(params.qstring.app_id) !== -1) || member.global_admin)) {
-                            common.returnMessage(params, 401, 'User does not have view right for this application');
-                            reject('User does not have view right for this application');
+                            common.returnMessage(params, 401, 'User does not have view right for this process');
+                            reject('User does not have view right for this process');
                             return false;
                         }
                     }
@@ -727,6 +728,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
+            var appIdExceptions = ['global_users', 'global_applications'];
             // then result is owner id
             if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
@@ -752,7 +754,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                     return false;
                 }
 
-                if (!member.global_admin && typeof params.qstring.app_id === "undefined") {
+                if (!member.global_admin && appIdExceptions.indexOf(feature) === -1 && typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
                     return false;
@@ -771,15 +773,15 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                         }
                         */
                         if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object") && (member.permission[accessType][params.qstring.app_id].all || member.permission[accessType][params.qstring.app_id].allowed[feature]))) {
-                            common.returnMessage(params, 401, 'User does not have view right for this application');
-                            reject('User does not have view right for this application');
+                            common.returnMessage(params, 401, 'User does not have view right for this process');
+                            reject('User does not have view right for this process');
                             return false;
                         }
                     }
                     else {
                         if (!this.hasAdminAccess(member, params.qstring.app_id)) {
-                            common.returnMessage(params, 401, 'User does not have write right for this application');
-                            reject('User does not have write right for this application');
+                            common.returnMessage(params, 401, 'User does not have write right for this process');
+                            reject('User does not have write right for this process');
                             return false;
                         }
                     }

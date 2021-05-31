@@ -23,11 +23,6 @@ const FEATURE_NAME = 'global_applications';
 * @returns {boolean} true if got data from db, false if did not
 **/
 appsApi.getAllApps = function(params) {
-    if (!(params.member.global_admin)) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
-
     common.db.collection('apps').find({}).toArray(function(err, apps) {
 
         if (!apps || err) {

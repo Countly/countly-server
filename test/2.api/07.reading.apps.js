@@ -49,7 +49,7 @@ describe('Reading apps', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'User is not a global administrator');
+                    ob.should.have.property('result', 'User does not have view right for this process');
                     done();
                 });
         });
@@ -64,8 +64,7 @@ describe('Reading apps', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('admin_of').be.empty;
-                    ob.should.have.property('user_of').be.empty;
+                    ob.length.should.be(0);
                     done();
                 });
         });
@@ -80,8 +79,7 @@ describe('Reading apps', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('admin_of').be.empty;
-                    ob.should.have.property('user_of').be.empty;
+                    ob.length.should.be(0);
                     done();
                 });
         });
