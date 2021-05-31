@@ -491,8 +491,7 @@
             countlyVue.mixins.hasDrawers("main"),
             countlyVue.container.mixin({
                 "externalTabs": "/vueExample/externalTabs"
-            }),
-            countlyVue.container.mixins("vue-example")
+            })
         ],
         components: {
             "table-view": TableView,
@@ -627,79 +626,57 @@
     });
 
     countlyVue.container.register("/vueExample/externalTabs", {
-        data: {
-            priority: 1,
-            title: 'External tab 1',
-            name: 'external1',
-            component: countlyVue.components.create({
-                data: function() {
-                    return {
-                        localStore: countlyVue.vuex.getLocalStore(window.foo.getVuexModule())
-                    };
-                },
-                computed: {
-                    message: function() {
-                        return this.localStore.getters["foo/bar/getName"];
-                    }
-                },
-                methods: {
-                    change: function() {
-                        this.localStore.dispatch("foo/bar/modifyName");
-                    }
-                },
-                template: CV.T("/vue-example/templates/external-tab.html"),
-                beforeDestroy: function() {
-                    this.localStore.unregisterModule("foo");
+        priority: 1,
+        title: 'External tab 1',
+        name: 'external1',
+        component: countlyVue.components.create({
+            data: function() {
+                return {
+                    localStore: countlyVue.vuex.getLocalStore(window.foo.getVuexModule())
+                };
+            },
+            computed: {
+                message: function() {
+                    return this.localStore.getters["foo/bar/getName"];
                 }
-            })
-        },
-        methods: {
-            fetchRemoteConfig: function() {
-                countlyVueExample.service.fetchRandomNumbers().then(function(obj) {
-                    console.log(obj);
-                    //Add data to your store here
-                    console.log(this.$store);
-                });
+            },
+            methods: {
+                change: function() {
+                    this.localStore.dispatch("foo/bar/modifyName");
+                }
+            },
+            template: CV.T("/vue-example/templates/external-tab.html"),
+            beforeDestroy: function() {
+                this.localStore.unregisterModule("foo");
             }
-        }
+        })
     });
 
     countlyVue.container.register("/vueExample/externalTabs", {
-        data: {
-            priority: 2,
-            title: 'External tab 2',
-            name: 'external2',
-            component: countlyVue.components.create({
-                data: function() {
-                    return {
-                        localStore: countlyVue.vuex.getLocalStore(window.foo.getVuexModule())
-                    };
-                },
-                computed: {
-                    message: function() {
-                        return this.localStore.getters["foo/getName"];
-                    }
-                },
-                methods: {
-                    change: function() {
-                        this.localStore.dispatch("foo/modifyName");
-                    }
-                },
-                template: CV.T("/vue-example/templates/external-tab.html"),
-                beforeDestroy: function() {
-                    this.localStore.unregisterModule("foo");
+        priority: 2,
+        title: 'External tab 2',
+        name: 'external2',
+        component: countlyVue.components.create({
+            data: function() {
+                return {
+                    localStore: countlyVue.vuex.getLocalStore(window.foo.getVuexModule())
+                };
+            },
+            computed: {
+                message: function() {
+                    return this.localStore.getters["foo/getName"];
                 }
-            })
-        },
-        methods: {
-            fetchRemoteConfig: function() {
-                countlyVueExample.service.fetchRandomNumbers().then(function(obj) {
-                    console.log(obj);
-                    //Add data to your store here
-                    console.log(this.$store);
-                });
+            },
+            methods: {
+                change: function() {
+                    this.localStore.dispatch("foo/modifyName");
+                }
+            },
+            template: CV.T("/vue-example/templates/external-tab.html"),
+            beforeDestroy: function() {
+                this.localStore.unregisterModule("foo");
             }
-        }
+        })
     });
 
 })();

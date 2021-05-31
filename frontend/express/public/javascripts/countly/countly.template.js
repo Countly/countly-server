@@ -711,20 +711,18 @@ var AppRouter = Backbone.Router.extend({
 
         //New sidebar container hook
         countlyVue.container.register("/sidebar/menuCategory", {
-            data: {
-                name: category,
-                priority: node.priority,
-                title: node.text || countlyVue.i18n("sidebar.category." + category),
-                node: node
-                /*
-                    Following secondary params are simply passed to registry, but not directly used for now:
+            name: category,
+            priority: node.priority,
+            title: node.text || countlyVue.i18n("sidebar.category." + category),
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
 
-                    * node.classes - string with css classes to add to category element
-                    * node.style - string with css styling to add to category element
-                    * node.html - additional HTML to append after text
-                    * node.callback 
-                */
-            }
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback 
+            */
         });
 
         var menu = $("<div></div>");
@@ -855,24 +853,22 @@ var AppRouter = Backbone.Router.extend({
 
         //New sidebar container hook
         countlyVue.container.register("/sidebar/menu", {
-            data: {
-                app_type: app_type,
-                category: category,
-                name: node.code,
-                priority: node.priority,
-                title: node.text,
-                url: node.url,
-                icon: node.icon,
-                node: node
-                /*
-                    Following secondary params are simply passed to registry, but not directly used for now:
+            app_type: app_type,
+            category: category,
+            name: node.code,
+            priority: node.priority,
+            title: node.text,
+            url: node.url,
+            icon: node.icon,
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
 
-                    * node.classes - string with css classes to add to category element
-                    * node.style - string with css styling to add to category element
-                    * node.html - additional HTML to append after text
-                    * node.callback
-                */
-            }
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback
+            */
         });
 
         if (!this.appTypes[app_type] && category !== "management" && category !== "users") {
@@ -975,23 +971,21 @@ var AppRouter = Backbone.Router.extend({
 
         //New sidebar container hook
         countlyVue.container.register("/sidebar/submenu", {
-            data: {
-                app_type: app_type,
-                parent_code: parent_code,
-                name: node.code,
-                priority: node.priority,
-                title: node.text,
-                url: node.url,
-                node: node
-                /*
-                    Following secondary params are simply passed to registry, but not directly used for now:
+            app_type: app_type,
+            parent_code: parent_code,
+            name: node.code,
+            priority: node.priority,
+            title: node.text,
+            url: node.url,
+            node: node
+            /*
+                Following secondary params are simply passed to registry, but not directly used for now:
 
-                    * node.classes - string with css classes to add to category element
-                    * node.style - string with css styling to add to category element
-                    * node.html - additional HTML to append after text
-                    * node.callback
-                */
-            }
+                * node.classes - string with css classes to add to category element
+                * node.style - string with css styling to add to category element
+                * node.html - additional HTML to append after text
+                * node.callback
+            */
         });
 
         if (!this.appTypes[app_type]) {

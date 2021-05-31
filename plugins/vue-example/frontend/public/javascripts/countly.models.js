@@ -19,19 +19,6 @@
         }
     };
 
-    countlyVueExample.service = {
-        fetchRandomNumbers: function() {
-            return CV.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_URL + "/o",
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    method: 'get-random-numbers'
-                }
-            });
-        }
-    };
-
     countlyVueExample.getVuexModule = function() {
 
         var getEmptyState = function() {
@@ -79,7 +66,14 @@
                 context.dispatch("countlyVueExample/myRecords/fetchAll", null, {root: true});
             },
             fetchGraphPoints: function(context) {
-                return countlyVueExample.service.fetchRandomNumbers().then(function(obj) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        method: 'get-random-numbers'
+                    }
+                }).then(function(obj) {
                     context.commit("setGraphPoints", [obj, obj.map(function(x) {
                         return x / 2;
                     })]);
