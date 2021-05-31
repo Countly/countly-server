@@ -11,10 +11,13 @@
 
     Container.prototype.register = function(id, value) {
         if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
-            this.dict[id] = {
-                items: []
-            };
+            this.dict[id] = {};
         }
+
+        if (!Object.prototype.hasOwnProperty.call(this.dict[id], "items")) {
+            this.dict[id].items = [];
+        }
+
         var _items = this.dict[id].items;
         if (!Object.prototype.hasOwnProperty.call(value, 'priority')) {
             _items.push(Object.freeze(value));
@@ -35,6 +38,18 @@
         }
     };
 
+    Container.prototype.registerMixin = function(id, mixin) {
+        if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
+            this.dict[id] = {};
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(this.dict[id], "mixins")) {
+            this.dict[id].mixins = [];
+        }
+
+        this.dict[id].mixins.push(mixin);
+    };
+
     Container.prototype.mixin = function(mapping) {
         var self = this;
         var mixin = {
@@ -46,6 +61,10 @@
             }
         };
         return mixin;
+    };
+
+    Container.prototype.mixins = function(id) {
+        return this.dict[id] ? this.dict[id].mixins : [];
     };
 
     countlyVue.container = new Container();

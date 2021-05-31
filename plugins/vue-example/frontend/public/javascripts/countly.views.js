@@ -485,6 +485,21 @@
         }
     });
 
+    countlyVue.container.registerMixin("/vueExample/externalTabs", {
+        data: function() {
+            return {
+                myname: "itsi"
+            };
+        },
+        beforeCreate: function() {
+            countlyVueExample.service.fetchRandomNumbers().then(function(data) {
+                console.log(data);
+                //Set data to your store here.
+                console.log(this.$store);
+            });
+        }
+    });
+
     var MainView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/main.html'),
         mixins: [
@@ -492,7 +507,7 @@
             countlyVue.container.mixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
-        ],
+        ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
         components: {
             "table-view": TableView,
             "form-basics": FormBasics,
@@ -517,7 +532,7 @@
             countlyVue.container.mixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
-        ],
+        ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
         components: {
             "drawer": ExampleDrawer
         },
