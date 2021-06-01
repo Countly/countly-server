@@ -3181,6 +3181,8 @@
             chartData.chartDP.dp = chartDP;
 
             for (i = 0; i < chartData.chartData.length; i++) {
+                //TODO-LA: use only percent property when sessions views are finished
+                chartData.chartData[i].percentageNumber = chartData.chartData[i].percent;
                 chartData.chartData[i].percent = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i].percent) + "px;'></div>" + chartData.chartData[i].percent + "%";
             }
 

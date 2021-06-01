@@ -18,14 +18,15 @@
                 series: [],
                 rows: []
             };
-            sessionDurationsModel.series = sessionData.chartDP.dp[0].data.filter(function(sessionDurationSerieItem) {
-                return countlySessionDurations.helpers.hasSerieValues(sessionDurationSerieItem);
+            var sessionDurationsSerieData = sessionData.chartData.map(function(chartDataItem) {
+                return chartDataItem.t;
             });
+            sessionDurationsModel.series.push({data: sessionDurationsSerieData, label: CV.i18n("session-durations.title")});
             sessionData.chartData.forEach(function(chartDataItem, index) {
                 sessionDurationsModel.rows[index] = {
                     duration: chartDataItem.ds,
                     numberOfSessions: chartDataItem.t,
-                    percentage: chartDataItem.percentage
+                    percentage: chartDataItem.percentageNumber
                 };
             });
             return sessionDurationsModel;

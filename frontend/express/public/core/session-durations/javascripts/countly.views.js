@@ -2,7 +2,9 @@
 var SessionDurationsView = countlyVue.views.create({
     template: CV.T("/core/session-durations/templates/session-durations.html"),
     data: function() {
-        return {};
+        return {
+            progressBarColor: "#017AFF"
+        };
     },
     computed: {
         sessionDurations: function() {
@@ -26,14 +28,14 @@ var SessionDurationsView = countlyVue.views.create({
         sessionDurationsOptions: function() {
             return {
                 xAxis: {
-                    data: this.xAxisSessionDurationsDatePeriods
+                    data: this.xAxisSessionDurationsPeriods
                 },
                 series: this.yAxisSessionDurationsCountSeries
             };
         },
-        xAxisSessionDurationsDatePeriods: function() {
+        xAxisSessionDurationsPeriods: function() {
             return this.$store.state.countlySessionDurations.sessionDurations.rows.map(function(tableRow) {
-                return tableRow.date;
+                return tableRow.duration;
             });
         },
         yAxisSessionDurationsCountSeries: function() {
