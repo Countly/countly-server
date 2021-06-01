@@ -517,7 +517,7 @@
         template: CV.T('/vue-example/templates/main.html'),
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.mixin({
+            countlyVue.container.dataMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
         ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
@@ -542,7 +542,7 @@
         template: CV.T('/vue-example/templates/newmain.html'),
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.mixin({
+            countlyVue.container.dataMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
         ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
@@ -653,7 +653,7 @@
         this.renderWhenReady(newExampleView);
     });
 
-    countlyVue.container.register("/vueExample/externalTabs", {
+    countlyVue.container.registerData("/vueExample/externalTabs", {
         priority: 1,
         title: 'External tab 1',
         name: 'external1',
@@ -680,7 +680,7 @@
         })
     });
 
-    countlyVue.container.register("/vueExample/externalTabs", {
+    countlyVue.container.registerData("/vueExample/externalTabs", {
         priority: 2,
         title: 'External tab 2',
         name: 'external2',

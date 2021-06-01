@@ -9,7 +9,7 @@
         this.dict = {};
     }
 
-    Container.prototype.register = function(id, value) {
+    Container.prototype.registerData = function(id, value) {
         if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
             this.dict[id] = {};
         }
@@ -50,7 +50,7 @@
         this.dict[id].mixins.push(mixin);
     };
 
-    Container.prototype.mixin = function(mapping) {
+    Container.prototype.dataMixin = function(mapping) {
         var self = this;
         var mixin = {
             data: function() {
