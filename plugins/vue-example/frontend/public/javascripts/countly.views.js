@@ -519,7 +519,7 @@
             countlyVue.container.tabsMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
-        ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
+        ].concat(countlyVue.container.mixins(["/vueExample/externalTabs"])),
         components: {
             "table-view": TableView,
             "form-basics": FormBasics,
@@ -544,7 +544,7 @@
             countlyVue.container.tabsMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
-        ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
+        ].concat(countlyVue.container.mixins(["/vueExample/externalTabs"])),
         components: {
             "drawer": ExampleDrawer
         },
@@ -599,7 +599,7 @@
             clyModel: countlyVueExample
         }];
 
-        var tabsVuex = countlyVue.container.tabsVuex("/vueExample/externalTabs");
+        var tabsVuex = countlyVue.container.tabsVuex(["/vueExample/externalTabs"]);
 
         vuex = vuex.concat(tabsVuex);
 
@@ -618,7 +618,7 @@
             clyModel: countlyVueExample
         }];
 
-        var tabsVuex = countlyVue.container.tabsVuex("/vueExample/externalTabs");
+        var tabsVuex = countlyVue.container.tabsVuex(["/vueExample/externalTabs"]);
 
         vuex = vuex.concat(tabsVuex);
 

@@ -89,19 +89,32 @@
         return mixin;
     };
 
-    Container.prototype.mixins = function(id) {
-        return this.dict[id] ? this.dict[id].mixins : [];
+    Container.prototype.mixins = function(ids) {
+        var self = this;
+        var mixins = [];
+
+        ids.forEach(function(id) {
+            var mix = self.dict[id] ? self.dict[id].mixins : [];
+            mixins = mixins.concat(mix);
+        });
+
+        return mixins;
     };
 
-    Container.prototype.tabsVuex = function(id) {
-        var tabs = this.dict[id] ? this.dict[id].tabs : [];
+    Container.prototype.tabsVuex = function(ids) {
+        var self = this;
         var vuex = [];
 
-        tabs.forEach(function(t) {
-            if (t.vuex) {
-                vuex = vuex.concat(t.vuex);
-            }
+        ids.forEach(function(id) {
+            var tabs = self.dict[id] ? self.dict[id].tabs : [];
+
+            tabs.forEach(function(t) {
+                if (t.vuex) {
+                    vuex = vuex.concat(t.vuex);
+                }
+            });
         });
+
 
         return vuex;
     };
