@@ -710,7 +710,7 @@ var AppRouter = Backbone.Router.extend({
         }
 
         //New sidebar container hook
-        countlyVue.container.register("/sidebar/menuCategory", {
+        countlyVue.container.registerData("/sidebar/menuCategory", {
             name: category,
             priority: node.priority,
             title: node.text || countlyVue.i18n("sidebar.category." + category),
@@ -852,7 +852,7 @@ var AppRouter = Backbone.Router.extend({
         }
 
         //New sidebar container hook
-        countlyVue.container.register("/sidebar/menu", {
+        countlyVue.container.registerData("/sidebar/menu", {
             app_type: app_type,
             category: category,
             name: node.code,
@@ -970,7 +970,7 @@ var AppRouter = Backbone.Router.extend({
         }
 
         //New sidebar container hook
-        countlyVue.container.register("/sidebar/submenu", {
+        countlyVue.container.registerData("/sidebar/submenu", {
             app_type: app_type,
             parent_code: parent_code,
             name: node.code,

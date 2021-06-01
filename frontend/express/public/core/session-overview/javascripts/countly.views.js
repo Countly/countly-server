@@ -1,7 +1,16 @@
 /* global countlyVue,CV,countlySessionOverview,app*/
-var SessionOverviewDatePicker = countlyVue.views.BaseView.extend({
-    template: "#session-overview-date-picker",
+var SessionOverviewView = countlyVue.views.create({
+    template: CV.T("/core/session-overview/templates/session-overview.html"),
+    data: function() {
+        return {};
+    },
     computed: {
+        sessionOverview: function() {
+            return this.$store.state.countlySessionOverview.sessionOverview;
+        },
+        isLoading: function() {
+            return this.$store.state.countlySessionOverview.isLoading;
+        },
         selectedDatePeriod: {
             get: function() {
                 return this.$store.state.countlySessionOverview.selectedDatePeriod;
@@ -10,19 +19,9 @@ var SessionOverviewDatePicker = countlyVue.views.BaseView.extend({
                 this.$store.dispatch('countlySessionOverview/onSetSelectedDatePeriod', value);
                 this.$store.dispatch('countlySessionOverview/fetchAll');
             }
-        }
-    }
-});
-
-var SessionOverviewLineChart = countlyVue.views.BaseView.extend({
-    template: "#session-overview-line-chart",
-    data: function() {
-        return {
-        };
-    },
-    computed: {
-        sessionOverview: function() {
-            return this.$store.state.countlySessionOverview.sessionOverview;
+        },
+        sessionOverviewRows: function() {
+            return this.$store.state.countlySessionOverview.sessionOverview.rows;
         },
         sessionOverviewOptions: function() {
             return {
@@ -44,42 +43,7 @@ var SessionOverviewLineChart = countlyVue.views.BaseView.extend({
                     name: sessionOverviewSerie.label,
                 };
             });
-        },
-        isLoading: function() {
-            return this.$store.state.countlySessionOverview.isLoading;
         }
-    }
-});
-
-var SessionOverviewTable = countlyVue.views.BaseView.extend({
-    template: "#session-overview-table",
-    data: function() {
-        return {};
-    },
-    computed: {
-        sessionOverview: function() {
-            return this.$store.state.countlySessionOverview.sessionOverview;
-        },
-        isLoading: function() {
-            return this.$store.state.countlySessionOverview.isLoading;
-        },
-        sessionOverviewRows: function() {
-            return this.$store.state.countlySessionOverview.sessionOverview.rows;
-        }
-    }
-});
-
-var SessionOverviewView = countlyVue.views.BaseView.extend({
-    template: "#session-overview",
-    components: {
-        "session-overview-date-picker": SessionOverviewDatePicker,
-        "session-overview-line-chart": SessionOverviewLineChart,
-        "session-overview-table": SessionOverviewTable
-    },
-    data: function() {
-        return {
-            description: CV.i18n('session-overview.description')
-        };
     },
     methods: {
         refresh: function() {
@@ -89,18 +53,45 @@ var SessionOverviewView = countlyVue.views.BaseView.extend({
     mounted: function() {
         this.$store.dispatch('countlySessionOverview/fetchAll');
     },
-
 });
 
-var sessionOverviewVuex = [{
-    clyModel: countlySessionOverview
-}];
+//Note: the parent component that renders all session analytics tabs.
+var SessionAnalyticsView = countlyVue.views.create({
+    template: CV.T("/core/session-overview/templates/session-analytics.html"),
+    mixins: [
+        countlyVue.container.tabsMixin({
+            "sessionAnalyticsTabs": "/analytics/sessions"
+        })
+    ].concat(countlyVue.container.mixins(["/analytics/sessions"])),
+    data: function() {
+        return {
+            selectedTab: (this.$route.params && this.$route.params.tab) || "overview"
+        };
+    },
+    computed: {
+        tabs: function() {
+            return this.sessionAnalyticsTabs;
+        }
+    }
+});
 
 app.route("/analytics/sessions", "sessions", function() {
-    var sessionOverviewViewWrapper = new countlyVue.views.BackboneWrapper({
-        component: SessionOverviewView,
-        vuex: sessionOverviewVuex,
-        templates: [ "/core/session-overview/templates/session-overview.html"]
+    var tabsVuex = countlyVue.container.tabsVuex(["/analytics/sessions"]);
+    var sessionAnalyticsViewWrapper = new countlyVue.views.BackboneWrapper({
+        component: SessionAnalyticsView,
+        vuex: tabsVuex,
+        templates: []
     });
-    this.renderWhenReady(sessionOverviewViewWrapper);
+    this.renderWhenReady(sessionAnalyticsViewWrapper);
+});
+
+
+countlyVue.container.registerTab("/analytics/sessions", {
+    priority: 1,
+    name: "overview",
+    title: "Session Overview",
+    component: SessionOverviewView,
+    vuex: [{
+        clyModel: countlySessionOverview
+    }]
 });

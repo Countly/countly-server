@@ -8,7 +8,7 @@
         var SidebarView = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar.html'),
             mixins: [
-                countlyVue.container.mixin({
+                countlyVue.container.dataMixin({
                     "categories": "/sidebar/menuCategory",
                     "menus": "/sidebar/menu",
                     "submenus": "/sidebar/submenu"
