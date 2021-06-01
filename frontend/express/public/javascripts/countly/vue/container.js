@@ -14,11 +14,12 @@
             this.dict[id] = {};
         }
 
-        if (!Object.prototype.hasOwnProperty.call(this.dict[id], "items")) {
-            this.dict[id].items = [];
+        if (!Object.prototype.hasOwnProperty.call(this.dict[id], "data")) {
+            this.dict[id].data = [];
         }
 
-        var _items = this.dict[id].items;
+        var _items = this.dict[id].data;
+
         if (!Object.prototype.hasOwnProperty.call(value, 'priority')) {
             _items.push(Object.freeze(value));
         }
@@ -38,6 +39,18 @@
         }
     };
 
+    Container.prototype.registerTab = function(id, tab) {
+        if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
+            this.dict[id] = {};
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(this.dict[id], "tabs")) {
+            this.dict[id].tabs = [];
+        }
+
+        this.dict[id].tabs.push(tab);
+    };
+
     Container.prototype.registerMixin = function(id, mixin) {
         if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
             this.dict[id] = {};
@@ -55,7 +68,20 @@
         var mixin = {
             data: function() {
                 return Object.keys(mapping).reduce(function(acc, val) {
-                    acc[val] = self.dict[mapping[val]] ? self.dict[mapping[val]].items : [];
+                    acc[val] = self.dict[mapping[val]] ? self.dict[mapping[val]].data : [];
+                    return acc;
+                }, {});
+            }
+        };
+        return mixin;
+    };
+
+    Container.prototype.tabsMixin = function(mapping) {
+        var self = this;
+        var mixin = {
+            data: function() {
+                return Object.keys(mapping).reduce(function(acc, val) {
+                    acc[val] = self.dict[mapping[val]] ? self.dict[mapping[val]].tabs : [];
                     return acc;
                 }, {});
             }
@@ -65,6 +91,19 @@
 
     Container.prototype.mixins = function(id) {
         return this.dict[id] ? this.dict[id].mixins : [];
+    };
+
+    Container.prototype.tabsVuex = function(id) {
+        var tabs = this.dict[id] ? this.dict[id].tabs : [];
+        var vuex = [];
+
+        tabs.forEach(function(t) {
+            if (t.vuex) {
+                vuex = vuex.concat(t.vuex);
+            }
+        });
+
+        return vuex;
     };
 
     countlyVue.container = new Container();
