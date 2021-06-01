@@ -1,0 +1,52 @@
+<script type="text/x-template" id="session-durations">
+    <div v-bind:class="[componentId]">
+        <cly-header>
+            <template v-slot:header-left>
+                <h2> {{i18n('session-durations.title')}} 
+                </h2>
+                <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description">
+                </span>
+            </template>
+        </cly-header>
+        <cly-main>
+            <session-durations-date-picker></session-durations-date-picker>
+            <session-durations-line-chart> </session-durations-line-chart>
+            <session-durations-table> </session-durations-table>
+        </cly-main>
+    </div>
+</script>
+
+<script type="text/x-template" id="session-durations-date-picker">
+    <div class="session-durations-date-picker-container">
+        <cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker>
+    </div>
+</script>
+
+<script type="text/x-template" id="session-durations-line-chart">
+    <cly-section>
+        <cly-chart-line :option="sessionDurationsOptions" :height="400" v-loading="isLoading"></cly-chart-line>
+    </cly-section>
+</script>
+
+<script type="text/x-template" id="session-durations-table">
+    <cly-section>
+        <cly-datatable-n  :rows="sessionDurationsRows" :resizable="true" v-loading="isLoading">
+            <template v-slot="scope">
+                <el-table-column sortable="custom" prop="sessionDuration" :label="i18n('common.date')">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.total-sessions')">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="percentage" :label="i18n('common.new-sessions')">
+                    <template slot-scope="scope">
+                        <div class="bu-level-left">
+                            <div class="bu-level-item slipping-away-users-table-data-item">
+                                <span>{{scope.row.percentage}} %</span>
+                            </div>
+                            <cly-progress-bar  :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
+                        </div>
+                    </template>
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+</script>
