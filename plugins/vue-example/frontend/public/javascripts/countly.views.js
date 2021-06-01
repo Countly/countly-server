@@ -485,14 +485,41 @@
         }
     });
 
+    countlyVue.container.registerMixin("/vueExample/externalTabs", {
+        data: function() {
+            return {
+                myname: "itsi"
+            };
+        },
+        beforeCreate: function() {
+            var self = this;
+            countlyVueExample.service.fetchRandomNumbers().then(function(data) {
+                // You can now set data in store here
+                // self.$store.dispatch("/set/data/in/store/here", data);
+            });
+        }
+    });
+
+    countlyVue.container.registerMixin("/vueExample/externalTabs", {
+        data: function() {
+            return {
+                myname: "pts"
+            };
+        },
+        beforeCreate: function() {
+            // You can now set data in store here
+            // self.$store.dispatch("/set/data/in/store/here", data);
+        }
+    });
+
     var MainView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/main.html'),
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.mixin({
+            countlyVue.container.dataMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
-        ],
+        ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
         components: {
             "table-view": TableView,
             "form-basics": FormBasics,
@@ -514,10 +541,10 @@
         template: CV.T('/vue-example/templates/newmain.html'),
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.mixin({
+            countlyVue.container.dataMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
-        ],
+        ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
         components: {
             "drawer": ExampleDrawer
         },
@@ -625,31 +652,57 @@
         this.renderWhenReady(newExampleView);
     });
 
-    countlyVue.container.register("/vueExample/externalTabs", {
-        priority: 2,
-        title: 'External tab 2',
-        name: 'external2',
-        component: countlyVue.components.create({
-            data: function() {
-                return {
-                    message: 'Bye.'
-                };
-            },
-            template: CV.T("/vue-example/templates/external-tab.html")
-        })
-    });
-
-    countlyVue.container.register("/vueExample/externalTabs", {
+    countlyVue.container.registerData("/vueExample/externalTabs", {
         priority: 1,
         title: 'External tab 1',
         name: 'external1',
         component: countlyVue.components.create({
             data: function() {
                 return {
-                    message: 'Hello.'
+                    localStore: countlyVue.vuex.getLocalStore(window.foo.getVuexModule())
                 };
             },
-            template: CV.T("/vue-example/templates/external-tab.html")
+            computed: {
+                message: function() {
+                    return this.localStore.getters["foo/bar/getName"];
+                }
+            },
+            methods: {
+                change: function() {
+                    this.localStore.dispatch("foo/bar/modifyName");
+                }
+            },
+            template: CV.T("/vue-example/templates/external-tab.html"),
+            beforeDestroy: function() {
+                this.localStore.unregisterModule("foo");
+            }
+        })
+    });
+
+    countlyVue.container.registerData("/vueExample/externalTabs", {
+        priority: 2,
+        title: 'External tab 2',
+        name: 'external2',
+        component: countlyVue.components.create({
+            data: function() {
+                return {
+                    localStore: countlyVue.vuex.getLocalStore(window.foo.getVuexModule())
+                };
+            },
+            computed: {
+                message: function() {
+                    return this.localStore.getters["foo/getName"];
+                }
+            },
+            methods: {
+                change: function() {
+                    this.localStore.dispatch("foo/modifyName");
+                }
+            },
+            template: CV.T("/vue-example/templates/external-tab.html"),
+            beforeDestroy: function() {
+                this.localStore.unregisterModule("foo");
+            }
         })
     });
 
