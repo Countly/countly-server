@@ -1,6 +1,7 @@
 @use "./typography-variables" as t;
 @use "./variables" as v;
 @use "./colors" as c;
+@use "sass:map";
 
 /* Element Chalk Variables */
 
@@ -26,12 +27,12 @@ $--color-transition-base: none !default;
 /* Color
 -------------------------- */
 /// color|1|Brand Color|0
-$--color-primary: c.$color-primary;
-$--color-primary-green: c.$color-primary-green;
+$--color-primary: map.get(c.$colors, "primary");
+$--color-primary-green: map.get(c.$colors, "primary-green");
 /// color|1|Background Color|4
-$--color-white: c.$color-white;
+$--color-white: map.get(c.$colors, "white");
 /// color|1|Background Color|4
-$--color-black: c.$color-black;
+$--color-black: map.get(c.$colors, "black");
 $--color-primary-light-1: mix($--color-white, $--color-primary, 10%) !default; /* 53a8ff */
 $--color-primary-light-2: mix($--color-white, $--color-primary, 20%) !default; /* 66b1ff */
 $--color-primary-light-3: mix($--color-white, $--color-primary, 30%) !default; /* 79bbff */
@@ -42,15 +43,15 @@ $--color-primary-light-7: mix($--color-white, $--color-primary, 70%) !default; /
 $--color-primary-light-8: mix($--color-white, $--color-primary, 80%) !default; /* d9ecff */
 $--color-primary-light-9: mix($--color-white, $--color-primary, 90%) !default; /* ecf5ff */
 /// color|1|Functional Color|1
-$--color-success: c.$color-success;
+$--color-success: map.get(c.$colors, "success");
 /// color|1|Functional Color|1
-$--color-warning: c.$color-warning;
+$--color-warning: map.get(c.$colors, "warning");
 /// color|1|Functional Color|1
-$--color-danger: c.$color-danger;
+$--color-danger: map.get(c.$colors, "danger");
 /// color|1|Functional Color|1
-$--color-info: c.$color-info;
+$--color-info: map.get(c.$colors, "info");
 /// color|1|Functional Color|1
-$--color-action-blue: c.$color-action-blue;
+$--color-action-blue: map.get(c.$colors, "action-blue");
 
 $--color-success-light: mix($--color-white, $--color-success, 80%) !default;
 $--color-warning-light: mix($--color-white, $--color-warning, 80%) !default;
@@ -62,13 +63,13 @@ $--color-warning-lighter: mix($--color-white, $--color-warning, 90%) !default;
 $--color-danger-lighter: mix($--color-white, $--color-danger, 90%) !default;
 $--color-info-lighter: mix($--color-white, $--color-info, 90%) !default;
 /// color|1|Font Color|2
-$--color-text-primary: c.$color-text-primary;
+$--color-text-primary: map.get(c.$colors, "text-primary");
 /// color|1|Font Color|2
-$--color-text-regular: c.$color-text-regular;
+$--color-text-regular: map.get(c.$colors, "text-regular");
 /// color|1|Font Color|2
-$--color-text-secondary: c.$color-text-secondary;// #909399 !default;
+$--color-text-secondary: map.get(c.$colors, "text-secondary");// #909399 !default;
 /// color|1|Font Color|2
-$--color-text-placeholder: c.$color-text-placeholder;
+$--color-text-placeholder: map.get(c.$colors, "text-placeholder");
 /// color|1|Border Color|3
 $--border-color-base: c.$border-color-base;
 /// color|1|Border Color|3
@@ -78,8 +79,8 @@ $--border-color-lighter: c.$border-color-lighter;
 /// color|1|Border Color|3
 $--border-color-extra-light: c.$border-color-extra-light;
 
-$--color-text-custom-1-active: c.$color-text-custom-1-active;
-$--color-text-custom-1-passive: c.$color-text-custom-1-passive;
+$--color-text-custom-1-active: map.get(c.$colors, "text-custom-1-active");
+$--color-text-custom-1-passive: map.get(c.$colors, "text-custom-1-passive");
 
 // Background
 /// color|1|Background Color|4

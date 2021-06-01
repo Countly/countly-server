@@ -261,36 +261,9 @@
                     ]
                 },
                 pieOptions: {
-                    toolbox: {
-                        feature: {
-                            saveAsImage: { show: true }
-                        }
-                    },
-                    title: {
-                        text: "Traffic Sources",
-                        left: "center"
-                    },
-                    tooltip: {
-                        trigger: "item",
-                        formatter: "{a} <br/>{b} : {c} ({d}%)"
-                    },
-                    legend: {
-                        orient: "vertical",
-                        left: "left",
-                        data: [
-                            "Direct",
-                            "Email",
-                            "Ad Networks",
-                            "Video Ads",
-                            "Search Engines"
-                        ]
-                    },
                     series: [
                         {
                             name: "Traffic Sources",
-                            type: "pie",
-                            radius: "55%",
-                            center: ["50%", "60%"],
                             data: [
                                 { value: 335, name: "Direct" },
                                 { value: 310, name: "Email" },
@@ -298,13 +271,29 @@
                                 { value: 135, name: "Video Ads" },
                                 { value: 1548, name: "Search Engines" }
                             ],
-                            emphasis: {
-                                itemStyle: {
-                                    shadowBlur: 10,
-                                    shadowOffsetX: 0,
-                                    shadowColor: "rgba(0, 0, 0, 0.5)"
+                            label: {
+                                formatter: function() {
+                                    return "New users \n 12k";
                                 }
-                            }
+                            },
+                            center: ["25%", "50%"] //Center should be passed as option
+                        }
+                    ]
+                },
+                newPieOptions: {
+                    series: [
+                        {
+                            name: "Traffic Sources",
+                            data: [
+                                { value: 335, name: "Direct" },
+                                { value: 310, name: "Email" },
+                                { value: 234, name: "Ad Networks" },
+                            ],
+                            label: {
+                                formatter: function() {
+                                    return "Total users \n 12k";
+                                }
+                            },
                         }
                     ]
                 },
@@ -457,21 +446,88 @@
         }
     });
 
+    var ProgressBarsView = countlyVue.views.create({
+        template: CV.T('/vue-example/templates/progress-bars.html'),
+        data: function() {
+            return {
+                title: "Progress bars",
+                stackedProgressBar: [{
+                    percentage: 40,
+                    color: "lightblue",
+                    tooltip: "user session"
+                }, {
+                    percentage: 30,
+                    color: "magenta",
+                    tooltip: "second item"
+                },
+                {
+                    percentage: 20,
+                    color: "cyan",
+                    tooltip: "another session type here"
+                }],
+                singleProgressBar: [{
+                    percentage: 50,
+                    color: "#39C0C8",
+                }],
+                hundredPercentProgressBar: [
+                    {
+                        percentage: 100,
+                        color: "#39C0C8",
+                    }
+                ],
+                zeroPercentProgressBar: [
+                    {
+                        percentage: 0,
+                        color: "yellow"
+                    }
+                ]
+            };
+        }
+    });
+
+    countlyVue.container.registerMixin("/vueExample/externalTabs", {
+        data: function() {
+            return {
+                myname: "itsi"
+            };
+        },
+        beforeCreate: function() {
+            var self = this;
+            countlyVueExample.service.fetchRandomNumbers().then(function(data) {
+                // You can now set data in store here
+                // self.$store.dispatch("/set/data/in/store/here", data);
+            });
+        }
+    });
+
+    countlyVue.container.registerMixin("/vueExample/externalTabs", {
+        data: function() {
+            return {
+                myname: "pts"
+            };
+        },
+        beforeCreate: function() {
+            // You can now set data in store here
+            // self.$store.dispatch("/set/data/in/store/here", data);
+        }
+    });
+
     var MainView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/main.html'),
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.mixin({
+            countlyVue.container.dataMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
-        ],
+        ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
         components: {
             "table-view": TableView,
             "form-basics": FormBasics,
             "form-dropdown": FormDropdown,
             "tg-view": TimeGraphView,
             "date-view": DateView,
-            "drawer": ExampleDrawer
+            "drawer": ExampleDrawer,
+            "progress-bars-view": ProgressBarsView
         },
         data: function() {
             return {
@@ -485,10 +541,10 @@
         template: CV.T('/vue-example/templates/newmain.html'),
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.mixin({
+            countlyVue.container.dataMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
-        ],
+        ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
         components: {
             "drawer": ExampleDrawer
         },
@@ -496,7 +552,7 @@
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
                 dynamicTab: (this.$route.params && this.$route.params.tab) || "tables",
-                tabs: [
+                localTabs: [
                     {
                         title: "Tables",
                         name: "tables",
@@ -529,6 +585,12 @@
                     }
                 ]
             };
+        },
+        computed: {
+            tabs: function() {
+                var allTabs = this.localTabs.concat(this.externalTabs);
+                return allTabs;
+            }
         }
     });
 
@@ -590,31 +652,57 @@
         this.renderWhenReady(newExampleView);
     });
 
-    countlyVue.container.register("/vueExample/externalTabs", {
-        priority: 2,
-        title: 'External tab 2',
-        name: 'external2',
-        component: countlyVue.components.create({
-            data: function() {
-                return {
-                    message: 'Bye.'
-                };
-            },
-            template: CV.T("/vue-example/templates/external-tab.html")
-        })
-    });
-
-    countlyVue.container.register("/vueExample/externalTabs", {
+    countlyVue.container.registerData("/vueExample/externalTabs", {
         priority: 1,
         title: 'External tab 1',
         name: 'external1',
         component: countlyVue.components.create({
             data: function() {
                 return {
-                    message: 'Hello.'
+                    localStore: countlyVue.vuex.getLocalStore(window.foo.getVuexModule())
                 };
             },
-            template: CV.T("/vue-example/templates/external-tab.html")
+            computed: {
+                message: function() {
+                    return this.localStore.getters["foo/bar/getName"];
+                }
+            },
+            methods: {
+                change: function() {
+                    this.localStore.dispatch("foo/bar/modifyName");
+                }
+            },
+            template: CV.T("/vue-example/templates/external-tab.html"),
+            beforeDestroy: function() {
+                this.localStore.unregisterModule("foo");
+            }
+        })
+    });
+
+    countlyVue.container.registerData("/vueExample/externalTabs", {
+        priority: 2,
+        title: 'External tab 2',
+        name: 'external2',
+        component: countlyVue.components.create({
+            data: function() {
+                return {
+                    localStore: countlyVue.vuex.getLocalStore(window.foo.getVuexModule())
+                };
+            },
+            computed: {
+                message: function() {
+                    return this.localStore.getters["foo/getName"];
+                }
+            },
+            methods: {
+                change: function() {
+                    this.localStore.dispatch("foo/modifyName");
+                }
+            },
+            template: CV.T("/vue-example/templates/external-tab.html"),
+            beforeDestroy: function() {
+                this.localStore.unregisterModule("foo");
+            }
         })
     });
 

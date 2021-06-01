@@ -250,22 +250,6 @@
                 }
             };
         },
-        computed: {
-            mergedOptions: function() {
-                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.internalOptions, this.option);
-                var series = JSON.parse(JSON.stringify(opt.series || []));
-                var legendData = [];
-
-                for (var i = 0; i < series.length; i++) {
-                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push(series[i].name);
-                }
-
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
-                opt.series = series;
-                return opt;
-            }
-        },
         methods: {
             onSeriesChange: function(v) {
                 this.seriesOptions.type = v;
@@ -306,6 +290,22 @@
                     type: 'line'
                 }
             };
+        },
+        computed: {
+            mergedOptions: function() {
+                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var series = opt.series || [];
+                var legendData = [];
+
+                for (var i = 0; i < series.length; i++) {
+                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    legendData.push(series[i].name);
+                }
+
+                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                opt.series = series;
+                return opt;
+            }
         }
     });
 
@@ -329,6 +329,97 @@
                     type: 'bar'
                 }
             };
+        },
+        computed: {
+            mergedOptions: function() {
+                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var series = opt.series || [];
+                var legendData = [];
+
+                for (var i = 0; i < series.length; i++) {
+                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    legendData.push(series[i].name);
+                }
+
+                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                opt.series = series;
+                return opt;
+            }
+        }
+    });
+
+    /*
+        Some handy series option for bar series
+
+        series-pie.label. overflow - Only works when width is set
+        series-pie. center - To change position of the pie chart
+        series-pie. center - Useful for positioning pie chart
+        series-pie. radius - Useful for setting width of the pie chart
+    */
+    var BasePieChart = BaseChart.extend({
+        data: function() {
+            return {
+                mixinOptions: {
+                    legend: {
+                        orient: 'vertical',
+                        right: "25%",
+                        top: "25%",
+                        bottom: 'auto'
+                    },
+                    tooltip: {
+                        trigger: 'item'
+                    },
+                    xAxis: {
+                        show: false
+                    },
+                    yAxis: {
+                        show: false
+                    }
+                },
+                seriesOptions: {
+                    type: 'pie',
+                    radius: ['45%', '70%'],
+                    center: ['50%', '50%'],
+                    itemStyle: {
+                        borderRadius: 0,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        position: "center",
+                        overflow: "breakAll",
+                        lineOverflow: "truncate",
+                        fontSize: 14,
+                        lineHeight: 18
+                    }
+                }
+            };
+        },
+        computed: {
+            mergedOptions: function() {
+                var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+                var series = opt.series || [];
+
+                var legendData = [];
+                for (var i = 0; i < series.length; i++) {
+                    series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
+                    var seriesData = series[i].data;
+
+                    if (!opt.legend.data) {
+                        /*
+                            Legend data in series comes from within series data names
+                        */
+                        for (var j = 0; j < seriesData.length; j++) {
+                            legendData.push(seriesData[j].name);
+                        }
+                    }
+                }
+
+                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                opt.series = series;
+                return opt;
+            }
         }
     });
 
@@ -523,7 +614,6 @@
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
             return {
-                internalOptions: {},
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
@@ -560,7 +650,6 @@
     Vue.component("cly-chart-time", BaseLineChart.extend({
         data: function() {
             return {
-                internalOptions: {},
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
@@ -666,7 +755,42 @@
     Vue.component("cly-chart-bar", BaseBarChart.extend({
         data: function() {
             return {
-                internalOptions: {},
+                forwardedSlots: ["chart-left", "chart-right"]
+            };
+        },
+        mounted: function() {
+            this.echartRef = this.$refs.echarts;
+        },
+        components: {
+            'chart-header': ChartHeader
+        },
+        computed: {
+            chartOptions: function() {
+                var opt = _merge({}, this.mergedOptions);
+                return opt;
+            }
+        },
+        template: '<div class="cly-vue-chart">\
+                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                <slot :name="item" v-bind="slotScope"></slot>\
+                            </template>\
+                        </chart-header>\
+                        <div :style="{height: height + \'px\'}">\
+                            <echarts\
+                                ref="echarts"\
+                                v-bind="$attrs"\
+                                v-on="$listeners"\
+                                :option="chartOptions"\
+                                :autoresize="autoresize">\
+                            </echarts>\
+                        </div>\
+                    </div>'
+    }));
+
+    Vue.component("cly-chart-pie", BasePieChart.extend({
+        data: function() {
+            return {
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },

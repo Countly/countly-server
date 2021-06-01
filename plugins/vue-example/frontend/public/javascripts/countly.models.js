@@ -19,6 +19,21 @@
         }
     };
 
+    countlyVueExample.service = {
+        fetchRandomNumbers: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/o",
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    method: 'get-random-numbers'
+                }
+            }).then(function(o) {
+                return o || [];
+            });
+        }
+    };
+
     countlyVueExample.getVuexModule = function() {
 
         var getEmptyState = function() {
@@ -66,14 +81,7 @@
                 context.dispatch("countlyVueExample/myRecords/fetchAll", null, {root: true});
             },
             fetchGraphPoints: function(context) {
-                return CV.$.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_URL + "/o",
-                    data: {
-                        app_id: countlyCommon.ACTIVE_APP_ID,
-                        method: 'get-random-numbers'
-                    }
-                }).then(function(obj) {
+                countlyVueExample.service.fetchRandomNumbers().then(function(obj) {
                     context.commit("setGraphPoints", [obj, obj.map(function(x) {
                         return x / 2;
                     })]);
@@ -173,6 +181,64 @@
             actions: actions,
             mutations: mutations,
             submodules: [recordsResource]
+        });
+    };
+
+    window.foo = {};
+    window.foo.getVuexModule = function() {
+        var getEmptyState = function() {
+            return {
+                name: "foo"
+            };
+        };
+
+        var getters = {
+            getName: function(state) {
+                return state.name;
+            }
+        };
+
+        var actions = {
+            modifyName: function(context) {
+                context.commit("setName", "newFoo");
+            }
+        };
+
+        var mutations = {
+            setName: function(state, val) {
+                state.name = val;
+            }
+        };
+
+        var bar = countlyVue.vuex.Module("bar", {
+            state: function() {
+                return {
+                    name: "bar"
+                };
+            },
+            getters: {
+                getName: function(state) {
+                    return state.name;
+                }
+            },
+            actions: {
+                modifyName: function(context) {
+                    context.commit("setName", "newBar");
+                }
+            },
+            mutations: {
+                setName: function(state, val) {
+                    state.name = val;
+                }
+            }
+        });
+
+        return countlyVue.vuex.Module("foo", {
+            state: getEmptyState,
+            getters: getters,
+            actions: actions,
+            mutations: mutations,
+            submodules: [bar]
         });
     };
 

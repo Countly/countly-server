@@ -69,7 +69,7 @@ var UserActivityTable = countlyVue.views.BaseView.extend({
     template: "#user-activity-table",
     data: function() {
         return {
-            progressbarColor: "#39C0C8",
+            progressBarColor: "#39C0C8",
             DECIMAL_PLACES_FORMAT: 2,
         };
     },
@@ -82,6 +82,9 @@ var UserActivityTable = countlyVue.views.BaseView.extend({
             return emptyRows;
         },
         formatPercentage: function(value) {
+            if (isNaN(value)) {
+                return 0;
+            }
             return parseFloat((Math.round(value * 100)).toFixed(this.DECIMAL_PLACES));
         }
     },
@@ -92,26 +95,19 @@ var UserActivityTable = countlyVue.views.BaseView.extend({
         isLoading: function() {
             return this.$store.state.countlyUserActivity.isLoading;
         },
-        nonEmptyBuckets: function() {
-            return this.$store.state.countlyUserActivity.nonEmptyBuckets;
-        },
         seriesTotal: function() {
             return this.$store.state.countlyUserActivity.seriesTotal;
         },
         userActivityRows: function() {
             var rows = this.getEmptyRows();
             var self = this;
-            this.nonEmptyBuckets.forEach(function(bucket, bucketIndex) {
-                Object.keys(self.userActivity).forEach((function(userActivityKey) {
-                    var userActivitySerie = self.userActivity[userActivityKey];
-                    userActivitySerie.forEach(function(userActivitySerieItem) {
-                        if (bucket === userActivitySerieItem._id) {
-                            rows[bucketIndex].bucket = bucket;
-                            rows[bucketIndex][userActivityKey] = userActivitySerieItem.count;
-                        }
-                    });
-                }));
-            });
+            Object.keys(self.userActivity).forEach((function(userActivityKey) {
+                var userActivitySerie = self.userActivity[userActivityKey];
+                userActivitySerie.forEach(function(userActivitySerieItem, userActivitySerieItemIndex) {
+                    rows[userActivitySerieItemIndex].bucket = userActivitySerieItem._id;
+                    rows[userActivitySerieItemIndex][userActivityKey] = userActivitySerieItem.count;
+                });
+            }));
             return rows;
         },
     }
