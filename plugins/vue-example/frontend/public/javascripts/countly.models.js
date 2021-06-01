@@ -28,6 +28,8 @@
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     method: 'get-random-numbers'
                 }
+            }).then(function(o) {
+                return o || [];
             });
         }
     };
@@ -79,7 +81,7 @@
                 context.dispatch("countlyVueExample/myRecords/fetchAll", null, {root: true});
             },
             fetchGraphPoints: function(context) {
-                return countlyVueExample.service.fetchRandomNumbers().then(function(obj) {
+                countlyVueExample.service.fetchRandomNumbers().then(function(obj) {
                     context.commit("setGraphPoints", [obj, obj.map(function(x) {
                         return x / 2;
                     })]);

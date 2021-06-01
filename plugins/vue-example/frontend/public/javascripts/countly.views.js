@@ -494,9 +494,8 @@
         beforeCreate: function() {
             var self = this;
             countlyVueExample.service.fetchRandomNumbers().then(function(data) {
-                console.log(data);
-                //Set data to your store here.
-                console.log(self.$store);
+                // You can now set data in store here
+                // self.$store.dispatch("/set/data/in/store/here", data);
             });
         }
     });
@@ -508,8 +507,8 @@
             };
         },
         beforeCreate: function() {
-            //server request here
-            console.log(this.myname);
+            // You can now set data in store here
+            // self.$store.dispatch("/set/data/in/store/here", data);
         }
     });
 
