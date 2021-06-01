@@ -516,7 +516,7 @@
         template: CV.T('/vue-example/templates/main.html'),
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.dataMixin({
+            countlyVue.container.tabsMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
         ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
@@ -541,7 +541,7 @@
         template: CV.T('/vue-example/templates/newmain.html'),
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.dataMixin({
+            countlyVue.container.tabsMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
         ].concat(countlyVue.container.mixins("/vueExample/externalTabs")),
@@ -599,6 +599,10 @@
             clyModel: countlyVueExample
         }];
 
+        var tabsVuex = countlyVue.container.tabsVuex("/vueExample/externalTabs");
+
+        vuex = vuex.concat(tabsVuex);
+
         return new countlyVue.views.BackboneWrapper({
             component: MainView,
             vuex: vuex,
@@ -613,6 +617,10 @@
         var vuex = [{
             clyModel: countlyVueExample
         }];
+
+        var tabsVuex = countlyVue.container.tabsVuex("/vueExample/externalTabs");
+
+        vuex = vuex.concat(tabsVuex);
 
         return new countlyVue.views.BackboneWrapper({
             component: NewMainView,
@@ -652,7 +660,7 @@
         this.renderWhenReady(newExampleView);
     });
 
-    countlyVue.container.registerData("/vueExample/externalTabs", {
+    countlyVue.container.registerTab("/vueExample/externalTabs", {
         priority: 1,
         title: 'External tab 1',
         name: 'external1',
@@ -679,30 +687,25 @@
         })
     });
 
-    countlyVue.container.registerData("/vueExample/externalTabs", {
+    countlyVue.container.registerTab("/vueExample/externalTabs", {
         priority: 2,
         title: 'External tab 2',
         name: 'external2',
+        vuex: [{
+            clyModel: window.foo
+        }],
         component: countlyVue.components.create({
-            data: function() {
-                return {
-                    localStore: countlyVue.vuex.getLocalStore(window.foo.getVuexModule())
-                };
-            },
             computed: {
                 message: function() {
-                    return this.localStore.getters["foo/getName"];
+                    return this.$store.getters["foo/getName"];
                 }
             },
             methods: {
                 change: function() {
-                    this.localStore.dispatch("foo/modifyName");
+                    this.$store.dispatch("foo/modifyName");
                 }
             },
-            template: CV.T("/vue-example/templates/external-tab.html"),
-            beforeDestroy: function() {
-                this.localStore.unregisterModule("foo");
-            }
+            template: CV.T("/vue-example/templates/external-tab.html")
         })
     });
 
