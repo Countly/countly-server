@@ -8,7 +8,7 @@ networks:
 
 services:
   mongodb:
-    image: 'bitnami/mongodb:3.6.14'
+    image: 'bitnami/mongodb:4.4.6'
     volumes:
       - 'mongodb_data:/bitnami'
     networks:
@@ -16,7 +16,7 @@ services:
 
   countly-api:
     image: 'countly/api:20.11.2'
-    # Enterprise Edition: image: 'gcr.io/countly-01/api:20.04'
+    # Enterprise Edition: image: 'gcr.io/countly-01/api:20.11.2'
     environment:
       - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate
       # Enterprise Edition: - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,restrict,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards
@@ -34,7 +34,7 @@ services:
 
   countly-frontend:
     image: 'countly/frontend:20.11.2'
-    # Enterprise Edition: image: 'gcr.io/countly-01/frontend:20.04'
+    # Enterprise Edition: image: 'gcr.io/countly-01/frontend:20.11.2'
     environment:
       - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate
       # Enterprise Edition: - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,restrict,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards
