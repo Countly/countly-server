@@ -1381,7 +1381,7 @@ const processRequest = (params) => {
                     validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAllApps);
                     break;
                 case 'mine':
-                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getCurrentUserApps);
+                    validateUser(params, countlyApi.mgmt.apps.getCurrentUserApps);
                     break;
                 case 'details':
                     validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAppsDetails);
