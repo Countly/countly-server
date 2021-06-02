@@ -2,6 +2,7 @@
     Handlebars,
     CountlyHelpers,
     countlyGlobal,
+    countlyAuth,
     countlyView,
     countlyEvent,
     ReportingView,
@@ -14,6 +15,7 @@
  */
 
 window.ReportingView = countlyView.extend({
+    featureName: 'reports',
     statusChanged: {},
     emailInput: {},
     initialize: function() {
@@ -283,6 +285,18 @@ window.ReportingView = countlyView.extend({
             $("#add-report").on("click", function() {
                 self.widgetDrawer.init("core");
             });
+
+            if (!countlyAuth.validateCreate(self.featureName)) {
+                $('#add-report').hide();
+            }
+
+            if (!countlyAuth.validateUpdate(self.featureName)) {
+                $('.edit-report').hide();
+            }
+
+            if (!countlyAuth.validateDelete(self.featureName)) {
+                $('.delete-report').hide();
+            }
         }
     },
 
@@ -1016,17 +1030,21 @@ app.addReportsCallbacks("reports", {
 //register views
 app.reportingView = new ReportingView();
 
-app.route('/manage/reports', 'reports', function() {
-    this.renderWhenReady(this.reportingView);
-});
+if (countlyAuth.validateRead(app.reportingView.featureName)) {
+    app.route('/manage/reports', 'reports', function() {
+        this.renderWhenReady(this.reportingView);
+    });
+}
 
 $(document).ready(function() {
-    app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
-    if (app.configurationsView) {
-        app.configurationsView.registerLabel("reports", "reports.title");
-        app.configurationsView.registerLabel(
-            "reports.secretKey",
-            "reports.secretKey"
-        );
+    if (countlyAuth.validateRead(app.reportingView.featureName)) {
+        app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+        if (app.configurationsView) {
+            app.configurationsView.registerLabel("reports", "reports.title");
+            app.configurationsView.registerLabel(
+                "reports.secretKey",
+                "reports.secretKey"
+            );
+        }
     }
 });

@@ -1,10 +1,18 @@
 var pluginOb = {},
     parser = require('ua-parser-js'),
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'web';
 
 (function() {
     plugins.appTypes.push("web");
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
     plugins.register("/sdk", function(ob) {
         var params = ob.params;
 
@@ -125,9 +133,8 @@ var pluginOb = {},
 
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
         if (params.qstring.method === "latest_users") {
-            validateUserForDataReadAPI(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 common.db.collection("app_users" + params.app_id).find({}, {projection: {uid: 1, cc: 1, cty: 1, p: 1, brw: 1, lv: 1, src: 1, sc: 1, lac: 1, tsd: 1}}).sort({lac: -1}).limit(50).toArray(function(err, users) {
                     if (!err) {
                         common.returnOutput(params, users);

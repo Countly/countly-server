@@ -1,5 +1,6 @@
 /*global 
     CountlyHelpers,
+    countlyAuth,
     countlyGlobal,
     countlyView,
     countlySources,
@@ -88,6 +89,10 @@ window.SourcesView = countlyView.extend({
             countlyCommon.drawGraph(data.chartDPNew, "#dashboard-graph2", "pie");
 
             CountlyHelpers.expandRows(this.dtable, this.expandTable, this);
+
+            if (!countlyAuth.validateRead('drill')) {
+                $('#drill-down-for-view').hide();
+            }
         }
     },
     refresh: function() {},
@@ -116,7 +121,7 @@ window.SourcesView = countlyView.extend({
         var str = '';
         if (d && d.sources && self.dataMap[d.sources]) {
             str += '<div class="datatablesubrow">' +
-				'<table cellpadding="5" cellspacing="0" border="0" class="subtable">';
+                '<table cellpadding="5" cellspacing="0" border="0" class="subtable">';
             str += '<tr>';
             str += '<th class="source-40">' + jQuery.i18n.map["sources.source"] + '</th>';
             str += '<th class="source-20">' + jQuery.i18n.map["common.table.total-sessions"] + '</th>';
@@ -137,7 +142,7 @@ window.SourcesView = countlyView.extend({
                 str += '</tr>';
             }
             str += '</table>' +
-			'</div>';
+            '</div>';
         }
         return str;
     },

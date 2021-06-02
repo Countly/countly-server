@@ -6,7 +6,8 @@
 /** @lends module:api/parts/data/stats */
 var stats = {},
     async = require('async'),
-    common = require("../../utils/common.js");
+    common = require("../../utils/common.js"),
+    { getUserApps } = require('../../utils/rights.js');
 
 var countlyDb;
 /**
@@ -65,7 +66,7 @@ stats.getUser = function(db, user, callback) {
     var apps;
 
     if (!user.global_admin) {
-        apps = user.user_of || [];
+        apps = getUserApps(user) || [];
     }
 
     getTotalEvents(function(totalEvents) {

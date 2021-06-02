@@ -1,7 +1,10 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    automaticStateManager = require('./helpers/automaticStateManager');
+    automaticStateManager = require('./helpers/automaticStateManager'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'logger';
 
 var RequestLoggerStateEnum = {
     ON: "on",
@@ -16,6 +19,10 @@ plugins.setConfigs("logger", {
 });
 
 (function() {
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
 
     var shouldLogRequest = function(requestLoggerConfiguration) {
         if (requestLoggerConfiguration.state === RequestLoggerStateEnum.ON) {
@@ -296,7 +303,7 @@ plugins.setConfigs("logger", {
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForDataReadAPI;
+
         if (params.qstring.method === 'logs') {
             var filter = {};
             if (typeof params.qstring.filter !== "undefined") {
@@ -307,7 +314,8 @@ plugins.setConfigs("logger", {
                     filter = {};
                 }
             }
-            validate(params, function(parameters) {
+
+            validateRead(params, FEATURE_NAME, function(parameters) {
                 common.db.collection('logs' + parameters.app_id).find(filter).limit(1000).toArray(function(err, items) {
                     if (err) {
                         console.log(err);
@@ -318,7 +326,7 @@ plugins.setConfigs("logger", {
             return true;
         }
         if (params.qstring.method === 'collection_info') {
-            validate(params, function(parameters) {
+            validateRead(params, FEATURE_NAME, function(parameters) {
                 common.db.collection('logs' + parameters.app_id).stats(function(err, stats) {
                     if (err) {
                         console.log(err);

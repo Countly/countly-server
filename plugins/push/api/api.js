@@ -9,8 +9,10 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
     plugins = require('../../pluginManager.js'),
-    countlyCommon = require('../../../api/lib/countly.common.js');
+    countlyCommon = require('../../../api/lib/countly.common.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
+const FEATURE_NAME = 'push';
 const PUSH_CACHE_GROUP = 'P';
 
 (function() {
@@ -37,6 +39,10 @@ const PUSH_CACHE_GROUP = 'P';
         }
         common.dbUniqueMap.users.push(creds.DB_MAP['messaging-enabled']);
     }
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
 
     plugins.register('/worker', function() {
         setUpCommons();
@@ -416,8 +422,7 @@ const PUSH_CACHE_GROUP = 'P';
 
     plugins.register('/i/pushes', function(ob) {
         var params = ob.params,
-            paths = ob.paths,
-            validateUserForWriteAPI = ob.validateUserForWriteAPI;
+            paths = ob.paths;
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -429,31 +434,31 @@ const PUSH_CACHE_GROUP = 'P';
 
         switch (paths[3]) {
         case 'dashboard':
-            validateUserForWriteAPI(push.dashboard, params);
+            validateRead(params, FEATURE_NAME, push.dashboard, params);
             break;
         case 'prepare':
-            validateUserForWriteAPI(push.prepare, params);
+            validateUpdate(params, FEATURE_NAME, push.prepare, params);
             break;
         case 'create':
-            validateUserForWriteAPI(push.create, params);
+            validateCreate(params, FEATURE_NAME, push.create, params);
             break;
         case 'push':
-            validateUserForWriteAPI(push.push, params);
+            validateCreate(params, FEATURE_NAME, push.push, params);
             break;
         case 'pop':
-            validateUserForWriteAPI(push.pop, params);
+            validateCreate(params, FEATURE_NAME, push.pop, params);
             break;
         case 'message':
-            validateUserForWriteAPI(push.message, params);
+            validateRead(params, FEATURE_NAME, push.message, params);
             break;
         case 'active':
-            validateUserForWriteAPI(push.active, params);
+            validateUpdate(params, FEATURE_NAME, push.active, params);
             break;
         case 'delete':
-            validateUserForWriteAPI(push.delete, params);
+            validateDelete(params, FEATURE_NAME, push.delete, params);
             break;
         case 'mime':
-            validateUserForWriteAPI(push.mimeInfo, params);
+            validateRead(params, FEATURE_NAME, push.mimeInfo, params);
             break;
         case 'huawei':
             push.huawei(params);
@@ -469,8 +474,7 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/o/pushes', function(ob) {
-        var params = ob.params,
-            validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        var params = ob.params;
 
         if (params.qstring.args) {
             try {
@@ -481,7 +485,7 @@ const PUSH_CACHE_GROUP = 'P';
             }
         }
 
-        validateUserForWriteAPI(push.getAllMessages, params);
+        validateRead(params, FEATURE_NAME, push.getAllMessages);
         return true;
     });
 

@@ -1,4 +1,4 @@
-/*global $, countlyTotalUsers, countlyLanguage, jQuery, app, LanguageView, countlyGlobalLang, Handlebars, countlyView, addDrill, countlyCommon, CountlyHelpers*/
+/*global $, countlyTotalUsers, countlyAuth, countlyLanguage, jQuery, app, LanguageView, countlyGlobalLang, Handlebars, countlyView, addDrill, countlyCommon, CountlyHelpers*/
 window.LanguageView = countlyView.extend({
     beforeRender: function() {
         return $.when(countlyLanguage.initialize(), countlyTotalUsers.initialize("languages")).then(function() {});
@@ -64,6 +64,10 @@ window.LanguageView = countlyView.extend({
             }));
 
             $(".d-table").stickyTableHeaders();
+
+            if (!countlyAuth.validateRead('drill')) {
+                $('#drill-down-for-view').hide();
+            }
         }
     },
     refresh: function() {

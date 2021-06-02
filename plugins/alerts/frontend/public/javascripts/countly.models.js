@@ -1,6 +1,7 @@
 /*global
-    jQuery
- */
+    jQuery,
+    store
+*/
 
 (function(alertsPlugin, $) {
     var _alertsList = {};
@@ -18,7 +19,8 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/alert/save",
             data: {
-                "alert_config": JSON.stringify(alertConfig)
+                "alert_config": JSON.stringify(alertConfig),
+                "app_id": alertConfig.selectedApps[0]
             },
             dataType: "json",
             success: function(res) {
@@ -39,7 +41,9 @@
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r + '/alert/list',
-            data: {},
+            data: {
+                app_id: store.get('countly_active_app')
+            },
             dataType: "json",
             success: function(data) {
                 _alertsList = data.alertsList;
@@ -69,12 +73,13 @@
         }
     };
 
-    alertsPlugin.deleteAlert = function deleteAlert(alertID, callback) {
+    alertsPlugin.deleteAlert = function deleteAlert(alertID, appId, callback) {
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/alert/delete",
             data: {
-                "alertID": alertID
+                "alertID": alertID,
+                "app_id": appId
             },
             dataType: "json",
             success: function(res) {
@@ -86,12 +91,13 @@
 
     };
 
-    alertsPlugin.updateAlertStatus = function deleteAlert(status, callback) {
+    alertsPlugin.updateAlertStatus = function deleteAlert(status, appId, callback) {
         $.ajax({
             type: "post",
             url: countlyCommon.API_PARTS.data.w + "/alert/status",
             data: {
-                "status": JSON.stringify(status)
+                "status": JSON.stringify(status),
+                "app_id": appId
             },
             dataType: "json",
             success: function(res) {

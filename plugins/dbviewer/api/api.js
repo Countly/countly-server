@@ -5,13 +5,16 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { dbUserHasAccessToCollection, dbLoadEventsData } = require('../../../api/utils/rights.js'),
-    { validateGlobalAdmin } = require('../../../api/utils/rights.js'),
+    { dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin } = require('../../../api/utils/rights.js'),
     exported = {};
 
+const FEATURE_NAME = 'dbviewer';
 var spawn = require('child_process').spawn,
     child;
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/o/db", function(ob) {
         var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
         var params = ob.params;
@@ -25,6 +28,7 @@ var spawn = require('child_process').spawn,
                 break;
             }
         }
+
         /**
         * Get indexes
         **/
@@ -264,8 +268,9 @@ var spawn = require('child_process').spawn,
             });
         }
 
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
-        validateUserForWriteAPI(function() {
+        //console.log(userApps);
+
+        validateUser(params, function() {
             // conditions
             var isContainDb = params.qstring.dbs || params.qstring.db;
             var isContainCollection = params.qstring.collection && params.qstring.collection.indexOf("system.indexes") === -1 && params.qstring.collection.indexOf("sessions_") === -1;
@@ -365,17 +370,17 @@ var spawn = require('child_process').spawn,
                 }
                 else {
                     var apps = [];
+                    var userApps = getUserApps(params.member);
                     if (params.qstring.app_id) {
                         //if we have app_id, check permissions
-                        if (params.member.user_of && params.member.user_of.indexOf(params.qstring.app_id) !== -1) {
+                        if (userApps.length > 0 && userApps.indexOf(params.qstring.app_id) !== -1) {
                             apps.push(common.db.ObjectID(params.qstring.app_id));
                         }
                     }
                     else {
                         //else use what ever user has access to
-                        params.member.user_of = params.member.user_of || [];
-                        for (let i = 0; i < params.member.user_of.length; i++) {
-                            apps.push(common.db.ObjectID(params.member.user_of[i]));
+                        for (let i = 0; i < userApps.length; i++) {
+                            apps.push(common.db.ObjectID(userApps[i]));
                         }
                     }
                     common.readBatcher.getMany("apps", { _id: { $in: apps } }, {}, (err, applications) => {
@@ -386,7 +391,7 @@ var spawn = require('child_process').spawn,
                     });
                 }
             }
-        }, params);
+        });
         return true;
     });
 

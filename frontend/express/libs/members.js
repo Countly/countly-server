@@ -12,7 +12,7 @@
 var authorize = require('./../../../api/utils/authorizer.js'); //for token validations
 var common = require('./../../../api/utils/common.js');
 var plugins = require('./../../../plugins/pluginManager.js');
-
+var { getUserApps } = require('./../../../api/utils/rights.js');
 var configs = require('./../config', 'dont-enclose');
 var countlyMail = require('./../../../api/parts/mgmt/mail.js');
 var countlyStats = require('./../../../api/parts/data/stats.js');
@@ -327,8 +327,9 @@ membersUtility.updateStats = function(member) {
 
     if ((!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) && !plugins.getConfig("api").offline_mode) {
         countlyStats.getUser(membersUtility.db, member, function(statsObj) {
+            const userApps = getUserApps(member);
             var custom = {
-                apps: (member.user_of) ? member.user_of.length : 0,
+                apps: (userApps) ? userApps.length : 0,
                 platforms: {"$addToSet": statsObj["total-platforms"]},
                 events: statsObj["total-events"],
                 pushes: statsObj["total-msg-sent"],

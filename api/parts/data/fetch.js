@@ -3,6 +3,8 @@
 * @module api/parts/data/fetch
 */
 
+const { getAdminApps, getUserApps } = require('../../utils/rights.js');
+
 /** @lends module:api/parts/data/fetch */
 var fetch = {},
     common = require('./../../utils/common.js'),
@@ -494,18 +496,21 @@ fetch.fetchAllApps = function(params) {
 
     if (!params.member.global_admin) {
         let apps = {};
-        for (let i = 0; i < params.member.admin_of.length; i++) {
-            if (params.member.admin_of[i] === "") {
+        let adminApps = getAdminApps(params.member);
+        let userApps = getUserApps(params.member);
+
+        for (let i = 0; i < adminApps.length; i++) {
+            if (adminApps[i] === "") {
                 continue;
             }
-            apps[params.member.admin_of[i]] = true;
+            apps[adminApps[i]] = true;
         }
 
-        for (let i = 0; i < params.member.user_of.length; i++) {
-            if (params.member.user_of[i] === "") {
+        for (let i = 0; i < userApps.length; i++) {
+            if (userApps[i] === "") {
                 continue;
             }
-            apps[params.member.user_of[i]] = true;
+            apps[userApps[i]] = true;
         }
 
         var fromApps = [];

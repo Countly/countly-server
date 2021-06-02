@@ -12,16 +12,16 @@
 <div class="create-user-row user-details datatablesubrow d-table">
 	<div class="row help-zone-vs" data-help-localize="help.manage-users.full-name">
 		<div class="title" data-localize="management-users.full-name"></div>
-		<div class="detail"><input class="full-name-text" type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/></div>
+		<div class="detail"><input class="full-name-text" placeholder="Enter full name" type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/></div>
 	</div>
 	<div class="row help-zone-vs" data-help-localize="help.manage-users.username">
 		<div class="title" data-localize="management-users.username"></div>
-		<div class="detail"><input class="username-text" type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/></div>
+		<div class="detail"><input placeholder="Enter user name" class="username-text" type="text" value="" readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"/></div>
 	</div>
 	<div class="row">
 		<div class="title" data-localize="management-users.password"></div>
 		<div class="detail">
-			<input class="password-text" type="text" value=""/><br/>
+			<input placeholder="Enter e-mail" class="password-text" type="text" value=""/><br/>
 			<div class="small-link generate-password" data-localize="management-users.generate-password"></div>
 		</div>
 	</div>
@@ -38,6 +38,7 @@
 			</div>
 		</div>
 	</div>
+	<!--
 	<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of">
 		<div class="title" data-localize="management-users.admin-of"></div>
 		<div class="select-apps">
@@ -59,6 +60,24 @@
 			<span data-localize="management-users.user-of.tip"></span>
 		</div>
 		<div class="no-apps" data-localize="management-users.user-of.tip"></div>
+	</div>
+	-->
+	<div class="row help-zone-vs member-permission" data-help-localize="help.manage-users.permissions">
+		<div class="title" data-localize="management-users.permissions"></div>
+		<div class="detail">
+			<div class="permission-app-select">
+				<select id="permission-app-selector">
+				</select>
+			</div>
+			<div class="permission-box">
+				<label data-localize="management-users.core-features"></label>
+				<div class="core-features">
+				</div>
+				<label data-localize="management-users.plugins"></label>
+				<div class="plugins-features">
+				</div>
+			</div>
+		</div>
 	</div>
 	<div class="button-container">
 		<a class="icon-button light create-user" data-localize="management-users.create-user"></a>
@@ -86,4 +105,134 @@
 		<a class="icon-button dark" id="deselect-all" data-localize="common.deselect-all"></a>
 	</div>
 </div>
+</div>
+<div class="cly-drawer create-user-drawer">
+    <div class="title" style="position: fixed; width: 100%;top: 0px; box-sizing:border-box">
+        <span id="create-user-drawer-title" data-localize="management-users.create-new-user"></span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <div class="details create-user-drawer-detail" style="height:100%;overflow-y:auto">
+    	<div class="left-area">
+    		<label data-localize="management-users.full-name"></label>
+	    	<input placeholder="Enter full name" class="drawer-input full-name-text" autocomplete="off" type="text"/>
+	    	<label data-localize="management-users.username"></label>
+	    	<input placeholder="Enter user name" class="drawer-input username-text" autocomplete="off" type="text"/>
+	    	<label data-localize="management-users.email"></label>
+	    	<input placeholder="Enter e-mail" class="drawer-input email-text" autocomplete="new-password" type="email"/>
+				<input id="password-text" type="password" style="display: none;">
+	    	<!-- <label data-localize="management-users.password"></label>
+	    	<input class="drawer-input password-text" autocomplete="new-password" type="password"/> -->
+	    </div>
+	    <div class="right-area">
+	    	<label data-localize="management-users.profile-picture" id="profile-picture-label"></label><span class="edit-picture update-picture"></span>
+	    	<div class="img-upload" id="user-avatar-upload-drop">
+					<div class="upload-message dz-clickable">Drag & drop or <span style="font-weight:bolder;color:#2EB52B;cursor:pointer;">browse</span> files to add picture</div>
+	    	</div>
+				<div class="img-preview"></div>
+	  	</div>
+	    <div style="clear:both"></div>
+	    <div class="access-area role-section">
+	    	<div class="header">
+	    		<div class="section-title" data-localize="management-users.role"></div>
+    			<i class="ion-information-circled show-tooltip"
+               		title="This text will be replaced"></i>
+					</div>
+	    	<div class="content">
+	    		<div id="user-drawer-global-admin"></div>
+				<div class="checkbox-label global-admin-checkbox-label" data-localize="management-users.global-administrator"></div>
+				<div style="clear:both"></div>
+	    	</div>
+	    </div>
+	    <div id="sub-header-1th">
+	    	<div class="drawer-header">
+	    		<span data-localize="management-users.permission-settings"></span>
+	    		<i class="ion-information-circled show-tooltip"
+               		title="This text will be replaced"></i>
+				</div>
+	    	<div class="drawer-information"><span data-localize="management-users.user-has-access-to"></span> <span id="accessible-app-count">0</span> <span data-localize="management-users.apps"></span></div>
+	    	<div style="clear:both"></div>
+	    </div>
+	    <div class="admin-access access-area">
+	    	<div class="header">
+	    		<div class="section-title" data-localize="management-users.grant-admin-access-to-apps"></div>
+	    		<div class="subtitle" data-localize="management-users.grant-admin-access-description"></div>
+	    	</div>
+	    	<div class="app-selector access-area">
+	    		<div class="selector-label" data-localize="management-users.apps"></div>
+	    		<div class="selector-wrapper">
+						<input type="text" id="manage-users-admin-app-selector">
+					</div>
+					<div style="clear:both"></div>
+	    	</div>
+	    </div>
+	    <button class="add-new-permission-set icon-button" data-localize="management-users.add-permission-set"></button>
+			<div class="create-user-drawer-bottom">
+				<button id="create-user-button" class="icon-button green create-new-user" data-localize="management-users.create-user">
+				</button>
+				<button class="drawer-link-button discard-changes" data-localize="management-users.discard-changes">
+				</button>
+			</div>
+    </div>
+    <div class="drawer-loading">
+    	<img src="/star-rating/images/star-rating/loader.svg" class="drawer-loader-img">
+    	Loading...
+    </div>
+</div>
+<div class="cly-drawer create-group-drawer">
+    <div class="title" style="position: fixed; width: 100%;top: 0px; box-sizing:border-box">
+        <span id="create-group-drawer-title" data-localize="groups.add-new-group"></span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <div class="details create-user-drawer-detail" style="height:100%;overflow-y:auto">
+    	<div class="left-area">
+    		<label data-localize="groups.name"></label>
+	    	<input placeholder="Enter group name" class="drawer-input" id="grpName" autocomplete="off" type="text"/>
+	    	<label data-localize="groups.id"></label>
+	    	<input placeholder="Enter group ID" class="drawer-input" id="grpID" autocomplete="off" type="text"/>
+	    </div>
+	    <div class="access-area role-section">
+	    	<div class="header">
+	    		<div class="section-title" data-localize="management-users.role"></div>
+					<i class="ion-information-circled show-tooltip"
+               		title="This text will be replaced"></i>
+	    	</div>
+	    	<div class="content">
+	    		<div id="group-drawer-global-admin"></div>
+					<div class="checkbox-label global-admin-checkbox-label" data-localize="management-users.global-administrator"></div>
+					<div style="clear:both"></div>
+	    	</div>
+	    </div>
+	    <div id="sub-header-1th">
+	    	<div class="drawer-header">
+	    		<span data-localize="management-users.permission-settings"></span>
+	    		<i class="ion-information-circled show-tooltip" title="This text will be replaced"></i>
+				</div>
+	    	<div class="drawer-information">
+					<span data-localize="groups.user-of-this-group-has-access-to"></span>
+					<span id="accessible-app-count">0</span> <span data-localize="management-users.apps"></span>
+				</div>
+	    	<div style="clear:both"></div>
+	    </div>
+	    <div class="admin-access access-area">
+	    	<div class="header">
+	    		<div class="section-title" data-localize="management-users.grant-admin-access-to-apps"></div>
+	    		<div class="subtitle" data-localize="management-users.grant-admin-access-description"></div>
+	    	</div>
+	    	<div class="app-selector access-area">
+	    		<div class="selector-label" data-localize="management-users.apps"></div>
+	    		<div class="selector-wrapper">
+						<input type="text" id="manage-groups-admin-app-selector">
+					</div>
+					<div style="clear:both"></div>
+	    	</div>
+	    </div>
+	    <button class="add-new-permission-set icon-button" data-localize="management-users.add-permission-set">
+		</button>
+    	<div class="create-user-drawer-bottom">
+    		<button class="icon-button green create-new-group" data-localize="groups.create-group">
+    		</button>
+    		<button class="drawer-link-button discard-changes" data-localize="common.discard-changes">
+    		</button>
+    	</div>
+    </div>
 </div>

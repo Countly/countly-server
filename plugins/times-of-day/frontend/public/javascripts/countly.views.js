@@ -1,6 +1,6 @@
-/*global $,countlyView,countlyGlobal,T,timesOfDayPlugin,countlyWidgets,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
+/*global $,countlyView,countlyAuth,countlyGlobal,T,timesOfDayPlugin,countlyWidgets,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
 window.todview = countlyView.extend({
-
+    featureName: 'times_of_day',
     initialize: function() {
     },
 
@@ -16,8 +16,6 @@ window.todview = countlyView.extend({
                 self.eventsList = timesOfDayPlugin.getEventsList();
             });
         }
-
-
     },
 
     loadSessionEventData: function() {
@@ -215,23 +213,23 @@ window.todview = countlyView.extend({
 
 app.todview = new todview();
 
-app.route('/analytics/times-of-day', 'times-of-day', function() {
-    this.renderWhenReady(this.todview);
-});
+if (countlyAuth.validateRead(app.todview.featureName)) {
+    app.route('/analytics/times-of-day', 'times-of-day', function() {
+        this.renderWhenReady(this.todview);
+    });
+}
+
 
 app.addPageScript("/custom#", function() {
-    addWidgetType();
-    addSettingsSection();
-
     /**
      * Adding widget type
      */
     function addWidgetType() {
         var todWidget = '<div data-widget-type="times-of-day" class="opt dashboard-widget-item">' +
-                            '    <div class="inner">' +
-                            '        <span class="icon timesofday"></span>' + jQuery.i18n.prop("times-of-day.times") +
-                            '    </div>' +
-                            '</div>';
+            '    <div class="inner">' +
+            '        <span class="icon timesofday"></span>' + jQuery.i18n.prop("times-of-day.times") +
+            '    </div>' +
+            '</div>';
 
         $("#widget-drawer .details #widget-types .opts").append(todWidget);
     }
@@ -257,17 +255,25 @@ app.addPageScript("/custom#", function() {
 
         $(setting).insertAfter(".cly-drawer .details .settings:last");
     }
+    if (countlyAuth.validateRead(app.todview.featureName)) {
+        addWidgetType();
+        addSettingsSection();
 
-    $("#single-tod-dropdown").on("cly-select-change", function() {
-        $("#widget-drawer").trigger("cly-widget-section-complete");
-    });
+        $("#single-tod-dropdown").on("cly-select-change", function() {
+            $("#widget-drawer").trigger("cly-widget-section-complete");
+        });
+    }
 });
 
 $(document).ready(function() {
-    app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
+    if (countlyAuth.validateRead(app.todview.featureName)) {
+        app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
+    }
 });
 
-initializeTimesOfDayWidget();
+if (countlyAuth.validateRead(app.todview.featureName)) {
+    initializeTimesOfDayWidget();
+}
 
 /**
  * Initialize times of day widget.

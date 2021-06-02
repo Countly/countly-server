@@ -3,9 +3,16 @@ var common = require('../../../api/utils/common.js'),
     async = require('async'),
     moment = require('moment-timezone'),
     log = require('../../../api/utils/log')('reports:api'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, getUserApps, getAdminApps } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'reports';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
     plugins.register("/master", function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
@@ -15,7 +22,6 @@ var common = require('../../../api/utils/common.js'),
 
     plugins.register("/o/reports", function(ob) {
         let paramsInstance = ob.params;
-        var validate = ob.validateUserForDataReadAPI;
         var paths = ob.paths;
         if (paramsInstance.qstring.args) {
             try {
@@ -28,7 +34,7 @@ var common = require('../../../api/utils/common.js'),
 
         switch (paths[3]) {
         case 'all':
-            validate(paramsInstance, function(params) {
+            validateRead(paramsInstance, FEATURE_NAME, function(params) {
                 const query = {};
                 if (params.member.global_admin !== true) {
                     query.$or = [
@@ -78,7 +84,6 @@ var common = require('../../../api/utils/common.js'),
 
     plugins.register("/i/reports", function(ob) {
         var paramsInstance = ob.params;
-        var validate = ob.validateUserForWriteAPI;
         var paths = ob.paths;
         if (paramsInstance.qstring.args) {
             try {
@@ -98,7 +103,8 @@ var common = require('../../../api/utils/common.js'),
 
         switch (paths[3]) {
         case 'create':
-            validate(function(params) {
+            validateCreate(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
                 var props = {};
                 props = params.qstring.args;
                 props.minute = (props.minute) ? parseInt(props.minute) : 0;
@@ -121,34 +127,37 @@ var common = require('../../../api/utils/common.js'),
 
                 convertToTimezone(props);
 
-                var reportType = props.report_type || "core";
-                var validationFn = validateCoreUser;
-                if (reportType !== "core") {
-                    validationFn = validateNonCoreUser;
+                // TODO: handle report type check
+
+                let userApps = getUserApps(params.member);
+                let notPermitted = false;
+                for (var i = 0; i < props.apps.length; i++) {
+                    if (userApps.indexOf(props.apps[i]) === -1) {
+                        notPermitted = true;
+                    }
                 }
 
-                validationFn(params, props, function(err, authorized) {
-                    if (err || !authorized) {
-                        return common.returnMessage(params, 401, 'User does not have right to access this information');
-                    }
+                if (notPermitted) {
+                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                }
 
-                    common.db.collection('reports').insert(props, function(err0, result) {
-                        result = result.ops;
-                        if (err0) {
-                            err0 = err0.err;
-                            common.returnMessage(params, 200, err0);
-                        }
-                        else {
-                            plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result[0]});
-                            common.returnMessage(params, 200, "Success");
-                        }
-                    });
+                common.db.collection('reports').insert(props, function(err0, result) {
+                    result = result.ops;
+                    if (err0) {
+                        err0 = err0.err;
+                        common.returnMessage(params, 200, err0);
+                    }
+                    else {
+                        plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result[0]});
+                        common.returnMessage(params, 200, "Success");
+                    }
                 });
-            }, paramsInstance);
+            });
             break;
         case 'update':
-            validate(function(params) {
+            validateUpdate(paramsInstance, FEATURE_NAME, function() {
                 var props = {};
+                var params = paramsInstance;
                 props = params.qstring.args;
                 var id = props._id;
                 delete props._id;
@@ -168,37 +177,39 @@ var common = require('../../../api/utils/common.js'),
 
                 convertToTimezone(props);
 
-                var reportType = props.report_type || "core";
-                var validationFn = validateCoreUser;
-                if (reportType !== "core") {
-                    validationFn = validateNonCoreUser;
+                // TODO: Handle report type check
+                const userApps = getUserApps(params.member);
+                let notPermitted = false;
+
+                for (var i = 0; i < props.apps.length; i++) {
+                    if (userApps.indexOf(props.apps[i]) === -1) {
+                        notPermitted = true;
+                    }
                 }
 
-                validationFn(params, props, function(err, authorized) {
-                    if (err || !authorized) {
-                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                if (notPermitted) {
+                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                }
+                common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err_update, report) {
+                    if (err_update) {
+                        console.log(err_update);
                     }
-
-                    common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err_update, report) {
-                        if (err_update) {
-                            console.log(err_update);
+                    common.db.collection('reports').update(recordUpdateOrDeleteQuery(params, id), {$set: props}, function(err_update2) {
+                        if (err_update2) {
+                            err_update2 = err_update2.err;
+                            common.returnMessage(params, 200, err_update2);
                         }
-                        common.db.collection('reports').update(recordUpdateOrDeleteQuery(params, id), {$set: props}, function(err_update2) {
-                            if (err_update2) {
-                                err_update2 = err_update2.err;
-                                common.returnMessage(params, 200, err_update2);
-                            }
-                            else {
-                                plugins.dispatch("/systemlogs", {params: params, action: "reports_edited", data: {_id: id, before: report, update: props}});
-                                common.returnMessage(params, 200, "Success");
-                            }
-                        });
+                        else {
+                            plugins.dispatch("/systemlogs", {params: params, action: "reports_edited", data: {_id: id, before: report, update: props}});
+                            common.returnMessage(params, 200, "Success");
+                        }
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'delete':
-            validate(function(params) {
+            validateDelete(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
                 var argProps = {
                         '_id': { 'required': true, 'type': 'String'}
                     },
@@ -209,6 +220,12 @@ var common = require('../../../api/utils/common.js'),
                     return false;
                 }
 
+                const adminApps = getAdminApps(params.member);
+                const notPermitted = adminApps.indexOf(id) === -1;
+
+                if (notPermitted) {
+                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                }
                 common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err, props) {
                     common.db.collection('reports').remove(recordUpdateOrDeleteQuery(params, id), {safe: true}, function(err_del) {
                         if (err_del) {
@@ -222,10 +239,11 @@ var common = require('../../../api/utils/common.js'),
                         }
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'send':
-            validate(function(params) {
+            validateCreate(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
                 var argProps = {
                         '_id': { 'required': true, 'type': 'String'}
                     },
@@ -241,31 +259,28 @@ var common = require('../../../api/utils/common.js'),
                         return false;
                     }
 
-                    var reportType = result.report_type || "core";
-                    var validationFn = validateCoreUser;
-                    if (reportType !== "core") {
-                        validationFn = validateNonCoreUser;
-                    }
-                    validationFn(params, result, function(err1, authorized) {
-                        if (err1 || !authorized) {
-                            return common.returnMessage(params, 401, 'User does not have right to access this information');
-                        }
+                    const adminApps = getAdminApps(params.member);
+                    const notPermitted = adminApps.indexOf(id) === -1;
 
-                        reports.sendReport(common.db, id, function(err2) {
-                            if (err2) {
-                                log.d("Error occurred while sending out report.", err);
-                                common.returnMessage(params, 200, err2);
-                            }
-                            else {
-                                common.returnMessage(params, 200, "Success");
-                            }
-                        });
+                    if (notPermitted) {
+                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    }
+
+                    reports.sendReport(common.db, id, function(err2) {
+                        if (err2) {
+                            log.d("Error occurred while sending out report.", err);
+                            common.returnMessage(params, 200, err2);
+                        }
+                        else {
+                            common.returnMessage(params, 200, "Success");
+                        }
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'preview':
-            validate(function(params) {
+            validateRead(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
                 var argProps = {
                         '_id': { 'required': true, 'type': 'String'}
                     },
@@ -280,33 +295,34 @@ var common = require('../../../api/utils/common.js'),
                         common.returnMessage(params, 200, 'Report not found');
                         return false;
                     }
-                    var reportType = result.report_type || "core";
-                    var validationFn = validateCoreUser;
-                    if (reportType !== "core") {
-                        validationFn = validateNonCoreUser;
-                    }
-                    validationFn(params, result, function(err1, authorized) {
-                        if (err1 || !authorized) {
-                            return common.returnMessage(params, 401, 'User does not have right to access this information');
-                        }
 
-                        reports.getReport(common.db, result, function(err2, res) {
-                            if (err2) {
-                                common.returnMessage(params, 200, err2);
+                    // TODO: Handle report type check
+                    const userApps = getUserApps(params.member);
+                    const notPermitted = userApps.indexOf(id) === -1;
+
+                    if (notPermitted) {
+                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    }
+
+                    reports.getReport(common.db, result, function(err2, res) {
+                        if (err2) {
+                            common.returnMessage(params, 200, err2);
+                        }
+                        else {
+                            if (params && params.res) {
+                                common.returnRaw(params, 200, res.message, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
                             }
-                            else {
-                                if (params && params.res) {
-                                    common.returnRaw(params, 200, res.message, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin': '*'});
-                                }
-                            }
-                        });
+                        }
                     });
                 });
-            }, paramsInstance);
+            });
             break;
         case 'status':
-            validate(function(params) {
+            validateUpdate(paramsInstance, FEATURE_NAME, function() {
+                var params = paramsInstance;
                 const statusList = params.qstring.args;
+
+                console.log(statusList, 'status-list');
 
                 var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
                 for (const id in statusList) {
@@ -320,7 +336,7 @@ var common = require('../../../api/utils/common.js'),
                         common.returnMessage(params, 200, "Success");
                     });
                 }
-            }, paramsInstance);
+            });
             break;
         default:
             common.returnMessage(paramsInstance, 400, 'Invalid path');
@@ -387,12 +403,12 @@ var common = require('../../../api/utils/common.js'),
      * @param {object} props  - report related props
      * @param {func} cb - callback function
      * @return {func} cb - callback function
-     */
+    
     function validateCoreUser(params, props, cb) {
-
+        var userApps = getUserApps(params.member);
         var apps = props.apps;
         var isAppUser = apps.every(function(app) {
-            return params.member.user_of && params.member.user_of.indexOf(app) > -1;
+            return userApps && userApps.indexOf(app) > -1;
         });
 
         if (!params.member.global_admin && !isAppUser) {
@@ -403,17 +419,19 @@ var common = require('../../../api/utils/common.js'),
         }
 
     }
+    */
 
     /**
      * validation function for verifing user have permission to access infomation or not for not core type of report
      * @param {object} params - request params object
      * @param {object} props  - report related props
      * @param {func} cb - callback function
-     */
+     
     function validateNonCoreUser(params, props, cb) {
         plugins.dispatch("/report/authorize", { params: params, report: props }, function() {
             var authorized = props.authorized || false;
             cb(null, authorized);
         });
     }
+    */
 }());
