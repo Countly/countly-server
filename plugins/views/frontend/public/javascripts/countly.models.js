@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal*/
+/*global CountlyHelpers, countlyCommon, $, countlySession, jQuery, countlyGlobal, Promise, CV, countlyVue*/
 
 (function() {
     window.countlyViews = window.countlyViews || {};
@@ -487,36 +487,6 @@
         return obj;
     };
 
-    countlyViews.getViewFrequencyData = function() {
-        var _Db = countlyViews.getDb();
-        countlyViews.setDb(countlySession.getDb());
-        var data = countlyViews.getRangeData("vc", "v-ranges", countlyViews.explainFrequencyRange, getRange());
-        countlyViews.setDb(_Db);
-        return data;
-    };
-
-    var getRange = function() {
-        var visits = jQuery.i18n.map["views.visits"].toLowerCase();
-        return [
-            "1 - 2 " + visits,
-            "3 - 5 " + visits,
-            "6 - 10 " + visits,
-            "11 - 15 " + visits,
-            "16 - 30 " + visits,
-            "31 - 50 " + visits,
-            "51 - 100 " + visits,
-            "> 100 " + visits
-        ];
-    };
-
-    countlyViews.explainFrequencyRange = function(index) {
-        return getRange()[index];
-    };
-
-    countlyViews.getFrequencyIndex = function(value) {
-        return getRange().indexOf(value);
-    };
-
     countlyViews.renameViews = function(data, callback) {
         $.ajax({
             type: "POST",
@@ -568,3 +538,143 @@
     };
 
 })();
+
+(function(countlyViewsPerSession) {
+    countlyViewsPerSession.helpers = {
+        getViewsPerSessionRange: function() {
+            var visits = jQuery.i18n.map["views.visits"].toLowerCase();
+            return [
+                "1 - 2 " + visits,
+                "3 - 5 " + visits,
+                "6 - 10 " + visits,
+                "11 - 15 " + visits,
+                "16 - 30 " + visits,
+                "31 - 50 " + visits,
+                "51 - 100 " + visits,
+                "> 100 " + visits
+            ];
+        },
+        explainViewsPerSessionRange: function(index) {
+            return countlyViewsPerSession.helpers.getViewsPerSessionRange()[index];
+        }
+    };
+
+    countlyViewsPerSession.service = {
+        mapViewsPerSessionDtoToModel: function(dto, period) {
+            countlySession.setDb(dto);
+            countlyCommon.setPeriod(period);
+            var viewsPerSessionData = countlySession.getRangeData("vc", "v-ranges", countlyViewsPerSession.helpers.explainViewsPerSessionRange, countlyViewsPerSession.helpers.getViewsPerSessionRange());
+            var viewsPerSessionModel = {
+                series: [],
+                rows: []
+            };
+            var viewsPerSessionSerieData = viewsPerSessionData.chartData.map(function(chartDataItem) {
+                return chartDataItem.t;
+            });
+            viewsPerSessionModel.series.push({data: viewsPerSessionSerieData, label: CV.i18n("views-per-session.title")});
+            viewsPerSessionData.chartData.forEach(function(chartDataItem, index) {
+                viewsPerSessionModel.rows[index] = {
+                    viewsBuckets: chartDataItem.vc,
+                    numberOfSessions: chartDataItem.t,
+                    percentage: chartDataItem.percentageNumber
+                };
+            });
+            return viewsPerSessionModel;
+        },
+
+        fetchViewsPerSession: function(period) {
+            var self = this;
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                method: 'users',
+            };
+            if (period) {
+                data.period = CountlyHelpers.getPeriodUrlQueryParameter(period);
+            }
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: data,
+                    dataType: "json",
+                }).then(function(response) {
+                    resolve(self.mapViewsPerSessionDtoToModel(response, period));
+                }).catch(function(error) {
+                    reject(error);
+                });
+            });
+        }
+    };
+
+    countlyViewsPerSession.getVuexModule = function() {
+
+        var getInitialState = function() {
+            return {
+                viewsPerSession: {
+                    rows: [],
+                    series: []
+                },
+                selectedDatePeriod: "day",
+                viewsPerSessionDatePeriods: [],
+                isLoading: false,
+                hasError: false,
+                error: null
+            };
+        };
+
+        var viewsPerSessionActions = {
+            fetchAll: function(context) {
+                context.dispatch('onFetchInit');
+                countlyViewsPerSession.service.fetchViewsPerSession(context.state.selectedDatePeriod)
+                    .then(function(response) {
+                        context.commit('setViewsPerSession', response);
+                        context.dispatch('onFetchSuccess');
+                    }).catch(function(error) {
+                        context.dispatch('onFetchError', error);
+                    });
+            },
+            onSetSelectedDatePeriod: function(context, period) {
+                context.commit('setSelectedDatePeriod', period);
+            },
+            onFetchInit: function(context) {
+                context.commit('setFetchInit');
+            },
+            onFetchError: function(context, error) {
+                context.commit('setFetchError', error);
+            },
+            onFetchSuccess: function(context) {
+                context.commit('setFetchSuccess');
+            },
+        };
+
+        var viewsPerSessionMutations = {
+            setViewsPerSession: function(state, value) {
+                state.viewsPerSession = value;
+            },
+            setSelectedDatePeriod: function(state, value) {
+                state.selectedDatePeriod = value;
+            },
+            setFetchInit: function(state) {
+                state.isLoading = true;
+                state.hasError = false;
+                state.error = null;
+            },
+            setFetchError: function(state, error) {
+                state.isLoading = false;
+                state.hasError = true;
+                state.error = error;
+            },
+            setFetchSuccess: function(state) {
+                state.isLoading = false;
+                state.hasError = false;
+                state.error = null;
+            }
+        };
+
+        return countlyVue.vuex.Module("countlyViewsPerSession", {
+            state: getInitialState,
+            actions: viewsPerSessionActions,
+            mutations: viewsPerSessionMutations
+        });
+    };
+}(window.countlyViewsPerSession = window.countlyViewsPerSession || {}));

@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlyWidgets, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, T, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlyWidgets, countlySegmentation, ViewsView, ViewManageView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlyViews, T, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV */
 
 window.ViewsView = countlyView.extend({
     selectedMetric: "u",
@@ -787,55 +787,72 @@ window.ViewManageView = countlyView.extend({
     }
 });
 
-window.ViewFrequencyView = countlyView.extend({
-    beforeRender: function() {
-        return $.when(countlySession.initialize()).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        var durationData = countlyViews.getViewFrequencyData();
-
-        this.templateData = {
-            "page-title": jQuery.i18n.map["views.view-frequency"],
-            "font-logo-class": "fa-eye"
+var ViewsPerSessionView = countlyVue.views.create({
+    template: CV.T("/views/templates/views-per-session.html"),
+    data: function() {
+        return {
+            progressBarColor: "#017AFF"
         };
-
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-
-            countlyCommon.drawGraph(durationData.chartDP, "#dashboard-graph", "bar");
-
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": durationData.chartData,
-                "aoColumns": [
-                    { "mData": "vc", sType: "view-frequency", "sTitle": jQuery.i18n.map["views.view-frequency"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.number-of-sessions"]
-                    },
-                    { "mData": "percent", "sType": "percent", "sTitle": jQuery.i18n.map["common.percent"] }
-                ]
-            }));
-
-            $(".d-table").stickyTableHeaders();
-
+    },
+    computed: {
+        viewsPerSession: function() {
+            return this.$store.state.countlyViewsPerSession.viewsPerSession;
+        },
+        isLoading: function() {
+            return this.$store.state.countlyViewsPerSession.isLoading;
+        },
+        selectedDatePeriod: {
+            get: function() {
+                return this.$store.state.countlyViewsPerSession.selectedDatePeriod;
+            },
+            set: function(value) {
+                this.$store.dispatch('countlyViewsPerSession/onSetSelectedDatePeriod', value);
+                this.$store.dispatch('countlyViewsPerSession/fetchAll');
+            }
+        },
+        viewsPerSessionRows: function() {
+            return this.$store.state.countlyViewsPerSession.viewsPerSession.rows;
+        },
+        viewsPerSessionOptions: function() {
+            return {
+                xAxis: {
+                    data: this.xAxisViewsPerSessionBuckets
+                },
+                series: this.yAxisViewsPerSessionCountSerie
+            };
+        },
+        xAxisViewsPerSessionBuckets: function() {
+            return this.$store.state.countlyViewsPerSession.viewsPerSession.rows.map(function(tableRow) {
+                return tableRow.viewsBuckets;
+            });
+        },
+        yAxisViewsPerSessionCountSerie: function() {
+            return this.viewsPerSession.series.map(function(viewsPerSessionSerie) {
+                return {
+                    data: viewsPerSessionSerie.data,
+                    name: viewsPerSessionSerie.label,
+                };
+            });
+        },
+    },
+    methods: {
+        refresh: function() {
+            this.$store.dispatch('countlyViewsPerSession/fetchAll');
         }
     },
-    refresh: function() {
-        var self = this;
-        $.when(countlySession.initialize()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
+    mounted: function() {
+        this.$store.dispatch('countlyViewsPerSession/fetchAll');
+    },
+});
 
-            var durationData = countlyViews.getViewFrequencyData();
-            countlyCommon.drawGraph(durationData.chartDP, "#dashboard-graph", "bar");
-            CountlyHelpers.refreshTable(self.dtable, durationData.chartData);
-        });
-    }
+countlyVue.container.registerTab("/analytics/sessions", {
+    priority: 4,
+    name: "views-per-session",
+    title: "Views per Session",
+    component: ViewsPerSessionView,
+    vuex: [{
+        clyModel: countlyViewsPerSession
+    }]
 });
 
 window.ActionMapView = countlyView.extend({
@@ -1028,7 +1045,6 @@ window.ActionMapView = countlyView.extend({
 });
 //register views
 app.viewsView = new ViewsView();
-app.viewFrequencyView = new ViewFrequencyView();
 app.actionMapView = new ActionMapView();
 app.viewManageView = new ViewManageView();
 
@@ -1040,10 +1056,6 @@ app.route("/analytics/views/manage", 'views', function() {
     this.renderWhenReady(this.viewManageView);
 });
 
-
-app.route("/analytics/view-frequency", 'views', function() {
-    this.renderWhenReady(this.viewFrequencyView);
-});
 
 app.route("/analytics/views/action-map/*view", 'views', function(view) {
     this.actionMapView.view = view;
@@ -1164,7 +1176,6 @@ $(document).ready(function() {
         }
     });
     app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
-    app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
 
     //check if configuration view exists
     if (app.configurationsView) {
