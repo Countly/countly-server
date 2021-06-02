@@ -15,11 +15,11 @@
         <cly-section>
             <cly-datatable-n  :rows="sessionDurationsRows" :resizable="true" v-loading="isLoading">
                 <template v-slot="scope">
-                    <el-table-column sortable="custom" prop="duration" :label="i18n('common.date')">
+                    <el-table-column sortable="custom" prop="duration" :label="i18n('common.session-duration')">
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.total-sessions')">
+                    <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.number-of-sessions')">
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="percentage" :label="i18n('common.new-sessions')">
+                    <el-table-column sortable="custom" prop="percentage" :label="i18n('common.percent')">
                         <template slot-scope="scope">
                             <div class="bu-level-left">
                                 <div class="bu-level-item slipping-away-users-table-data-item">
