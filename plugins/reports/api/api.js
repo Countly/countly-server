@@ -29,7 +29,14 @@ var common = require('../../../api/utils/common.js'),
         switch (paths[3]) {
         case 'all':
             validate(paramsInstance, function(params) {
-                common.db.collection('reports').find({user: common.db.ObjectID(params.member._id)}).toArray(function(err, result) {
+                const query = {};
+                if (params.member.global_admin !== true) {
+                    query.$or = [
+                        {user: common.db.ObjectID(params.member._id)},
+                        {emails: params.member.email},
+                    ];
+                }
+                common.db.collection('reports').find(query).toArray(function(err, result) {
                     var parallelTashs = [];
 
                     for (var i = 0; i < result.length; i++) {
@@ -68,6 +75,7 @@ var common = require('../../../api/utils/common.js'),
         return true;
     });
 
+
     plugins.register("/i/reports", function(ob) {
         var paramsInstance = ob.params;
         var validate = ob.validateUserForWriteAPI;
@@ -80,6 +88,13 @@ var common = require('../../../api/utils/common.js'),
                 console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
             }
         }
+        const recordUpdateOrDeleteQuery = function(params, recordID) {
+            const query = {_id: common.db.ObjectID(recordID)};
+            if (params.member.global_admin !== true) {
+                query.user = common.db.ObjectID(params.member._id);
+            }
+            return query;
+        };
 
         switch (paths[3]) {
         case 'create':
@@ -134,9 +149,7 @@ var common = require('../../../api/utils/common.js'),
         case 'update':
             validate(function(params) {
                 var props = {};
-
                 props = params.qstring.args;
-
                 var id = props._id;
                 delete props._id;
                 if (props.frequency !== "daily" && props.frequency !== "weekly" && props.frequency !== "monthly") {
@@ -166,11 +179,11 @@ var common = require('../../../api/utils/common.js'),
                         return common.returnMessage(params, 401, 'User does not have right to access this information');
                     }
 
-                    common.db.collection('reports').findOne({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, function(err_update, report) {
+                    common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err_update, report) {
                         if (err_update) {
                             console.log(err_update);
                         }
-                        common.db.collection('reports').update({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, {$set: props}, function(err_update2) {
+                        common.db.collection('reports').update(recordUpdateOrDeleteQuery(params, id), {$set: props}, function(err_update2) {
                             if (err_update2) {
                                 err_update2 = err_update2.err;
                                 common.returnMessage(params, 200, err_update2);
@@ -195,8 +208,9 @@ var common = require('../../../api/utils/common.js'),
                     common.returnMessage(params, 200, 'Not enough args');
                     return false;
                 }
-                common.db.collection('reports').findOne({'_id': common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, function(err, props) {
-                    common.db.collection('reports').remove({'_id': common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, {safe: true}, function(err_del) {
+
+                common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err, props) {
+                    common.db.collection('reports').remove(recordUpdateOrDeleteQuery(params, id), {safe: true}, function(err_del) {
                         if (err_del) {
                             common.returnMessage(params, 200, 'Error deleting report');
                         }
@@ -221,7 +235,7 @@ var common = require('../../../api/utils/common.js'),
                     common.returnMessage(params, 200, 'Not enough args');
                     return false;
                 }
-                common.db.collection('reports').findOne({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, function(err, result) {
+                common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err, result) {
                     if (err || !result) {
                         common.returnMessage(params, 200, 'Report not found');
                         return false;
@@ -261,7 +275,7 @@ var common = require('../../../api/utils/common.js'),
                     common.returnMessage(params, 200, 'Not enough args');
                     return false;
                 }
-                common.db.collection('reports').findOne({_id: common.db.ObjectID(id), user: common.db.ObjectID(params.member._id)}, function(err, result) {
+                common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err, result) {
                     if (err || !result) {
                         common.returnMessage(params, 200, 'Report not found');
                         return false;
