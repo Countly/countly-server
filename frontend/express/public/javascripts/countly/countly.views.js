@@ -770,58 +770,6 @@ window.CountriesView = countlyView.extend({
     }
 });
 
-window.FrequencyView = countlyView.extend({
-    beforeRender: function() {
-        return $.when(countlySession.initialize()).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        var frequencyData = countlySession.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange, countlySession.getFrequencyRange());
-
-        this.templateData = {
-            "page-title": jQuery.i18n.map["session-frequency.title"],
-            "logo-class": "frequency",
-            "chart-helper": "frequency.chart",
-            "table-helper": "frequency.table"
-        };
-
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-
-            countlyCommon.drawGraph(frequencyData.chartDP, "#dashboard-graph", "bar");
-
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": frequencyData.chartData,
-                "aoColumns": [
-                    { "mData": "f", sType: "frequency", "sTitle": jQuery.i18n.map["session-frequency.table.time-after"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.number-of-sessions"]
-                    },
-                    { "mData": "percent", "sType": "percent", "sTitle": jQuery.i18n.map["common.percent"] }
-                ]
-            }));
-
-            $(".d-table").stickyTableHeaders();
-        }
-    },
-    refresh: function() {
-        var self = this;
-        $.when(countlySession.initialize()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-
-            var frequencyData = countlySession.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange, countlySession.getFrequencyRange());
-            countlyCommon.drawGraph(frequencyData.chartDP, "#dashboard-graph", "bar");
-            CountlyHelpers.refreshTable(self.dtable, frequencyData.chartData);
-        });
-    }
-});
-
 window.DeviceView = countlyView.extend({
     beforeRender: function() {
         //Fetches device_details and devices using metric model from countly.helpers.js
@@ -7829,7 +7777,6 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 app.graphNotesView = new GraphNotesView();
 app.userView = new UserView();
 app.countriesView = new CountriesView();
-// app.frequencyView = new FrequencyView();
 app.deviceView = new DeviceView();
 app.platformView = new PlatformView();
 app.appVersionView = new AppVersionView();
@@ -7860,9 +7807,7 @@ app.route("/analytics/users", "users", function() {
 app.route("/analytics/countries", "countries", function() {
     this.renderWhenReady(this.countriesView);
 });
-// app.route("/analytics/frequency", "frequency", function() {
-//     this.renderWhenReady(this.frequencyView);
-// });
+
 app.route("/analytics/devices", "devices", function() {
     this.renderWhenReady(this.deviceView);
 });
