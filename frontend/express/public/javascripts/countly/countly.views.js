@@ -1475,58 +1475,6 @@ window.DeviceTypeView = countlyView.extend({
     }
 });
 
-// window.DurationView = countlyView.extend({
-//     beforeRender: function() {
-//         return $.when(countlySession.initialize()).then(function() {});
-//     },
-//     renderCommon: function(isRefresh) {
-//         var durationData = countlySession.getRangeData("ds", "d-ranges", countlySession.explainDurationRange, countlySession.getDurationRange());
-
-//         this.templateData = {
-//             "page-title": jQuery.i18n.map["session-duration.title"],
-//             "logo-class": "durations",
-//             "chart-helper": "durations.chart",
-//             "table-helper": "durations.table"
-//         };
-
-//         if (!isRefresh) {
-//             $(this.el).html(this.template(this.templateData));
-
-//             countlyCommon.drawGraph(durationData.chartDP, "#dashboard-graph", "bar");
-
-//             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-//                 "aaData": durationData.chartData,
-//                 "aoColumns": [
-//                     { "mData": "ds", sType: "session-duration", "sTitle": jQuery.i18n.map["session-duration.table.duration"] },
-//                     {
-//                         "mData": "t",
-//                         sType: "formatted-num",
-//                         "mRender": function(d) {
-//                             return countlyCommon.formatNumber(d);
-//                         },
-//                         "sTitle": jQuery.i18n.map["common.number-of-sessions"]
-//                     },
-//                     { "mData": "percent", "sType": "percent", "sTitle": jQuery.i18n.map["common.percent"] }
-//                 ]
-//             }));
-
-//             $(".d-table").stickyTableHeaders();
-//         }
-//     },
-//     refresh: function() {
-//         var self = this;
-//         $.when(countlySession.initialize()).then(function() {
-//             if (app.activeView !== self) {
-//                 return false;
-//             }
-
-//             var durationData = countlySession.getRangeData("ds", "d-ranges", countlySession.explainDurationRange, countlySession.getDurationRange());
-//             countlyCommon.drawGraph(durationData.chartDP, "#dashboard-graph", "bar");
-//             CountlyHelpers.refreshTable(self.dtable, durationData.chartData);
-//         });
-//     }
-// });
-
 window.ManageAppsView = countlyView.extend({
     initialize: function() {
         this.template = Handlebars.compile($("#template-management-applications").html());
@@ -7836,7 +7784,6 @@ app.appVersionView = new AppVersionView();
 app.carrierView = new CarrierView();
 app.resolutionView = new ResolutionView();
 app.deviceTypeView = new DeviceTypeView();
-// app.durationView = new DurationView();
 app.manageAppsView = new ManageAppsView();
 app.manageUsersView = new ManageUsersView();
 app.eventsView = new EventsView();
@@ -7881,9 +7828,6 @@ app.route("/analytics/resolutions", "resolutions", function() {
 app.route("/analytics/device_type", "device_type", function() {
     this.renderWhenReady(this.deviceTypeView);
 });
-// app.route("/analytics/durations", "durations", function() {
-//     this.renderWhenReady(this.durationView);
-// });
 app.route("/manage/apps", "manageApps", function() {
     this.renderWhenReady(this.manageAppsView);
 });
