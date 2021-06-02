@@ -1,4 +1,4 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, UserView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DeviceTypeView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $,JobsView, JobDetailView*/
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, UserView, CountriesView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DeviceTypeView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $,JobsView, JobDetailView*/
 
 
 window.GraphNotesView = countlyView.extend({
@@ -7829,7 +7829,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 app.graphNotesView = new GraphNotesView();
 app.userView = new UserView();
 app.countriesView = new CountriesView();
-app.frequencyView = new FrequencyView();
+// app.frequencyView = new FrequencyView();
 app.deviceView = new DeviceView();
 app.platformView = new PlatformView();
 app.appVersionView = new AppVersionView();
@@ -7860,9 +7860,9 @@ app.route("/analytics/users", "users", function() {
 app.route("/analytics/countries", "countries", function() {
     this.renderWhenReady(this.countriesView);
 });
-app.route("/analytics/frequency", "frequency", function() {
-    this.renderWhenReady(this.frequencyView);
-});
+// app.route("/analytics/frequency", "frequency", function() {
+//     this.renderWhenReady(this.frequencyView);
+// });
 app.route("/analytics/devices", "devices", function() {
     this.renderWhenReady(this.deviceView);
 });
