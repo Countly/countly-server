@@ -85,13 +85,8 @@ fi
 yum -y install nginx
 
 set +e
-useradd www-data
 unalias cp
 set -e
-
-if grep -q -i "release 8" /etc/redhat-release ; then
-    chown -R www-data:www-data /var/lib/nginx
-fi
 
 #install sendmail
 yum -y install sendmail
