@@ -15,7 +15,7 @@
             sessionFrequencyModel.series.push({data: sessionFrequencySerieData, label: CV.i18n("session-frequency.title")});
             frequencyData.chartData.forEach(function(chartDataItem, index) {
                 sessionFrequencyModel.rows[index] = {
-                    frequency: chartDataItem.f === undefined ? "First session" : chartDataItem.f,
+                    frequency: chartDataItem.f,
                     numberOfSessions: chartDataItem.t,
                     percentage: chartDataItem.percentageNumber
                 };
