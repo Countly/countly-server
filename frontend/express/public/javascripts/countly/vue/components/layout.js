@@ -8,30 +8,60 @@
         props: {
             title: String
         },
-        template: '<div class="cly-vue-header white-bg">\
-                    <div class="bu-level bu-is-mobile">\
-                        <div class="bu-level-left">\
-                            <slot name="header-top"></slot>\
+        computed: {
+            slotHeaderTop: function() {
+                return !!(this.$scopedSlots["header-top"] || this.$slots["header-top"]);
+            },
+            slotHeaderBottom: function() {
+                return !!(this.$scopedSlots["header-bottom"] || this.$slots["header-bottom"]);
+            },
+            slotHeaderTabs: function() {
+                return !!(this.$scopedSlots["header-tabs"] || this.$slots["header-tabs"]);
+            },
+            headerClasses: function() {
+                return {
+                    "cly-vue-header": true,
+                    "white-bg": true,
+                    "cly-vue-header--no-mb": this.slotHeaderTabs,
+                    "cly-vue-header--no-bb": this.slotHeaderTabs
+                };
+            },
+            midLevelClasses: function() {
+                return {
+                    "bu-level": true,
+                    "bu-is-mobile": true,
+                    "cly-vue-header__level": true,
+                    "cly-vue-header__level--no-pt": !this.slotHeaderTop,
+                    "cly-vue-header__level--no-pb": !this.slotHeaderBottom
+                };
+            }
+        },
+        template: '<div>\
+                    <div :class="[headerClasses]">\
+                        <div class="bu-level bu-is-mobile" v-if="slotHeaderTop">\
+                            <div class="bu-level-left">\
+                                <slot name="header-top"></slot>\
+                            </div>\
+                        </div>\
+                        <div :class="[midLevelClasses]">\
+                            <div class="bu-level-left">\
+                                <slot name="header-left">\
+                                    <div class="bu-level-item">\
+                                        <h2>{{title}}</h2>\
+                                    </div>\
+                                </slot>\
+                            </div>\
+                            <div class="bu-level-right">\
+                                <slot name="header-right"></slot>\
+                            </div>\
+                        </div>\
+                        <div class="bu-level bu-is-mobile" v-if="slotHeaderBottom">\
+                            <div class="bu-level-left">\
+                                <slot name="header-bottom"></slot>\
+                            </div>\
                         </div>\
                     </div>\
-                    <div class="bu-level bu-is-mobile">\
-                        <div class="bu-level-left">\
-                            <slot name="header-left">\
-                                <div class="bu-level-item">\
-                                    <h2>{{title}}</h2>\
-                                </div>\
-                            </slot>\
-                        </div>\
-                        <slot></slot>\
-                        <div class="bu-level-right">\
-                            <slot name="header-right"></slot>\
-                        </div>\
-                    </div>\
-                    <div class="bu-level bu-is-mobile">\
-                        <div class="bu-level-left">\
-                            <slot name="header-bottom"></slot>\
-                        </div>\
-                    </div>\
+                    <slot name="header-tabs"></slot>\
                 </div>'
     }));
 

@@ -77,9 +77,6 @@
             },
             onDelete: function(row) {
                 this.$store.dispatch("countlyVueExample/myRecords/remove", row._id);
-            },
-            add: function() {
-                this.openDrawer("main", countlyVueExample.factory.getEmpty());
             }
         }
     });
@@ -188,8 +185,8 @@
                     "label": "A Items",
                     "name": "type-1",
                     "options": [
-                        {"label": "hello0", "value": 0},
-                        {"label": "hello1", "value": 1},
+                        {"label": "windows 10", "value": 0},
+                        {"label": "hello how", "value": 1},
                         {"label": "hello2", "value": 2},
                         {"label": "hello3", "value": 3},
                         {"label": "hello4", "value": 4},
@@ -512,6 +509,38 @@
         }
     });
 
+    var AllTablesView = countlyVue.views.create({
+        template: CV.T('/vue-example/templates/tables.html'),
+        mixins: [countlyVue.mixins.hasDrawers("main")],
+        data: function() {
+            return {
+                appId: countlyCommon.ACTIVE_APP_ID,
+                dynamicTab: "local-table",
+                localTabs: [
+                    {
+                        title: "Local table",
+                        name: "local-table",
+                        component: TableView,
+                        // route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/tables/all"
+                    }
+                ]
+            };
+        },
+        components: {
+            "drawer": ExampleDrawer
+        },
+        computed: {
+            tabs: function() {
+                return this.localTabs;
+            }
+        },
+        methods: {
+            add: function() {
+                this.openDrawer("main", countlyVueExample.factory.getEmpty());
+            }
+        }
+    });
+
     var MainView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/main.html'),
         mixins: [
@@ -540,14 +569,10 @@
     var NewMainView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/newmain.html'),
         mixins: [
-            countlyVue.mixins.hasDrawers("main"),
             countlyVue.container.tabsMixin({
                 "externalTabs": "/vueExample/externalTabs"
             })
         ].concat(countlyVue.container.mixins(["/vueExample/externalTabs"])),
-        components: {
-            "drawer": ExampleDrawer
-        },
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
@@ -556,7 +581,7 @@
                     {
                         title: "Tables",
                         name: "tables",
-                        component: TableView,
+                        component: AllTablesView,
                         route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/tables"
                     },
                     {
