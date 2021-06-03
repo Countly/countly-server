@@ -11,9 +11,7 @@
         template: '<div class="cly-vue-header white-bg">\
                     <div class="bu-level bu-is-mobile">\
                         <div class="bu-level-left">\
-                            <div class="bu-level-item">\
-                                <slot name="header-top"></slot>\
-                            </div>\
+                            <slot name="header-top"></slot>\
                         </div>\
                     </div>\
                     <div class="bu-level bu-is-mobile">\
@@ -26,15 +24,12 @@
                         </div>\
                         <slot></slot>\
                         <div class="bu-level-right">\
-                            <slot name="header-right">\
-                            </slot>\
+                            <slot name="header-right"></slot>\
                         </div>\
                     </div>\
                     <div class="bu-level bu-is-mobile">\
                         <div class="bu-level-left">\
-                            <div class="bu-level-item">\
-                                <slot name="header-bottom"></slot>\
-                            </div>\
+                            <slot name="header-bottom"></slot>\
                         </div>\
                     </div>\
                 </div>'
