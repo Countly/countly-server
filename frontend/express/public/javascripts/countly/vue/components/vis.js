@@ -594,9 +594,7 @@
         },
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
-                            <div class="bu-level-item">\
-                                <slot name="chart-left" v-bind:echart="echartRef"></slot>\
-                            </div>\
+                            <slot name="chart-left" v-bind:echart="echartRef"></slot>\
                             <div class="bu-level-item" v-if="showZoom">\
                                 <zoom-dropdown :echartRef="echartRef"></zoom-dropdown>\
                             </div>\
