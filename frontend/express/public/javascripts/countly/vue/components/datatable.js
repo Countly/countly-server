@@ -32,6 +32,10 @@
             paused: {
                 type: Boolean,
                 default: false
+            },
+            displaySearch: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
@@ -574,7 +578,7 @@
                                             </template>\
                                         </cly-select-x>\
                                     </div>\
-                                    <div class="bu-level-item">\
+                                    <div class="bu-level-item" v-if="displaySearch">\
                                         <el-input size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>\
                                     </div>\
                                 </div>\
