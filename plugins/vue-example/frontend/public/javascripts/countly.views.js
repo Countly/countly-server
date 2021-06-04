@@ -522,6 +522,13 @@
                         name: "local-table",
                         component: TableView,
                         // route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/tables/all"
+                    },
+                    {
+                        title: "Dummy table",
+                        name: "dummy-table",
+                        component: countlyVue.views.create({
+                            template: "<div>Hello there</div>"
+                        })
                     }
                 ]
             };
