@@ -482,7 +482,7 @@
         }
     });
 
-    countlyVue.container.registerMixin("/vueExample/externalTabs", {
+    countlyVue.container.registerMixin("vue/example", {
         data: function() {
             return {
                 myname: "itsi"
@@ -497,7 +497,7 @@
         }
     });
 
-    countlyVue.container.registerMixin("/vueExample/externalTabs", {
+    countlyVue.container.registerMixin("vue/example", {
         data: function() {
             return {
                 myname: "pts"
@@ -553,9 +553,9 @@
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
             countlyVue.container.tabsMixin({
-                "externalTabs": "/vueExample/externalTabs"
+                "externalTabs": "vue/example"
             })
-        ].concat(countlyVue.container.mixins(["/vueExample/externalTabs"])),
+        ].concat(countlyVue.container.mixins(["vue/example"])),
         components: {
             "table-view": TableView,
             "form-basics": FormBasics,
@@ -577,9 +577,9 @@
         template: CV.T('/vue-example/templates/main.html'),
         mixins: [
             countlyVue.container.tabsMixin({
-                "externalTabs": "/vueExample/externalTabs"
+                "externalTabs": "vue/example"
             })
-        ].concat(countlyVue.container.mixins(["/vueExample/externalTabs"])),
+        ].concat(countlyVue.container.mixins(["vue/example"])),
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
@@ -631,7 +631,7 @@
             clyModel: countlyVueExample
         }];
 
-        var tabsVuex = countlyVue.container.tabsVuex(["/vueExample/externalTabs"]);
+        var tabsVuex = countlyVue.container.tabsVuex(["vue/example"]);
 
         vuex = vuex.concat(tabsVuex);
 
@@ -651,7 +651,7 @@
             clyModel: countlyVueExample
         }];
 
-        var tabsVuex = countlyVue.container.tabsVuex(["/vueExample/externalTabs"]);
+        var tabsVuex = countlyVue.container.tabsVuex(["vue/example"]);
 
         vuex = vuex.concat(tabsVuex);
 
@@ -693,10 +693,11 @@
         this.renderWhenReady(newExampleView);
     });
 
-    countlyVue.container.registerTab("/vueExample/externalTabs", {
+    countlyVue.container.registerTab("vue/example", {
         priority: 1,
         title: 'External tab 1',
         name: 'external1',
+        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/external1",
         component: countlyVue.components.create({
             data: function() {
                 return {
@@ -720,10 +721,11 @@
         })
     });
 
-    countlyVue.container.registerTab("/vueExample/externalTabs", {
+    countlyVue.container.registerTab("vue/example", {
         priority: 2,
         title: 'External tab 2',
         name: 'external2',
+        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/external2",
         vuex: [{
             clyModel: window.foo
         }],
