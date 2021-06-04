@@ -75,16 +75,28 @@ var SessionAnalyticsView = countlyVue.views.create({
     }
 });
 
-app.route("/analytics/sessions", "sessions", function() {
+var getSessionAnalyticsView = function() {
     var tabsVuex = countlyVue.container.tabsVuex(["/analytics/sessions"]);
-    var sessionAnalyticsViewWrapper = new countlyVue.views.BackboneWrapper({
+    return new countlyVue.views.BackboneWrapper({
         component: SessionAnalyticsView,
         vuex: tabsVuex,
         templates: []
     });
+};
+
+app.route("/analytics/sessions", "sessions", function() {
+    var sessionAnalyticsViewWrapper = getSessionAnalyticsView();
     this.renderWhenReady(sessionAnalyticsViewWrapper);
 });
 
+app.route("/analytics/sessions/*tab", "sessions-tab", function(tab) {
+    var sessionAnalyticsViewWrapper = getSessionAnalyticsView();
+    var params = {
+        tab: tab
+    };
+    sessionAnalyticsViewWrapper.params = params;
+    this.renderWhenReady(sessionAnalyticsViewWrapper);
+});
 
 countlyVue.container.registerTab("/analytics/sessions", {
     priority: 1,
