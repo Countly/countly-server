@@ -521,7 +521,7 @@
                         title: "Local table",
                         name: "local-table",
                         component: TableView,
-                        // route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/tables/all"
+                        // route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/tables/all"
                     }
                 ]
             };
@@ -541,8 +541,8 @@
         }
     });
 
-    var MainView = countlyVue.views.create({
-        template: CV.T('/vue-example/templates/main.html'),
+    var MainView_0 = countlyVue.views.create({
+        template: CV.T('/vue-example/templates/main_0.html'),
         mixins: [
             countlyVue.mixins.hasDrawers("main"),
             countlyVue.container.tabsMixin({
@@ -566,8 +566,8 @@
         }
     });
 
-    var NewMainView = countlyVue.views.create({
-        template: CV.T('/vue-example/templates/newmain.html'),
+    var MainView_1 = countlyVue.views.create({
+        template: CV.T('/vue-example/templates/main.html'),
         mixins: [
             countlyVue.container.tabsMixin({
                 "externalTabs": "/vueExample/externalTabs"
@@ -582,31 +582,31 @@
                         title: "Tables",
                         name: "tables",
                         component: AllTablesView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/tables"
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/tables"
                     },
                     {
                         title: "Form: Basic",
                         name: "form-basic",
                         component: FormBasics,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/form-basic"
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/form-basic"
                     },
                     {
                         title: "Form: Dropdown",
                         name: "form-dropdown",
                         component: FormDropdown,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/form-dropdown"
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/form-dropdown"
                     },
                     {
                         title: "Charts",
                         name: "charts",
                         component: TimeGraphView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/charts"
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/charts"
                     },
                     {
                         title: "Date",
                         name: "date",
                         component: DateView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue-2/date"
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/date"
                     }
                 ]
             };
@@ -619,7 +619,7 @@
         }
     });
 
-    var getMainView = function() {
+    var getMainView_0 = function() {
         var vuex = [{
             clyModel: countlyVueExample
         }];
@@ -629,7 +629,7 @@
         vuex = vuex.concat(tabsVuex);
 
         return new countlyVue.views.BackboneWrapper({
-            component: MainView,
+            component: MainView_0,
             vuex: vuex,
             templates: [
                 "/vue-example/templates/empty.html",
@@ -638,7 +638,8 @@
         });
     };
 
-    var getNewMainView = function() {
+    //This is the main view that we use in /vue/example
+    var getMainView_1 = function() {
         var vuex = [{
             clyModel: countlyVueExample
         }];
@@ -648,7 +649,7 @@
         vuex = vuex.concat(tabsVuex);
 
         return new countlyVue.views.BackboneWrapper({
-            component: NewMainView,
+            component: MainView_1,
             vuex: vuex,
             templates: [
                 "/vue-example/templates/empty.html",
@@ -658,12 +659,12 @@
     };
 
     app.route("/vue/example", 'vue-example', function() {
-        var exampleView = getMainView();
+        var exampleView = getMainView_1();
         this.renderWhenReady(exampleView);
     });
 
     app.route("/vue/example/*tab", 'vue-example-tab', function(tab) {
-        var exampleView = getMainView();
+        var exampleView = getMainView_1();
         var params = {
             tab: tab
         };
@@ -671,13 +672,13 @@
         this.renderWhenReady(exampleView);
     });
 
-    app.route("/vue-2", 'vue-2', function() {
-        var newExampleView = getNewMainView();
+    app.route("/vue-0", 'vue-0', function() {
+        var newExampleView = getMainView_0();
         this.renderWhenReady(newExampleView);
     });
 
-    app.route("/vue-2/*tab", 'vue-2-tab', function(tab) {
-        var newExampleView = getNewMainView();
+    app.route("/vue-0/*tab", 'vue-0-tab', function(tab) {
+        var newExampleView = getMainView_0();
         var params = {
             tab: tab
         };
