@@ -1,11 +1,4 @@
 <div>
-    <cly-header title="Tables">
-        <template v-slot:header-right>
-            <div class="bu-level-item">
-                <el-button @click="add" type="primary" size="small" icon="el-icon-circle-plus">Create</el-button>
-            </div>
-        </template>
-    </cly-header>
     <cly-main>
         <cly-section>
             <cly-datatable-n :available-dynamic-cols="tableDynamicCols" :tracked-fields="localTableTrackedFields"

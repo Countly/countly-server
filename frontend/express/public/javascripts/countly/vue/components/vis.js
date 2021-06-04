@@ -490,21 +490,23 @@
                         this.echartRef.dispatchAction({
                             type: "restore",
                         });
+
+                        this.selZoomNumber = "";
+                        return;
                     }
-                    else {
-                        this.echartRef.dispatchAction({
-                            type: "dataZoom",
-                            start: v / 2,
-                            end: 100 - v / 2
-                        });
-                    }
+
+                    this.echartRef.dispatchAction({
+                        type: "dataZoom",
+                        start: v / 2,
+                        end: 100 - v / 2
+                    });
 
                     this.selZoomNumber = v;
                 }
             }
         },
-        template: "<div style='width: 94px'>\
-                        <el-select v-model='selZoom'>\
+        template: "<div style='width: 105px'>\
+                        <el-select v-model='selZoom' placeholder='Zoom out'>\
                             <el-option :key='item.value' :value='item.value' :label='item.name'\
                                 v-for='item in zoomNumbers'></el-option>\
                         </el-select>\
@@ -592,9 +594,7 @@
         },
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
-                            <div class="bu-level-item">\
-                                <slot name="chart-left" v-bind:echart="echartRef"></slot>\
-                            </div>\
+                            <slot name="chart-left" v-bind:echart="echartRef"></slot>\
                             <div class="bu-level-item" v-if="showZoom">\
                                 <zoom-dropdown :echartRef="echartRef"></zoom-dropdown>\
                             </div>\
