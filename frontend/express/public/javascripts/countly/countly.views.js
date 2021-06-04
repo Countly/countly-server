@@ -7826,9 +7826,6 @@ app.route("/analytics/resolutions", "resolutions", function() {
 app.route("/analytics/device_type", "device_type", function() {
     this.renderWhenReady(this.deviceTypeView);
 });
-// app.route("/analytics/durations", "durations", function() {
-//     this.renderWhenReady(this.durationView);
-// });
 app.route("/manage/apps", "manageApps", function() {
     this.renderWhenReady(this.manageAppsView);
 });
