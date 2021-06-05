@@ -230,13 +230,14 @@ module.exports = function(grunt) {
                 },
                 files: [
                     {src: 'frontend/express/public/stylesheets/vue/clyvue.scss', dest: 'frontend/express/public/stylesheets/vue/clyvue.css'},
+                    {src: 'frontend/express/public/stylesheets/styles/manifest.scss', dest: 'frontend/express/public/stylesheets/styles/manifest.css'},
                     {expand: true, src: ['plugins/*/frontend/public/stylesheets/**/*.scss'], ext: '.css', extDot: 'first'}
                 ]
             }
         },
         watch: {
             scripts: {
-                files: ['frontend/express/public/stylesheets/vue/clyvue.scss', 'plugins/*/frontend/public/stylesheets/**/*.scss'],
+                files: ['frontend/express/public/stylesheets/styles/manifest.css', 'plugins/*/frontend/public/stylesheets/**/*.scss'],
                 tasks: ['sass']
             },
         }
