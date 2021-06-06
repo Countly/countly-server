@@ -141,9 +141,6 @@
     }));
 
     Vue.component("cly-tooltip-icon", countlyBaseComponent.extend({
-        mixins: [
-            _mixins.i18n
-        ],
         props: {
             icon: {
                 type: String,
