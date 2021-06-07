@@ -105,6 +105,11 @@ var SlippingAwayUsersView = countlyVue.views.BaseView.extend({
             description: CV.i18n("slipping-away-users.description"),
         };
     },
+    methods: {
+        refresh: function() {
+            this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
+        }
+    },
     mounted: function() {
         if (this.$route.params) {
             this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', {query: this.$route.params });
@@ -121,7 +126,7 @@ var slippingAwayUsersView = new countlyVue.views.BackboneWrapper({
     component: SlippingAwayUsersView,
     vuex: vuex,
     templates: [
-        "/slipping-away-users/templates/SlippingAwayUsers.html",
+        "/slipping-away-users/templates/slipping-away-users.html",
         "/drill/templates/query.builder.v2.html"
     ]
 });

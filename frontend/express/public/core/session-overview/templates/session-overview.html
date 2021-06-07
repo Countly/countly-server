@@ -1,0 +1,30 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('session-overview.title')}} 
+            </h2>
+            <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="i18n('session-overview.description')">
+            </span>
+        </template>
+    </cly-header>
+    <cly-main>
+        <cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms" class="session-overview-date-picker-container"></cly-date-picker>
+        <cly-section>
+            <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading"></cly-chart-line>
+        </cly-section>
+        <cly-section>
+            <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" v-loading="isLoading">
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" prop="date" :label="i18n('common.date')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="totalSessions" :label="i18n('common.total-sessions')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="newSessions" :label="i18n('common.new-sessions')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="uniqueSessions" :label="i18n('common.unique-sessions')">
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+    </cly-main>
+</div>

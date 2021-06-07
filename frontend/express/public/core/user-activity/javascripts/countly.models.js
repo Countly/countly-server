@@ -1,4 +1,4 @@
-/*global window, countlyVue, CV, countlyCommon, countlyGlobal, countlySession, CountlyHelpers */
+/*global window, countlyVue, CV, countlyCommon, countlyGlobal, countlySession, CountlyHelpers, Promise */
 (function(countlyUserActivity) {
 
     countlyUserActivity.helpers = {
@@ -41,24 +41,25 @@
 
     countlyUserActivity.service = {
 
-        mapUserActivityDtoToModel: function(data, nonEmptyBuckets) {
+
+        mapUserActivityDtoToModel: function(responseDto, nonEmptyBuckets) {
             var modelResult = {};
-            Object.keys(data).forEach(function(key) {
+            Object.keys(responseDto).forEach(function(key) {
                 var nonNumericSeriePropertyName = countlyUserActivity.helpers.getNonNumericSeriePropertyName(key);
                 modelResult[nonNumericSeriePropertyName] = [];
                 nonEmptyBuckets.forEach(function(nonEmptyBucket) {
-                    if (!data[key].length) {
+                    if (!responseDto[key].length) {
                         modelResult[nonNumericSeriePropertyName].push({_id: nonEmptyBucket, count: 0});
                     }
                     else {
-                        var seriesItemIndex = data[key].findIndex(function(item) {
+                        var seriesItemIndex = responseDto[key].findIndex(function(item) {
                             return item._id === nonEmptyBucket;
                         });
                         if (seriesItemIndex === -1) {
                             modelResult[nonNumericSeriePropertyName].push({_id: nonEmptyBucket, count: 0 });
                         }
                         else {
-                            modelResult[nonNumericSeriePropertyName].push({_id: nonEmptyBucket, count: data[key][seriesItemIndex].count });
+                            modelResult[nonNumericSeriePropertyName].push({_id: nonEmptyBucket, count: responseDto[key][seriesItemIndex].count });
 
                         }
                     }
@@ -68,15 +69,23 @@
         },
 
         fetchUserActivity: function(filters) {
-            return CV.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r + '/app_users/loyalty',
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    api_key: countlyGlobal.member.api_key,
-                    query: JSON.stringify(CountlyHelpers.buildFilters(filters))
-                },
-                dataType: "json",
+            var self = this;
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + '/app_users/loyalty',
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        api_key: countlyGlobal.member.api_key,
+                        query: JSON.stringify(CountlyHelpers.buildFilters(filters))
+                    },
+                    dataType: "json",
+                }).then(function(response) {
+                    var nonEmptyBuckets = countlyUserActivity.helpers.findNonEmptyBuckets(response);
+                    resolve({model: self.mapUserActivityDtoToModel(response, nonEmptyBuckets), nonEmptyBuckets: nonEmptyBuckets});
+                }).catch(function(error) {
+                    reject(error);
+                });
             });
         }
     };
@@ -87,7 +96,6 @@
             return {
                 userActivity: {},
                 seriesTotal: {},
-                minNonEmptyBucketsLength: 0,
                 nonEmptyBuckets: countlySession.getLoyalityRange(),
                 userActivityFilters: {query: {}, byVal: []},
                 isLoading: false,
@@ -101,12 +109,9 @@
                 context.dispatch('onFetchInit');
                 countlyUserActivity.service.fetchUserActivity(context.state.userActivityFilters)
                     .then(function(response) {
-                        var nonEmptyBuckets = countlyUserActivity.helpers.findNonEmptyBuckets(response);
-                        var userActivityModel = countlyUserActivity.service.mapUserActivityDtoToModel(response, nonEmptyBuckets);
-                        context.commit('setUserActivity', userActivityModel);
-                        context.commit('setNonEmptyBuckets', nonEmptyBuckets);
-                        context.commit('setMinNonEmptyBucketsLength', nonEmptyBuckets.length);
-                        context.dispatch('findSeriesTotal', userActivityModel);
+                        context.commit('setUserActivity', response.model);
+                        context.commit('setNonEmptyBuckets', response.nonEmptyBuckets);
+                        context.dispatch('findSeriesTotal', response.model);
                         context.dispatch('onFetchSuccess');
                     }).catch(function(error) {
                         context.dispatch('onFetchError', error);
@@ -139,9 +144,6 @@
             },
             setUserActivityFilters: function(state, value) {
                 state.userActivityFilters = value;
-            },
-            setMinNonEmptyBucketsLength: function(state, result) {
-                state.minNonEmptyBucketsLength = result;
             },
             setNonEmptyBuckets: function(state, value) {
                 state.nonEmptyBuckets = value;

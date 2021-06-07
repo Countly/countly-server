@@ -489,8 +489,7 @@
             };
         },
         beforeCreate: function() {
-            var self = this;
-            countlyVueExample.service.fetchRandomNumbers().then(function(data) {
+            countlyVueExample.service.fetchRandomNumbers().then(function() {
                 // You can now set data in store here
                 // self.$store.dispatch("/set/data/in/store/here", data);
             });

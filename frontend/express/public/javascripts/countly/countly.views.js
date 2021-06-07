@@ -1,93 +1,5 @@
-/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, SessionView, UserView, CountriesView, FrequencyView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DeviceTypeView, DurationView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $,JobsView, JobDetailView*/
-window.SessionView = countlyView.extend({
-    beforeRender: function() {
-        return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        var sessionData = countlySession.getSessionData(),
-            sessionDP = countlySession.getSessionDP();
-        this.templateData = {
-            "page-title": jQuery.i18n.map["sessions.title"],
-            "logo-class": "sessions",
-            "big-numbers": {
-                "count": 3,
-                "items": [
-                    {
-                        "title": jQuery.i18n.map["common.total-sessions"],
-                        "total": sessionData.usage["total-sessions"].total,
-                        "trend": sessionData.usage["total-sessions"].trend,
-                        "help": "sessions.total-sessions"
-                    },
-                    {
-                        "title": jQuery.i18n.map["common.new-sessions"],
-                        "total": sessionData.usage["new-users"].total,
-                        "trend": sessionData.usage["new-users"].trend,
-                        "help": "sessions.new-sessions"
-                    },
-                    {
-                        "title": jQuery.i18n.map["common.unique-sessions"],
-                        "total": sessionData.usage["total-users"].total,
-                        "trend": sessionData.usage["total-users"].trend,
-                        "help": "sessions.unique-sessions"
-                    }
-                ]
-            }
-        };
+/* global countlyView, countlySession, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, UserView, CountriesView, DeviceView, PlatformView, AppVersionView, CarrierView, ResolutionView, DeviceTypeView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $,JobsView, JobDetailView*/
 
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-            countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
-            CountlyHelpers.applyColors();
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": sessionDP.chartData,
-                "aoColumns": [
-                    { "mData": "date", "sType": "customDate", "sTitle": jQuery.i18n.map["common.date"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.new-sessions"]
-                    },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.unique-sessions"]
-                    }
-                ]
-            }));
-            $(".d-table").stickyTableHeaders();
-        }
-    },
-    refresh: function() {
-        var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-            self.renderCommon(true);
-            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            $(self.el).find("#big-numbers-container").html(newPage.find("#big-numbers-container").html());
-
-            var sessionDP = countlySession.getSessionDP();
-            countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
-            CountlyHelpers.refreshTable(self.dtable, sessionDP.chartData);
-            app.localize();
-        });
-    }
-});
 
 window.GraphNotesView = countlyView.extend({
     beforeRender: function() {
@@ -858,58 +770,6 @@ window.CountriesView = countlyView.extend({
     }
 });
 
-window.FrequencyView = countlyView.extend({
-    beforeRender: function() {
-        return $.when(countlySession.initialize()).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        var frequencyData = countlySession.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange, countlySession.getFrequencyRange());
-
-        this.templateData = {
-            "page-title": jQuery.i18n.map["session-frequency.title"],
-            "logo-class": "frequency",
-            "chart-helper": "frequency.chart",
-            "table-helper": "frequency.table"
-        };
-
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-
-            countlyCommon.drawGraph(frequencyData.chartDP, "#dashboard-graph", "bar");
-
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": frequencyData.chartData,
-                "aoColumns": [
-                    { "mData": "f", sType: "frequency", "sTitle": jQuery.i18n.map["session-frequency.table.time-after"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.number-of-sessions"]
-                    },
-                    { "mData": "percent", "sType": "percent", "sTitle": jQuery.i18n.map["common.percent"] }
-                ]
-            }));
-
-            $(".d-table").stickyTableHeaders();
-        }
-    },
-    refresh: function() {
-        var self = this;
-        $.when(countlySession.initialize()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-
-            var frequencyData = countlySession.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange, countlySession.getFrequencyRange());
-            countlyCommon.drawGraph(frequencyData.chartDP, "#dashboard-graph", "bar");
-            CountlyHelpers.refreshTable(self.dtable, frequencyData.chartData);
-        });
-    }
-});
-
 window.DeviceView = countlyView.extend({
     beforeRender: function() {
         //Fetches device_details and devices using metric model from countly.helpers.js
@@ -1563,57 +1423,6 @@ window.DeviceTypeView = countlyView.extend({
     }
 });
 
-window.DurationView = countlyView.extend({
-    beforeRender: function() {
-        return $.when(countlySession.initialize()).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        var durationData = countlySession.getRangeData("ds", "d-ranges", countlySession.explainDurationRange, countlySession.getDurationRange());
-
-        this.templateData = {
-            "page-title": jQuery.i18n.map["session-duration.title"],
-            "logo-class": "durations",
-            "chart-helper": "durations.chart",
-            "table-helper": "durations.table"
-        };
-
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-
-            countlyCommon.drawGraph(durationData.chartDP, "#dashboard-graph", "bar");
-
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": durationData.chartData,
-                "aoColumns": [
-                    { "mData": "ds", sType: "session-duration", "sTitle": jQuery.i18n.map["session-duration.table.duration"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.number-of-sessions"]
-                    },
-                    { "mData": "percent", "sType": "percent", "sTitle": jQuery.i18n.map["common.percent"] }
-                ]
-            }));
-
-            $(".d-table").stickyTableHeaders();
-        }
-    },
-    refresh: function() {
-        var self = this;
-        $.when(countlySession.initialize()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-
-            var durationData = countlySession.getRangeData("ds", "d-ranges", countlySession.explainDurationRange, countlySession.getDurationRange());
-            countlyCommon.drawGraph(durationData.chartDP, "#dashboard-graph", "bar");
-            CountlyHelpers.refreshTable(self.dtable, durationData.chartData);
-        });
-    }
-});
 
 window.ManageAppsView = countlyView.extend({
     initialize: function() {
@@ -7914,18 +7723,15 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 });
 
 //register views
-app.sessionView = new SessionView();
 app.graphNotesView = new GraphNotesView();
 app.userView = new UserView();
 app.countriesView = new CountriesView();
-app.frequencyView = new FrequencyView();
 app.deviceView = new DeviceView();
 app.platformView = new PlatformView();
 app.appVersionView = new AppVersionView();
 app.carrierView = new CarrierView();
 app.resolutionView = new ResolutionView();
 app.deviceTypeView = new DeviceTypeView();
-app.durationView = new DurationView();
 app.manageAppsView = new ManageAppsView();
 app.manageUsersView = new ManageUsersView();
 app.eventsView = new EventsView();
@@ -7939,9 +7745,6 @@ app.VersionHistoryView = new VersionHistoryView();
 app.jobsView = new JobsView();
 app.jobDetailView = new JobDetailView();
 
-app.route("/analytics/sessions", "sessions", function() {
-    this.renderWhenReady(this.sessionView);
-});
 app.route("/analytics/graph-notes", "graphNotes", function() {
     this.renderWhenReady(this.graphNotesView);
 });
@@ -7952,9 +7755,7 @@ app.route("/analytics/users", "users", function() {
 app.route("/analytics/countries", "countries", function() {
     this.renderWhenReady(this.countriesView);
 });
-app.route("/analytics/frequency", "frequency", function() {
-    this.renderWhenReady(this.frequencyView);
-});
+
 app.route("/analytics/devices", "devices", function() {
     this.renderWhenReady(this.deviceView);
 });
@@ -7972,9 +7773,6 @@ app.route("/analytics/resolutions", "resolutions", function() {
 });
 app.route("/analytics/device_type", "device_type", function() {
     this.renderWhenReady(this.deviceTypeView);
-});
-app.route("/analytics/durations", "durations", function() {
-    this.renderWhenReady(this.durationView);
 });
 app.route("/manage/apps", "manageApps", function() {
     this.renderWhenReady(this.manageAppsView);

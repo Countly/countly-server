@@ -74,18 +74,16 @@ var UserActivityTable = countlyVue.views.BaseView.extend({
         };
     },
     methods: {
-        getEmptyRows: function() {
-            var emptyRows = [];
-            for (var counter = 0;counter < this.$store.state.countlyUserActivity.minNonEmptyBucketsLength; counter += 1) {
-                emptyRows.push({});
-            }
-            return emptyRows;
-        },
         formatPercentage: function(value) {
             if (isNaN(value)) {
                 return 0;
             }
             return parseFloat((Math.round(value * 100)).toFixed(this.DECIMAL_PLACES));
+        },
+        addEmptyRowIfNotFound: function(rowsArray, index) {
+            if (!rowsArray[index]) {
+                rowsArray.push({});
+            }
         }
     },
     computed: {
@@ -99,11 +97,12 @@ var UserActivityTable = countlyVue.views.BaseView.extend({
             return this.$store.state.countlyUserActivity.seriesTotal;
         },
         userActivityRows: function() {
-            var rows = this.getEmptyRows();
+            var rows = [];
             var self = this;
             Object.keys(self.userActivity).forEach((function(userActivityKey) {
                 var userActivitySerie = self.userActivity[userActivityKey];
                 userActivitySerie.forEach(function(userActivitySerieItem, userActivitySerieItemIndex) {
+                    self.addEmptyRowIfNotFound(rows, userActivitySerieItemIndex);
                     rows[userActivitySerieItemIndex].bucket = userActivitySerieItem._id;
                     rows[userActivitySerieItemIndex][userActivityKey] = userActivitySerieItem.count;
                 });
@@ -124,6 +123,11 @@ var UserActivityView = countlyVue.views.BaseView.extend({
         return {
             description: CV.i18n('user-activity.decription')
         };
+    },
+    methods: {
+        refresh: function() {
+            this.$store.dispatch('countlyUserActivity/fetchAll');
+        }
     },
     mounted: function() {
         if (this.$route.params) {

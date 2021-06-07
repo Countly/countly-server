@@ -1,0 +1,36 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('session-durations.title')}} 
+            </h2>
+            <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="i18n('session-durations.description')">
+            </span>
+        </template>
+    </cly-header>
+    <cly-main>
+        <cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms" class="session-durations-date-picker-container"></cly-date-picker>
+        <cly-section>
+            <cly-chart-bar :option="sessionDurationsOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
+        </cly-section>
+        <cly-section>
+            <cly-datatable-n  :rows="sessionDurationsRows" :resizable="true" v-loading="isLoading">
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" prop="duration" :label="i18n('common.session-duration')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.number-of-sessions')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="percentage" :label="i18n('common.percent')">
+                        <template slot-scope="scope">
+                            <div class="bu-level-left">
+                                <div class="bu-level-item slipping-away-users-table-data-item">
+                                    <span>{{scope.row.percentage}} %</span>
+                                </div>
+                                <cly-progress-bar  :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
+                            </div>
+                        </template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>       
+    </cly-main>
+</div>

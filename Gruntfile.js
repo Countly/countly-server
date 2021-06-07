@@ -146,7 +146,13 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/countly.analytics.js',
                     'frontend/express/public/javascripts/countly/countly.views.js',
                     'frontend/express/public/core/user-activity/javascripts/countly.models.js',
-                    'frontend/express/public/core/user-activity/javascripts/countly.views.js'
+                    'frontend/express/public/core/user-activity/javascripts/countly.views.js',
+                    'frontend/express/public/core/session-overview/javascripts/countly.models.js',
+                    'frontend/express/public/core/session-overview/javascripts/countly.views.js',
+                    'frontend/express/public/core/session-durations/javascripts/countly.models.js',
+                    'frontend/express/public/core/session-durations/javascripts/countly.views.js',
+                    'frontend/express/public/core/session-frequency/javascripts/countly.models.js',
+                    'frontend/express/public/core/session-frequency/javascripts/countly.views.js',
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }
