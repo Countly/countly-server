@@ -140,4 +140,18 @@
                     </div>'
     }));
 
+    Vue.component("cly-tooltip-icon", countlyBaseComponent.extend({
+        props: {
+            icon: {
+                type: String,
+                default: 'ion ion-ios-information-outline'
+            },
+            tooltip: {
+                type: String,
+                default: 'Tooltip here :)'
+            }
+        },
+        template: '<i v-bind:class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltip"></i>'
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));

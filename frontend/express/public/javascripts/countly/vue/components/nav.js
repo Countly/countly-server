@@ -138,17 +138,19 @@
                 this.$emit("input", this.tabs[0].name);
             }
         },
-        template: '<div class="cly-vue-tabs">\
-                        <div :class="tabListClasses">\
-                            <div\
-                                v-for="tab in tabs"\
-                                v-bind:key="tab.name"\
-                                v-bind:class="[tabClasses, activeClasses(tab.name)]"\
-                                v-on:click="setTab(tab.name)"\
-                                >\
-                                    <slot :name="tab.name" :tab="tab">\
-                                        <span>{{ tab.title }}</span>\
-                                    </slot>\
+        template: '<div>\
+                        <div class="cly-vue-tabs">\
+                            <div :class="tabListClasses">\
+                                <div\
+                                    v-for="tab in tabs"\
+                                    v-bind:key="tab.name"\
+                                    v-bind:class="[tabClasses, activeClasses(tab.name)]"\
+                                    v-on:click="setTab(tab.name)"\
+                                    >\
+                                        <slot :name="tab.name" :tab="tab">\
+                                            <span>{{ tab.title }}</span>\
+                                        </slot>\
+                                </div>\
                             </div>\
                         </div>\
                         <component v-bind:is="currentTab" class="cly-vue-tab"></component>\
