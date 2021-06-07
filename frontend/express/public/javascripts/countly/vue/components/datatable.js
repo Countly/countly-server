@@ -557,6 +557,7 @@
                                 <div class="bu-level-left">\
                                     <slot v-bind="commonScope" name="header-left"></slot>\
                                 </div>\
+                                <slot v-bind="commonScope" name="header-full"></slot>\
                                 <div class="bu-level-right">\
                                     <slot v-bind="commonScope" name="header-right"></slot>\
                                     <div class="bu-level-item">\
