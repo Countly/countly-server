@@ -231,7 +231,7 @@ module.exports = function(grunt) {
         sass: { // Task
             dist: { // Target
                 options: { // Target options
-                    style: 'expanded',
+                    style: 'compressed',
                     update: true // only compile when scss file is newer than css file
                 },
                 files: [
@@ -243,7 +243,10 @@ module.exports = function(grunt) {
         },
         watch: {
             scripts: {
-                files: ['frontend/express/public/stylesheets/styles/manifest.css', 'plugins/*/frontend/public/stylesheets/**/*.scss'],
+                files: ['plugins/*/frontend/public/stylesheets/**/*.scss',
+                    "frontend/express/public/core/*/stylesheets/**/*.scss",
+                    "frontend/express/public/stylesheets/styles/**/*.scss"
+                ],
                 tasks: ['sass']
             },
         }

@@ -23,6 +23,7 @@
 @use "blocks/progress";
 @use "blocks/nav";
 @use "blocks/vis";
+@use "blocks/helpers";
 
 // All "States" specific SASS partials
 // Defined at the last to increase specificity
