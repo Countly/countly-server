@@ -2951,71 +2951,100 @@
         * countlyCommon.formatTimeAgo(1484654066);
         */
         countlyCommon.formatTimeAgo = function(timestamp) {
+            var meta = countlyCommon.formatTimeAgoText(timestamp);
+            var elem = $("<span>");
+            elem.prop("title", meta.tooltip);
+            if (meta.color) {
+                elem.css("color", meta.color);
+            }
+            elem.text(meta.text);
+            elem.append("<a style='display: none;'>|" + meta.tooltip + "</a>");
+            return elem.prop('outerHTML');
+        };
+
+        /**
+        * Format timestamp to twitter like time ago format with real date as tooltip and hidden data for exporting
+        * @memberof countlyCommon
+        * @param {number} timestamp - timestamp in seconds or miliseconds
+        * @returns {string} formated time ago
+        * @example
+        * //outputs ago time without html tags
+        * countlyCommon.formatTimeAgo(1484654066);
+        */
+        countlyCommon.formatTimeAgoText = function(timestamp) {
             if (Math.round(timestamp).toString().length === 10) {
                 timestamp *= 1000;
             }
             var target = new Date(timestamp);
             var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
-            var elem = $("<span>");
-            elem.prop("title", tooltip);
+            var text = tooltip;
+            var color = null;
             var now = new Date();
             var diff = Math.floor((now - target) / 1000);
             if (diff <= -2592000) {
-                elem.text(tooltip);
+                return tooltip;
             }
             else if (diff < -86400) {
-                elem.text(jQuery.i18n.prop("common.in.days", Math.abs(Math.round(diff / 86400))));
+                text = jQuery.i18n.prop("common.in.days", Math.abs(Math.round(diff / 86400)));
             }
             else if (diff < -3600) {
-                elem.text(jQuery.i18n.prop("common.in.hours", Math.abs(Math.round(diff / 3600))));
+                text = jQuery.i18n.prop("common.in.hours", Math.abs(Math.round(diff / 3600)));
             }
             else if (diff < -60) {
-                elem.text(jQuery.i18n.prop("common.in.minutes", Math.abs(Math.round(diff / 60))));
+                text = jQuery.i18n.prop("common.in.minutes", Math.abs(Math.round(diff / 60)));
             }
             else if (diff <= -1) {
-                elem.css("color", "#50C354"); elem.text(jQuery.i18n.prop("common.in.seconds", Math.abs(diff)));
+                color = "#50C354";
+                text = (jQuery.i18n.prop("common.in.seconds", Math.abs(diff)));
             }
             else if (diff <= 1) {
-                elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.just-now"]);
+                color = "#50C354";
+                text = jQuery.i18n.map["common.ago.just-now"];
             }
             else if (diff < 20) {
-                elem.css("color", "#50C354"); elem.text(jQuery.i18n.prop("common.ago.seconds-ago", diff));
+                color = "#50C354";
+                text = jQuery.i18n.prop("common.ago.seconds-ago", diff);
             }
             else if (diff < 40) {
-                elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.half-minute"]);
+                color = "#50C354";
+                text = jQuery.i18n.map["common.ago.half-minute"];
             }
             else if (diff < 60) {
-                elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.less-minute"]);
+                color = "#50C354";
+                text = jQuery.i18n.map["common.ago.less-minute"];
             }
             else if (diff <= 90) {
-                elem.text(jQuery.i18n.map["common.ago.one-minute"]);
+                text = jQuery.i18n.map["common.ago.one-minute"];
             }
             else if (diff <= 3540) {
-                elem.text(jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60)));
+                text = jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60));
             }
             else if (diff <= 5400) {
-                elem.text(jQuery.i18n.map["common.ago.one-hour"]);
+                text = jQuery.i18n.map["common.ago.one-hour"];
             }
             else if (diff <= 86400) {
-                elem.text(jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600)));
+                text = jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600));
             }
             else if (diff <= 129600) {
-                elem.text(jQuery.i18n.map["common.ago.one-day"]);
+                text = jQuery.i18n.map["common.ago.one-day"];
             }
             else if (diff < 604800) {
-                elem.text(jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400)));
+                text = jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
             }
             else if (diff <= 777600) {
-                elem.text(jQuery.i18n.map["common.ago.one-week"]);
+                text = jQuery.i18n.map["common.ago.one-week"];
             }
             else if (diff <= 2592000) {
-                elem.text(jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400)));
+                text = jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
             }
             else {
-                elem.text(tooltip);
+                text = tooltip;
             }
-            elem.append("<a style='display: none;'>|" + tooltip + "</a>");
-            return elem.prop('outerHTML');
+            return {
+                text: text,
+                tooltip: tooltip,
+                color: color
+            };
         };
 
         /**
