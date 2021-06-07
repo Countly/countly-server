@@ -56,7 +56,6 @@
                     series: []
                 },
                 selectedDatePeriod: "day",
-                sessionOverviewDatePeriods: [],
                 isLoading: false,
                 hasError: false,
                 error: null
