@@ -48,9 +48,9 @@ var SessionFrequencyView = countlyVue.views.create({
         },
     },
     methods: {
-        // refresh: function() {
-        //     this.$store.dispatch('countlySessionFrequency/fetchAll');
-        // }
+        refresh: function() {
+            this.$store.dispatch('countlySessionFrequency/fetchAll');
+        }
     },
     mounted: function() {
         this.$store.dispatch('countlySessionFrequency/fetchAll');

@@ -62,7 +62,7 @@ var SessionAnalyticsView = countlyVue.views.create({
         countlyVue.container.tabsMixin({
             "sessionAnalyticsTabs": "/analytics/sessions"
         })
-    ].concat(countlyVue.container.mixins(["/analytics/sessions"])),
+    ],
     data: function() {
         return {
             selectedTab: (this.$route.params && this.$route.params.tab) || "overview"

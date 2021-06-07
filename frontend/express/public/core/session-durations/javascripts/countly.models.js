@@ -1,14 +1,6 @@
 /*global window, countlyVue, CV, countlyCommon, countlySession, CountlyHelpers, Promise*/
 (function(countlySessionDurations) {
 
-    countlySessionDurations.helpers = {
-        hasSerieValues: function(serie) {
-            return serie.every(function(serieItem) {
-                return serieItem !== null;
-            });
-        },
-
-    };
     countlySessionDurations.service = {
         mapSessionDurationsDtoToModel: function(dto, period) {
             countlySession.setDb(dto);
