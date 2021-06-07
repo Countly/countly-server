@@ -1,4 +1,4 @@
-/*global $, countlyReporting, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
+/*global $, countlyReporting, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation, countlyVue*/
 window.starView = countlyView.extend({
     /**
      * this variable contains the infos that render view required.
@@ -2462,24 +2462,27 @@ $(document).ready(function() {
     });
 });
 
-app.addPageScript("/manage/export/export-features", function() {
-    $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {
-        var widgets = starRatingPlugin.getFeedbackWidgetsData();
-        var widgetsList = [];
-        widgets.forEach(function(widget) {
-            widgetsList.push({
-                id: widget._id,
-                name: widget.popup_header_text
+countlyVue.container.registerMixin("/manage/export/export-features", {
+    beforeCreate: function() {
+        var self = this;
+        $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {
+            var widgets = starRatingPlugin.getFeedbackWidgetsData();
+            var widgetsList = [];
+            widgets.forEach(function(widget) {
+                widgetsList.push({
+                    id: widget._id,
+                    name: widget.popup_header_text
+                });
             });
+    
+            var selectItem = {
+                id: "feedback_widgets",
+                name: "Feedback Widgets",
+                children: widgetsList
+            };
+            if (widgetsList.length) {
+                self.$store.dispatch("countlyConfigTransfer/addConfigurations", selectItem);
+            }
         });
-
-        var selectItem = {
-            id: "feedback_widgets",
-            name: "Feedback Widgets",
-            children: widgetsList
-        };
-        if (widgetsList.length) {
-            app.exportView.addSelectTable(selectItem);
-        }
-    });
+    }
 });

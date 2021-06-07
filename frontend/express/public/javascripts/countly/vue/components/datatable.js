@@ -553,35 +553,38 @@
         },
         template: '<div class="cly-vue-eldatatable" :class="classes">\
                         <div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">\
-                            <div class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white">\
-                                <div class="bu-level-left">\
-                                    <slot v-bind="commonScope" name="header-left"></slot>\
-                                </div>\
-                                <div class="bu-level-right">\
-                                    <slot v-bind="commonScope" name="header-right"></slot>\
-                                    <div class="bu-level-item">\
-                                        <cly-select-x\
-                                            v-if="hasDynamicCols"\
-                                            search-placeholder="Search in Columns"\
-                                            placeholder="Edit columns" \
-                                            title="Edit columns"\
-                                            mode="multi-check-sortable"\
-                                            placement="bottom-end"\
-                                            :width="300"\
-                                            :auto-commit="false"\
-                                            :hide-default-tabs="true"\
-                                            :hide-all-options-tab="true"\
-                                            :options="availableDynamicCols"\
-                                            v-model="controlParams.selectedDynamicCols">\
-                                            <template v-slot:trigger>\
-                                                <el-button size="small" icon="el-icon-s-operation"></el-button>\
-                                            </template>\
-                                        </cly-select-x>\
+                            <div class="cly-vue-eldatatable__header cly-vue-eldatatable__header--white">\
+                                <div class="bu-level">\
+                                    <div class="bu-level-left">\
+                                        <slot v-bind="commonScope" name="header-left"></slot>\
                                     </div>\
-                                    <div class="bu-level-item" v-if="displaySearch">\
-                                        <el-input size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>\
+                                    <div class="bu-level-right">\
+                                        <slot v-bind="commonScope" name="header-right"></slot>\
+                                        <div class="bu-level-item">\
+                                            <cly-select-x\
+                                                v-if="hasDynamicCols"\
+                                                search-placeholder="Search in Columns"\
+                                                placeholder="Edit columns" \
+                                                title="Edit columns"\
+                                                mode="multi-check-sortable"\
+                                                placement="bottom-end"\
+                                                :width="300"\
+                                                :auto-commit="false"\
+                                                :hide-default-tabs="true"\
+                                                :hide-all-options-tab="true"\
+                                                :options="availableDynamicCols"\
+                                                v-model="controlParams.selectedDynamicCols">\
+                                                <template v-slot:trigger>\
+                                                    <el-button size="small" icon="el-icon-s-operation"></el-button>\
+                                                </template>\
+                                            </cly-select-x>\
+                                        </div>\
+                                        <div class="bu-level-item" v-if="displaySearch">\
+                                            <el-input size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>\
+                                        </div>\
                                     </div>\
                                 </div>\
+                                <slot v-bind="commonScope" name="header-full"></slot>\
                             </div>\
                             <el-table\
                                 :border="border"\
