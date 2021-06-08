@@ -1,5 +1,6 @@
-/*global $, jQuery, countlyCommon, countlyView, CountlyHelpers, countlyGlobal, app, _, T, CompareView, countlyEventCompare, countlyAppCompare, countlyEvent*/
+/*global $, jQuery, countlyAuth, countlyCommon, countlyView, CountlyHelpers, countlyGlobal, app, _, T, CompareView, countlyEventCompare, countlyAppCompare, countlyEvent*/
 window.CompareView = countlyView.extend({
+    featureName: 'compare',
     selectedMetric: null,
     selectedAlt: null,
     alternatives: [],
@@ -235,14 +236,16 @@ app.compareView = new CompareView();
 
 /* Compare for the events view */
 app.addPageScript("/analytics/events", function() {
-    $("#event-nav-head").after(
-        "<a href='#/analytics/events/compare'>" +
-            "<div id='compare-events' class='event-container'>" +
-                "<div class='icon'></div>" +
-                "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
-            "</div>" +
-        "</a>"
-    );
+    if (countlyAuth.validateRead(app.compareView.featureName)) {
+        $("#event-nav-head").after(
+            "<a href='#/analytics/events/compare'>" +
+                "<div id='compare-events' class='event-container'>" +
+                    "<div class='icon'></div>" +
+                    "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
+                "</div>" +
+            "</a>"
+        );
+    }
 });
 
 var compareEventsViewHelper = {
@@ -316,22 +319,26 @@ var compareEventsViewHelper = {
     }
 };
 
-app.route("/analytics/events/compare", 'views', function() {
-    this.compareView.setHelper(compareEventsViewHelper);
-    this.renderWhenReady(this.compareView);
-});
+if (countlyAuth.validateRead(app.compareView.featureName)) {
+    app.route("/analytics/events/compare", 'views', function() {
+        this.compareView.setHelper(compareEventsViewHelper);
+        this.renderWhenReady(this.compareView);
+    });
+}
 /* End of compare for the events view */
 
 /* Compare applications */
 $(document).ready(function() {
-    $("#app-navigation").find(".menu").prepend(
-        "<a href='#/compare'>" +
-            "<div id='compare-apps' class='action'>" +
-                "<div class='icon'></div>" +
-                "<span>" + jQuery.i18n.map["compare.button"] + "</span>" +
-            "</div>" +
-        "</a>"
-    );
+    if (countlyAuth.validateRead(app.compareView.featureName)) {
+        $("#app-navigation").find(".menu").prepend(
+            "<a href='#/compare'>" +
+                "<div id='compare-apps' class='action'>" +
+                    "<div class='icon'></div>" +
+                    "<span>" + jQuery.i18n.map["compare.button"] + "</span>" +
+                "</div>" +
+            "</a>"
+        );
+    }
 });
 
 var compareAppsViewHelper = {
@@ -472,8 +479,10 @@ var compareAppsViewHelper = {
     }
 };
 
-app.route("/compare", 'views', function() {
-    this.compareView.setHelper(compareAppsViewHelper);
-    this.renderWhenReady(this.compareView);
-});
+if (countlyAuth.validateRead(app.compareView.featureName)) {
+    app.route("/compare", 'views', function() {
+        this.compareView.setHelper(compareAppsViewHelper);
+        this.renderWhenReady(this.compareView);
+    });
+}
 /* End of compare applications */

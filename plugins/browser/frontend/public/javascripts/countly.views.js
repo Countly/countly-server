@@ -1,5 +1,6 @@
-/*global countlyView, $, countlyBrowser, countlyTotalUsers, countlyCommon, jQuery, CountlyHelpers, BrowserView, app, addDrill*/
+/*global countlyView, countlyAuth, $, countlyBrowser, countlyTotalUsers, countlyCommon, jQuery, CountlyHelpers, BrowserView, app, addDrill*/
 window.BrowserView = countlyView.extend({
+    featureName: 'browser',
     activeSegment: {},
     beforeRender: function() {
         return $.when(countlyBrowser.initialize(), countlyTotalUsers.initialize("browser")).then(function() {});
@@ -165,10 +166,14 @@ window.BrowserView = countlyView.extend({
 //register views
 app.browserView = new BrowserView();
 
-app.route("/analytics/browser", 'browser', function() {
-    this.renderWhenReady(this.browserView);
-});
+if (countlyAuth.validateRead(app.browserView.featureName)) {
+    app.route("/analytics/browser", 'browser', function() {
+        this.renderWhenReady(this.browserView);
+    });
+}
 
 $(document).ready(function() {
-    app.addSubMenuForType("web", "analytics", {code: "analytics-browser", url: "#/analytics/browser", text: "browser.title", priority: 90});
+    if (countlyAuth.validateRead(app.browserView.featureName)) {
+        app.addSubMenuForType("web", "analytics", {code: "analytics-browser", url: "#/analytics/browser", text: "browser.title", priority: 90});
+    }
 });

@@ -451,7 +451,7 @@ window.component('push.dash', function (dash) {
             m.component(components.widget, {
                 header: {
                     title: 'pu.dash.users',
-                    view: (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) ?
+                    view: (countlyAuth.validateCreate('push')) ?
                         [
                             m('div', {
                                 style: {
@@ -729,7 +729,15 @@ window.MessagingDashboardView = countlyView.extend({
         m.startComputation();
         components.slider.instance.close();
         m.endComputation();
-        if (callback) {
+        if (window.countlySegmentation) {
+            window.countlySegmentation.initialize("[CLY]_session").then(function(){
+                window.components.push.initPersOpts();
+                if (callback) {
+                    callback();
+                }
+            });
+        }
+        else if (callback) {
             callback();
         }
     }

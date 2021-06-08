@@ -1,5 +1,6 @@
-/*global countlyView,countlyDeviceDetails,countlyAppUsers,countlyDevice,$,countlyConsentManager,countlyGlobal,countlyCommon,moment,CountlyHelpers,jQuery,app,ConsentManagementView,T,Backbone,countlyUserdata */
+/*global countlyView,countlyAuth,countlyDeviceDetails,countlyAppUsers,countlyDevice,$,countlyConsentManager,countlyGlobal,countlyCommon,moment,CountlyHelpers,jQuery,app,ConsentManagementView,T,Backbone,countlyUserdata */
 window.ConsentManagementView = countlyView.extend({
+    featureName: 'compliance_hub',
     curSegment: "",
     initialize: function() {},
     beforeRender: function() {
@@ -361,7 +362,6 @@ window.ConsentManagementView = countlyView.extend({
                 data = self.dtableusers.fnGetData(row[0]);
                 //now show hide list options based on user data
 
-                var have_rights = countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.indexOf(+countlyCommon.ACTIVE_APP_ID) > -1;
                 $(".cly-button-menu a.export-user").css("display", "none");
                 $(".cly-button-menu a.export-download").css("display", "none");
                 $(".cly-button-menu a.export-delete").css("display", "none");
@@ -372,17 +372,17 @@ window.ConsentManagementView = countlyView.extend({
                     if (data.appUserExport.slice(-7) === ".tar.gz") {
                         $(".cly-button-menu a.export-download").css("display", "block");
                     }
-                    if (have_rights) {
+                    if (countlyAuth.validateDelete(self.featureName)) {
                         $(".cly-button-menu a.export-delete").css("display", "block");
                     }
                 }
                 else {
-                    if (have_rights) {
+                    if (countlyAuth.validateRead(self.featureName)) {
                         $(".cly-button-menu a.export-user").css("display", "block");
                     }
                 }
 
-                if (have_rights) {
+                if (countlyAuth.validateDelete(self.featureName)) {
                     $(".cly-button-menu a.delete-user").css("display", "block");
                 }
             });
@@ -598,17 +598,20 @@ window.ConsentManagementView = countlyView.extend({
 
 app.consentManagementView = new ConsentManagementView();
 
-app.route('/manage/compliance/:tab', 'compliance', function(tab) {
-    this.consentManagementView._tab = tab;
-    this.renderWhenReady(this.consentManagementView);
-});
-app.route("/manage/compliance", "compliance", function() {
-    this.consentManagementView._tab = null;
-    this.renderWhenReady(this.consentManagementView);
-});
+if (countlyAuth.validateRead(app.consentManagementView.featureName)) {
+    app.route('/manage/compliance/:tab', 'compliance', function(tab) {
+        this.consentManagementView._tab = tab;
+        this.renderWhenReady(this.consentManagementView);
+    });
+    app.route("/manage/compliance", "compliance", function() {
+        this.consentManagementView._tab = null;
+        this.renderWhenReady(this.consentManagementView);
+    });
+}
+
 
 app.addPageScript("/users/#", function() {
-    if (app.activeView && app.activeView.tabs) {
+    if (app.activeView && app.activeView.tabs && countlyAuth.validateRead(self.featureName)) {
         var formatConsent = function(d) {
             // `d` is the original data object for the row
             var str = '';
@@ -765,5 +768,7 @@ app.addPageScript("/users/#", function() {
 });
 
 $(document).ready(function() {
-    app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 20});
+    if (countlyAuth.validateRead(app.consentManagementView.featureName)) {
+        app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 20});
+    }
 });

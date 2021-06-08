@@ -1,5 +1,7 @@
 'use strict';
 
+const { getAdminApps, getUserApps } = require('../../../../api/utils/rights.js');
+
 /* jshint ignore:start */
 
 var common = require('../../../../api/utils/common.js'),
@@ -246,7 +248,7 @@ function cachedData(note) {
             args = {};
 
         if (!(args = common.validateArgs(params.qstring.args, argProps))) {
-            log.d('Not enough params to create message: %j', params.qstring.args);
+            log.w('Not enough params to create message: %j', params.qstring.args);
             common.returnMessage(params, 400, 'Not enough args');
             return;
         }
@@ -381,6 +383,7 @@ function cachedData(note) {
                 'collapseKey': { 'required': false, 'type': 'String' },
                 'delayWhileIdle': { 'required': false, 'type': 'Boolean' },
                 'data': { 'required': false, 'type': 'Object' },
+                'userProps': { 'required': false, 'type': 'Array' },
                 'source': { 'required': false, 'type': 'String' },
                 'test': { 'required': false, 'type': 'Boolean' },
                 'tx': { 'required': false, 'type': 'Boolean' },
@@ -398,7 +401,7 @@ function cachedData(note) {
             data = common.validateArgs(params.qstring.args, argProps, true);
 
         if (!data.result) {
-            log.d('Not enough params to create message: %j / %j', params.qstring.args, data.errors);
+            log.w('Not enough params to create message: %j / %j', params.qstring.args, data.errors);
             return [{error: 'Not enough args', errors: data.errors}];
         }
 
@@ -614,6 +617,7 @@ function cachedData(note) {
             collapseKey: data.collapseKey,
             delayWhileIdle: data.delayWhileIdle,
             data: data.data,
+            userProps: data.userProps && data.userProps.length ? data.userProps : undefined,
             userConditions: data.userConditions && Object.keys(data.userConditions).length ? data.userConditions : undefined,
             drillConditions: data.drillConditions && Object.keys(data.drillConditions).length ? data.drillConditions : undefined,
             geos: geos && geos.length ? data.geos : undefined,
@@ -1077,7 +1081,8 @@ function cachedData(note) {
         var query = {
             'result.status': {$bitsAllSet: N.Status.Created, $bitsAllClear: N.Status.Deleted}
         };
-
+        let adminApps = getAdminApps(params.member);
+        let userApps = getUserApps(params.member);
         let app_id = params.qstring.app_id;
 
         if (!app_id || app_id.length !== 24) {
@@ -1088,7 +1093,7 @@ function cachedData(note) {
         if (!params.member.global_admin) {
             var found = false;
 
-            (params.member.admin_of || []).concat(params.member.user_of || []).forEach(id => {
+            (adminApps || []).concat(userApps || []).forEach(id => {
                 if (id === app_id) {
                     found = true;
                 }
@@ -1205,7 +1210,7 @@ function cachedData(note) {
             return common.returnMessage(params, 403, 'Only app / global admins are allowed to delete');
         }
 
-        await note.update(common.db, {$bit: {'result.status': {or: N.Status.Deleted}}});
+        await note.update(common.db, {$bit: {'result.status': {or: N.Status.Deleted}}}).catch(log.w.bind(log, 'Error during message deletion'));
         api.cache.remove(_id);
         note.result.status |= N.Status.Deleted;
 
@@ -2003,11 +2008,12 @@ function cachedData(note) {
      * @returns {boolean} - true if is admin of app
      */
     function adminOfApp(member, app) {
+        let adminApps = getAdminApps(member);
         if (member.global_admin) {
             return true;
         }
         else {
-            return member.admin_of && member.admin_of.indexOf(app._id.toString()) !== -1;
+            return adminApps && adminApps.indexOf(app._id.toString()) !== -1;
         }
     }
 

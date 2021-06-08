@@ -8,11 +8,18 @@ var pluginOb = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
-    log = common.log('views:api');
+    log = common.log('views:api'),
+    { validateCreate, validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'views';
 
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true};
 //keys to not use as segmentation
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
     plugins.setConfigs("views", {
         view_limit: 50000,
         view_name_limit: 100,
@@ -46,9 +53,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/i/views", function(ob) {
         var appId = ob.params.qstring.app_id;
-        var validateUserForDataWriteAPI = ob.validateUserForDataWriteAPI;
+
         return new Promise(function(resolve) {
-            validateUserForDataWriteAPI(ob.params, function(params) {
+            validateCreate(ob.params, FEATURE_NAME, function(params) {
                 if (ob.params.qstring.method === "rename_views") {
                     if (ob.params.qstring.data) {
                         var haveUpdate = false;
@@ -610,12 +617,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     }
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+
 
         var segment = params.qstring.segment || "";
         var segmentVal = params.qstring.segmentVal || "";
         if (params.qstring.method === "views") {
-            validateUserForDataReadAPI(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 var colName = "";
                 var sortby;
                 var startPos = 0;
@@ -986,7 +993,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             return true;
         }
         else if (params.qstring.method === "get_view_segments") {
-            validateUserForDataReadAPI(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 var res = {segments: [], domains: []};
                 common.db.collection("views").findOne({'_id': common.db.ObjectID(params.app_id)}, function(err1, res1) {
                     if (res1 && res1.segments) {
@@ -1231,7 +1238,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
     plugins.register("/o/actions", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+
         if (common.drillDb && params.qstring && params.qstring.view) {
             if (params.req.headers["countly-token"]) {
                 common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err1, app) => {
@@ -1281,7 +1288,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 });
             }
             else {
-                validateUserForDataReadAPI(params, getHeatmap);
+                validateRead(params, FEATURE_NAME, getHeatmap);
             }
             return true;
         }
@@ -2060,10 +2067,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         }
                         dati[z].u = dati[z].uvalue || dati[z].u;
                         dati[z].views = dati[z]._id;
-                        if (dati[z].view_meta && dati[z].view_meta[0] && dati[z].view_meta[0].view) {
-                            dati[z].views = dati[z].view_meta[0].display || dati[z].view_meta[0].view;
-                        }
                     }
+
                     if (dati) {
                         dati = {chartData: dati};
                     }

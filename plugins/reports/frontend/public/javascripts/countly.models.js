@@ -44,7 +44,8 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/create",
             data: {
-                args: JSON.stringify(args)
+                args: JSON.stringify(args),
+                app_id: args.apps[0]
             }
         });
     };
@@ -54,7 +55,8 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/update",
             data: {
-                args: JSON.stringify(args)
+                args: JSON.stringify(args),
+                app_id: args.apps[0]
             }
         });
     };
@@ -66,7 +68,8 @@
             data: {
                 args: JSON.stringify({
                     "_id": id
-                })
+                }),
+                "app_id": countlyCommon.ACTIVE_APP_ID
             }
         });
     };
@@ -78,7 +81,8 @@
             data: {
                 args: JSON.stringify({
                     "_id": id
-                })
+                }),
+                "app_id": countlyCommon.ACTIVE_APP_ID
             }
         });
     };
@@ -88,7 +92,8 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/status",
             data: {
-                args: JSON.stringify(args)
+                args: JSON.stringify(args),
+                app_id: countlyCommon.ACTIVE_APP_ID
             }
         });
     };

@@ -1,5 +1,6 @@
-/*globals countlyView,$,countlyErrorLogs,countlyGlobal,T,jQuery,countlyCommon,CountlyHelpers,app,ErrorLogsView */
+/*globals countlyView,$,countlyAuth,countlyErrorLogs,countlyGlobal,T,jQuery,countlyCommon,CountlyHelpers,app,ErrorLogsView */
 window.ErrorLogsView = countlyView.extend({
+    featureName: 'errorlogs',
     initialize: function() {
 
     },
@@ -68,14 +69,15 @@ window.ErrorLogsView = countlyView.extend({
 
 //register views
 app.errorLogsView = new ErrorLogsView();
-if (countlyGlobal.member.global_admin) {
+
+if (countlyAuth.validateRead(app.errorLogsView.featureName)) {
     app.route('/manage/errorlogs', 'errorlogs', function() {
         this.renderWhenReady(this.errorLogsView);
     });
 }
 
 $(document).ready(function() {
-    if (countlyGlobal.member.global_admin) {
+    if (countlyAuth.validateRead(app.errorLogsView.featureName)) {
         app.addMenu("management", {code: "errorlogs", url: "#/manage/errorlogs", text: "errorlogs.title", icon: '<div class="logo-icon fa fa-server"></div>', priority: 60});
     }
 });

@@ -12,21 +12,17 @@ var appsApi = {},
     plugins = require('../../../plugins/pluginManager.js'),
     jimp = require('jimp'),
     fs = require('fs'),
+    { hasUpdateRight, hasDeleteRight, getUserApps, getAdminApps } = require('./../../utils/rights.js'),
     countlyFs = require('./../../utils/countlyFs.js');
 const taskmanager = require('./../../utils/taskmanager.js');
 const {timezoneValidation} = require('../../utils/timezones.js');
-
+const FEATURE_NAME = 'global_applications';
 /**
 * Get all apps and outputs to browser, requires global admin permission
 * @param {params} params - params object
 * @returns {boolean} true if got data from db, false if did not
 **/
 appsApi.getAllApps = function(params) {
-    if (!(params.member.global_admin)) {
-        common.returnMessage(params, 401, 'User is not a global administrator');
-        return false;
-    }
-
     common.db.collection('apps').find({}).toArray(function(err, apps) {
 
         if (!apps || err) {
@@ -59,24 +55,8 @@ appsApi.getCurrentUserApps = function(params) {
         return true;
     }
 
-    var adminOfAppIds = [],
-        userOfAppIds = [];
-
-    if (params.member.admin_of) {
-        for (let i = 0; i < params.member.admin_of.length ;i++) {
-            if (params.member.admin_of[i] === "") {
-                continue;
-            }
-
-            adminOfAppIds[adminOfAppIds.length] = common.db.ObjectID(params.member.admin_of[i]);
-        }
-    }
-
-    if (params.member.user_of) {
-        for (let i = 0; i < params.member.user_of.length ;i++) {
-            userOfAppIds[userOfAppIds.length] = common.db.ObjectID(params.member.user_of[i]);
-        }
-    }
+    var adminOfAppIds = getAdminApps(params.member),
+        userOfAppIds = getUserApps(params.member);
 
     common.db.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err, admin_of) {
         common.db.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err2, user_of) {
@@ -140,7 +120,9 @@ appsApi.getAppsDetails = function(params) {
                                 owner_id: params.app.owner_id || "",
                                 created_at: params.app.created_at || 0,
                                 edited_at: params.app.edited_at || 0,
-                                last_data: (typeof last !== "undefined" && last.length) ? last[0].lac : 0,
+                                plugins: params.app.plugins,
+                                last_data: params.app.last_data,
+                                last_data_users: (typeof last !== "undefined" && last.length) ? last[0].lac : 0,
                             },
                             global_admin: global_admins || [],
                             admin: admins || [],
@@ -390,29 +372,67 @@ appsApi.updateApp = function(params) {
                 });
             }
             else {
-                common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err2, member) {
-                    if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
-                        common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function() {
-                            plugins.dispatch("/i/apps/update", {
-                                params: params,
-                                appId: params.qstring.args.app_id,
-                                data: {
-                                    app: appBefore,
-                                    update: updatedApp
-                                }
-                            });
-                            iconUpload(params);
-                            common.returnOutput(params, updatedApp);
+                if (hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
+                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function() {
+                        plugins.dispatch("/i/apps/update", {
+                            params: params,
+                            appId: params.qstring.args.app_id,
+                            data: {
+                                app: appBefore,
+                                update: updatedApp
+                            }
                         });
-                    }
-                    else {
-                        common.returnMessage(params, 401, 'User does not have admin rights for this app');
-                    }
-                });
+                        iconUpload(params);
+                        common.returnOutput(params, updatedApp);
+                    });
+                }
+                else {
+                    common.returnMessage(params, 401, 'User does not have admin rights for this app');
+                }
             }
         }
     });
 
+    return true;
+};
+
+/**
+ * Returns application level configurations
+ * @param {params} params - params object with query parameters appId and name(optional parameter)
+ * @returns {boolean} returns true; 
+ */
+appsApi.getAppPlugins = async function(params) {
+    const queryParamsValidationSchema = {
+        'app_id': {
+            'required': true,
+            'type': 'String',
+            'min-length': 24,
+            'max-length': 24,
+        },
+        'name': {
+            'required': false,
+            'type': 'String',
+        }
+    };
+    const getAppPluginsQueryValidationResult = common.validateArgs(params.qstring, queryParamsValidationSchema, true);
+    if (!getAppPluginsQueryValidationResult.result) {
+        common.returnMessage(params, 400, 'Error: ' + getAppPluginsQueryValidationResult.errors);
+        return true;
+    }
+    try {
+        const appId = params.qstring.app_id;
+        const pluginName = params.qstring.name;
+        const appModel = await common.db.collection('apps').findOne(common.db.ObjectID(appId));
+        if (params.qstring.name && appModel.plugins[pluginName]) {
+            common.returnOutput(params, {plugins: {[pluginName]: appModel.plugins[pluginName] || {}}});
+        }
+        else {
+            common.returnOutput(params, {plugins: appModel.plugins});
+        }
+    }
+    catch (error) {
+        common.returnMessage(params, 400, 'Error getting app plugins:', error);
+    }
     return true;
 };
 
@@ -547,7 +567,6 @@ appsApi.updateAppPlugins = function(params) {
 * @returns {boolean} true if operation successful
 **/
 appsApi.deleteApp = function(params) {
-
     var argProps = {
             'app_id': {
                 'required': true,
@@ -572,14 +591,12 @@ appsApi.deleteApp = function(params) {
                 removeApp(app);
             }
             else {
-                common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err2, member) {
-                    if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
-                        removeApp(app);
-                    }
-                    else {
-                        common.returnMessage(params, 401, 'User does not have admin rights for this app');
-                    }
-                });
+                if (hasDeleteRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
+                    removeApp(app);
+                }
+                else {
+                    common.returnMessage(params, 401, 'User does not have admin rights for this app');
+                }
             }
         }
         else {
@@ -661,18 +678,13 @@ appsApi.resetApp = function(params) {
                 common.returnMessage(params, 200, 'Success');
             }
             else {
-                common.db.collection('members').findOne({
-                    admin_of: appId,
-                    api_key: params.member.api_key
-                }, function(err2, member) {
-                    if (!err2 && member) {
-                        deleteAppData(appId, false, params, app);
-                        common.returnMessage(params, 200, 'Success');
-                    }
-                    else {
-                        common.returnMessage(params, 401, 'User does not have admin rights for this app');
-                    }
-                });
+                if (hasDeleteRight(FEATURE_NAME, appId, params.member)) {
+                    deleteAppData(appId, false, params, app);
+                    common.returnMessage(params, 200, 'Success');
+                }
+                else {
+                    common.returnMessage(params, 401, 'User does not have admin rights for this app');
+                }
             }
         }
         else {

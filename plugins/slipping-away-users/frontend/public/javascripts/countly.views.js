@@ -1,5 +1,8 @@
-/*global app, countlySlippingAwayUsers, countlyVue, $, CV, CountlyHelpers */
+/*global app, countlyAuth, countlySlippingAwayUsers, countlyVue, $, CV, CountlyHelpers */
 //TODO-LA: Use query builder component with modal when it becomes available
+
+var FEATURE_NAME_SLIPPING_AWAY_USERS = "slipping_away_users";
+
 var SlippingAwayUsersFilter = countlyVue.views.BaseView.extend({
     template: "#slipping-away-users-filter",
     computed: {
@@ -131,24 +134,27 @@ var slippingAwayUsersView = new countlyVue.views.BackboneWrapper({
     ]
 });
 
-app.route("/analytics/slipping-away", "slipping-away", function() {
-    this.renderWhenReady(slippingAwayUsersView);
-});
-
-app.route("/analytics/slipping-away/*query", "slipping-away-query", function(query) {
-    var queryUrlParameter = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
-    slippingAwayUsersView.params = queryUrlParameter;
-    this.renderWhenReady(slippingAwayUsersView);
-});
+if (countlyAuth.validateRead(FEATURE_NAME_SLIPPING_AWAY_USERS)) {
+    app.route("/analytics/slipping-away", 'slipping-away', function() {
+        this.renderWhenReady(slippingAwayUsersView);
+    });
+    app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
+        var queryUrlParameter = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
+        slippingAwayUsersView.params = queryUrlParameter;
+        this.renderWhenReady(slippingAwayUsersView);
+    });
+}
 
 $(document).ready(function() {
-    app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping-away-users.title", priority: 30});
-    if (app.configurationsView) {
-        app.configurationsView.registerLabel("slipping-away-users", "slipping-away-users.config-title");
-        app.configurationsView.registerLabel("slipping-away-users.p1", "slipping-away-users.config-first-threshold");
-        app.configurationsView.registerLabel("slipping-away-users.p2", "slipping-away-users.config-second-threshold");
-        app.configurationsView.registerLabel("slipping-away-users.p3", "slipping-away-users.config-third-threshold");
-        app.configurationsView.registerLabel("slipping-away-users.p4", "slipping-away-users.config-fourth-threshold");
-        app.configurationsView.registerLabel("slipping-away-users.p5", "slipping-away-users.config-fifth-threshold");
+    if (countlyAuth.validateRead(FEATURE_NAME_SLIPPING_AWAY_USERS)) {
+        app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping.title", priority: 30});
+        if (app.configurationsView) {
+            app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
+            app.configurationsView.registerLabel("slipping-away-users.p1", "slipping.config-first");
+            app.configurationsView.registerLabel("slipping-away-users.p2", "slipping.config-second");
+            app.configurationsView.registerLabel("slipping-away-users.p3", "slipping.config-third");
+            app.configurationsView.registerLabel("slipping-away-users.p4", "slipping.config-fourth");
+            app.configurationsView.registerLabel("slipping-away-users.p5", "slipping.config-fifth");
+        }
     }
 });

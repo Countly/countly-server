@@ -4,11 +4,13 @@ var exported = {},
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    {validateUserForWrite} = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 var fetch = require('../../../api/parts/data/fetch.js');
 var ejs = require("ejs"),
     path = require('path'),
     reportUtils = require('../../reports/api/utils.js');
+
+const FEATURE_NAME = 'starrating';
 
 const widgetProperties = {
     popup_header_text: {
@@ -127,6 +129,10 @@ const widgetPropertyPreprocessors = {
 };
 
 (function() {
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     /**
      *    register internalEvent
      */
@@ -148,7 +154,7 @@ const widgetPropertyPreprocessors = {
         var widget = validatedArgs.obj;
         widget.type = "rating";
 
-        validateUserForWrite(obParams, function(params) {
+        validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
                     common.returnMessage(ob.params, 201, "Successfully created " + result.insertedIds[0]);
@@ -165,7 +171,7 @@ const widgetPropertyPreprocessors = {
     };
     var removeFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        validateUserForWrite(obParams, function(params) {
+        validateDelete(obParams, FEATURE_NAME, function(params) {
             var widgetId = params.qstring.widget_id;
             var app = params.qstring.app_id;
             var withData = params.qstring.with_data;
@@ -213,7 +219,7 @@ const widgetPropertyPreprocessors = {
     };
     var editFeedbackWidget = function(ob) {
         var obParams = ob.params;
-        validateUserForWrite(obParams, function(params) {
+        validateUpdate(obParams, FEATURE_NAME, function(params) {
             let widgetId;
 
             try {
@@ -459,8 +465,7 @@ const widgetPropertyPreprocessors = {
             }
         }
 
-        var validateUserForRead = ob.validateUserForDataReadAPI;
-        validateUserForRead(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             var cursor = common.db.collection(collectionName).find(query);
             cursor.count(function(err, total) {
@@ -534,8 +539,7 @@ const widgetPropertyPreprocessors = {
      */
     plugins.register('/o/feedback/widgets', function(ob) {
         var params = ob.params;
-        var validateUserForRead = ob.validateUserForDataReadAPI;
-        validateUserForRead(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             var collectionName = 'feedback_widgets';
             var query = {type: "rating"};
             if (params.qstring.is_active) {

@@ -79,7 +79,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/jsoneditor/minify.json.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/jsoneditor.js',
                     'frontend/express/public/javascripts/utils/Sortable.min.js',
-                    'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js'
+                    'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js',
+                    'frontend/express/public/javascripts/utils/countly.checkbox.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
             },
@@ -105,6 +106,7 @@ module.exports = function(grunt) {
             },
             lib: {
                 src: [
+                    'frontend/express/public/javascripts/countly/countly.auth.js',
                     'frontend/express/public/javascripts/countly/countly.helpers.js',
                     'frontend/express/public/javascripts/countly/countly.map.helper.js',
                     'frontend/express/public/javascripts/countly/countly.event.js',
@@ -184,6 +186,7 @@ module.exports = function(grunt) {
                         'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
                         'frontend/express/public/stylesheets/jsoneditor/codemirror.css',
+                        'frontend/express/public/stylesheets/countly-checkbox/countly.checkbox.css',
                         'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
                         'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
                         'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',

@@ -20,7 +20,7 @@
     "website"
   ],
   "dependencies": {
-    "ua-parser-js": "0.7.23"
+    "ua-parser-js": "0.7.28"
   },
   "private": true
 }

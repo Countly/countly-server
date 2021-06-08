@@ -1,6 +1,7 @@
-/*global CountlyHelpers, countlySystemLogs, SystemLogsView, countlyAttribution, pathsToSectionNames, countlyCrashes, moment, countlyView, countlyCommon, countlyGlobal, T, app, $, jQuery*/
+/*global CountlyHelpers, countlyAuth, countlySystemLogs, SystemLogsView, countlyAttribution, pathsToSectionNames, countlyCrashes, moment, countlyView, countlyCommon, countlyGlobal, T, app, $, jQuery*/
 
 window.SystemLogsView = countlyView.extend({
+    featureName: 'systemlogs',
     initialize: function() {
         this.loaded = false;
     },
@@ -329,7 +330,7 @@ window.SystemLogsView = countlyView.extend({
 
 //register views
 app.systemLogsView = new SystemLogsView();
-if (countlyGlobal.member.global_admin) {
+if (countlyAuth.validateRead(app.systemLogsView.featureName)) {
     app.route('/manage/systemlogs', 'systemlogs', function() {
         this.systemLogsView._query = null;
         this.renderWhenReady(this.systemLogsView);
@@ -497,7 +498,7 @@ if (countlyGlobal.member.global_admin) {
 }
 
 $(document).ready(function() {
-    if (countlyGlobal.member.global_admin) {
+    if (countlyAuth.validateRead(app.systemLogsView.featureName)) {
         app.addMenu("management", {code: "systemlogs", url: "#/manage/systemlogs", text: "systemlogs.title", icon: '<div class="logo-icon fa fa-book"></div>', priority: 50});
     }
 

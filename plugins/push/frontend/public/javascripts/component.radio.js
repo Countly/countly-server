@@ -17,7 +17,7 @@ window.component('radio', function(radio) {
         this.value = function(){
             if (arguments.length) {
                 if (opts.onchange) {
-                    opts.onchange(arguments[0]);
+                    opts.onchange(arguments[0], val());
                 }
                 val(arguments[0]);
             }

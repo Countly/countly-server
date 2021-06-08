@@ -326,6 +326,31 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+    * Update existing application level configuration
+    * @param {object} db -database connection for countly db
+    * @param {string} appId - id of application
+    * @param {string} namespace - name of plugin
+    * @param {object} config  - new configuration object for selected plugin 
+    * @param {function} callback - function that is called when updating has finished
+    **/
+    this.updateApplicationConfigs = function(db, appId, namespace, config, callback) {
+        var pluginName = 'plugins.'.concat(namespace);
+        db.collection('apps').updateOne({_id: appId}, {$set: {[pluginName]: config}}, function(error, result) {
+            if (error) {
+                log.e('Error updating application level %s plugin configuration.Got error:%j', namespace, error);
+            }
+            if (callback) {
+                if (error) {
+                    callback(error, null);
+                }
+                else {
+                    callback(null, result);
+                }
+            }
+        });
+    };
+
     var preventKillingNumberType = function(configsPointer, changes) {
         for (var k in changes) {
             if (!Object.prototype.hasOwnProperty.call(configsPointer, k) || !Object.prototype.hasOwnProperty.call(changes, k)) {

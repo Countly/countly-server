@@ -1,4 +1,4 @@
-/*global countlyCommon,jQuery */
+/*global countlyCommon,jQuery,countlyGlobal */
 (function(countlyPlugins, $) {
 
     //Private Properties
@@ -14,6 +14,7 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o/plugins",
             data: {
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 _pluginsData = json;
@@ -99,7 +100,8 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/plugins",
             data: {
-                plugin: JSON.stringify(plugins)
+                plugin: JSON.stringify(plugins),
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 if (callback) {
@@ -133,7 +135,9 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/themes",
-                data: {},
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID
+                },
                 success: function(json) {
                     _themeList = json;
                 }
@@ -141,7 +145,9 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/configs",
-                data: {},
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID
+                },
                 success: function(json) {
                     _configsData = json;
                 }
@@ -156,7 +162,8 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/configs",
             data: {
-                configs: JSON.stringify(configs)
+                configs: JSON.stringify(configs),
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 _configsData = json;
@@ -177,7 +184,9 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/themes",
-                data: {},
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID
+                },
                 success: function(json) {
                     _themeList = json;
                 }
@@ -185,7 +194,9 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/userconfigs",
-                data: {},
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID
+                },
                 success: function(json) {
                     _userConfigsData = json;
                 }
@@ -195,12 +206,26 @@
         });
     };
 
+    countlyPlugins.initializeActiveAppConfigs = function() {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/apps/plugins",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+            },
+            success: function(appPluginsConfig) {
+                countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins = appPluginsConfig.plugins;
+            }
+        });
+    };
+
     countlyPlugins.updateUserConfigs = function(configs, callback) {
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/userconfigs",
             data: {
-                configs: JSON.stringify(configs)
+                configs: JSON.stringify(configs),
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 _userConfigsData = json;
@@ -238,6 +263,7 @@
             url: countlyCommon.API_URL + "/i/users/deleteOwnAccount",
             data: {
                 password: configs.password,
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 if (callback) {

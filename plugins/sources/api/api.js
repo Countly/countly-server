@@ -4,7 +4,10 @@ var pluginInstance = {},
     stores = require("../stores.json"),
     fetch = require('../../../api/parts/data/fetch.js'),
     parseDomain = require('parse-domain'),
+    { validateRead } = require('../../../api/utils/rights.js'),
     urlParse = require('url');
+
+const FEATURE_NAME = 'sources';
 
 var searchEngineKeyWord = {
     "q": true,
@@ -25,6 +28,10 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
 (function(plugin) {
     plugins.setConfigs("sources", {
         sources_length_limit: 100
+    });
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
     });
 
     plugin.urlParser = function(url) {
@@ -164,9 +171,8 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
     });
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
         if (params.qstring.method === "sources") {
-            validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'sources');
+            validateRead(params, FEATURE_NAME, fetch.fetchTimeObj, "sources");
             return true;
         }
         return false;
@@ -174,8 +180,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
 
     plugins.register("/o/keywords", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        validateUserForDataReadAPI(params, function() {
+        validateRead(params, FEATURE_NAME, function() {
             fetch.getMetric(params, "sources", null, function(data) {
                 var result = [];
                 for (var i = 0; i < data.length; i++) {

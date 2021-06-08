@@ -1,10 +1,53 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    automaticStateManager = require('./helpers/automaticStateManager'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'logger';
+
+var RequestLoggerStateEnum = {
+    ON: "on",
+    OFF: "off",
+    AUTOMATIC: "automatic"
+};
+Object.freeze(RequestLoggerStateEnum);
+
+plugins.setConfigs("logger", {
+    state: RequestLoggerStateEnum.AUTOMATIC,
+    limit: 1000,
+});
 
 (function() {
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
+    var shouldLogRequest = function(requestLoggerConfiguration) {
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.ON) {
+            return true;
+        }
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.AUTOMATIC) {
+            automaticStateManager.updateOnIncomingRequest();
+            return !automaticStateManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit);
+        }
+        return false;
+    };
+
+    var getRequestLoggerConfiguration = function(params) {
+        return plugins.getConfig("logger", params.app && params.app.plugins, true);
+    };
+
+    var turnRequestLoggerOffIfNecessary = function(params, requestLoggerConfiguration) {
+        if (requestLoggerConfiguration.state === RequestLoggerStateEnum.AUTOMATIC && automaticStateManager.shouldTurnOffRequestLogger(requestLoggerConfiguration.limit)) {
+            plugins.updateApplicationConfigs(common.db, params.app._id, "logger", Object.assign(requestLoggerConfiguration, {state: RequestLoggerStateEnum.OFF}));
+        }
+    };
+
     var processSDKRequest = function(params) {
-        if (params.logging_is_allowed) {
+        const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
+        if (params.logging_is_allowed && shouldLogRequest(requestLoggerConfiguration)) {
             params.log_processed = true;
             var now = new Date().getTime();
             var ts = common.initTimeObj(null, params.qstring.timestamp || now).mstimestamp;
@@ -218,7 +261,11 @@ var exported = {},
                 }, 1000);
             });
         }
+        else {
+            turnRequestLoggerOffIfNecessary(params, requestLoggerConfiguration);
+        }
     };
+
     //write api call
     plugins.register("/sdk/log", function(ob) {
         ob.params.logging_is_allowed = !ob.params.retry_request && !ob.params.log_processed;
@@ -256,7 +303,7 @@ var exported = {},
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForDataReadAPI;
+
         if (params.qstring.method === 'logs') {
             var filter = {};
             if (typeof params.qstring.filter !== "undefined") {
@@ -267,18 +314,19 @@ var exported = {},
                     filter = {};
                 }
             }
-            validate(params, function(parameters) {
-                common.db.collection('logs' + parameters.app_id).find(filter).toArray(function(err, items) {
+
+            validateRead(params, FEATURE_NAME, function(parameters) {
+                common.db.collection('logs' + parameters.app_id).find(filter).limit(1000).toArray(function(err, items) {
                     if (err) {
                         console.log(err);
                     }
-                    common.returnOutput(parameters, items || []);
+                    common.returnOutput(parameters, {logs: items || [], state: getRequestLoggerConfiguration(params).state});
                 });
             });
             return true;
         }
         if (params.qstring.method === 'collection_info') {
-            validate(params, function(parameters) {
+            validateRead(params, FEATURE_NAME, function(parameters) {
                 common.db.collection('logs' + parameters.app_id).stats(function(err, stats) {
                     if (err) {
                         console.log(err);

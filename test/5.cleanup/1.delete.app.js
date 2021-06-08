@@ -22,7 +22,7 @@ describe('Deleting app', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'User does not have admin rights for this app');
+                    ob.should.have.property('result', 'User does not have right');
                     done();
                 });
         });

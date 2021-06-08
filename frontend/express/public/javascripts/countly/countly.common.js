@@ -1051,6 +1051,11 @@
                     */
                 function showCrosshairTooltip(dataIndex, position, onPoint) {
 
+                    //increase dataIndex if ticks are padded
+                    var tickIndex = dataIndex;
+                    if ((tickObj.ticks && tickObj.ticks[0] && tickObj.ticks[0][0] < 0) && (tickObj.tickTexts && tickObj.tickTexts[0] === "")) {
+                        tickIndex++;
+                    }
                     var tooltip = $("#graph-tooltip");
                     var crossHairPos = graphObj.p2c(position);
                     var minpoz = Math.max(200, tooltip.width());
@@ -1059,7 +1064,7 @@
 
                     if (onPoint) {
                         var dataSet = graphObj.getData(),
-                            tooltipHTML = "<div class='title'>" + tickObj.tickTexts[dataIndex] + "</div>";
+                            tooltipHTML = "<div class='title'>" + tickObj.tickTexts[tickIndex] + "</div>";
 
                         dataSet = _.sortBy(dataSet, function(obj) {
                             return obj.data[dataIndex][1];
@@ -2562,7 +2567,13 @@
                 limitAdjustment = 0;
 
             if (overrideBucket) {
-                var thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
+                var thisDay;
+                if (countlyCommon.periodObj.activePeriod) {
+                    thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
+                }
+                else {
+                    thisDay = moment(countlyCommon.periodObj.currentPeriodArr[0], "YYYY.M.D");
+                }
                 ticks.push([0, countlyCommon.formatDate(thisDay, "D MMM")]);
                 tickTexts[0] = countlyCommon.formatDate(thisDay, "D MMM, dddd");
             }
