@@ -434,47 +434,47 @@
                 zoomNumbers: [
                     {
                         value: 0,
-                        name: "Reset"
+                        name: "100%"
                     },
                     {
-                        value: 10,
-                        name: "10%"
+                        value: 8,
+                        name: "110%"
                     },
                     {
-                        value: 20,
-                        name: "20%"
+                        value: 16,
+                        name: "120%"
                     },
                     {
-                        value: 30,
-                        name: "30%"
+                        value: 24,
+                        name: "130%"
+                    },
+                    {
+                        value: 32,
+                        name: "140%"
                     },
                     {
                         value: 40,
-                        name: "40%"
+                        name: "150%"
                     },
                     {
-                        value: 50,
-                        name: "50%"
+                        value: 48,
+                        name: "160%"
                     },
                     {
-                        value: 60,
-                        name: "60%"
+                        value: 56,
+                        name: "170%"
                     },
                     {
-                        value: 70,
-                        name: "70%"
+                        value: 64,
+                        name: "180%"
+                    },
+                    {
+                        value: 72,
+                        name: "190%"
                     },
                     {
                         value: 80,
-                        name: "80%"
-                    },
-                    {
-                        value: 90,
-                        name: "90%"
-                    },
-                    {
-                        value: 100,
-                        name: "100%"
+                        name: "200%"
                     },
                 ],
                 selZoomNumber: ""
@@ -486,6 +486,10 @@
                     return this.selZoomNumber;
                 },
                 set: function(v) {
+                    var zoomNumber = this.zoomNumbers.filter(function(z) {
+                        return z.value === v;
+                    });
+
                     if (!v) {
                         this.echartRef.dispatchAction({
                             type: "restore",
@@ -497,11 +501,11 @@
 
                     this.echartRef.dispatchAction({
                         type: "dataZoom",
-                        start: v / 2,
-                        end: 100 - v / 2
+                        start: parseInt(v / 2),
+                        end: 100 - parseInt(v / 2)
                     });
 
-                    this.selZoomNumber = v;
+                    this.selZoomNumber = zoomNumber[0].name;
                 }
             }
         },
