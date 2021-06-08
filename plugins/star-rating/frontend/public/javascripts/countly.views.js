@@ -2477,7 +2477,7 @@ countlyVue.container.registerMixin("/manage/export/export-features", {
                     name: widget.popup_header_text
                 });
             });
-    
+
             var selectItem = {
                 id: "feedback_widgets",
                 name: "Feedback Widgets",

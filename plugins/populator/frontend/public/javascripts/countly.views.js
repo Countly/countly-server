@@ -1,4 +1,4 @@
-/*global countlyPopulator, countlyAuth, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, T, jQuery, PopulatorView, CountlyHelpers*/
+/*global countlyPopulator, countlyAuth, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, T, jQuery, PopulatorView, CountlyHelpers, countlyVue*/
 
 window.PopulatorView = countlyView.extend({
     featureName: 'populator',

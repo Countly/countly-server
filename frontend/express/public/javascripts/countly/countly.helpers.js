@@ -3434,7 +3434,7 @@
         else {
             return period;
         }
-    }
+    };
 
     /*
      * Function that returns difference between two arrays

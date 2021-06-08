@@ -1226,6 +1226,7 @@ if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
 
     app.route('/manage/db/:dbs/:collection/*document', 'dbs', function(db, collection, document) {
         this.dbviewerView.mongotop = false;
+        this.dbviewerView.mongostat = false;
         this.dbviewerView._task = null;
         this.dbviewerView.db = db;
         this.dbviewerView.collection = collection;
@@ -1234,7 +1235,6 @@ if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
         this.renderWhenReady(this.dbviewerView);
     });
 
-    this.dbviewerView.mongostat = false;
     app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function(db, collection, page) {
         this.dbviewerView.mongotop = false;
         this.dbviewerView.mongostat = false;

@@ -662,5 +662,5 @@
             }
         }
     }));
-    
+
 }(window.countlyVue = window.countlyVue || {}));
