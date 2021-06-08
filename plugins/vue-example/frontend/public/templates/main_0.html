@@ -2,8 +2,7 @@
     <cly-tabs v-model="currentTab" :route-pattern="'#/' + appId + '/vue-0/:tab'" route-key="tab">
         <el-tab-pane name="tables" lazy>
             <span slot="label">Tables</span>
-                <table-view v-on:open-drawer="openDrawer"></table-view>
-            </cly-main>
+            <table-view v-on:open-drawer="openDrawer"></table-view>
         </el-tab-pane>
         <el-tab-pane name="form-basic" lazy>
             <span slot="label">Form: Basic</span>
@@ -24,9 +23,7 @@
         <el-tab-pane name="progress-bars">
             <span slot="label">Progress bars</span>
             <cly-header title="Progress bars view"></cly-header>
-            <cly-main>
-                <progress-bars-view></progress-bars-view>
-            </cly-main>
+            <progress-bars-view></progress-bars-view>
         </el-tab-pane>
         <el-tab-pane
             v-for="(xtab, idx) in externalTabs"

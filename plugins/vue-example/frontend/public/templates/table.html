@@ -1,57 +1,55 @@
-<div>
-    <cly-main>
-        <cly-section>
-            <cly-datatable-n :available-dynamic-cols="tableDynamicCols" :tracked-fields="localTableTrackedFields"
-                :rows="tableRows" :resizable="false" :persist-key="tablePersistKey">
-                <template v-slot="scope">
-                    <el-table-column fixed="left" width="100" label="Status">
-                        <template v-slot="rowScope">
-                            <el-switch :value="rowScope.row.status"
-                                @input="scope.patch(rowScope.row, {status: !rowScope.row.status})">
-                            </el-switch>
-                        </template>
-                    </el-table-column>
-                    <el-table-column fixed type="expand">
-                        <template v-slot="props">
-                            Data in expanded row
-                        </template>
-                    </el-table-column>
-                    <el-table-column fixed sortable="custom" prop="_id" label="ID">
-                    </el-table-column>
-                    <template v-for="(col,idx) in scope.dynamicCols">
-                        <el-table-column v-if="col.value === 'description'" sortable="custom" :key="idx"
-                            prop="description" label="Description">
-                            Some custom template for description
-                        </el-table-column>
-                        <el-table-column v-else :key="idx" sortable="custom" :prop="col.value" :label="col.label">
-                        </el-table-column>
+<cly-main>
+    <cly-section>
+        <cly-datatable-n :available-dynamic-cols="tableDynamicCols" :tracked-fields="localTableTrackedFields"
+            :rows="tableRows" :resizable="false" :persist-key="tablePersistKey">
+            <template v-slot="scope">
+                <el-table-column fixed="left" width="100" label="Status">
+                    <template v-slot="rowScope">
+                        <el-switch :value="rowScope.row.status"
+                            @input="scope.patch(rowScope.row, {status: !rowScope.row.status})">
+                        </el-switch>
                     </template>
+                </el-table-column>
+                <el-table-column fixed type="expand">
+                    <template v-slot="props">
+                        Data in expanded row
+                    </template>
+                </el-table-column>
+                <el-table-column fixed sortable="custom" prop="_id" label="ID">
+                </el-table-column>
+                <template v-for="(col,idx) in scope.dynamicCols">
+                    <el-table-column v-if="col.value === 'description'" sortable="custom" :key="idx"
+                        prop="description" label="Description">
+                        Some custom template for description
+                    </el-table-column>
+                    <el-table-column v-else :key="idx" sortable="custom" :prop="col.value" :label="col.label">
+                    </el-table-column>
                 </template>
-                <template v-slot:bottomline="scope">
-                    <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()">
-                    </cly-diff-helper>
-                </template>
-            </cly-datatable-n>
-        </cly-section>
+            </template>
+            <template v-slot:bottomline="scope">
+                <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()">
+                </cly-diff-helper>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
 
-        <cly-section>
-            <el-switch
-                active-text="Table paused"
-                v-model="isTablePaused"
-                active-color="#2FA732">
-            </el-switch>
-            <cly-datatable-n :available-dynamic-cols="remoteTableDynamicCols" :data-source="remoteTableDataSource"
-                :resizable="true" :persist-key="remoteTablePersistKey" :paused="isTablePaused">
-                <template v-slot="scope">
-                    <el-table-column sortable="custom" prop="_id" label="ID">
-                    </el-table-column>
-                    <el-table-column sortable="custom" prop="name" label="Name">
-                    </el-table-column>
-                    <el-table-column v-for="(col,idx) in scope.dynamicCols" :key="idx" sortable="custom"
-                        :prop="col.value" :label="col.label">
-                    </el-table-column>
-                </template>
-            </cly-datatable-n>
-        </cly-section>
-    </cly-main>
-</div>
+    <cly-section>
+        <el-switch
+            active-text="Table paused"
+            v-model="isTablePaused"
+            active-color="#2FA732">
+        </el-switch>
+        <cly-datatable-n :available-dynamic-cols="remoteTableDynamicCols" :data-source="remoteTableDataSource"
+            :resizable="true" :persist-key="remoteTablePersistKey" :paused="isTablePaused">
+            <template v-slot="scope">
+                <el-table-column sortable="custom" prop="_id" label="ID">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="name" label="Name">
+                </el-table-column>
+                <el-table-column v-for="(col,idx) in scope.dynamicCols" :key="idx" sortable="custom"
+                    :prop="col.value" :label="col.label">
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+</cly-main>

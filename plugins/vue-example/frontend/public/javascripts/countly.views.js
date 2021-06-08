@@ -613,6 +613,12 @@
                         name: "date",
                         component: DateView,
                         route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/date"
+                    },
+                    {
+                        title: "Progress bars",
+                        name: "progress-bars",
+                        component: ProgressBarsView,
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/vue/example/progress-bars"
                     }
                 ]
             };
