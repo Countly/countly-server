@@ -15,7 +15,11 @@ yum -y install wget openssl-devel make git sqlite unzip bzip2
 
 if grep -q -i "release 8" /etc/redhat-release ; then
     yum -y group install "Development Tools"
-
+    
+    if [ ! -f "/etc/centos-release" ]; then
+        dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    fi
+    
     yum -y install epel-release
     # see https://github.com/koalaman/shellcheck/issues/1871
     wget https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz
@@ -23,7 +27,7 @@ if grep -q -i "release 8" /etc/redhat-release ; then
 
     yum install -y python3-pip
     pip3 install pip --upgrade
-    pip install meld3
+    pip3 install meld3
     pip3 install supervisor --ignore-installed meld3
     yum -y install python3-setuptools
     yum -y install python3-policycoreutils
@@ -77,7 +81,7 @@ NODE_JS_CMD=$(which nodejs)
 set -e
 if [[ -z "$NODE_JS_CMD" ]]; then
 	ln -s "$(which node)" /usr/bin/nodejs
-else
+elif [ ! -f "/usr/bin/node" ]; then
     ln -s "$(which nodejs)" /usr/bin/node
 fi
 

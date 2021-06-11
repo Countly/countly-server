@@ -16,7 +16,7 @@ if [ -n "$(command -v apt-get)" ]; then
 elif [ -n "$(command -v yum)" ]; then
     yum install -y git make binutils autoconf automake libtool pkgconfig zlib-devel libxml2-devel
 
-    if grep -q -i "release 8" /etc/redhat-release ; then
+    if grep -q -i "release 8" /etc/centos-release ; then
         yum config-manager --set-enabled powertools
         yum install -y makedepend
     elif grep -q -i "release 7" /etc/redhat-release ; then
