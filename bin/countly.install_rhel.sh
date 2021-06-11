@@ -23,7 +23,7 @@ if grep -q -i "release 8" /etc/redhat-release ; then
 
     yum install -y python3-pip
     pip3 install pip --upgrade
-    yum install -y python3-meld3
+    pip install meld3
     pip3 install supervisor --ignore-installed meld3
     yum -y install python3-setuptools
     yum -y install python3-policycoreutils
@@ -52,8 +52,7 @@ enabled=1" > /etc/yum.repos.d/nginx.repo
 
     yum -y --enablerepo=extras install epel-release
     yum install -y python-pip
-    #pip install pip --upgrade
-    yum install -y python-meld3
+    pip install meld3
     pip install supervisor --ignore-installed meld3
     yum -y install python-setuptools
 
