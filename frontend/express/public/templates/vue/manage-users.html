@@ -1,0 +1,186 @@
+<div class="manage-users-wrapper">
+    <cly-tabs class="tab-bar" v-model="currentTab" :route-pattern="'#/' + appId + '/vue-0/:tab'" route-key="tab">
+        <el-tab-pane class="tab-content" name="users" lazy>
+            <span slot="label">Users</span>
+            <cly-header title="Manage Users">
+                <template v-slot:header-right>
+                    <div class="bu-level-item">
+                        <el-button class="create-button" @click="isOpened = true" type="success" size="small" icon="el-icon-plus">New User</el-button>
+                    </div>
+                </template>
+            </cly-header>
+            <cly-datatable-n :available-dynamic-cols="tableDynamicCols" :tracked-fields="localTableTrackedFields"
+                :rows="tableRows" :resizable="false" :persist-key="tablePersistKey">
+                <template v-slot="scope">
+                    <el-table-column fixed="left" width="100" label="Status">
+                        <template v-slot="rowScope">
+                            <el-switch :value="rowScope.row.status"
+                                @input="scope.patch(rowScope.row, {status: !rowScope.row.status})">
+                            </el-switch>
+                        </template>
+                    </el-table-column>
+                    <el-table-column fixed type="expand">
+                        <template v-slot="props">
+                            Data in expanded row
+                        </template>
+                    </el-table-column>
+                    <el-table-column fixed sortable="custom" prop="_id" label="ID">
+                    </el-table-column>
+                    <template v-for="(col,idx) in scope.dynamicCols">
+                        <el-table-column v-if="col.value === 'description'" sortable="custom" :key="idx"
+                            prop="description" label="Description">
+                            Some custom template for description
+                        </el-table-column>
+                        <el-table-column v-else :key="idx" sortable="custom" :prop="col.value" :label="col.label">
+                        </el-table-column>
+                    </template>
+                </template>
+                <template v-slot:bottomline="scope">
+                    <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()">
+                    </cly-diff-helper>
+                </template>
+            </cly-datatable-n>
+        </el-tab-pane>
+        <el-tab-pane class="tab-content" name="groups" lazy>
+            <span slot="label">User Groups</span>
+            <cly-header title="Manage User Groups">
+                <template v-slot:header-right>
+                    <div class="bu-level-item">
+                        <el-button class="create-button" @click="isOpened = true" type="success" size="small" icon="el-icon-plus">New User Group</el-button>
+                    </div>
+                </template>
+            </cly-header>
+            <cly-datatable-n :available-dynamic-cols="tableDynamicCols" :tracked-fields="localTableTrackedFields"
+                :rows="tableRows" :resizable="false" :persist-key="tablePersistKey">
+                <template v-slot="scope">
+                    <el-table-column fixed="left" width="100" label="Status">
+                        <template v-slot="rowScope">
+                            <el-switch :value="rowScope.row.status"
+                                @input="scope.patch(rowScope.row, {status: !rowScope.row.status})">
+                            </el-switch>
+                        </template>
+                    </el-table-column>
+                    <el-table-column fixed type="expand">
+                        <template v-slot="props">
+                            Data in expanded row
+                        </template>
+                    </el-table-column>
+                    <el-table-column fixed sortable="custom" prop="_id" label="ID">
+                    </el-table-column>
+                    <template v-for="(col,idx) in scope.dynamicCols">
+                        <el-table-column v-if="col.value === 'description'" sortable="custom" :key="idx"
+                            prop="description" label="Description">
+                            Some custom template for description
+                        </el-table-column>
+                        <el-table-column v-else :key="idx" sortable="custom" :prop="col.value" :label="col.label">
+                        </el-table-column>
+                    </template>
+                </template>
+                <template v-slot:bottomline="scope">
+                    <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()">
+                    </cly-diff-helper>
+                </template>
+            </cly-datatable-n>
+            <cly-drawer
+                :isOpened="isOpened"
+                name="userCreateDrawer"
+                @submit="onSubmit"
+                @close="onClose"
+                @copy="onCopy"
+                :title="title"
+                :saveButtonLabel="saveButtonLabel"
+                v-bind="$props.controls">
+                    <template v-slot:sidecars="drawerScope">
+                        <cly-content id="mainSidecar" role="sidecar" :always-active="true">
+                            <pre>
+                                {{drawerScope.editedObject}}
+                            </pre>
+                        </cly-content>
+                    </template>
+                    <template v-slot:default="drawerScope">
+                        <cly-form-step id="step1" name="First Step">
+                            <div class="section">
+                                <div class="label">Name</div> 
+                                <div>
+                                    <validation-provider name="name" rules="required" v-slot="v">
+                                        <cly-text-field v-model="drawerScope.editedObject.name" placeholder="Some required value"></cly-text-field>
+                                        <div class="validation-error" v-if="v.errors.length > 0">
+                                            Name is required.
+                                        </div>
+                                    </validation-provider>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="panel">
+                                    <div class="panel-heading">Fields</div>
+                                    <div class="panel-body">
+                                        <div class="label">Field 1</div> 
+                                        <div>
+                                            <validation-provider name="field1" rules="required" v-slot="v">
+                                                <cly-text-field v-model="drawerScope.editedObject.field1" placeholder="Some required value"></cly-text-field>
+                                                <div class="validation-error" v-if="v.errors.length > 0">
+                                                    Field 1 is required.
+                                                </div>
+                                            </validation-provider>
+                                        </div>
+                                        <br>
+                                        <div class="label">Field 2</div> 
+                                        <div>
+                                            <validation-provider name="field2" rules="required" v-slot="v">
+                                                <cly-text-field v-model="drawerScope.editedObject.field2" placeholder="Some required value"></cly-text-field>
+                                                <div class="validation-error" v-if="v.errors.length > 0">
+                                                    Field 2 is required.
+                                                </div>
+                                            </validation-provider>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </cly-form-step>
+                        <cly-form-step id="step2" name="Second Step">
+                            <div class="section">
+                                <div class="label">Description</div> 
+                                <div>
+                                    <cly-text-area v-model="drawerScope.editedObject.description" placeholder="A brief description (optional)"></cly-text-area>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <pre>
+                                    {{drawerScope.editedObject}}
+                                </pre>
+                            </div>
+                        </cly-form-step>
+                        <cly-form-step id="step3" name="Final Step">
+                            <div class="section">
+                                <div class="panel">
+                                    <div class="panel-heading">Allowed Props</div>
+                                    <div class="panel-body">
+                                        <validation-provider name="selectedProps" rules="required|arrmin:2" v-slot="v">
+                                            <cly-check-list v-model="drawerScope.editedObject.selectedProps" :items="constants.availableProps"></cly-check-list>
+                                            <div class="validation-error" v-if="v.errors.length > 0">
+                                                You must select at least 2 props.
+                                            </div>
+                                        </validation-provider>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="label">Visibility</div> 
+                                <div>
+                                    <cly-radio v-model="drawerScope.editedObject.visibility" :items="constants.visibilityOptions"></cly-radio>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <cly-check v-model="drawerScope.editedObject.status" skin="tick" label="Set as active"></cly-check>
+                            </div>
+                            <div class="section">
+                                <pre>
+                                    {{drawerScope.editedObject}}
+                                </pre>
+                            </div>
+                        </cly-form-step>
+                    </template>
+            </cly-drawer>
+        </el-tab-pane>
+    </cly-tabs>
+</div>
