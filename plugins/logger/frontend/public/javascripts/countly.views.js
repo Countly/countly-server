@@ -1,24 +1,24 @@
-/*global $, moment, countlyVue, app, countlyLogger */
+/*global $, moment, countlyVue, app, countlyLogger, CountlyHelpers */
 
 var isSecondFormat = (Math.round(parseFloat(this.timestamp, 10)) + "").length === 10;
 
-var formatVersion = function(version, eleminateFirstCharacter) {
+var formatVersion = function (version, eleminateFirstCharacter) {
     return version ? eleminateFirstCharacter ? version.substring(1).replaceAll(':', '.') : version.replaceAll(':', '.') : '';
 };
 
-var filterLogs = function(logs, loggerFilter) {
-    return loggerFilter !== 'all' ?
-        logs.filter(function(log) {
+var filterLogs = function (logs, loggerFilter) {
+    return loggerFilter && loggerFilter === 'all'
+        ? logs
+        : logs && logs.length ? logs.filter(function (log) {
             return log.t && Object.keys(log.t).includes(loggerFilter);
-        }) :
-        logs;
+        }) : [];
 };
 
 var ReadableDateComponent = countlyVue.components.BaseComponent.extend({
     props: ['timestamp'],
     computed: {
         date: {
-            get: function() {
+            get: function () {
                 return isSecondFormat ?
                     moment(this.timestamp * 1000).format("MMMM Do YYYY") :
                     moment(this.timestamp).format("MMMM Do YYYY");
@@ -26,7 +26,7 @@ var ReadableDateComponent = countlyVue.components.BaseComponent.extend({
 
         },
         time: {
-            get: function() {
+            get: function () {
                 return isSecondFormat ?
                     moment(this.timestamp * 1000).format("HH:mm:ss") :
                     moment(this.timestamp).format("HH:mm:ss");
@@ -40,7 +40,7 @@ var DetailsComponent = countlyVue.components.BaseComponent.extend({
     props: ['device', 'location', 'version', 'sdk'],
     computed: {
         log: {
-            get: function() {
+            get: function () {
                 var flag = this.location.cc ? this.location.cc.toLowerCase() : '';
                 return {
                     id: this.device.id,
@@ -62,7 +62,7 @@ var InfoComponent = countlyVue.components.BaseComponent.extend({
     props: ['info', 'filter'],
     computed: {
         logInfo: {
-            get: function() {
+            get: function () {
                 if (this.filter === 'all') {
                     return this.info && Object.keys(this.info).length ?
                         Object.keys(this.info).join(', ') : [];
@@ -80,7 +80,7 @@ var InfoComponent = countlyVue.components.BaseComponent.extend({
 
 var LoggerView = countlyVue.views.BaseView.extend({
     template: '#logger-main-view',
-    data: function() {
+    data: function () {
         return {
             message: 'EVENT LOGGING VIEW',
             switch: true,
@@ -88,7 +88,7 @@ var LoggerView = countlyVue.views.BaseView.extend({
             logsData: [],
             autoRefresh: false,
             collectionInfo: '',
-            filterOptions: [{
+            defaultFilters: [{
                 value: 'all',
                 label: this.i18n('logger.all')
             }, {
@@ -113,33 +113,16 @@ var LoggerView = countlyVue.views.BaseView.extend({
             loggerFilter: 'all'
         };
     },
-    mounted: function() {
-        if (Object.prototype.hasOwnProperty.call(app, 'remoteConfigView')) {
-            this.filterOptions.push({
-                value: 'rc',
-                label: this.i18n('logger.remote-config')
-            });
+    computed: {
+        filterOptions: function(){
+              return this.defaultFilters.concat(this.externalFilters);
         }
-
-        if (Object.prototype.hasOwnProperty.call(app, 'performanceMonitoringView')) {
-            this.filterOptions.push({
-                value: 'apm',
-                label: this.i18n('logger.performance-monitoring')
-            });
-        }
-
-        countlyLogger.getRequestLogs()
-            .then(data => {
-                this.logsData = filterLogs(data, this.loggerFilter);
-            });
-
-        countlyLogger.getCollectionInfo()
-            .then(info => {
-                this.collectionInfo = info
-                    ? this.i18n('logger.collection-description', info.max)
-                    : this.i18n('logger.capped-remind');
-            });
     },
+    mixins: [
+        countlyVue.container.dataMixin({
+            'externalFilters': '/manage/logger'
+        })
+    ],
     methods: {
         getTitleTooltip() {
             return this.i18n('logger.description');
@@ -150,30 +133,27 @@ var LoggerView = countlyVue.views.BaseView.extend({
         stopAutoRefresh() {
             this.autoRefresh = false;
         },
+        fetchRequestLogs() {
+            var vm = this;
+            countlyLogger.getRequestLogs()
+                .then(function (data) {
+                    vm.logsData = filterLogs(data.logs || data, vm.loggerFilter);
+                });
+        },
         refresh() {
             if (this.autoRefresh) {
-                countlyLogger.getRequestLogs()
-                    .then(data => {
-                        this.logsData = filterLogs(data, this.loggerFilter);
-                    });
+                this.fetchRequestLogs();
             }
         },
         sync() {
-            countlyLogger.getRequestLogs()
-                .then(data => {
-                    this.logsData = filterLogs(data, this.loggerFilter);
-                });
+            this.fetchRequestLogs();
         },
         filterChange() {
-            console.log(this.loggerFilter);
-            countlyLogger.getRequestLogs()
-                .then(data => {
-                    this.logsData = filterLogs(data, this.loggerFilter);
-                });
+            this.fetchRequestLogs();
         }
     },
     filters: {
-        pretty: function(value) {
+        pretty: function (value) {
             return typeof value === 'string' ? JSON.stringify(JSON.parse(value), null, 2) : JSON.stringify(value, null, 2);
         }
     },
@@ -182,6 +162,16 @@ var LoggerView = countlyVue.views.BaseView.extend({
         "logger-details": DetailsComponent,
         "logger-info": InfoComponent,
     },
+    mounted: function () {
+        this.fetchRequestLogs();
+
+        countlyLogger.getCollectionInfo()
+            .then(info => {
+                this.collectionInfo = info
+                    ? this.i18n('logger.collection-description', info.max)
+                    : this.i18n('logger.capped-remind');
+            });
+    }
 });
 
 var logger = new countlyVue.views.BackboneWrapper({
@@ -194,10 +184,10 @@ var logger = new countlyVue.views.BackboneWrapper({
     }]
 });
 
-$(document).ready(function() {
+$(document).ready(function () {
     app.logger = logger;
 
-    app.route('/manage/logger', 'logger', function() {
+    app.route('/manage/logger', 'logger', function () {
         var params = {};
         this.logger.params = params;
         this.renderWhenReady(this.logger);
