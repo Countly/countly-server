@@ -16,7 +16,7 @@
         <cly-section title="Time Graph">
             <cly-chart-time :option="largeScaleOptions" :bucket="selBucket" :dummy="true">
                 <template v-slot:chart-left="scope">
-                    <div style="width: 100px;">
+                    <div class="bu-level-item" style="width: 100px;">
                         <el-select v-model="selBucket">
                             <el-option :key="item" :value="item" :label="item"
                                 v-for="item in ['daily', 'weekly', 'monthly', 'hourly']"></el-option>
