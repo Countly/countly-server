@@ -1,6 +1,6 @@
 /*global countlyCommon, CountlyHelpers $*/
-(function (countlyLogger) {
-    countlyLogger.getRequestLogs = function (query = {}) {
+(function(countlyLogger) {
+    countlyLogger.getRequestLogs = function(query = {}) {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
@@ -9,10 +9,10 @@
                 "method": "logs",
                 "filter": JSON.stringify(query)
             },
-            success: function (json) {
+            success: function(json) {
                 return json;
             },
-            error: function (xhr, status, error) {
+            error: function(xhr, status, error) {
                 if (error) {
                     CountlyHelpers.alert(error, "red");
                 }
@@ -20,7 +20,7 @@
         });
     };
 
-    countlyLogger.getCollectionInfo = function () {
+    countlyLogger.getCollectionInfo = function() {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
@@ -28,10 +28,10 @@
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "collection_info"
             },
-            success: function (json) {
+            success: function(json) {
                 return json;
             },
-            error: function (xhr, status, error) {
+            error: function(xhr, status, error) {
                 if (error) {
                     CountlyHelpers.alert(error, "red");
                 }

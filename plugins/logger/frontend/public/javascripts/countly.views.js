@@ -1,15 +1,15 @@
-/*global $, moment, countlyVue, app, countlyLogger, CountlyHelpers */
+/*global $, moment, countlyVue, app, countlyLogger */
 
 var isSecondFormat = (Math.round(parseFloat(this.timestamp, 10)) + "").length === 10;
 
-var formatVersion = function (version, eleminateFirstCharacter) {
+var formatVersion = function(version, eleminateFirstCharacter) {
     return version ? eleminateFirstCharacter ? version.substring(1).replaceAll(':', '.') : version.replaceAll(':', '.') : '';
 };
 
-var filterLogs = function (logs, loggerFilter) {
+var filterLogs = function(logs, loggerFilter) {
     return loggerFilter && loggerFilter === 'all'
         ? logs
-        : logs && logs.length ? logs.filter(function (log) {
+        : logs && logs.length ? logs.filter(function(log) {
             return log.t && Object.keys(log.t).includes(loggerFilter);
         }) : [];
 };
@@ -17,12 +17,12 @@ var filterLogs = function (logs, loggerFilter) {
 var ReadableDateComponent = countlyVue.components.BaseComponent.extend({
     props: ['timestamp'],
     computed: {
-        date: function () {
+        date: function() {
             return isSecondFormat ?
                 moment(this.timestamp * 1000).format("MMMM Do YYYY") :
                 moment(this.timestamp).format("MMMM Do YYYY");
         },
-        time: function () {
+        time: function() {
             return isSecondFormat ?
                 moment(this.timestamp * 1000).format("HH:mm:ss") :
                 moment(this.timestamp).format("HH:mm:ss");
@@ -34,7 +34,7 @@ var ReadableDateComponent = countlyVue.components.BaseComponent.extend({
 var DetailsComponent = countlyVue.components.BaseComponent.extend({
     props: ['device', 'location', 'version', 'sdk'],
     computed: {
-        log: function () {
+        log: function() {
             var flag = this.location.cc ? this.location.cc.toLowerCase() : '';
             return {
                 id: this.device.id,
@@ -54,7 +54,7 @@ var DetailsComponent = countlyVue.components.BaseComponent.extend({
 var InfoComponent = countlyVue.components.BaseComponent.extend({
     props: ['info', 'filter'],
     computed: {
-        logInfo: function () {
+        logInfo: function() {
             if (this.filter === 'all') {
                 return this.info && Object.keys(this.info).length ?
                     Object.keys(this.info).join(', ') : [];
@@ -70,7 +70,7 @@ var InfoComponent = countlyVue.components.BaseComponent.extend({
 
 var LoggerView = countlyVue.views.BaseView.extend({
     template: '#logger-main-view',
-    data: function () {
+    data: function() {
         return {
             message: 'EVENT LOGGING VIEW',
             switch: true,
@@ -104,7 +104,7 @@ var LoggerView = countlyVue.views.BaseView.extend({
         };
     },
     computed: {
-        filterOptions: function () {
+        filterOptions: function() {
             return this.defaultFilters.concat(this.externalFilters);
         }
     },
@@ -126,7 +126,7 @@ var LoggerView = countlyVue.views.BaseView.extend({
         fetchRequestLogs() {
             var vm = this;
             countlyLogger.getRequestLogs()
-                .then(function (data) {
+                .then(function(data) {
                     vm.logsData = filterLogs(data.logs || data, vm.loggerFilter);
                 });
         },
@@ -143,7 +143,7 @@ var LoggerView = countlyVue.views.BaseView.extend({
         }
     },
     filters: {
-        pretty: function (value) {
+        pretty: function(value) {
             return typeof value === 'string' ? JSON.stringify(JSON.parse(value), null, 2) : JSON.stringify(value, null, 2);
         }
     },
@@ -152,7 +152,7 @@ var LoggerView = countlyVue.views.BaseView.extend({
         "logger-details": DetailsComponent,
         "logger-info": InfoComponent,
     },
-    mounted: function () {
+    mounted: function() {
         this.fetchRequestLogs();
 
         countlyLogger.getCollectionInfo()
@@ -174,10 +174,10 @@ var logger = new countlyVue.views.BackboneWrapper({
     }]
 });
 
-$(document).ready(function () {
+$(document).ready(function() {
     app.logger = logger;
 
-    app.route('/manage/logger', 'logger', function () {
+    app.route('/manage/logger', 'logger', function() {
         var params = {};
         this.logger.params = params;
         this.renderWhenReady(this.logger);
