@@ -89,6 +89,6 @@ var EventsOverviewViewWrapper = new countlyVue.views.BackboneWrapper({
     ]
 });
 
-app.route("/analytics/events/1/overview", "overview", function() {
+app.route("/analytics/events/overview", "overview", function() {
     this.renderWhenReady(EventsOverviewViewWrapper);
 });
