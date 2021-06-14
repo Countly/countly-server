@@ -14,15 +14,10 @@ var EventsTable = countlyVue.views.BaseView.extend({
             return this.$store.getters["countlyEventsOverview/detailEvents"];
         },
     },
-    template: '#overview-tables-events',
-    components: {
-    }
+    template: '#overview-tables-events'
 });
 
 var EventsBreakdownHorizontalTile = countlyVue.views.BaseView.extend({
-    mixins: [
-        countlyVue.mixins.i18n
-    ],
     props: {
         trend: {
             type: String
@@ -76,7 +71,7 @@ var EventsOverviewView = countlyVue.views.BaseView.extend({
             description: CV.i18n('events.overview.title.new')
         };
     },
-    mounted: function() {
+    beforeCreate: function() {
         this.$store.dispatch('countlyEventsOverview/fetchDetailEvents');
         this.$store.dispatch('countlyEventsOverview/fetchTopEvents');
     }
