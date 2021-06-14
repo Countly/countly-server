@@ -1,28 +1,7 @@
-/* global countlyVue, countlyCommonEvents, countlyEventsOverview,CV,app,CountlyHelpers*/
-var EventsSegmentsTable = countlyVue.views.BaseView.extend({
-    mixins: [countlyVue.mixins.i18n],
-    data: function () {
-        return {
-            eventsSegmentsTableExportSettings: {
-                title: "Event Segments",
-                timeDependent: true
-            }
-        };
-    },
-    computed: {
-        eventsSegmentsTableRows: function () {
-            return this.$store.getters["countlyEventsOverview/detailEvents"];
-        },
-    },
-    template: '#overview-tables-events-segments',
-    components: {
-    }
-});
-
-
+/* global countlyVue, countlyEventsOverview,CV,app*/
 var EventsTable = countlyVue.views.BaseView.extend({
     mixins: [countlyVue.mixins.i18n],
-    data: function () {
+    data: function() {
         return {
             scoreTableExportSettings: {
                 title: "Events",
@@ -31,7 +10,7 @@ var EventsTable = countlyVue.views.BaseView.extend({
         };
     },
     computed: {
-        eventsTableRows: function () {
+        eventsTableRows: function() {
             return this.$store.getters["countlyEventsOverview/detailEvents"];
         },
     },
@@ -46,19 +25,19 @@ var EventsOverviewView = countlyVue.views.BaseView.extend({
         "detail-tables": EventsTable
     },
     computed: {
-        topEvents: function () {
+        topEvents: function() {
             return this.$store.getters["countlyEventsOverview/topEvents"];
         },
-        eventsOverview: function () {
+        eventsOverview: function() {
             return this.$store.getters["countlyEventsOverview/eventsOverview"];
         }
     },
-    data: function () {
+    data: function() {
         return {
             description: CV.i18n('events.overview.title.new')
         };
     },
-    mounted: function () {
+    mounted: function() {
         this.$store.dispatch('countlyEventsOverview/fetchDetailEvents');
         this.$store.dispatch('countlyEventsOverview/fetchTopEvents');
     }
@@ -76,6 +55,6 @@ var EventsOverviewViewWrapper = new countlyVue.views.BackboneWrapper({
     ]
 });
 
-app.route("/analytics/events/overview", "overview", function () {
+app.route("/analytics/events/overview", "overview", function() {
     this.renderWhenReady(EventsOverviewViewWrapper);
 });

@@ -1,8 +1,8 @@
-/*global window, countlyVue, CV, countlyCommon, countlyGlobal, countlySession, CountlyHelpers */
-(function (countlyEventsOverview) {
+/*global window, countlyVue, CV, countlyCommon */
+(function(countlyEventsOverview) {
 
     countlyEventsOverview.helpers = {
-        getEventOverview: function (ob) {
+        getEventOverview: function(ob) {
             var eventsOverview = [];
             var totalEvents = {};
             totalEvents["name"] = "Total Events";
@@ -14,13 +14,13 @@
             var epr = {};
             epr["name"] = "Events Per Session";
             epr["value"] = parseFloat(countlyCommon.getShortNumber((ob.totalCount / ob.totalSessionCount).toFixed(1)));
-            var res = countlyCommon.getPercentChange(countlyCommon.getShortNumber((ob.prevTotalCount / ob.prevSessionCount).toFixed(1)), countlyCommon.getShortNumber((ob.totalCount / ob.totalSessionCount).toFixed(1)));
+            res = countlyCommon.getPercentChange(countlyCommon.getShortNumber((ob.prevTotalCount / ob.prevSessionCount).toFixed(1)), countlyCommon.getShortNumber((ob.totalCount / ob.totalSessionCount).toFixed(1)));
             epr["change"] = res.percent;
             epr["trend"] = res.trend;
             eventsOverview.push(epr);
             return eventsOverview;
         },
-        getTopEvents: function (ob) {
+        getTopEvents: function(ob) {
             var topEvents = [];
             if (ob.data && ob.data.length > 0) {
                 var data = ob.data;
@@ -36,13 +36,13 @@
             }
             return topEvents;
         },
-        formatPercentage: function (value) {
+        formatPercentage: function(value) {
             return parseFloat((Math.round(value * 100)).toFixed(this.DECIMAL_PLACES));
         }
     };
 
     countlyEventsOverview.service = {
-        fetchEvents: function () {
+        fetchEvents: function() {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -54,7 +54,7 @@
                 dataType: "json",
             });
         },
-        fetchTopEvents: function (filter, limit) {
+        fetchTopEvents: function(filter, limit) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -70,9 +70,9 @@
         }
     };
 
-    countlyEventsOverview.getVuexModule = function () {
+    countlyEventsOverview.getVuexModule = function() {
 
-        var getInitialState = function () {
+        var getInitialState = function() {
             return {
                 eventsOverview: [],
                 detailEvents: {},
@@ -81,46 +81,46 @@
         };
 
         var eventsOverviewActions = {
-            fetchDetailEvents: function (context) {
+            fetchDetailEvents: function(context) {
                 return countlyEventsOverview.service.fetchEvents()
-                    .then(function (res) {
+                    .then(function(res) {
                         if (res) {
                             context.commit("setDetailEvents", res || {});
                             context.commit("setEventOverview", countlyEventsOverview.helpers.getEventOverview(res) || []);
                             return;
                         }
-                    })
+                    });
             },
-            fetchTopEvents: function (context) {
+            fetchTopEvents: function(context) {
                 return countlyEventsOverview.service.fetchTopEvents("count", 3)
-                    .then(function (res) {
+                    .then(function(res) {
                         if (res) {
                             return context.commit("setTopEvents", countlyEventsOverview.helpers.getTopEvents(res) || []);
                         }
-                    })
+                    });
             }
 
         };
 
         var eventsOverviewMutations = {
-            setDetailEvents: function (state, value) {
+            setDetailEvents: function(state, value) {
                 state.detailEvents = value;
             },
-            setEventOverview: function (state, value) {
+            setEventOverview: function(state, value) {
                 state.eventsOverview = value;
             },
-            setTopEvents: function (state, value) {
+            setTopEvents: function(state, value) {
                 state.topEvents = value;
             }
         };
         var eventsOverviewGetters = {
-            detailEvents: function (_state, _getters, _rootState, _rootGetters) {
+            detailEvents: function(_state) {
                 return _state.detailEvents;
             },
-            eventsOverview: function (_state, _getters, _rootState, _rootGetters) {
+            eventsOverview: function(_state) {
                 return _state.eventsOverview;
             },
-            topEvents: function (_state, _getters, _rootState, _rootGetters) {
+            topEvents: function(_state) {
                 return _state.topEvents;
             }
         };
