@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 if command -v eslint &> /dev/null
 then
 	ESLINT='eslint'
