@@ -1,0 +1,150 @@
+<script type="text/x-template" id="events-overview">
+    <div v-bind:class="[componentId]">
+        <cly-header>
+            <template v-slot:header-left>
+                <h2> {{i18n('events.overview.title.new')}} 
+                </h2>
+                <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description">
+                </span>
+            </template>
+        </cly-header>
+		<div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
+			<cly-events-breakdown-horizontal-tile
+				:name="item.name"
+				:trend="item.trend"
+				:value="item.value"
+				:change="item.change"
+				:key="idx"
+				v-for="(item, idx) in eventsOverview">
+				<h4 slot="title" class="text-uppercase cly-events-breakdown-horizontal-tile__titleoverview">{{item.name}}</h4>
+				<div slot="countValue" class="cly-events-breakdown-horizontal-tile__overviewvalue">{{item.value}}</div>
+			</cly-events-breakdown-horizontal-tile>
+		</div>
+		<h4 class="cly-vue-events-overview-top-events">{{i18n('events.overview.top.events.by.count')}} </h4>
+		<div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
+			<cly-events-breakdown-horizontal-tile 
+				:name="item.name"
+				:percentage="item.percentage"
+				:trend="item.trend"
+				:value="item.value"
+				:change="item.change"
+				:isTopEvents=true
+				:key="idx"
+				v-for="(item, idx) in topEvents">
+				<h4 slot="title" class="text-uppercase cly-events-breakdown-horizontal-tile__title">{{item.name}}</h4>
+				<div slot="countValue" class="cly-events-breakdown-horizontal-tile__value">{{item.value}}</div>
+				<div class="bu-level-right" slot="totalPercentage">
+					<div class="bu-level-item cly-events-breakdown-horizontal-tile__percentage">
+					 {{item.percentage}}{{i18n("events.percentage.of.total")}}
+					</div>
+				</div>
+				<div slot="progressBar">
+					<progress class="bu-progress bu-is-link" :value="item.percentage" max="100">{{item.percentage}}%</progress>
+				</div>
+			</cly-events-breakdown-horizontal-tile>
+		</div>
+        <cly-main>
+            <h3>{{i18n('events.overview.metrics')}} </h3>
+            <detail-tables></detail-tables>
+        </cly-main>
+        <div>
+            <h3 style="padding-left:24px">{{i18n('events.overview.monitor')}} </h3>
+            <div style="padding-left:24px">{{i18n('events.overview.time.period')}}
+            <cly-date-picker-g class="cly-vue-events-overview-date-picker"></cly-date-picker-g>
+		</div>   
+		</div>
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="overview-tables">
+	<div>
+		<cly-dynamic-tabs skin="secondary" v-model="dynamicTab" :tabs="tabs">
+		</cly-dynamic-tabs>
+	</div>
+ </script>
+ <script type="text/x-template" id="overview-tables-events">
+	<div>
+	<cly-datatable-n :rows="eventsTableRows.data">
+				<template v-slot:header-left="selectScope">
+				</template>
+				<template v-slot="scope">
+					<el-table-column sortable="true" prop="event" :label="i18n('events.overview.event')">
+						<template v-slot="rowScope">
+							<div>
+								<span :style="{'background-color': rowScope.row.bgColor}" class="nps-dot"></span>
+								{{rowScope.row.name}}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="true" prop="count" :label="i18n('events.overview.count')">
+						<template v-slot="rowScope">
+							<div>
+								{{rowScope.row.count}}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="true" prop="sum" :label="i18n('events.overview.sum')">
+                        <template v-slot="rowScope">
+							<div>
+								{{rowScope.row.sum}}
+							</div>
+						</template>
+					</el-table-column>
+                    <el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')">
+                        <template v-slot="rowScope">
+							<div>
+								{{rowScope.row.duration}}
+							</div>
+						</template>
+					</el-table-column>
+				</template>
+			</cly-datatable-n>
+	</div>
+ </script>
+ <script type="text/x-template" id="overview-tables-events-segments">
+	<div>
+	<cly-datatable-n :rows="eventsSegmentsTableRows.rows">
+				<template v-slot:header-left="selectScope">
+				</template>
+				<template v-slot="scope">
+					<el-table-column sortable="true" prop="event" :label="i18n('events.overview.segment')">
+						<template v-slot="rowScope">
+							<div>
+								<span :style="{'background-color': rowScope.row.bgColor}" class="nps-dot"></span>
+								{{rowScope.row.segmentName}}
+							</div>
+						</template>
+					</el-table-column>
+                    <el-table-column sortable="true" prop="event" :label="i18n('events.overview.event')">
+						<template v-slot="rowScope">
+							<div>
+								<span :style="{'background-color': rowScope.row.bgColor}" class="nps-dot"></span>
+								{{rowScope.row.event}}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="true" prop="count" :label="i18n('events.overview.count')">
+						<template v-slot="rowScope">
+							<div>
+								{{rowScope.row.count}}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="true" prop="sum" :label="i18n('events.overview.sum')">
+                        <template v-slot="rowScope">
+							<div>
+								{{rowScope.row.sum}}
+							</div>
+						</template>
+					</el-table-column>
+                    <el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')">
+                        <template v-slot="rowScope">
+							<div>
+								{{rowScope.row.duration}}
+							</div>
+						</template>
+					</el-table-column>
+				</template>
+			</cly-datatable-n>
+	</div>
+ </script>
