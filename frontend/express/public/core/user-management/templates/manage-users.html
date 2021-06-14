@@ -5,7 +5,7 @@
             <cly-header title="Manage Users">
                 <template v-slot:header-right>
                     <div class="bu-level-item">
-                        <el-button class="create-button" @click="isOpened = true" type="success" size="small" icon="el-icon-plus">New User</el-button>
+                        <el-button class="create-button" @click="openDrawer()" type="success" size="small" icon="el-icon-plus">New User</el-button>
                     </div>
                 </template>
             </cly-header>
@@ -46,7 +46,7 @@
             <cly-header title="Manage User Groups">
                 <template v-slot:header-right>
                     <div class="bu-level-item">
-                        <el-button class="create-button" @click="isOpened = true" type="success" size="small" icon="el-icon-plus">New User Group</el-button>
+                        <el-button class="create-button" @click="openDrawer()" type="success" size="small" icon="el-icon-plus">New User Group</el-button>
                     </div>
                 </template>
             </cly-header>
@@ -86,7 +86,6 @@
                 name="userCreateDrawer"
                 @submit="onSubmit"
                 @close="onClose"
-                @copy="onCopy"
                 :title="title"
                 :saveButtonLabel="saveButtonLabel"
                 v-bind="$props.controls">

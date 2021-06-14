@@ -4414,20 +4414,3 @@ transform: rotate(45deg);
 .mgmt-plugins-row .selectize-dropdown [data-selectable] .highlight {
     background: #fff;
 }
-
-.routename-manageUsers .manage-users-wrapper .tab-content {
-    padding: 0px 24px;    
-}
-
-.routename-manageUsers .tab-bar .el-tabs__header {
-    padding: 24px 24px 0px 24px;
-}
-
-.routename-manageUsers .cly-vue-header {
-    padding: 24px 0px;
-    border-bottom: none;
-}
-
-.routename-manageUsers .create-button {
-    background-color: #12AF51;
-}
