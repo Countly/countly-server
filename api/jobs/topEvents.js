@@ -29,7 +29,7 @@ class TopEventsJob extends job.Job {
      * @return {string} event collection.
      */
     eventsCollentions(params) {
-        const {event, id} = params;
+        const { event, id } = params;
         const eventName = `${event}${id}`;
         return `events${crypto.createHash("sha1").update(eventName).digest("hex")}`;
     }
@@ -54,15 +54,41 @@ class TopEventsJob extends job.Job {
      * @returns {Promise.<boolean>} true.
      */
     async getEventsCount(params) {
-        const {collectionNameEvents, ob, data, event} = params;
+        const { collectionNameEvents, ob, data, event } = params;
         return await new Promise((resolve) => {
             countlyApi.data.fetch.getTimeObjForEvents(collectionNameEvents, ob, (doc) => {
                 countlyEvents.setDb(doc || {});
-                const countProp = countlyEvents.getNumber("c");
+                const countProp = countlyEvents.getNumber("c", true);
+                const sumProp = countlyEvents.getNumber("s", true);
+                const durationProp = countlyEvents.getNumber("dur", true);
                 data[event] = {};
                 data[event].data = {
-                    count: countProp
+                    count: countProp,
+                    sum: sumProp,
+                    duration: durationProp
                 };
+                resolve(true);
+            });
+        });
+    }
+
+    /**
+     * async
+     * Get total sessions.
+     * @param {Object} params - getSessionsCount object
+     * @param {String} params.usersCollectionName - users collection name
+     * @param {Object} params.ob - it contains all necessary info
+     * @param {Object} params.sessionData - dummy session data
+     * @returns {Promise.<boolean>} true.
+     */
+    async getSessionCount(params) {
+        const { ob, sessionData, usersCollectionName } = params;
+        return await new Promise((resolve) => {
+            countlyApi.data.fetch.getTimeObj(usersCollectionName, ob, (doc) => {
+                countlyEvents.setDb(doc || {});
+                const sessionProp = countlyEvents.getNumber("t", true);
+                sessionData.totalSessionCount = sessionProp.total;
+                sessionData.prevSessionCount = sessionProp["prev-total"];
                 resolve(true);
             });
         });
@@ -109,7 +135,7 @@ class TopEventsJob extends job.Job {
      */
     async getAllApps() {
         try {
-            const getAllApps = await new Promise((res, rej) => common.db.collection("apps").find({}, {_id: 1, timezone: 1}).toArray((err, apps) => err ? rej(err) : res(apps)));
+            const getAllApps = await new Promise((res, rej) => common.db.collection("apps").find({}, { _id: 1, timezone: 1 }).toArray((err, apps) => err ? rej(err) : res(apps)));
             await Promise.all(getAllApps.map((app) => this.getAppEvents(app)));
         }
         catch (error) {
@@ -123,11 +149,11 @@ class TopEventsJob extends job.Job {
      * @param {Object} params - saveAppEvents object
      */
     async saveAppEvents(params) {
-        const {data, period, app: {_id}} = params;
+        const { data, sessionData, period, app: { _id }, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration } = params;
         const encodedData = this.encodeEvents(data);
         const timeSecond = this.timeSecond();
         const currentPeriood = this.mutatePeriod(period);
-        await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).insert({app_id: _id, ts: timeSecond, period: currentPeriood, data: encodedData}, (error, records) => !error && records ? res(records) : rej(error)));
+        await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).insert({ app_id: _id, ts: timeSecond, period: currentPeriood, data: encodedData, totalCount: totalCount, prevTotalCount: prevTotalCount, totalSum: totalSum, prevTotalSum: prevTotalSum, totalDuration: totalDuration, prevTotalDuration: prevTotalDuration, prevSessionCount: sessionData.prevSessionCount, totalSessionCount: sessionData.totalSessionCount }, (error, records) => !error && records ? res(records) : rej(error)));
     }
 
     /**
@@ -136,23 +162,38 @@ class TopEventsJob extends job.Job {
      * @param {Object} app - saveAppEvents object
      */
     async getAppEvents(app) {
-        const getEvents = await new Promise((res, rej) => common.db.collection("events").findOne({_id: app._id}, (errorEvents, result) => errorEvents ? rej(errorEvents) : res(result)));
+        const getEvents = await new Promise((res, rej) => common.db.collection("events").findOne({ _id: app._id }, (errorEvents, result) => errorEvents ? rej(errorEvents) : res(result)));
         if (getEvents && 'list' in getEvents) {
             const eventMap = this.eventsFilter(getEvents.list);
-            await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).remove({app_id: app._id}, (error, result) => error ? rej(error) : res(result)));
+            await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).remove({ app_id: app._id }, (error, result) => error ? rej(error) : res(result)));
             if (eventMap && eventMap instanceof Array && eventMap.length >= TopEventsJob.TOTAL_EVENT_COUNT) {
                 for (const period of TopEventsJob.PERIODS) {
                     const data = {};
+                    const sessionData = {};
+                    const usersCollectionName = "users";
                     const ob = { app_id: app._id, appTimezone: app.timezone, qstring: { period: period } };
                     // if (period === "hour") {
                     //     ob.time = common.initTimeObj(app.timezone, new Date().getTime());
                     //     ob.qstring.action = "refresh";
                     // }
+                    let totalCount = 0;
+                    let prevTotalCount = 0;
+                    let totalSum = 0;
+                    let prevTotalSum = 0;
+                    let totalDuration = 0;
+                    let prevTotalDuration = 0;
                     for (const event of eventMap) {
-                        const collectionNameEvents = this.eventsCollentions({event, id: app._id});
-                        await this.getEventsCount({collectionNameEvents, ob, data, event});
+                        const collectionNameEvents = this.eventsCollentions({ event, id: app._id });
+                        await this.getEventsCount({ collectionNameEvents, ob, data, event });
+                        totalCount += data[event].data.count.total;
+                        prevTotalCount += data[event].data.count["prev-total"];
+                        totalSum += data[event].data.sum.total;
+                        prevTotalSum += data[event].data.sum["prev-total"];
+                        totalDuration += data[event].data.duration.total;
+                        prevTotalDuration += data[event].data.duration["prev-total"];
                     }
-                    await this.saveAppEvents({app, data, period});
+                    await this.getSessionCount({ ob, sessionData, usersCollectionName });
+                    await this.saveAppEvents({ app, data, sessionData, period, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration });
                 }
             }
         }
