@@ -155,6 +155,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/session-durations/javascripts/countly.views.js',
                     'frontend/express/public/core/session-frequency/javascripts/countly.models.js',
                     'frontend/express/public/core/session-frequency/javascripts/countly.views.js',
+                    'frontend/express/public/core/events/javascripts/countly.models.js',
+                    'frontend/express/public/core/events/javascripts/countly.views.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }
@@ -238,9 +240,9 @@ module.exports = function(grunt) {
                     update: true // only compile when scss file is newer than css file
                 },
                 files: [
-                    {src: 'frontend/express/public/stylesheets/vue/clyvue.scss', dest: 'frontend/express/public/stylesheets/vue/clyvue.css'},
-                    {src: 'frontend/express/public/stylesheets/styles/manifest.scss', dest: 'frontend/express/public/stylesheets/styles/manifest.css'},
-                    {expand: true, src: ['plugins/*/frontend/public/stylesheets/**/*.scss'], ext: '.css', extDot: 'first'}
+                    { src: 'frontend/express/public/stylesheets/vue/clyvue.scss', dest: 'frontend/express/public/stylesheets/vue/clyvue.css' },
+                    { src: 'frontend/express/public/stylesheets/styles/manifest.scss', dest: 'frontend/express/public/stylesheets/styles/manifest.css' },
+                    { expand: true, src: ['plugins/*/frontend/public/stylesheets/**/*.scss'], ext: '.css', extDot: 'first' }
                 ]
             }
         },
@@ -316,7 +318,7 @@ module.exports = function(grunt) {
             if (fs.existsSync(javascripts) && fs.statSync(javascripts).isDirectory()) {
                 files = fs.readdirSync(javascripts);
                 if (files.length) {
-                // move models to the top, then all dependencies, then views
+                    // move models to the top, then all dependencies, then views
                     for (var i = 0; i < files.length; i++) {
                         if (files[i].indexOf('countly.models.js') !== -1 && i !== 0) {
                             files.splice(0, 0, files.splice(i, 1)[0]);
@@ -347,7 +349,7 @@ module.exports = function(grunt) {
 
             try {
                 if (fs.existsSync(images) && fs.statSync(images).isDirectory()) {
-                    img.push({expand: true, cwd: 'plugins/' + plugin + '/frontend/public/images/' + plugin + '/', filter: 'isFile', src: '**', dest: 'frontend/express/public/images/' + plugin + '/'});
+                    img.push({ expand: true, cwd: 'plugins/' + plugin + '/frontend/public/images/' + plugin + '/', filter: 'isFile', src: '**', dest: 'frontend/express/public/images/' + plugin + '/' });
                 }
             }
             catch (err) {
