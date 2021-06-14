@@ -9,18 +9,18 @@
             </template>
         </cly-header>
 		<div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
-			<cly-events-breakdown-horizontal-tile
+			<events-breakdown-horizontal-tile
 				:trend="item.trend"
 				:change="item.change"
 				:key="idx"
 				v-for="(item, idx) in eventsOverview">
 				<h4 slot="title" class="text-uppercase cly-events-breakdown-horizontal-tile__titleoverview">{{item.name}}</h4>
 				<div slot="countValue" class="cly-events-breakdown-horizontal-tile__overviewvalue">{{item.value}}</div>
-			</cly-events-breakdown-horizontal-tile>
+			</events-breakdown-horizontal-tile>
 		</div>
 		<h4 class="cly-vue-events-overview-top-events">{{i18n('events.overview.top.events.by.count')}} </h4>
 		<div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
-			<cly-events-breakdown-horizontal-tile 
+			<events-breakdown-horizontal-tile 
 				:trend="item.trend"
 				:change="item.change"
 				:key="idx"
@@ -35,7 +35,7 @@
 				<div slot="progressBar">
 					<progress class="bu-progress bu-is-link" :value="item.percentage" max="100">{{item.percentage}}%</progress>
 				</div>
-			</cly-events-breakdown-horizontal-tile>
+			</events-breakdown-horizontal-tile>
 		</div>
         <cly-main>
             <h3>{{i18n('events.overview.metrics')}} </h3>

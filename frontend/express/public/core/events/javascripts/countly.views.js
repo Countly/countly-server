@@ -19,10 +19,49 @@ var EventsTable = countlyVue.views.BaseView.extend({
     }
 });
 
+var EventsBreakdownHorizontalTile = countlyVue.views.BaseView.extend({
+    mixins: [
+        countlyVue.mixins.i18n
+    ],
+    props: {
+        trend: {
+            type: String
+        },
+        change: {
+            type: String
+        }
+    },
+    template: '<div class="cly-events-breakdown-horizontal-tile bu-column bu-is-4">\
+    <div class="cly-events-breakdown-horizontal-tile__wrapper">\
+    <slot name="title"></slot>\
+        <div class="cly-events-breakdown-horizontal-tile__values-list bu-columns bu-is-gapless bu-is-multiline bu-is-mobile">\
+            <div class="bu-column bu-is-12">\
+                <div class="cly-events-breakdown-horizontal-tile__item">\
+                    <div class="bu-level bu-is-mobile cly-events-breakdown-horizontal-tile__item-title">\
+                        <div class="bu-level-left">\
+                            <div class="bu-level-item">\
+                            <slot name="countValue"></slot>\
+                            <span v-if="trend === \'u\'" class="cly-events-breakdown-horizontal-tile--green"><i class="fas fa-arrow-up"></i>{{change}}</span>\
+                            <span v-else class="cly-events-breakdown-horizontal-tile--red"><i class="fas fa-arrow-down"></i>{{change}}</span>\
+                            </div>\
+                        </div>\
+                        <slot name="totalPercentage">\
+                        </slot>\
+                    </div>\
+                    <slot name="progressBar"></slot>\
+                </div>\
+            </div>\
+        </div>\
+    </div>\
+</div>'
+});
+
 var EventsOverviewView = countlyVue.views.BaseView.extend({
     template: "#events-overview",
     components: {
-        "detail-tables": EventsTable
+        "detail-tables": EventsTable,
+        "events-breakdown-horizontal-tile": EventsBreakdownHorizontalTile
+
     },
     computed: {
         topEvents: function() {
@@ -55,6 +94,6 @@ var EventsOverviewViewWrapper = new countlyVue.views.BackboneWrapper({
     ]
 });
 
-app.route("/analytics/events/overview", "overview", function() {
+app.route("/analytics/events/1/overview", "overview", function() {
     this.renderWhenReady(EventsOverviewViewWrapper);
 });
