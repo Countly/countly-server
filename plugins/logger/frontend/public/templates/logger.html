@@ -1,28 +1,28 @@
-<div v-bind:class="[componentId]" class="main-view logger-home logger">
+<div v-bind:class="[componentId]" class="main-view logger-home cly-vue-logger">
     <cly-header>
         <template v-slot:header-left>
-            <h2 class="title"> {{i18n('logger.title')}}
+            <h2 class="cly-vue-logger__title"> {{i18n('logger.title')}}
             </h2>
-            <span v-tooltip="getTitleTooltip()"><i class="tooltip ion-help-circled"></i></span>
+            <span v-tooltip="getTitleTooltip()"><i class="cly-vue-logger__tooltip ion-help-circled"></i></span>
         </template>
         </span>
         <template v-slot:header-bottom>
-            <span class='subtitle text-small'>
+            <span class='cly-vue-logger__subtitle text-small'>
                 {{collectionInfo}}
             </span>
         </template>
         <template v-slot:header-right>
             <div v-if="autoRefresh" class="bu-level-item">
-                <span class="refresh-enabled">{{i18n('logger.auto-refresh-is')}}</span>
-                <span class="refresh-enabled-color">{{i18n('logger.enabled')}}</span>
-                <span v-tooltip="getRefreshTooltip()"><i class="tooltip ion-help-circled"></i></span>
+                <span class="cly-vue-logger__refresh--enabled">{{i18n('logger.auto-refresh-is')}}</span>
+                <span class="cly-vue-logger__refresh--enabled-color">{{i18n('logger.enabled')}}</span>
+                <span v-tooltip="getRefreshTooltip()"><i class="cly-vue-logger__tooltip ion-help-circled"></i></span>
                 <el-button @click="stopAutoRefresh()"><i class="ion-stop"></i> {{i18n('logger.auto-refresh-stop')}}</el-button>
             </div>
             <div v-else="autoRefresh" class="bu-level-item">
                 <el-switch v-model="autoRefresh">
                 </el-switch>
-                <span class="refresh-disabled">{{i18n('logger.auto-refresh')}}</span>
-                <span v-tooltip="getRefreshTooltip()"><i class="tooltip ion-help-circled"></i></span>
+                <span class="cly-vue-logger__refresh--disabled">{{i18n('logger.auto-refresh')}}</span>
+                <span v-tooltip="getRefreshTooltip()"><i class="cly-vue-logger__tooltip ion-help-circled"></i></span>
             </div>
         </template>
     </cly-header>
@@ -36,11 +36,11 @@
                     </el-select>
                 </template>
                 <template v-slot:header-right="scope">
-                    <div class="next-page">
-                        <div class="first"></div>
-                        <div class="second"></div>
+                    <div class="cly-vue-logger__next-page">
+                        <div class="cly-vue-logger__next-page--first"></div>
+                        <div class="cly-vue-logger__next-page--second"></div>
                     </div>
-                    <i :click="sync()" class="el-icon-refresh refresh-icon"></i>
+                    <i :click="sync()" class="el-icon-refresh cly-vue-logger__refresh"></i>
                 </template>
                 <template v-slot="scope">
                     <el-table-column type="expand">
