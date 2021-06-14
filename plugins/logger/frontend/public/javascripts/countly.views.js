@@ -1,6 +1,6 @@
 /*global $, moment, countlyVue, app, countlyLogger */
 
-var isSecondFormat = (Math.round(parseFloat(this.timestamp, 10)) + "").length === 10;
+var isSecondFormat = (Math.round(parseFloat(this.timestamp)) + "").length === 10;
 
 var formatVersion = function(version, eleminateFirstCharacter) {
     return version ? eleminateFirstCharacter ? version.substring(1).replaceAll(':', '.') : version.replaceAll(':', '.') : '';
