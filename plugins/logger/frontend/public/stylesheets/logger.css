@@ -1,0 +1,55 @@
+.cly-vue-logger__title {
+  color: #24292e;
+}
+.cly-vue-logger__subtitle {
+  color: #5e6c84;
+}
+.cly-vue-logger__tooltip {
+  color: #a7aeb8;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.cly-vue-logger--oval {
+  width: 3px;
+  height: 3px;
+  margin: 12px 2px 5px 3px;
+  color: #969fad;
+}
+.cly-vue-logger__refresh {
+  font-size: 18px;
+  color: #a7aeb8;
+  margin-left: 10px;
+}
+.cly-vue-logger__refresh--enabled {
+  font-size: 14px;
+  color: #333c48;
+}
+.cly-vue-logger__refresh--enabled-color {
+  font-size: 14px;
+  color: #0064de;
+  margin-left: 5px;
+}
+.cly-vue-logger__refresh--disabled {
+  font-size: 14px;
+  color: #333c48;
+  margin-left: 10px;
+}
+.cly-vue-logger__next-page {
+  margin: auto;
+  border: solid 1px #a7aeb8;
+  border-radius: 2px;
+}
+.cly-vue-logger__next-page--first {
+  width: 8px;
+  height: 16px;
+  background-color: #a7aeb8;
+  float: left;
+}
+.cly-vue-logger__next-page--second {
+  width: 8px;
+  height: 16px;
+  background-color: #ffffff;
+  float: right;
+}
+
+/*# sourceMappingURL=logger.css.map */
