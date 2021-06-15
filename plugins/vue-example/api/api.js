@@ -1,6 +1,6 @@
 var common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    {validateRead, validateCreate} = require('../../../api/utils/rights.js');
+    {validateRead, validateCreate, validateUpdate, validateDelete} = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'vue_example';
 
@@ -92,7 +92,7 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
 
     plugins.register("/i/vue_example/save", function(ob) {
         let paramsInstance = ob.params;
-        validateCreate(paramsInstance, function(params) {
+        validateCreate(paramsInstance, FEATURE_NAME, function(params) {
             let record = params.qstring.record;
             record = JSON.parse(record);
             if (!record._id) {
@@ -113,7 +113,7 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
 
     plugins.register("/i/vue_example/status", function(ob) {
         let paramsInstance = ob.params;
-        validateCreate(paramsInstance, function(params) {
+        validateUpdate(paramsInstance, FEATURE_NAME, function(params) {
             let records = params.qstring.records;
             records = JSON.parse(records);
             var updates = records.map(function(record) {
@@ -142,7 +142,7 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
 
     plugins.register("/i/vue_example/delete", function(ob) {
         let paramsInstance = ob.params;
-        validateCreate(paramsInstance, function(params) {
+        validateDelete(paramsInstance, FEATURE_NAME, function(params) {
             common.db.collection("vue_example").remove({ "_id": common.db.ObjectID(params.qstring.id) }, function() {
                 common.returnMessage(params, 200, "Deleted a record");
             });
