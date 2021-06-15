@@ -1,0 +1,11 @@
+{
+    "name": "countly-apidoc",
+    "version": "20.11.2",
+    "description": "Countly Api Docs",
+    "title": "Countly Api Docs",
+    "url": "https://api.count.ly/",
+    "template": {
+        "withCompare": true,
+        "withGenerator": false
+    }
+}
