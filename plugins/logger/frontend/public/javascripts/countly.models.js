@@ -1,6 +1,7 @@
 /*global countlyCommon, CountlyHelpers $*/
 (function(countlyLogger) {
-    countlyLogger.getRequestLogs = function(query = {}) {
+    countlyLogger.getRequestLogs = function(query) {
+        query = query || {};
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,

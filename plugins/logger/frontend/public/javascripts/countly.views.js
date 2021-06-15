@@ -1,15 +1,15 @@
 /*global $, moment, countlyVue, app, countlyLogger */
-(function () {
+(function() {
     var isSecondFormat = (Math.round(parseFloat(this.timestamp)) + "").length === 10;
 
-    var formatVersion = function (version, eleminateFirstCharacter) {
+    var formatVersion = function(version, eleminateFirstCharacter) {
         return version ? eleminateFirstCharacter ? version.substring(1).replaceAll(':', '.') : version.replaceAll(':', '.') : '';
     };
 
-    var filterLogs = function (logs, loggerFilter) {
+    var filterLogs = function(logs, loggerFilter) {
         return loggerFilter && loggerFilter === 'all'
             ? logs
-            : logs && logs.length ? logs.filter(function (log) {
+            : logs && logs.length ? logs.filter(function(log) {
                 return log.t && Object.keys(log.t).includes(loggerFilter);
             }) : [];
     };
@@ -17,24 +17,24 @@
     var ReadableDateComponent = countlyVue.components.BaseComponent.extend({
         props: ['timestamp'],
         computed: {
-            date: function () {
+            date: function() {
                 return isSecondFormat ?
                     moment(this.timestamp * 1000).format("MMMM Do YYYY") :
                     moment(this.timestamp).format("MMMM Do YYYY");
             },
-            time: function () {
+            time: function() {
                 return isSecondFormat ?
                     moment(this.timestamp * 1000).format("HH:mm:ss") :
                     moment(this.timestamp).format("HH:mm:ss");
             },
         },
-        template: `<div>{{date}}<p class='text-small'>{{time}}</p></div>`
+        template: "<div>{{date}}<p class='text-small'>{{time}}</p></div>"
     });
 
     var DetailsComponent = countlyVue.components.BaseComponent.extend({
         props: ['device', 'location', 'version', 'sdk'],
         computed: {
-            log: function () {
+            log: function() {
                 var flag = this.location.cc ? this.location.cc.toLowerCase() : '';
                 return {
                     id: this.device.id,
@@ -48,13 +48,13 @@
                 };
             },
         },
-        template: `<div><p>{{log.deviceInfo}} <pre class="oval"></pre> {{log.version}}</p><p class="text-small">ID {{log.id}}</p>{{log.sdkInfo}}<span :class="log.flagCss" :style="log.flagBg"></span><span class="oval"></span>{{log.country}}{{log.city}}</div>`
+        template: '<div><p>{{log.deviceInfo}} <pre class="oval"></pre> {{log.version}}</p><p class="text-small">ID {{log.id}}</p>{{log.sdkInfo}}<span :class="log.flagCss" :style="log.flagBg"></span><span class="oval"></span>{{log.country}}{{log.city}}</div>'
     });
 
     var InfoComponent = countlyVue.components.BaseComponent.extend({
         props: ['info', 'filter'],
         computed: {
-            logInfo: function () {
+            logInfo: function() {
                 if (this.filter === 'all') {
                     return this.info && Object.keys(this.info).length ?
                         Object.keys(this.info).join(', ') : [];
@@ -65,12 +65,12 @@
                 }
             },
         },
-        template: `<pre>{{logInfo}}</pre>`
+        template: "<pre>{{logInfo}}</pre>"
     });
 
     var LoggerView = countlyVue.views.BaseView.extend({
         template: '#logger-main-view',
-        data: function () {
+        data: function() {
             return {
                 message: 'EVENT LOGGING VIEW',
                 switch: true,
@@ -104,46 +104,47 @@
             };
         },
         computed: {
-            filterOptions: function () {
+            filterOptions: function() {
                 return this.defaultFilters.concat(this.externalFilters);
             }
         },
         mixins: [
+            countlyVue.mixins.i18n,
             countlyVue.container.dataMixin({
                 'externalFilters': '/manage/logger'
             })
         ],
         methods: {
-            getTitleTooltip() {
+            getTitleTooltip: function() {
                 return this.i18n('logger.description');
             },
-            getRefreshTooltip() {
+            getRefreshTooltip: function() {
                 return this.i18n('logger.auto-refresh-help');
             },
-            stopAutoRefresh() {
+            stopAutoRefresh: function() {
                 this.autoRefresh = false;
             },
-            fetchRequestLogs() {
+            fetchRequestLogs: function() {
                 var vm = this;
                 countlyLogger.getRequestLogs()
-                    .then(function (data) {
+                    .then(function(data) {
                         vm.logsData = filterLogs(data.logs || data, vm.loggerFilter);
                     });
             },
-            refresh() {
+            refresh: function() {
                 if (this.autoRefresh) {
                     this.fetchRequestLogs();
                 }
             },
-            sync() {
+            sync: function() {
                 this.fetchRequestLogs();
             },
-            filterChange() {
+            filterChange: function() {
                 this.fetchRequestLogs();
             }
         },
         filters: {
-            pretty: function (value) {
+            pretty: function(value) {
                 return typeof value === 'string' ? JSON.stringify(JSON.parse(value), null, 2) : JSON.stringify(value, null, 2);
             }
         },
@@ -152,14 +153,15 @@
             "logger-details": DetailsComponent,
             "logger-info": InfoComponent,
         },
-        mounted: function () {
+        mounted: function() {
+            var self = this;
             this.fetchRequestLogs();
 
             countlyLogger.getCollectionInfo()
-                .then(info => {
-                    this.collectionInfo = info
-                        ? this.i18n('logger.collection-description', info.max)
-                        : this.i18n('logger.capped-remind');
+                .then(function(info) {
+                    self.collectionInfo = info
+                        ? self.i18n('logger.collection-description', info.max)
+                        : self.i18n('logger.capped-remind');
                 });
         }
     });
@@ -174,10 +176,10 @@
         }]
     });
 
-    $(document).ready(function () {
+    $(document).ready(function() {
         app.logger = logger;
 
-        app.route('/manage/logger', 'logger', function () {
+        app.route('/manage/logger', 'logger', function() {
             var params = {};
             this.logger.params = params;
             this.renderWhenReady(this.logger);
