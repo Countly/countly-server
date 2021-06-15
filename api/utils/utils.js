@@ -60,6 +60,9 @@ exports.encrypt = function(text, key, iv, algorithm, input_encoding, output_enco
 * @returns {string} decrypted value
 */
 exports.decrypt = function(crypted, key, iv, algorithm, input_encoding, output_encoding) {
+    if (!crypted || !crypted.length || typeof crypted !== "string") {
+        return crypted;
+    }
     if (crypted.lastIndexOf("[CLY]_true") === -1 || crypted.lastIndexOf("[CLY]_true") !== crypted.length - 10) {
         return crypted;
     }
