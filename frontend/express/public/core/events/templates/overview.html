@@ -39,21 +39,36 @@
 	</div>
 		<cly-main>
 	<cly-section>
-			<h3>{{i18n('events.overview.metrics')}} </h3>
+			<h3 style="margin:20px 0px">{{i18n('events.overview.metrics')}} </h3>
 			<detail-tables></detail-tables>
 	</cly-section>
-	<cly-section>
+	<h3 class="cly-vue-events-overview-monitor-events__heading">{{i18n('events.overview.monitor')}} </h3>
+	<cly-section class="cly-vue-events-overview-monitor-events">
 		<div>
-			<h3 style="padding-left:24px">{{i18n('events.overview.monitor')}} </h3>
-			<div style="padding-left:24px">{{i18n('events.overview.time.period')}}
-			<cly-date-picker-g class="cly-vue-events-overview-date-picker"></cly-date-picker-g>
-	</div>  
-	</div> 
+			<div class="cly-vue-events-overview-monitor-events__datepicker-section"><span class="cly-vue-events-overview-monitor-events--grey">{{i18n('events.overview.time.period')}}</span>
+			<cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms" class="cly-vue-events-overview-date-picker"></cly-date-picker>
+	  </div>   
+	<div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
+	<monitor-events-breakdown-horizontal-tile
+		:trend="item.trend"
+		:change="item.change"
+		:key="idx"
+		v-for="(item, idx) in monitorEventsData">
+		<h4 slot="title" class="text-uppercase cly-monitor-events-breakdown-horizontal-tile__titleoverview">{{item.name}}</h4>
+		<div slot="countValue" class="cly-monitor-events-breakdown-horizontal-tile__overviewvalue">{{item.total}}</div>
+		<div slot="propertyName" class="cly-monitor-events-breakdown-horizontal-tile__eventproperty">{{item.eventProperty}}</div>
+		<div slot="barGraph">
+		<cly-chart-bar :height=100 :option="item.barData" :autoresize=false :showZoom=false :showToggle=false :showDownload=false>			
+		</cly-chart-bar>
+	</div>
+	</monitor-events-breakdown-horizontal-tile>
+	</div>
+		</div>
 	</cly-section>
 	</cly-main>
 	</div>
   </script>
- <script type="text/x-template" id="overview-tables-events">
+  <script type="text/x-template" id="overview-tables-events">
 	<div>
 	<cly-datatable-n :rows="eventsTableRows.data">
 				<template v-slot:header-left="selectScope">
@@ -75,14 +90,14 @@
 						</template>
 					</el-table-column>
 					<el-table-column sortable="true" prop="sum" :label="i18n('events.overview.sum')">
-                        <template v-slot="rowScope">
+						   <template v-slot="rowScope">
 							<div>
 								{{rowScope.row.sum}}
 							</div>
 						</template>
 					</el-table-column>
-                    <el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')">
-                        <template v-slot="rowScope">
+					   <el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')">
+						   <template v-slot="rowScope">
 							<div>
 								{{rowScope.row.duration}}
 							</div>
@@ -91,51 +106,4 @@
 				</template>
 			</cly-datatable-n>
 	</div>
- </script>
- <script type="text/x-template" id="overview-tables-events-segments">
-	<div>
-	<cly-datatable-n :rows="eventsSegmentsTableRows.rows">
-				<template v-slot:header-left="selectScope">
-				</template>
-				<template v-slot="scope">
-					<el-table-column sortable="true" prop="event" :label="i18n('events.overview.segment')">
-						<template v-slot="rowScope">
-							<div>
-								<span :style="{'background-color': rowScope.row.bgColor}" class="nps-dot"></span>
-								{{rowScope.row.segmentName}}
-							</div>
-						</template>
-					</el-table-column>
-                    <el-table-column sortable="true" prop="event" :label="i18n('events.overview.event')">
-						<template v-slot="rowScope">
-							<div>
-								<span :style="{'background-color': rowScope.row.bgColor}" class="nps-dot"></span>
-								{{rowScope.row.event}}
-							</div>
-						</template>
-					</el-table-column>
-					<el-table-column sortable="true" prop="count" :label="i18n('events.overview.count')">
-						<template v-slot="rowScope">
-							<div>
-								{{rowScope.row.count}}
-							</div>
-						</template>
-					</el-table-column>
-					<el-table-column sortable="true" prop="sum" :label="i18n('events.overview.sum')">
-                        <template v-slot="rowScope">
-							<div>
-								{{rowScope.row.sum}}
-							</div>
-						</template>
-					</el-table-column>
-                    <el-table-column sortable="true" prop="duration" :label="i18n('events.overview.duration')">
-                        <template v-slot="rowScope">
-							<div>
-								{{rowScope.row.duration}}
-							</div>
-						</template>
-					</el-table-column>
-				</template>
-			</cly-datatable-n>
-	</div>
- </script>
+  </script>
