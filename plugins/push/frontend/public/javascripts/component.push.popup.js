@@ -21,8 +21,12 @@ window.component('push.popup', function(popup) {
         m.startComputation();
         var message = prefilled instanceof push.Message ? prefilled : new push.Message(prefilled || {});
         if (!duplicate) {
-            message.sound('default');
-            message.expiration(1000 * 3600 * 24 * 7);
+            if (!message.sound()) {
+                message.sound('default');
+            }
+            if (!message.expiration()) {
+                message.expiration(1000 * 3600 * 24 * 7);
+            }
             if (message.auto() || message.tx()) {
                 if (message._id()) {
                     message.editingAuto = true;
