@@ -46,7 +46,7 @@
         });
 
         new Vue({
-            el: $('#sidebar-vue').get(0),
+            el: $('#sidebar-x').get(0),
             store: countlyVue.vuex.getGlobalStore(),
             components: {
                 Sidebar: SidebarView

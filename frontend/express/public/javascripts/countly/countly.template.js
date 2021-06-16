@@ -1401,7 +1401,7 @@ var AppRouter = Backbone.Router.extend({
             self.addMenuCategory("reach", {priority: 30});
             self.addMenuCategory("improve", {priority: 40});
             self.addMenuCategory("utilities", {priority: 50});
-            self.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.dashboard", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10});
+            self.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.home", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10});
             self.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
             self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
             self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
