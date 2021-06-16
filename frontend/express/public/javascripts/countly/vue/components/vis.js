@@ -615,6 +615,24 @@
                     </div>'
     });
 
+    var customLegend = countlyBaseComponent.extend({
+        template: '<div class="cly-vue-chart-legend">\
+                        <div class="cly-vue-chart-legend__first-row">\
+                            <div class="cly-vue-chart-legend__checkbox"></div>\
+                            <div class="cly-vue-chart-legend__title">Total sessions</div>\
+                            <cly-tooltip-icon class="cly-vue-chart-legend__tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
+                        </div>\
+                        <div class="cly-vue-chart-legend__second-row">\
+                            <div class="cly-vue-chart-legend__number">123</div>\
+                            <div class="cly-vue-chart-legend__trend cly-vue-chart-legend--trend-up">\
+                                <i class="fas fa-arrow-circle-up"></i>\
+                                <i class="fas fa-arrow-circle-down"></i>\
+                                <span>4.5%</span>\
+                            </div>\
+                        </div>\
+                    </div>'
+    });
+
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
             return {
@@ -625,7 +643,8 @@
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': customLegend
         },
         computed: {
             chartOptions: function() {
@@ -648,6 +667,8 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
+                        <custom-legend :echartRef="echartRef">\
+                        </custom-legend>\
                     </div>'
     }));
 
