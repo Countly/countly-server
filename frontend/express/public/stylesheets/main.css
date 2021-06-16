@@ -2049,7 +2049,7 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #top-bar .dropdown .menu #manage-menu.list .item .text { margin-left:12px; float:left; padding-top:6px; font:14px Ubuntu,Helvetica,sans-serif; line-height:100%; color:#9F9F9F; max-width: 125px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 #top-bar .dropdown .menu.manage-menu .menu-category-title{padding-left:25px; padding-right:15px; padding-top:16px; font:13px Ubuntu,Helvetica,sans-serif; color:#9F9F9F; width: 100%; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display:block; text-transform: uppercase; padding-bottom: 4px; text-align:left;}
 
-#app-navigation.dropdown.large { padding:21px 25px 19px 25px; box-sizing:border-box; height:59px; width:230px; white-space: nowrap; }
+#app-navigation.dropdown.large { margin-left: 80px; padding:21px 25px 19px 25px; box-sizing:border-box; height:59px; width:230px; white-space: nowrap; }
 #app-navigation #active-app-name { text-overflow:ellipsis; white-space:nowrap; overflow:hidden; display: inline-block; max-width: 125px; }
 #app-navigation #active-app-icon { vertical-align:top; display:inline-block; width:20px; height:20px; background-size:22px 22px; margin-right:10px; margin-top:-3px; background-position:center; border-radius:4px; border:1px solid #555; }
 #app-navigation .list .item .app-icon { width: 20px; height: 20px; background-position:center; background-size:22px 22px;  border-radius:4px; display: inline-block; margin-right:10px; vertical-align: top; margin-top: 1px; }

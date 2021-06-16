@@ -1,18 +1,26 @@
-<div class="sidebar-x" style="position: fixed;left: 0;width: 224px;background-color: #0B131A;height: 100%;z-index: 998;user-select: none;color: white;overflow-y: scroll;top: 59px;">
-    <ul>
-        <li v-for="(cat, idx) in categories">
-            <a href="#">{{cat.title}}
-                <ul>
-                    <li v-for="(menu, idx) in categorizedMenus[cat.name]">
+<div class="cly-vue-sidebar">
+    <div class="cly-vue-sidebar__options">
+    </div>
+    <div class="cly-vue-sidebar__menu">
+        <div v-for="(cat, idx) in categories" :data-category="cat.name">
+            <ul>
+                <li v-for="(menu, idx) in categorizedMenus[cat.name]">
+                    <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
+                        <el-collapse accordian>
+                            <el-collapse-item :title="i18nM(menu.title)">
+                                <ul>
+                                    <li class="cly-vue-sidebar__submenu-items" v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
+                                        <a :href="submenu.url">{{i18nM(submenu.title)}}</a>
+                                    </li>
+                                </ul>
+                            </el-collapse-item>
+                        </el-collapse>
+                    </div>
+                    <div v-else class="cly-vue-sidebar__menu-items">
                         <a :href="menu.url">{{i18nM(menu.title)}}</a>
-                        <ul>
-                            <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
-                                <a :href="submenu.url">{{i18nM(submenu.title)}}</a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </a>
-        </li>
-    </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
 </div>

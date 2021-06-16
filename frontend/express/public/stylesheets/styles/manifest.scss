@@ -24,6 +24,7 @@
 @use "blocks/nav";
 @use "blocks/vis";
 @use "blocks/helpers";
+@use "blocks/sidebar";
 
 // All "States" specific SASS partials
 // Defined at the last to increase specificity
