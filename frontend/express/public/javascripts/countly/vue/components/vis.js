@@ -615,7 +615,7 @@
                     </div>'
     });
 
-    var customLegend = countlyBaseComponent.extend({
+    var CustomLegend = countlyBaseComponent.extend({
         template: '<div class="cly-vue-chart-legend">\
                         <div class="cly-vue-chart-legend__first-row">\
                             <div class="cly-vue-chart-legend__checkbox"></div>\
@@ -636,7 +636,8 @@
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right"]
+                forwardedSlots: ["chart-left", "chart-right"],
+                showCustomLegend: false
             };
         },
         mounted: function() {
@@ -644,7 +645,7 @@
         },
         components: {
             'chart-header': ChartHeader,
-            'custom-legend': customLegend
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
@@ -667,7 +668,7 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        <custom-legend :echartRef="echartRef">\
+                        <custom-legend :echartRef="echartRef" v-if="showCustomLegend">\
                         </custom-legend>\
                     </div>'
     }));
