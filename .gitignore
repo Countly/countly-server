@@ -23,3 +23,5 @@ frontend/express/public/images/*/
 !frontend/express/public/images/pre-login/
 !frontend/express/public/images/screenshots
 !frontend/express/public/images/heatmap-demos/
+frontend/express/public/stylesheets/styles/manifest.css
+frontend/express/public/stylesheets/vue/clyvue.css
