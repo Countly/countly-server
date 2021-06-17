@@ -51,7 +51,7 @@
             components: {
                 Sidebar: SidebarView
             },
-            template: '<div><Sidebar></Sidebar></div>'
+            template: '<Sidebar></Sidebar>'
         });
     });
 
