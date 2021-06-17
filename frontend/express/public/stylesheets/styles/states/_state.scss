@@ -79,3 +79,16 @@
 .no-bg {
     background-color: none;
 }
+
+.blinker {
+    position: relative;
+    top: -1px;
+    width: 6px;
+    height: 6px;
+    border-radius: 8px;
+    background-color: #2fa732;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+    animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+}

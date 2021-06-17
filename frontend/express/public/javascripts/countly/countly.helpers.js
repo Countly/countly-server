@@ -3435,6 +3435,22 @@
             return period;
         }
     };
+    /**
+    * Format number to percentage value
+    * @memberof CountlyHelpers
+    * @param {number} value number to be converted to percentage    
+    * @param {number} decimalPlaces number of decimal places to keep for percentage, default is two
+    * @returns {number} percentage number for given value. Otherwise, returns 0 for falsy or non number values
+    */
+    CountlyHelpers.formatPercentage = function(value, decimalPlaces) {
+        if (isNaN(value) || !value) {
+            return 0;
+        }
+        if (!decimalPlaces) {
+            decimalPlaces = 2;
+        }
+        return parseFloat((Math.round(value * 100)).toFixed(decimalPlaces));
+    };
 
     /*
      * Function that returns difference between two arrays
