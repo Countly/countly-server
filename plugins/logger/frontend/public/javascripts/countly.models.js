@@ -1,16 +1,7 @@
-/*global countlyCommon, jQuery, $*/
+/*global countlyCommon, CountlyHelpers $*/
 (function(countlyLogger) {
-
-    //Private Properties
-    var _data = {};
-    var _collection_info = {};
-    var _state = "";
-    //Public Methods
-    countlyLogger.initialize = function(query) {
-        if (!query) {
-            return;
-        }
-
+    countlyLogger.getRequestLogs = function(query) {
+        query = query || {};
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
@@ -20,13 +11,17 @@
                 "filter": JSON.stringify(query)
             },
             success: function(json) {
-                _data = json.logs;
-                _state = json.state;
+                return json;
+            },
+            error: function(xhr, status, error) {
+                if (error) {
+                    CountlyHelpers.alert(error, "red");
+                }
             }
         });
     };
 
-    countlyLogger.collection_info = function() {
+    countlyLogger.getCollectionInfo = function() {
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
@@ -35,23 +30,13 @@
                 "method": "collection_info"
             },
             success: function(json) {
-                _collection_info = json;
+                return json;
+            },
+            error: function(xhr, status, error) {
+                if (error) {
+                    CountlyHelpers.alert(error, "red");
+                }
             }
         });
     };
-
-
-
-    countlyLogger.getData = function() {
-        return _data;
-    };
-
-    countlyLogger.getCollectionInfo = function() {
-        return _collection_info;
-    };
-
-    countlyLogger.isTurnedOff = function() {
-        return _state === "off";
-    };
-
-}(window.countlyLogger = window.countlyLogger || {}, jQuery));
+}(window.countlyLogger = window.countlyLogger || {}));

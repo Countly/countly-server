@@ -1,0 +1,100 @@
+#cly-vue-sidebar {
+    position: fixed;
+    left: 0;
+    width: 272px;
+    background-color:#191C20;
+    height: 100%;
+    z-index: 100000;
+    user-select: none;
+    color: #D6D6D6;
+    overflow-y: scroll;
+
+    .cly-vue-sidebar {
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                padding: 8px 16px 8px 24px;
+            }
+        }
+
+        .el-collapse {
+            border: none;
+        }
+
+        &__options {
+            width: 48px;
+            height: 100%;
+            overflow: auto;
+            position: absolute;
+            left: 0;
+            color: #A7AEB8;
+        }
+
+        &__options-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        &__options-toggle {
+            position: absolute;
+            bottom: 0;
+            width: 48px;
+            height: 48px;
+            background-color: #24292E;
+            border-top-left-radius: 50%;
+            border-bottom-left-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        &__option {
+            width: 24px;
+            height: 24px;
+            margin-top: 25px;
+            font-size: 24px;
+        }
+
+        &__menu {
+            width: 224px;
+            background-color: #24292E;
+            color: #D6D6D6;
+            padding-bottom: 25px;
+            box-sizing: border-box;
+            height: 100%;
+            overflow: auto;
+            position: absolute;
+            right: 0;
+        }
+
+        &__menu-items,
+        &__submenu-items,
+        .el-collapse-item__header {
+            line-height: 20px;
+            height: 20px;
+            background-color: #24292E;
+            color: #D6D6D6;
+            border: none;
+            font-size: 14px;
+            padding: 0;
+            font-weight: 400;
+        }
+
+        .el-collapse-item__content {
+            margin: 0;
+            padding: 0;
+        }
+
+        .el-collapse-item__wrap {
+            border-bottom: 1px solid #424243;
+            background-color: #24292E;
+            box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
+        }
+    }
+}

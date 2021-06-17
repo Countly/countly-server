@@ -320,7 +320,9 @@
                 </div>
 				<div id="version-info"><%= countlyTypeName %></div>
 			</div>
-			<div id="sidebar-vue"></div>
+			<div id="cly-vue-sidebar" class="bu-column">
+                <div id="sidebar-x"></div>
+            </div>
 			<div id="content-container" class="bu-column content-container">
 				<div id="content-top"></div>
 				<div id="content"></div>
@@ -1488,7 +1490,7 @@
                         <div class="label-desc" data-localize="events.edit.omit-event-segments-description" class="config-help"></div>
                         <div class="label-desc" style="margin-bottom: 12px;" data-localize="events.edit.omit-event-segments-description-drill" class="config-help"></div>
                         <div class="label" data-localize="events.edit.omit-event-segments-to-omit"></div>
-                        <div id="eb-multi-omit-segments-drop" class="cly-multi-select" data-max="10" style="width: 100%; box-sizing: border-box;">
+                        <div id="eb-multi-omit-segments-drop" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
                             <div class="select-inner">
                                 <div class="text-container">
                                     <div class="text">
@@ -2724,6 +2726,8 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/session-durations/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/session-frequency/javascripts/countly.models.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/session-frequency/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <% if (javascripts) { %>
 			<% for(var i=0, l=javascripts.length; i<l; i++) {%>
 				<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>

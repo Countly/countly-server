@@ -266,7 +266,7 @@ countlyModel.create = function(fetchValue) {
 
             //add metrics
             for (let i = 0; i < _metrics.length; i++) {
-                dataProps.push({"name": _metrics[i]});
+                dataProps.push({ "name": _metrics[i] });
             }
             let chartData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(segment), this.clearObject, dataProps, _totalUsersObj);
             chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, segment);
@@ -280,7 +280,7 @@ countlyModel.create = function(fetchValue) {
             }
 
             if (join) {
-                chartData.chartDP = {ticks: []};
+                chartData.chartDP = { ticks: [] };
                 var chartDP = [];
 
                 for (let i = 0; i < _metrics.length; i++) {
@@ -484,9 +484,10 @@ countlyModel.create = function(fetchValue) {
     * Get value of single metric with changes and sparkle lines
     * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} metric - metric name to return value for
+    * @param {boolean} isSparklineNotRequired - boolean to identify if sparkLines object is required in response
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
-    countlyMetric.getNumber = function(metric) {
+    countlyMetric.getNumber = function(metric, isSparklineNotRequired) {
         metric = metric || _metrics[0];
         var metrics = [metric];
         //include other default metrics for data correction
@@ -497,7 +498,10 @@ countlyModel.create = function(fetchValue) {
         if (metric === "n") {
             metrics.push("u");
         }
-        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, {u: this.getTotalUsersObj().users}, {u: this.getTotalUsersObj(true).users});
+        var data = countlyCommon.getDashboardData(this.getDb(), metrics, _uniques, { u: this.getTotalUsersObj().users }, { u: this.getTotalUsersObj(true).users });
+        if (isSparklineNotRequired) {
+            return data[metric];
+        }
         var ob = {};
         ob[metric] = metric;
         var sparkLines = countlyCommon.getSparklineData(this.getDb(), ob, function(obj) {
@@ -531,7 +535,7 @@ countlyModel.create = function(fetchValue) {
     countlyMetric.getTimelineData = function() {
         var dataProps = [];
         for (let i = 0; i < _metrics.length; i++) {
-            dataProps.push({name: _metrics[i]});
+            dataProps.push({ name: _metrics[i] });
         }
         var data = countlyCommon.extractData(this.getDb(), this.clearObject, dataProps);
         var ret = {};
@@ -587,7 +591,7 @@ countlyModel.create = function(fetchValue) {
         var frequencies = _.pluck(chartData.chartData, metric),
             frequencyTotals = _.pluck(chartData.chartData, "t"),
             chartDP = [
-                {data: []}
+                { data: [] }
             ];
 
         chartDP[0].data[0] = [-1, null];

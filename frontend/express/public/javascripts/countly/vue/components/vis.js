@@ -615,17 +615,37 @@
                     </div>'
     });
 
+    var CustomLegend = countlyBaseComponent.extend({
+        template: '<div class="cly-vue-chart-legend">\
+                        <div class="cly-vue-chart-legend__first-row">\
+                            <div class="cly-vue-chart-legend__checkbox"></div>\
+                            <div class="cly-vue-chart-legend__title">Total sessions</div>\
+                            <cly-tooltip-icon class="cly-vue-chart-legend__tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
+                        </div>\
+                        <div class="cly-vue-chart-legend__second-row">\
+                            <div class="cly-vue-chart-legend__number">123</div>\
+                            <div class="cly-vue-chart-legend__trend cly-vue-chart-legend--trend-up">\
+                                <i class="fas fa-arrow-circle-up"></i>\
+                                <i class="fas fa-arrow-circle-down"></i>\
+                                <span>4.5%</span>\
+                            </div>\
+                        </div>\
+                    </div>'
+    });
+
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right"]
+                forwardedSlots: ["chart-left", "chart-right"],
+                showCustomLegend: false
             };
         },
         mounted: function() {
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
@@ -648,6 +668,8 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
+                        <custom-legend :echartRef="echartRef" v-if="showCustomLegend">\
+                        </custom-legend>\
                     </div>'
     }));
 

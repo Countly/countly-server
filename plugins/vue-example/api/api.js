@@ -1,7 +1,8 @@
 var common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    {validateUserForWrite} = require('../../../api/utils/rights.js');
+    {validateRead, validateCreate, validateUpdate, validateDelete} = require('../../../api/utils/rights.js');
 
+const FEATURE_NAME = 'vue_example';
 
 const mockCollection = [...Array(100)].map((elem, idx) => {
     return {
@@ -15,17 +16,20 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
 
 (function() {
 
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
     plugins.register('/o', function(ob) {
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
         var params = ob.params;
         if (ob.params.qstring.method === 'get-random-numbers') {
-            validateUserForDataReadAPI(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 common.returnOutput(params, [...Array(30)].map(() => Math.floor(Math.random() * 9)));
             });
             return true;
         }
         else if (ob.params.qstring.method === 'vue-records') {
-            validateUserForDataReadAPI(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 var query = {};
                 if (ob.params.qstring.id) {
                     query = { "_id": common.db.ObjectID(ob.params.qstring.id) };
@@ -37,7 +41,7 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
             return true;
         }
         else if (ob.params.qstring.method === 'large-col') {
-            validateUserForDataReadAPI(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 let tableParams = params.qstring;
                 let currentArray = mockCollection.slice();
                 if (tableParams.sSearch) {
@@ -88,7 +92,7 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
 
     plugins.register("/i/vue_example/save", function(ob) {
         let paramsInstance = ob.params;
-        validateUserForWrite(paramsInstance, function(params) {
+        validateCreate(paramsInstance, FEATURE_NAME, function(params) {
             let record = params.qstring.record;
             record = JSON.parse(record);
             if (!record._id) {
@@ -109,7 +113,7 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
 
     plugins.register("/i/vue_example/status", function(ob) {
         let paramsInstance = ob.params;
-        validateUserForWrite(paramsInstance, function(params) {
+        validateUpdate(paramsInstance, FEATURE_NAME, function(params) {
             let records = params.qstring.records;
             records = JSON.parse(records);
             var updates = records.map(function(record) {
@@ -138,7 +142,7 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
 
     plugins.register("/i/vue_example/delete", function(ob) {
         let paramsInstance = ob.params;
-        validateUserForWrite(paramsInstance, function(params) {
+        validateDelete(paramsInstance, FEATURE_NAME, function(params) {
             common.db.collection("vue_example").remove({ "_id": common.db.ObjectID(params.qstring.id) }, function() {
                 common.returnMessage(params, 200, "Deleted a record");
             });
