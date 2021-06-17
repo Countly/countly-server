@@ -8,7 +8,7 @@ cat << 'EOF' > "$PRECOMMIT"
 set -euo pipefail
 shopt -s nullglob
 GIT_DIR=${GIT_DIR-`git rev-parse --git-dir`}
-for filename in "$GIT_DIR/dev-scripts/pre-commit-hooks/*.sh"; do
+for filename in "$GIT_DIR/../bin/dev-scripts/pre-commit-hooks/*.sh"; do
 	bash $filename
 done
 EOF
