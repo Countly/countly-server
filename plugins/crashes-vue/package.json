@@ -1,0 +1,24 @@
+{
+  "name": "countly-crashes",
+  "title": "Crash analytics (Vue)",
+  "version": "0.5.0",
+  "description": "See which users are affected by crashes and exceptions, and take necessary precautions",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/plugins/crashes-errors/",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "reports",
+    "crash"
+  ],
+  "dependencies": {},
+  "private": true
+}

@@ -1,6 +1,50 @@
+@use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
+@use "sass:map";
+
 .cly-vue-theme-clydef {
 	.crashes-statistics-dashboard {
 		margin-bottom: 0 !important;
+	}
+
+	.crashes-trend {
+		margin-top: auto;
+		margin-left: 0.5rem;
+		margin-bottom: 0.15rem;
+
+		i {
+			border: 0px solid;
+			border-radius: 100%;
+			text-align: center;
+			vertical-align: middle;
+			width: 14px;
+			height: 14px;
+			padding: 2px;
+			margin-top: -4px;
+		}
+
+		&--up {
+    			color: map.get(c.$colors, "red-100");
+
+			i {
+				background-color: map.get(c.$colors, "red-10");
+			}
+		}
+
+		&--down {
+    			color: map.get(c.$colors, "green-80");
+
+			i {
+				background-color: map.get(c.$colors, "green-10");
+			}
+		}
+
+		&--neutral {
+    			color: map.get(c.$colors, "cool-gray-50");
+
+			i {
+				background-color: map.get(c.$colors, "cool-gray-20");
+			}
+		}
 	}
 
 	.crashes-tile {
@@ -10,11 +54,20 @@
 
 		&--vertical {
 			border-bottom: 1px solid #ECECEC;
+			flex-grow: 1;
+			align-items: center;
+
+			.crashes-tile__content {
+				margin-left: 1rem;
+			}
 		}
 
 		&:last-of-type {
 			border-right: 0;
 			border-bottom: 0;
+		}
+
+		&__content {
 		}
 	}
 
@@ -43,6 +96,8 @@
 
 			&__item {
 				border-left: 1px solid #ECECEC !important;
+				height: auto;
+				text-align: left;
 			}
 			
 			&__item:last-of-type {
