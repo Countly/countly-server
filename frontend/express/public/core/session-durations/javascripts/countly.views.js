@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlySessionDurations*/
+/* global countlyVue,CV,countlySessionDurations,countlyCommon*/
 var SessionDurationsView = countlyVue.views.create({
     template: CV.T("/core/session-durations/templates/session-durations.html"),
     data: function() {
@@ -61,6 +61,7 @@ countlyVue.container.registerTab("/analytics/sessions", {
     priority: 2,
     name: "durations",
     title: "Session Durations",
+    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/durations",
     component: SessionDurationsView,
     vuex: [{
         clyModel: countlySessionDurations
