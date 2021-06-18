@@ -614,8 +614,7 @@
     //countly.view global management settings
     $(document).ready(function() {
         if (countlyAuth.validateRead('push')) {
-            app.addMenuForType("mobile", "reach", {code: "push", text: "push.sidebar.section", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
-            app.addSubMenuForType("mobile", "push", {code: "messaging", url: "#/messaging", text: "push.sidebar.overview", priority: 10});
+            app.addMenuForType("mobile", "reach", {code: "push", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
         }
 
         if (app.configurationsView) {
