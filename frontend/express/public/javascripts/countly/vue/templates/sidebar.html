@@ -33,6 +33,16 @@
         </div>
     </div>
     <div class="cly-vue-sidebar__menu">
+        <div class="cly-vue-app-navigation">
+            <cly-select-x
+                search-placeholder=""
+                placeholder="Select App"
+                v-model="appSelect.selected"
+                :mode="appSelect.mode"
+                :options="allApps"
+                @change="onChange">
+            </cly-select-x>
+        </div>
         <div v-for="(cat, idx) in categories" :data-category="cat.name">
             <ul>
                 <li v-for="(menu, idx) in categorizedMenus[cat.name]">

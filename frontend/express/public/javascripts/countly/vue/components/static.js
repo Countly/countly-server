@@ -1,4 +1,4 @@
-/* global jQuery, CV, Vue*/
+/* global app, jQuery, CV, Vue, countlyGlobal, _, setTimeout*/
 
 (function(countlyVue, $) {
 
@@ -14,9 +14,34 @@
                     "submenus": "/sidebar/submenu"
                 })
             ],
+            data: function() {
+                var apps = _.sortBy(countlyGlobal.apps, function(app) {
+                    return (app.name + "").toLowerCase();
+                });
+
+                apps = apps.map(function(a) {
+                    a.label = a.name;
+                    a.value = a._id;
+
+                    return a;
+                });
+
+                return {
+                    appSelect: {
+                        selected: this.$store.state.countlyCommon.activeApp._id,
+                        mode: 'single-list',
+                    },
+                    allApps: apps,
+                };
+            },
             computed: {
                 activeApp: function() {
-                    return this.$store.state.countlyCommon.activeApp;
+                    var self = this;
+                    var active = this.allApps.find(function(a) {
+                        return a._id === self.appSelect.selected;
+                    });
+
+                    return active;
                 },
                 categorizedMenus: function() {
                     if (!this.activeApp) {
@@ -41,6 +66,25 @@
                         }
                         return acc;
                     }, {});
+                }
+            },
+            methods: {
+                onChange: function(id) {
+                    var selectedApp = this.allApps.find(function(a) {
+                        return a._id === id;
+                    });
+
+                    var appKey = selectedApp.key;
+                    var appName = selectedApp.name;
+                    var appId = selectedApp._id;
+                    if (app.activeAppKey !== appKey) {
+                        app.activeAppName = appName;
+                        app.activeAppKey = appKey;
+                        app.switchApp(appId);
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1000);
+                    }
                 }
             }
         });
