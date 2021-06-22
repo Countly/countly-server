@@ -973,11 +973,10 @@
         }
         &__steps-view {
             box-sizing: border-box;
-            //padding-top: 58px;
             padding-bottom: 190px;
             position: absolute;
             right: 0;
-            background-color: #fcfcfc;
+            background-color: white;
         }
 
         &__steps-view,
@@ -998,21 +997,17 @@
             width: 100%;
         }
 
-        &.mounted {
+        &.is-mounted {
             transform: translateX(100%);
         }
 
-        &.open {
+        &.is-open {
             transform: translateX(0);
             transition: transform 0.3s;
         }
 
         &__title {
             position: relative;
-            padding: 20px;
-            font-size: 20px;
-            color: #636363;
-            background-color: #fff;
             top: 0px;
             box-sizing: border-box;
             .close {
@@ -1093,10 +1088,10 @@
         }
 
         &__steps-container {
-            padding: 20px;
             height: 100%;
             float: none;
             overflow-y: auto;
+            overflow-x: hidden;
             .subgroup {
                 padding-bottom: 35px;
                 &.thin {
@@ -1208,13 +1203,10 @@
             }
         }
 
-        .controls-left-container {
+        &__controls-left-pc {
             display: inline-block;
             height: 30px;
             padding-top: 10px;
-        }
-
-        &__buttons {
         }
     }
 

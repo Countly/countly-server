@@ -32,8 +32,8 @@
                 },
                 rootClasses: function() {
                     var classes = {
-                        mounted: this.isMounted,
-                        open: this.isOpened,
+                        'is-mounted': this.isMounted,
+                        'is-open': this.isOpened,
                         'has-sidecars': this.hasSidecars
                     };
                     classes["cly-vue-drawer--" + this.currentScreenMode + "-screen"] = true;
