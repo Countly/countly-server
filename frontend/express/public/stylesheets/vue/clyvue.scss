@@ -984,7 +984,7 @@
             height: 100%;
         }
 
-        &--half-screen, &--full-screen.has-sidecars {
+        &--half-screen {
             .steps-view {
                 width: 50%;
             }
@@ -993,7 +993,7 @@
             }
         }
 
-        &--full-screen:not(.has-sidecars) .steps-view {
+        &--full-screen .steps-view {
             width: 100%;
         }
 
@@ -1215,44 +1215,24 @@
             padding-top: 10px;
         }
 
-        .buttons {
-            position: absolute;
-            right: 0;
-            width: 410px;
-            padding: 20px;
-            bottom: 0;
-            position: relative;
-            background-color: #fff;
-            border-top: 1px solid #ececed;
-            width: 100%;
-            padding: 20px 20px;
-            margin: 0;
-            left: 0;
-            right: 0;
-            box-sizing: border-box;
-            bottom: 0;
-            overflow: auto;
-
-            .cly-vue-button {
-                float: none;
-                font-size: 15px;
-                text-align: center;
-                padding: 12px;
-                margin: 0;
-                &.button-light-skin {
-                    box-shadow: none;
-                    background-color: #fff;
-                }
-            }
-
-            &.multi-step {
-                .cly-vue-button {
-                    float: right;
-                    font-size: 14px;
-                    padding: 12px 22px;
-                }
-            }
-        }
+        // .buttons {
+        //     position: absolute;
+        //     right: 0;
+        //     width: 410px;
+        //     padding: 20px;
+        //     bottom: 0;
+        //     position: relative;
+        //     background-color: #fff;
+        //     border-top: 1px solid #ececed;
+        //     width: 100%;
+        //     padding: 20px 20px;
+        //     margin: 0;
+        //     left: 0;
+        //     right: 0;
+        //     box-sizing: border-box;
+        //     bottom: 0;
+        //     overflow: auto;
+        // }
     }
 
     .cly-vue-panel {

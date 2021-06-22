@@ -13,7 +13,7 @@
             </span>
         </div>
         <div class="steps-header" v-show="isMultiStep">
-            <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">
+            <div class="label" :class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">
                 <div class="wrapper">
                     <span class="index">{{i + 1}}</span>
                     <span class="done-icon"><i class="fa fa-check"></i></span>
@@ -21,7 +21,7 @@
                 </div>
             </div>
         </div>
-        <div class="details" v-bind:class="{'multi-step':isMultiStep}">
+        <div class="details" :class="{'multi-step':isMultiStep}">
             <slot name="default"
                 v-bind="passedScope">
             </slot>
@@ -32,14 +32,14 @@
                     v-bind="passedScope">
                 </slot>
             </div>
-            <cly-button @click="doClose" v-if="hasCancelButton" skin="light" v-bind:label="cancelButtonLabel"></cly-button>
-            <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n('common.drawer.next-step')"></cly-button>
-            <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="!isSubmissionAllowed" skin="green" v-bind:label="saveButtonLabel"></cly-button>
-            <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n('common.drawer.previous-step')"></cly-button>
+            <el-button @click="doClose" v-if="hasCancelButton" skin="light">{{cancelButtonLabel}}</el-button>
+            <el-button @click="nextStep" v-if="!isLastStep" :disabled="!isCurrentStepValid">{{i18n('common.drawer.next-step')}}</el-button>
+            <el-button @click="submit" v-if="isLastStep" :disabled="!isSubmissionAllowed">{{saveButtonLabel}}</el-button>
+            <el-button @click="prevStep" v-if="currentStepIndex > 0">{{i18n('common.drawer.previous-step')}}</el-button>
         </div>
         <div class="buttons single-step" v-if="!isMultiStep">
-            <cly-button @click="doClose" v-if="hasCancelButton" skin="light" v-bind:label="cancelButtonLabel"></cly-button>
-            <cly-button @click="submit" v-bind:disabled="!isSubmissionAllowed" skin="green" v-bind:label="saveButtonLabel"></cly-button>
+            <el-button @click="doClose" v-if="hasCancelButton">{{cancelButtonLabel}}</el-button>
+            <el-button @click="submit" :disabled="!isSubmissionAllowed">{{saveButtonLabel}}</el-button>
         </div>
     </div>
 </div>
