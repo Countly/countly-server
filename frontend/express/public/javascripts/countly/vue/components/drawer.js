@@ -20,7 +20,6 @@
                 saveButtonLabel: {type: String, required: true, default: ""},
                 cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
-                width: {type: String, default: "1000px"},
                 hasCancelButton: {type: Boolean, required: false, default: false}
             },
             data: function() {

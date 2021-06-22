@@ -1,6 +1,5 @@
 <div class="cly-vue-drawer"
-    :class="{mounted: isMounted, open: isOpened, 'has-sidecars': hasSidecars}"
-    :style="{width: width}">
+    :class="{mounted: isMounted, open: isOpened, 'has-sidecars': hasSidecars}">
     <div class="title">
         <span>{{title}}</span>
         <span class="close" v-on:click="doClose">
@@ -33,6 +32,7 @@
                     v-bind="passedScope">
                 </slot>
             </div>
+            <cly-button @click="doClose" v-if="hasCancelButton" skin="light" v-bind:label="cancelButtonLabel"></cly-button>
             <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n('common.drawer.next-step')"></cly-button>
             <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="!isSubmissionAllowed" skin="green" v-bind:label="saveButtonLabel"></cly-button>
             <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n('common.drawer.previous-step')"></cly-button>
