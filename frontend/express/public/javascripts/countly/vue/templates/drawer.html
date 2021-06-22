@@ -1,18 +1,18 @@
 <div class="cly-vue-drawer"
     :class="rootClasses">
-    <div class="sidecars-view" v-show="hasSidecars">
+    <div class="cly-vue-drawer__sidecars-view" v-show="hasSidecars">
         <slot name="sidecars"
             v-bind="passedScope">
         </slot>
     </div>
-    <div class="steps-view">
-        <div class="title">
+    <div class="cly-vue-drawer__steps-view">
+        <div class="cly-vue-drawer__title">
             <span>{{title}}</span>
             <span class="close" v-on:click="doClose">
                 <i class="ion-ios-close-empty"></i>
             </span>
         </div>
-        <div class="steps-header" v-show="isMultiStep">
+        <div class="cly-vue-drawer__steps-header" v-show="isMultiStep">
             <div class="label" :class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">
                 <div class="wrapper">
                     <span class="index">{{i + 1}}</span>
@@ -21,12 +21,12 @@
                 </div>
             </div>
         </div>
-        <div class="details" :class="{'multi-step':isMultiStep}">
+        <div class="cly-vue-drawer__steps-container" :class="{'is-multi-step':isMultiStep}">
             <slot name="default"
                 v-bind="passedScope">
             </slot>
         </div>
-        <div class="buttons multi-step" v-if="isMultiStep">
+        <div class="cly-vue-drawer__buttons is-multi-step" v-if="isMultiStep">
             <div class="controls-left-container">
                 <slot name="controls-left"
                     v-bind="passedScope">
@@ -36,7 +36,7 @@
             <el-button @click="nextStep" type="success" v-if="!isLastStep" :disabled="!isCurrentStepValid">{{i18n('common.drawer.next-step')}}</el-button>
             <el-button @click="submit" v-if="isLastStep" type="success" :disabled="!isSubmissionAllowed">{{saveButtonLabel}}</el-button>
         </div>
-        <div class="buttons single-step" v-if="!isMultiStep">
+        <div class="cly-vue-drawer__buttons is-single-step" v-if="!isMultiStep">
             <el-button @click="doClose" v-if="hasCancelButton">{{cancelButtonLabel}}</el-button>
             <el-button @click="submit" type="success" :disabled="!isSubmissionAllowed">{{saveButtonLabel}}</el-button>
         </div>

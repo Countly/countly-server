@@ -963,14 +963,15 @@
         background-color: transparent;
         z-index: 2000;
         width: 100%;
+        transform: translateX(100%);
 
-        .sidecars-view {
+        &__sidecars-view {
             background-color: #f3f3f3;
             overflow-y: scroll;
             position: absolute;
             left: 0;
         }
-        .steps-view {
+        &__steps-view {
             box-sizing: border-box;
             //padding-top: 58px;
             padding-bottom: 190px;
@@ -979,25 +980,23 @@
             background-color: #fcfcfc;
         }
 
-        .steps-view,
-        .sidecars-view {
+        &__steps-view,
+        &__sidecars-view {
             height: 100%;
         }
 
         &--half-screen {
-            .steps-view {
+            .cly-vue-drawer__steps-view {
                 width: 50%;
             }
-            .sidecars-view {
+            .cly-vue-drawer__sidecars-view {
                 width: 50%;
             }
         }
 
-        &--full-screen .steps-view {
+        &--full-screen .cly-vue-drawer__steps-view {
             width: 100%;
         }
-
-        transform: translateX(100%);
 
         &.mounted {
             transform: translateX(100%);
@@ -1008,7 +1007,7 @@
             transition: transform 0.3s;
         }
 
-        .title {
+        &__title {
             position: relative;
             padding: 20px;
             font-size: 20px;
@@ -1032,7 +1031,7 @@
             }
         }
 
-        .steps-header {
+        &__steps-header {
             background-color: #fff;
             height: 55px;
             width: 100%;
@@ -1093,7 +1092,7 @@
             }
         }
 
-        .details {
+        &__steps-container {
             padding: 20px;
             height: 100%;
             float: none;
@@ -1130,7 +1129,7 @@
                     font-size: 12px;
                 }
             }
-            &.multi-step {
+            &.is-multi-step {
                 height: calc(100% - 56px);
             }
             .validation-error {
@@ -1215,24 +1214,8 @@
             padding-top: 10px;
         }
 
-        // .buttons {
-        //     position: absolute;
-        //     right: 0;
-        //     width: 410px;
-        //     padding: 20px;
-        //     bottom: 0;
-        //     position: relative;
-        //     background-color: #fff;
-        //     border-top: 1px solid #ececed;
-        //     width: 100%;
-        //     padding: 20px 20px;
-        //     margin: 0;
-        //     left: 0;
-        //     right: 0;
-        //     box-sizing: border-box;
-        //     bottom: 0;
-        //     overflow: auto;
-        // }
+        &__buttons {
+        }
     }
 
     .cly-vue-panel {
