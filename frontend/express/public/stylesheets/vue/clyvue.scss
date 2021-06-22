@@ -964,16 +964,11 @@
         z-index: 2000;
         width: 100%;
 
-        &--half-screen .steps-view {
-            width: 50%;
-        }
-        &--full-screen .steps-view {
-            width: 100%;
-        }
-
         .sidecars-view {
             background-color: #f3f3f3;
             overflow-y: scroll;
+            position: absolute;
+            left: 0;
         }
         .steps-view {
             box-sizing: border-box;
@@ -989,34 +984,28 @@
             height: 100%;
         }
 
-
-        //$drawer-width: 600px;
-
-        //width: #{$drawer-width};
-
-        transform: translateX(100%); // translateX(#{$drawer-width * 2});
-
-        &.mounted {
-            transform: translateX(100%); // translateX(#{$drawer-width});
+        &--half-screen, &--full-screen.has-sidecars {
+            .steps-view {
+                width: 50%;
+            }
+            .sidecars-view {
+                width: 50%;
+            }
         }
 
-        // &.has-sidecars {
-        //     width: 100%; //#{$drawer-width * 2};
-        //     transform: translateX(100%); //translateX(#{$drawer-width * 2});
-        //     .steps-view,
-        //     .sidecars-view {
-        //         width: 50%;
-        //         float: left;
-        //     }
-        // }
+        &--full-screen:not(.has-sidecars) .steps-view {
+            width: 100%;
+        }
+
+        transform: translateX(100%);
+
+        &.mounted {
+            transform: translateX(100%);
+        }
 
         &.open {
             transform: translateX(0);
             transition: transform 0.3s;
-        }
-
-        .cly-vue-button.disabled {
-            cursor: auto;
         }
 
         .title {
