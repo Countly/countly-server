@@ -1,0 +1,45 @@
+<div class="cly-vue-drawer"
+    :class="{mounted: isMounted, open: isOpened, 'has-sidecars': hasSidecars}"
+    :style="{width: width}">
+    <div class="title">
+        <span>{{title}}</span>
+        <span class="close" v-on:click="doClose">
+            <i class="ion-ios-close-empty"></i>
+        </span>
+    </div>
+    <div class="sidecars-view" v-show="hasSidecars">
+        <slot name="sidecars"
+            v-bind="passedScope">
+        </slot>
+    </div>
+    <div class="steps-view">
+        <div class="steps-header" v-show="isMultiStep">
+            <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">
+                <div class="wrapper">
+                    <span class="index">{{i + 1}}</span>
+                    <span class="done-icon"><i class="fa fa-check"></i></span>
+                    <span class="text">{{currentContent.name}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="details" v-bind:class="{'multi-step':isMultiStep}">
+            <slot name="default"
+                v-bind="passedScope">
+            </slot>
+        </div>
+        <div class="buttons multi-step" v-if="isMultiStep">
+            <div class="controls-left-container">
+                <slot name="controls-left"
+                    v-bind="passedScope">
+                </slot>
+            </div>
+            <cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n('common.drawer.next-step')"></cly-button>
+            <cly-button @click="submit" v-if="isLastStep" v-bind:disabled="!isSubmissionAllowed" skin="green" v-bind:label="saveButtonLabel"></cly-button>
+            <cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n('common.drawer.previous-step')"></cly-button>
+        </div>
+        <div class="buttons single-step" v-if="!isMultiStep">
+            <cly-button @click="doClose" v-if="hasCancelButton" skin="light" v-bind:label="cancelButtonLabel"></cly-button>
+            <cly-button @click="submit" v-bind:disabled="!isSubmissionAllowed" skin="green" v-bind:label="saveButtonLabel"></cly-button>
+        </div>
+    </div>
+</div>
