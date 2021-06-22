@@ -37,6 +37,10 @@
                 isOpened: function(newState) {
                     if (!newState) {
                         this.reset();
+                        $("#vue-common-overlay").hide();
+                    }
+                    else {
+                        $("#vue-common-overlay").show();
                     }
                 }
             },
