@@ -57,6 +57,12 @@
                 }
                 return null;
             },
+            currentScreenMode: function() {
+                if (this.activeContent && this.activeContent.screen) {
+                    return this.activeContent.screen;
+                }
+                return "half";
+            },
             currentStepId: function() {
                 return this.activeContentId;
             },
@@ -184,11 +190,6 @@
                 }
             }
         },
-        computed: {
-            classes: function() {
-                return "cly-form-step__" + this.screen + "-screen";
-            }
-        },
         mounted: function() {
             var self = this;
             this.$watch(function() {
@@ -206,7 +207,7 @@
                 this.$refs.observer.validate();
             }
         },
-        template: '<div class="cly-vue-content" :class="classes" :id="elementId" v-if="isActive || alwaysMounted">\n' +
+        template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
                     '<div v-show="isActive">\n' +
                         '<validation-observer ref="observer" v-slot="v">\n' +
                             '<slot/>\n' +

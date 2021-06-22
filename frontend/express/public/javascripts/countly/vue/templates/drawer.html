@@ -1,17 +1,17 @@
 <div class="cly-vue-drawer"
-    :class="{mounted: isMounted, open: isOpened, 'has-sidecars': hasSidecars}">
-    <div class="title">
-        <span>{{title}}</span>
-        <span class="close" v-on:click="doClose">
-            <i class="ion-ios-close-empty"></i>
-        </span>
-    </div>
+    :class="rootClasses">
     <div class="sidecars-view" v-show="hasSidecars">
         <slot name="sidecars"
             v-bind="passedScope">
         </slot>
     </div>
     <div class="steps-view">
+        <div class="title">
+            <span>{{title}}</span>
+            <span class="close" v-on:click="doClose">
+                <i class="ion-ios-close-empty"></i>
+            </span>
+        </div>
         <div class="steps-header" v-show="isMultiStep">
             <div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">
                 <div class="wrapper">

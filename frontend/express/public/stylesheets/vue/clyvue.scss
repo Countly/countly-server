@@ -960,10 +960,16 @@
         transition: transform 0.3s;
         right: 0;
         top: 0;
-        background-color: #fcfcfc;
-        border-left: 1px solid #d0d0d0;
+        background-color: transparent;
         z-index: 2000;
         width: 100%;
+
+        &--half-screen .steps-view {
+            width: 50%;
+        }
+        &--full-screen .steps-view {
+            width: 100%;
+        }
 
         .sidecars-view {
             background-color: #f3f3f3;
@@ -973,6 +979,9 @@
             box-sizing: border-box;
             //padding-top: 58px;
             padding-bottom: 190px;
+            position: absolute;
+            right: 0;
+            background-color: #fcfcfc;
         }
 
         .steps-view,
@@ -991,15 +1000,15 @@
             transform: translateX(100%); // translateX(#{$drawer-width});
         }
 
-        &.has-sidecars {
-            width: 100%; //#{$drawer-width * 2};
-            transform: translateX(100%); //translateX(#{$drawer-width * 2});
-            .steps-view,
-            .sidecars-view {
-                width: 50%;
-                float: left;
-            }
-        }
+        // &.has-sidecars {
+        //     width: 100%; //#{$drawer-width * 2};
+        //     transform: translateX(100%); //translateX(#{$drawer-width * 2});
+        //     .steps-view,
+        //     .sidecars-view {
+        //         width: 50%;
+        //         float: left;
+        //     }
+        // }
 
         &.open {
             transform: translateX(0);
@@ -1016,7 +1025,6 @@
             font-size: 20px;
             color: #636363;
             background-color: #fff;
-            width: inherit;
             top: 0px;
             box-sizing: border-box;
             .close {
@@ -1255,15 +1263,6 @@
                     padding: 12px 22px;
                 }
             }
-        }
-    }
-
-    .cly-form-step {
-        &__half-screen {
-            width: 50%
-        }
-        &__full-screen {
-            width: 100%
         }
     }
 

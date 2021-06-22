@@ -1,9 +1,8 @@
-/* global Vue, CV */
+/* global Vue, CV, $ */
 
 (function(countlyVue) {
 
-    var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins;
+    var _mixins = countlyVue.mixins;
 
     Vue.component("cly-drawer", countlyVue.components.create(
         // @vue/component
@@ -30,6 +29,15 @@
             computed: {
                 hasSidecars: function() {
                     return this.sidecarContents.length > 0;
+                },
+                rootClasses: function() {
+                    var classes = {
+                        mounted: this.isMounted,
+                        open: this.isOpened,
+                        'has-sidecars': this.hasSidecars
+                    };
+                    classes["cly-vue-drawer--" + this.currentScreenMode + "-screen"] = true;
+                    return classes;
                 }
             },
             watch: {
