@@ -1,4 +1,4 @@
-/* global Vue */
+/* global Vue, CV */
 
 (function(countlyVue) {
 
@@ -18,8 +18,10 @@
                 name: {type: String, required: true},
                 title: {type: String, required: true},
                 saveButtonLabel: {type: String, required: true, default: ""},
+                cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
-                width: {type: String, default: "1000px"}
+                width: {type: String, default: "1000px"},
+                hasCancelButton: {type: Boolean, required: false, default: false}
             },
             data: function() {
                 return {
@@ -91,6 +93,7 @@
                                     '<cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\n' +
                                 '</div>\n' +
                                 '<div class="buttons single-step" v-if="!isMultiStep">\n' +
+                                    '<cly-button @click="doClose" v-if="hasCancelButton" skin="light" v-bind:label="cancelButtonLabel"></cly-button>\n' +
                                     '<cly-button @click="submit" v-bind:disabled="!isSubmissionAllowed" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
                                 '</div>\n' +
                             '</div>\n' +
