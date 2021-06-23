@@ -991,10 +991,18 @@
             .cly-vue-drawer__sidecars-view {
                 width: 50%;
             }
+            .cly-vue-drawer__footer {
+                padding: 16px;
+            }
         }
 
-        &--full-screen .cly-vue-drawer__steps-view {
-            width: 100%;
+        &--full-screen {
+            .cly-vue-drawer__steps-view {
+                width: 100%;
+            }
+            .cly-vue-drawer__footer {
+                padding: 16px 0;
+            }
         }
 
         &.is-mounted {
@@ -1092,6 +1100,7 @@
             float: none;
             overflow-y: auto;
             overflow-x: hidden;
+            width: 100%;
             .subgroup {
                 padding-bottom: 35px;
                 &.thin {
@@ -1207,6 +1216,14 @@
             display: inline-block;
             height: 30px;
             padding-top: 10px;
+        }
+        &__header {
+        }
+        &__footer {
+            border-top: 2px solid #ECECEC;
+        }
+        &__steps-wrapper{ 
+            height: inherit;
         }
     }
 
