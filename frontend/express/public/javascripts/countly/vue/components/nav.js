@@ -61,6 +61,10 @@
             skin: {
                 type: String,
                 default: "primary"
+            },
+            noHistory: {
+                type: Boolean,
+                default: true
             }
         },
         computed: {
