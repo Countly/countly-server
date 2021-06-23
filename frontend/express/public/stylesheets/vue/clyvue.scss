@@ -960,62 +960,62 @@
         transition: transform 0.3s;
         right: 0;
         top: 0;
-        background-color: #fcfcfc;
-        border-left: 1px solid #d0d0d0;
+        background-color: transparent;
         z-index: 2000;
+        width: 100%;
+        transform: translateX(100%);
 
-        .sidecars-view {
+        &__sidecars-view {
             background-color: #f3f3f3;
             overflow-y: scroll;
+            position: absolute;
+            left: 0;
         }
-        .steps-view {
+        &__steps-view {
             box-sizing: border-box;
-            //padding-top: 58px;
             padding-bottom: 190px;
+            position: absolute;
+            right: 0;
+            background-color: white;
         }
 
-        .steps-view,
-        .sidecars-view {
+        &__steps-view,
+        &__sidecars-view {
             height: 100%;
         }
 
-
-        //$drawer-width: 600px;
-
-        //width: #{$drawer-width};
-
-        transform: translateX(100%); // translateX(#{$drawer-width * 2});
-
-        &.mounted {
-            transform: translateX(100%); // translateX(#{$drawer-width});
-        }
-
-        &.has-sidecars {
-            width: 100%; //#{$drawer-width * 2};
-            transform: translateX(100%); //translateX(#{$drawer-width * 2});
-            .steps-view,
-            .sidecars-view {
+        &--half-screen {
+            .cly-vue-drawer__steps-view {
                 width: 50%;
-                float: left;
+            }
+            .cly-vue-drawer__sidecars-view {
+                width: 50%;
+            }
+            .cly-vue-drawer__footer {
+                padding: 16px;
             }
         }
 
-        &.open {
+        &--full-screen {
+            .cly-vue-drawer__steps-view {
+                width: 100%;
+            }
+            .cly-vue-drawer__footer {
+                padding: 16px 0;
+            }
+        }
+
+        &.is-mounted {
+            transform: translateX(100%);
+        }
+
+        &.is-open {
             transform: translateX(0);
             transition: transform 0.3s;
         }
 
-        .cly-vue-button.disabled {
-            cursor: auto;
-        }
-
-        .title {
+        &__title {
             position: relative;
-            padding: 20px;
-            font-size: 20px;
-            color: #636363;
-            background-color: #fff;
-            width: inherit;
             top: 0px;
             box-sizing: border-box;
             .close {
@@ -1034,7 +1034,7 @@
             }
         }
 
-        .steps-header {
+        &__steps-header {
             background-color: #fff;
             height: 55px;
             width: 100%;
@@ -1095,11 +1095,12 @@
             }
         }
 
-        .details {
-            padding: 20px;
+        &__steps-container {
             height: 100%;
             float: none;
             overflow-y: auto;
+            overflow-x: hidden;
+            width: 100%;
             .subgroup {
                 padding-bottom: 35px;
                 &.thin {
@@ -1132,7 +1133,7 @@
                     font-size: 12px;
                 }
             }
-            &.multi-step {
+            &.is-multi-step {
                 height: calc(100% - 56px);
             }
             .validation-error {
@@ -1211,49 +1212,18 @@
             }
         }
 
-        .controls-left-container {
+        &__controls-left-pc {
             display: inline-block;
             height: 30px;
             padding-top: 10px;
         }
-
-        .buttons {
-            position: absolute;
-            right: 0;
-            width: 410px;
-            padding: 20px;
-            bottom: 0;
-            position: relative;
-            background-color: #fff;
-            border-top: 1px solid #ececed;
-            width: 100%;
-            padding: 20px 20px;
-            margin: 0;
-            left: 0;
-            right: 0;
-            box-sizing: border-box;
-            bottom: 0;
-            overflow: auto;
-
-            .cly-vue-button {
-                float: none;
-                font-size: 15px;
-                text-align: center;
-                padding: 12px;
-                margin: 0;
-                &.button-light-skin {
-                    box-shadow: none;
-                    background-color: #fff;
-                }
-            }
-
-            &.multi-step {
-                .cly-vue-button {
-                    float: right;
-                    font-size: 14px;
-                    padding: 12px 22px;
-                }
-            }
+        &__header {
+        }
+        &__footer {
+            border-top: 2px solid #ECECEC;
+        }
+        &__steps-wrapper{ 
+            height: inherit;
         }
     }
 

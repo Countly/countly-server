@@ -57,6 +57,12 @@
                 }
                 return null;
             },
+            currentScreenMode: function() {
+                if (this.activeContent && this.activeContent.screen) {
+                    return this.activeContent.screen;
+                }
+                return "half";
+            },
             currentStepId: function() {
                 return this.activeContentId;
             },
@@ -176,6 +182,13 @@
     Vue.component("cly-form-step", BaseStep.extend({
         props: {
             validatorFn: {type: Function},
+            screen: {
+                type: String,
+                default: "half",
+                validator: function(value) {
+                    return ['half', 'full', 'custom'].indexOf(value) !== -1;
+                }
+            }
         },
         mounted: function() {
             var self = this;

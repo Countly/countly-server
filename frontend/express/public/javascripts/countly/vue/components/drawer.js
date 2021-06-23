@@ -1,11 +1,10 @@
-/* global Vue */
+/* global Vue, CV, $ */
 
 (function(countlyVue) {
 
-    var countlyBaseComponent = countlyVue.components.BaseComponent,
-        _mixins = countlyVue.mixins;
+    var _mixins = countlyVue.mixins;
 
-    Vue.component("cly-drawer", countlyBaseComponent.extend(
+    Vue.component("cly-drawer", countlyVue.components.create(
         // @vue/component
         {
             inheritAttrs: false,
@@ -18,8 +17,9 @@
                 name: {type: String, required: true},
                 title: {type: String, required: true},
                 saveButtonLabel: {type: String, required: true, default: ""},
+                cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
-                width: {type: String, default: "1000px"}
+                hasCancelButton: {type: Boolean, required: false, default: false}
             },
             data: function() {
                 return {
@@ -29,12 +29,25 @@
             computed: {
                 hasSidecars: function() {
                     return this.sidecarContents.length > 0;
+                },
+                rootClasses: function() {
+                    var classes = {
+                        'is-mounted': this.isMounted,
+                        'is-open': this.isOpened,
+                        'has-sidecars': this.hasSidecars
+                    };
+                    classes["cly-vue-drawer--" + this.currentScreenMode + "-screen"] = true;
+                    return classes;
                 }
             },
             watch: {
                 isOpened: function(newState) {
                     if (!newState) {
                         this.reset();
+                        $("#vue-common-overlay").hide();
+                    }
+                    else {
+                        $("#vue-common-overlay").show();
                     }
                 }
             },
@@ -51,50 +64,7 @@
                     }
                 }
             },
-            template: '<div class="cly-vue-drawer"\n' +
-                            ':class="{mounted: isMounted, open: isOpened, \'has-sidecars\': hasSidecars}"\n' +
-                            ':style="{width: width}">\n' +
-                            '<div class="title">\n' +
-                                '<span>{{title}}</span>\n' +
-                                '<span class="close" v-on:click="doClose">\n' +
-                                    '<i class="ion-ios-close-empty"></i>\n' +
-                                '</span>\n' +
-                            '</div>\n' +
-                            '<div class="sidecars-view" v-show="hasSidecars">\n' +
-                                '<slot name="sidecars"\n' +
-                                    'v-bind="passedScope">\n' +
-                                '</slot>\n' +
-                            '</div>\n' +
-                            '<div class="steps-view">\n' +
-                                '<div class="steps-header" v-show="isMultiStep">\n' +
-                                    '<div class="label" v-bind:class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">\n' +
-                                        '<div class="wrapper">\n' +
-                                            '<span class="index">{{i + 1}}</span>\n' +
-                                            '<span class="done-icon"><i class="fa fa-check"></i></span>\n' +
-                                            '<span class="text">{{currentContent.name}}</span>\n' +
-                                        '</div>\n' +
-                                    '</div>\n' +
-                                '</div>\n' +
-                                '<div class="details" v-bind:class="{\'multi-step\':isMultiStep}">\n' +
-                                    '<slot name="default"\n' +
-                                        'v-bind="passedScope">\n' +
-                                    '</slot>\n' +
-                                '</div>\n' +
-                                '<div class="buttons multi-step" v-if="isMultiStep">\n' +
-                                    '<div class="controls-left-container">\n' +
-                                        '<slot name="controls-left"\n' +
-                                            'v-bind="passedScope">\n' +
-                                        '</slot>\n' +
-                                    '</div>\n' +
-                                    '<cly-button @click="nextStep" v-if="!isLastStep" v-bind:disabled="!isCurrentStepValid" skin="green" v-bind:label="i18n(\'common.drawer.next-step\')"></cly-button>\n' +
-                                    '<cly-button @click="submit" v-if="isLastStep" v-bind:disabled="!isSubmissionAllowed" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
-                                    '<cly-button @click="prevStep" v-if="currentStepIndex > 0" skin="light" v-bind:label="i18n(\'common.drawer.previous-step\')"></cly-button>\n' +
-                                '</div>\n' +
-                                '<div class="buttons single-step" v-if="!isMultiStep">\n' +
-                                    '<cly-button @click="submit" v-bind:disabled="!isSubmissionAllowed" skin="green" v-bind:label="saveButtonLabel"></cly-button>\n' +
-                                '</div>\n' +
-                            '</div>\n' +
-                        '</div>'
+            template: CV.T('/javascripts/countly/vue/templates/drawer.html')
         }
     ));
 
