@@ -6,13 +6,28 @@
         </slot>
     </div>
     <div class="cly-vue-drawer__steps-view">
-        <div class="cly-vue-drawer__steps-wrapper bu-container bu-p-5 bu-is-max-desktop">
-            <div class="cly-vue-drawer__header">
-                <div class="cly-vue-drawer__title">
-                    <h3>{{title}}</h3>
-                    <span class="close" v-on:click="doClose">
+        <div class="bu-container bu-pt-3 bu-is-fluid" v-if="currentScreenMode === 'full'">
+            <div class="bu-columns bu-is-gapless">
+                <div class="bu-column bu-is-12 bu-is-flex bu-is-justify-content-flex-end">
+                    <span class="cly-vue-drawer__close-button" v-on:click="doClose">
                         <i class="ion-ios-close-empty"></i>
                     </span>
+                </div>
+            </div>
+        </div>
+        <div class="cly-vue-drawer__steps-wrapper bu-container bu-is-max-desktop" :class="{ 'bu-p-5': currentScreenMode === 'full' }">
+            <div class="cly-vue-drawer__header">
+                <div class="cly-vue-drawer__title">
+                    <div v-if="currentScreenMode !== 'full'" class="bu-columns bu-is-gapless bu-is-mobile bu-p-3">
+                        <div class="bu-column bu-is-11 bu-is-flex bu-is-align-items-center bu-m-3">
+                            <h3>{{title}}</h3>
+                        </div>
+                        <div class="bu-column bu-is-1 bu-is-flex bu-is-align-items-center bu-is-justify-content-flex-end">
+                            <span class="cly-vue-drawer__close-button" v-on:click="doClose">
+                                <i class="ion-ios-close-empty"></i>
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div class="cly-vue-drawer__steps-header" v-show="isMultiStep">
                     <div class="label" :class="{active: i === currentStepIndex,  passed: i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">
@@ -25,6 +40,11 @@
                 </div>
             </div>
             <div class="cly-vue-drawer__steps-container" :class="{'is-multi-step':isMultiStep}">
+                <div class="bu-columns bu-is-gapless bu-is-mobile" v-if="currentScreenMode === 'full'">
+                    <div class="bu-column bu-is-12">
+                        <h3>{{title}}</h3>
+                    </div>
+                </div>
                 <slot name="default"
                     v-bind="passedScope">
                 </slot>

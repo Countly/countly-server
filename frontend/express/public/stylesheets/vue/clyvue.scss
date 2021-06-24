@@ -1018,19 +1018,18 @@
             position: relative;
             top: 0px;
             box-sizing: border-box;
-            .close {
-                font-size: 42px;
-                color: #9c9c9c;
+        }
+
+
+        &__close-button {
+            font-size: 42px;
+            color: #9c9c9c;
+            transition: color 1s;
+            cursor: pointer;
+            width: 70px;
+            &:hover {
+                color: #333;
                 transition: color 1s;
-                cursor: pointer;
-                float: right;
-                vertical-align: top;
-                bottom: 12px;
-                position: relative;
-                &:hover {
-                    color: #333;
-                    transition: color 1s;
-                }
             }
         }
 
