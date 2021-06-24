@@ -1035,11 +1035,11 @@
         }
 
         &__close-button {
-            font-size: 42px;
+            font-size: 30px;
             color: #9c9c9c;
             transition: color 1s;
             cursor: pointer;
-            width: 70px;
+            width: 30px;
             &:hover {
                 color: #333;
                 transition: color 1s;
@@ -1120,7 +1120,7 @@
             height: 30px;
             padding-top: 10px;
         }
-        &__header {
+        &__header:not(.is-full-screen) {
             border-bottom: 1px solid #CFD6E4;
         }
         &__footer {
