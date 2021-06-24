@@ -1,0 +1,301 @@
+.user-management-view {
+  .el-tabs--button>.el-tabs__header {
+    padding: 24px 24px 0px 24px;
+  }
+
+  .manage-users-table {
+    margin: 0px 25px;
+  }
+
+  .manage-users-action-btn {
+    background-color: #12af51;
+  }
+
+  .label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    
+    .label-text {
+      font-style: normal;
+      font-weight: normal;
+      font-size: 13px;
+      line-height: 16px;
+      color: #333C48;
+    }
+  }
+
+  .help-text {
+    font-family: Inter;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 12px;
+    line-height: 16px;
+    color: #81868D;
+  }
+
+  .section-header {
+    font-weight: 500;
+    font-size: 12px;
+  }
+
+  .section-title {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin:0px 10px;
+  }
+
+  .medium-header {
+    font-size: 14px;
+  }
+
+  .drawer-sub-section {
+    border: 1px solid #ebebeb;
+    border-bottom: 3px solid #ebebeb;
+    border-radius: 6px;
+    background-color: white;
+    margin-top: 10px;
+    padding: 10px 0px;
+
+    .right {
+      padding: 0px 10px;
+    }
+
+    .label {
+      margin: 0px 10px;
+    }
+  }
+
+  .drawer-sub-title {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 5px 0px;
+  }
+
+  .user-management-drawer {
+
+    .check-label {
+      color: #0166D6 !important;
+    }
+
+    .light-button {
+      background-color: #ddedff;
+      color: #0166d6;
+      font-weight: bold;
+      padding: 10px 20px;
+      width: fit-content;
+      margin-top: 10px;
+      font-size: 13px;
+      border-radius: 5px;
+    }
+
+    .drawer-content {
+      display: flex;
+      flex-direction: column;
+
+      .top-section {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        .inputs-area {
+          width: 60%;
+          
+          .input-wrapper {
+            margin-top: 10px;
+
+            input {
+              background-color: #F6F6F6;
+              border: 1px solid #E2E4E8;
+            }
+
+            input:focus {
+              background-color: white;
+            }
+          }
+        }
+
+        .profile-picture-area {
+          width: 35%;
+
+          .upload-section {
+            margin-top: 5px;
+            border: 1px dashed #bdbdbd;
+            padding: 30px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+
+            .img-box {
+              background-color: #F6F6F6;
+              height: 50px;
+              width: 50px;
+              border-radius: 4px;
+            }
+
+            .description-box {
+              font-size: 13px;
+              text-align: center;
+
+              .bold {
+                font-weight: 500;
+              }
+
+              .link {
+                color: blue;
+                text-decoration: underline;
+              }
+
+              .size-warning {
+                color: gray;
+              }
+            }
+          }
+
+          .label {
+            margin-top: 5px;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 13px;
+            line-height: 16px;
+            color: #333C48;
+          }
+        }
+      }
+
+      .bottom-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .role-area {
+
+          .section-content {
+            margin: 10px 10px 0px 10px;
+          }
+
+          .check-text {
+            font-size: 13px;
+            margin-top: 4px;
+          }
+        }
+
+        .permission-table-header {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 10px;
+          font-size: 12px;
+          font-weight: 500;
+          border-bottom: 1px solid #ebebeb;
+          padding-bottom: 10px;
+          box-shadow: 0px 3px 5px rgb(0 0 0 / 8%);
+          
+          .feature-name-col {
+            width: calc(25% - 15px);
+            text-align: left;
+            padding-left: 15px;
+          }
+
+          .permission-type-cols {
+            width: 75%;
+            display: flex;
+            justify-content: space-evenly;
+
+            .permission-type {
+              text-align: center;
+              font-size: 11px;
+              width: 25%;
+
+              .check-label {
+                font-size: 15px;
+              }
+
+              .check-text {
+                margin-top: 2px;
+              }
+            }
+          }
+        }
+
+        .permission-table-content {
+          height: 300px;
+          overflow-y: scroll;
+          padding: 10px 0px;
+
+          .permission-row {
+            display: flex;
+            flex-direction: row;
+            height: 30px;
+
+            .feature-name {
+              width: calc(25% - 15px);
+              text-align: left;
+              padding-left: 15px;
+              display: flex;
+              justify-content: flex-start;
+              align-items: center;
+              font-size: 14px;
+            }
+
+            .feature-permissions {
+              width: 75%;
+              display: flex;
+              justify-content: space-evenly;
+
+              .permission-box {
+                text-align: center;
+                width: 25%;
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    .title {
+      font-style: normal;
+      font-weight: 500;
+      font-size: 20px;
+      line-height: 30px;
+      letter-spacing: 0.003em;
+      color: #333C48;
+    }
+
+    .buttons {
+      position: absolute !important;
+      display: flex;
+      justify-content: flex-end;
+      
+      .button-green-skin {
+        padding: 10px 16px;
+        background-color: #12af51;
+        color: white;
+        font-size: 13px;
+        border-radius: 4px;
+        font-weight: 500;
+        width: fit-content;
+      }
+
+      .button-light-skin {
+        width: fit-content;
+        font-weight: 500;
+        padding: 10px 16px;
+        background-color: #F6F6F6 !important;
+        color: black;
+        font-size: 13px;
+        border-radius: 4px;
+        margin-right: 10px;
+      }
+    }
+
+    .app-selector {
+      width: calc(100% - 20px);
+      margin: 5px 10px;
+    }
+  }
+}
