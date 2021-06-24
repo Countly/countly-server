@@ -4,7 +4,7 @@
 			<template v-slot:header-left>
 				<h2> {{i18n('events.all.title.new')}} 
 				</h2>
-				<span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description">
+				<span class="el-icon-info cly-vue-events-all-tooltip" v-tooltip.top-center="description">
 				</span>
 			</template>
 		</cly-header>
@@ -16,12 +16,12 @@
 				<div class="cly-vue-events-all-name">
 				{{selectedEventName}}<span class="cly-vue-events-group" v-if="isGroup">{{i18n('events.all.group')}}</span>
 				</div>
-				<div  style="padding-bottom:24px" v-if="isGroup">
+				<div  class="cly-vue-events-all-description" v-if="isGroup">
 					{{selectedEventDescription}}
 				</div>
-				<div style="display:flex">
+				<div class="bu-is-flex">
 					<div><span class="cly-vue-events-all-period">{{i18n('events.all.period')}}</span>
-					<cly-date-picker style="margin-right:26px" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker></div>
+					<cly-date-picker classs="cly-vue-events-all-date-picker" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker></div>
 					<div v-if="hasSegments">
 						<span class="cly-vue-events-all-segmentation">{{i18n('events.all.segmentation')}}</span>
 						<el-select v-model="selectedSegment">
@@ -30,7 +30,7 @@
 					</el-select>
 				</div>
 			    </div>  
-				<div style="background:white">
+				<div class="cly-vue-events-all-charts">
 						<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData">	
 				</cly-chart-bar>
 				<cly-chart-time v-else  :option="chartData"></cly-chart-time>
