@@ -109,4 +109,43 @@
                     </div>'
     }));
 
+    var _ModalManager = new Vue({
+        el: "#vue-modal-manager",
+        template: '<div><div :class="{\'is-active\': nClients>0}" id="vue-common-overlay"></div></div>',
+        data: function() {
+            return {
+                clients: {}
+            };
+        },
+        computed: {
+            nClients: function() {
+                return Object.keys(this.clients).length;
+            }
+        },
+        methods: {
+            setState: function(clientId, state) {
+                if (state) {
+                    Vue.set(this.clients, clientId, true);
+                }
+                else {
+                    Vue.delete(this.clients, clientId);
+                }
+            }
+        }
+    });
+
+    countlyVue.mixins.Modal = {
+        methods: {
+            setModalState: function(state) {
+                _ModalManager.setState(this.componentId, state);
+            }
+        },
+        beforeDestroy: function() {
+            _ModalManager.setState(this.componentId, false);
+        }
+    };
+
+    countlyVue.ModalManager = _ModalManager;
+
+
 }(window.countlyVue = window.countlyVue || {}));

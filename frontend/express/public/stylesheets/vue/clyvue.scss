@@ -13,6 +13,20 @@
         z-index: 2000;
     }
 
+    #vue-common-overlay { 
+        display:none; 
+        background-color:#383A3F;
+        opacity:0.5; 
+        width:100%; 
+        height:100%; 
+        position:fixed; 
+        z-index:1999; 
+        top:0; 
+        &.is-active {
+            display: block;
+        }
+    }
+
     font-family: t.$font-family !important;
 
     // tabs component

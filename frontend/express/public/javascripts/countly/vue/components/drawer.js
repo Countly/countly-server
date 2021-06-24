@@ -1,4 +1,4 @@
-/* global Vue, CV, $ */
+/* global Vue, CV */
 
 (function(countlyVue) {
 
@@ -10,7 +10,8 @@
             inheritAttrs: false,
             mixins: [
                 _mixins.i18n,
-                _mixins.MultiStepForm
+                _mixins.MultiStepForm,
+                _mixins.Modal
             ],
             props: {
                 isOpened: {type: Boolean, required: true},
@@ -44,11 +45,8 @@
                 isOpened: function(newState) {
                     if (!newState) {
                         this.reset();
-                        $("#vue-common-overlay").hide();
                     }
-                    else {
-                        $("#vue-common-overlay").show();
-                    }
+                    this.setModalState(newState);
                 }
             },
             mounted: function() {
