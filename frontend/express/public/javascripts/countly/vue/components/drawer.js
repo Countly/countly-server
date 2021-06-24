@@ -46,6 +46,9 @@
                     if (!newState) {
                         this.reset();
                     }
+                    else {
+                        this.$refs.rootEl.focus();
+                    }
                     this.setModalState(newState);
                 }
             },
@@ -60,6 +63,9 @@
                     if (this.closeFn) {
                         this.closeFn();
                     }
+                },
+                escKeyEvent: function() {
+                    this.doClose();
                 }
             },
             template: CV.T('/javascripts/countly/vue/templates/drawer.html')

@@ -1,4 +1,4 @@
-<div class="cly-vue-drawer"
+<div class="cly-vue-drawer" tabindex="0" @keydown.esc="escKeyEvent" ref="rootEl"
     :class="rootClasses">
     <div class="cly-vue-drawer__sidecars-view" v-show="hasSidecars">
         <slot name="sidecars"
