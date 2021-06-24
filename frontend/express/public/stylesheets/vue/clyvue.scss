@@ -966,7 +966,7 @@
         transform: translateX(100%);
 
         &__sidecars-view {
-            background-color: #f3f3f3;
+            background-color: #383A3F;
             overflow-y: scroll;
             position: absolute;
             left: 0;
@@ -1100,114 +1100,8 @@
             overflow-y: auto;
             overflow-x: hidden;
             width: 100%;
-            .subgroup {
-                padding-bottom: 35px;
-                &.thin {
-                    padding-bottom: 10px;
-                }
-            }
-            .section {
-                margin-bottom: 25px;
-                .label {
-                    font-size: 12px;
-                    margin-bottom: 8px;
-                    color: #636363;
-                }
-                .description {
-                    font-size: 11px;
-                    margin-top: 4px;
-                    color: #9c9c9c;
-                    line-height: 17px;
-                    &.tall {
-                        margin: 8px 0px;
-                    }
-                }
-                input[type="text"].input {
-                    width: 100%;
-                    box-sizing: border-box;
-                    border-radius: 2px;
-                    border: 1px solid #d6d6d6;
-                    outline: none;
-                    padding: 7px;
-                    font-size: 12px;
-                }
-            }
             &.is-multi-step {
                 height: calc(100% - 56px);
-            }
-            .validation-error {
-                margin-top: 10px;
-                clear: both;
-                color: rgb(255, 0, 0);
-                font-size: 12px;
-            }
-            .regular {
-                width: 85%;
-                margin: 20px auto 0 auto;
-            }
-            .slim {
-                width: 75%;
-                margin: 20px auto 0 auto;
-            }
-
-            .slim.super {
-                width: 45%;
-                margin: 10% auto 0 auto;
-            }
-
-            ul.steplist {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-
-                li {
-                    position: relative;
-                    margin-bottom: 0;
-                    padding-bottom: 35px;
-                    &:after {
-                        content: "";
-                        position: absolute;
-                        left: -27px;
-                        top: 4px;
-                        font-family: "Font Awesome 5 Free";
-                        font-weight: 900;
-                        color: #636363;
-                        font-size: 8px;
-                    }
-                    &:before {
-                        content: "";
-                        position: absolute;
-                        left: -23px;
-                        border-left: 1px dashed #d6d6d6;
-                        height: 100%;
-                        width: 1px;
-                    }
-                    &:first-child:before {
-                        top: 6px;
-                    }
-                    &:last-child:before {
-                        height: 6px;
-                    }
-                }
-            }
-        }
-
-        .panel {
-            background-color: #ffffff;
-            border: 1px solid #d0d0d0;
-            font-size: 13px;
-            border-radius: 2px;
-            .panel-heading {
-                padding: 8px 20px;
-                background-color: #ececec;
-                color: #636363;
-                text-transform: uppercase;
-                border-bottom: 1px solid #d0d0d0;
-                font-weight: 500;
-            }
-            .panel-body {
-                padding: 20px;
-                position: relative;
             }
         }
 
@@ -1223,6 +1117,42 @@
         }
         &__steps-wrapper{ 
             height: inherit;
+        }
+    }
+
+    .cly-helper-steplist {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            position: relative;
+            margin-bottom: 0;
+            padding-bottom: 35px;
+            &:after {
+                content: "";
+                position: absolute;
+                left: -27px;
+                top: 4px;
+                font-family: "Font Awesome 5 Free";
+                font-weight: 900;
+                color: #636363;
+                font-size: 8px;
+            }
+            &:before {
+                content: "";
+                position: absolute;
+                left: -23px;
+                border-left: 1px dashed #d6d6d6;
+                height: 100%;
+                width: 1px;
+            }
+            &:first-child:before {
+                top: 6px;
+            }
+            &:last-child:before {
+                height: 6px;
+            }
         }
     }
 
