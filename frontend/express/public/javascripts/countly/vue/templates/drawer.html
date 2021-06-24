@@ -45,9 +45,13 @@
                         <h3>{{title}}</h3>
                     </div>
                 </div>
-                <slot name="default"
-                    v-bind="passedScope">
-                </slot>
+                <div class="bu-columns bu-is-gapless bu-is-mobile" :class="{ 'bu-p-6': currentScreenMode !== 'full' }">
+                    <div class="bu-column bu-is-12">
+                        <slot name="default"
+                            v-bind="passedScope">
+                        </slot>
+                    </div>
+                </div>
             </div>
             <div class="cly-vue-drawer__footer">
                 <div class="cly-vue-drawer__buttons is-multi-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="isMultiStep">
