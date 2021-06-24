@@ -1034,7 +1034,6 @@
             box-sizing: border-box;
         }
 
-
         &__close-button {
             font-size: 42px;
             color: #9c9c9c;
@@ -1049,60 +1048,57 @@
 
         &__steps-header {
             background-color: #fff;
-            height: 55px;
-            width: 100%;
-            bottom: 5px;
             position: relative;
-            border-top: 1px solid #f9f9f9;
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             align-items: center;
-            z-index: 1000;
-            .label {
-                height: 100%;
-                width: 30%;
-                text-align: center;
-                cursor: pointer;
-                background-color: #fff;
+            z-index: 1000;    
+            width: 100%;
+            max-width: 720px;
+        }
 
-                .wrapper {
-                    margin-top: 17px;
+        &__step-sign {
+            width: 18px;
+            height: 18px;
+            border-radius: 18px;
+            background-color: transparent;
+            border: 1px solid #A7AEB8;
+            color: #A7AEB8;
+            display: inline-block;
+            .index {
+                vertical-align: top;
+            }
+            .done-icon {
+                vertical-align: top;
+                display: none;
+            }
+        }
 
-                    .index {
-                        font-size: 20px;
-                        color: #c0c0c0;
-                        vertical-align: middle;
-                    }
-                    .text {
-                        color: #c0c0c0;
-                        font-size: 15px;
-                        vertical-align: middle;
-                        margin-left: 8px;
-                    }
-                    .done-icon {
-                        vertical-align: middle;
-                        font-size: 20px;
-                        color: #13b94d;
-                        display: none;
-                    }
+        &__step-label {
+            height: 100%;
+            text-align: center;
+            cursor: pointer;
+            background-color: #fff;
+
+            &.is-active {
+                .cly-vue-drawer__step-sign {
+                    background-color: #333C48;
+                    border-color:#333C48;
+                    color: white;
                 }
+                color: #333C48;
+            }
 
-                &.active {
-                    border-bottom: 2px solid #13b94d;
-                    z-index: 1000;
-                    border-top: 1px solid #f9f9f9;
-                    .text,
-                    .index {
-                        color: #000;
+            &.is-passed {
+                .cly-vue-drawer__step-sign {
+                    background-color: #12AF51;
+                    border-color: #12AF51;
+                    color: white;
+                    .done-icon {
+                        display: block;
                     }
-                }
-
-                &.passed {
                     .index {
                         display: none;
-                    }
-                    .done-icon {
-                        display: inline;
                     }
                 }
             }
@@ -1125,6 +1121,7 @@
             padding-top: 10px;
         }
         &__header {
+            border-bottom: 1px solid #CFD6E4;
         }
         &__footer {
             border-top: 2px solid #ECECEC;
