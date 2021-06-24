@@ -78,7 +78,6 @@ var AllEventsViewWrapper = new countlyVue.views.BackboneWrapper({
         "/core/events/templates/allEvents.html"
     ]
 });
-app.AllEventsView = AllEventsView;
 
 app.route("/analytics/events/key/:eventKey", "all-events", function(eventKey) {
     var params = {
