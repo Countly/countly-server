@@ -27,6 +27,10 @@
         }
     }
 
+    &.has-active-modal {
+        overflow: hidden!important;
+    }
+
     font-family: t.$font-family !important;
 
     // tabs component

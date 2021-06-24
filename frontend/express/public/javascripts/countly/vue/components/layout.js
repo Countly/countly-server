@@ -1,4 +1,4 @@
-/* global Vue */
+/* global Vue, $ */
 
 (function(countlyVue) {
 
@@ -120,6 +120,16 @@
         computed: {
             nClients: function() {
                 return Object.keys(this.clients).length;
+            }
+        },
+        watch: {
+            nClients: function(newVal) {
+                if (newVal > 0) {
+                    $("body").addClass("has-active-modal");
+                }
+                else {
+                    $("body").removeClass("has-active-modal");
+                }
             }
         },
         methods: {
