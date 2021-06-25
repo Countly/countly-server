@@ -991,7 +991,6 @@
         }
         &__steps-view {
             box-sizing: border-box;
-            padding-bottom: 190px;
             position: absolute;
             right: 0;
             background-color: white;
@@ -1137,9 +1136,6 @@
             overflow-y: auto;
             overflow-x: hidden;
             width: 100%;
-            &.is-multi-step {
-                height: calc(100% - 56px);
-            }
         }
 
         &__controls-left-pc {
@@ -1154,7 +1150,9 @@
             border-top: 2px solid #ECECEC;
         }
         &__steps-wrapper{ 
-            height: inherit;
+            height: 100%;
+            flex-direction: column;
+            display: flex;
         }
     }
 
