@@ -2,10 +2,8 @@
     <div v-bind:class="[componentId]">
         <cly-header>
             <template v-slot:header-left>
-                <h2> {{i18n('push-notification.title')}} 
-                </h2>
-                <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="i18n('push-notification.description')">
-                </span>
+                <h2> {{i18n('push-notification.title')}} </h2>
+                <cly-tooltip-icon :tooltip="i18n('push-notification.description')"> </cly-tooltip-icon>
             </template>
             <template v-slot:header-right>
                 <div class="bu-level-item">

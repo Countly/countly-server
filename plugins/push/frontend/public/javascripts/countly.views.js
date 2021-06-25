@@ -1,20 +1,20 @@
-/* global countlyVue,app,CV,countlyPushNotification,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata, components,Backbone*/
+/* global countlyVue,app,CV,countlyPushNotification,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment*/
 (function() {
 
     var AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = [
-        {label: CV.i18n("push-notification.table-filter-scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
-        {label: CV.i18n("push-notification.table-filter-all"), value: countlyPushNotification.service.StatusEnum.ALL},
-        {label: CV.i18n("push-notification.table-filter-sent"), value: countlyPushNotification.service.StatusEnum.SENT},
-        {label: CV.i18n("push-notification.table-filter-sending"), value: countlyPushNotification.service.StatusEnum.SENDING},
-        {label: CV.i18n("push-notification.table-filter-aborted"), value: countlyPushNotification.service.StatusEnum.ABORTED},
-        {label: CV.i18n("push-notification.table-filter-failed"), value: countlyPushNotification.service.StatusEnum.FAILED},
-        {label: CV.i18n("push-notification.table-filter-stopped"), value: countlyPushNotification.service.StatusEnum.STOPPED}
+        {label: CV.i18n("push-notification.status-scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
+        {label: CV.i18n("push-notification.status-all"), value: countlyPushNotification.service.StatusEnum.ALL},
+        {label: CV.i18n("push-notification.status-sent"), value: countlyPushNotification.service.StatusEnum.SENT},
+        {label: CV.i18n("push-notification.status-sending"), value: countlyPushNotification.service.StatusEnum.SENDING},
+        {label: CV.i18n("push-notification.status-aborted"), value: countlyPushNotification.service.StatusEnum.ABORTED},
+        {label: CV.i18n("push-notification.status-failed"), value: countlyPushNotification.service.StatusEnum.FAILED},
+        {label: CV.i18n("push-notification.status-stopped"), value: countlyPushNotification.service.StatusEnum.STOPPED}
     ];
     var TRANSACTIONAL_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
 
     var ONE_TIME_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS.concat([
-        {label: CV.i18n("push-notification.table-filter-draft"), value: countlyPushNotification.service.StatusEnum.DRAFT},
-        {label: CV.i18n("push-notification.table-filter-not-approved"), value: countlyPushNotification.service.StatusEnum.NOT_APPROVED},
+        {label: CV.i18n("push-notification.status-draft"), value: countlyPushNotification.service.StatusEnum.DRAFT},
+        {label: CV.i18n("push-notification.status-not-approved"), value: countlyPushNotification.service.StatusEnum.NOT_APPROVED},
     ]);
 
     var statusFilterOptions = {
@@ -24,9 +24,9 @@
     };
 
     var platformFilterOptions = [
-        {label: CV.i18n("push-notification.platform-all"), value: countlyPushNotification.service.PlatformEnum.ALL},
-        {label: CV.i18n("push-notification.platform-android"), value: countlyPushNotification.service.PlatformEnum.ANDROID},
-        {label: CV.i18n("push-notification.platform-ios"), value: countlyPushNotification.service.PlatformEnum.IOS}
+        {label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL},
+        {label: CV.i18n("push-notification.platform-filter-android"), value: countlyPushNotification.service.PlatformEnum.ANDROID},
+        {label: CV.i18n("push-notification.platform-filter-ios"), value: countlyPushNotification.service.PlatformEnum.IOS}
     ];
 
     var oneTimePeriodFilterOptions = [
@@ -37,6 +37,9 @@
     var transactionalPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
 
 
+    var localizationFilterOptions = [
+        {label: CV.i18n("push-notification-details.localization-filter-all"), value: countlyPushNotification.service.LocalizationEnum.ALL}
+    ];
     var PushNotificationTabView = countlyVue.views.BaseView.extend({
         template: "#push-notification-tab",
         data: function() {
@@ -214,9 +217,9 @@
         data: function() {
             return {
                 pushNotificationTabs: [
-                    {title: CV.i18n('push-notification.tab-one-time'), name: countlyPushNotification.service.TypeEnum.ONE_TIME, component: PushNotificationTabView},
-                    {title: CV.i18n('push-notification.tab-automatic'), name: countlyPushNotification.service.TypeEnum.AUTOMATIC, component: PushNotificationTabView},
-                    {title: CV.i18n('push-notification.tab-transactional'), name: countlyPushNotification.service.TypeEnum.TRANSACTIONAL, component: PushNotificationTabView}
+                    {title: CV.i18n('push-notification.one-time'), name: countlyPushNotification.service.TypeEnum.ONE_TIME, component: PushNotificationTabView},
+                    {title: CV.i18n('push-notification.automatic'), name: countlyPushNotification.service.TypeEnum.AUTOMATIC, component: PushNotificationTabView},
+                    {title: CV.i18n('push-notification.transactional'), name: countlyPushNotification.service.TypeEnum.TRANSACTIONAL, component: PushNotificationTabView}
                 ]
             };
         },
@@ -253,18 +256,251 @@
         this.renderWhenReady(pushNotificationViewWrapper);
     });
 
+    var MessageSummaryContentTab = countlyVue.views.create({
+        template: CV.T('/push/templates/message-summary-content-tab.html'),
+        data: function() {
+            return {
+                selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
+                localizationFilters: localizationFilterOptions
+            };
+        },
+        computed: {
+            message: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.message;
+            }
+        }
+    });
+
+    var MessageSummaryTargetingTab = countlyVue.views.create({
+        template: CV.T('/push/templates/message-summary-targeting-tab.html'),
+        data: function() {
+            return {
+                DAY_TO_MS_RATIO: 86400 * 1000
+            };
+        },
+        computed: {
+            pushNotification: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification;
+            }
+        },
+        methods: {
+            convertDaysInMsToDays: function(daysInMs) {
+                return daysInMs / this.DAY_TO_MS_RATIO;
+            }
+        }
+    });
+
+    var MessageSummaryErrorsTab = countlyVue.views.create({
+        template: CV.T('/push/templates/message-summary-errors-tab.html'),
+        computed: {
+            errors: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.errors;
+            },
+            errorRows: function() {
+                return this.errors.error;
+            }
+        },
+        methods: {
+            hasErrors: function() {
+                return this.errors.numberOfErrors && this.errors.numberOfErrors > 0;
+            }
+        }
+    });
+
+    var MobileMessagePreview = countlyVue.views.create({
+        template: CV.T("/push/templates/mobile-message-preview.html"),
+        data: function() {
+            return {
+                selectedPlatform: this.getDefaultSelectedPlatform(),
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name')
+            };
+        },
+        props: {
+            platforms: {
+                type: Array,
+                default: []
+            },
+            title: {
+                type: String,
+                default: CV.i18n('push-notification.mobile-preview-default-title')
+            },
+            content: {
+                type: String,
+                default: CV.i18n('push-notification.mobile-preview-default-content'),
+            },
+            buttons: {
+                type: Array,
+                default: []
+            },
+            media: {
+                type: String,
+                default: null
+            }
+        },
+        watch: {
+            platforms: function() {
+                this.selectedPlatform = this.getDefaultSelectedPlatform();
+            }
+        },
+        methods: {
+            hasAndroidPlatform: function() {
+                return this.platforms.filter(function(platform) {
+                    return platform.value === countlyPushNotification.service.PlatformEnum.ANDROID;
+                }).length > 0;
+            },
+            hasIOSPlatform: function() {
+                return this.platforms.filter(function(platform) {
+                    return platform.value === countlyPushNotification.service.PlatformEnum.IOS;
+                }).length > 0;
+            },
+            timeNow: function() {
+                return moment().format("H:mm");
+            },
+            isAndroidPlatformSelected: function() {
+                return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.ANDROID;
+            },
+            isIOSPlatformSelected: function() {
+                return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.IOS;
+            },
+            getDefaultSelectedPlatform: function() {
+                return this.hasIOSPlatform() ? countlyPushNotification.service.PlatformEnum.IOS : countlyPushNotification.service.PlatformEnum.ANDROID;
+            },
+            setSelectedPlatform: function(value) {
+                this.selectedPlatform = value;
+            }
+        },
+    });
+
     var PushNotificationDetailsView = countlyVue.views.BaseView.extend({
         template: "#push-notification-details",
         data: function() {
-            return {};
+            return {
+                selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
+                platformFilters: platformFilterOptions,
+                selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
+                localizationFilters: localizationFilterOptions,
+                DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
+                currentSummaryTab: "content",
+                summaryTabs: [
+                    {
+                        title: CV.i18n('push-notification-details.summary-content-tab'),
+                        name: "content",
+                        component: MessageSummaryContentTab
+                    },
+                    {
+                        title: CV.i18n('push-notification-details.summary-targeting-tab'),
+                        name: "targeting",
+                        component: MessageSummaryTargetingTab
+                    },
+                    {
+                        title: CV.i18n('push-notification-details.summary-errors-tab'),
+                        name: "errors",
+                        component: MessageSummaryErrorsTab
+                    }
+                ]
+            };
+        },
+        computed: {
+            pushNotification: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification;
+            },
+            usersTargetedOptions: function() {
+                return {
+                    xAxis: {
+                        type: "category",
+                        data: [0],
+                        show: false
+                    },
+                    yAxis: {
+                        type: "value",
+                    },
+                    series: [{data: [45], stack: "total"}, {data: [55], stack: "total", color: 'rgba(180, 180, 180, 0.2)'}]
+                };
+            },
+            sentMessagesOptions: function() {
+                return {
+                    xAxis: {
+                        type: "category",
+                        data: [0],
+                        show: false
+                    },
+                    yAxis: {
+                        type: "value",
+                    },
+                    series: [{data: [45], stack: "total"}, {data: [55], stack: "total", color: 'rgba(180, 180, 180, 0.2)'}]
+                };
+            },
+            clickedMessagesOptions: function() {
+                return {
+                    xAxis: {
+                        type: "category",
+                        data: [0],
+                        show: false
+                    },
+                    yAxis: {
+                        type: "value",
+                    },
+                    series: [{data: [45], stack: "total"}, {data: [55], stack: "total", color: 'rgba(180, 180, 180, 0.2)'}]
+                };
+            },
+            failedMessagesOptions: function() {
+                return {
+                    xAxis: {
+                        type: "category",
+                        data: [0],
+                        show: false
+                    },
+                    yAxis: {
+                        type: "value",
+                    },
+                    series: [{data: [45], stack: "total"}, {data: [55], stack: "total", color: 'rgba(180, 180, 180, 0.2)'}]
+                };
+            }
+        },
+        methods: {
+            // eslint-disable-next-line no-unused-vars
+            handleUserEvents: function(event, id) {
+            },
+            getStatusBackgroundColor: function() {
+                if (this.pushNotification.status) {
+                    switch (this.pushNotification.status.value) {
+                    case countlyPushNotification.service.StatusEnum.SENT: {
+                        return "#12AF51";
+                    }
+                    case countlyPushNotification.service.StatusEnum.ABORTED: {
+                        return "#D23F00";
+                    }
+                    case countlyPushNotification.service.StatusEnum.SCHEDULED: {
+                        return "#CDAD7A";
+                    }
+                    case countlyPushNotification.service.StatusEnum.STOPPED: {
+                        return "#D23F00";
+                    }
+                    default: {
+                        return "#FFFFFF";
+                    }
+                    }
+                }
+                return "#FFFFFF";
+            }
+        },
+        components: {
+            "mobile-message-preview": MobileMessagePreview
+        },
+        mounted: function() {
+            if (this.$route.params.id) {
+                this.$store.dispatch('countlyPushNotification/details/fetchById', this.$route.params.id);
+            }
         }
     });
 
     var pushNotificationDetailsViewWrapper = new countlyVue.views.BackboneWrapper({
         component: PushNotificationDetailsView,
+        vuex: pushNotificationVuex,
         templates: [
             "/push/templates/push-notification-details.html"
-        ]
+        ],
     });
 
     app.route('/messaging/details/*id', "messagingDetails", function(id) {
@@ -273,7 +509,6 @@
         };
         this.renderWhenReady(pushNotificationDetailsViewWrapper);
     });
-
 
     //countly.views application management settings
     var featureName = 'push';

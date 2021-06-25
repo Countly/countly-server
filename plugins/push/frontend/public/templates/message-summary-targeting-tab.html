@@ -1,0 +1,54 @@
+<el-card class="box-card cly-vue-push-notification-details-summary-card">
+    <div>
+        <h3>{{i18n('push-notification-details.targeting-sub-header')}}</h3>
+        <div class="bu-columns">
+            <div class="bu-column bu-is-2">
+                {{i18n('push-notification-details.targeted-users')}}
+            </div>
+            <div class="bu-column bu-is-10">
+                {{pushNotification.cohortIds && pushNotification.cohortIds.toString()}}
+            </div>
+        </div>
+        <div class="bu-columns">
+            <div class="bu-column bu-is-2">
+                {{i18n('push-notification-details.geolocation')}}
+            </div>
+            <div class="bu-column bu-is-10">
+                {{pushNotification.geoIds && pushNotification.geoIds.toString()}}
+            </div>
+        </div>
+        <div class="bu-columns">
+            <div class="bu-column bu-is-2">
+                {{i18n('push-notification-details.when-to-determine')}}
+            </div>
+            <div class="bu-column bu-is-10">
+                {{pushNotification.audienceSelectionType}}
+            </div>
+        </div>
+        <h3>{{i18n('push-notification-details.delivery-sub-header')}}</h3>
+        <div class="bu-columns">
+            <div class="bu-column bu-is-2">
+                {{i18n('push-notification-details.delivery-type')}}
+            </div>
+            <div class="bu-column bu-is-10">
+                {{pushNotification.deliveryType}}
+            </div>
+        </div>
+        <div class="bu-columns">
+            <div class="bu-column bu-is-2">
+                {{i18n('push-notification-details.scheduled-for')}}
+            </div>
+            <div class="bu-column bu-is-10">
+                {{pushNotification.startDate}}
+            </div>
+        </div>
+        <div class="bu-columns">
+            <div class="bu-column bu-is-2">
+                {{i18n('push-notification-details.expiration-time')}}
+            </div>
+            <div class="bu-column bu-is-10">
+                {{i18n('push-notification-details.message-expires-after', convertDaysInMsToDays(pushNotification.expirationDaysInMs))}}
+            </div>
+        </div>
+    </div>
+</el-card>
