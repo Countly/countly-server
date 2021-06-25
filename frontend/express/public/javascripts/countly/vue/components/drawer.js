@@ -50,9 +50,6 @@
                     if (!newState) {
                         this.reset();
                     }
-                    else {
-                        this.$refs.rootEl.focus();
-                    }
                     this.setModalState(newState);
                 }
             },
@@ -70,6 +67,9 @@
                 },
                 escKeyEvent: function() {
                     this.doClose();
+                },
+                onViewEntered: function() {
+                    this.$refs.rootEl.focus();
                 }
             },
             template: CV.T('/javascripts/countly/vue/templates/drawer.html')
