@@ -51,6 +51,17 @@
             };
         },
         computed: {
+            lastValidIndex: function() {
+                if (!this.isMounted) {
+                    return -1;
+                }
+                for (var i = 0; i < this.stepContents.length; i++) {
+                    if (this.stepContents[i].isStep && !this.stepContents[i].isValid) {
+                        return i;
+                    }
+                }
+                return i;
+            },
             activeContentId: function() {
                 if (this.activeContent) {
                     return this.activeContent.tId;
@@ -125,6 +136,11 @@
             setStep: function(newIndex) {
                 if (newIndex >= 0 && newIndex < this.stepContents.length) {
                     this.currentStepIndex = newIndex;
+                }
+            },
+            setStepSafe: function(newIndex) {
+                if (newIndex <= this.lastValidIndex) {
+                    this.setStep(newIndex);
                 }
             },
             prevStep: function() {

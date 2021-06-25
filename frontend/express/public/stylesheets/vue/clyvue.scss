@@ -1077,6 +1077,7 @@
             .done-icon {
                 vertical-align: top;
                 display: none;
+                padding-top: 2px;
             }
         }
 
@@ -1086,7 +1087,7 @@
 
         &__step-separator {
             width: 20%;
-            border-top: 1px solid #333c48;
+            border-top: 1px solid #A7AEB8;
             max-width: 50px;
         }
 
@@ -1099,6 +1100,10 @@
             align-items: center;
             justify-content: space-between;
 
+            &.is-locked {
+                cursor: not-allowed;
+            }
+
             &.is-active {
                 .cly-vue-drawer__step-sign {
                     background-color: #333C48;
@@ -1106,6 +1111,9 @@
                     color: white;
                 }
                 color: #333C48;
+                + .cly-vue-drawer__step-separator {
+                    border-color: #333C48;
+                }
             }
 
             &.is-passed {
