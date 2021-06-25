@@ -2,6 +2,13 @@
 @use "../styles/base/colors" as c;
 @use "sass:map";
 
+.std-fade-enter-active, .std-fade-leave-active {
+    transition: opacity .5s;
+}
+.std-fade-enter, .std-fade-leave-to {
+    opacity: 0;
+}
+
 .cly-vue-theme-clydef {
 
     background-color:#FCFCFC;
@@ -975,13 +982,13 @@
 
         position: fixed;
         height: 100%;
-        transition: transform 0.3s;
+        //transition: transform 0.3s;
         right: 0;
         top: 0;
         background-color: transparent;
         z-index: 2000;
         width: 100%;
-        transform: translateX(100%);
+        //transform: translateX(100%);
 
         &__sidecars-view {
             background-color: #A7AEB8;
@@ -1023,12 +1030,12 @@
         }
 
         &.is-mounted {
-            transform: translateX(100%);
+            //transform: translateX(100%);
         }
 
         &.is-open {
-            transform: translateX(0);
-            transition: transform 0.3s;
+            //transform: translateX(0);
+            //transition: transform 0.3s;
         }
 
         &__title {
