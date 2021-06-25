@@ -984,7 +984,7 @@
         transform: translateX(100%);
 
         &__sidecars-view {
-            background-color: #383A3F;
+            background-color: #A7AEB8;
             overflow-y: scroll;
             position: absolute;
             left: 0;
@@ -1068,7 +1068,9 @@
             background-color: transparent;
             border: 1px solid #A7AEB8;
             color: #A7AEB8;
-            display: inline-block;
+            display: inline-block;   
+            min-width: 18px;
+            margin: 0px 6px;
             .index {
                 vertical-align: top;
             }
@@ -1083,6 +1085,8 @@
             text-align: center;
             cursor: pointer;
             background-color: #fff;
+            display: flex;
+            align-items: center;
 
             &.is-active {
                 .cly-vue-drawer__step-sign {
@@ -1106,6 +1110,12 @@
                     }
                 }
             }
+        }
+
+        &__step-separator {
+            width: 6%;
+            border-top: 1px solid #333c48;
+            max-width: 50px;
         }
 
         &__steps-container {

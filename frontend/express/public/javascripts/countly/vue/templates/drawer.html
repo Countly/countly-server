@@ -31,13 +31,16 @@
                     <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile bu-px-5 bu-py-3">
                         <div class="bu-column bu-is-12 bu-is-flex bu-is-align-items-center bu-is-justify-content-left">
                             <div class="cly-vue-drawer__steps-header">
-                                <div class="cly-vue-drawer__step-label" :class="{'is-active': i === currentStepIndex,  'is-passed': i < currentStepIndex}" v-for="(currentContent, i) in stepContents" :key="i">
-                                    <div class="cly-vue-drawer__step-sign">
-                                        <span class="index text-small">{{i + 1}}</span>
-                                        <span class="done-icon text-small"><i class="fa fa-check"></i></span>
+                                <template v-for="(currentContent, i) in stepContents" :key="i">
+                                    <div v-if="i !== 0" class="cly-vue-drawer__step-separator"></div>
+                                    <div class="cly-vue-drawer__step-label" :class="{'is-active': i === currentStepIndex,  'is-passed': i < currentStepIndex}">
+                                        <div class="cly-vue-drawer__step-sign">
+                                            <span class="index text-small">{{i + 1}}</span>
+                                            <span class="done-icon text-small"><i class="fa fa-check"></i></span>
+                                        </div>
+                                        <span class="text-medium font-weight-bold">{{currentContent.name}}</span>
                                     </div>
-                                    <span class="text-medium font-weight-bold">{{currentContent.name}}</span>
-                                </div>
+                                </template>
                             </div>
                         </div>
                     </div>
