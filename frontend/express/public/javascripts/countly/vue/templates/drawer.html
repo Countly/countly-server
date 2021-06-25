@@ -6,16 +6,16 @@
         </slot>
     </div>
     <div class="cly-vue-drawer__steps-view">
-        <div class="bu-container bu-pt-3 bu-is-fluid bu-p-0" v-if="currentScreenMode === 'full'">
-            <div class="bu-columns bu-is-gapless">
-                <div class="bu-column bu-is-12 bu-is-flex bu-is-justify-content-flex-end">
-                    <span class="cly-vue-drawer__close-button" v-on:click="doClose">
-                        <i class="ion-ios-close-empty"></i>
-                    </span>
+        <div class="cly-vue-drawer__steps-wrapper">
+            <div class="bu-container bu-pt-3 bu-is-fluid bu-p-0" v-if="currentScreenMode === 'full'">
+                <div class="bu-columns bu-is-gapless">
+                    <div class="bu-column bu-is-12 bu-is-flex bu-is-justify-content-flex-end">
+                        <span class="cly-vue-drawer__close-button" v-on:click="doClose">
+                            <i class="ion-ios-close-empty"></i>
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="cly-vue-drawer__steps-wrapper bu-container bu-is-max-desktop" :class="{ 'bu-p-5': currentScreenMode === 'full' }">
             <div class="cly-vue-drawer__header bu-pb-2" :class="{ 'is-full-screen': currentScreenMode === 'full'}">
                 <div class="cly-vue-drawer__title">
                     <div v-if="currentScreenMode !== 'full'" class="bu-columns bu-is-gapless bu-is-mobile bu-px-3 bu-pt-3 bu-mb-0">
