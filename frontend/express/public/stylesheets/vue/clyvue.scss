@@ -1080,6 +1080,16 @@
             }
         }
 
+        &__step-title {
+            display: inline-block;
+        }
+
+        &__step-separator {
+            width: 20%;
+            border-top: 1px solid #333c48;
+            max-width: 50px;
+        }
+
         &__step-label {
             height: 100%;
             text-align: center;
@@ -1087,6 +1097,7 @@
             background-color: #fff;
             display: flex;
             align-items: center;
+            justify-content: space-between;
 
             &.is-active {
                 .cly-vue-drawer__step-sign {
@@ -1110,12 +1121,6 @@
                     }
                 }
             }
-        }
-
-        &__step-separator {
-            width: 6%;
-            border-top: 1px solid #333c48;
-            max-width: 50px;
         }
 
         &__steps-container {
