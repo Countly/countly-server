@@ -1,5 +1,5 @@
 
-<transition name="std-fade">
+<transition :name="toggleTransition">
     <div class="cly-vue-drawer" tabindex="0" v-show="isOpened" @keydown.esc="escKeyEvent" ref="rootEl"
         :class="rootClasses">
         <div class="cly-vue-drawer__sidecars-view" v-show="hasSidecars">

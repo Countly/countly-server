@@ -2,11 +2,24 @@
 @use "../styles/base/colors" as c;
 @use "sass:map";
 
-.std-fade-enter-active, .std-fade-leave-active {
-    transition: opacity .5s;
-}
-.std-fade-enter, .std-fade-leave-to {
-    opacity: 0;
+.stdt {
+    &-fade-enter-active, &-fade-leave-active {
+        transition: opacity .3s;
+    }
+    &-fade-enter, &-fade-leave-to {
+        opacity: 0;
+    }
+
+    &-slide-right-leave-active,
+    &-slide-right-enter-active {
+        transition: transform .3s;
+    }
+    &-slide-right-enter {
+        transform: translate(100%, 0);
+    }
+    &-slide-right-leave-to {
+        transform: translate(100%, 0);
+    }
 }
 
 .cly-vue-theme-clydef {
@@ -979,16 +992,13 @@
 
     //drawer
     .cly-vue-drawer {
-
         position: fixed;
         height: 100%;
-        //transition: transform 0.3s;
         right: 0;
         top: 0;
         background-color: transparent;
         z-index: 2000;
         width: 100%;
-        //transform: translateX(100%);
 
         &__sidecars-view {
             background-color: #A7AEB8;
@@ -1029,14 +1039,11 @@
             }
         }
 
-        &.is-mounted {
-            //transform: translateX(100%);
-        }
+        // &.is-mounted {
+        // }
 
-        &.is-open {
-            //transform: translateX(0);
-            //transition: transform 0.3s;
-        }
+        // &.is-open {
+        // }
 
         &__title {
             position: relative;
