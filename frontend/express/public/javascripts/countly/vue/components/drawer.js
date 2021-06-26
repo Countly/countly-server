@@ -1,4 +1,4 @@
-/* global Vue, CV, $ */
+/* global Vue, CV */
 
 (function(countlyVue) {
 
@@ -10,7 +10,8 @@
             inheritAttrs: false,
             mixins: [
                 _mixins.i18n,
-                _mixins.MultiStepForm
+                _mixins.MultiStepForm,
+                _mixins.Modal
             ],
             props: {
                 isOpened: {type: Boolean, required: true},
@@ -19,7 +20,11 @@
                 saveButtonLabel: {type: String, required: true, default: ""},
                 cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
-                hasCancelButton: {type: Boolean, required: false, default: false}
+                hasCancelButton: {type: Boolean, required: false, default: false},
+                toggleTransition: {
+                    type: String,
+                    default: 'stdt-slide-right'
+                }
             },
             data: function() {
                 return {
@@ -44,11 +49,8 @@
                 isOpened: function(newState) {
                     if (!newState) {
                         this.reset();
-                        $("#vue-common-overlay").hide();
                     }
-                    else {
-                        $("#vue-common-overlay").show();
-                    }
+                    this.setModalState(newState);
                 }
             },
             mounted: function() {
@@ -62,6 +64,12 @@
                     if (this.closeFn) {
                         this.closeFn();
                     }
+                },
+                escKeyEvent: function() {
+                    this.doClose();
+                },
+                onViewEntered: function() {
+                    this.$refs.rootEl.focus();
                 }
             },
             template: CV.T('/javascripts/countly/vue/templates/drawer.html')
