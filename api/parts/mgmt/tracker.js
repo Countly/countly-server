@@ -18,6 +18,7 @@ var tracker = {},
     os = require('os'),
     fs = require('fs'),
     asyncjs = require('async'),
+    trial = "79199134e635edb05fc137e8cd202bb8640fb0eb",
     server = "e0693b48a5513cb60c112c21aede3cab809d52d0",
     app = "386012020c7bf7fcb2f1edf215f1801d6146913f",
     url = "https://stats.count.ly",
@@ -77,11 +78,11 @@ var isEnabled = false;
 **/
 tracker.enable = function() {
     Countly.init({
-        app_key: server,
+        app_key: (versionInfo.trial) ? trial : server,
         url: url,
         app_version: versionInfo.version,
         storage_path: "../../../.sdk/",
-        interval: 60000,
+        interval: 10000,
         fail_timeout: 600,
         session_update: 120,
         debug: (logger.getLevel("tracker:server") === "debug")
@@ -94,12 +95,10 @@ tracker.enable = function() {
         setTimeout(function() {
             if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
                 Countly.begin_session(true);
-                common.db.onOpened(function() {
-                    setTimeout(function() {
-                        collectServerStats();
-                        collectServerData();
-                    }, 20000);
-                });
+                setTimeout(function() {
+                    collectServerStats();
+                    collectServerData();
+                }, 20000);
             }
         }, 1000);
         //report app start trace
@@ -114,7 +113,7 @@ tracker.enable = function() {
 **/
 tracker.enableDashboard = function() {
     Countly.init({
-        app_key: server,
+        app_key: (versionInfo.trial) ? trial : server,
         url: url,
         app_version: versionInfo.version,
         storage_path: "../../../.sdk/",
@@ -178,18 +177,28 @@ tracker.getSDK = function() {
 **/
 function collectServerStats() { // eslint-disable-line no-unused-vars
     stats.getServer(common.db, function(data) {
-        if (data) {
-            if (data.app_users) {
-                Countly.userData.set("app_users", data.app_users);
-            }
-            if (data.apps) {
-                Countly.userData.set("apps", data.apps);
-            }
-            if (data.users) {
-                Countly.userData.set("users", data.users);
-            }
-        }
-        Countly.userData.save();
+        common.db.collection("apps").aggregate([{$project: {last_data: 1}}, {$sort: {"last_data": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errApps, resApps) {
+            common.db.collection("members").aggregate([{$project: {last_login: 1}}, {$sort: {"last_login": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errLogin, resLogin) {
+                if (resApps && resApps[0]) {
+                    Countly.userData.set("last_data", resApps[0].last_data || 0);
+                }
+                if (resLogin && resLogin[0]) {
+                    Countly.userData.set("last_login", resLogin[0].last_login || 0);
+                }
+                if (data) {
+                    if (data.app_users) {
+                        Countly.userData.set("app_users", data.app_users);
+                    }
+                    if (data.apps) {
+                        Countly.userData.set("apps", data.apps);
+                    }
+                    if (data.users) {
+                        Countly.userData.set("users", data.users);
+                    }
+                }
+                Countly.userData.save();
+            });
+        });
     });
 }
 
@@ -197,6 +206,7 @@ function collectServerStats() { // eslint-disable-line no-unused-vars
 * Get server data
 **/
 function collectServerData() {
+    Countly.userData.set("plugins", plugins.getPlugins());
     var cpus = os.cpus();
     if (cpus && cpus.length) {
         Countly.userData.set("cores", cpus.length);

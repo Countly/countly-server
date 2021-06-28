@@ -59,10 +59,10 @@
             <div id="login-logo" style="margin-bottom:30px;"></div>
             <form method="POST">
                 <div>
-                    <input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email"/>
+                    <input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
                 </div>
                 <div>
-                    <input name="password" type="password" placeholder="Password" data-localize="placeholder.password"/>
+                    <input name="password" type="password" placeholder="Password" data-localize="placeholder.password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>"/>
                 </div>
                 <% if (typeof inject_template.form != "undefined") { %>
                     <%- inject_template.form %>

@@ -1,6 +1,7 @@
-/*global CountlyHelpers, countlyDashboards, countlyView, _, simpleheat, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, T, app, $, jQuery, moment*/
+/*global CountlyHelpers, countlyAuth, countlyDashboards, countlyView, _, simpleheat, countlyWidgets, countlySegmentation, ViewsView, ViewManageView, ViewFrequencyView, ActionMapView, countlyCommon, countlyTokenManager, addDrill, countlyGlobal, countlySession, countlyViews, T, app, $, jQuery, moment*/
 
 window.ViewsView = countlyView.extend({
+    featureName: 'views',
     selectedMetric: "u",
     haveActionColumn: false,
     selectedView: null,
@@ -10,6 +11,7 @@ window.ViewsView = countlyView.extend({
     graphColors: {},
     selectedSegment: {"segmentKey": "", "segmentValue": ""},
     ids: {},
+    viewMap: {},
     lastId: 0,
     token: false,
     useView: null,
@@ -35,7 +37,7 @@ window.ViewsView = countlyView.extend({
     getExportAPI: function(tableID) {
         if (tableID === 'ViewsDataTableOne') {
             var set = this.dtable.fnSettings();
-            var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getTable&seeMee=1" + "&period=" + countlyCommon.getPeriodForAjax() + "&iDisplayStart=0&app_id=" + countlyCommon.ACTIVE_APP_ID + '&api_key=' + countlyGlobal.member.api_key;
+            var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getExportQuery" + "&period=" + countlyCommon.getPeriodForAjax() + "&iDisplayStart=0&app_id=" + countlyCommon.ACTIVE_APP_ID + '&api_key=' + countlyGlobal.member.api_key;
             if (self.selectedSegment && self.selectedSegment.segmentKey !== "" && self.selectedSegment.segmentValue !== "") {
                 requestPath += "&segment=" + self.selectedSegment.segmentKey;
                 requestPath += "&segmentVal=" + self.selectedSegment.segmentKey;
@@ -54,8 +56,9 @@ window.ViewsView = countlyView.extend({
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 path: requestPath,
                 method: "GET",
-                filename: "Systemlogs_on_" + moment().format("DD-MMM-YYYY"),
-                prop: ['aaData']
+                filename: "Views" + countlyCommon.ACTIVE_APP_ID + "_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData'],
+                "url": "/o/export/requestQuery"
             };
             return apiQueryData;
         }
@@ -299,6 +302,7 @@ window.ViewsView = countlyView.extend({
                     }
                     $(nRow).attr("id", self.ids[aData._id]);
                     $(nRow).data("viewid", aData._id);
+                    self.viewMap[aData._id] = aData.display || aData.view || aData._id;
                 },
                 "fnInitComplete": function(oSettings, json) {
                     $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
@@ -395,9 +399,6 @@ window.ViewsView = countlyView.extend({
                     followLink = true;
                 }
 
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version && parseInt((countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version + "").split(".")[0]) <= 16) {
-                    return;
-                }
                 $(event.target).toggleClass("active");
                 if ($(event.target).hasClass("active")) {
                     $(".views-table a.table-link").removeClass("active");
@@ -421,7 +422,7 @@ window.ViewsView = countlyView.extend({
                         countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
                             self.token = token && token.result;
                             if (self.token) {
-                                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
+                                newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, app_key: countlyCommon.ACTIVE_APP_KEY, url: window.location.protocol + "//" + window.location.host});
                                 newWindow.location.href = url;
                             }
                         });
@@ -453,7 +454,7 @@ window.ViewsView = countlyView.extend({
                     self.token = token && token.result;
                     if (self.token) {
                         var path = self.useView.replace("#/analytics/views/action-map/", "");
-                        newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true});
+                        newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, app_key: countlyCommon.ACTIVE_APP_KEY, url: window.location.protocol + "//" + window.location.host});
                         newWindow.location.href = url + path;
                     }
                 });
@@ -536,14 +537,24 @@ window.ViewsView = countlyView.extend({
 
             }
         }
+
+        if (!countlyAuth.validateUpdate(self.featureName)) {
+            $('#manage-views-button').hide();
+        }
     },
     drawGraph: function() {
-        var props = this.getProperties();
         var dp = [];
         for (var i = 0; i < this.selectedViews.length; i++) {
             var color = countlyCommon.GRAPH_COLORS[i];
-            var data = countlyViews.getChartData(this.selectedViews[i], this.selectedMetric, props[this.selectedMetric], this.selectedSegment.segmentKey, this.selectedSegment.segmentValue).chartDP;
+            var data = countlyViews.getChartData(this.selectedViews[i], this.selectedMetric, this.viewMap[this.selectedViews[i]], this.selectedSegment.segmentKey, this.selectedSegment.segmentValue).chartDP;
             if (data) {
+                for (var index = 0; index < data.length; index++) {
+                    var point = data[index];
+                    if (point && point.label) {
+                        var n = 25;
+                        point.label = point.label.substr(0, n) + '&hellip;';
+                    }
+                }
                 data[1].color = color;
                 $("#" + this.ids[this.selectedViews[i]] + " .color").css("background-color", color);
                 this.graphColors[this.selectedViews[i]] = color;
@@ -587,6 +598,7 @@ window.ViewsView = countlyView.extend({
 });
 
 window.ViewManageView = countlyView.extend({
+    featureName: 'views',
     beforeRender: function() {
         var self = this;
         return $.when(T.render('/views/templates/manageViews.html', function(src) {
@@ -610,6 +622,31 @@ window.ViewManageView = countlyView.extend({
         else {
             $(".apply-view-changes").removeClass("disabled");
         }
+    },
+    getExportAPI: function(tableID) {
+        if (tableID === 'DataTables_Table_0') {
+            var set = this.dtable.fnSettings();
+            var requestPath = countlyCommon.API_PARTS.data.r + "?method=views&action=getTableNames&api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&project=true";
+            if (set && set.oPreviousSearch && set.oPreviousSearch.sSearch) {
+                requestPath += "&sSearch=" + set.oPreviousSearch.sSearch;
+            }
+            if (set && set.aaSorting && set.aaSorting[0]) {
+                if (set.aaSorting[0][1] === 'asc' || set.aaSorting[0][1] === 'desc') {
+                    requestPath += "&iSortCol_0=" + set.aaSorting[0][0];
+                    requestPath += "&sSortDir_0=" + set.aaSorting[0][1];
+                }
+            }
+            var apiQueryData = {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                path: requestPath,
+                method: "GET",
+                filename: "views_naming_on_" + moment().format("DD-MMM-YYYY"),
+                prop: ['aaData']
+            };
+            return apiQueryData;
+        }
+        return null;
     },
     renderCommon: function(isRefresh) {
         var self = this;
@@ -1001,115 +1038,116 @@ app.viewFrequencyView = new ViewFrequencyView();
 app.actionMapView = new ActionMapView();
 app.viewManageView = new ViewManageView();
 
-app.route("/analytics/views", 'views', function() {
-    this.renderWhenReady(this.viewsView);
-});
+if (countlyAuth.validateRead(app.viewsView.featureName)) {
+    app.route("/analytics/views", 'views', function() {
+        this.renderWhenReady(this.viewsView);
+    });
 
-app.route("/analytics/views/manage", 'views', function() {
-    this.renderWhenReady(this.viewManageView);
-});
+    app.route("/analytics/views/manage", 'views', function() {
+        this.renderWhenReady(this.viewManageView);
+    });
 
+    app.route("/analytics/view-frequency", 'views', function() {
+        this.renderWhenReady(this.viewFrequencyView);
+    });
 
-app.route("/analytics/view-frequency", 'views', function() {
-    this.renderWhenReady(this.viewFrequencyView);
-});
+    app.route("/analytics/views/action-map/*view", 'views', function(view) {
+        this.actionMapView.view = view;
+        this.renderWhenReady(this.actionMapView);
+    });
 
-app.route("/analytics/views/action-map/*view", 'views', function(view) {
-    this.actionMapView.view = view;
-    this.renderWhenReady(this.actionMapView);
-});
+    app.addPageScript("/drill#", function() {
+        var drillClone;
+        var self = app.drillView;
+        var record_views = countlyGlobal.record_views;
+        if (countlyGlobal.apps && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill && typeof countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views !== "undefined") {
+            record_views = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views;
+        }
+        if (record_views) {
 
-app.addPageScript("/drill#", function() {
-    var drillClone;
-    var self = app.drillView;
-    var record_views = countlyGlobal.record_views;
-    if (countlyGlobal.apps && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill && typeof countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views !== "undefined") {
-        record_views = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins.drill.record_views;
-    }
-    if (record_views) {
-
-        $("#drill-types").append('<div id="drill-type-views" class="item"><div class="inner"><span class="icon views"></span><span class="text">' + jQuery.i18n.map["views.title"] + '</span></div></div>');
-        $("#drill-type-views").on("click", function() {
-            if ($(this).hasClass("active")) {
-                return true;
-            }
-
-            $("#drill-types").find(".item").removeClass("active");
-            $(this).addClass("active");
-            $("#event-selector").hide();
-
-            $("#drill-no-event").fadeOut();
-            $("#segmentation-start").fadeOut().remove();
-
-            var currEvent = "[CLY]_view";
-
-            self.graphType = "line";
-            self.graphVal = "times";
-            self.filterObj = {};
-            self.byVal = "";
-            self.drillChartDP = {};
-            self.drillChartData = {};
-            self.activeSegmentForTable = "";
-            countlySegmentation.reset();
-
-            $("#drill-navigation").find(".menu[data-open=table-view]").hide();
-
-            $.when(countlySegmentation.initialize(currEvent)).then(function() {
-                $("#drill").replaceWith(drillClone.clone(true));
-                self.adjustFilters();
-                if (!self.keepQueryTillExec) {
-                    self.draw(true, false);
+            $("#drill-types").append('<div id="drill-type-views" class="item"><div class="inner"><span class="icon views"></span><span class="text">' + jQuery.i18n.map["views.title"] + '</span></div></div>');
+            $("#drill-type-views").on("click", function() {
+                if ($(this).hasClass("active")) {
+                    return true;
                 }
-            });
-        });
-        setTimeout(function() {
-            drillClone = $("#drill").clone(true);
-        }, 0);
-    }
-});
 
-app.addPageScript("/custom#", function() {
-    addWidgetType();
-    addSettingsSection();
-    /**
-     * Function to add widget
-     */
-    function addWidgetType() {
-        var viewsWidget = '<div data-widget-type="views" class="opt dashboard-widget-item">' +
-                            '    <div class="inner">' +
-                            '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
+                $("#drill-types").find(".item").removeClass("active");
+                $(this).addClass("active");
+                $("#event-selector").hide();
+
+                $("#drill-no-event").fadeOut();
+                $("#segmentation-start").fadeOut().remove();
+
+                var currEvent = "[CLY]_view";
+
+                self.graphType = "line";
+                self.graphVal = "times";
+                self.filterObj = {};
+                self.byVal = "";
+                self.drillChartDP = {};
+                self.drillChartData = {};
+                self.activeSegmentForTable = "";
+                countlySegmentation.reset();
+
+                $("#drill-navigation").find(".menu[data-open=table-view]").hide();
+
+                $.when(countlySegmentation.initialize(currEvent)).then(function() {
+                    $("#drill-filter-view").replaceWith(drillClone.clone(true));
+                    self.adjustFilters();
+                    if (!self.keepQueryTillExec) {
+                        self.draw(true, false);
+                    }
+                });
+            });
+            setTimeout(function() {
+                drillClone = $("#drill-filter-view").clone(true);
+            }, 0);
+        }
+    });
+
+    app.addPageScript("/custom#", function() {
+        addWidgetType();
+        addSettingsSection();
+        /**
+         * Function to add widget
+         */
+        function addWidgetType() {
+            var viewsWidget = '<div data-widget-type="views" class="opt dashboard-widget-item">' +
+                                '    <div class="inner">' +
+                                '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
+                                '    </div>' +
+                                '</div>';
+
+            $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
+        }
+
+        /**
+         * Function to add setting section
+         */
+        function addSettingsSection() {
+            var setting = '<div id="widget-section-multi-views" class="settings section">' +
+                            '    <div class="label">' + jQuery.i18n.prop("views.widget-type") + '</div>' +
+                            '    <div id="multi-views-dropdown" class="cly-multi-select" data-max="2" style="width: 100%; box-sizing: border-box;">' +
+                            '        <div class="select-inner">' +
+                            '            <div class="text-container">' +
+                            '                <div class="text">' +
+                            '                    <div class="default-text">' + jQuery.i18n.prop("views.select") + '</div>' +
+                            '                </div>' +
+                            '            </div>' +
+                            '            <div class="right combo"></div>' +
+                            '        </div>' +
+                            '        <div class="select-items square" style="width: 100%;"></div>' +
                             '    </div>' +
                             '</div>';
 
-        $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
-    }
+            $(setting).insertAfter(".cly-drawer .details .settings:last");
+        }
 
-    /**
-     * Function to add setting section
-     */
-    function addSettingsSection() {
-        var setting = '<div id="widget-section-multi-views" class="settings section">' +
-                        '    <div class="label">' + jQuery.i18n.prop("views.widget-type") + '</div>' +
-                        '    <div id="multi-views-dropdown" class="cly-multi-select" data-max="2" style="width: 100%; box-sizing: border-box;">' +
-                        '        <div class="select-inner">' +
-                        '            <div class="text-container">' +
-                        '                <div class="text">' +
-                        '                    <div class="default-text">' + jQuery.i18n.prop("views.select") + '</div>' +
-                        '                </div>' +
-                        '            </div>' +
-                        '            <div class="right combo"></div>' +
-                        '        </div>' +
-                        '        <div class="select-items square" style="width: 100%;"></div>' +
-                        '    </div>' +
-                        '</div>';
-
-        $(setting).insertAfter(".cly-drawer .details .settings:last");
-    }
-
-    $("#multi-views-dropdown").on("cly-multi-select-change", function() {
-        $("#widget-drawer").trigger("cly-widget-section-complete");
+        $("#multi-views-dropdown").on("cly-multi-select-change", function() {
+            $("#widget-drawer").trigger("cly-widget-section-complete");
+        });
     });
-});
+}
 
 $(document).ready(function() {
     jQuery.fn.dataTableExt.oSort['view-frequency-asc'] = function(x, y) {
@@ -1131,17 +1169,21 @@ $(document).ready(function() {
             countlyViews.loadList(appId);
         }
     });
-    app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
-    app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
+
+    if (countlyAuth.validateRead(app.viewsView.featureName)) {
+        app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
+        app.addSubMenu("engagement", {code: "analytics-view-frequency", url: "#/analytics/view-frequency", text: "views.view-frequency", priority: 50});
+    }
 
     //check if configuration view exists
     if (app.configurationsView) {
         app.configurationsView.registerLabel("views", "views.title");
         app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
     }
-
-    initializeViewsWidget();
 });
+
+initializeViewsWidget();
+
 /**
  * Function that initializes widget
  */
@@ -1150,6 +1192,22 @@ function initializeViewsWidget() {
     if (countlyGlobal.plugins.indexOf("dashboards") < 0) {
         return;
     }
+
+    var widgetOptions = {
+        init: initWidgetSections,
+        settings: widgetSettings,
+        placeholder: addPlaceholder,
+        create: createWidgetView,
+        reset: resetWidget,
+        set: setWidget,
+        refresh: refreshWidget
+    };
+
+    if (!app.dashboardsWidgetCallbacks) {
+        app.dashboardsWidgetCallbacks = {};
+    }
+
+    app.dashboardsWidgetCallbacks.views = widgetOptions;
 
     //TO REFRESH VIEWS DATA CHECK FETCH.JS IN API LINE NO: 926
     //SEGMENT THINGY REMAINING
@@ -1195,20 +1253,7 @@ function initializeViewsWidget() {
         T.render('/views/templates/widget.html', function(src) {
             viewsWidgetTemplate = src;
         })
-    ).then(function() {
-
-        var widgetOptions = {
-            init: initWidgetSections,
-            settings: widgetSettings,
-            placeholder: addPlaceholder,
-            create: createWidgetView,
-            reset: resetWidget,
-            set: setWidget,
-            refresh: refreshWidget
-        };
-
-        app.addWidgetCallbacks("views", widgetOptions);
-    });
+    ).then(function() {});
     /**
      * Function to init widget sections
      */
@@ -1288,8 +1333,10 @@ function initializeViewsWidget() {
             var appName = countlyDashboards.getAppName(app[0]),
                 appId = app[0];
 
+            var periodDesc = countlyWidgets.formatPeriod(widgetData.custom_period);
             var $widget = $(viewsWidgetTemplate({
                 title: title,
+                period: periodDesc.name,
                 app: {
                     id: appId,
                     name: appName
@@ -1303,7 +1350,7 @@ function initializeViewsWidget() {
 
             if (!title) {
                 var widgetTitle = jQuery.i18n.prop("views.heading");
-                placeHolder.find(".title").text(widgetTitle);
+                placeHolder.find(".title .name").text(widgetTitle);
             }
 
             addTooltip(placeHolder);
@@ -1339,7 +1386,7 @@ function initializeViewsWidget() {
         var viewsData = [];
         for (i = 0; i < data.chartData.length; i++) {
             viewsData.push({
-                views: data.chartData[i].views,
+                views: data.chartData[i].display,
                 data: []
             });
             for (var j = 0; j < viewsValueNames.length; j++) {
@@ -1413,6 +1460,7 @@ function initializeViewsWidget() {
 
         widgetEl.find("table").replaceWith($widget.find("table"));
         addTooltip(widgetEl);
+        countlyWidgets.setPeriod(widgetEl, widgetData.custom_period);
     }
     /**
      * Function to add tooltip

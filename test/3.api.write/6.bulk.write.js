@@ -57,7 +57,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=sessions')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"]}, f: { '0': 2, '1': 1 }, u: 2, n: 2, t: 3, e: 5, d: 60, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
                     });
             });
         });
@@ -67,7 +67,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=users')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"]}, f: { '0': 2, '1': 1 }, u: 2, n: 2, t: 3, e: 5, d: 60, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
                     });
             });
         });
@@ -77,7 +77,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=locations')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"]}, f: { '0': 2, '1': 1 }, u: 2, n: 2, t: 3, e: 5, d: 60, Unknown: true});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown"], "f-ranges": ["0", "1"], "d-ranges": ["0", "2"]}, f: { '0': 2, '1': 1 }, ds: {'0': 1, '2': 1}, u: 2, n: 2, t: 3, e: 6, d: 60, Unknown: true});
                     });
             });
         });
@@ -87,7 +87,7 @@ describe('Bulk writing', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "1.0 min", avg_time: "0.3 min", avg_requests: "2.5", platforms: [], carriers: [], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "1.0 min", avg_time: "0.3 min", avg_requests: "3.0", platforms: [], carriers: [], resolutions: []});
                     });
             });
         });
@@ -103,7 +103,7 @@ describe('Bulk writing', function() {
         });
         describe('reseting data', function() {
             it('should reset data', function(done) {
-                var params = {app_id: APP_ID};
+                var params = {app_id: APP_ID, "period": "reset"};
                 request
                     .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                     .expect(200)
@@ -191,13 +191,13 @@ describe('Bulk writing', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 9, total_users: 9, new_users: 9, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 50}, {"name": "IOS", "value": 2, "percent": 50}], resolutions: [{"name": "2048x1536", "value": 2, "percent": 66}, {"name": "1200x800", "value": 1, "percent": 34}], carriers: [{"name": "Telecom", "value": 2, "percent": 66}, {"name": "Vodafone", "value": 1, "percent": 34}]});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 9, total_users: 9, new_users: 9, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 50}, {"name": "IOS", "value": 2, "percent": 50}], resolutions: [{"name": "2048x1536", "value": 2, "percent": 66.7}, {"name": "1200x800", "value": 1, "percent": 33.3}], carriers: [{"name": "Telecom", "value": 2, "percent": 66.7}, {"name": "Vodafone", "value": 1, "percent": 33.3}]});
                     });
             });
         });
         describe('reseting data', function() {
             it('should reset data', function(done) {
-                var params = {app_id: APP_ID};
+                var params = {app_id: APP_ID, "period": "reset"};
                 request
                     .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                     .expect(200)
@@ -451,7 +451,7 @@ describe('Bulk writing', function() {
         });
         describe('reseting data', function() {
             it('should reset data', function(done) {
-                var params = {app_id: APP_ID};
+                var params = {app_id: APP_ID, "period": "reset"};
                 request
                     .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                     .expect(200)

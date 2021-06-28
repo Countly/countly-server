@@ -12,13 +12,12 @@ try {
 catch (err) {
     if (process.env.COUNTLY_CONTAINER !== 'frontend') {
         console.warn(
-            `Puppeteer not installed. Please install puppeteer (1.19.0) if
+            `Puppeteer not installed. Please install puppeteer if
             you would like to use api/utils/render.js. \nGracefully skipping
             any functionality associated with Puppeteer...`, err.stack
         );
     }
 }
-var Promise = require('bluebird');
 var pathModule = require('path');
 var exec = require('child_process').exec;
 var alternateChrome = true;
@@ -50,186 +49,187 @@ exports.renderView = function(options, cb) {
     if (puppeteer === undefined) {
         cb = typeof cb === 'function' ? cb : () => undefined;
         return cb(new Error(
-            'Puppeteer not installed. Please install Puppeteer (1.19.0) to use this plugin.'
+            'Puppeteer not installed. Please install Puppeteer to use this plugin.'
         ));
     }
-    Promise.coroutine(function * () {
-        /**
-         * Function to set a timeout
-         * @param  {number} ms - Total milliseconds
-         * @returns {Promise} Promise
-         */
-        function timeout(ms) {
-            return new Promise(function(resolve) {
-                setTimeout(resolve, ms);
-            });
-        }
 
-        if (!chromePath && alternateChrome) {
-            chromePath = yield fetchChromeExecutablePath();
-        }
-
-        var settings = {
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            ignoreHTTPSErrors: true,
-            userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
-        };
-
-        if (chromePath) {
-            settings.executablePath = chromePath;
-        }
-
-        var browser = yield puppeteer.launch(settings);
-
+    (async() => {
         try {
-            var page = yield browser.newPage();
 
-            page.on('console', (msg) => {
-                log.d("Headless chrome page log", msg.text());
-            });
-
-            page.on('pageerror', (error) => {
-                log.e("Headless chrome page error message", error.message);
-            });
-
-            page.on('response', (response) => {
-                log.d("Headless chrome page response", response.status(), response.url());
-            });
-
-            page.on('requestfailed', (request) => {
-                log.d("Headless chrome page failed request", request.failure().errorText, request.url());
-            });
-
-            var host = "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "127.0.0.1") + countlyConfig.path;
-
-            if (options.host) {
-                host = options.host + countlyConfig.path;
+            if (!chromePath && alternateChrome) {
+                chromePath = await fetchChromeExecutablePath();
             }
 
-            var token = options.token;
-            var view = options.view;
-            var id = options.id;
-            var path = options.savePath || pathModule.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + "screenshot_" + Date.now() + ".png");
-            var cbFn = options.cbFn || function() {};
-            var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
-            var source = options.source;
-            var updatedTimeout = options.timeout || 30000;
-
-            options.dimensions = {
-                width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
-                height: options.dimensions && options.dimensions.height ? options.dimensions.height : 0,
-                padding: options.dimensions && options.dimensions.padding ? options.dimensions.padding : 0,
-                scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
+            var settings = {
+                headless: true,
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                ignoreHTTPSErrors: true,
+                userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
             };
 
-            page.setDefaultNavigationTimeout(updatedTimeout);
+            if (chromePath) {
+                settings.executablePath = chromePath;
+            }
 
-            yield page.goto(host + '/login/token/' + token + '?ssr=true');
+            var browser = await puppeteer.launch(settings);
 
-            yield page.waitForSelector('countly', {timeout: updatedTimeout});
+            try {
+                var page = await browser.newPage();
 
-            yield timeout(2000);
+                page.on('console', (msg) => {
+                    log.d("Headless chrome page log", msg.text());
+                });
 
-            yield page.goto(host + view);
+                page.on('pageerror', (error) => {
+                    log.e("Headless chrome page error message", error.message);
+                });
 
-            yield page.waitForSelector('countly', {timeout: updatedTimeout});
+                page.on('response', (response) => {
+                    log.d("Headless chrome page response", response.status(), response.url());
+                });
 
-            yield timeout(10000);
+                page.on('requestfailed', (request) => {
+                    log.d("Headless chrome page failed request", request.failure().errorText, request.url());
+                });
 
-            yield page.evaluate(cbFn, options);
+                var host = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + countlyConfig.path;
 
-            yield timeout(3000);
+                if (options.host) {
+                    host = options.host + countlyConfig.path;
+                }
 
-            yield page.setViewport({
-                width: parseInt(options.dimensions.width),
-                height: parseInt(options.dimensions.height),
-                deviceScaleFactor: options.dimensions.scale
-            });
+                var token = options.token;
+                var view = options.view;
+                var id = options.id;
+                var path = options.savePath || pathModule.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + "screenshot_" + Date.now() + ".png");
+                var cbFn = options.cbFn || function() {};
+                var beforeScrnCbFn = options.beforeScrnCbFn || function() {};
+                var source = options.source;
+                var updatedTimeout = options.timeout || 30000;
+                var waitForRegex = options.waitForRegex;
 
-            yield timeout(3000);
-
-            var bodyHandle = yield page.$('body');
-            var dimensions = yield bodyHandle.boundingBox();
-
-            yield page.setViewport({
-                width: parseInt(options.dimensions.width || dimensions.width),
-                height: parseInt(dimensions.height - options.dimensions.padding),
-                deviceScaleFactor: options.dimensions.scale
-            });
-
-            yield timeout(3000);
-
-            yield page.evaluate(beforeScrnCbFn, options);
-
-            yield timeout(3000);
-
-            var image = "";
-            var screenshotOptions = {
-                type: 'png',
-                encoding: 'binary'
-            };
-
-            if (id) {
-                var rect = yield page.evaluate(function(selector) {
-                    /*global document */
-                    var element = document.querySelector(selector);
-                    dimensions = element.getBoundingClientRect();
-                    return {
-                        left: dimensions.x,
-                        top: dimensions.y,
-                        width: dimensions.width,
-                        height: dimensions.height,
-                        id: element.id
-                    };
-                }, id);
-
-                var clip = {
-                    x: rect.left,
-                    y: rect.top,
-                    width: rect.width,
-                    height: rect.height
+                options.dimensions = {
+                    width: options.dimensions && options.dimensions.width ? options.dimensions.width : 1366,
+                    height: options.dimensions && options.dimensions.height ? options.dimensions.height : 0,
+                    padding: options.dimensions && options.dimensions.padding ? options.dimensions.padding : 0,
+                    scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
                 };
 
-                screenshotOptions.clip = clip;
+                page.setDefaultNavigationTimeout(updatedTimeout);
+
+                await page.goto(host + '/login/token/' + token + '?ssr=true');
+
+                await page.waitForSelector('countly', {timeout: updatedTimeout});
+
+                await timeout(1500);
+
+                await page.goto(host + view);
+
+                if (waitForRegex) {
+                    await page.waitForResponse(
+                        function(response) {
+                            var url = response.url();
+                            if (waitForRegex.test(url) && response.status() === 200) {
+                                return true;
+                            }
+                        },
+                        { timeout: updatedTimeout }
+                    );
+                }
+
+                await timeout(500);
+
+                await page.evaluate(cbFn, options);
+
+                await timeout(1500);
+
+                await page.setViewport({
+                    width: parseInt(options.dimensions.width),
+                    height: parseInt(options.dimensions.height),
+                    deviceScaleFactor: options.dimensions.scale
+                });
+
+                await timeout(1500);
+
+                var bodyHandle = await page.$('body');
+                var dimensions = await bodyHandle.boundingBox();
+
+                await page.setViewport({
+                    width: parseInt(options.dimensions.width || dimensions.width),
+                    height: parseInt(dimensions.height - options.dimensions.padding),
+                    deviceScaleFactor: options.dimensions.scale
+                });
+
+                await timeout(1500);
+
+                await page.evaluate(beforeScrnCbFn, options);
+
+                await timeout(1500);
+
+                var image = "";
+                var screenshotOptions = {
+                    type: 'png',
+                    encoding: 'binary'
+                };
+
+                if (id) {
+                    var rect = await page.evaluate(function(selector) {
+                    /*global document */
+                        var element = document.querySelector(selector);
+                        dimensions = element.getBoundingClientRect();
+                        return {
+                            left: dimensions.x,
+                            top: dimensions.y,
+                            width: dimensions.width,
+                            height: dimensions.height,
+                            id: element.id
+                        };
+                    }, id);
+
+                    var clip = {
+                        x: rect.left,
+                        y: rect.top,
+                        width: rect.width,
+                        height: rect.height
+                    };
+
+                    screenshotOptions.clip = clip;
+                }
+
+                image = await page.screenshot(screenshotOptions);
+
+                await saveScreenshot(image, path, source);
+
+                await page.evaluate(function() {
+                    var $ = window.$;
+                    $("#user-logout").trigger("click");
+                });
+
+                await timeout(1500);
+
+                await bodyHandle.dispose();
+                await browser.close();
+
+                var imageData = {
+                    image: image,
+                    path: path
+                };
+
+                return cb(null, imageData);
             }
-
-            image = yield page.screenshot(screenshotOptions);
-
-            yield saveScreenshot(image, path, source);
-
-            yield page.evaluate(function() {
-                var $ = window.$;
-                $("#user-logout").trigger("click");
-            });
-
-            yield timeout(3000);
-
-            yield bodyHandle.dispose();
-            yield browser.close();
-
-            var imageData = {
-                image: image,
-                path: path
-            };
-
-            return imageData;
+            catch (e) {
+                log.e("Headless chrome browser error", e);
+                await browser.close();
+                return cb(e);
+            }
         }
-        catch (e) {
-            log.e(e, e.stack);
-            yield browser.close();
-            throw e;
+        catch (err) {
+            if (cb) {
+                log.e("Headless chrome error", err);
+                return cb(err);
+            }
         }
-    })().then(function(response) {
-        if (cb) {
-            return cb(null, response);
-        }
-    }, function(err) {
-        if (cb) {
-            log.e("Headless chrome error", err.message);
-            return cb(err);
-        }
-    });
+    })();
 };
 /**
  * Function to fetch Chrome executable
@@ -283,5 +283,16 @@ function saveScreenshot(image, path, source) {
             }
             return resolve();
         });
+    });
+}
+
+/**
+ * Function to set a timeout
+ * @param  {number} ms - Total milliseconds
+ * @returns {Promise} Promise
+ */
+function timeout(ms) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, ms);
     });
 }

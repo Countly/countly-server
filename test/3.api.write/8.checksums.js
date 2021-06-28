@@ -46,7 +46,7 @@ describe("Testing checksum validations", function() {
             request
                 .get("/i")
                 .query({device_id: DEVICE_ID, app_key: APP_KEY})
-                .expect(400)
+                .expect(200)
                 .end(function(error, response) {
                     if (error) {
                         return done(error);
@@ -66,7 +66,7 @@ describe("Testing checksum validations", function() {
             request
                 .get("/i")
                 .query({device_id: DEVICE_ID, app_key: APP_KEY, checksum: checksum}).sortQuery()
-                .expect(400)
+                .expect(200)
                 .end(function(error, response) {
                     if (error) {
                         return done(error);
@@ -86,7 +86,7 @@ describe("Testing checksum validations", function() {
             request
                 .get("/i")
                 .query({device_id: DEVICE_ID, app_key: APP_KEY, checksum256: checksum}).sortQuery()
-                .expect(400)
+                .expect(200)
                 .end(function(error, response) {
                     if (error) {
                         return done(error);
@@ -207,7 +207,7 @@ describe("Testing checksum validations", function() {
 
     describe("Reseting app", function() {
         it("should successfully reset data", function(done) {
-            const args = {app_id: APP_ID};
+            const args = {app_id: APP_ID, "period": "reset"};
             request
                 .get("/i/apps/reset")
                 .query({api_key: API_KEY_ADMIN, args: JSON.stringify(args)})

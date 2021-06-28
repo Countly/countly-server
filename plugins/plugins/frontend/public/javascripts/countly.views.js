@@ -1,5 +1,6 @@
-/*global countlyView,_,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView,T */
+/*global countlyView, countlyAuth, _,$,store,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,ConfigurationsView,PluginsView,T */
 window.PluginsView = countlyView.extend({
+    featureName: 'global_plugins',
     initialize: function() {
         this.filter = (store.get("countly_pluginsfilter")) ? store.get("countly_pluginsfilter") : "plugins-all";
     },
@@ -58,8 +59,8 @@ window.PluginsView = countlyView.extend({
                     {
                         "mData": function(row, type) {
                             if (type === "display") {
-                                var disabled = (row.prepackaged) ? 'disabled' : '';
-                                var input = '<div class="on-off-switch ' + disabled + '">';
+                                var disabled = (row.prepackaged || !countlyAuth.validateUpdate(self.featureName)) ? 'disabled' : '';
+                                var input = '<div data-initial="' + row.enabled + '" class="on-off-switch ' + disabled + '">';
 
                                 if (row.enabled) {
                                     input += '<input type="checkbox" class="on-off-switch-checkbox" id="plugin-' + row.code + '" checked ' + disabled + '>';
@@ -94,6 +95,18 @@ window.PluginsView = countlyView.extend({
                         "sTitle": jQuery.i18n.map["plugins.description"],
                         "bSortable": false,
                         "sClass": "light"
+                    },
+                    {
+                        "mData": function(row) {
+                            var dependentKeys = Object.keys(row.dependents).map(function(item) {
+                                return countlyPlugins.getTitle(item);
+                            });
+                            return dependentKeys.join(", ");
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["plugins.dependents"],
+                        "sClass": "center",
+                        "bSortable": false
                     },
                     {
                         "mData": function(row) {
@@ -247,6 +260,7 @@ window.PluginsView = countlyView.extend({
 });
 
 window.ConfigurationsView = countlyView.extend({
+    featureName: 'global_configurations',
     userConfig: false,
     initialize: function() {
         this.predefinedInputs = {};
@@ -287,7 +301,7 @@ window.ConfigurationsView = countlyView.extend({
 
         this.registerInput("apps.country", function(value) {
             var zones = app.manageAppsView.getTimeZones();
-            var select = '<div class="cly-select" id="apps.country">' +
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + '" id="apps.country">' +
                 '<div class="select-inner">' +
                 '<div class="text-container">';
             if (!zones[value]) {
@@ -315,7 +329,7 @@ window.ConfigurationsView = countlyView.extend({
 
         this.registerInput("frontend.theme", function(value) {
             var themes = countlyPlugins.getThemeList();
-            var select = '<div class="cly-select" id="frontend.theme">' +
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + '" id="frontend.theme">' +
                 '<div class="select-inner">' +
                 '<div class="text-container">';
             if (value && value.length) {
@@ -349,7 +363,7 @@ window.ConfigurationsView = countlyView.extend({
         //register some common system config inputs
         this.registerInput("logs.default", function(value) {
             var categories = ['debug', 'info', 'warn', 'error'];
-            var select = '<div class="cly-select" id="logs.default">' +
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + '" id="logs.default">' +
                 '<div class="select-inner">' +
                 '<div class="text-container">';
             if (value && value.length) {
@@ -375,11 +389,11 @@ window.ConfigurationsView = countlyView.extend({
         });
 
         this.registerInput("security.dashboard_additional_headers", function(value) {
-            return '<textarea rows="5" style="width:100%" id="security.dashboard_additional_headers">' + (value || "") + '</textarea>';
+            return '<textarea rows="5" ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' style="width:100%" id="security.dashboard_additional_headers">' + (value || "") + '</textarea>';
         });
 
         this.registerInput("security.api_additional_headers", function(value) {
-            return '<textarea rows="5" style="width:100%" id="security.api_additional_headers">' + (value || "") + '</textarea>';
+            return '<textarea rows="5" ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' style="width:100%" id="security.api_additional_headers">' + (value || "") + '</textarea>';
         });
 
         this.registerInput("apps.timezone", function() {
@@ -387,7 +401,7 @@ window.ConfigurationsView = countlyView.extend({
         });
 
         this.registerInput("push.proxypass", function(value) {
-            return '<input type="password" id="push.proxypass" value="' + (value || '') + '"/>';
+            return '<input type="password" ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' id="push.proxypass" value="' + (value || '') + '"/>';
         });
 
         this.registerLabel("frontend.google_maps_api_key", "configs.frontend-google_maps_api_key");
@@ -402,7 +416,7 @@ window.ConfigurationsView = countlyView.extend({
                 43200: jQuery.i18n.prop("common.every.hours", 12),
                 86400: jQuery.i18n.prop("common.every.hours", 24)
             };
-            var select = '<div class="cly-select" id="api.reports_regenerate_interval">' +
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + '" id="api.reports_regenerate_interval">' +
                 '<div class="select-inner">' +
                 '<div class="text-container">';
             if (!values[value]) {
@@ -432,7 +446,7 @@ window.ConfigurationsView = countlyView.extend({
         this.registerLabel("api.google_maps_api_key", "configs.frontend-google_maps_api_key");
 
         this.registerInput("api.send_test_email", function() {
-            return '<div id="send_test_email" style="margin-left: 0px;" class="icon-button green">Send</div>';
+            return '<div id="send_test_email" style="margin-left: 0px;" class="icon-button green ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + '">Send</div>';
         });
     },
     beforeRender: function() {
@@ -735,9 +749,9 @@ window.ConfigurationsView = countlyView.extend({
                         return false;
                     }
                     var username = $(".configs #username").val(),
-                        old_pwd = $(".configs #old_pwd").val(),
-                        new_pwd = $(".configs #new_pwd").val(),
-                        re_new_pwd = $(".configs #re_new_pwd").val(),
+                        old_pwd = $(".user-configuration-modal #old_pwd").val(),
+                        new_pwd = $(".user-configuration-modal #new_pwd").val(),
+                        re_new_pwd = $(".user-configuration-modal #re_new_pwd").val(),
                         api_key = $(".configs #api-key").val(),
                         member_image = $('#member-image-path').val();
 
@@ -858,6 +872,8 @@ window.ConfigurationsView = countlyView.extend({
                                     title: jQuery.i18n.map["configs.changed"],
                                     message: jQuery.i18n.map["configs.saved"]
                                 });
+                                $('#overlay').hide();
+                                $('.user-configuration-modal').hide();
                                 $("#configs-apply-changes").hide();
                             }
                             if (member_image !== "" && member_image !== "delete") {
@@ -889,14 +905,17 @@ window.ConfigurationsView = countlyView.extend({
             $("#delete_account_password").keyup(function() {
                 $('#password-input-mandatory-warning').css('visibility', 'hidden');
             });
-            $("#delete-user-account-button").click(function() {
+
+            $("#delete-user-account").click(function() {
                 var pv = $("#delete_account_password").val();
                 pv = pv.trim();
                 if (pv === "") {
-                    $('#password-input-mandatory-warning').css('visibility', 'visible');
+                    var msg1 = {title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings.password-mandatory"], clearAll: true, type: "error"};
+                    CountlyHelpers.notify(msg1);
                 }
                 else {
                     var text = jQuery.i18n.map["user-settings.delete-account-confirm"];
+                    $('.user-configuration-modal').hide();
                     CountlyHelpers.confirm(text, "popStyleGreen", function(result) {
                         if (!result) {
                             return true;
@@ -906,17 +925,19 @@ window.ConfigurationsView = countlyView.extend({
                                 window.location = "/login"; //deleted. go to login
                             }
                             else if (msg === 'password not valid' || msg === 'password mandatory' || msg === 'global admin limit') {
-                                var msg1 = {title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"};
-                                CountlyHelpers.notify(msg1);
+                                $('#overlay').show();
+                                $('#user-account-delete-modal').show();
+                                CountlyHelpers.notify({title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"});
                             }
                             else if (err === true) {
+                                $('#overlay').show();
+                                $('#user-account-delete-modal').show();
                                 var msg2 = {title: jQuery.i18n.map["common.error"], message: msg, sticky: true, clearAll: true, type: "error"};
                                 CountlyHelpers.notify(msg2);
                             }
                         });
                     }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["common.yes"]], { title: jQuery.i18n.map["user-settings.delete-account-title"], image: "delete-user" });
                 }
-
             });
 
 
@@ -1035,6 +1056,46 @@ window.ConfigurationsView = countlyView.extend({
                         CountlyHelpers.notify({ type: "error", message: jQuery.i18n.map['configs.help.api-send_test_email_failed']});
                     }
                 });
+            });
+
+            $('body').off("click", "#user-configuration-change-password").on("click", "#user-configuration-change-password", function() {
+                $('.user-configuration-modal').hide();
+                $('#overlay').show();
+                $('#user-change-password-modal').show();
+            });
+
+            $('body').off("click", "#delete-user-account-button").on("click", "#delete-user-account-button", function() {
+                $('.user-configuration-modal').hide();
+                $('#overlay').show();
+                $('#user-account-delete-modal').show();
+            });
+
+            $(document).keyup(function(e) {
+                if (e.keyCode === 27) {
+                    $('.user-configuration-modal').hide();
+                }
+            });
+
+            $('body').off('click', '.hide-user-configuration-modal').on('click', '.hide-user-configuration-modal', function() {
+                $('#overlay').hide();
+                $('.user-configuration-modal').hide();
+            });
+
+            $('body').on('click', '#change-user-password', function() {
+                var old_pwd = $('.user-configuration-modal #old_pwd').val();
+                var new_pwd = $('.user-configuration-modal #new_pwd').val();
+                var re_new_pwd = $('.user-configuration-modal #re_new_pwd').val();
+
+                if (old_pwd.length > 0 && new_pwd.length > 0 && re_new_pwd.length > 0) {
+                    $('#configs-apply-changes').trigger('click');
+                }
+                else {
+                    CountlyHelpers.notify({
+                        title: jQuery.i18n.map["configs.not-saved"],
+                        message: jQuery.i18n.map["configs.fill-required-fields"],
+                        type: "error"
+                    });
+                }
             });
         }
     },
@@ -1176,8 +1237,7 @@ window.ConfigurationsView = countlyView.extend({
                     return configsData[i][key];
                 });
                 var userLevelLabel = '<div data-localize="' + jQuery.i18n.map["configs.user-level-configuration"] + '">' + jQuery.i18n.map["configs.user-level-configuration"] + '</div><span class="config-help" data-localize="' + jQuery.i18n.map["configs.help.user-level-configuration"] + '">' + jQuery.i18n.map["configs.help.user-level-configuration"] + '</span>';
-
-                var userLevelInput = '<div class="cly-multi-select user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">';
+                var userLevelInput = '<div class="cly-multi-select ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' user-config-select ' + (hasSelectedData ? 'selection-exists' : '') + '" id="' + id.substring(1) + '._user" style="width: 100%; box-sizing: border-box;">';
                 userLevelInput += '<div class="select-inner">';
                 userLevelInput += '<div class="text-container">';
                 userLevelInput += '<div class="text">';
@@ -1211,9 +1271,6 @@ window.ConfigurationsView = countlyView.extend({
         if (!first) {
             configsHTML += "</table>";
         }
-
-
-
         return configsHTML;
     },
     getLabelName: function(id, value) {
@@ -1270,10 +1327,10 @@ window.ConfigurationsView = countlyView.extend({
             var input = '<div class="on-off-switch">';
 
             if (value) {
-                input += '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '" checked>';
+                input += '<input type="checkbox" ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '" checked>';
             }
             else {
-                input += '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '">';
+                input += '<input type="checkbox" ' + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + ' name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '">';
             }
 
             input += '<label class="on-off-switch-label" for="' + id + '"></label>';
@@ -1282,10 +1339,10 @@ window.ConfigurationsView = countlyView.extend({
             return input;
         }
         else if (typeof value === "number") {
-            return "<input type='number' id='" + id + "' value='" + value + "' max='2147483647' min='0' onkeyup='this.value= (parseInt(this.value) > 2147483647) ? 2147483647 : this.value;'/>";
+            return "<input type='number' " + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + " id='" + id + "' value='" + value + "' max='2147483647' min='0' onkeyup='this.value= (parseInt(this.value) > 2147483647) ? 2147483647 : this.value;'/>";
         }
         else {
-            return "<input type='text' id='" + id + "' value='" + value + "' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\"/>";
+            return "<input type='text' " + (countlyAuth.validateUpdate('global_plugins') ? '' : 'disabled') + " id='" + id + "' value='" + value + "' readonly onfocus=\"if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}\"/>";
         }
     },
     getLabel: function(id) {
@@ -1375,13 +1432,18 @@ window.ConfigurationsView = countlyView.extend({
 app.pluginsView = new PluginsView();
 app.configurationsView = new ConfigurationsView();
 
-if (countlyGlobal.member.global_admin) {
-    var showInAppManagment = {"api": {"safe": true, "send_test_email": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true, "data_retention_period": true}};
+var showInAppManagment = {"api": {"safe": true, "send_test_email": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true, "data_retention_period": true}};
 
+if (countlyAuth.validateRead(app.configurationsView.featureName)) {
     if (countlyGlobal.plugins.indexOf("drill") !== -1) {
         showInAppManagment.drill = {"big_list_limit": true, "record_big_list": true, "cache_threshold": true, "correct_estimation": true, "custom_property_limit": true, "list_limit": true, "projection_limit": true, "record_actions": true, "record_crashes": true, "record_meta": true, "record_pushes": true, "record_sessions": true, "record_star_rating": true, "record_apm": true, "record_views": true};
     }
+    if (countlyGlobal.plugins.includes("logger")) {
+        showInAppManagment.logger = {"state": true, "limit": true};
+    }
+}
 
+if (countlyAuth.validateUpdate(app.configurationsView.featureName)) {
     var configManagementPromise = null;
     for (var key in showInAppManagment) {
         app.addAppManagementView(key, jQuery.i18n.map['configs.' + key], countlyManagementView.extend({
@@ -1430,10 +1492,10 @@ if (countlyGlobal.member.global_admin) {
                     }
 
                     if (this.isSaveAvailable()) {
-                        this.el.find('.icon-button').show();
+                        this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').show();
                     }
                     else {
-                        this.el.find('.icon-button').hide();
+                        this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').hide();
                     }
                     this.onChange(name, value);
                 }
@@ -1441,7 +1503,7 @@ if (countlyGlobal.member.global_admin) {
             beforeRender: function() { // eslint-disable-line no-loop-func
                 var self = this;
                 if (!configManagementPromise) {
-                    configManagementPromise = $.when(countlyPlugins.initializeConfigs());
+                    configManagementPromise = $.when(countlyPlugins.initializeConfigs(), countlyPlugins.initializeActiveAppConfigs());
                 }
                 return $.when(configManagementPromise).then(function() {
                     configManagementPromise = null;
@@ -1451,7 +1513,9 @@ if (countlyGlobal.member.global_admin) {
             }
         }));
     }
+}
 
+if (countlyAuth.validateRead(app.pluginsView.featureName)) {
     app.route('/manage/plugins', 'plugins', function() {
         if (countlyGlobal.COUNTLY_CONTAINER === 'frontend') {
             app.navigate("#/", true);
@@ -1461,6 +1525,144 @@ if (countlyGlobal.member.global_admin) {
         }
     });
 
+    app.addPageScript("/manage/plugins", function() {
+        $("#plugins-selector").find(">.button").click(function() {
+            if ($(this).hasClass("selected")) {
+                return true;
+            }
+
+            $(".plugins-selector").removeClass("selected").removeClass("active");
+            var filter = $(this).attr("id");
+
+            app.activeView.filterPlugins(filter);
+        });
+
+        var pluginsData = countlyPlugins.getData();
+        var plugins = [];
+        var dirtyPlugins = {};
+        for (var i = 0; i < pluginsData.length; i++) {
+            if (pluginsData[i].enabled) {
+                plugins.push(pluginsData[i].code);
+            }
+        }
+
+        /**
+         *  Change state of plugins
+         *  @param {Array} pluginList - list of plugins to change state for
+         *  @param {Boolean} newState - State to change to
+         */
+        function changeStateOf(pluginList, newState) {
+            pluginList.forEach(function(item) {
+                $("#plugin-" + item).prop('checked', newState);
+                if (newState) {
+                    plugins.push(item);
+                    plugins = _.uniq(plugins);
+                }
+                else {
+                    plugins = _.without(plugins, item);
+                }
+            });
+        }
+
+        $("#plugins-table").on("change", ".on-off-switch input", function() {
+            var $checkBox = $(this),
+                plugin = $checkBox.attr("id").replace(/^plugin-/, '');
+
+            var defaultAction = function(affected) {
+                if ($checkBox.is(":checked")) {
+                    plugins.push(plugin);
+                    plugins = _.uniq(plugins);
+                }
+                else {
+                    plugins = _.without(plugins, plugin);
+                }
+
+                if (!affected) {
+                    affected = [plugin];
+                }
+                else {
+                    affected = [plugin].concat(affected);
+                }
+
+                affected.forEach(function(item) {
+                    var itemCb = $("#plugin-" + item);
+                    if (itemCb.length > 0 && itemCb.is(":checked") !== itemCb.parent().data("initial")) {
+                        itemCb.parents("tr").addClass("dirty");
+                        dirtyPlugins[item] = 1;
+                    }
+                    else {
+                        itemCb.parents("tr").removeClass("dirty");
+                        delete dirtyPlugins[item];
+                    }
+                });
+
+                var isDirty = Object.keys(dirtyPlugins).length > 0;
+
+                if (isDirty) {
+                    $(".btn-plugin-enabler").show();
+                }
+                else {
+                    $(".btn-plugin-enabler").hide();
+                }
+            };
+
+            var enabledDescendants = _.intersection(countlyPlugins.getRelativePlugins(plugin, "down"), plugins),
+                disabledAncestors = _.difference(countlyPlugins.getRelativePlugins(plugin, "up"), plugins);
+
+            if (!$checkBox.is(":checked") && enabledDescendants.length > 0) {
+                CountlyHelpers.confirm(jQuery.i18n.prop("plugins.disable-descendants", countlyPlugins.getTitle(plugin), enabledDescendants.map(function(item) {
+                    return countlyPlugins.getTitle(item);
+                }).join(", ")), "popStyleGreen popStyleGreenWide", function(result) {
+                    if (result) {
+                        changeStateOf(enabledDescendants, false);
+                        defaultAction(enabledDescendants);
+                    }
+                    else {
+                        $checkBox.prop('checked', true);
+                    }
+                }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-continue"]], { title: jQuery.i18n.map["plugins.indirect-status-change"], image: "apply-changes-to-plugins" });
+            }
+            else if ($checkBox.is(":checked") && disabledAncestors.length > 0) {
+                CountlyHelpers.confirm(jQuery.i18n.prop("plugins.enable-ancestors", countlyPlugins.getTitle(plugin), disabledAncestors.map(function(item) {
+                    return countlyPlugins.getTitle(item);
+                }).join(", ")), "popStyleGreen popStyleGreenWide", function(result) {
+                    if (result) {
+                        changeStateOf(disabledAncestors, true);
+                        defaultAction(disabledAncestors);
+                    }
+                    else {
+                        $checkBox.prop('checked', false);
+                    }
+                }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-continue"]], { title: jQuery.i18n.map["plugins.indirect-status-change"], image: "apply-changes-to-plugins" });
+            }
+            else {
+                defaultAction();
+            }
+        });
+
+        $(document).on("click", ".btn-plugin-enabler", function() {
+            var pluginsEnabler = {};
+
+            $("#plugins-table").find(".on-off-switch input").each(function() {
+                var plugin = this.id.toString().replace(/^plugin-/, ''),
+                    state = ($(this).is(":checked")) ? true : false;
+                pluginsEnabler[plugin] = state;
+            });
+
+            var text = jQuery.i18n.map["plugins.confirm"];
+            var msg = { title: jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info: jQuery.i18n.map["plugins.hold-on"], sticky: true };
+            CountlyHelpers.confirm(text, "popStyleGreen popStyleGreenWide", function(result) {
+                if (!result) {
+                    return true;
+                }
+                CountlyHelpers.notify(msg);
+                app.activeView.togglePlugin(pluginsEnabler);
+            }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]], { title: jQuery.i18n.map["plugins-apply-changes-to-plugins"], image: "apply-changes-to-plugins" });
+        });
+    });
+}
+
+if (countlyAuth.validateRead(app.configurationsView.featureName)) {
     app.route('/manage/configurations', 'configurations', function() {
         this.configurationsView.namespace = null;
         this.configurationsView.reset = false;
@@ -1495,102 +1697,43 @@ if (countlyGlobal.member.global_admin) {
             this.renderWhenReady(this.configurationsView);
         }
     });
+
+    app.route('/manage/user-settings', 'user-settings', function() {
+        this.configurationsView.namespace = null;
+        this.configurationsView.reset = false;
+        this.configurationsView.userConfig = true;
+        this.configurationsView.success = false;
+        this.renderWhenReady(this.configurationsView);
+    });
+
+    app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function(namespace) {
+        if (namespace === "reset") {
+            this.configurationsView.reset = true;
+            this.configurationsView.success = false;
+            this.configurationsView.namespace = null;
+        }
+        else if (namespace === "success") {
+            this.configurationsView.reset = false;
+            this.configurationsView.success = true;
+            this.configurationsView.namespace = null;
+        }
+        else {
+            this.configurationsView.reset = false;
+            this.configurationsView.success = false;
+            this.configurationsView.namespace = namespace;
+        }
+        this.configurationsView.userConfig = true;
+        this.renderWhenReady(this.configurationsView);
+    });
 }
 
-app.route('/manage/user-settings', 'user-settings', function() {
-    this.configurationsView.namespace = null;
-    this.configurationsView.reset = false;
-    this.configurationsView.userConfig = true;
-    this.configurationsView.success = false;
-    this.renderWhenReady(this.configurationsView);
-});
-
-app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function(namespace) {
-    if (namespace === "reset") {
-        this.configurationsView.reset = true;
-        this.configurationsView.success = false;
-        this.configurationsView.namespace = null;
-    }
-    else if (namespace === "success") {
-        this.configurationsView.reset = false;
-        this.configurationsView.success = true;
-        this.configurationsView.namespace = null;
-    }
-    else {
-        this.configurationsView.reset = false;
-        this.configurationsView.success = false;
-        this.configurationsView.namespace = namespace;
-    }
-    this.configurationsView.userConfig = true;
-    this.renderWhenReady(this.configurationsView);
-});
-
-app.addPageScript("/manage/plugins", function() {
-    $("#plugins-selector").find(">.button").click(function() {
-        if ($(this).hasClass("selected")) {
-            return true;
-        }
-
-        $(".plugins-selector").removeClass("selected").removeClass("active");
-        var filter = $(this).attr("id");
-
-        app.activeView.filterPlugins(filter);
-    });
-
-    var pluginsData = countlyPlugins.getData();
-    var plugins = [];
-    for (var i = 0; i < pluginsData.length; i++) {
-        plugins.push(pluginsData[i].code);
-    }
-
-    $("#plugins-table").on("change", ".on-off-switch input", function() {
-        var $checkBox = $(this),
-            plugin = $checkBox.attr("id").replace(/^plugin-/, '');
-
-        if ($checkBox.is(":checked")) {
-            plugins.push(plugin);
-            plugins = _.uniq(plugins);
-        }
-        else {
-            plugins = _.without(plugins, plugin);
-        }
-
-        if (_.difference(countlyGlobal.plugins, plugins).length === 0 &&
-            _.difference(plugins, countlyGlobal.plugins).length === 0) {
-            $(".btn-plugin-enabler").hide();
-        }
-        else {
-            $(".btn-plugin-enabler").show();
-        }
-    });
-
-    $(document).on("click", ".btn-plugin-enabler", function() {
-        var pluginsEnabler = {};
-
-        $("#plugins-table").find(".on-off-switch input").each(function() {
-            var plugin = this.id.toString().replace(/^plugin-/, ''),
-                state = ($(this).is(":checked")) ? true : false;
-
-            pluginsEnabler[plugin] = state;
-        });
-
-        var text = jQuery.i18n.map["plugins.confirm"];
-        var msg = { title: jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info: jQuery.i18n.map["plugins.hold-on"], sticky: true };
-        CountlyHelpers.confirm(text, "popStyleGreen popStyleGreenWide", function(result) {
-            if (!result) {
-                return true;
-            }
-            CountlyHelpers.notify(msg);
-            app.activeView.togglePlugin(pluginsEnabler);
-        }, [jQuery.i18n.map["common.no-dont-continue"], jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]], { title: jQuery.i18n.map["plugins-apply-changes-to-plugins"], image: "apply-changes-to-plugins" });
-    });
-});
-
 $(document).ready(function() {
-    if (countlyGlobal.member && countlyGlobal.member.global_admin) {
+    if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateRead(app.pluginsView.featureName)) {
         if (countlyGlobal.COUNTLY_CONTAINER !== 'frontend') {
             app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 30});
         }
+    }
+    if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateRead(app.configurationsView.featureName)) {
         app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 40});
     }
 });

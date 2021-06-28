@@ -1,7 +1,9 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals app, $, countlyGlobal, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery, countlyManagementView, Backbone */
+/* globals app, $, countlyAuth, countlyGlobal, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery, countlyManagementView, Backbone */
+
+var featureName = 'push';
 
 app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyManagementView.extend({
     initialize: function() {
@@ -188,11 +190,11 @@ app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyMa
 }));
 
 app.addPageScript('/drill#', function() {
-    if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1) {
+    if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
         return;
     }
     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
-        if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
+        if (countlyAuth.validateCreate(featureName)) {
             var content =
             '<div class="item" id="action-create-message">' +
                 '<div class="item-icon">' +
@@ -247,7 +249,7 @@ app.addPageScript('/drill#', function() {
 * Modify user profile views with push additions
 **/
 function modifyUserDetailsForPush() {
-    if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1) {
+    if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
         return;
     }
     if (Backbone.history.fragment.indexOf('manage/') === -1 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
@@ -271,7 +273,7 @@ function modifyUserDetailsForPush() {
             test = !!userDetails.tkid || !!userDetails.tkia || !!userDetails.tkat;
             prod = !!userDetails.tkip || !!userDetails.tkap;
 
-            if (tokens.length && (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1))) {
+            if (tokens.length && countlyAuth.validateCreate('push')) {
                 if (!$('.btn-create-message').length) {
                     $('#user-profile-detail-buttons .cly-button-menu').append('<div class="item btn-create-message" >' + jQuery.i18n.map['push.create'] + '</div>');
                     app.activeView.resetExportSubmenu();
@@ -282,7 +284,7 @@ function modifyUserDetailsForPush() {
                             platforms: platforms,
                             apps: [countlyCommon.ACTIVE_APP_ID],
                             test: test && !prod,
-                            userConditions: {_id: app.userdetailsView.user_id}
+                            userConditions: {did: {$in: [app.userdetailsView.user_did]}}
                         });
                     }
                     else {
@@ -304,7 +306,7 @@ function modifyUserDetailsForPush() {
         }
         else {
             //list view
-            if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
+            if (countlyAuth.validateCreate('push')) {
                 if (!$('.btn-create-message').length) {
                     $('.widget-header').append($('<a class="icon-button green btn-header right btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
 
@@ -337,8 +339,10 @@ app.addRefreshScript('/users#', modifyUserDetailsForPush);
 app.addPageScript('/users#', modifyUserDetailsForPush);
 
 $(document).ready(function() {
-    app.addMenuForType("mobile", "reach", {code: "push", text: "push.sidebar.section", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
-    app.addSubMenuForType("mobile", "push", {code: "messaging", url: "#/messaging", text: "push.sidebar.overview", priority: 10});
+    if (countlyAuth.validateRead('push')) {
+        app.addMenuForType("mobile", "reach", {code: "push", text: "push.sidebar.section", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+        app.addSubMenuForType("mobile", "push", {code: "messaging", url: "#/messaging", text: "push.sidebar.overview", priority: 10});
+    }
 
     if (app.configurationsView) {
         app.configurationsView.registerLabel("push", "push.plugin-title");

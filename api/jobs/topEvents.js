@@ -96,7 +96,7 @@ class TopEventsJob extends job.Job {
      * @return {String} - period
      */
     mutatePeriod(period) {
-        if (period === "hour") {
+        if (period === "yesterday") {
             period = "today";
         }
         return period;
@@ -144,6 +144,10 @@ class TopEventsJob extends job.Job {
                 for (const period of TopEventsJob.PERIODS) {
                     const data = {};
                     const ob = { app_id: app._id, appTimezone: app.timezone, qstring: { period: period } };
+                    // if (period === "hour") {
+                    //     ob.time = common.initTimeObj(app.timezone, new Date().getTime());
+                    //     ob.qstring.action = "refresh";
+                    // }
                     for (const event of eventMap) {
                         const collectionNameEvents = this.eventsCollentions({event, id: app._id});
                         await this.getEventsCount({collectionNameEvents, ob, data, event});
@@ -183,6 +187,6 @@ TopEventsJob.COLLECTION_NAME = "top_events";
  * Events periods.
  * @property {array} ["30days", "hour", "month", "60days", "yesterday", "7days"]
  */
-TopEventsJob.PERIODS = ["30days", "hour"];
+TopEventsJob.PERIODS = ["30days", "yesterday"];
 
 module.exports = TopEventsJob;

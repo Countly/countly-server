@@ -5,7 +5,9 @@
 
 /** @lends module:api/parts/data/stats */
 var stats = {},
-    async = require('async');
+    async = require('async'),
+    common = require("../../utils/common.js"),
+    { getUserApps } = require('../../utils/rights.js');
 
 var countlyDb;
 /**
@@ -64,7 +66,7 @@ stats.getUser = function(db, user, callback) {
     var apps;
 
     if (!user.global_admin) {
-        apps = user.user_of || [];
+        apps = getUserApps(user) || [];
     }
 
     getTotalEvents(function(totalEvents) {
@@ -92,6 +94,31 @@ stats.getUser = function(db, user, callback) {
 * @param {array=} apps - provide array of apps to fetch data for, else will fetch data for all apps
 **/
 function getTotalUsers(callback, apps) {
+    /**
+     *  Process app result
+     *  @param {Error} err - database error
+     *  @param {Array} allApps - array of apps
+     */
+    function processApps(err, allApps) {
+        if (err || !allApps) {
+            callback(0, 0);
+        }
+        else {
+            async.map(allApps, getUserCountForApp, function(err2, results) {
+                if (err2) {
+                    callback(0, 0);
+                }
+
+                var userCount = 0;
+
+                for (let i = 0; i < results.length; i++) {
+                    userCount += results[i] || 0;
+                }
+
+                callback(userCount, allApps.length);
+            });
+        }
+    }
     if (typeof apps !== "undefined") {
         async.map(apps, function(app, done) {
             getUserCountForApp({_id: app}, done);
@@ -110,26 +137,12 @@ function getTotalUsers(callback, apps) {
         });
     }
     else {
-        countlyDb.collection("apps").find({}, {_id: 1}).toArray(function(err, allApps) {
-            if (err || !allApps) {
-                callback(0, 0);
-            }
-            else {
-                async.map(allApps, getUserCountForApp, function(err2, results) {
-                    if (err2) {
-                        callback(0, 0);
-                    }
-
-                    var userCount = 0;
-
-                    for (let i = 0; i < results.length; i++) {
-                        userCount += results[i] || 0;
-                    }
-
-                    callback(userCount, allApps.length);
-                });
-            }
-        });
+        if (common.readBatcher) {
+            common.readBatcher.getMany("apps", {}, {_id: 1}, processApps);
+        }
+        else {
+            countlyDb.collection("apps").find({}, {_id: 1}).toArray(processApps);
+        }
     }
 }
 

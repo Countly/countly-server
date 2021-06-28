@@ -8,8 +8,8 @@ function mongodb_configure () {
     INDENT_LEVEL=$(grep dbPath ${MONGODB_CONFIG_FILE} | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
     INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
 
-    #sed -i "/directoryPerDB/d" ${MONGODB_CONFIG_FILE}
-    #sed -i "s#storage:#storage:\n${INDENT_STRING}directoryPerDB: true#g" ${MONGODB_CONFIG_FILE}
+    sed -i "/directoryPerDB/d" ${MONGODB_CONFIG_FILE}
+    sed -i "s#storage:#storage:\n${INDENT_STRING}directoryPerDB: true#g" ${MONGODB_CONFIG_FILE}
 
     if grep -q "slowOpThresholdMs" "$MONGODB_CONFIG_FILE"; then
         sed -i "/slowOpThresholdMs/d" ${MONGODB_CONFIG_FILE}
@@ -18,6 +18,10 @@ function mongodb_configure () {
         sed -i "/#operationProfiling/d" ${MONGODB_CONFIG_FILE}
         sed -i "\$aoperationProfiling:\n${INDENT_STRING}slowOpThresholdMs: 10000" ${MONGODB_CONFIG_FILE}
     fi
+
+    if ! grep -q "directoryForIndexes" "$MONGODB_CONFIG_FILE"; then
+        sed -i "s#storage:#storage:\n${INDENT_STRING}wiredTiger:\n${INDENT_STRING}${INDENT_STRING}engineConfig:\n${INDENT_STRING}${INDENT_STRING}${INDENT_STRING}directoryForIndexes: true#g" ${MONGODB_CONFIG_FILE}
+    fi
 }
 
 function mongodb_logrotate () {
@@ -25,6 +29,7 @@ function mongodb_logrotate () {
     if [ -x "$(command -v logrotate)" ]; then
         INDENT_LEVEL=$(grep dbPath "${MONGODB_CONFIG_FILE}" | awk -F"[ ]" '{for(i=1;i<=NF && ($i=="");i++);print i-1}')
         INDENT_STRING=$(printf ' %.0s' $(seq 1 "$INDENT_LEVEL"))
+        MONGODB_DATA_PATH=$(grep "dbPath" "${MONGODB_CONFIG_FILE}" | awk -F' ' '{print $2}')
         #delete if any other logRotate directive exist and add logRotate to mongod.conf
         sed -i '/logRotate/d' "$MONGODB_CONFIG_FILE"
         sed -i "s#systemLog:#systemLog:\n${INDENT_STRING}logRotate: reopen#g" "$MONGODB_CONFIG_FILE"
@@ -44,6 +49,8 @@ postrotate
 endscript
 }
 EOF
+
+        sed -i "s#/var/lib/mongo#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
         if [ -f /etc/lsb-release ]; then
@@ -61,19 +68,8 @@ postrotate
 endscript
 }
 EOF
-        fi
 
-        if [ -f /etc/redhat-release ]; then
-            #mongodb might need to be started
-            if grep -q -i "release 6" /etc/redhat-release ; then
-                service mongod restart > /dev/null || echo "mongodb service does not exist"
-            else
-                systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
-            fi
-        fi
-
-        if [ -f /etc/lsb-release ]; then
-            systemctl restart mongod > /dev/null || echo "mongodb systemctl job does not exist"
+        sed -i "s#/var/lib/mongodb#${MONGODB_DATA_PATH}#g" /etc/logrotate.d/mongod
         fi
 
         message_ok 'Logrotate configured'
@@ -155,6 +151,25 @@ function fix_mongod_service_type () {
         fi
 
         sed -i "s#\[Service\]#\[Service\]\nType=simple#g" "${SERVICE_FILE_PATH}"
+
+        systemctl daemon-reload
+	fi 2> /dev/null
+}
+
+function fix_mongod_service_limits () {
+    if [[ ! $(/sbin/init --version) =~ upstart ]]; then
+        SERVICE_FILE_PATH=$(systemctl status mongod | grep "loaded" | awk -F';' '{print $1}' | awk -F'(' '{print $2}')
+
+        if grep -q "LimitNPROC=" "${SERVICE_FILE_PATH}"; then
+            sed -i "/LimitNPROC=/d" "${SERVICE_FILE_PATH}"
+        fi
+
+        if grep -q "LimitNOFILE=" "${SERVICE_FILE_PATH}"; then
+            sed -i "/LimitNOFILE=/d" "${SERVICE_FILE_PATH}"
+        fi
+
+        sed -i "s#\[Service\]#\[Service\]\nLimitNPROC=256000#g" "${SERVICE_FILE_PATH}"
+        sed -i "s#\[Service\]#\[Service\]\nLimitNOFILE=392000#g" "${SERVICE_FILE_PATH}"
 
         systemctl daemon-reload
 	fi 2> /dev/null
@@ -271,7 +286,8 @@ function mongodb_check() {
     update_sysctl "fs.file-max" "392000"
     update_sysctl "kernel.pid_max" "256000"
     update_sysctl "kernel.threads-max" "256000"
-    update_sysctl "vm.max_map_count" "512000"
+    update_sysctl "vm.max_map_count" "2048000"
+    update_sysctl "net.ipv4.ip_local_port_range" "1024 65535"
 
     message_ok "Configured file handle kernel limits"
 
@@ -302,7 +318,7 @@ function mongodb_check() {
             else
                 update_sysctl "vm.zone_reclaim_mode" "0"
                 sed -i "s#NUMACTL_STATUS=0#NUMACTL_STATUS=1#g" "${DIR}/../commands/systemd/mongodb.sh"
-                systemctl daemon-reload
+                bash "${DIR}/../commands/systemd/mongodb.sh"
 
                 message_ok "Changed service file to work with NUMA"
             fi
@@ -347,6 +363,8 @@ function mongodb_check() {
 
     #change mongod systemd service type to 'simple' to prevent systemd timeout interrupt on wiredtiger's long boot
     fix_mongod_service_type
+    #match service system limits to mongodb user's limits
+    fix_mongod_service_limits
 
     echo -e "\nSome of changes may need reboot!\n"
 }
@@ -357,34 +375,41 @@ if [ $# -eq 0 ]; then
 
         #select source based on release
         if grep -q -i "release 6" /etc/redhat-release ; then
-            echo "[mongodb-org-3.6]
+            echo "[mongodb-org-4.4]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/3.6/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/4.4/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
+gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
         elif grep -q -i "release 7" /etc/redhat-release ; then
-            echo "[mongodb-org-3.6]
+            echo "[mongodb-org-4.4]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.6/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/4.4/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-3.6.asc" > /etc/yum.repos.d/mongodb-org-3.6.repo
+gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
+        elif grep -q -i "release 8" /etc/redhat-release ; then
+            echo "[mongodb-org-4.4]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/8/mongodb-org/4.4/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc" > /etc/yum.repos.d/mongodb-org-4.4.repo
         fi
         yum install -y mongodb-org
     fi
 
     if [ -f /etc/lsb-release ]; then
         #install latest mongodb
-        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
+        wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
         UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-        if [ "$UBUNTU_YEAR" == "14" ]; then
-            echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
-        elif [ "$UBUNTU_YEAR" == "16" ]; then
-            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+        if [ "$UBUNTU_YEAR" == "16" ]; then
+            echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
+        elif [ "$UBUNTU_YEAR" == "18" ]; then
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
         else
-            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.6.list ;
+            echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list ;
         fi
         apt-get update
         #install mongodb

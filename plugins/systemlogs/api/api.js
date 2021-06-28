@@ -1,14 +1,18 @@
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'systemlogs';
 
 (function() {
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring.method === 'systemlogs') {
             var query = {};
             if (typeof params.qstring.query === "string") {
@@ -37,8 +41,7 @@ var pluginOb = {},
                 countlyCommon.getPeriodObj(params);
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
-            query._id = {$ne: "meta_v2"};
-            validate(params, function(paramsNew) {
+            validateRead(params, FEATURE_NAME, function(paramsNew) {
                 var columns = [null, "ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
                     total--;
@@ -83,7 +86,7 @@ var pluginOb = {},
             return true;
         }
         else if (params.qstring.method === 'systemlogs_meta') {
-            validate(params, function(paramsNew) {
+            validateRead(params, FEATURE_NAME, function(paramsNew) {
                 //get all users
                 common.db.collection('members').find({}, {username: 1, email: 1, full_name: 1}).toArray(function(err1, users) {
                     common.db.collection('systemlogs').findOne({_id: "meta_v2"}, {_id: 0}, function(err2, res) {
@@ -195,24 +198,6 @@ var pluginOb = {},
         recordAction(ob.params, ob.params.member, "user_deleted", ob.data);
     });
 
-    plugins.register("/i/app_users/create", function(ob) {
-        ob.params = ob.params || {};
-        var data = {app_id: ob.app_id, user: ob.user, uids: ob.user.uid || "", res: ob.res};
-        recordAction(ob.params, ob.params.member || {_id: "", username: "[code]"}, "app_user_created", data);
-    });
-
-    plugins.register("/i/app_users/update", function(ob) {
-        ob.params = ob.params || {};
-        var data = {app_id: ob.app_id, query: ob.query, update: JSON.stringify(ob.update), result: ob.user};
-        recordAction(ob.params, ob.params.member || {_id: "", username: "[code]"}, "app_user_updated", data);
-    });
-
-    plugins.register("/i/app_users/delete", function(ob) {
-        ob.params = ob.params || {};
-        var data = {app_id: ob.app_id, query: ob.query, uids: ob.uids};
-        recordAction(ob.params, ob.params.member || {_id: "", username: "[code]"}, "app_user_deleted", data);
-    });
-
     plugins.register("/systemlogs", function(ob) {
         processRecording(ob);
     });
@@ -233,10 +218,17 @@ var pluginOb = {},
             }
         }
         for (let i = 0; i < keys.length; i++) {
-            if (typeof after[keys[i]] !== "undefined" && typeof before[keys[i]] !== "undefined") {
+            if (after[keys[i]] === null || before[keys[i]] === null) {
+                if (after[keys[i]] !== before[keys[i]]) {
+                    databefore[keys[i]] = before[keys[i]];
+                    dataafter[keys[i]] = after[keys[i]];
+                }
+            }
+            else if (typeof after[keys[i]] !== "undefined" && typeof before[keys[i]] !== "undefined") {
                 if (typeof after[keys[i]] === "object") {
                     if (Array.isArray(after[keys[i]])) {
                         if (JSON.stringify(after[keys[i]]) !== JSON.stringify(before[keys[i]])) {
+
                             databefore[keys[i]] = before[keys[i]];
                             dataafter[keys[i]] = after[keys[i]];
                         }
@@ -290,6 +282,7 @@ var pluginOb = {},
      */
     function processRecording(ob) {
         var user = ob.user || ob.params.member;
+        ob.data = ob.data || {};
         if (typeof ob.data.before !== "undefined" && typeof ob.data.update !== "undefined") {
             var data = {};
             for (var i in ob.data) {

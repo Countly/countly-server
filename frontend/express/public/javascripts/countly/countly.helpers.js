@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars*/
+/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, Handlebars, countlyTaskManager*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
@@ -217,44 +217,41 @@
             }
         };
 
-        if (options.applyChangeTriggers) {
-            //on off switch
-            $(drawer).find('.on-off-switch input').on("change", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
+        drawer._changeDefaultHandler = function() {
+            $(drawer).trigger('cly-drawer-form-updated');
+        };
+        drawer._changeDefaultGreenCheckBoxHandler = function() {
+            var isChecked = $(this).hasClass("fa-check-square"); //now is checked
+            if (isChecked) {
+                $(this).addClass("fa-square-o");
+                $(this).removeClass("fa-check-square");
+            }
+            else {
+                $(this).removeClass("fa-square-o");
+                $(this).addClass("fa-check-square");
+            }
+            $(drawer).trigger('cly-drawer-form-updated');
+        };
+        drawer._applyChangeTrigger = function() {
+            var domDict = [
+                {s: '.on-off-switch input', e: 'change'},
+                {s: 'input[type=text]', e: 'keyup'},
+                {s: 'textarea', e: 'keyup'},
+                {s: '.cly-select', e: 'cly-select-change'},
+            ];
+            domDict.forEach(function(d) {
+                $(drawer).find(d.s).off(d.e, drawer._changeDefaultHandler).on(d.e, drawer._changeDefaultHandler);
             });
 
-            //input text field
-            $(drawer).find("input[type=text]").on("keyup", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
-
-            //textarea
-            $(drawer).find("textarea").on("keyup", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
-
-            //single select
-            $(drawer).find(".cly-select").on("cly-select-change", function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
             //multi select
-            $(drawer).on('cly-multi-select-change', function() {
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
+            $(drawer).off('cly-multi-select-change', drawer._changeDefaultHandler).on('cly-multi-select-change', drawer._changeDefaultHandler);
 
             //green checkboxes
-            $(drawer).find(".check-green").on("click", function() {
-                var isChecked = $(this).hasClass("fa-check-square"); //now is checked
-                if (isChecked) {
-                    $(this).addClass("fa-square-o");
-                    $(this).removeClass("fa-check-square");
-                }
-                else {
-                    $(this).removeClass("fa-square-o");
-                    $(this).addClass("fa-check-square");
-                }
-                $(drawer).trigger('cly-drawer-form-updated');
-            });
+            $(drawer).find(".check-green").off("click", drawer._changeDefaultGreenCheckBoxHandler).on("click", drawer._changeDefaultGreenCheckBoxHandler);
+        };
+
+        if (options.applyChangeTriggers) {
+            drawer._applyChangeTrigger(drawer);
         }
         if (options.onUpdate) {
             $(drawer).on('cly-drawer-form-updated', options.onUpdate);
@@ -634,6 +631,10 @@
     * });
     */
     CountlyHelpers.confirm = function(msg, type, callback, buttonText, moreData) {
+        if (countlyGlobal.ssr) {
+            return;
+        }
+
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
         if (moreData && moreData.image) {
@@ -730,6 +731,68 @@
             dialog.find(".export-columns-selector p:first span").text("");
         }
     }
+
+    /** function to show selected column count in export dialog
+	* @param {object} dialog - dialog 
+	* @param {object} data - object with information about formating 
+	* @param {object} instance - refenrence to instance
+	*/
+    function show_formatting_warning(dialog, data, instance) {
+
+        dialog.find(".export-format-option i").not(".tooltipstered").tooltipster({
+            animation: "fade",
+            animationDuration: 50,
+            delay: 100,
+            theme: 'tooltipster-borderless',
+            side: ['top'],
+            maxWidth: 300,
+            trigger: 'hover',
+            interactive: true,
+            functionBefore: function(instance2) {
+                instance2.content("<p>" + jQuery.i18n.map["export.format-if-possible-explain"] + "</p>");
+            },
+            contentAsHTML: true,
+            functionInit: function(instance2) {
+                instance2.content("<p>" + jQuery.i18n.map["export.format-if-possible-explain"] + "</p>");
+            }
+        });
+
+        if (data && data.fields && Object.keys(data.fields).length > 0) {
+            dialog.find(".export-format-option").css("display", "none");
+            if (dialog.find(".export-columns-selector:visible").length > 0) {
+                if (dialog.find(".export-all-columns").hasClass("fa-check-square")) {
+                    //export all columns no need for projections
+                    for (var filed in data.fields) {
+                        if (data.fields[filed].to === "time") {
+                            dialog.find(".export-format-option").css("display", "block");
+                        }
+                    }
+                }
+                else {
+                    var projection = {};
+
+                    var checked = dialog.find('.columns-wrapper .fa-check-square');
+                    for (var kz = 0; kz < checked.length; kz++) {
+                        projection[$(checked[kz]).data("index")] = true;
+                    }
+
+                    if (instance && instance.fixProjectionParams) {
+                        projection = instance.fixProjectionParams(projection);
+                    }
+
+                    for (var filed2 in data.fields) {
+                        if (data.fields[filed2].to === "time" && projection[filed2]) {
+                            dialog.find(".export-format-option").css("display", "block");
+                        }
+                    }
+
+                }
+            }
+        }
+        else {
+            dialog.find(".export-format-option").css("display", "none");
+        }
+    }
     /**
     * Displays database export dialog
     * @param {number} count - total count of documents to export
@@ -751,6 +814,13 @@
         //var page = 0;
         var tableCols;
 
+        var formatData = data.formatFields || "";
+        try {
+            formatData = JSON.parse(formatData);
+        }
+        catch (e) {
+            formatData = {};
+        }
         dialog.removeAttr("id");
         /*dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count + "").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
         if (count <= hardLimit) {
@@ -825,8 +895,42 @@
                     }
                 }
                 show_selected_column_count(dialog);
+                show_formatting_warning(dialog, formatData, instance);
             });
+
+
+
+            dialog.on("click", ".export-format-option", function() {
+                var checkbox = $(this).find("a").first();
+                var isChecked = $(checkbox).hasClass("fa-check-square");//is now checked
+
+                if (isChecked) {
+                    $(checkbox).addClass("fa-square-o");
+                    $(checkbox).removeClass("fa-check-square");
+                }
+                else {
+                    $(checkbox).removeClass("fa-square-o");
+                    $(checkbox).addClass("fa-check-square");
+                }
+            });
+
             show_selected_column_count(dialog);
+            setTimeout(function() {
+                show_formatting_warning(dialog, formatData, instance);
+            }, 10);
+            dialog.find(".export-columns-search input").on("keyup", function() {
+                var value = dialog.find(".export-columns-search input").val();
+                value = new RegExp((value || ""), 'i');
+                for (var z = 0;z < tableCols.length; z++) {
+                    if (tableCols[z].sTitle.match(value)) {
+                        dialog.find(".export-columns-selector .columns-wrapper .checkbox-line[data-selectorname='" + tableCols[z].columnSelectorIndex + "']").css("display", "block");
+                    }
+                    else {
+                        dialog.find(".export-columns-selector .columns-wrapper .checkbox-line[data-selectorname='" + tableCols[z].columnSelectorIndex + "']").css("display", "none");
+                    }
+                }
+
+            });
         }
         else {
             dialog.find(".export-columns-selector .columns-wrapper").html("");
@@ -859,9 +963,8 @@
                 data.limit = "";
                 data.skip = 0;
             }*/
-
-            delete data.projection;
-            if (dialog.find(".export-columns-selector")) {
+            if (dialog.find(".export-columns-selector:visible").length > 0) {
+                delete data.projection;
                 if (dialog.find(".export-all-columns").hasClass("fa-check-square")) {
                     //export all columns no need for projections
                 }
@@ -879,8 +982,14 @@
                 }
             }
 
-
+            if (!(dialog.find(".export-format-columns").hasClass("fa-check-square"))) {
+                delete data.formatFields;
+            }
             var url = countlyCommon.API_URL + (exportByAPI ? "/o/export/request" : "/o/export/db");
+            if (data.url) {
+                url = data.url;
+            }
+
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
                 if (CountlyHelpers.isJSON(v)) {
@@ -890,13 +999,77 @@
                     form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
                 }
             });
-            $('body').append(form);
-            form.submit();
+            if (exportByAPI && url === "/o/export/requestQuery") {
+                if (Array.isArray(data.prop)) {
+                    data.prop = data.prop.join(",");
+                }
+                $.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.data.r + "/export/requestQuery",
+                    data: data,
+                    success: function(result) {
+                        var task_id = null;
+                        var fileid = null;
+                        if (result && result.result && result.result.task_id) {
+                            task_id = result.result.task_id;
+                            countlyTaskManager.monitor(task_id);
+                            CountlyHelpers.displayExportStatus(null, fileid, task_id);
+                        }
+                        $(".save-table-data").click();
+
+                    },
+                    error: function(xhr, status, error) {
+                        var filename = null;
+                        if (xhr && xhr.responseText && xhr.responseText !== "") {
+                            var ob = JSON.parse(xhr.responseText);
+                            if (ob.result && ob.result.message) {
+                                error = ob.result.message;
+                            }
+                            if (ob.result && ob.result.filename) {
+                                filename = ob.result.filename;
+                            }
+                        }
+                        CountlyHelpers.displayExportStatus(error, filename, null);
+                    }
+                });
+            }
+            else {
+                $('body').append(form);
+                form.submit();
+            }
         });
         if (asDialog) {
             revealDialog(dialog);
         }
         return dialog;
+    };
+
+    CountlyHelpers.displayExportStatus = function(error, export_id, task_id) {
+        if (error) {
+            CountlyHelpers.alert(error, "red");
+        }
+        else if (export_id) {
+            CountlyHelpers.notify({
+                type: "ok",
+                title: jQuery.i18n.map["common.success"],
+                message: jQuery.i18n.map["export.export-finished"],
+                info: jQuery.i18n.map["app-users.export-finished-click"],
+                sticky: false,
+                clearAll: true,
+                onClick: function() {
+                    var win = window.open(countlyCommon.API_PARTS.data.r + "/export/download/" + task_id + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID, '_blank');
+                    win.focus();
+                }
+            });
+            self.refresh();
+        }
+        else if (task_id) {
+            CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["export.export-started"], sticky: false, clearAll: false});
+            // self.refresh();
+        }
+        else {
+            CountlyHelpers.alert(jQuery.i18n.map["export.export-failed"], "red");
+        }
     };
 
     /**
@@ -1179,12 +1352,14 @@
             }
 
             $(".cly-select").find(".search").remove();
+            $(".cly-multi-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
                 $(context).removeClass("active");
             }
             else {
                 $(".cly-select").removeClass("active");
+                $(".cly-multi-select").removeClass("active");
                 $(".select-items").hide();
                 $(context).addClass("active");
 
@@ -1420,7 +1595,7 @@
 
         $.fn.clySelectSetSelection = function(value, name) {
             $(this).find(".select-inner .text").data("value", value);
-            $(this).find(".select-inner .text").text(name);
+            $(this).find(".select-inner .text").text($('<div>').html(name).text());
             $(this).trigger("cly-select-change", [value]);
         };
     };
@@ -1455,12 +1630,14 @@
                 return false;
             }
 
+            $(".cly-select").find(".search").remove();
             $(".cly-multi-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
                 $(this).removeClass("active");
             }
             else {
+                $(".cly-select").removeClass("active");
                 $(".cly-multi-select").removeClass("active");
                 $(".select-items").hide();
                 $(this).addClass("active");
@@ -1619,7 +1796,7 @@
 
             $(this).parent(".selection").remove();
 
-            var maxToSelect = $multiSelect.data("max");
+            var maxToSelect = $multiSelect.data("max") || 99;
 
             if (maxToSelect) {
                 if (getSelected($multiSelect).length < maxToSelect) {
@@ -1671,6 +1848,14 @@
             }
         };
 
+        $.fn.clyMultiSelectGetItems = function() {
+            var items = [];
+            $(this).find(".item").each(function() {
+                items.push({name: $(this).text(), value: $(this).data("value")});
+            });
+            return items;
+        };
+
         $.fn.clyMultiSelectGetSelection = function() {
             return getSelected($(this));
         };
@@ -1687,7 +1872,7 @@
 
                 var $selection = $("<div class='selection'></div>");
 
-                $selection.text(name);
+                $selection.text($('<div>').html(name).text());
                 $selection.attr("data-value", value);
                 $selection.append("<div class='remove'><i class='ion-android-close'></i></div>");
 
@@ -1854,11 +2039,8 @@
         dtable.CoultyColumnSel.tableCol = 0;
 
         var str = "";
-        var myClass = "";
-        var myClass2 = "";
-        var disabled = "";
         var selectedC = 0;
-        var startLine = true;
+
 
         //Clear out keys not represented in table
         for (var k in config.visible) {
@@ -1899,41 +2081,11 @@
         if (saveSettings) { // we don't have stored value
             store.set(tableName + "VisibleDataTableColumns", config.visible);
         }
-
-        for (colIndex = 0; colIndex < tableCols.length; colIndex++) {
-            if (tableCols[colIndex].columnSelectorIndex) {
-                var colName = tableCols[colIndex].columnSelectorIndex;
-                myClass = 'fa-check-square';
-                myClass2 = "";
-                disabled = "";
-
-                if (config.disabled && config.disabled[tableCols[colIndex].columnSelectorIndex] && config.disabled[tableCols[colIndex].columnSelectorIndex] === true) {
-                    disabled = " disabled";
-                }
-                else if (config.visible && config.visible[tableCols[colIndex].columnSelectorIndex] && config.visible[tableCols[colIndex].columnSelectorIndex] === true) {
-                    selectedC++;
-                }
-                else {
-                    myClass = 'fa-square-o';
-                    myClass2 = ' not-checked';
-                    dtable.fnSetColumnVis(parseInt(colIndex), false, false);
-                }
-
-                if (startLine === true) {
-                    str += "<tr><td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
-                    startLine = false;
-                }
-                else {
-                    str += "<td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
-                    startLine = true;
-                }
-            }
-        }
-        if (!startLine) {
-            str += "<td></td></tr>";
-        }
+        str = redrawColumnsVisibilityTable(tableCols, config, dtable, "");
+        selectedC = str.selectedC || 0;
+        str = str.str || "";
         dtable.CoultyColumnSel.maxCol = Math.min(maxCol, totalCol);
-        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">' + jQuery.i18n.map["common.select-columns-to-display"] + '</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + dtable.CoultyColumnSel.maxCol + '</span></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
+        $(dtable[0]).parent().find(".select-column-table-data").first().after('<div class="data-table-column-selector" tabindex="1"><div class="title" ><span style="margin-left: 15px;">' + jQuery.i18n.map["common.select-columns-to-display"] + '</span><span class="columncounter" style="margin-right: 15px;">' + selectedC + '/' + dtable.CoultyColumnSel.maxCol + '</span></div><div class="export-columns-search"><table><tr><td><input placeholder="' + jQuery.i18n.map["placeholder.search-columns"] + '" type="text" /></td><td><i class="fa fa-search"></i></td><tr></table></div><div class="all_columns scrollable"><table>' + str + '</table></div></div>');
         if (tableCols.length > 8) {
             $(dtable[0]).parent().find('.scrollable').slimScroll({
                 height: '100%',
@@ -1987,11 +2139,78 @@
             }
         });
 
+        $(dtable[0]).parent().find(".export-columns-search input").on("keyup", function() {
+            var value = $(dtable[0]).parent().find(".export-columns-search input").val();
+            var settings_my = store.get(tableName + "VisibleDataTableColumns") || {};
+            var vv = redrawColumnsVisibilityTable(tableCols, {visible: settings_my, disabled: config.disabled, maxCol: config.maxCol}, dtable, value);
+            $(dtable[0]).parent().find(".data-table-column-selector .all_columns table").first().replaceWith("<table>" + vv.str + "</table>");
+        });
+
+
         $(dtable[0]).parent().find(".select-column-table-data").css("display", "table-cell");
 
 
         var visibleColCount = dtable.oApi._fnVisbleColumns(dtable.fnSettings());
         $(dtable).find('.dataTables_empty').first().attr("colspan", visibleColCount);
+    };
+
+    var redrawColumnsVisibilityTable = function(tableCols, config, dtable, value) {
+        if (value) {
+            value = new RegExp((value || ""), 'i');
+        }
+        var myClass = "";
+        var myClass2 = "";
+        var disabled = "";
+        var str = "";
+        var startLine = true;
+        var selectedC = 0;
+
+
+        for (var colIndex = 0; colIndex < tableCols.length; colIndex++) {
+            if (tableCols[colIndex].columnSelectorIndex) {
+                var colName = tableCols[colIndex].columnSelectorIndex;
+                myClass = 'fa-check-square';
+                myClass2 = "";
+                disabled = "";
+
+                if (config.disabled && config.disabled[tableCols[colIndex].columnSelectorIndex] && config.disabled[tableCols[colIndex].columnSelectorIndex] === true) {
+                    disabled = " disabled";
+                }
+                else if (config.visible && config.visible[tableCols[colIndex].columnSelectorIndex] && config.visible[tableCols[colIndex].columnSelectorIndex] === true) {
+                    selectedC++;
+                }
+                else {
+                    myClass = 'fa-square-o';
+                    myClass2 = ' not-checked';
+                    dtable.fnSetColumnVis(parseInt(colIndex), false, false);
+                }
+                var hideMe = false;
+                if (value && !tableCols[colIndex].sTitle.match(value)) {
+                    hideMe = true;
+                }
+                if (hideMe) {
+                    if (startLine) {
+                        str += "<tr style='display:none'><td  data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
+                    }
+                    else {
+                        str += "<td style='display:none'  data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                    }
+                }
+                else if (startLine === true) {
+                    str += "<tr><td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td>";
+                    startLine = false;
+                }
+                else {
+                    str += "<td data-selectorname='" + colName + "' data-index='" + colIndex + "' class='" + myClass2 + disabled + "'><div><a data-index='" + colIndex + "' class='fa check-green check-header " + myClass + disabled + " data-table-toggle-column'></a></div>" + tableCols[colIndex].sTitle + "</td></tr>";
+                    startLine = true;
+                }
+            }
+        }
+        if (!startLine) {
+            str += "<td></td></tr>";
+        }
+
+        return {str: str, selectedC: selectedC};
     };
 
     /** function hides column in data table and stores config in local storage
@@ -2740,10 +2959,13 @@
         /**
         * Get bar data for metric with percentages of total
         * @memberof countlyMetric
-        * @param {string} metric_pd - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @param {string} segment - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @param {string} mtric - name of the metric to use ordering and returning
+        * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
         */
-        countlyMetric.getBarsWPercentageOfTotal = function(metric_pd) {
+        countlyMetric.getBarsWPercentageOfTotal = function(segment, mtric, estOverrideMetric) {
+            mtric = mtric || "t";
             if (_processed) {
                 var rangeData = {};
                 rangeData.chartData = [];
@@ -2757,13 +2979,13 @@
                     }
                     rangeData.chartData[i] = data[i];
                 }
-                return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData);
+
+                return countlyCommon.calculateBarDataWPercentageOfTotal(rangeData, mtric, this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined);
             }
             else {
-                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(metric_pd), this.clearObject, fetchValue);
+                return countlyCommon.extractBarDataWPercentageOfTotal(_Db, this.getMeta(segment), this.clearObject, fetchValue, mtric, estOverrideMetric, this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined);
             }
         };
-
 
         /**
         * Get bar data for metric
@@ -2864,39 +3086,13 @@
                 ], estOverrideMetric || _estOverrideMetric);
             }
 
-            var osSegmentation = ((os) ? os : ((_os) ? _os[0] : null)),
-                platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),
-                chartData2 = [];
-            var osName = osSegmentation;
-            if (osSegmentation) {
-                if (countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) {
-                    osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
-                }
-                else {
-                    osName = osSegmentation.toLowerCase()[0];
-                }
-            }
+            os = ((os) ? os : ((_os) ? _os[0] : null));
 
-            if (oSVersionData.chartData) {
-                var regTest = new RegExp("^" + osName + "[0-9]");
-                var reg = new RegExp("^" + osName);
-                for (i = 0; i < oSVersionData.chartData.length; i++) {
-                    var shouldDelete = true;
-                    oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(/:/g, ".");
-                    if (regTest.test(oSVersionData.chartData[i][metric_pd || _name])) {
-                        shouldDelete = false;
-                        oSVersionData.chartData[i][metric_pd || _name] = oSVersionData.chartData[i][metric_pd || _name].replace(reg, "");
-                    }
-                    else if (countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][metric_pd || _name], osName)) {
-                        shouldDelete = false;
-                    }
-                    if (shouldDelete) {
-                        delete oSVersionData.chartData[i];
-                        delete platformVersionTotal[i];
-                    }
-                }
-            }
+            var chartData2 = [];
+            var osSegmentation = os;
+            oSVersionData = countlyDeviceDetails.eliminateOSVersion(oSVersionData, osSegmentation, metric_pd || _name, false);
 
+            var platformVersionTotal = _.pluck(oSVersionData.chartData, 'u');
             oSVersionData.chartData = _.compact(oSVersionData.chartData);
             platformVersionTotal = _.without(platformVersionTotal, false, null, "", undefined, NaN);
 
@@ -3208,6 +3404,78 @@
         el = el ? $(el) : $("#content .widget");
 
         $(breadcrumbsEl).prependTo(el);
+    };
+
+    /*
+     * Function that returns difference between two arrays
+     * @param {Array} a1 - first array
+     * @param {Array} a2 - second array
+     */
+    CountlyHelpers.arrayDiff = function(a1, a2) {
+        var a = [], diff = [];
+
+        for (var i1 = 0; i1 < a1.length; i1++) {
+            a[a1[i1]] = true;
+        }
+
+        for (var i2 = 0; i2 < a2.length; i2++) {
+            if (a[a2[i2]]) {
+                delete a[a2[i2]];
+            }
+            else {
+                a[a2[i2]] = true;
+            }
+        }
+
+        for (var k in a) {
+            diff.push(k);
+        }
+
+        return diff;
+    };
+
+    /*
+     * Function that returns difference between two arrays
+     * @param {*} item - item
+     * @param {Array} array - array
+     */
+    CountlyHelpers.removeItemFromArray = function(item, array) {
+        var index = array.indexOf(item);
+        if (index > -1) {
+            array.splice(index, 1);
+        }
+        return array;
+    };
+
+    /**
+     * Function that clean duplicates from passed array.
+     * @param {Array} array - array
+     * @return {Array} - array without duplicates
+     */
+    CountlyHelpers.arrayUnique = function(array) {
+        var a = array.concat();
+        for (var i = 0; i < a.length; ++i) {
+            for (var j = i + 1; j < a.length; ++j) {
+                if (a[i] === a[j]) {
+                    a.splice(j--, 1);
+                }
+            }
+        }
+        return a;
+    };
+
+    /**
+     * Function that remove empty values from array.
+     * @param {array} array - array that contain empty values
+     * @return {array} - array without empty values
+     */
+    CountlyHelpers.removeEmptyValues = function(array) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i] === "") {
+                array.splice(i, 1);
+            }
+        }
+        return array;
     };
 
     $(document).ready(function() {

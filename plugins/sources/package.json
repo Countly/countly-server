@@ -19,6 +19,8 @@
     "store",
     "app"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "parse-domain": "3.0.3"
+  },
   "private": true
 }

@@ -19,10 +19,9 @@ else {
         console.log("[");
     }
     localize.getProperties("en", function(err, properties) {
-        var db = plugins.dbConnection("countly");
-        db.onOpened(function() {
+        plugins.dbConnection().then((db) => {
             plugins.loadConfigs(db, function() {
-                var cursor = db._native.collection("systemlogs").find({ts: {$gte: date.unix()}});
+                var cursor = db.collection("systemlogs").find({ts: {$gte: date.unix()}});
                 var returned = false;
                 var first = true;
                 cursor.on('data', function(doc) {
@@ -42,7 +41,7 @@ else {
                         output.push(moment.unix(doc.ts).format("YYYY/MM/DD HH:mm:ss"));
                         output.push(doc.user_id + (doc.u ? " (" + doc.u + ")" : ""));
                         output.push(doc.ip);
-                        output.push(doc.app_id || plugins.getConfig("api").domain || "localhost");
+                        output.push(doc.app_id || plugins.getConfig("api").domain || process.env.COUNTLY_CONFIG_HOSTNAME || "localhost");
                         if (loginActions.indexOf(doc.a) !== -1) {
                             console.log("Time stamp | User ID | Login device IP or Hostname | Application/Service/Server Name | Result");
                             output.push(properties["systemlogs.action." + doc.a] || doc.a);

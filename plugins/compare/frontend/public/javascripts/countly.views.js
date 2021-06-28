@@ -1,5 +1,6 @@
-/*global $, jQuery, countlyCommon, countlyView, CountlyHelpers, countlyGlobal, app, _, T, CompareView, countlyEventCompare, countlyAppCompare, countlyEvent*/
+/*global $, jQuery, countlyAuth, countlyCommon, countlyView, CountlyHelpers, countlyGlobal, app, _, T, CompareView, countlyEventCompare, countlyAppCompare, countlyEvent*/
 window.CompareView = countlyView.extend({
+    featureName: 'compare',
     selectedMetric: null,
     selectedAlt: null,
     alternatives: [],
@@ -191,6 +192,12 @@ window.CompareView = countlyView.extend({
         }
 
         countlyCommon.drawTimeGraph(dp, "#dashboard-graph");
+
+        var list = [];
+        for (var z in this.templateData.alternatives) {
+            list.push({"value": z, "name": this.templateData.alternatives[z]});
+        }
+        $("#alternative-selector").clyMultiSelectSetItems(list);
     },
     refresh: function() {
         var self = this;
@@ -229,14 +236,16 @@ app.compareView = new CompareView();
 
 /* Compare for the events view */
 app.addPageScript("/analytics/events", function() {
-    $("#event-nav-head").after(
-        "<a href='#/analytics/events/compare'>" +
-            "<div id='compare-events' class='event-container'>" +
-                "<div class='icon'></div>" +
-                "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
-            "</div>" +
-        "</a>"
-    );
+    if (countlyAuth.validateRead(app.compareView.featureName)) {
+        $("#event-nav-head").after(
+            "<a href='#/analytics/events/compare'>" +
+                "<div id='compare-events' class='event-container'>" +
+                    "<div class='icon'></div>" +
+                    "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
+                "</div>" +
+            "</a>"
+        );
+    }
 });
 
 var compareEventsViewHelper = {
@@ -296,36 +305,40 @@ var compareEventsViewHelper = {
         ];
     },
     getAlternatives: function() {
-        var events = countlyEvent.getEvents(),
-            keys = _.pluck(events, "key"),
-            names = _.pluck(events, "name");
-
+        var events = countlyEvent.getEvents(false, true);
         var toReturn = {};
 
-        for (var i = 0; i < keys.length; i++) {
-            toReturn[keys[i]] = names[i] || keys[i];
+        for (var i = 0; i < events.length; i++) {
+            toReturn[events[i].key] = events[i].name || events[i].key;
+            if (events[i].is_event_group) {
+                toReturn[events[i].key] += "<div class='group-badge'><span> (</span>" + jQuery.i18n.prop("common.group") + "<span>)</span></div>";
+            }
         }
 
         return toReturn;
     }
 };
 
-app.route("/analytics/events/compare", 'views', function() {
-    this.compareView.setHelper(compareEventsViewHelper);
-    this.renderWhenReady(this.compareView);
-});
+if (countlyAuth.validateRead(app.compareView.featureName)) {
+    app.route("/analytics/events/compare", 'views', function() {
+        this.compareView.setHelper(compareEventsViewHelper);
+        this.renderWhenReady(this.compareView);
+    });
+}
 /* End of compare for the events view */
 
 /* Compare applications */
 $(document).ready(function() {
-    $("#app-navigation").find(".menu").prepend(
-        "<a href='#/compare'>" +
-            "<div id='compare-apps' class='action'>" +
-                "<div class='icon'></div>" +
-                "<span>" + jQuery.i18n.map["compare.button"] + "</span>" +
-            "</div>" +
-        "</a>"
-    );
+    if (countlyAuth.validateRead(app.compareView.featureName)) {
+        $("#app-navigation").find(".menu").prepend(
+            "<a href='#/compare'>" +
+                "<div id='compare-apps' class='action'>" +
+                    "<div class='icon'></div>" +
+                    "<span>" + jQuery.i18n.map["compare.button"] + "</span>" +
+                "</div>" +
+            "</a>"
+        );
+    }
 });
 
 var compareAppsViewHelper = {
@@ -466,8 +479,10 @@ var compareAppsViewHelper = {
     }
 };
 
-app.route("/compare", 'views', function() {
-    this.compareView.setHelper(compareAppsViewHelper);
-    this.renderWhenReady(this.compareView);
-});
+if (countlyAuth.validateRead(app.compareView.featureName)) {
+    app.route("/compare", 'views', function() {
+        this.compareView.setHelper(compareAppsViewHelper);
+        this.renderWhenReady(this.compareView);
+    });
+}
 /* End of compare applications */

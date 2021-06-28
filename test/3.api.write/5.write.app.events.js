@@ -93,7 +93,13 @@ describe('Writing app events', function() {
                             return done(err);
                         }
                         var ob = JSON.parse(res.text);
-                        ob.should.eql({});
+                        ob.should.eql({
+                            limits: {
+                                event_limit: 500,
+                                event_segmentation_limit: 100,
+                                event_segmentation_value_limit: 1000
+                            }
+                        });
                         done();
                     });
             });
@@ -1324,7 +1330,7 @@ describe('Writing app events', function() {
     describe('reset app', function() {
         describe('reseting data', function() {
             it('should reset data', function(done) {
-                var params = {app_id: APP_ID};
+                var params = {app_id: APP_ID, "period": "reset"};
                 request
                     .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                     .expect(200)

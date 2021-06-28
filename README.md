@@ -46,11 +46,17 @@
 
 
 ## What is Countly?
-[Countly](http://count.ly) is an innovative, real-time, open source [mobile](https://count.ly/mobile-analytics) & [web analytics](http://count.ly/web-analytics), [rich push notifications](https://count.ly/plugins/rich-push-notifications) and [crash reporting](https://count.ly/plugins/crash-analytics) platform powering more than 2500 web sites, 16000 mobile applications and several desktop applications as of 2019. It collects data from mobile, desktop, web apps including Apple Watch, TvOS and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
+[Countly](http://count.ly) is a product analytics solution and innovation enabler that helps teams track product performance and customer journey and behavior across [mobile](https://count.ly/mobile-analytics), [web](http://count.ly/web-analytics), and [desktop](https://count.ly/desktop-analytics) applications. [Ensuring privacy by design](https://count.ly/your-data-your-rules), Countly allows you to innovate and enhance your products to provide personalized and customized customer experiences, and meet key business and revenue goals.
 
-With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
+Countly tracks 1.5B+ unique identities on more than 16,000 applications and using over 2,000 servers worldwide, making it a world leading product analytics platform. It securely processes billions of data points every day in the cloud and on-premise,  giving you full control over your data.
 
-There are two parts of Countly: the server that collects and analyzes data, and an SDK (mobile, web or desktop) that sends this data. This repository includes Countly Community Edition (server side). For more information other versions (e.g Enterprise Edition), see [comparison of different Countly editions](https://count.ly/pricing#compare-editions)
+Countly relies on a wide diversity of SDKs for deployment and provides an extensive list of plugins and dozens of integrations, as well as features a clean and intuitive UI with an easy-to-use and customizable Dashboard. The plaform is available in [two different editions](https://count.ly/pricing#compare-editions): Enterprise Edition, which offers a wider range of plugins, customizable SLA, and direct support; while Community Edition, with essential plugins and a free-to-use, open source, non-commercial license, lets you contribute new features, bug fixes, and optimize repositories, giving you the power to improve the product for yourself as well as for others.
+
+And because data-flow security is critical, the Countly Dashboard enables you to not only access settings within your team but also provides a privacy-protection compliant environment, so you can focus on innovation with customer intelligence, without worrying about compliance.
+
+**An analytics platform as it should be: secure data ownership to track, measure, and take action, all in one place.**
+
+With Countly, understand your digital customer journey across devices. Build better ones.
 
 Click on the below image for a 1 minute video introduction to Countly (opens Youtube);
 
@@ -124,7 +130,7 @@ There are several ways to install Countly:
 
 3. For bash lovers, we provide a beautiful installation script (`bin/countly.install.sh`) in countly-server package which installs everything required to run Countly Server. For this, you need a stable release of this repository [available here](https://github.com/Countly/countly-server/releases). 
 
-4. Countly Community Edition also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/) and [installation instructions for Docker](http://resources.count.ly/docs/installing-countly-server)
+4. Countly Community Edition also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/r/countly/countly-server/) and [installation instructions for Docker](http://resources.count.ly/docs/installing-countly-server)
 
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](http://resources.count.ly/v1.0/docs/upgrading-countly-server).
 
@@ -145,17 +151,6 @@ Countly is extensible using the [plugin architecture](https://count.ly/plugins).
 5. Create a new pull request
 
 Also, you are encouraged to read an extended contribution section on [how to contribute to Countly](https://github.com/Countly/countly-server/blob/master/CONTRIBUTING.md)
-
-[![0](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/0)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/0)
-[![1](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/1)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/1)
-[![2](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/2)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/2)
-[![3](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/3)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/3)
-[![4](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/4)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/4)
-[![5](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/5)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/5)
-[![6](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/6)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/6)
-[![7](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/7)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/7) 
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/Countly/countly-server.svg)](https://greenkeeper.io/)
 
 ## Badges
 

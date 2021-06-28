@@ -1,4 +1,4 @@
-/* global countlyGlobal, google, _, jQuery, T*/
+/* global countlyGlobal, google, _, jQuery, countlyLocation*/
 (function(countlyMapHelper) {
 
     // Private Properties
@@ -14,12 +14,7 @@
             backgroundColor: "transparent",
             datalessRegionColor: "#FFF"
         },
-        _mapData = [],
-        _countryMap = {};
-
-    T.get('/localization/countries/en/country.json', function(data) {
-        _countryMap = data;
-    });
+        _mapData = [];
 
     countlyMapHelper.drawGeoChart = function(options, locationData) {
         if (options) {
@@ -68,7 +63,7 @@
             if (value.value === 0) {
                 return;
             }
-            value.country = _countryMap[value.country] || jQuery.i18n.map["common.unknown"] || "Unknown";
+            value.country = countlyLocation.getCountryName(value.country);
 
             if (value.country === "European Union" || value.country === jQuery.i18n.map["common.unknown"]) {
                 return {

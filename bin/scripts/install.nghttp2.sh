@@ -12,34 +12,16 @@ export LANGUAGE=en_US.UTF-8 ; export LC_ALL=en_US.UTF-8;
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ -n "$(command -v apt-get)" ]; then
-    add-apt-repository -y ppa:ondrej/apache2
-    apt-get update && apt-get install -y --force-yes openssl git g++ make binutils autoconf automake autotools-dev libtool pkg-config zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev libevent-dev libjansson-dev libjemalloc-dev cython python3-dev python-setuptools
+    apt-get update && apt-get install -y --force-yes git g++ make binutils autoconf automake autotools-dev libtool pkg-config zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev libevent-dev libjansson-dev libjemalloc-dev cython python3-dev python-setuptools
 elif [ -n "$(command -v yum)" ]; then
-    # wget http://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/x86_64/os/Packages/o/openssl-1.0.2h-1.fc25.x86_64.rpm
-    # wget http://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/x86_64/os/Packages/o/openssl-libs-1.0.2h-1.fc25.x86_64.rpm
-    # wget http://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/i386/os/Packages/c/crypto-policies-20160516-1.git8f69c35.fc25.noarch.rpm
+    yum install -y git make binutils autoconf automake libtool pkgconfig zlib-devel libxml2-devel
 
-    if grep -q -i "release 6" /etc/redhat-release ; then
-        wget https://rpmfind.net/linux/Mandriva/devel/cooker/x86_64/media/main/release/autoconf-2.69-1-mdv2012.0.noarch.rpm
-        rpm -i --force autoconf-2.69-1-mdv2012.0.noarch.rpm
-        rm -f autoconf-2.69-1-mdv2012.0.noarch.rpm
-        # wget https://www.softwarecollections.org/en/scls/praiskup/autotools/epel-6-x86_64/download/praiskup-autotools-epel-6-x86_64.noarch.rpm
-        # rpm -i praiskup-autotools-epel-6-x86_64.noarch.rpm
-        # yum install -y autotools-latest
-        # source /opt/rh/autotools-latest/enable
+    if grep -q -i "release 8" /etc/centos-release ; then
+        yum config-manager --set-enabled powertools
+        yum install -y makedepend
+    elif grep -q -i "release 7" /etc/redhat-release ; then
+        yum install -y python-setuptools makedepend
     fi
-
-    yum install -y git make binutils autoconf automake makedepend libtool pkgconfig zlib-devel libxml2-devel python-setuptools
-    wget https://www.openssl.org/source/openssl-1.1.1f.tar.gz
-    tar -zxvf openssl-1.1.1f.tar.gz -C /usr/local/src
-    cd /usr/local/src/openssl-1.1.1f
-    ./config --prefix=/usr
-    make depend
-    make
-    make install
-    # mv /usr/bin/openssl /root/
-    # ln -s /usr/local/ssl/bin/openssl /usr/bin/openssl
-    cd "$DIR"
 fi
 
 #clean folder if exists

@@ -1,5 +1,6 @@
-/*global $, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
+/*global $, countlyAuth, countlyReporting, starRatingPlugin, app, jQuery, CountlyHelpers, starView, store, countlyGlobal, countlyCommon, ClipboardJS, tippy, moment, countlyView, T, path1, addDrill, countlySegmentation*/
 window.starView = countlyView.extend({
+    featureName: 'starrating',
     /**
      * this variable contains the infos that render view required.
      * @type {object}
@@ -8,7 +9,7 @@ window.starView = countlyView.extend({
 
     },
     templateData: {
-        "page-title": jQuery.i18n.map["star.menu-title"],
+        "page-title": jQuery.i18n.map["feedback.ratings-tab-table-title"],
         platform_version: null,
         rating: null,
         timeSeriesData: null
@@ -872,6 +873,21 @@ window.starView = countlyView.extend({
                 bSortable: false
             }];
 
+            if (countlyGlobal.plugins.indexOf("users") >= 0) {
+                columnsDefine.push(
+                    {
+                        "mData": function(row) {
+                            return "<a class='table-link green external' href='#/users/" + row.uid + "'>" + jQuery.i18n.map["userdata.view"] + "</a>";
+                        },
+                        sType: "string",
+                        "bSortable": false,
+                        "sTitle": '',
+                        "sClass": "center",
+                        "sWidth": "90px"
+                    }
+                );
+            }
+
             this.commentsTable = $('#tableThree').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": this.templateData.commentsData,
                 "aoColumns": columnsDefine
@@ -896,7 +912,7 @@ window.starView = countlyView.extend({
                 "sTitle": jQuery.i18n.map["report-manager.name"]
             }, {
                 "mData": function(row) {
-                    if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
+                    if (!countlyAuth.validateUpdate(self.featureName)) {
                         return (row.is_active) ? 'Active' : 'Deactive';
                     }
                     else {
@@ -950,7 +966,7 @@ window.starView = countlyView.extend({
                         }
                         row.target_pages.forEach(function(page) {
                             if (row.target_pages.indexOf(page) < 5) {
-                                target_pages += "<div class='feedback-widget-target-page-item'>" + page + "</div>";
+                                target_pages += "<a class='feedback-widget-target-page-item' title='" + page + "'>" + (page.length < 20 ? page : (page.substr(0, 20) + "...")) + "</a>";
                             }
                             else if (row.target_pages.indexOf(page) === 5) {
                                 target_pages += "<div class='feedback-widget-target-page-item'>And " + (row.target_pages.length - 5) + " more...</div>";
@@ -993,20 +1009,15 @@ window.starView = countlyView.extend({
             }];
             columnsDefine.push({
                 "mData": function(row) {
-                    if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
-                        return '';
-                    }
-                    else {
-                        return "<div class='feedback-options-item options-item'>"
-                            + "<div class='edit' data-id='" + row._id + "'></div>"
-                            + "<div class='edit-menu rating-feedback-menu' id='" + row._id + "'>"
-                            + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + "><i class='fa fa-clipboard'></i>" + jQuery.i18n.map["common.copy-id"] + "</div>"
-                            + "<div class='show-instructions item' data-id='" + row._id + "'" + "><i class='fa fa-eye'></i>" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
-                            + "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>"
-                            + "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>"
-                            + "</div>"
-                            + "</div>";
-                    }
+                    return "<div class='feedback-options-item options-item'>"
+                        + "<div class='edit' data-id='" + row._id + "'></div>"
+                        + "<div class='edit-menu rating-feedback-menu' id='" + row._id + "'>"
+                        + "<div data-clipboard-text='" + row._id + "' class='copy-widget-id item'" + " data-id='" + row._id + "'" + "><i class='fa fa-clipboard'></i>" + jQuery.i18n.map["common.copy-id"] + "</div>"
+                        + "<div class='show-instructions item' data-id='" + row._id + "'" + "><i class='fa fa-eye'></i>" + jQuery.i18n.map["feedback.show-instructions"] + "</div>"
+                        + ((countlyAuth.validateUpdate(self.featureName)) ? "<div class='edit-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["feedback.edit"] + "</div>" : "")
+                        + ((countlyAuth.validateDelete(self.featureName)) ? "<div class='delete-widget item'" + " data-id='" + row._id + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["feedback.delete"] + "</div>" : "")
+                        + "</div>"
+                        + "</div>";
                 },
                 "bSortable": false,
             });
@@ -1145,6 +1156,11 @@ window.starView = countlyView.extend({
             "display": "block"
         });
     },
+    decode: function(string) {
+        var div = document.createElement("div");
+        div.innerHTML = string;
+        return typeof div.textContent !== 'undefined' ? div.textContent : div.innerText;
+    },
     renderCommon: function(isRefresh) {
         var self = this;
         new ClipboardJS('.copy-widget-id');
@@ -1227,7 +1243,8 @@ window.starView = countlyView.extend({
                 $('#overlay').fadeIn();
                 $('#widgets-array').html($(this).data('id'));
                 $('.feedback-copy-code').attr("data-clipboard-text", "Countly.q.push(['enable_feedback',{'widgets':['" + $(this).data('id') + "']}]);");
-                $('#feedback-' + countlyGlobal.apps[store.get('countly_active_app')].type + '-integration').css({
+                var type = countlyGlobal.apps[store.get('countly_active_app')].type === 'web' ? 'web' : 'mobile';
+                $('#feedback-' + type + '-integration').css({
                     "display": "block"
                 });
                 var id = $(this).data('id');
@@ -1354,19 +1371,17 @@ window.starView = countlyView.extend({
                     "display": "none"
                 });
             });
+
+            $('.options-item').css({
+                "display": "block"
+            });
             // permission controls
             if (countlyGlobal.member.global_admin) {
                 $('#create-feedback-widget-button').css({
                     "display": "block"
                 });
-                $('.options-item').css({
-                    "display": "block"
-                });
             }
-            else if (countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
-                $('.options-item').css({
-                    "display": "block"
-                });
+            else if (countlyAuth.validateCreate(self.featureName)) {
                 $('#create-feedback-widget-button').css({
                     "display": "block"
                 });
@@ -1730,12 +1745,12 @@ window.starView = countlyView.extend({
                 }
             });
             var renderFeedbackWidgetModal = function(isCreate) {
-                $("#feedback-popup-header-text").val(isCreate ? "" : self.feedbackWidget.popup_header_text);
-                $("#feedback-popup-comment-text").val(isCreate ? "" : self.feedbackWidget.popup_comment_callout);
-                $("#feedback-popup-email-text").val(isCreate ? "" : self.feedbackWidget.popup_email_callout);
-                $("#feedback-popup-button-text").val(isCreate ? "" : self.feedbackWidget.popup_button_callout);
-                $("#feedback-popup-thanks-text").val(isCreate ? "" : self.feedbackWidget.popup_thanks_message);
-                $("#feedback-trigger-text").val(isCreate ? "" : self.feedbackWidget.trigger_button_text);
+                $("#feedback-popup-header-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_header_text));
+                $("#feedback-popup-comment-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_comment_callout));
+                $("#feedback-popup-email-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_email_callout));
+                $("#feedback-popup-button-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_button_callout));
+                $("#feedback-popup-thanks-text").val(isCreate ? "" : self.decode(self.feedbackWidget.popup_thanks_message));
+                $("#feedback-trigger-text").val(isCreate ? "" : self.decode(self.feedbackWidget.trigger_button_text));
 
                 $("#counter-for-feedback-popup-header-text").html($("#feedback-popup-header-text").val().length + "/45");
                 $("#counter-for-feedback-popup-comment-text").html($("#feedback-popup-comment-text").val().length + "/25");
@@ -2203,6 +2218,10 @@ window.starView = countlyView.extend({
             $('#set-feedback-active').on('change', function() {
                 self.feedbackWidget.is_active = ($(this).attr('checked')) ? true : false;
             });
+
+            if (countlyAuth.validateCreate(self.featureName)) {
+                $('#create-feedback-widget-button').show();
+            }
         }
         if (self._tab === 'ratings') {
             this.updateViews();
@@ -2281,19 +2300,26 @@ window.starView = countlyView.extend({
 });
 //register views
 app.starView = new starView();
-app.route("/analytics/star-rating", 'star', function() {
-    this.starView._tab = 'ratings';
-    this.renderWhenReady(this.starView);
-});
-app.route("/analytics/star-rating/:tab", 'star', function(tab) {
-    if (tab.length === 0) {
+if (countlyAuth.validateRead(app.starView.featureName)) {
+    app.route("/analytics/star-rating", 'star', function() {
         this.starView._tab = 'ratings';
-    }
-    else {
-        this.starView._tab = tab;
-    }
-    this.renderWhenReady(this.starView);
-});
+        this.renderWhenReady(this.starView);
+    });
+
+    app.route("/analytics/star-rating/:tab", 'star', function(tab) {
+        if (tab.length === 0) {
+            this.starView._tab = 'ratings';
+        }
+        else {
+            this.starView._tab = tab;
+        }
+        this.renderWhenReady(this.starView);
+    });
+
+    app.addPageScript("/manage/reports", function() {
+        countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
+    });
+}
 
 app.addPageScript("/drill#", function() {
     var drillClone;
@@ -2305,51 +2331,158 @@ app.addPageScript("/drill#", function() {
     }
 
     if (record_star_rating) {
-        $("#drill-types").append('<div id="drill-type-star-rating" class="item"><div class="inner"><span class="icon star-rating"><i class="material-icons">star_half</i></span><span class="text">' + jQuery.i18n.map["internal-events.[CLY]_star_rating"] + '</span></div></div>');
-        $("#drill-type-star-rating").on("click", function() {
-            if ($(this).hasClass("active")) {
-                return true;
-            }
+        if (!$("#drill-type-feedback").length) {
+            $("#drill-types").append('<div id="drill-type-feedback" class="item two-phase-selector"><div class="inner"><span class="icon star-rating"><i class="material-icons">star_half</i></span><span class="text">' + jQuery.i18n.map["sidebar.feedback"] + '</span></div></div>');
 
-            $("#drill-types").find(".item").removeClass("active");
-            $(this).addClass("active");
-            $("#event-selector").hide();
+            var dropdown = '<div id="feedback-selector" class="select-configuration">' +
+                    '<div class="text-wrapper" data-localize="drill.select-event"></div>' +
+                    '<div class="event-select">' +
+                      '<div class="menu">' +
+                        '<div class="search event-search">' +
+                            '<input type="text" readonly onfocus="if (this.hasAttribute(\'readonly\')) {this.removeAttribute(\'readonly\'); this.blur(); this.focus();}">' +
+                        '</div>' +
+                        '<div class="list"></div>' +
+                      '</div>' +
+                   '</div>' +
+                 '</div>';
+            $("#selector-no-event").after(dropdown);
+            $("#feedback-selector").hide();
+            $("#drill-types > .item").on("click", function() {
+                $("#feedback-selector").hide();
+            });
 
-            $("#drill-no-event").fadeOut();
-            $("#segmentation-start").fadeOut().remove();
+            $("#drill-type-feedback").on("click", function() {
 
-            self.graphType = "line";
-            self.graphVal = "times";
-            self.filterObj = {};
-            self.byVal = "";
-            self.drillChartDP = {};
-            self.drillChartData = {};
-            self.activeSegmentForTable = "";
-            countlySegmentation.reset();
+                if ($(this).hasClass("active")) {
+                    return true;
+                }
+                $("#drill-types").find(".item").removeClass("active");
+                $(this).addClass("active");
 
-            $("#drill-navigation").find(".menu[data-open=table-view]").hide();
+                if ($("#event-selector").is(":visible")) {
+                    $("#event-selector").hide();
+                }
 
-            $.when(countlySegmentation.initialize("[CLY]_star_rating")).then(function() {
-                $("#drill").replaceWith(drillClone.clone(true));
-                self.adjustFilters();
-                if (!self.keepQueryTillExec) {
-                    self.draw(true, false);
+                $("#feedback-selector").show();
+                $(".event-select input").focus();
+            });
+
+            $("#feedback-selector .event-select").on("click", ".item", function() {
+                $(this).parent().find(".item").removeClass("active");
+                $(this).addClass("active");
+
+                self.graphType = "line";
+                self.graphVal = "times";
+                self.filterObj = {};
+                self.byVal = "";
+                self.drillChartDP = {};
+                self.drillChartData = {};
+                self.activeSegmentForTable = "";
+                countlySegmentation.reset();
+
+                $("#drill-navigation").find(".menu[data-open=table-view]").hide();
+
+                var currEvent = $(this).data("value");
+                var currEventTitle = $(this).html();
+
+                $.when(countlySegmentation.initialize(currEvent)).then(function() {
+                    $("#drill-filter-view").replaceWith(drillClone.clone(true));
+                    self.adjustFilters();
+                    if (!self.keepQueryTillExec) {
+                        self.draw(true, false);
+                    }
+                });
+                $("#feedback-selector .event-select").data("value", currEvent);
+                $("#drill-type-select").find(".select-toggler .text").text($("#drill-type-feedback").find(".text").text() + ", " + currEventTitle);
+                $("#drill-type-select").find(".select-toggler").removeClass('active');
+                $("#drill-type-select").find(".main-square").hide();
+                $("#drill-type-select").find(".arrow").removeClass("ion-chevron-up").addClass("ion-chevron-down");
+            });
+
+            $(".event-select input").off("keydown").on("keydown", function(e) {
+                var selector = ".event-select .item.in-subset.navigating";
+                if (e.keyCode === 40) {
+                    var nextItem = $(selector).removeClass("navigating").nextAll('.in-subset:first');
+                    if (nextItem.length === 0) {
+                        nextItem = $('.event-select .item.in-subset:first');
+                    }
+                    nextItem.addClass("navigating");
+                }
+                else if (e.keyCode === 38) {
+                    var prevItem = $(selector).removeClass("navigating").prevAll(".in-subset:first");
+                    if (prevItem.length === 0) {
+                        prevItem = $('.event-select .item.in-subset:last');
+                    }
+                    prevItem.addClass("navigating");
+                }
+                else if (e.keyCode === 13) {
+                    $(selector).trigger("click");
+                }
+                if ($(selector).length !== 0) {
+                    var offset = $(selector).position().top - $(selector).parent().position().top;
+                    $(selector).parent().scrollTop(offset);
                 }
             });
-        });
+
+            $('.event-search').off("input", "input").on('input', "input", function() {
+                var searchText = new RegExp($(this).val().toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')),
+                    searchInside = $(this).parent().next().find(".searchable").addClass("in-subset");
+
+                searchInside.filter(function() {
+                    return !(searchText.test($(this).text().toLowerCase()));
+                }).css('display', 'none').removeClass("in-subset").removeClass("navigating");
+
+                searchInside.filter(function() {
+                    return searchText.test($(this).text().toLowerCase());
+                }).css('display', 'block');
+            });
+        }
+        var tmpItem = $("<div>");
+        tmpItem.addClass("item").addClass("searchable").addClass("in-subset");
+        tmpItem.attr("data-value", "[CLY]_star_rating");
+        tmpItem.text(jQuery.i18n.map["internal-events.[CLY]_star_rating"]);
+        $("#feedback-selector").find(".list").append(tmpItem);
     }
 
     setTimeout(function() {
-        drillClone = $("#drill").clone(true);
+        drillClone = $("#drill-filter-view").clone(true);
     }, 0);
 });
 
 $(document).ready(function() {
-    app.addMenu("reach", {
-        code: "star-rating",
-        url: "#/analytics/star-rating",
-        text: "star.menu-title",
-        icon: '<div class="logo ion-android-star-half"></div>',
-        priority: 20
+    if (countlyAuth.validateRead(app.starView.featureName)) {
+        if (!$("#feedback-menu").length) {
+            app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
+        }
+
+        app.addSubMenu("feedback", {
+            code: "star-rating",
+            url: "#/analytics/star-rating",
+            text: "star.menu-title",
+            icon: '<div class="logo ion-android-star-half"></div>',
+            priority: 30
+        });
+    }
+});
+
+app.addPageScript("/manage/export/export-features", function() {
+    $.when(starRatingPlugin.requestFeedbackWidgetsData()).then(function() {
+        var widgets = starRatingPlugin.getFeedbackWidgetsData();
+        var widgetsList = [];
+        widgets.forEach(function(widget) {
+            widgetsList.push({
+                id: widget._id,
+                name: widget.popup_header_text
+            });
+        });
+
+        var selectItem = {
+            id: "feedback_widgets",
+            name: "Feedback Widgets",
+            children: widgetsList
+        };
+        if (widgetsList.length) {
+            app.exportView.addSelectTable(selectItem);
+        }
     });
 });

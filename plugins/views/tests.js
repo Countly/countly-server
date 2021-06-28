@@ -2,8 +2,6 @@ var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../test/testUtils");
 request = request.agent(testUtils.url);
-var plugins = require("./../pluginManager");
-var db = plugins.dbConnection();
 var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var APP_ID = "";
@@ -177,6 +175,8 @@ function verifyTotals(period) {
                     }
                     for (var i = 0; i < resDecoded.aaData.length; i++) {
                         if (verifyMetrics(err, resDecoded.aaData[i], done, tableResponse[period].aaData[i]) == false) {
+                            console.log("GOT: " + JSON.stringify(resDecoded.aaData));
+                            console.log("NEED:" + JSON.stringify(tableResponse[period].aaData));
                             return done("wrong values");
                         }
                     }
@@ -358,9 +358,9 @@ describe('Testing views plugin', function() {
     });
 
     describe('Adding some scrolling', function() {
-        it('adding 2 days ago(with visit)', function(done) {
+        it('adding 2 days ago(calling with visit, shouldnt record visit)', function(done) {
 
-            pushValues("30days", 0, {"t": 1, "s": 1, "scr": 60, "scr-calc": 20});
+            pushValues("30days", 0, { "s": 1, "scr": 60, "scr-calc": 20});
             var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"name": "testview0", "type": "scroll", "height": 1000, "y": 600, "visit": 1, "start": 1}}]);
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 26 * 60 * 60 * 1000 * 2) + '&events=' + data)
@@ -388,13 +388,12 @@ describe('Testing views plugin', function() {
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
         });
-
-        it('adding 1 day ago(visit, new user)', function(done) {
-            pushValues("30days", 0, {"uvalue": 1, "u": 1, "n": 1, "t": 1, "s": 1, "scr": 60, "scr-calc": 6});
-            pushValues("yesterday", 0, {"uvalue": 1, "u": 1, "n": 1, "t": 1, "s": 1, "scr": 60, "scr-calc": 30});
-            var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"name": "testview0", "type": "scroll", "height": 1000, "y": 600, "visit": 1, "start": 1}}]);
+        it('adding 1 day ago', function(done) {
+            pushValues("30days", 0, { "scr": 60, "scr-calc": 6});
+            pushValues("yesterday", 0, { "scr": 60, "scr-calc": 30});
+            var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"name": "testview0", "type": "scroll", "height": 1000, "y": 600}}]);
             request
-                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user3" + '&timestamp=' + (myTime - 24 * 60 * 60 * 1000) + '&events=' + data)
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 24 * 60 * 60 * 1000) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -547,7 +546,7 @@ describe('Testing views plugin', function() {
     describe('Validating user merging', function() {
         it('getting Info about users', function(done) {
 
-            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
+            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
                         userObject[res[k].userinfo[0].did] = res[k];
@@ -576,7 +575,7 @@ describe('Testing views plugin', function() {
         });
 
         it('validating result', function(done) {
-            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
+            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 var userObject2 = {};
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
@@ -611,7 +610,7 @@ describe('Testing views plugin', function() {
         });
 
         it('validating result', function(done) {
-            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
+            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 var userObject2 = {};
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
@@ -647,7 +646,7 @@ describe('Testing views plugin', function() {
         });
 
         it('validating result', function(done) {
-            db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
+            testUtils.db.collection("app_userviews" + APP_ID).aggregate([{$lookup: {from: "app_users" + APP_ID, localField: "_id", foreignField: "uid", as: "userinfo"}}], function(err, res) {
                 var userObject2 = {};
                 for (var k = 0; k < res.length; k++) {
                     if (res[k].userinfo && res[k].userinfo[0]) {
@@ -727,7 +726,7 @@ describe('Testing views plugin', function() {
                     var isSet = false;
                     for (var k = 0; k < resDecoded.aaData.length; k++) {
                         if (resDecoded.aaData[k].view == 'testview9Ze') {
-                            if (resDecoded.aaData[k].domain[db.encode("www.kakis.lv")] && resDecoded.aaData[k].domain[db.encode("www.kakis.lv")] == true) {
+                            if (resDecoded.aaData[k].domain[testUtils.db.encode("www.kakis.lv")] && resDecoded.aaData[k].domain[testUtils.db.encode("www.kakis.lv")] == true) {
                                 done();
                                 isSet = true;
                             }
@@ -791,7 +790,7 @@ describe('Testing views plugin', function() {
 
     describe('reset app', function() {
         it('should reset data', function(done) {
-            var params = {app_id: APP_ID};
+            var params = {app_id: APP_ID, "period": "reset"};
             request
                 .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)
@@ -801,12 +800,8 @@ describe('Testing views plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 20 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
-        });
-        it('closing db', function(done) {
-            db.close();
-            done();
         });
     });
 

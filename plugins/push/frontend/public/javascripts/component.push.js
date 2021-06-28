@@ -85,6 +85,7 @@ window.component('push', function(push) {
         // Automated push fields
         this.auto = m.prop(data.auto || false);
         this.autoOnEntry = m.prop(data.autoOnEntry || false);
+        this.autoCancelTrigger = m.prop(data.autoCancelTrigger || false);
         this.autoCohorts = m.prop(data.autoCohorts || []);
         this.autoEvents = m.prop(data.autoEvents || []);
         this.autoEnd = m.prop(data.autoEnd || undefined);
@@ -99,7 +100,7 @@ window.component('push', function(push) {
         this.sent = m.prop(data.sent);
         this.sound = vprop(data.sound, function(v){ return !!v; }, t('pu.po.tab2.extras.sound.invalid'));
         this.badge = vprop(data.badge, function(v){ return v === undefined || ((v + '') === (parseInt(v) + '') && parseInt(v) >= 0); }, t('pu.po.tab2.extras.badge.invalid'));
-        this.url = vprop(data.url, function(v){ return v && URL_REGEXP.test(v); }, t('pu.po.tab2.extras.url.invalid'));
+        this.url = vprop(data.url, function(v){ return v && URL_REGEXP.test(v) && v[0] !== ' ' && v[v.length - 1] !== ' '; }, t('pu.po.tab2.extras.url.invalid'));
         this.data = vprop(typeof data.data === 'object' ? JSON.stringify(data.data) : data.data, function(v){
             try {
                 var o = window.jsonlite.parse(v);
@@ -108,6 +109,7 @@ window.component('push', function(push) {
                 return false;
             }
         }, t('pu.po.tab2.extras.data.invalid'));
+        this.userProps = m.prop(data.userProps);
         this.test = buildClearingProp(typeof data.test === 'undefined' ? false : data.test);
 
         this.userConditions = buildClearingProp(data.userConditions === '{}' ? undefined : typeof data.userConditions === 'string' ? JSON.parse(data.userConditions) : data.userConditions);
@@ -175,14 +177,22 @@ window.component('push', function(push) {
             el.querySelectorAll('.pers').forEach(function(el){
                 el.textContent = el.getAttribute('data-fallback');
 
-                var name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                var key = el.getAttribute('data-key'),
+                    name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === key; })[0];
                 if (name) {
-                    name = name.title();
+                    name =  t.p('pu.po.tab2.tt', name.title(), el.getAttribute('data-fallback'));
+                } else if (this.auto() && this.autoOnEntry() === 'events') {
+                    name = this.autoEvents().map(function(event){
+                        return push.PERS_EVENTS && push.PERS_EVENTS[event] && push.PERS_EVENTS[event].filter(function(opt){ return opt.value() === key; })[0];
+                    }).filter(function(opt) { return !!opt; })[0];
+                    if (name) {
+                        name = name.desc() || t.p('pu.po.tab2.tt', name.title(), el.getAttribute('data-fallback'));
+                    }
                 }
                 if (!name) {
-                    name = el.getAttribute('data-key');
+                    name = t.p('pu.po.tab2.tt', el.getAttribute('data-key'), el.getAttribute('data-fallback'));
                 }
-                el.title = t.p('pu.po.tab2.tt', name, el.getAttribute('data-fallback'));
+                el.title = name;
                 $(el).tooltipster({
                     animation: 'fade',
                     animationDuration: 100,
@@ -201,12 +211,11 @@ window.component('push', function(push) {
                     interactive: true,
                     contentAsHTML: true
                 });
-            });
+            }.bind(this));
         };
 
         this.result = new push.MessageResult(data.result || {});
 
-        this.expiryDate = m.prop(data.expiryDate);
         this.appNames = m.prop(data.appNames || []);
         this.created = m.prop(data.created);
         this.saved = m.prop(false);
@@ -215,6 +224,9 @@ window.component('push', function(push) {
             var prop = m.prop(),
                 f = function(){
                     if (arguments.length) {
+                        if (arguments[0]) {
+                            arguments[0] = arguments[0].trim();
+                        }
                         f.valid = false;
                         prop(arguments[0]);
 						
@@ -380,7 +392,9 @@ window.component('push', function(push) {
                 tz: this.tz(),
                 test: this.test(),
                 auto: this.auto(),
-                date: this.date()
+                date: this.date(),
+                expiration: this.expiration(),
+                tx: this.tx(),
             };
             if (includeId) {
                 obj._id = this._id();
@@ -392,10 +406,17 @@ window.component('push', function(push) {
                 obj.sound = this.sound();
                 obj.badge = this.badge();
                 obj.url = this.url();
+                if (obj.url) {
+                    obj.url = obj.url.trim();
+                }
                 obj.source = 'dash';
                 obj.buttons = parseInt(this.buttons());
                 obj.media = this.media();
+                if (obj.media) {
+                    obj.media = obj.media.trim();
+                }
                 obj.autoOnEntry = this.autoOnEntry();
+                obj.autoCancelTrigger = this.autoCancelTrigger();
                 obj.autoCohorts = this.autoCohorts();
                 obj.autoEvents = this.autoEvents();
                 obj.autoEnd = this.autoEnd();
@@ -404,6 +425,7 @@ window.component('push', function(push) {
                 obj.autoCapMessages = this.autoCapMessages();
                 obj.autoCapSleep = this.autoCapSleep();
                 obj.actualDates = this.actualDates();
+                obj.userProps = this.userProps();
 
                 if (this.data()) {
                     obj.data = typeof this.data() === 'string' ? JSON.parse(this.data()) : this.data();
@@ -506,6 +528,7 @@ window.component('push', function(push) {
         this.tz = buildClearingProp(typeof data.tz === 'undefined' ? false : data.tz);
         this.created = m.prop(data.created || null);
         this.sent = m.prop(data.sent || null);
+        this.expiration = m.prop(data.expiration);
         this.dates = function() {
             var dates = {
 			    created: moment(this.created()).format('D MMM, YYYY HH:mm'),
@@ -667,6 +690,9 @@ window.component('push', function(push) {
         this.errorFixed = function() {
             if (this.error() === 'Process exited') {
                 return (this.status() & (1 << 4)) ? 'exited' :  'exited-sent';
+            }
+            if (this.error() === '{}') {
+                return 'exited';
             }
             return this.error();
         };

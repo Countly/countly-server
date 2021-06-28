@@ -1,4 +1,4 @@
-/*global $, jQuery, countlyCommon, countlyDeviceDetails, countlyView, countlyTotalUsers, countlyDensity, T, app, addDrill, CountlyHelpers, DensityView*/
+/*global $, jQuery, countlyAuth, countlyCommon, countlyDeviceDetails, countlyView, countlyTotalUsers, countlyDensity, T, app, addDrill, CountlyHelpers, DensityView*/
 window.DensityView = countlyView.extend({
     initialize: function() {
 
@@ -96,6 +96,10 @@ window.DensityView = countlyView.extend({
             }));
 
             $("#dataTableOne").stickyTableHeaders();
+
+            if (!countlyAuth.validateRead('drill')) {
+                $('#drill-down-for-view').hide();
+            }
         }
     },
     refresh: function() {

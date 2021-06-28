@@ -9,12 +9,11 @@ var exports = {},
     moment = require('moment-timezone'),
     plugin = require('./../../../plugins/pluginManager.js'),
     json2csv = require('json2csv'),
-    json2xls = require('json2xls'),
-    request = require("request");
+    json2xls = require('json2xls');
 
 //npm install node-xlsx-stream !!!!!
 var xlsx = require("node-xlsx-stream");
-
+const Transform = require('stream').Transform;
 var contents = {
     "json": "application/json",
     "csv": "text/csv",
@@ -70,10 +69,28 @@ function flattenObject(ob, fields) {
             }
         }
         else if (type === "[object Array]") {
-            if (fields) {
-                fields[i] = true;
+            var is_complex = false;
+            for (let p = 0; p < ob[i].length; p++) { //check if entities are complex.
+                let type1 = Object.prototype.toString.call(ob[i][p]);
+                if (ob[i][p] && (type1 === "[object Object]" || type1 === "[object Array]")) {
+                    is_complex = true;
+                }
             }
-            toReturn[i] = ob[i].map(preventCSVInjection).join(", ");
+            if (!is_complex) {
+                if (fields) {
+                    fields[i] = true;
+                }
+                toReturn[i] = ob[i].map(preventCSVInjection).join(", "); //just join values
+            }
+            else {
+                for (let p = 0; p < ob[i].length; p++) {
+                    if (fields) {
+                        fields[i + delimiter + p] = true;
+                    }
+                    toReturn[i + delimiter + p] = preventCSVInjection(JSON.stringify(ob[i][p])); //stringify values
+                }
+            }
+
         }
         else {
             if (fields) {
@@ -156,6 +173,14 @@ exports.convertData = function(data, type) {
     }
 };
 
+exports.getType = function(key) {
+    if (contents[key]) {
+        return contents[key];
+    }
+    else {
+        return key;
+    }
+};
 /**
 * Output data as response
 * @param {params} params - params object
@@ -169,6 +194,7 @@ exports.output = function(params, data, filename, type) {
         headers["Content-Type"] = contents[type];
     }
     headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename) + "." + type;
+
     if (type === "xlsx" || type === "xls") {
         common.returnRaw(params, 200, new Buffer(data, 'binary'), headers);
     }
@@ -178,15 +204,58 @@ exports.output = function(params, data, filename, type) {
 };
 
 /**
+* Transform value
+* @param {object} value - any value
+* @param {string} key - key
+* @param {object} mapper - object with information how to transform data
+* @returns {string} transformed value
+*/
+function transformValue(value, key, mapper) {
+    if (mapper && mapper.fields && mapper.fields[key]) {
+        //if we need we can easy add later different transformations and pass other params for them
+        if (mapper.fields[key].to && mapper.fields[key].to === "time") {
+            if (value) {
+                if (Math.round(value).toString().length === 10) {
+                    value *= 1000;
+                }
+                value = moment(new Date(value)).tz(mapper.tz);
+                if (value) {
+                    value = value.format("ddd, D MMM YYYY HH:mm:ss");
+                }
+                else {
+                    value /= 1000;
+                }
+            }
+        }
+        return value;
+    }
+    else {
+        return value;
+    }
+}
+
+/**
+* Transform all values in object
+* @param {object} doc - any value
+* @param {object} mapper - object with information how to transform data
+* @returns {object} object with transformed data
+*/
+function transformValuesInObject(doc, mapper) {
+    for (var z in doc) {
+        doc[z] = transformValue(doc[z], z, mapper);
+    }
+    return doc;
+}
+/**
 * function to collect calues in order based on current order.
 * @param {array} values - arary to collect values
 * @param {object} valuesMap - object to see which values are collected
 * @param {array} paramList - array of keys(in order)
 * @param {object} doc - data from db
-* @param {boolean} collectProp - true if collect properties,if false use only listed(from projection)
+* @param {object} options -{options.collectProp = true if collect properties,if false use only listed(from projection), options.mapper - mapper for fransforming data}
 */
-function getValues(values, valuesMap, paramList, doc, collectProp) {
-    if (collectProp) {
+function getValues(values, valuesMap, paramList, doc, options) {
+    if (options && options.collectProp) {
         doc = flattenObject(doc);
         var keys = Object.keys(doc);
         for (var z = 0; z < keys.length; z++) {
@@ -194,7 +263,7 @@ function getValues(values, valuesMap, paramList, doc, collectProp) {
         }
         for (var p = 0; p < paramList.length; p++) {
             if (doc[paramList[p]]) {
-                values.push(doc[paramList[p]]);
+                values.push(transformValue(doc[paramList[p]], paramList[p], options.mapper));
             }
             else {
                 values.push("");
@@ -203,7 +272,7 @@ function getValues(values, valuesMap, paramList, doc, collectProp) {
         }
         for (var k in valuesMap) {
             if (valuesMap[k] === false) {
-                values.push(doc[k]);
+                values.push(transformValue(doc[k], k, options.mapper));
                 paramList.push(k);
             }
         }
@@ -212,10 +281,10 @@ function getValues(values, valuesMap, paramList, doc, collectProp) {
         for (var kz = 0; kz < paramList.length; kz++) {
             var value = common.getDescendantProp(doc, paramList[kz]) || "";
             if (typeof value === 'object' || Array.isArray(value)) {
-                values.push(JSON.stringify(value));
+                values.push(JSON.stringify(transformValue(value, paramList[kz], options.mapper)));
             }
             else {
-                values.push(value);
+                values.push(transformValue(value, paramList[kz], options.mapper));
             }
         }
     }
@@ -223,13 +292,20 @@ function getValues(values, valuesMap, paramList, doc, collectProp) {
 /**
 * Stream data as response
 * @param {params} params - params object
-* @param {Stream} stream - stream to output
-* @param {string} filename - name of the file to output to browser
-* @param {string} type - type to be used in content type
-* @param {object} projection - object of field projection
+* @param {Stream} stream - cursor stream
+* @param {string} options - options object 
+		options.filename - name of the file to output to browser
+		options.type - type to be used in content type
+		options.projection - object of field projection
+		options.mapper - object of mapping if need to transform data(for example timestamp to date string)
 */
-exports.stream = function(params, stream, filename, type, projection) {
+exports.stream = function(params, stream, options) {
     var headers = {};
+
+    var filename = options.filename;
+    var type = options.type;
+    var projection = options.projection;
+    var mapper = options.mapper;
     var listAtEnd = true;
     if (type && contents[type]) {
         headers["Content-Type"] = contents[type];
@@ -242,80 +318,83 @@ exports.stream = function(params, stream, filename, type, projection) {
             listAtEnd = false;
         }
     }
-    if (params.res.writeHead) {
+    if (options.writeHeaders && params.res.writeHead) {
         params.res.writeHead(200, headers);
-        if (type === "csv") {
-            var head = [];
-            if (listAtEnd === false) {
-                for (let p = 0; p < paramList.length; p++) {
+    }
+    if (type === "csv") {
+        var head = [];
+        if (listAtEnd === false) {
+            for (let p = 0; p < paramList.length; p++) {
+                head.push(processCSVvalue(paramList[p]));
+            }
+            params.res.write(head.join(',') + '\r\n');
+        }
+
+        stream.on('data', function(doc) {
+            var values = [];
+            var valuesMap = {};
+            getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd}); // if we have list at end - then we don'thave projection
+
+            for (let p = 0; p < values.length; p++) {
+                values[p] = processCSVvalue(values[p]);
+            }
+            params.res.write(values.join(',') + '\r\n');
+        });
+
+        stream.once('close', function() {
+            if (listAtEnd) {
+                for (var p = 0; p < paramList.length; p++) {
                     head.push(processCSVvalue(paramList[p]));
                 }
                 params.res.write(head.join(',') + '\r\n');
             }
-
-            stream.on('data', function(doc) {
-                var values = [];
-                var valuesMap = {};
-                getValues(values, valuesMap, paramList, doc, listAtEnd); // if we have list at end - then we don'thave projection
-
-                for (let p = 0; p < values.length; p++) {
-                    values[p] = processCSVvalue(values[p]);
-                }
-                params.res.write(values.join(',') + '\r\n');
-            });
-
-            stream.once('close', function() {
-                if (listAtEnd) {
-                    for (var p = 0; p < paramList.length; p++) {
-                        head.push(processCSVvalue(paramList[p]));
-                    }
-                    params.res.write(head.join(',') + '\r\n');
-                }
-                params.res.end();
-            });
+            params.res.end();
+        });
+    }
+    else if (type === 'xlsx' || type === 'xls') {
+        var xc = xlsx();
+        xc.pipe(params.res);
+        var sheet = xc.sheet("Countly export");
+        if (listAtEnd === false) {
+            sheet.write(paramList);
         }
-        else if (type === 'xlsx' || type === 'xls') {
-            var xc = xlsx();
-            xc.pipe(params.res);
-            var sheet = xc.sheet("Countly export");
-            if (listAtEnd === false) {
+        stream.on('data', function(doc) {
+            var values = [];
+            var valuesMap = {};
+            getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
+            sheet.write(values);
+        });
+
+        stream.once('close', function() {
+            if (listAtEnd) {
                 sheet.write(paramList);
             }
-            stream.on('data', function(doc) {
-                var values = [];
-                var valuesMap = {};
-                getValues(values, valuesMap, paramList, doc, listAtEnd);
-                sheet.write(values);
-            });
+            sheet.end();
+            xc.finalize();
+        });
+    }
+    else {
+        params.res.write("[");
+        var first = false;
+        stream.on('data', function(doc) {
+            if (!first) {
+                first = true;
+                params.res.write(doc);
+            }
+            else {
+                params.res.write("," + doc);
+            }
+        });
 
-            stream.once('close', function() {
-                if (listAtEnd) {
-                    sheet.write(paramList);
-                }
-                sheet.end();
-                xc.finalize();
-            });
-        }
-        else {
-            params.res.write("[");
-            var first = false;
-            stream.on('data', function(doc) {
-                if (!first) {
-                    first = true;
-                    params.res.write(doc);
-                }
-                else {
-                    params.res.write("," + doc);
-                }
-            });
-
-            stream.once('close', function() {
-                params.res.write("]");
-                params.res.end();
-            });
-        }
+        stream.once('close', function() {
+            params.res.write("]");
+            params.res.end();
+        });
     }
 };
+
+
+
 
 /**
 * Export data from database
@@ -336,6 +415,12 @@ exports.fromDatabase = function(options) {
     options.db = options.db || common.db;
     options.query = options.query || {};
     options.projection = options.projection || {};
+    options.writeHeaders = true;
+
+    if (options.params && options.params.qstring && options.params.qstring.formatFields) {
+        options.mapper = options.params.qstring.formatFields;
+    }
+
     if (options.limit && options.limit !== "") {
         options.limit = parseInt(options.limit, 10);
         if (options.limit > plugin.getConfig("api").export_limit) {
@@ -360,7 +445,7 @@ exports.fromDatabase = function(options) {
         query: options.query
     });
 
-    var cursor = options.db._native.collection(options.collection).find(options.query, {"projection": options.projection});
+    var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
     if (options.sort) {
         cursor.sort(options.sort);
     }
@@ -373,10 +458,11 @@ exports.fromDatabase = function(options) {
 
     if (options.type === "stream" || options.type === "json") {
         options.output = options.output || function(stream) {
-            exports.stream(options.params, stream, options.filename, "json", options.projection);
+            exports.stream(options.params, stream, options);
         };
         cursor.stream({
             transform: function(doc) {
+                doc = transformValuesInObject(doc, options.mapper);
                 return JSON.stringify(doc);
             }
         });
@@ -384,7 +470,7 @@ exports.fromDatabase = function(options) {
     }
     else if (options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
         options.output = options.output || function(stream) {
-            exports.stream(options.params, stream, options.filename, options.type, options.projection);
+            exports.stream(options.params, stream, options);
         };
         cursor.stream();
         options.output(cursor);
@@ -413,44 +499,89 @@ exports.fromRequest = function(options) {
     if (!options.path.startsWith("/")) {
         options.path = "/" + options.path;
     }
-    var opts = {
-        uri: "http://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + options.path,
-        method: options.method || 'POST',
-        json: options.data || {},
-        strictSSL: false
-    };
     options.filename = options.filename || options.path.replace(/\//g, "_") + "_on_" + moment().format("DD-MMM-YYYY");
 
-    /**
-     *  Make request to get data
-     */
-    function makeRequest() {
-        request(opts, function(error, response, body) {
-            //we got a redirect, we need to follow it
-            if (response && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-                opts.uri = response.headers.location;
-                makeRequest();
-            }
-            else {
-                var data = [];
-                try {
-                    if (options.prop) {
-                        var path = options.prop.split(".");
-                        for (var i = 0; i < path.length; i++) {
-                            body = body[path[i]];
-                        }
-                    }
-                    data = body;
-                }
-                catch (ex) {
-                    data = [];
-                }
-                exports.fromData(data, options);
-            }
-        });
-    }
 
-    makeRequest();
+    //creating request context
+    var params = {
+        //providing data in request object
+        'req': {
+            url: options.path,
+            body: options.data || {},
+            method: "export"
+        },
+        //adding custom processing for API responses
+        'APICallback': function(err, body) {
+            var data = [];
+            try {
+                if (options.prop) {
+                    var path = options.prop.split(".");
+                    for (var i = 0; i < path.length; i++) {
+                        body = body[path[i]];
+                    }
+                }
+                data = body;
+            }
+            catch (ex) {
+                data = [];
+            }
+            //"stream all data"
+            exports.fromData(data, options);
+        }
+    };
+
+    //processing request
+    common.processRequest(params);
+};
+
+
+exports.fromRequestQuery = function(options) {
+    options.path = options.path || "/";
+    if (!options.path.startsWith("/")) {
+        options.path = "/" + options.path;
+    }
+    options.filename = options.filename || options.path.replace(/\//g, "_") + "_on_" + moment().format("DD-MMM-YYYY");
+
+
+    //creating request context
+    var params = {
+        //providing data in request object
+        'req': {
+            url: options.path,
+            body: options.data || {},
+            method: "export"
+        },
+        //adding custom processing for API responses
+        'APICallback': function(err, body) {
+            if (body) {
+                var cursor = common.db.collection(body.collection).aggregate(body.pipeline);
+                options.projection = body.projection;
+                var outputStream = new Transform({
+                    objectMode: true,
+                    transform: (data, _, done) => {
+                        done(null, data);
+                    }
+                });
+                if (options.type === "stream" || options.type === "json") {
+                    cursor.stream({
+                        transform: function(doc) {
+                            doc = transformValuesInObject(doc, options.mapper);
+                            return JSON.stringify(doc);
+                        }
+                    });
+                    exports.stream({res: outputStream}, cursor, options);
+                }
+                else if (options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
+                    cursor.stream();
+                    exports.stream({res: outputStream}, cursor, options);
+                }
+                options.output(outputStream);
+            }
+        }
+    };
+
+    //processing request
+    common.processRequest(params);
 };
 
 /**

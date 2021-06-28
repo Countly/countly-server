@@ -1,9 +1,17 @@
 var plugin = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    moment = require('moment');
+    moment = require('moment'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'times_of_day';
 
 (function() {
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
     plugins.register("/i", function(ob) {
         var params = ob.params;
 
@@ -124,8 +132,7 @@ var plugin = {},
 
 
         if (query) {
-            common.db.collection('events').findOne({ _id: common.db.ObjectID(appId) }, { list: 1 }, function(err, eventData) {
-
+            common.readBatcher.getOne("events", {'_id': common.db.ObjectID(appId)}, {list: 1}, (err, eventData) => {
                 if (err) {
                     console.log("err", err);
                     return true;
@@ -136,10 +143,18 @@ var plugin = {},
                 var limit = plugins.getConfig("api", params.app && params.app.plugins, true).event_limit;
                 var overLimit = eventData.list.count > limit;
 
-                common.db.onOpened(function() {
-                    var bulk = common.db._native.collection(collectionName).initializeUnorderedBulkOp();
 
-
+                if (plugins.getConfig("api", params.app && params.app.plugins, true).batch_processing === true) {
+                    Object.keys(query).forEach(function(key) {
+                        var queryObject = query[key];
+                        var s = queryObject.update.$set.s;
+                        if (s === "[CLY]_session" || !overLimit || (overLimit && eventData.list.indexOf(s) >= 0)) {
+                            common.writeBatcher.add(collectionName, queryObject.criteria._id, queryObject.update);
+                        }
+                    });
+                }
+                else {
+                    var bulk = common.db.collection(collectionName).initializeUnorderedBulkOp();
                     Object.keys(query).forEach(function(key) {
                         var queryObject = query[key];
                         var s = queryObject.update.$set.s;
@@ -153,7 +168,7 @@ var plugin = {},
                     if (bulk.length > 0) {
                         bulk.execute(function() {});
                     }
-                });
+                }
             });
         }
 
@@ -177,15 +192,17 @@ var plugin = {},
 
             var collectionName = "timesofday" + appId;
 
-            fetchTodData(collectionName, criteria, function(err, result) {
-                if (err) {
-                    console.log("Error while fetching times of day data: ", err.message);
-                    common.returnMessage(params, 400, "Something went wrong");
-                    return false;
-                }
+            validateRead(params, FEATURE_NAME, function() {
+                fetchTodData(collectionName, criteria, function(err, result) {
+                    if (err) {
+                        console.log("Error while fetching times of day data: ", err.message);
+                        common.returnMessage(params, 400, "Something went wrong");
+                        return false;
+                    }
 
-                common.returnOutput(params, result);
-                return true;
+                    common.returnOutput(params, result);
+                    return true;
+                });
             });
             return true;
         }

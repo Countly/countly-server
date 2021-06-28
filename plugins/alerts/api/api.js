@@ -5,6 +5,8 @@ var Promise = require("bluebird");
 const JOB = require('../../../api/parts/jobs');
 const utils = require('./parts/utils');
 const _ = require('lodash');
+const { validateCreate, validateRead, validateUpdate } = require('../../../api/utils/rights.js');
+const FEATURE_NAME = 'alerts';
 
 (function() {
     /**
@@ -39,18 +41,20 @@ const _ = require('lodash');
 	 * load job list
 	 */
     function loadJobs() {
-        common.db.collection("alerts").find({})
-            .toArray(function(err, alertsList) {
-                log.d(alertsList, "get alert configs");
-                alertsList && alertsList.forEach(t => {
-                    //period type
-                    if (t.period) {
-                        updateJobForAlert(t);
-                    }
-                });
+        common.readBatcher.getMany("alerts", {}, function(err, alertsList) {
+            log.d(alertsList, "get alert configs");
+            alertsList && alertsList.forEach(t => {
+                //period type
+                if (t.period) {
+                    updateJobForAlert(t);
+                }
             });
+        });
     }
 
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
 
     plugins.register("/master", function() {
         loadJobs();
@@ -78,10 +82,9 @@ const _ = require('lodash');
 
 
     plugins.register("/i/alert/save", function(ob) {
-        let paramsInstance = ob.params;
-        let validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        let params = ob.params;
 
-        validateUserForWriteAPI(function(params) {
+        validateCreate(params, FEATURE_NAME, function() {
             let alertConfig = params.qstring.alert_config;
             try {
                 alertConfig = JSON.parse(alertConfig);
@@ -136,15 +139,14 @@ const _ = require('lodash');
                 log.e('Parse alert failed', alertConfig);
                 common.returnMessage(params, 500, "Failed to create an alert");
             }
-        }, paramsInstance);
+        });
         return true;
     });
 
     plugins.register("/i/alert/delete", function(ob) {
-        let paramsInstance = ob.params;
-        let validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        let params = ob.params;
 
-        validateUserForWriteAPI(function(params) {
+        validateUpdate(params, FEATURE_NAME, function() {
             let alertID = params.qstring.alertID;
             try {
                 common.db.collection("alerts").remove(
@@ -162,14 +164,14 @@ const _ = require('lodash');
                 log.e('delete alert failed', alertID);
                 common.returnMessage(params, 500, "Failed to delete an alert");
             }
-        }, paramsInstance);
+        });
         return true;
     });
 
     plugins.register("/i/alert/status", function(ob) {
-        let paramsInstance = ob.params;
-        let validateUserForWriteAPI = ob.validateUserForWriteAPI;
-        validateUserForWriteAPI(function(params) {
+        let params = ob.params;
+
+        validateUpdate(params, FEATURE_NAME, function() {
             const statusList = JSON.parse(params.qstring.status);
             const batch = [];
             for (const appID in statusList) {
@@ -184,18 +186,18 @@ const _ = require('lodash');
             }
             Promise.all(batch).then(function() {
                 log.d("alert all updated.");
+                common.readBatcher.invalidate("alerts", {}, {}, true);
                 plugins.dispatch("/updateAlert", { method: "alertTrigger" });
                 common.returnOutput(params, true);
             });
-        }, paramsInstance);
+        });
         return true;
     });
 
 
     plugins.register("/o/alert/list", function(ob) {
-        const paramsInstance = ob.params;
-        let validateUserForWriteAPI = ob.validateUserForWriteAPI;
-        validateUserForWriteAPI(function(params) {
+        const params = ob.params;
+        validateRead(params, FEATURE_NAME, function() {
             try {
                 let query = {};
                 let count_query = { _id: 'meta'};
@@ -227,7 +229,7 @@ const _ = require('lodash');
                 log.e('get alert list failed');
                 common.returnMessage(params, 500, "Failed to get alert list");
             }
-        }, paramsInstance);
+        });
         return true;
     });
 

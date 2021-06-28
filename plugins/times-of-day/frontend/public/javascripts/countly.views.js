@@ -1,6 +1,6 @@
-/*global $,countlyView,countlyGlobal,T,timesOfDayPlugin,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
+/*global $,countlyView,countlyAuth,countlyGlobal,T,timesOfDayPlugin,countlyWidgets,jQuery,countlyCommon,app,moment,todview,countlyDashboards */
 window.todview = countlyView.extend({
-
+    featureName: 'times_of_day',
     initialize: function() {
     },
 
@@ -16,8 +16,6 @@ window.todview = countlyView.extend({
                 self.eventsList = timesOfDayPlugin.getEventsList();
             });
         }
-
-
     },
 
     loadSessionEventData: function() {
@@ -215,23 +213,23 @@ window.todview = countlyView.extend({
 
 app.todview = new todview();
 
-app.route('/analytics/times-of-day', 'times-of-day', function() {
-    this.renderWhenReady(this.todview);
-});
+if (countlyAuth.validateRead(app.todview.featureName)) {
+    app.route('/analytics/times-of-day', 'times-of-day', function() {
+        this.renderWhenReady(this.todview);
+    });
+}
+
 
 app.addPageScript("/custom#", function() {
-    addWidgetType();
-    addSettingsSection();
-
     /**
      * Adding widget type
      */
     function addWidgetType() {
         var todWidget = '<div data-widget-type="times-of-day" class="opt dashboard-widget-item">' +
-                            '    <div class="inner">' +
-                            '        <span class="icon timesofday"></span>' + jQuery.i18n.prop("times-of-day.times") +
-                            '    </div>' +
-                            '</div>';
+            '    <div class="inner">' +
+            '        <span class="icon timesofday"></span>' + jQuery.i18n.prop("times-of-day.times") +
+            '    </div>' +
+            '</div>';
 
         $("#widget-drawer .details #widget-types .opts").append(todWidget);
     }
@@ -255,37 +253,27 @@ app.addPageScript("/custom#", function() {
                         '    </div>' +
                         '</div>';
 
-        var barColors = '<div id="tod-widget-section-bar-color" class="settings section" style="margin-bottom: 55px;">' +
-                        '    <div class="label">' + jQuery.i18n.prop("dashboards.bar-color") + '</div>' +
-                        '    <div id="tod-bar-colors" class="colors">' +
-                        '        <div data-color="1" class="color alt1 selected"></div>' +
-                        '        <div data-color="2" class="color alt2"></div>' +
-                        '        <div data-color="3" class="color alt3"></div>' +
-                        '        <div data-color="4" class="color alt4"></div>' +
-                        '    </div>' +
-                        '</div>';
-
         $(setting).insertAfter(".cly-drawer .details .settings:last");
-        $(barColors).insertAfter(".cly-drawer .details .settings:last");
-
     }
+    if (countlyAuth.validateRead(app.todview.featureName)) {
+        addWidgetType();
+        addSettingsSection();
 
-    $("#tod-bar-colors").off("click").on("click", ".color", function() {
-        $("#tod-bar-colors").find(".color").removeClass("selected");
-        $(this).addClass("selected");
-
-        $("#widget-drawer").trigger("cly-widget-section-complete");
-    });
-
-    $("#single-tod-dropdown").on("cly-select-change", function() {
-        $("#widget-drawer").trigger("cly-widget-section-complete");
-    });
+        $("#single-tod-dropdown").on("cly-select-change", function() {
+            $("#widget-drawer").trigger("cly-widget-section-complete");
+        });
+    }
 });
 
 $(document).ready(function() {
-    app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
-    initializeTimesOfDayWidget();
+    if (countlyAuth.validateRead(app.todview.featureName)) {
+        app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
+    }
 });
+
+if (countlyAuth.validateRead(app.todview.featureName)) {
+    initializeTimesOfDayWidget();
+}
 
 /**
  * Initialize times of day widget.
@@ -295,6 +283,22 @@ function initializeTimesOfDayWidget() {
     if (countlyGlobal.plugins.indexOf("dashboards") < 0) {
         return;
     }
+
+    var widgetOptions = {
+        init: initWidgetSections,
+        settings: widgetSettings,
+        placeholder: addPlaceholder,
+        create: createWidgetView,
+        reset: resetWidget,
+        set: setWidget,
+        refresh: refreshWidget
+    };
+
+    if (!app.dashboardsWidgetCallbacks) {
+        app.dashboardsWidgetCallbacks = {};
+    }
+
+    app.dashboardsWidgetCallbacks["times-of-day"] = widgetOptions;
 
     var todWidgetTemplate;
     var periods = [
@@ -320,20 +324,7 @@ function initializeTimesOfDayWidget() {
         T.render('/times-of-day/templates/widget.html', function(src) {
             todWidgetTemplate = src;
         })
-    ).then(function() {
-
-        var widgetOptions = {
-            init: initWidgetSections,
-            settings: widgetSettings,
-            placeholder: addPlaceholder,
-            create: createWidgetView,
-            reset: resetWidget,
-            set: setWidget,
-            refresh: refreshWidget
-        };
-
-        app.addWidgetCallbacks("times-of-day", widgetOptions);
-    });
+    ).then(function() {});
 
     /**
      * Initialize widget section.
@@ -353,11 +344,12 @@ function initializeTimesOfDayWidget() {
         $("#data-types").find(".opt[data-data-type=push]").addClass("disabled");
         $("#data-types").find(".opt[data-data-type=crash]").addClass("disabled");
         $("#widget-section-single-app").show();
-        $("#tod-widget-section-bar-color").show();
+        $("#widget-section-bar-color").show();
         $("#widget-section-single-tod").show();
         if (dataType === "event") {
             $("#widget-section-single-event").show();
         }
+        $("#widget-section-custom-period").hide();
     }
 
     /**
@@ -368,7 +360,7 @@ function initializeTimesOfDayWidget() {
         var $singleAppDrop = $("#single-app-dropdown"),
             $singleEventDrop = $("#single-event-dropdown"),
             dataType = $("#data-types").find(".opt.selected").data("data-type"),
-            $barColors = $("#tod-bar-colors"),
+            $barColors = $("#bar-colors"),
             $singleTodDrop = $("#single-tod-dropdown");
 
         var selectedApp = $singleAppDrop.clySelectGetSelection(),
@@ -441,7 +433,7 @@ function initializeTimesOfDayWidget() {
                 });
                 var esTypeName = widgetData.data_type === "session" ? jQuery.i18n.map['times-of-day.sessions'] : widgetData.events[0].split("***")[1];
                 var widgetTitle = "Times of day: " + esTypeName + " (" + periodName[0].name + ")";
-                placeHolder.find(".title").text(widgetTitle);
+                placeHolder.find(".title .name").text(widgetTitle);
             }
 
             addTooltip(placeHolder);
@@ -513,9 +505,7 @@ function initializeTimesOfDayWidget() {
             },
         ];
 
-        var barColors = ["rgba(111, 163, 239, 1)", "rgba(85, 189, 185, 1)", "rgba(239, 136, 0, 1)", "rgba(174, 131, 210, 1)"];
-
-        var color = barColors[widgetData.bar_color - 1 || 0];
+        var color = countlyCommon.hexToRgba(countlyWidgets.barColors[widgetData.bar_color - 1 || 0]);
         var maxDataValue = Math.max.apply(null, ([].concat.apply([], data))) || 1;
         var defaultColor = "rgba(255, 255, 255, .07)";
         var maxRadius = 30;
@@ -580,9 +570,6 @@ function initializeTimesOfDayWidget() {
 
         $singleEventDrop.clySelectSetSelection("", jQuery.i18n.prop("dashboards.select-event-single"));
         $sinleTopDrop.clySelectSetSelection("", jQuery.i18n.prop("times-of-day.select"));
-
-        $("#tod-bar-colors").find(".color").removeClass("selected");
-        $("#tod-bar-colors").find(".color[data-color=1]").addClass("selected");
     }
 
     /**
@@ -599,7 +586,7 @@ function initializeTimesOfDayWidget() {
         var $singleAppDrop = $("#single-app-dropdown");
         var $singleEventDrop = $("#single-event-dropdown");
         var $dataTypes = $("#data-types");
-        var $barColors = $("#tod-bar-colors");
+        var $barColors = $("#bar-colors");
         var $singleTodDrop = $("#single-tod-dropdown");
 
         $singleAppDrop.clySelectSetSelection(apps[0], countlyDashboards.getAppName(apps[0]));

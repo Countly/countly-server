@@ -19,8 +19,11 @@ window.component('push.view', function(view) {
 	
     view.show = function(message){
         message = message instanceof components.push.Message ? message : new components.push.Message(message);
+        if (message.auto() && message.autoOnEntry() === 'events' && message.autoEvents().filter(function(ev){ return !push.PERS_EVENTS[ev]; }).length) {
+            return Promise.all(message.autoEvents().map(function(key) { return components.push.initEvent(key); })).then(view.show.bind(view, message), view.show.bind(view, message));
+        }
         view.slider = components.slider.show({
-            key: message._id(),
+            key: message._id() + Math.random(),
             title: function(){
                 var els = [
                     t('pu.po.view.title')
@@ -75,7 +78,7 @@ window.component('push.view', function(view) {
             if (fi === -1 && k.indexOf('a') === 0) { fa= i; }
         });
 
-        var els = [ctrl.message.auto() ? t('pu.po.progress.auto') : t('pu.po.progress')];
+        var els = [ctrl.message.auto() || ctrl.message.tx() ? t('pu.po.progress.auto') : t('pu.po.progress')];
         if (ctrl.message.count()) {
             els.push(m('span.count.ion-person', 'Recipients: ' + ctrl.message.count().TOTALLY));
         }
@@ -134,7 +137,7 @@ window.component('push.view', function(view) {
 
         return m('div.comp-push', { class : 'view-message-slider' }, [
             m('h3', els),
-            ctrl.message.auto() ? m.component(components.widget, {
+            ctrl.message.auto() || ctrl.message.tx() ? m.component(components.widget, {
                 content: {
                     view: m('.message-chart-container',  [
                         m('.message-chart', {config : ctrl.chartConfig})
@@ -150,12 +153,14 @@ window.component('push.view', function(view) {
             r.error() ? 
                 m(r.errorFixed().toLowerCase() === 'exited-sent' ? '.comp-push-warn' : '.comp-push-error', [
                     m('svg[width=21][height=18]', m('path[fill="#FFFFFF"][d="M20,18c0.6,0,0.8-0.4,0.5-0.9L11,0.9c-0.3-0.5-0.7-0.5-1,0L0.5,17.1C0.2,17.6,0.4,18,1,18H20zM10,13h2v2h-2V13z M10,8h2v4h-2V8z"]')),
-                    m.trust(t('push.error.' + r.errorFixed().toLowerCase(), r.errorFixed()))
+                    m.trust(t('push.error.' + r.errorFixed().toLowerCase(), r.errorFixed())),
+                    m('a[href="https://support.count.ly/hc/en-us/articles/360037270012-Push-notifications#troubleshooting"][target="_blank"]', t('push.error.learn')),
+                    m('i.ion-information-circled'),
                 ])
                 : '',
-            r.processed() > 0 && (r.isDone() || r.isSending()) ? 
+            (r.processed() > 0 || r.errors() > 0) && (r.isDone() || r.isSending()) ? 
                 m('div', [
-                    m('h4', t(ctrl.message.auto() ? 'pu.dash.totals' : 'pu.po.metrics')),
+                    m('h4', t(ctrl.message.auto() || ctrl.message.tx() ? 'pu.dash.totals' : 'pu.po.metrics')),
                     m('.comp-push-view-table.comp-push-metrics', [
                         r.isSending() ? 
                             m.component(view.metric, {
@@ -183,7 +188,6 @@ window.component('push.view', function(view) {
                                     titleClick: function(ev){
                                         ev.preventDefault();
                                         window.app.navigate('#/users/qfilter/' + JSON.stringify({message: {$in: [ctrl.message._id()]}}), true);
-                                        // window.location.hash = '/' + countlyCommon.ACTIVE_APP_ID + '/users/qfilter/' + JSON.stringify({message: {$in: [ctrl.message._id()]}});
                                     },
                                     titleTitle: t('push.po.table.recipients'),
                                     helpr: t('pu.po.metrics.sent.desc'),
@@ -216,6 +220,18 @@ window.component('push.view', function(view) {
                                 color: '#FE8827',
                                 title: t('pu.po.metrics.actions'),
                                 helpr: t('pu.po.metrics.actions.desc'),
+                                titleClick: function(ev){
+                                    ev.preventDefault();
+                                    window.app.navigate('#/users/request/' + JSON.stringify({
+                                        app_id: countlyCommon.ACTIVE_APP_ID,
+                                        event: "[CLY]_push_action",
+                                        method: "segmentation_users",
+                                        queryObject: JSON.stringify({"sg.i":{"$in":[ctrl.message._id()]}}),
+                                        period: "month",
+                                        bucket: "daily",
+                                        projectionKey: ""
+                                    }), true);
+                                },
                                 descr: [r.actioned() === r.sent() ? 
                                     t('pu.po.metrics.actions.all') 
                                     : t.n('pu.po.users', r.actioned()) + ' ' + t('pu.po.metrics.actions.performed'),
@@ -229,6 +245,46 @@ window.component('push.view', function(view) {
                                     t.n('pu.po.users', r.actioned2()) + ' ' + t('pu.po.metrics.actions2.performed')
                                     : '',
                                 ].join(' ').replace(/\s+$/, ' ')
+                            })
+                            : '',
+                        r.errors() > 0 ? 
+                            m.component(view.metric, {
+                                count: r.errors(),
+                                total: r.total(),
+                                color: '#D53F43',
+                                title: t('pu.po.metrics.failed'),
+                                helpr: t('pu.po.metrics.failed.desc'),
+                                titleClick: function(ev){
+                                    ev.preventDefault();
+                                    var or = [],
+                                        $in = [],
+                                        query = Object.assign({
+                                            message: {$nin: [ctrl.message._id()]}
+                                        }, ctrl.message.userConditions());
+                                    query.push.$in = $in;
+                                    ctrl.message.platforms().forEach(function (p) {
+                                        if (ctrl.message.test()) {
+                                            if (p === 'i') {
+                                                $in.push('tkid');
+                                                $in.push('tkia');
+                                            } else if (p === 'a') {
+                                                $in.push('tkat');
+                                            }
+                                        } else {
+                                            $in.push(p === 'i' ? 'tkip' : 'tkap');
+                                        }
+                                    });
+                                    if (ctrl.message.geos() && ctrl.message.geos().length) {
+                                        query.geo = {$in: ctrl.message.geos().slice()};
+                                    }
+                                    if (ctrl.message.cohorts() && ctrl.message.cohorts().length) {
+                                        query.chr = {$in: ctrl.message.cohorts().slice()};
+                                    }
+                                    window.app.navigate('#/users/qfilter/' + JSON.stringify(query), true);
+                                },
+                                descr: [
+                                    r.errors() === r.total() ? t('pu.po.metrics.failed.all') : t('pu.po.metrics.failed.some', r.errors())
+                                ]
                             })
                             : ''
 
@@ -254,6 +310,26 @@ window.component('push.view', function(view) {
                                     t('push.errorCode.' + k + '.desc', m.trust(t('push.errorCode.' + comps[1] + comps[2] + '.desc', ''))),
                                     t('push.errorCode.' + k + '.desc', m.trust(t('push.errorCode.' + comps[1] + comps[2] + '.desc', ''))) ? m('br') : '',
                                     m('a[target=_blank]', {href: HELP[comps[1]]}, t('push.errorCode.link.' + comps[1])),
+                                ])
+                            ]);
+                        } else if (k === 'aborted') {
+                            return m('.comp-push-view-row', [
+                                m('.col-left', m.trust(t('push.errorCode.' + k))),
+                                m('.col-mid', r.errorCodes()[k]),
+                                m('.col-right', [
+                                    t('push.errorCode.aborted.desc'),
+                                    m('br'),
+                                    t('push.errorCode.aborted.desc.abeg'),
+                                    m.trust('&nbsp;'),
+                                    m('a[href="https://support.count.ly/hc/en-us/articles/360037270012-Push-notifications#troubleshooting"][target="blank"]', t('push.errorCode.aborted.desc.a')),
+                                    m.trust('&nbsp;'),
+                                    t('push.errorCode.aborted.desc.aend'),
+                                    m('br'),
+                                    t('push.errorCode.aborted.desc.follow'),
+                                    m.trust('&nbsp;'),
+                                    m('a[href="https://support.count.ly/hc/en-us/articles/360037270012#resend-failed-notifications"][target="blank"]', t('push.errorCode.aborted.desc.follow.a')),
+                                    m.trust('&nbsp;'),
+                                    t('push.errorCode.aborted.desc.follow.rest'),
                                 ])
                             ]);
                         } else {
@@ -453,12 +529,12 @@ window.component('push.view', function(view) {
                             m('.col-left', t('pu.po.tab3.platforms')),
                             m('.col-right', ctrl.message.platforms().map(function(p){ return t('pu.platform.' + p); }).join(', '))
                         ]),
-                        ctrl.message.auto() || !ctrl.message.geos() || !ctrl.message.geos().length ? ''
+                        ctrl.message.auto() || ctrl.message.tx() || !ctrl.message.geos() || !ctrl.message.geos().length ? ''
                             : m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab1.geos')),
                                 m('.col-right', geoNames || t('pu.po.tab3.unknown'))
                             ]),
-                        ctrl.message.auto() || !ctrl.message.cohorts() || !ctrl.message.cohorts().length ? ''
+                        ctrl.message.auto() || ctrl.message.tx() || !ctrl.message.cohorts() || !ctrl.message.cohorts().length ? ''
                             : m('.comp-push-view-row', [
                                 m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.cohorts().length)),
                                 m('.col-right', oneTimeCohortNames.length ? m.trust(oneTimeCohortNames.join(', ')) : t('pu.po.tab4.cohorts.no'))
@@ -470,32 +546,34 @@ window.component('push.view', function(view) {
                     ]),	
                 ]),
 
-                ctrl.message.auto() ? 
+                ctrl.message.auto() || ctrl.message.tx() ? 
                     m('.form-group', [
                         m('h4', t('pu.po.tab1.title.auto')),
-                        m('.comp-push-view-table', [
-                            ctrl.message.autoOnEntry() === 'events' ?
+                        m('.comp-push-view-table', (ctrl.message.auto() ? [
+                                ctrl.message.autoOnEntry() === 'events' ?
+                                    m('.comp-push-view-row', [
+                                        m('.col-left', t.n('pu.po.tab4.events', ctrl.message.autoEvents().length)),
+                                        m('.col-right', eventNames.length ? m.trust(eventNames.join(', ')) : t('pu.po.tab4.events.no'))
+                                    ]) :
+                                    m('.comp-push-view-row', [
+                                        m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.autoCohorts().length)),
+                                        m('.col-right', cohortNames.length ? m.trust(cohortNames.join(', ')) : t('pu.po.tab4.cohorts.no'))
+                                    ]),
                                 m('.comp-push-view-row', [
-                                    m('.col-left', t.n('pu.po.tab4.events', ctrl.message.autoEvents().length)),
-                                    m('.col-right', eventNames.length ? m.trust(eventNames.join(', ')) : t('pu.po.tab4.events.no'))
-                                ]) :
+                                    m('.col-left', t('pu.po.tab1.trigger-type')),
+                                    m('.col-right', ctrl.message.autoOnEntry() === 'events' ? t('pu.po.tab1.trigger-type.event') : ctrl.message.autoOnEntry() ? t('pu.po.tab1.trigger-type.entry') : t('pu.po.tab1.trigger-type.exit'))
+                                ])
+                            ] : []).concat([
                                 m('.comp-push-view-row', [
-                                    m('.col-left', t.n('pu.po.tab4.cohorts', ctrl.message.autoCohorts().length)),
-                                    m('.col-right', cohortNames.length ? m.trust(cohortNames.join(', ')) : t('pu.po.tab4.cohorts.no'))
+                                    m('.col-left', t('pu.po.tab1.campaign-start-date')),
+                                    m('.col-right', ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab1.scheduling-auto-now'))
                                 ]),
-                            m('.comp-push-view-row', [
-                                m('.col-left', t('pu.po.tab1.trigger-type')),
-                                m('.col-right', ctrl.message.autoOnEntry() === 'events' ? t('pu.po.tab1.trigger-type.event') : ctrl.message.autoOnEntry() ? t('pu.po.tab1.trigger-type.entry') : t('pu.po.tab1.trigger-type.exit'))
-                            ]),
-                            m('.comp-push-view-row', [
-                                m('.col-left', t('pu.po.tab1.campaign-start-date')),
-                                m('.col-right', ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab1.scheduling-auto-now'))
-                            ]),
-                            m('.comp-push-view-row', [
-                                m('.col-left', t('pu.po.tab1.campaign-end-date')),
-                                m('.col-right', ctrl.message.autoEnd() ? moment(ctrl.message.autoEnd()).format('DD.MM.YYYY, HH:mm') : t('pu.never'))
-                            ]),
-                        ]),	
+                                m('.comp-push-view-row', [
+                                    m('.col-left', t('pu.po.tab1.campaign-end-date')),
+                                    m('.col-right', ctrl.message.autoEnd() ? moment(ctrl.message.autoEnd()).format('DD.MM.YYYY, HH:mm') : t('pu.never'))
+                                ]),
+                            ])	
+                        ),
                     ]) 
                     :
                     m('.form-group', [
@@ -599,6 +677,15 @@ window.component('push.view', function(view) {
                             m('.comp-push-view-row', [
                                 m('.col-left', t('pu.po.tab3.extras.data')),
                                 m('.col-right', m.trust(ctrl.message.data()))
+                            ])
+                            : '',
+                        ctrl.message.userProps() ?
+                            m('.comp-push-view-row', [
+                                m('.col-left', t('pu.po.tab2.extras.props')),
+                                m('.col-right', m.trust(ctrl.message.userProps().map(function(k) {
+                                    var op = push.PERS_OPTS.filter(function(o){ return o.value() === k})[0];
+                                    return op && op.title() || undefined;
+                                }).filter(function(x) { return !!x; } ).join(', ')))
                             ])
                             : '',
                         // ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale()['default' + push.C.S + 't'] ? m('.comp-push-view-row', [

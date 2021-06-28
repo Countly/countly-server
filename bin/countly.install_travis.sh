@@ -33,7 +33,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_10.x | bash -
+wget -qO- https://deb.nodesource.com/setup_14.x | bash -
 
 #update g++ to 4.8
 add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -60,10 +60,10 @@ apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 #install sendmail
 #apt-get -y install sendmail
 
-#install grunt & npm modules
+#install npm modules
 node --version
 npm --version
-(  npm install npm@6.4.1 -g; npm --version; npm install -g grunt-cli --unsafe-perm ; sudo npm install --unsafe-perm )
+( sudo npm install --unsafe-perm )
 
 GLIBC_VERSION=$(ldd --version | head -n 1 | rev | cut -d ' ' -f 1 | rev)
 if [[ "$GLIBC_VERSION" != "2.25" ]]; then
@@ -118,7 +118,7 @@ bash "$DIR/scripts/install.nghttp2.sh"
 bash "$DIR/scripts/countly.install.plugins.sh"
 
 #compile scripts for production
-cd "$DIR" && grunt dist-all
+countly task dist-all
 
 # after install call
 countly check after install

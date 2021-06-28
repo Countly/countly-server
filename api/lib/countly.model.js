@@ -375,7 +375,7 @@ countlyModel.create = function(fetchValue) {
     countlyMetric.getBars = function(segment, maxItems, metric) {
         metric = metric || _metrics[0];
         if (segment) {
-            return countlyCommon.extractBarData(_Db, this.getMeta(segment), this.clearObject, fetchValue, maxItems, metric, this.getTotalUsersObj());
+            return countlyCommon.extractBarData(_Db, this.getMeta(segment), this.clearObject, fetchValue, maxItems, metric, this.getTotalUsersObj(), this.fixBarSegmentData ? this.fixBarSegmentData.bind(null, segment) : undefined);
         }
         else {
             var barData = [],
@@ -406,21 +406,13 @@ countlyModel.create = function(fetchValue) {
                     return -obj[metric];
                 });
 
-            if (topUsers.length < maxItems) {
-                maxItems = topUsers.length;
-            }
+            topUsers.forEach(function(r) {
+                sum += r[metric];
+            });
 
-            for (let i = 0; i < maxItems; i++) {
-                sum += topUsers[i][metric];
-            }
-
-            for (let i = 0; i < maxItems; i++) {
-                var percent = Math.floor((topUsers[i][metric] / sum) * 100);
+            for (var i = topUsers.length - 1; i >= 0; i--) {
+                var percent = countlyCommon.round((topUsers[i][metric] / sum) * 100, 1);
                 totalPercent += percent;
-
-                if (i === (maxItems - 1)) {
-                    percent += 100 - totalPercent;
-                }
 
                 barData[i] = {
                     "name": topUsers[i].date,
@@ -428,6 +420,14 @@ countlyModel.create = function(fetchValue) {
                     "percent": percent
                 };
             }
+
+            barData = countlyCommon.fixPercentageDelta(barData, totalPercent);
+
+            if (topUsers.length < maxItems) {
+                maxItems = topUsers.length;
+            }
+
+            barData = barData.slice(0, maxItems);
 
             return _.sortBy(barData, function(obj) {
                 return -obj.value;

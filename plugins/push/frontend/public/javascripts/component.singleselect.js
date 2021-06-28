@@ -13,6 +13,7 @@ window.component('singleselect', function (sselect) {
         this.value = typeof opts.value === 'function' ? opts.value : m.prop(opts.value);
         this.options = m.prop(opts.options.map(window.components.selector.Option));
         this.icon = opts.icon || '';
+        this.filter = m.prop();
 
         this.isOpen = false;
         this.onSelectClick = function (ev) {
@@ -62,6 +63,10 @@ window.component('singleselect', function (sselect) {
                 ]),
                 m('.right combo')
             ]),
+            m('.srch', {onclick: function(ev){ ev.stopPropagation(); }, style: {display: ctrl.isOpen ? 'block' : 'none'}}, m('.inner', [
+                m('input[type=search]', {placeholder: t('push.search'), value: ctrl.filter() || '', oninput: m.withAttr('value', ctrl.filter)}),
+                m('i.fa.fa-search')
+            ])),
             m('.select-items square', {
                 style: {
                     width: '100%',
@@ -86,6 +91,9 @@ window.component('singleselect', function (sselect) {
                 }
             }, m('.items', [
                 ctrl.options()
+                    .filter(function(o){
+                        return !ctrl.filter() || o.value() === undefined || o.title().toLowerCase().indexOf(ctrl.filter().toLowerCase().trim()) !== -1;
+                    })
                     .map(function (o) {
                             return o.value() !== undefined && o.value() !== null && o.value() !== '' ? 
                             m('.item.scrollable', {'data-value': o.value(), onclick: function(e){

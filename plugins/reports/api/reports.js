@@ -13,7 +13,14 @@ var reportsInstance = {},
     localize = require('../../../api/utils/localization.js'),
     common = require('../../../api/utils/common.js'),
     log = require('../../../api/utils/log')('reports:reports'),
-    versionInfo = require('../../../frontend/express/version.info');
+    versionInfo = require('../../../frontend/express/version.info'),
+    countlyConfig = require('../../../frontend/express/config.js');
+
+countlyConfig.passwordSecret || "";
+
+plugins.setConfigs("reports", {
+    secretKey: "Ydqa7Omkd3yhV33M3iWV1oFcOEk898h9",
+});
 
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
 versionInfo.title = versionInfo.title || "Countly";
@@ -44,6 +51,11 @@ var metrics = {
     },
     "events": {},
     "views": {}
+};
+var metricProps = {
+    "analytics": ["metric", "count", "change"],
+    "events": ["event", "count", "change"],
+    "crash": ["crash", "occurrences", "change"],
 };
 (function(reports) {
     let _periodObj = null;
@@ -97,6 +109,22 @@ var metrics = {
                 });
             });
         }
+
+        /**
+         *  Load event group information
+         *  @param {function} cb - callback function
+         */
+        function loadEventGroups(cb) {
+            db.collection('event_groups').find({}, {projection: {name: 1, status: 1}}).toArray(function(err1, event_groups) {
+                var mapping = {};
+                if (event_groups && event_groups.length) {
+                    for (let i = 0; i < event_groups.length; i++) {
+                        mapping[event_groups[i]._id] = event_groups[i];
+                    }
+                }
+                return cb(null, mapping);
+            });
+        }
         /**
          * process to get news from countly offical site
          * @param {func} cb - callback function
@@ -136,7 +164,8 @@ var metrics = {
         if (report) {
             var parallelTasks = [
                 findMember.bind(null),
-                processUniverse.bind(null)
+                processUniverse.bind(null),
+                loadEventGroups.bind(null)
             ];
 
             async.parallel(parallelTasks, function(err, data) {
@@ -180,10 +209,17 @@ var metrics = {
                                             done2(null, {metric: parts[1], data: output});
                                         });
                                     }
+                                    else if (event && event.startsWith('[CLY]_group_')) {
+                                        fetch.getMergedEventGroups(params, event, {db: db}, function(output) {
+                                            var displayName = data[2][parts[1]] && data[2][parts[1]].name || parts[1];
+                                            done2(null, {metric: displayName, data: output});
+                                        });
+                                    }
                                     else {
                                         var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
                                         fetch.getTimeObjForEvents(collectionName, params, {db: db}, function(output) {
-                                            done2(null, {metric: parts[1], data: output});
+                                            var displayName = data[3] && data[3][app_id] && data[3][app_id][parts[1]] && data[3][app_id][parts[1]].name || parts[1];
+                                            done2(null, {metric: displayName, data: output});
                                         });
                                     }
                                 }
@@ -198,13 +234,43 @@ var metrics = {
                                     });
                                 }
                                 else {
-                                    fetch.getTimeObj(metric, params, {db: db}, function(output) {
-                                        fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
-                                            output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
-                                            output.prev_correction = fetch.formatTotalUsersObj(dbTotalUsersObj, null, true);
-                                            done2(null, {metric: metric, data: output});
+                                    // process in reports plugin
+                                    if (["users", "revenue"].indexOf(metric) >= 0) {
+                                        fetch.getTimeObj(metric, params, {db: db}, function(output) {
+                                            fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
+                                                output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
+                                                output.prev_correction = fetch.formatTotalUsersObj(dbTotalUsersObj, null, true);
+                                                done2(null, {metric: metric, data: output});
+                                            });
                                         });
-                                    });
+                                    }
+                                    else {
+                                        // process outside reports plugin
+                                        // set plugin report dispatch max duration to 30s
+                                        const cancelReportCallTimeout = setTimeout(() => {
+                                            done2("cancel report plugin dispatcher:" + metric, null);
+                                        }, 30000);
+                                        plugins.dispatch("/email/report", {
+                                            params: {
+                                                db: db,
+                                                report: report,
+                                                member: member,
+                                                moment: moment,
+                                                app: params.app,
+                                            },
+                                            metric: metric,
+                                            reportAPICallback: (callErr, callData) => {
+                                                clearTimeout(cancelReportCallTimeout);
+                                                if (callErr) {
+                                                    log.e('Error during report plugin dispatch: %j', callErr);
+                                                    done2(callErr, null);
+                                                }
+                                                else {
+                                                    done2(null, {plugin_metric: metric, data: callData});
+                                                }
+                                            },
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -222,21 +288,37 @@ var metrics = {
                                 params2.app_name = app.name;
                                 params2.appTimezone = app.timezone;
                                 params2.app = app;
-                                db.collection('events').findOne({_id: params2.app_id}, function(err_events, events) {
+                                db.collection('events').findOne({_id: params2.app_id}, {projection: {list: 1, map: 1}}, function(err_events, events) {
                                     if (err_events) {
                                         console.log(err_events);
                                     }
                                     events = events || {};
                                     events.list = events.list || [];
+                                    events.map = events.map || {};
+                                    if (report.selectedEvents) {
+                                        events.list = report.selectedEvents.map(function(event) {
+                                            return (event + "").split("***").pop();
+                                        });
+                                    }
+                                    if (!data[3]) {
+                                        data[3] = {};
+                                    }
+                                    if (!data[3][app._id]) {
+                                        data[3][app._id] = events.map;
+                                    }
                                     const metricIterator = metricIteratorCurryFunc(params2);
                                     async.map(metricsToCollections(report.metrics, events.list), metricIterator, function(err1, results) {
                                         if (err1) {
                                             console.log(err1);
                                         }
                                         app.results = {};
+                                        app.plugin_metrics = {};
                                         for (var i = 0; i < results.length; i++) {
                                             if (results[i] && results[i].metric) {
                                                 app.results[results[i].metric] = results[i].data;
+                                            }
+                                            if (results[i] && results[i].plugin_metric) {
+                                                app.plugin_metrics[results[i].plugin_metric] = results[i].data;
                                             }
                                         }
                                         if (!cache[app_id]) {
@@ -278,12 +360,14 @@ var metrics = {
                     };
 
                     if (!plugins.isPluginEnabled(reportType)) {
-                        return callback("No data to report", {report: report});
+                        log.d("Plugin is not enabled, no data to report. Report type: " + reportType, {report: report});
+                        return callback("Plugin is not enabled, no data to report. Report type: " + reportType, {report: report});
                     }
 
                     plugins.dispatch("/email/report", { params: params }, function() {
                         if (!params.report || !params.report.data) {
-                            return callback("No data to report", {report: report});
+                            log.d("There was no data from plugin.");
+                            return callback("No data to report from other plugins", {report: report});
                         }
 
                         return callback(null, report.data);
@@ -459,21 +543,46 @@ var metrics = {
                                     else {
                                         props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
                                         props["reports.your"] = localize.format(props["reports.your"], props["reports." + report.frequency], report.date);
+                                        props["reports.sent-by"] = localize.format(props["reports.sent-by"]);
+                                        props["reports.view-in-browser"] = localize.format(props["reports.view-in-browser"]);
+                                        props["reports.get-help"] = localize.format(props["reports.get-help"]);
+                                        report.unsubscribe_local_string = props["reports.unsubscribe"];
+
+                                        const metricPropsString = {};
+                                        for (let k in metricProps) {
+                                            metricPropsString[k] = metricProps[k].map((item) => {
+                                                return props["reports.metric-" + item];
+                                            });
+                                        }
                                         report.properties = props;
                                         var allowedMetrics = {};
-                                        for (var i in report.metrics) {
-                                            if (metrics[i]) {
-                                                for (var j in metrics[i]) {
+                                        for (var k in report.metrics) {
+                                            if (metrics[k]) {
+                                                for (var j in metrics[k]) {
                                                     allowedMetrics[j] = true;
                                                 }
                                             }
                                         }
-                                        var message = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics});
+                                        const messages = [];
+                                        try {
+                                            for (let i = 0; i < report.emails.length; i++) {
+                                                const msg = reports.genUnsubscribeCode(report, report.emails[i]);
+                                                const unsubscribeLink = host + "/unsubscribe_report?data=" + encodeURIComponent(msg);
+                                                const html = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics, metricProps: metricPropsString, "unsubscribe_link": unsubscribeLink});
+                                                messages.push({html, unsubscribeLink});
+                                            }
+                                        }
+                                        catch (e) {
+                                            log.e(e);
+                                        }
                                         report.subject = versionInfo.title + ': ' + localize.format(
                                             (
                                                 (report.frequency === "weekly") ? report.properties["reports.subject-week"] :
                                                     ((report.frequency === "monthly") ? report.properties["reports.subject-month"] : report.properties["reports.subject-day"])
                                             ), report.total_new);
+                                        report.messages = messages;
+
+                                        const message = ejs.render(template, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, metrics: allowedMetrics, metricProps: metricPropsString, "unsubscribe_link": ""});
                                         if (callback) {
                                             return callback(err2, {"apps": report.apps, "host": host, "report": report, "version": versionInfo, "properties": props, message: message});
                                         }
@@ -491,6 +600,44 @@ var metrics = {
         }
     };
 
+    reports.decryptUnsubscribeCode = function(data) {
+        try {
+            const reportConfig = plugins.getConfig("reports", null, true);
+            const key = reportConfig.secretKey;
+            const decipher = crypto.createDecipheriv('aes-256-ctr', key, Buffer.from(data.iv, 'hex'));
+            const decrpyted = Buffer.concat([decipher.update(Buffer.from(data.content, 'hex')), decipher.final()]);
+            const result = JSON.parse(decrpyted.toString());
+            return result;
+        }
+        catch (e) {
+            log.e("decrypt unsubscribe code err", e);
+        }
+    };
+
+    reports.genUnsubscribeCode = function(report, email) {
+        try {
+            const reportConfig = plugins.getConfig("reports", null, true);
+
+            const iv = crypto.randomBytes(16);
+            const key = reportConfig.secretKey;
+            const cipher = crypto.createCipheriv('aes-256-ctr', key, iv);
+            const data = {
+                "reportID": report._id,
+                "email": email,
+            };
+
+            const encrypted = Buffer.concat([cipher.update(JSON.stringify(data)), cipher.final()]);
+            const result = {
+                iv: iv.toString('hex'),
+                content: encrypted.toString('hex')
+            };
+            return JSON.stringify(result);
+        }
+        catch (e) {
+            console.log(e, "[report subscription encode]");
+        }
+    };
+
     reports.send = function(report, message, callback) {
         if (report.emails) {
             for (var i = 0; i < report.emails.length; i++) {
@@ -498,8 +645,19 @@ var metrics = {
                     to: report.emails[i],
                     from: versionInfo.title,
                     subject: report.subject,
-                    html: message
+                    // if report contains customize message for each email address, use reports.messages[i]
+                    html: report.messages && report.messages[i] && report.messages[i].html || message,
                 };
+
+                if (report.messages && report.messages[i]) {
+                    msg.list = {
+                        unsubscribe: {
+                            url: report.messages[i].unsubscribeLink,
+                            comment: report.unsubscribe_local_string || 'Unsubscribe'
+                        }
+                    };
+                }
+
                 if (mail.sendPoolMail) {
                     mail.sendPoolMail(msg);
                 }
@@ -536,10 +694,13 @@ var metrics = {
                 }
                 else if (i === "events") {
                     for (let j = 0; j < events.length; j++) {
-                        if (events[j].indexOf("[CLY]_") === -1) {
+                        if (events[j].indexOf("[CLY]_") === -1 || events[j].startsWith('[CLY]_group_')) {
                             collections["events." + events[j]] = true;
                         }
                     }
+                }
+                else {
+                    collections[i] = true;
                 }
             }
         }
@@ -823,8 +984,10 @@ var metrics = {
             for (let i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
                 tmp_x = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.currentPeriodArr[i]);
                 tmp_x = clearCrashObject(tmp_x);
-                currentUnique += tmp_x.cru;
-                currentTotal += tmp_x.cr;
+                if ((tmp_x.cruf !== undefined) && (tmp_x.crunf !== undefined)) {
+                    currentUnique += tmp_x.cruf + tmp_x.crunf;
+                }
+                currentTotal += tmp_x.crf + tmp_x.crnf;
                 currentNonfatal += tmp_x.crnf;
                 currentFatal += tmp_x.crf;
                 currentResolved += tmp_x.crru;
@@ -833,8 +996,10 @@ var metrics = {
             for (let i = 0; i < (_periodObj.previousPeriodArr.length); i++) {
                 tmp_y = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousPeriodArr[i]);
                 tmp_y = clearCrashObject(tmp_y);
-                previousUnique += tmp_y.cru;
-                previousTotal += tmp_y.cr;
+                if ((tmp_y.cruf !== undefined) && (tmp_y.crunf !== undefined)) {
+                    previousUnique += tmp_y.cruf + tmp_y.crunf;
+                }
+                previousTotal += tmp_y.crf + tmp_y.crnf;
                 previousNonfatal += tmp_y.crnf;
                 previousFatal += tmp_y.crf;
                 previousResolved += tmp_y.crru;
@@ -846,12 +1011,12 @@ var metrics = {
             tmp_x = clearCrashObject(tmp_x);
             tmp_y = clearCrashObject(tmp_y);
 
-            currentTotal = tmp_x.cr;
-            previousTotal = tmp_y.cr;
+            currentTotal = tmp_x.crf + tmp_x.crnf;
+            previousTotal = tmp_y.crf + tmp_y.crnf;
             currentNonfatal = tmp_x.crnf;
             previousNonfatal = tmp_y.crnf;
-            currentUnique = tmp_x.cru;
-            previousUnique = tmp_y.cru;
+            currentUnique = tmp_x.cruf + tmp_x.crunf;
+            previousUnique = tmp_y.cruf + tmp_y.crunf;
             currentFatal = tmp_x.crf;
             previousFatal = tmp_y.crf;
             currentResolved = tmp_x.crru;

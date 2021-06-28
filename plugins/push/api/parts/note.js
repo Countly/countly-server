@@ -80,6 +80,7 @@ class Note {
         this.delayWhileIdle = data.delayWhileIdle; // delay_while_idle for Android
         this.url = data.url; // url to open
         this.data = typeof data.data === 'string' ? JSON.parse(data.data) : data.data; // Custom data
+        this.userProps = data.userProps; // Custom data
         this.sound = data.sound; // Sound
         this.badge = data.badge; // Badge
         this.buttons = data.buttons; // Number of buttons
@@ -100,6 +101,7 @@ class Note {
         this.autoCapMessages = data.autoCapMessages; // Automated message: limit number of messages per user
         this.autoCapSleep = data.autoCapSleep; // Automated message: how much ms to wait before sending a message
         this.actualDates = data.actualDates; // Automated message: whether to use actual event dates instead of server arrival whenever possible
+        this.autoCancelTrigger = data.autoCancelTrigger; // Automated message: cancel the message when trigger condition is no longer valid
 
         this.result = {
             status: data.result && data.result.status || Status.NotCreated,
@@ -114,7 +116,7 @@ class Note {
             nextbatch: data.result && data.result.nextbatch || null,
         };
 
-        this.expiryDate = data.expiryDate ? parseDate(data.expiryDate) : data.date ? new Date(data.date.getTime() + DEFAULT_EXPIRY) : new Date(Date.now() + DEFAULT_EXPIRY); // one week by default
+        this.expiration = data.expiration || DEFAULT_EXPIRY; // notification expiration in ms relative to sending date, 1 week by default
         this.created = parseDate(data.created) || new Date();
         this.build = data.build;
     }
@@ -156,13 +158,14 @@ class Note {
             delayWhileIdle: this.delayWhileIdle,
             url: this.url,
             data: this.data ? JSON.stringify(this.data) : undefined,
+            userProps: this.userProps,
             sound: this.sound,
             badge: this.badge,
             buttons: this.buttons,
             media: this.media,
             mediaMime: this.mediaMime,
             result: this.result,
-            expiryDate: this.expiryDate,
+            expiration: this.expiration,
             date: this.date,
             tz: this.tz,
             tx: this.tx,
@@ -176,6 +179,7 @@ class Note {
             autoCapMessages: this.autoCapMessages,
             autoCapSleep: this.autoCapSleep,
             actualDates: this.actualDates,
+            autoCancelTrigger: this.autoCancelTrigger,
             created: this.created,
             test: this.test,
             build: this.build,
@@ -220,7 +224,7 @@ class Note {
                 diff[k] = note[k];
             }
         });
-        ['geos', 'cohorts', 'collapseKey', 'contentAvailable', 'delayWhileIdle', 'url', 'sound', 'badge', 'buttons', 'media', 'mediaMime', 'date', 'tz'].forEach(k => {
+        ['geos', 'cohorts', 'collapseKey', 'contentAvailable', 'delayWhileIdle', 'url', 'sound', 'badge', 'buttons', 'media', 'mediaMime', 'date', 'tz', 'expiration'].forEach(k => {
             if (note[k] !== null && note[k] !== undefined && this[k] !== note[k]) {
                 diff[k] = note[k];
             }
@@ -404,7 +408,7 @@ class Note {
             k = parseInt(k);
             ret = ret.substr(0, k) + (p.c && v ? v.substr(0, 1).toUpperCase() + v.substr(1) : (v || p.f)) + ret.substr(k);
         });
-        return ret;
+        return ret.trim();
     }
 
     /**
@@ -451,6 +455,7 @@ class Note {
             buttons = o.buttons || this.buttons || 0,
             mpl = o.messagePerLocale || this.messagePerLocale || null,
             data = o.data || this.data || null,
+            userProps = o.userProps || this.userProps || null,
             lang = p.la || 'default',
             alert = null,
             title = null,
@@ -464,9 +469,9 @@ class Note {
             contentAvailable = isset(o.contentAvailable) ? o.contentAvailable : isset(this.contentAvailable) ? this.contentAvailable : null,
             delayWhileIdle = isset(o.delayWhileIdle) ? o.delayWhileIdle : isset(this.delayWhileIdle) ? this.delayWhileIdle : null,
             collapseKey = o.collapseKey || this.collapseKey || null,
-            expiryDate = o.expiryDate || this.expiryDate || null,
+            expiration = o.expiration || this.expiration || null,
             buttonsJSON = buttons > 0 ? new Array(buttons).fill(undefined).map((_, i) => {
-                return {t: mpl[`default${S}${i}${S}t`], l: mpl[`default${S}${i}${S}l`]};
+                return {t: (mpl[`default${S}${i}${S}t`] || '').trim(), l: (mpl[`default${S}${i}${S}l`] || '').trim()};
             }) : null,
             compiled;
 
@@ -520,6 +525,17 @@ class Note {
                 }
             }
 
+            if (userProps) {
+                userProps.forEach(k => {
+                    if (!compiled.u) {
+                        compiled.u = {};
+                    }
+                    if (k in p) {
+                        compiled.u[k.replace(S, '.')] = p[k];
+                    }
+                });
+            }
+
             if (Object.keys(compiled.aps).length === 0) {
                 delete compiled.aps;
             }
@@ -550,7 +566,7 @@ class Note {
         else if (platform === Platform.HUAWEI) {
             let android = {
                     bi_tag: this.id + '.' + Date.now(),
-                    ttl: '' + Math.max(600000, Math.round((expiryDate.getTime() - Date.now()) / 1000))
+                    ttl: '' + ((expiration || DEFAULT_EXPIRY) / 1000)
                 },
                 dt = {};
 
@@ -580,6 +596,16 @@ class Note {
             if (data) {
                 Object.assign(dt, data);
             }
+            if (userProps) {
+                userProps.forEach(k => {
+                    if (!dt.u) {
+                        dt.u = {};
+                    }
+                    if (k in p) {
+                        dt.u[k.replace(S, '.')] = p[k];
+                    }
+                });
+            }
             dt['c.i'] = this._id.toString();
 
             if (url) {
@@ -606,7 +632,7 @@ class Note {
                 compiled.collapse_key = collapseKey;
             }
 
-            compiled.time_to_live = Math.max(600000, Math.round((expiryDate.getTime() - Date.now()) / 1000));
+            compiled.time_to_live = (expiration || DEFAULT_EXPIRY) / 1000;
             if (delayWhileIdle !== null) {
                 compiled.delay_while_idle = delayWhileIdle;
             }
@@ -634,6 +660,20 @@ class Note {
                 var flattened = flattenObject(data);
                 for (let k in flattened) {
                     compiled.data[k] = flattened[k];
+                }
+            }
+            if (userProps) {
+                let tmp = {};
+                userProps.forEach(k => {
+                    if (k in p) {
+                        tmp['u.' + k.replace(S, '.')] = p[k];
+                    }
+                });
+                if (Object.keys(tmp).length) {
+                    tmp = flattenObject(tmp);
+                    for (let k in tmp) {
+                        compiled.data[k] = tmp[k];
+                    }
                 }
             }
             compiled.data['c.i'] = this._id.toString();
@@ -665,9 +705,14 @@ class Note {
         let ret = {};
         Object.values(this.messagePerLocale || {}).filter(v => typeof v === 'object').forEach(v => {
             Object.values(v).forEach(z => {
-                ret[z.k] = 1;
+                ret[z.k.replace(S, '.')] = 1;
             });
         });
+        if (this.userProps && this.userProps.length) {
+            this.userProps.forEach(p => {
+                ret[p.replace(S, '.')] = 1;
+            });
+        }
         this._compilationDataFields = JSON.parse(JSON.stringify(ret));
 
         return ret;
@@ -683,11 +728,12 @@ class Note {
         };
 
         Object.keys(this.compilationDataFields()).forEach(k => {
+
             if (k.indexOf('.') === -1 && typeof user[k] !== 'undefined') {
                 ret[k] = user[k];
             }
             else if (k.indexOf('custom.') !== -1 && user.custom && typeof user.custom[k.substr(7)] !== 'undefined') {
-                ret[k] = user.custom[k.substr(7)];
+                ret[k.replace('.', S)] = user.custom[k.substr(7)];
             }
         });
         return ret;

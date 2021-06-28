@@ -55,16 +55,16 @@
         <div id="login-logo" style="margin-bottom:25px;"></div>
         <form id="account-form" method="POST" onsubmit="return validateForm()">
             <div>
-                <input required autocapitalize="off" autocomplete="off" type="text" name="full_name" id="full_name" placeholder="Full Name" data-localize="placeholder.full-name"<% if (params && params.full_name){ %> value="<%- params.full_name %>" <% } %>/>
+                <input required autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="text" name="full_name" id="full_name" placeholder="Full Name" data-localize="placeholder.full-name"<% if (params && params.full_name){ %> value="<%- params.full_name %>" <% } %>/>
             </div>
             <div>
-                <input required autocapitalize="off" autocomplete="off" type="email" name="email" id="email" placeholder="Email" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
+                <input required autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" type="email" name="email" id="email" placeholder="Email" data-localize="placeholder.email"<% if (params && params.email){ %> value="<%- params.email %>" <% } %>/>
             </div>
             <div>
-                <input required type="text" autocapitalize="off" autocomplete="off" name="username" id="username" placeholder="Username" data-localize="placeholder.username"<% if (params && params.username){ %> value="<%- params.username %>" <% } %>/>
+                <input required type="text" autocapitalize="off" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" name="username" id="username" placeholder="Username" data-localize="placeholder.username"<% if (params && params.username){ %> value="<%- params.username %>" <% } %>/>
             </div>
             <div>
-                <input required name="password" id="password" type="password" autocomplete="off" placeholder="Password" data-localize="placeholder.password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
+                <input required name="password" id="password" type="password" autocomplete="<% if(security.autocomplete) {%>on<%} else { %>off<%}%>" placeholder="Password" data-localize="placeholder.password"<% if (params && params.password){ %> value="<%- params.password %>" <% } %>/>
                 <div id="password-requirements">
                     <ul>
                         <li id="hint-password_min"  data-localize="management-users.password.length"></li>

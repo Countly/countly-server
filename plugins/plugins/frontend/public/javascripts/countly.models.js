@@ -1,4 +1,4 @@
-/*global countlyCommon,jQuery */
+/*global countlyCommon,jQuery,countlyGlobal */
 (function(countlyPlugins, $) {
 
     //Private Properties
@@ -6,6 +6,7 @@
     var _configsData = {};
     var _userConfigsData = {};
     var _themeList = [];
+    var _graph = {};
 
     //Public Methods
     countlyPlugins.initialize = function() {
@@ -13,11 +14,85 @@
             type: "GET",
             url: countlyCommon.API_URL + "/o/plugins",
             data: {
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 _pluginsData = json;
+                _graph = {};
+                var dependentsMap = _pluginsData.reduce(function(acc, val) {
+                    Object.keys(val.cly_dependencies).forEach(function(dep) {
+                        if (!Object.prototype.hasOwnProperty.call(acc, dep)) {
+                            acc[dep] = {};
+                        }
+                        acc[dep][val.code] = 1;
+                    });
+                    return acc;
+                }, {});
+                _pluginsData.forEach(function(plugin) {
+                    if (Object.prototype.hasOwnProperty.call(dependentsMap, plugin.code)) {
+                        plugin.dependents = dependentsMap[plugin.code];
+                    }
+                    else {
+                        plugin.dependents = {};
+                    }
+                    _graph[plugin.code] = {title: plugin.title, parents: plugin.cly_dependencies, children: plugin.dependents};
+                });
             }
         });
+    };
+
+    countlyPlugins.getTitle = function(code) {
+        if (!Object.prototype.hasOwnProperty.call(_graph, code)) {
+            return "";
+        }
+
+        return _graph[code].title;
+    };
+
+    countlyPlugins.getRelativePlugins = function(code, direction) {
+
+        if (!Object.prototype.hasOwnProperty.call(_graph, code)) {
+            return [];
+        }
+
+        direction = direction || "up";
+
+        if (Object.prototype.hasOwnProperty.call(_graph[code], direction)) {
+            return _graph[code][direction];
+        }
+
+        var queue = [code],
+            visited = {},
+            relativeType = "parents";
+        if (direction !== "up") {
+            relativeType = "children";
+        }
+        while (queue.length > 0) {
+            var current = queue.pop();
+            if (Object.prototype.hasOwnProperty.call(visited, current)) {
+                continue;
+            }
+
+            if (!_graph[current]) {
+                visited[current] = 1;
+                continue;
+            }
+
+            for (var item in _graph[current][relativeType]) {
+                queue.push(item);
+            }
+            visited[current] = 1;
+        }
+        var relatives = [];
+        for (var itemCode in visited) {
+            if (itemCode !== code) {
+                relatives.push(itemCode);
+            }
+        }
+
+        _graph[code][direction] = relatives;
+
+        return relatives;
     };
 
     countlyPlugins.toggle = function(plugins, callback) {
@@ -25,7 +100,8 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/plugins",
             data: {
-                plugin: JSON.stringify(plugins)
+                plugin: JSON.stringify(plugins),
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 if (callback) {
@@ -59,7 +135,9 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/themes",
-                data: {},
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID
+                },
                 success: function(json) {
                     _themeList = json;
                 }
@@ -67,7 +145,9 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/configs",
-                data: {},
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID
+                },
                 success: function(json) {
                     _configsData = json;
                 }
@@ -82,7 +162,8 @@
             type: "GET",
             url: countlyCommon.API_URL + "/i/configs",
             data: {
-                configs: JSON.stringify(configs)
+                configs: JSON.stringify(configs),
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 _configsData = json;
@@ -103,7 +184,9 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/themes",
-                data: {},
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID
+                },
                 success: function(json) {
                     _themeList = json;
                 }
@@ -111,7 +194,9 @@
             $.ajax({
                 type: "GET",
                 url: countlyCommon.API_URL + "/o/userconfigs",
-                data: {},
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID
+                },
                 success: function(json) {
                     _userConfigsData = json;
                 }
@@ -121,12 +206,26 @@
         });
     };
 
+    countlyPlugins.initializeActiveAppConfigs = function() {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/apps/plugins",
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+            },
+            success: function(appPluginsConfig) {
+                countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins = appPluginsConfig.plugins;
+            }
+        });
+    };
+
     countlyPlugins.updateUserConfigs = function(configs, callback) {
         $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/userconfigs",
             data: {
-                configs: JSON.stringify(configs)
+                configs: JSON.stringify(configs),
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 _userConfigsData = json;
@@ -164,6 +263,7 @@
             url: countlyCommon.API_URL + "/i/users/deleteOwnAccount",
             data: {
                 password: configs.password,
+                app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
                 if (callback) {

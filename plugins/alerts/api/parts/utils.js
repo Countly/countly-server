@@ -1,6 +1,7 @@
 const mail = require("../../../../api/parts/mgmt/mail");
 const request = require('request');
-const moment = require('moment');
+const moment = require('moment-timezone');
+
 const common = require('../../../../api/utils/common.js');
 const ejs = require('ejs');
 const path = require('path');
@@ -9,7 +10,7 @@ var Promise = require("bluebird");
 const _ = require("lodash");
 const log = require('../../../../api/utils/log.js')('alert:utils');
 
-const utils = {};
+const utils = {_apps: {}};
 utils.sendEmail = function(to, subject, message, callback) {
     log.d('will send Alert email:', to, subject, message);
     return mail.sendMessage(to, subject, message, callback);
@@ -24,10 +25,10 @@ utils.sendRequest = function(url, callback) {
     });
 };
 
-utils.getDatesValue = function(alertConfig, data, keyPath) {
+utils.getDatesValue = function(alertConfig, data, keyPath, appTimezone) {
     const keyName = keyPath.split('.')[0];
     const subKeyName = keyPath.split('.')[1];
-    const today = new moment();
+    const today = appTimezone ? new moment.tz(appTimezone) : new moment();
     const tYear = today.year();
     const tMonth = today.month() + 1;
     const tDate = today.date();
@@ -37,10 +38,11 @@ utils.getDatesValue = function(alertConfig, data, keyPath) {
     // if (alertConfig.comparePeriod && alertConfig.comparePeriod === 'same_day_last_week') {
     // 	lastDayGap = 7;
     // }
-    const lastDay = moment().subtract(lastDayGap, 'days');
+    const lastDay = today.subtract(lastDayGap, 'days');
     const lYear = lastDay.year();
     const lMonth = lastDay.month() + 1;
     const lDate = lastDay.date();
+    log.d("[alert utils.getDatesValue]:", data, alertConfig, tYear, tMonth, tDate, lYear, lMonth, lDate);
     let lastDateValue = data[lYear] && data[lYear][lMonth] && data[lYear][lMonth][lDate] && data[lYear][lMonth][lDate][keyName] || 0;
 
     if (subKeyName) {
@@ -52,7 +54,8 @@ utils.getDatesValue = function(alertConfig, data, keyPath) {
 
 utils.compareValues = function(alertConfig, data, keyName, appIndex) {
     const currentApp = alertConfig.selectedApps[appIndex];
-    const { todayValue, lastDateValue } = keyName ? this.getDatesValue(alertConfig, data, keyName) : data;
+    const currentAppObj = utils._apps[currentApp] || {};
+    const { todayValue, lastDateValue } = keyName ? this.getDatesValue(alertConfig, data, keyName, currentAppObj.timezone) : data;
 
     log.d('#######app:' + currentApp + ' today:', todayValue, ' lastDateValue:', lastDateValue, alertConfig);
     const compareValue = parseFloat(alertConfig.compareValue);
@@ -135,6 +138,9 @@ utils.getHost = function() {
 
 utils.getAppInfo = function(appID) {
     return new Promise(function(resolve, reject) {
+        if (appID === "all-apps") {
+            return resolve({ _id: "all-apps", name: "All apps"});
+        }
         common.db.collection('apps').findOne({ _id: common.db.ObjectID(appID)}, function(err, app) {
             if (err) {
                 return reject(err);
@@ -174,10 +180,11 @@ utils.checkAppLocalTimeHour = function(appId, targetHour) {
             if (!(app && app.timezone)) {
                 return false;
             }
+            utils._apps[app._id + ''] = app;
             const appTime = new moment().tz(app.timezone);
             const hour = appTime.hours();
             const result = hour === targetHour;
-            log.d("Alert get App Time zone:", app, appTime, app.timezone);
+            log.d("Alert get App Time zone:", app, appTime, hour, app.timezone);
             log.d("Alert get App Time result:", result);
             return resolve(result);
         }).catch((err)=> {

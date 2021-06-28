@@ -8,7 +8,8 @@
     jQuery,
     $,
     app,
-    T
+    T,
+    countlyAuth
  */
 
 
@@ -21,7 +22,7 @@ var alertDefine = {
             { value: 'Average session duration', name: 'Average session duration' },
             { value: 'Bounce rate', name: 'Bounce rate (%)' },
             { value: 'Number of page views', name: 'Number of page views' },
-            { value: 'Purchases', name: 'Purchases' }
+            { value: 'Purchases', name: 'Purchases' },
         ],
         condition: [
             { value: 'increased by at least', name: 'increased by at least' },
@@ -46,7 +47,28 @@ var alertDefine = {
             { value: 'increased by at least', name: 'increased by at least' },
             { value: 'decreased by at least', name: 'decreased by at least' },
         ]
-    }
+    },
+    rating: {
+        target: [
+            { value: 'Number of ratings', name: 'Number of ratings' },
+        ],
+        condition: [
+            { value: 'increased by at least', name: 'increased by at least' },
+            { value: 'decreased by at least', name: 'decreased by at least' },
+        ]
+    },
+    dataPoint: {
+        target: [
+            { value: 'Number of daily DP', name: 'Daily data points' },
+            { value: 'Hourly data points', name: 'Hourly data points' },
+            { value: 'Monthly data points', name: 'Monthly data points' }
+        ],
+        condition: [
+            { value: 'increased by at least', name: 'increased by at least' },
+            { value: 'decreased by at least', name: 'decreased by at least' },
+        ]
+    },
+
 };
 
 // dynamic to get value for different settings properties.
@@ -66,9 +88,11 @@ var dict = {
 
 
 window.AlertsView = countlyView.extend({
+    featureName: 'alerts',
     initialize: function() {
     },
     statusChanged: {},
+    lastAlertAppId: '',
     beforeRender: function() {
         var self = this;
         return $.when(
@@ -126,12 +150,15 @@ window.AlertsView = countlyView.extend({
             var appNameList = [];
             if (alertsList[i].selectedApps) {
                 appNameList = _.map(alertsList[i].selectedApps, function(appID) {
+                    if (appID === "all-apps") {
+                        return "All apps";
+                    }
                     return countlyGlobal.apps[appID] && countlyGlobal.apps[appID].name;
                 });
             }
-
             pluginsData.push({
                 id: alertsList[i]._id,
+                app_id: alertsList[i].selectedApps[0],
                 appNameList: appNameList.join(', '),
                 alertName: alertsList[i].alertName || '',
                 type: alertsList[i].alertDataSubType || '',
@@ -152,13 +179,13 @@ window.AlertsView = countlyView.extend({
                 {
                     "mData": function(row, type) {
                         if (type === "display") {
-                            var disabled = (row.prepackaged) ? 'disabled' : '';
+                            var disabled = (row.prepackaged) || (!countlyAuth.validateUpdate(self.featureName)) ? 'disabled' : '';
                             var input = '<div class="on-off-switch ' + disabled + '">';
                             if (row.enabled) {
-                                input += '<input type="checkbox" class="on-off-switch-checkbox alert-switcher" id="plugin-' + row.id + '" checked ' + disabled + '>';
+                                input += '<input type="checkbox" class="on-off-switch-checkbox alert-switcher" app-id="' + row.app_id + '" id="plugin-' + row.id + '" checked ' + disabled + '>';
                             }
                             else {
-                                input += '<input type="checkbox" class="on-off-switch-checkbox alert-switcher" id="plugin-' + row.id + '" ' + disabled + '>';
+                                input += '<input type="checkbox" class="on-off-switch-checkbox alert-switcher" app-id="' + row.app_id + '" id="plugin-' + row.id + '" ' + disabled + '>';
                             }
                             input += '<label class="on-off-switch-label" for="plugin-' + row.id + '"></label>';
                             input += '<span class="text">' + 'Enable' + '</span>';
@@ -178,7 +205,6 @@ window.AlertsView = countlyView.extend({
                     "sType": "string",
                     "sTitle": jQuery.i18n.map["alert.Application"],
                     "bSortable": false,
-
                 },
                 {
                     "mData": 'condtionText',
@@ -196,17 +222,25 @@ window.AlertsView = countlyView.extend({
                 "bSortable": false
             });
         }
-        dataTableDefine.aoColumns.push({
-            "mData": function(row) {
-                return "<div class='options-item'>" +
-					"<div class='edit'></div>" +
-					"<div class='edit-menu alerts-menu'>" +
-					"<div class='edit-alert item'" + " id='" + row.id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["alert.Edit"] + "</div>" +
-					"<div class='delete-alert item'" + " id='" + row.id + "'" + " data-name='" + row.alertName + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["alert.Delete"] + "</div></div>" +
-					"</div>";
-            },
-            "bSortable": false,
-        });
+        if (countlyAuth.validateUpdate(self.featureName) || countlyAuth.validateDelete(self.featureName)) {
+            dataTableDefine.aoColumns.push({
+                "mData": function(row) {
+                    var menu = "<div class='options-item'>";
+                    menu += "<div class='edit'></div>";
+                    menu += "<div class='edit-menu alerts-menu'>";
+                    if (countlyAuth.validateUpdate(self.featureName)) {
+                        menu += "<div class='edit-alert item'" + " app-id='" + row.app_id + "' id='" + row.id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["alert.Edit"] + "</div>";
+                    }
+                    if (countlyAuth.validateDelete(self.featureName)) {
+                        menu += "<div class='delete-alert item'" + " app-id='" + row.app_id + "' id='" + row.id + "'" + " data-name='" + row.alertName + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["alert.Delete"] + "</div></div>";
+                    }
+                    menu += "</div>";
+
+                    return menu;
+                },
+                "bSortable": false,
+            });
+        }
 
         this.dtable = $('#alerts-table').dataTable($.extend({}, $.fn.dataTable.defaults, dataTableDefine));
         this.dtable.stickyTableHeaders();
@@ -214,8 +248,10 @@ window.AlertsView = countlyView.extend({
 
         $(".alert-switcher").off("click").on("click", function() {
             var pluginId = this.id.toString().replace(/^plugin-/, '');
+            var appId = $(this).attr('app-id');
             var newStatus = $(this).is(":checked");
             var list = alertsPlugin.getAlertsList();
+            self.lastAlertAppId = appId;
             var alertRecord = _.filter(list, function(item) {
                 return item._id === pluginId;
             });
@@ -240,7 +276,7 @@ window.AlertsView = countlyView.extend({
             return $(".data-saver-bar").addClass("data-saver-bar-hide");
         });
         $(".data-saver-button").off("click").on("click", function() {
-            alertsPlugin.updateAlertStatus(self.statusChanged, function() {
+            alertsPlugin.updateAlertStatus(self.statusChanged, self.lastAlertAppId, function() {
                 alertsPlugin.requestAlertsList(function() {
                     self.renderTable();
                 });
@@ -260,10 +296,11 @@ window.AlertsView = countlyView.extend({
 
         $(".delete-alert").off("click").on("click", function(e) {
             var alertID = e.target.id;
+            var appId = $('#' + alertID).attr('app-id');
             var name = $(e.target).attr("data-name");
             return CountlyHelpers.confirm(jQuery.i18n.prop("alert.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
                 if (result) {
-                    alertsPlugin.deleteAlert(alertID, function() {
+                    alertsPlugin.deleteAlert(alertID, appId, function() {
                         alertsPlugin.requestAlertsList(function() {
                             self.renderTable();
                         });
@@ -274,6 +311,7 @@ window.AlertsView = countlyView.extend({
 
         $(".edit-alert").off("click").on("click", function(e) {
             var alertID = e.target.id;
+            self.lastAlertAppId = $('#' + alertID).attr('app-id');
             var formData = alertsPlugin.getAlert(alertID);
             self.widgetDrawer.loadData(formData);
             $(self.widgetDrawer.drawer).find('.title span').first().html(jQuery.i18n.map["alert.Edit_Your_Alert"]);
@@ -283,8 +321,28 @@ window.AlertsView = countlyView.extend({
         });
 
     },
-    renderCommon: function() {
+    renderCommon: function(refresh) {
+        var self = this;
         $(this.el).html(this.template({"email-placeholder": jQuery.i18n.map["alert.email-place-holder"]}));
+        if (!refresh) {
+            var views = ["starView", "crashesView"];
+            views.forEach(function(view) {
+                if (!app[view]) {
+                    CountlyHelpers.notify({
+                        clearAll: false,
+                        type: 'warning',
+                        title: jQuery.i18n.map["alert." + view + "-disabled-title"],
+                        message: jQuery.i18n.map["alert." + view + "-disabled-desc"],
+                        info: jQuery.i18n.map["alert." + view + "-disabled-suggest"],
+                        delay: 5000,
+                        sticky: false
+                    });
+                }
+            });
+        }
+        if (countlyAuth.validateCreate(self.featureName)) {
+            $('#create-alert').show();
+        }
         this.renderTable();
         this.prepareDrawer();
     },
@@ -295,6 +353,22 @@ window.AlertsView = countlyView.extend({
         $("#alerts-today-sum").text(count.today);
     },
     widgetDrawer: {
+        loadRatingOptions: function(selected) {
+            var ratings = [
+                {value: 1, name: jQuery.i18n.map["star.one-star"]},
+                {value: 2, name: jQuery.i18n.map["star.two-star"]},
+                {value: 3, name: jQuery.i18n.map["star.three-star"]},
+                {value: 4, name: jQuery.i18n.map["star.four-star"]},
+                {value: 5, name: jQuery.i18n.map["star.five-star"]},
+            ];
+            $("#single-target2-dropdown").clySelectSetItems(ratings);
+            if (selected) {
+                $("#single-target2-dropdown").clySelectSetSelection(ratings[selected - 1].value, ratings[selected - 1].name);
+            }
+            else {
+                $("#single-target2-dropdown").clySelectSetSelection("", "Select a rating");
+            }
+        },
         loadAppViewData: function(selectedView) {
             var appID = $("#single-app-dropdown").clySelectGetSelection();
             var self = this;
@@ -322,12 +396,9 @@ window.AlertsView = countlyView.extend({
                 $("#single-target2-dropdown").clySelectSetSelection("", "please select app first");
             }
             $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
-
         },
         init: function() {
             var self = this;
-            var apps = [];
-
             // clear alertName
             $("#alert-name-input").val('');
             $("#alert-name-input").off('input').on('input', function() {
@@ -346,6 +417,12 @@ window.AlertsView = countlyView.extend({
                         $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
                         self.loadAppViewData();
                     }
+                    else if (selected === 'Number of ratings') {
+                        source = $("#rating-condition-template").html();
+                        $('.alert-condition-block').html(source);
+                        $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
+                        self.loadRatingOptions();
+                    }
                     else if (selected === 'Bounce rate') {
                         source = $("#metric2-condition-template").html();
                         $('.alert-condition-block').html(source);
@@ -356,9 +433,17 @@ window.AlertsView = countlyView.extend({
                         $("#single-target-condition-dropdown").css("visibility", "hidden");
                         $('#alert-compare-value').css("visibility", "hidden");
                     }
+                    else if (selected === 'Monthly data points' || selected === 'Hourly data points') {
+                        $("#single-target-condition-dropdown").clySelectSetSelection("reach threshold", "reach threshold");
+                        $("#alert-view .alert-compare-value-class").addClass("datapoint");
+                        setTimeout(function() {
+                            $("#single-target-condition-dropdown").clySelectSetItems([{value: 'reach threshold', name: 'reach threshold'}]);
+                        }, 10);
+                    }
                     else {
                         $("#single-target-condition-dropdown").css("visibility", "visible");
                         $('#alert-compare-value').css("visibility", "visible");
+
                     }
 
 
@@ -390,19 +475,19 @@ window.AlertsView = countlyView.extend({
                 $(this).addClass('selected');
 
                 $("#widget-section-single-app").show();
+
                 $("#single-app-dropdown").clySelectSetSelection("", "Select App");
 
                 var source = $("#" + dataType + "-condition-template").html();
                 $('.alert-condition-block').html(source);
 
-
                 $("#single-target-dropdown").clySelectSetItems(alertDefine[dataType].target);
                 $("#single-target-condition-dropdown").clySelectSetItems(alertDefine[dataType].condition);
-
-                app.localize();
                 switch (dataType) {
                 case 'metric':
                 case 'crash':
+                case 'rating':
+                case 'dataPoint':
                     metricClickListner();
                     break;
                 case 'event':
@@ -410,17 +495,19 @@ window.AlertsView = countlyView.extend({
                 }
                 self.checkDisabled();
                 $("#alert-compare-value-input").attr("placeholder", jQuery.i18n.map["alert.add-number"]);
+                var apps = [];
+                for (var appId in countlyGlobal.apps) {
+                    apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
+                }
+                if ($(($('#alert-data-types').find(".selected")[0])).data("dataType") === "dataPoint") {
+                    apps.unshift({value: "all-apps", name: "All apps"});
+                }
+                // $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
+                $("#single-app-dropdown").clySelectSetItems(apps);
+                app.localize();
             });
             // init content
             $(".alert-condition-block").html('');
-
-
-            for (var appId in countlyGlobal.apps) {
-                apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
-            }
-            // $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
-            $("#single-app-dropdown").clySelectSetItems(apps);
-
             $("#single-app-dropdown").off("cly-select-change").on("cly-select-change", function(e, selected) {
                 var dataType = $(($('#alert-data-types').find(".selected")[0])).data("dataType");
                 var dataSubType = $("#single-target-dropdown").clySelectGetSelection();
@@ -575,12 +662,16 @@ window.AlertsView = countlyView.extend({
             switch (data.alertDataType) {
             case 'metric':
             case 'crash':
+            case 'rating':
+            case 'dataPoint':
                 var appSelected = [];
                 for (var index in data.selectedApps) {
                     var appId = data.selectedApps[index];
                     countlyGlobal.apps[appId] && appSelected.push({ value: appId, name: countlyGlobal.apps[appId].name });
                     countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
-
+                    if (appId === "all-apps") {
+                        $("#single-app-dropdown").clySelectSetSelection("all-apps", "All apps");
+                    }
                 }
                 var target = _.find(alertDefine[data.alertDataType].target, function(m) {
                     return m.value === data.alertDataSubType;
@@ -588,9 +679,11 @@ window.AlertsView = countlyView.extend({
                 if (target) {
                     $("#single-target-dropdown").clySelectSetSelection(target.value, target.name);
                 }
-
                 if (data.alertDataSubType2 && (data.alertDataSubType === 'Number of page views' || data.alertDataSubType === 'Bounce rate')) {
                     this.loadAppViewData(data.alertDataSubType2);
+                }
+                if (data.alertDataSubType2 && (data.alertDataSubType === 'Number of ratings')) {
+                    this.loadRatingOptions(data.alertDataSubType2);
                 }
                 break;
             case 'event':
@@ -598,6 +691,12 @@ window.AlertsView = countlyView.extend({
                     $("#single-target-dropdown").off("cly-select-change");
                     $("#single-target-dropdown").clySelectSetSelection(data.alertDataSubType, data.alertDataSubType);
                 });
+                var targetEvent = _.find(alertDefine[data.alertDataType].target, function(m) {
+                    return m.value === data.alertDataSubType;
+                });
+                if (targetEvent) {
+                    $("#single-target-dropdown").clySelectSetSelection(targetEvent.value, targetEvent.name);
+                }
                 for (index in data.selectedApps) {
                     appId = data.selectedApps[index];
                     countlyGlobal.apps[appId] && $("#single-app-dropdown").clySelectSetSelection(appId, countlyGlobal.apps[appId].name);
@@ -616,7 +715,6 @@ window.AlertsView = countlyView.extend({
                     $("#" + dict[data.alertDataSubType][key]).val(data[key]);
                 }
             }
-
 
             $("#save-widget").removeClass("disabled");
         },
@@ -654,9 +752,12 @@ window.AlertsView = countlyView.extend({
             settings.selectedApps = selectedSingleAPP ? [selectedSingleAPP] : null;
 
             settings.compareDescribe = settings.alertDataSubType + (settings.alertDataSubType2 ? ' (' + document.querySelector('div[data-value="' + settings.alertDataSubType2 + '"]').textContent + ')' : '') +
-				' ' + settings.compareType +
-				' ' + settings.compareValue + "%";
+                ' ' + settings.compareType +
+                ' ' + settings.compareValue + "%";
 
+            if (dataType === 'dataPoint' && (settings.alertDataSubType === 'Monthly data points' || settings.alertDataSubType === 'Hourly data points')) {
+                settings.compareDescribe = settings.compareDescribe.substring(0, settings.compareDescribe.length - 1);
+            }
             var dictObject = dict[settings.alertDataType] && dict[settings.alertDataType][settings.alertDataSubType];
             if (dictObject) {
                 for (var key in dictObject) {
@@ -679,12 +780,14 @@ window.AlertsView = countlyView.extend({
             var alertConfig = this.getWidgetSettings();
             if (!alertConfig.selectedApps) {
                 $("#single-target-dropdown").addClass("disabled");
+                $("#single-target2-dropdown").addClass("disabled");
                 $("#single-target-condition-dropdown").addClass("disabled");
                 $("#alert-compare-value").addClass("disabled");
                 $("#alert-compare-value-input").attr("disabled", "true");
             }
             else {
                 $("#single-target-dropdown").removeClass("disabled");
+                $("#single-target2-dropdown").removeClass("disabled");
                 $("#single-target-condition-dropdown").removeClass("disabled");
                 $("#alert-compare-value").removeClass("disabled");
                 $("#alert-compare-value-input").removeAttr("disabled");
@@ -704,15 +807,16 @@ window.AlertsView = countlyView.extend({
 
 app.alertsView = new window.AlertsView();
 
-if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+
+if (countlyAuth.validateRead(app.alertsView.featureName)) {
     app.route('/manage/alerts', 'alerts', function() {
         this.renderWhenReady(this.alertsView);
     });
 }
 
+
 $(document).ready(function() {
-    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+    if (countlyAuth.validateRead(app.alertsView.featureName)) {
         app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
     }
-
 });

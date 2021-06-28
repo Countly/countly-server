@@ -3055,7 +3055,7 @@ describe('Testing Crashes', function() {
 
     describe('Reset app', function() {
         it('should reset data', function(done) {
-            var params = {app_id: APP_ID};
+            var params = {app_id: APP_ID, "period": "reset"};
             request
                 .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)
@@ -3065,7 +3065,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 200 * testUtils.testScalingFactor);
                 });
         });
     });

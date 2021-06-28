@@ -8,54 +8,37 @@ networks:
 
 services:
   mongodb:
-    image: 'bitnami/mongodb:3.6.14'
-    environment:
-      - MONGODB_USERNAME
-      - MONGODB_PASSWORD
-      - MONGODB_DATABASE
+    image: 'bitnami/mongodb:4.4.6'
     volumes:
       - 'mongodb_data:/bitnami'
     networks:
       countly:
 
   countly-api:
-    image: 'countly/api:20.04'
-    # Enterprise Edition: image: 'gcr.io/countly-01/api:20.04'
+    image: 'countly/api:20.11.2'
+    # Enterprise Edition: image: 'gcr.io/countly-01/api:20.11.2'
     environment:
-      - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
-      # Enterprise Edition: - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing,active_users,performance-monitoring
-      - COUNTLY_CONFIG_API_MONGODB_HOST=mongodb
-      - COUNTLY_CONFIG_API_MONGODB_USERNAME=${MONGODB_USERNAME}
-      - COUNTLY_CONFIG_API_MONGODB_PASSWORD=${MONGODB_PASSWORD}
-      - COUNTLY_CONFIG_API_MONGODB_DB=${MONGODB_DATABASE}
-      - COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=mongodb
-      - COUNTLY_CONFIG_FRONTEND_MONGODB_USERNAME=${MONGODB_USERNAME}
-      - COUNTLY_CONFIG_FRONTEND_MONGODB_PASSWORD=${MONGODB_PASSWORD}
-      - COUNTLY_CONFIG_FRONTEND_MONGODB_DB=${MONGODB_DATABASE}
+      - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate
+      # Enterprise Edition: - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,restrict,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards
+      - COUNTLY_CONFIG__MONGODB_HOST=mongodb
     deploy:
       restart_policy:
         condition: on-failure
         delay: 5s
         max_attempts: 3
-        window: 120s
+        window: 400s
     networks:
       countly:
     depends_on:
       - mongodb
 
   countly-frontend:
-    image: 'countly/frontend:20.04'
-    # Enterprise Edition: image: 'gcr.io/countly-01/frontend:20.04'
+    image: 'countly/frontend:20.11.2'
+    # Enterprise Edition: image: 'gcr.io/countly-01/frontend:20.11.2'
     environment:
-      - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding
-      # Enterprise Edition: - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,concurrent_users,retention_segments,revenue,logger,systemlogs,populator,reports,crashes,push,block,restrict,users,geo,star-rating,slipping-away-users,compare,server-stats,dashboards,assistant,flows,dbviewer,cohorts,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,remote-config,formulas,ab-testing,active_users,performance-monitoring
-      - COUNTLY_CONFIG_API_MONGODB_HOST=mongodb
-      - COUNTLY_CONFIG_API_MONGODB_USERNAME=${MONGODB_USERNAME}
-      - COUNTLY_CONFIG_API_MONGODB_PASSWORD=${MONGODB_PASSWORD}
-      - COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=mongodb
-      - COUNTLY_CONFIG_FRONTEND_MONGODB_USERNAME=${MONGODB_USERNAME}
-      - COUNTLY_CONFIG_FRONTEND_MONGODB_PASSWORD=${MONGODB_PASSWORD}
-      - COUNTLY_CONFIG_FRONTEND_MONGODB_DB=${MONGODB_DATABASE}
+      - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate
+      # Enterprise Edition: - COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,restrict,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards
+      - COUNTLY_CONFIG__MONGODB_HOST=mongodb
     networks:
       countly:
     depends_on:
@@ -70,7 +53,7 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
-        window: 120s
+        window: 400s
 
   nginx:
     image: 'bitnami/nginx'

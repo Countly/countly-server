@@ -2,6 +2,7 @@
     countlyGlobal,
     countlyView,
     countlyCommon,
+    countlyAuth,
     jQuery,
     app,
     _,
@@ -14,6 +15,7 @@
     $,
  */
 window.slippingView = countlyView.extend({
+    featureName: 'slipping_away_users',
     beforeRender: function() {
         var query = this._query || {};
         return $.when(countlySlippingPlugin.initialize(query)).then(function() {});
@@ -62,7 +64,7 @@ window.slippingView = countlyView.extend({
             item.percentage = "<div style='width:90%;  box-sizing:border-box;'><div class='percent-bar' style='width:" + (item.percentage) + "%;'></div><span style='margin-right:-70px;'>" + item.percentage + "%</span></div>";
             if (countlyGlobal.plugins.indexOf("users") >= 0) {
                 if (item.count > 0) {
-                    item.userList = "<a class='extable-link table-link green'  href='#/users/query/" + JSON.stringify({"lac": {"$lt": item.timeStamp * 1000}}) + "'   target='_blank'>" +
+                    item.userList = "<a class='extable-link table-link green'  href='#/users/query/" + JSON.stringify({"lac": {"$lt": item.timeStamp}}) + "'   target='_blank'>" +
                 "<i class='material-icons'>open_in_new</i></a>" +
                 '<a class="table-link green external"   data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')">View User List</a> ' ;
                 }
@@ -125,6 +127,10 @@ window.slippingView = countlyView.extend({
         else {
             countlyCommon.drawGraph(slippingChartData.chartDP, "#dashboard-graph", "bar", { legend: { show: false }});
             CountlyHelpers.refreshTable(this.dtable, slippingData);
+        }
+
+        if (!countlyAuth.validateRead('drill')) {
+            $('#view-filter').hide();
         }
     },
     drillInitProcess: function(self) {
@@ -271,25 +277,31 @@ window.slippingView = countlyView.extend({
 //register views
 app.slippingView = new slippingView();
 
-app.route("/analytics/slipping-away", 'slipping-away', function() {
-    this.slippingView._query = undefined;
-    this.renderWhenReady(this.slippingView);
-});
-app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
-    this.slippingView._query = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
-    this.renderWhenReady(this.slippingView);
-});
+if (countlyAuth.validateRead(app.slippingView.featureName)) {
+    app.route("/analytics/slipping-away", 'slipping-away', function() {
+        this.slippingView._query = undefined;
+        this.renderWhenReady(this.slippingView);
+    });
+    app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
+        this.slippingView._query = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
+        this.renderWhenReady(this.slippingView);
+    });
+}
+
 $(document).ready(function() {
-    if (typeof extendViewWithFilter === "function") {
-        extendViewWithFilter(app.slippingView);
-    }
-    app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping.title", priority: 30});
-    if (app.configurationsView) {
-        app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
-        app.configurationsView.registerLabel("slipping-away-users.p1", "slipping.config-first");
-        app.configurationsView.registerLabel("slipping-away-users.p2", "slipping.config-second");
-        app.configurationsView.registerLabel("slipping-away-users.p3", "slipping.config-third");
-        app.configurationsView.registerLabel("slipping-away-users.p4", "slipping.config-fourth");
-        app.configurationsView.registerLabel("slipping-away-users.p5", "slipping.config-fifth");
+    if (countlyAuth.validateRead(app.slippingView.featureName)) {
+        if (typeof extendViewWithFilter === "function") {
+            app.slippingView.hideDrillEventMetaProperties = true;
+            extendViewWithFilter(app.slippingView);
+        }
+        app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping.title", priority: 30});
+        if (app.configurationsView) {
+            app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
+            app.configurationsView.registerLabel("slipping-away-users.p1", "slipping.config-first");
+            app.configurationsView.registerLabel("slipping-away-users.p2", "slipping.config-second");
+            app.configurationsView.registerLabel("slipping-away-users.p3", "slipping.config-third");
+            app.configurationsView.registerLabel("slipping-away-users.p4", "slipping.config-fourth");
+            app.configurationsView.registerLabel("slipping-away-users.p5", "slipping.config-fifth");
+        }
     }
 });

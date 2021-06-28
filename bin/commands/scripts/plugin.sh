@@ -77,9 +77,11 @@ elif [ -d "$DIR/../../../plugins/$2" ]; then
         shift;
         nodejs "$DIR/plugin.js" test "$@" ;
     elif [ "$1" = "lint" ]; then
-        "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" "$DIR/../../../plugins/$2/." ;
+        cd "$DIR/../../../";
+        "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" --ignore-path "$DIR/../../../.eslintignore" "$DIR/../../../plugins/$2/." ;
     elif [ "$1" = "lintfix" ]; then
-        "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" "$DIR/../../../plugins/$2/." --fix;
+        cd "$DIR/../../../";
+        "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" --ignore-path "$DIR/../../../.eslintignore" "$DIR/../../../plugins/$2/." --fix;
     else
         usage ;
     fi

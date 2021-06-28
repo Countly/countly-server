@@ -4,9 +4,15 @@
     jQuery
  */
 (function(countlyReporting, $) {
-
     //Private Properties
     var _data = {};
+    var _metrics = [
+        {name: jQuery.i18n.map["reports.analytics"], value: "analytics"},
+        {name: jQuery.i18n.map["reports.events"], value: "events"},
+        {name: jQuery.i18n.map["reports.revenue"], value: "revenue"},
+        {name: jQuery.i18n.map["reports.crash"], value: "crash"},
+    ];
+
     //Public Methods
     countlyReporting.initialize = function() {
         return $.ajax({
@@ -38,7 +44,8 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/create",
             data: {
-                args: JSON.stringify(args)
+                args: JSON.stringify(args),
+                app_id: args.apps[0]
             }
         });
     };
@@ -48,7 +55,8 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/update",
             data: {
-                args: JSON.stringify(args)
+                args: JSON.stringify(args),
+                app_id: args.apps[0]
             }
         });
     };
@@ -60,7 +68,8 @@
             data: {
                 args: JSON.stringify({
                     "_id": id
-                })
+                }),
+                "app_id": countlyCommon.ACTIVE_APP_ID
             }
         });
     };
@@ -72,7 +81,8 @@
             data: {
                 args: JSON.stringify({
                     "_id": id
-                })
+                }),
+                "app_id": countlyCommon.ACTIVE_APP_ID
             }
         });
     };
@@ -82,7 +92,8 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/reports/status",
             data: {
-                args: JSON.stringify(args)
+                args: JSON.stringify(args),
+                app_id: countlyCommon.ACTIVE_APP_ID
             }
         });
     };
@@ -94,5 +105,18 @@
             }
         }
         return null;
+    };
+
+    countlyReporting.addMetric = function(m) {
+        var existed = _metrics.filter(function(item) {
+            return item.value === m.value;
+        });
+        if (existed.length === 0) {
+            _metrics.push(m);
+        }
+    };
+
+    countlyReporting.getMetrics = function() {
+        return _metrics;
     };
 }(window.countlyReporting = window.countlyReporting || {}, jQuery));

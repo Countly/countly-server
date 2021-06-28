@@ -8,6 +8,7 @@
 #include <queue>
 #include <unordered_map>
 #include <uv.h>
+#include <tuple>
 
 #include <openssl/err.h>
 #include <openssl/conf.h>
@@ -38,7 +39,6 @@ static std::string H2_APN_PATH("/3/device/");
 
 #define ST_ERROR_RECOVERABLE 	ST_ERROR | 1 << 6	// 65
 #define ST_ERROR_NONRECOVERABLE ST_ERROR | 1 << 7	// 129
-
 
 static std::string NGHTTP2_H2_ALPN = std::string("\x2h2");
 static std::string NGHTTP2_H2 = std::string("h2");
@@ -120,13 +120,13 @@ namespace apns {
 	class H2 : public Nan::ObjectWrap {
 	public:
 		static void Init(v8::Local<v8::Object> exports);
+		static void New(const Nan::FunctionCallbackInfo<v8::Value>& info);
 
 	private:
 		H2(std::string cert, std::string pass, std::string topic, std::string exp, std::string host);
 		~H2();
 
 		static void sending_thread_run(void *arg);
-		static void New(const Nan::FunctionCallbackInfo<v8::Value>& info);
 		static void init(const Nan::FunctionCallbackInfo<v8::Value>& info);
 		static void resolve(const Nan::FunctionCallbackInfo<v8::Value>& info);
 		static void init_connection(const Nan::FunctionCallbackInfo<v8::Value>& info);
@@ -149,7 +149,7 @@ namespace apns {
 		std::string topic;
 		std::string expiration;
 		std::vector<std::string *> messages;
-		struct addrinfo *address;
+		std::unordered_map <std::string, addrinfo*> addresses;		// requests in socket, key is stream_id
 
 		uv_loop_t* loop;
 		int fd;

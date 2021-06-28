@@ -9,8 +9,10 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
     plugins = require('../../pluginManager.js'),
-    countlyCommon = require('../../../api/lib/countly.common.js');
+    countlyCommon = require('../../../api/lib/countly.common.js'),
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
+const FEATURE_NAME = 'push';
 const PUSH_CACHE_GROUP = 'P';
 
 (function() {
@@ -35,7 +37,12 @@ const PUSH_CACHE_GROUP = 'P';
         for (let k in creds.DB_USER_MAP) {
             common.dbUserMap[k] = creds.DB_USER_MAP[k];
         }
+        common.dbUniqueMap.users.push(creds.DB_MAP['messaging-enabled']);
     }
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
 
     plugins.register('/worker', function() {
         setUpCommons();
@@ -97,7 +104,8 @@ const PUSH_CACHE_GROUP = 'P';
                                     dur: 0,
                                     sg: {
                                         i: m,
-                                        a: m ? m.auto : undefined
+                                        a: m ? m.auto : undefined,
+                                        t: m ? m.tx : undefined,
                                     },
                                 });
                             });
@@ -116,8 +124,10 @@ const PUSH_CACHE_GROUP = 'P';
                 });
             }
             else if (event === '[CLY]_push_action') {
+                events = events.filter(e => !!e.sg.i);
+
                 let ids = events.map(e => e.sg.i);
-                ids = ids.filter((id, i) => ids.indexOf(id) === i).map(id => common.db.ObjectID(id));
+                ids = ids.filter((id, i) => ids.indexOf(id) === i).map(common.db.ObjectID);
 
                 common.db.collection('messages').find({_id: {$in: ids}}).toArray((err, msgs) => {
                     if (err) {
@@ -135,15 +145,42 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/drill/preprocess_query', ({query, params}) => {
-        if (query.message && query.message.$in) {
-            let min = query.message.$in;
+        if (query.push) {
+            if (query.push.$nin) {
+                query.$and = query.push.$nin.map(tk => {
+                    return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
+                });
+            }
+            if (query.push.$in) {
+                let q = query.push.$in.map(tk => {
+                    return {[tk]: true};
+                });
+                query.$or = q;
+            }
+            delete query.push;
+        }
+
+        if (query.message) {
+            let mid = query.message.$in || query.message.$nin,
+                not = !!query.message.$nin;
+
+            if (!mid) {
+                return;
+            }
+
             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
 
-            if (params.qstring.method === 'user_details') {
+            if (params && params.qstring.method === 'user_details') {
                 return new Promise((res, rej) => {
                     try {
-                        common.db.collection(`push_${params.app_id}`).find({msgs: {$elemMatch: {'0': {$in: min.map(common.db.ObjectID)}}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+                        mid = mid.map(common.db.ObjectID);
+
+                        let q = {msgs: {$elemMatch: {'0': {$in: mid}}}};
+                        if (not) {
+                            q = {msgs: {$not: q.msgs}};
+                        }
+                        common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
                             if (err) {
                                 rej(err);
                             }
@@ -165,9 +202,22 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/drill/postprocess_uids', ({uids, params}) => new Promise((res, rej) => {
-        if (uids.length && params.initialQueryObject && params.initialQueryObject.message) {
+        let message = params.initialQueryObject && params.initialQueryObject.message;
+        if (uids.length && message) {
             log.d(`filtering ${uids.length} uids by message`);
-            return common.db.collection(`push_${params.app_id}`).find({_id: {$in: uids}, msgs: {$elemMatch: {'0': common.db.ObjectID(params.initialQueryObject.message)}}}, {projection: {_id: 1}}).toArray((err, ids) => {
+
+            let q;
+            if (message.$in) {
+                q = {_id: {$in: uids}, msgs: {$elemMatch: {'0': {$in: message.$in.map(common.db.ObjectID)}}}};
+            }
+            else if (message.$nin) {
+                q = {$and: [{_id: {$in: uids}}, {msgs: {$not: {$elemMatch: {'0': {$in: message.$nin.map(common.db.ObjectID)}}}}}]};
+            }
+            else {
+                q = {_id: {$in: uids}, msgs: {$elemMatch: {'0': {$in: message.map(common.db.ObjectID)}}}};
+            }
+
+            return common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
                 if (err) {
                     rej(err);
                 }
@@ -188,7 +238,7 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/cache/init', function() {
         common.cache.init(PUSH_CACHE_GROUP, {
             init: () => new Promise((res, rej) => {
-                common.db.collection('messages').find({auto: true, 'result.status': {$bitsAllSet: N.Status.Scheduled, $bitsAllClear: N.Status.Deleted | N.Status.Aborted}}).toArray((err, arr) => {
+                common.db.collection('messages').find({$or: [{auto: true}, {tx: true}], 'result.status': {$bitsAllSet: N.Status.Scheduled, $bitsAllClear: N.Status.Deleted | N.Status.Aborted}}).toArray((err, arr) => {
                     err ? rej(err) : res(arr.map(m => [m._id.toString(), m]));
                 });
             }),
@@ -320,7 +370,7 @@ const PUSH_CACHE_GROUP = 'P';
                             else {
                                 date = new Date().toString();
                             }
-                            push.onEvent(params.app_id, params.app_user.uid, evs[0], date, note).catch(log.e.bind(log));
+                            push.onEvent(params.app_id, params.app_user.uid, params.qstring.events.filter(e => e.key === evs[0])[0], date, note).catch(log.e.bind(log));
                         }, e => {
                             log.e('Couldn\'t load notification %s', k, e);
                         });
@@ -333,7 +383,7 @@ const PUSH_CACHE_GROUP = 'P';
                 msgIds = pushEvents.map(e => common.db.ObjectID(e.segmentation.i));
             if (msgIds.length) {
                 return new Promise((resolve, reject) => {
-                    common.db.collection('messages').find({_id: {$in: msgIds}}, {auto: 1}).toArray(function(err, msgs) {
+                    common.db.collection('messages').find({_id: {$in: msgIds}}, {auto: 1, tx: 1}).toArray(function(err, msgs) {
                         if (err) {
                             log.e('Error while looking for a message: %j', err);
                             reject(err);
@@ -344,6 +394,7 @@ const PUSH_CACHE_GROUP = 'P';
                                     inc = {};
                                 if (msg) {
                                     event.segmentation.a = msg.auto || false;
+                                    event.segmentation.t = msg.tx || false;
 
                                     if (event.key === '[CLY]_push_open') {
                                         inc['result.delivered'] = event.count;
@@ -371,8 +422,7 @@ const PUSH_CACHE_GROUP = 'P';
 
     plugins.register('/i/pushes', function(ob) {
         var params = ob.params,
-            paths = ob.paths,
-            validateUserForWriteAPI = ob.validateUserForWriteAPI;
+            paths = ob.paths;
         if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
@@ -384,31 +434,31 @@ const PUSH_CACHE_GROUP = 'P';
 
         switch (paths[3]) {
         case 'dashboard':
-            validateUserForWriteAPI(push.dashboard, params);
+            validateRead(params, FEATURE_NAME, push.dashboard, params);
             break;
         case 'prepare':
-            validateUserForWriteAPI(push.prepare, params);
+            validateUpdate(params, FEATURE_NAME, push.prepare, params);
             break;
         case 'create':
-            validateUserForWriteAPI(push.create, params);
+            validateCreate(params, FEATURE_NAME, push.create, params);
             break;
         case 'push':
-            validateUserForWriteAPI(push.push, params);
+            validateCreate(params, FEATURE_NAME, push.push, params);
             break;
         case 'pop':
-            validateUserForWriteAPI(push.pop, params);
+            validateCreate(params, FEATURE_NAME, push.pop, params);
             break;
         case 'message':
-            validateUserForWriteAPI(push.message, params);
+            validateRead(params, FEATURE_NAME, push.message, params);
             break;
         case 'active':
-            validateUserForWriteAPI(push.active, params);
+            validateUpdate(params, FEATURE_NAME, push.active, params);
             break;
         case 'delete':
-            validateUserForWriteAPI(push.delete, params);
+            validateDelete(params, FEATURE_NAME, push.delete, params);
             break;
         case 'mime':
-            validateUserForWriteAPI(push.mimeInfo, params);
+            validateRead(params, FEATURE_NAME, push.mimeInfo, params);
             break;
         case 'huawei':
             push.huawei(params);
@@ -424,8 +474,7 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/o/pushes', function(ob) {
-        var params = ob.params,
-            validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        var params = ob.params;
 
         if (params.qstring.args) {
             try {
@@ -436,7 +485,7 @@ const PUSH_CACHE_GROUP = 'P';
             }
         }
 
-        validateUserForWriteAPI(push.getAllMessages, params);
+        validateRead(params, FEATURE_NAME, push.getAllMessages);
         return true;
     });
 
@@ -478,10 +527,16 @@ const PUSH_CACHE_GROUP = 'P';
             }
             var postfix = common.crypto.createHash('md5').update(params.qstring.device_id).digest('base64')[0];
             if (Object.keys(updateUsersZero).length) {
+                /* OLD
                 common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.zero + '_' + postfix}, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero}, {'upsert': true}, function() {});
+				*/
+                common.writeBatcher.add('users', params.app_id + '_' + dbDateIds.zero + '_' + postfix, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero});
             }
             if (Object.keys(updateUsersMonth).length) {
+                /* OLD
                 common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.month + '_' + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth}, {'upsert': true}, function() {});
+				*/
+                common.writeBatcher.add('users', params.app_id + '_' + dbDateIds.month + '_' + postfix, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth});
             }
         }
     });
@@ -542,7 +597,7 @@ const PUSH_CACHE_GROUP = 'P';
     plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}) => {
         if (uids && uids.length) {
             if (!export_commands.push) {
-                export_commands.push = [{cmd: 'mongoexport', args: [...dbargs, '--collection', `push_${app_id}`, '-q', `{uid: {$in: ${JSON.stringify(uids)}}}`, '--out', `${export_folder}/push_${app_id}.json`]}];
+                export_commands.push = [{cmd: 'mongoexport', args: [...dbargs, '--collection', `push_${app_id}`, '-q', `{"uid": {"$in": ${JSON.stringify(uids)}}}`, '--out', `${export_folder}/push_${app_id}.json`]}];
             }
         }
     });

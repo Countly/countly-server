@@ -1,4 +1,5 @@
 var should = require('should');
+var countlyConfig = require("../frontend/express/config.js");
 should.Assertion.add('haveSameItems', function(other) {
     this.params = { operator: 'to be have same items' };
 
@@ -33,11 +34,17 @@ var testUtils = function testUtils() {
     };
     var RE = /^-{0,1}\d*\.{0,1}\d+$/;
 
-    this.url = "http://localhost";
+    this.url = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "");
     this.name = "Test Test";
     this.username = "test";
     this.password = "Test1test$";
     this.email = "test@domain.com";
+    this.permission = {
+        "_": {
+            "u": [],
+            "a": []
+        }
+    };
     this.testScalingFactor = 1.5;//this is used to multiply the base timeout time for tests. Should be decreased of more powerful servers
     this.testWaitTimeForDrillEvents = 5300;//in ms, how long should the test wait for drill to finish it's actions
     this.testWaitTimeForResetApp = 1200;//in ms, how long should the test wait for a app reset
@@ -375,70 +382,72 @@ var testUtils = function testUtils() {
             ob.should.have.property("meta", correct.meta);
         }
         for (var i in ob) {
-            ob.should.have.property(i).and.not.eql({});
-            if (RE.test(i)) {
-                if (!refresh) {
-                    for (var c in correct) {
-                        if (c != "meta") {
-                            if (c == "s") {
-                                ob[i].should.have.property(c);
-                                ob[i][c].should.be.approximately(correct[c], 0.0001);
-                            }
-                            else {
-                                ob[i].should.have.property(c, correct[c]);
+            if (i != "meta") {
+                ob.should.have.property(i).and.not.eql({});
+                if (RE.test(i)) {
+                    if (!refresh) {
+                        for (var c in correct) {
+                            if (c != "meta") {
+                                if (c == "s") {
+                                    ob[i].should.have.property(c);
+                                    ob[i][c].should.be.approximately(correct[c], 0.0001);
+                                }
+                                else {
+                                    ob[i].should.have.property(c, correct[c]);
+                                }
                             }
                         }
                     }
-                }
-                for (var j in ob[i]) {
-                    if (RE.test(j)) {
-                        if (!refresh) {
-                            for (var c in correct) {
-                                if (c != "meta") {
-                                    if (c == "s") {
-                                        ob[i][j].should.have.property(c);
-                                        ob[i][j][c].should.be.approximately(correct[c], 0.0001);
-                                    }
-                                    else {
-                                        ob[i][j].should.have.property(c, correct[c]);
-                                    }
-                                }
-                            }
-                        }
-                        for (var k in ob[i][j]) {
-                            if (RE.test(k)) {
+                    for (var j in ob[i]) {
+                        if (RE.test(j)) {
+                            if (!refresh) {
                                 for (var c in correct) {
                                     if (c != "meta") {
                                         if (c == "s") {
-                                            ob[i][j][k].should.have.property(c);
-                                            ob[i][j][k][c].should.be.approximately(correct[c], 0.0001);
+                                            ob[i][j].should.have.property(c);
+                                            ob[i][j][c].should.be.approximately(correct[c], 0.0001);
                                         }
                                         else {
-                                            ob[i][j][k].should.have.property(c, correct[c]);
+                                            ob[i][j].should.have.property(c, correct[c]);
                                         }
                                     }
                                 }
-                                var totals = {};
-                                for (var n in ob[i][j][k]) {
-                                    if (RE.test(n)) {
-                                        for (var m in ob[i][j][k][n]) {
-                                            if (!totals[m]) {
-                                                totals[m] = 0;
-                                            }
-                                            totals[m] += ob[i][j][k][n][m];
-                                        }
-                                    }
-                                }
-                                if (Object.keys(totals).length) {
-                                    //totals for hours should match
+                            }
+                            for (var k in ob[i][j]) {
+                                if (RE.test(k)) {
                                     for (var c in correct) {
                                         if (c != "meta") {
                                             if (c == "s") {
-                                                totals.should.have.property(c);
-                                                totals[c].should.be.approximately(correct[c], 0.0001);
+                                                ob[i][j][k].should.have.property(c);
+                                                ob[i][j][k][c].should.be.approximately(correct[c], 0.0001);
                                             }
                                             else {
-                                                totals.should.have.property(c, correct[c]);
+                                                ob[i][j][k].should.have.property(c, correct[c]);
+                                            }
+                                        }
+                                    }
+                                    var totals = {};
+                                    for (var n in ob[i][j][k]) {
+                                        if (RE.test(n)) {
+                                            for (var m in ob[i][j][k][n]) {
+                                                if (!totals[m]) {
+                                                    totals[m] = 0;
+                                                }
+                                                totals[m] += ob[i][j][k][n][m];
+                                            }
+                                        }
+                                    }
+                                    if (Object.keys(totals).length) {
+                                        //totals for hours should match
+                                        for (var c in correct) {
+                                            if (c != "meta") {
+                                                if (c == "s") {
+                                                    totals.should.have.property(c);
+                                                    totals[c].should.be.approximately(correct[c], 0.0001);
+                                                }
+                                                else {
+                                                    totals.should.have.property(c, correct[c]);
+                                                }
                                             }
                                         }
                                     }
@@ -450,6 +459,12 @@ var testUtils = function testUtils() {
             }
         }
         done();
+    };
+
+    this.sleep = function(timeToSleepInMs = 5000) {
+        return new Promise(function(resolve) {
+            setTimeout(resolve, timeToSleepInMs);
+        });
     };
 };
 

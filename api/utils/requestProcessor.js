@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection} = require('./rights.js');
+const { validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -18,7 +18,7 @@ const fs = require('fs');
 var countlyFs = require('./countlyFs.js');
 var path = require('path');
 const validateUserForWriteAPI = validateUser;
-const validateUserForDataReadAPI = validateUserForRead;
+const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
@@ -35,7 +35,8 @@ const countlyApi = {
     mgmt: {
         users: require('../parts/mgmt/users.js'),
         apps: require('../parts/mgmt/apps.js'),
-        appUsers: require('../parts/mgmt/app_users.js')
+        appUsers: require('../parts/mgmt/app_users.js'),
+        eventGroups: require('../parts/mgmt/event_groups.js')
     }
 };
 
@@ -55,6 +56,7 @@ const reloadConfig = function() {
         }
     });
 };
+
 /**
  * Default request processing handler, which requires request context to operate. Check tcp_example.js
  * @static
@@ -205,6 +207,11 @@ const processRequest = (params) => {
                     common.returnMessage(params, 400, 'Missing parameter "requests"');
                     return false;
                 }
+                if (!Array.isArray(requests)) {
+                    console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
+                    common.returnMessage(params, 400, 'Invalid parameter "requests"');
+                    return false;
+                }
                 if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                     common.returnMessage(params, 200, 'Success');
                 }
@@ -225,16 +232,16 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.createUser, params);
+                    validateCreate(params, 'global_users', countlyApi.mgmt.users.createUser);
                     break;
                 case 'update':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.updateUser, params);
+                    validateUpdate(params, 'global_users', countlyApi.mgmt.users.updateUser);
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.deleteUser, params);
+                    validateDelete(params, 'global_users', countlyApi.mgmt.users.deleteUser);
                     break;
                 case 'deleteOwnAccount':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.deleteOwnAccount, params);
+                    validateDelete(params, 'global_users', countlyApi.mgmt.users.deleteOwnAccount);
                     break;
                 case 'ack':
                     validateUserForWriteAPI(countlyApi.mgmt.users.ackNotification, params);
@@ -266,12 +273,12 @@ const processRequest = (params) => {
                 }
                 switch (paths[3]) {
                 case 'save':
-                    validateUserForWriteAPI(params, () => {
+                    validateCreate(params, 'core', () => {
                         countlyApi.mgmt.users.saveNote(params);
                     });
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(params, () => {
+                    validateDelete(params, 'core', () => {
                         countlyApi.mgmt.users.deleteNote(params);
                     });
                     break;
@@ -530,27 +537,21 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForWriteAPI(() => {
-                        if (!(params.member.global_admin)) {
-                            common.returnMessage(params, 401, 'User is not a global administrator');
-                            return false;
-                        }
-                        countlyApi.mgmt.apps.createApp(params);
-                    }, params);
+                    validateCreate(params, 'global_applications', countlyApi.mgmt.apps.createApp);
                     break;
                 case 'update':
                     if (paths[4] === 'plugins') {
-                        validateUserForDataWriteAPI(params, countlyApi.mgmt.apps.updateAppPlugins);
+                        validateUpdate(params, 'global_applications', countlyApi.mgmt.apps.updateAppPlugins);
                     }
                     else {
-                        validateUserForWriteAPI(countlyApi.mgmt.apps.updateApp, params);
+                        validateUpdate(params, 'global_applications', countlyApi.mgmt.apps.updateApp);
                     }
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(countlyApi.mgmt.apps.deleteApp, params);
+                    validateDelete(params, 'global_applications', countlyApi.mgmt.apps.deleteApp);
                     break;
                 case 'reset':
-                    validateUserForWriteAPI(countlyApi.mgmt.apps.resetApp, params);
+                    validateDelete(params, 'global_applications', countlyApi.mgmt.apps.resetApp);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -568,6 +569,21 @@ const processRequest = (params) => {
 
                 break;
             }
+            case '/i/event_groups':
+                switch (paths[3]) {
+                case 'create':
+                    validateCreate(params, 'core', countlyApi.mgmt.eventGroups.create);
+                    break;
+                case 'update':
+                    validateUpdate(params, 'core', countlyApi.mgmt.eventGroups.update);
+                    break;
+                case 'delete':
+                    validateDelete(params, 'core', countlyApi.mgmt.eventGroups.remove);
+                    break;
+                default:
+                    break;
+                }
+                break;
             case '/i/tasks': {
                 if (!params.qstring.task_id) {
                     common.returnMessage(params, 400, 'Missing parameter "task_id"');
@@ -648,13 +664,82 @@ const processRequest = (params) => {
             }
             case '/i/events': {
                 switch (paths[3]) {
+                case 'whitelist_segments':
+                {
+                    validateUpdate(params, "events", function() {
+                        common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
+                            if (err) {
+                                common.returnMessage(params, 400, err);
+                                return;
+                            }
+                            else if (!event) {
+                                common.returnMessage(params, 400, "Could not find record in event collection");
+                                return;
+                            }
+
+                            //rewrite whitelisted
+                            if (params.qstring.whitelisted_segments && params.qstring.whitelisted_segments !== "") {
+                                try {
+                                    params.qstring.whitelisted_segments = JSON.parse(params.qstring.whitelisted_segments);
+                                }
+                                catch (SyntaxError) {
+                                    params.qstring.whitelisted_segments = {}; console.log('Parse ' + params.qstring.whitelisted_segments + ' JSON failed', params.req.url, params.req.body);
+                                }
+
+                                var update = {};
+                                var whObj = params.qstring.whitelisted_segments;
+                                for (let k in whObj) {
+                                    if (Array.isArray(whObj[k]) && whObj[k].length > 0) {
+                                        update.$set = update.$set || {};
+                                        update.$set["whitelisted_segments." + k] = whObj[k];
+                                    }
+                                    else {
+                                        update.$unset = update.$unset || {};
+                                        update.$unset["whitelisted_segments." + k] = true;
+                                    }
+                                }
+
+                                common.db.collection('events').update({"_id": common.db.ObjectID(params.qstring.app_id)}, update, function(err2) {
+                                    if (err2) {
+                                        common.returnMessage(params, 400, err2);
+                                    }
+                                    else {
+                                        var data_arr = {update: {}};
+                                        if (update.$set) {
+                                            data_arr.update.$set = update.$set;
+                                        }
+
+                                        if (update.$unset) {
+                                            data_arr.update.$unset = update.$unset;
+                                        }
+                                        data_arr.update = JSON.stringify(data_arr.update);
+                                        common.returnMessage(params, 200, 'Success');
+                                        plugins.dispatch("/systemlogs", {
+                                            params: params,
+                                            action: "segments_whitelisted_for_events",
+                                            data: data_arr
+                                        });
+                                    }
+                                });
+
+                            }
+                            else {
+                                common.returnMessage(params, 400, "Value for 'whitelisted_segments' missing");
+                                return;
+                            }
+
+
+                        });
+                    });
+                    break;
+                }
                 case 'edit_map':
                 {
                     if (!params.qstring.app_id) {
                         common.returnMessage(params, 400, 'Missing parameter "app_id"');
                         return false;
                     }
-                    validateUserForWrite(params, function() {
+                    validateUpdate(params, 'events', function() {
                         common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
@@ -915,7 +1000,7 @@ const processRequest = (params) => {
                 }
                 case 'delete_events':
                 {
-                    validateUserForWrite(params, function() {
+                    validateDelete(params, 'events', function() {
                         var idss = [];
                         try {
                             idss = JSON.parse(params.qstring.events);
@@ -1037,7 +1122,7 @@ const processRequest = (params) => {
                 }
                 case 'change_visibility':
                 {
-                    validateUserForWrite(params, function() {
+                    validateUpdate(params, 'events', function() {
                         common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
@@ -1195,16 +1280,24 @@ const processRequest = (params) => {
             case '/o/users': {
                 switch (paths[3]) {
                 case 'all':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.getAllUsers, params);
+                    validateRead(params, 'global_users', countlyApi.mgmt.users.getAllUsers);
                     break;
                 case 'me':
                     validateUserForMgmtReadAPI(countlyApi.mgmt.users.getCurrentUser, params);
                     break;
                 case 'id':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.getUserById, params);
+                    validateRead(params, 'global_users', countlyApi.mgmt.users.getUserById);
                     break;
                 case 'reset_timeban':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.resetTimeBan, params);
+                    validateUpdate(params, 'global_users', countlyApi.mgmt.users.resetTimeBan);
+                    break;
+                case 'permissions':
+                    validateRead(params, 'core', function() {
+                        var features = ["core", "events", "global_configurations", "global_applications", "global_users", "global_jobs"];
+                        plugins.dispatch("/permissions/features", {params: params, features: features}, function() {
+                            common.returnOutput(params, features);
+                        });
+                    });
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1285,13 +1378,16 @@ const processRequest = (params) => {
             case '/o/apps': {
                 switch (paths[3]) {
                 case 'all':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getAllApps, params);
+                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAllApps);
                     break;
                 case 'mine':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getCurrentUserApps, params);
+                    validateUser(params, countlyApi.mgmt.apps.getCurrentUserApps);
                     break;
                 case 'details':
-                    validateUserForDataReadAPI(params, countlyApi.mgmt.apps.getAppsDetails);
+                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAppsDetails);
+                    break;
+                case 'plugins':
+                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAppPlugins);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1302,7 +1398,7 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /all, /mine, /details or /plugins');
                     }
                     break;
                 }
@@ -1312,7 +1408,7 @@ const processRequest = (params) => {
             case '/o/tasks': {
                 switch (paths[3]) {
                 case 'all':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1333,6 +1429,12 @@ const processRequest = (params) => {
                         }
                         params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
+                        if (params.qstring.app_ids && params.qstring.app_ids !== "") {
+                            var ll = params.qstring.app_ids.split(",");
+                            if (ll.length > 1) {
+                                params.qstring.query.app_id = {$in: ll};
+                            }
+                        }
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
@@ -1343,10 +1445,10 @@ const processRequest = (params) => {
                         }, (err, res) => {
                             common.returnOutput(params, res || []);
                         });
-                    }, params);
+                    });
                     break;
                 case 'count':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1375,10 +1477,10 @@ const processRequest = (params) => {
                         }, (err, res) => {
                             common.returnOutput(params, res || []);
                         });
-                    }, params);
+                    });
                     break;
                 case 'list':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1423,10 +1525,10 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 500, '"Query failed"');
                             }
                         });
-                    }, params);
+                    });
                     break;
                 case 'task':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (!params.qstring.task_id) {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
@@ -1443,10 +1545,10 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'Task does not exist');
                             }
                         });
-                    }, params);
+                    });
                     break;
                 case 'check':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (!params.qstring.task_id) {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
@@ -1462,7 +1564,7 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'Task does not exist');
                             }
                         });
-                    }, params);
+                    });
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1557,6 +1659,15 @@ const processRequest = (params) => {
                             }
                         }
 
+                        if (typeof params.qstring.formatFields === "string") {
+                            try {
+                                params.qstring.formatFields = JSON.parse(params.qstring.formatFields);
+                            }
+                            catch (ex) {
+                                params.qstring.formatFields = null;
+                            }
+                        }
+
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess) {
                                 countlyApi.data.exports.fromDatabase({
@@ -1604,6 +1715,110 @@ const processRequest = (params) => {
                         });
                     }, params);
                     break;
+                case 'requestQuery':
+                    validateUserForMgmtReadAPI(() => {
+                        if (!params.qstring.path) {
+                            common.returnMessage(params, 400, 'Missing parameter "path"');
+                            return false;
+                        }
+                        if (typeof params.qstring.data === "string") {
+                            try {
+                                params.qstring.data = JSON.parse(params.qstring.data);
+                            }
+                            catch (ex) {
+                                console.log("Error parsing export request data", params.qstring.data, ex);
+                                params.qstring.data = {};
+                            }
+                        }
+                        var my_name = JSON.stringify(params.qstring);
+
+                        var ff = taskmanager.longtask({
+                            db: common.db,
+                            threshold: plugins.getConfig("api").request_threshold,
+                            force: true,
+                            gridfs: true,
+                            binary: true,
+                            app_id: params.qstring.app_id,
+                            params: params,
+                            type: "tableExport",
+                            report_name: params.qstring.filename + "." + params.qstring.type,
+                            meta: JSON.stringify({
+                                "app_id": params.qstring.app_id,
+                                "query": params.qstring.query || {}
+                            }),
+                            name: my_name,
+                            view: "#/exportedData/tableExport/",
+                            processData: function(err, res, callback) {
+                                if (!err) {
+                                    callback(null, res);
+                                }
+                                else {
+                                    callback(err, '');
+                                }
+                            },
+                            outputData: function(err, data) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
+                                }
+                                else {
+                                    common.returnMessage(params, 200, data);
+                                }
+                            }
+                        });
+
+                        countlyApi.data.exports.fromRequestQuery({
+                            params: params,
+                            path: params.qstring.path,
+                            data: params.qstring.data,
+                            method: params.qstring.method,
+                            prop: params.qstring.prop,
+                            type: params.qstring.type,
+                            filename: params.qstring.filename + "." + params.qstring.type,
+                            output: function(data) {
+                                ff(null, data);
+                            }
+                        });
+                    }, params);
+                    break;
+                case 'download': {
+                    if (paths[4] && paths[4] !== '') {
+                        common.db.collection("long_tasks").findOne({_id: paths[4]}, function(err, data) {
+
+                            var filename = data.report_name;
+                            var type = filename.split(".");
+                            type = type[type.length - 1];
+                            var myfile = paths[4];
+
+                            countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(error, size) {
+                                if (error) {
+                                    common.returnMessage(params, 400, error);
+                                }
+                                else if (parseInt(size) === 0) {
+                                    common.returnMessage(params, 400, "Export size is 0");
+                                }
+                                else {
+                                    countlyFs.gridfs.getStream("task_results", myfile, {id: paths[4]}, function(err5, stream) {
+                                        if (err5) {
+                                            common.returnMessage(params, 400, "Export strem does not exist");
+                                        }
+                                        else {
+                                            var headers = {};
+                                            headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                            headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                            params.res.writeHead(200, headers);
+                                            stream.pipe(params.res);
+                                        }
+                                    });
+                                }
+                            });
+
+                        });
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing filename');
+                    }
+                    break;
+                }
                 case 'data':
                     validateUserForMgmtReadAPI(() => {
                         if (!params.qstring.data) {
@@ -1788,34 +2003,40 @@ const processRequest = (params) => {
 
                 switch (params.qstring.method) {
                 case 'jobs':
-                    validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
+                    validateRead(params, "global_jobs", countlyApi.data.fetch.fetchJobs('jobs', params));
                     break;
                 case 'total_users':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                     break;
                 case 'get_period_obj':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.getPeriodObj, 'users');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.getPeriodObj, 'users');
                     break;
                 case 'locations':
                 case 'sessions':
                 case 'users':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, 'users');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, 'users');
                     break;
                 case 'app_versions':
                 case 'device_details':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, 'device_details');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, 'device_details');
                     break;
                 case 'devices':
                 case 'carriers':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                     break;
                 case 'cities':
                     if (plugins.getConfig("api", params.app && params.app.plugins, true).city_data !== false) {
-                        validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
+                        validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                     }
                     else {
                         common.returnOutput(params, {});
                     }
+                    break;
+                case 'get_event_groups':
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchEventGroups);
+                    break;
+                case 'get_event_group':
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchEventGroupById);
                     break;
                 case 'events':
                     if (params.qstring.events) {
@@ -1826,30 +2047,35 @@ const processRequest = (params) => {
                             console.log('Parse events array failed', params.qstring.events, params.req.url, params.req.body);
                         }
                         if (params.qstring.overview) {
-                            validateUserForDataReadAPI(params, function() {
-                                countlyApi.data.fetch.fetchDataEventsOverview(params);
-                            });
+                            // TODO: handle here, what permission should be required for here?
+                            countlyApi.data.fetch.fetchDataEventsOverview(params);
                         }
                         else {
-                            validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
+                            // TODO: handle here what permission should be required for here?
+                            validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventData);
                         }
                     }
                     else {
-                        params.truncateEventValuesList = true;
-                        validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                        if (params.qstring.event && params.qstring.event.startsWith('[CLY]_group_')) {
+                            validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventGroups, params.qstring.method);
+                        }
+                        else {
+                            params.truncateEventValuesList = true;
+                            validateRead(params, 'core', countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                        }
                     }
                     break;
                 case 'get_events':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
                     break;
                 case 'top_events':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDataTopEvents);
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchDataTopEvents);
                     break;
                 case 'all_apps':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchAllApps);
+                    validateRead(params, 'global_applications', countlyApi.data.fetch.fetchAllApps);
                     break;
                 case 'notes':
-                    validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
+                    validateRead(params, 'core', countlyApi.mgmt.users.fetchNotes);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1874,31 +2100,31 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'dashboard':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDashboard);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDashboard);
                     break;
                 case 'countries':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCountries);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchCountries);
                     break;
                 case 'sessions':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchSessions);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchSessions);
                     break;
                 case 'metric':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMetric);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchMetric);
                     break;
                 case 'tops':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTops);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTops);
                     break;
                 case 'loyalty':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchLoyalty);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchLoyalty);
                     break;
                 case 'frequency':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchFrequency);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchFrequency);
                     break;
                 case 'durations':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDurations);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDurations);
                     break;
                 case 'events':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchEvents);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchEvents);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1966,7 +2192,7 @@ const processRequest = (params) => {
                 break;
             }
             case '/o/notes': {
-                validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
+                validateUserForDataReadAPI(params, 'core', countlyApi.mgmt.users.fetchNotes);
                 break;
             }
             default:
@@ -1994,7 +2220,7 @@ const processRequest = (params) => {
             }
         }
         else {
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+            if (!params.res.finished) {
                 common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
             }
             common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
@@ -2010,28 +2236,74 @@ const processRequest = (params) => {
  * @param {function} done - callbck when processing done
  */
 const processRequestData = (params, app, done) => {
-    plugins.dispatch("/i", {
-        params: params,
-        app: app
-    }, () => {
-        if (params.qstring.events) {
-            if (params.promises) {
-                params.promises.push(countlyApi.data.events.processEvents(params));
-            }
-            else {
-                countlyApi.data.events.processEvents(params);
-            }
-        }
-        else if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.bulk) {
-            common.returnMessage(params, 200, 'Success');
-        }
 
-        if (countlyApi.data.usage.processLocationRequired(params)) {
-            countlyApi.data.usage.processLocation(params).then(() => continueProcessingRequestData(params, done));
+    //preserve time for user's previous session
+    params.previous_session = params.app_user.lsid;
+    params.previous_session_start = params.app_user.ls;
+    params.request_id = params.request_hash + "_" + params.app_user.uid + "_" + params.time.mstimestamp;
+
+    var ob = {params: params, app: app, updates: []};
+    plugins.dispatch("/sdk/user_properties", ob, function() {
+        var update = {};
+        //check if we already processed app users for this request
+        if (params.app_user.last_req !== params.request_hash && ob.updates.length) {
+            ob.updates.push({$set: {last_req: params.request_hash, ingested: false}});
+            for (let i = 0; i < ob.updates.length; i++) {
+                update = common.mergeQuery(update, ob.updates[i]);
+            }
         }
-        else {
-            continueProcessingRequestData(params, done);
-        }
+        var newUser = params.app_user.fs ? false : true;
+        common.updateAppUser(params, update, function() {
+            if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                common.returnMessage(params, 200, 'Success');
+            }
+            if (params.qstring.begin_session) {
+                plugins.dispatch("/session/retention", {
+                    params: params,
+                    user: params.app_user,
+                    isNewUser: newUser
+                });
+            }
+            if (params.qstring.events) {
+                if (params.promises) {
+                    params.promises.push(countlyApi.data.events.processEvents(params));
+                }
+                else {
+                    countlyApi.data.events.processEvents(params);
+                }
+            }
+            //process the rest of the plugins as usual
+            plugins.dispatch("/i", {
+                params: params,
+                app: app
+            });
+            plugins.dispatch("/sdk/data_ingestion", {params: params}, function(result) {
+                var retry = false;
+                if (result && result.length) {
+                    for (let index = 0; index < result.length; index++) {
+                        if (result[index].status === "rejected") {
+                            retry = true;
+                            break;
+                        }
+                    }
+                }
+                if (!retry && plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+                    //acknowledge data ingestion
+                    common.updateAppUser(params, {$set: {ingested: true}});
+                }
+                if (!params.res.finished) {
+                    if (retry) {
+                        common.returnMessage(params, 400, 'Could not ingest data');
+                    }
+                    else {
+                        common.returnMessage(params, 200, 'Success');
+                    }
+                }
+                if (done) {
+                    done();
+                }
+            });
+        });
     });
 };
 
@@ -2067,53 +2339,6 @@ const processFetchRequest = (params, app, done) => {
 
         return done ? done() : false;
     });
-};
-
-/**
- * Continue Processing Request Data
- * @param {params} params - params object
- * @param {function} done - callbck when processing done
- * @returns {void} void
- */
-const continueProcessingRequestData = (params, done) => {
-    if (params.qstring.begin_session) {
-        countlyApi.data.usage.beginUserSession(params, done);
-    }
-    else {
-        if (params.qstring.metrics) {
-            countlyApi.data.usage.processMetrics(params);
-        }
-        if (params.qstring.end_session) {
-            if (params.qstring.session_duration) {
-                countlyApi.data.usage.processSessionDuration(params, () => {
-                    countlyApi.data.usage.endUserSession(params, done);
-                });
-            }
-            else {
-                countlyApi.data.usage.endUserSession(params, done);
-            }
-        }
-        else if (params.qstring.session_duration) {
-            countlyApi.data.usage.processSessionDuration(params, () => {
-                return done ? done() : false;
-            });
-        }
-        else {
-            //update lac only on real change (Artem TM)
-            //common.updateAppUser(params, {$set: {lac: params.time.mstimestamp}});
-
-            // begin_session, session_duration and end_session handle incrementing request count in usage.js
-            const dbDateIds = common.getDateIds(params),
-                updateUsers = {};
-
-            common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
-            const postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert': true}, () => {
-            });
-
-            return done ? done() : false;
-        }
-    }
 };
 
 /**
@@ -2189,6 +2414,59 @@ const processBulkRequest = (i, requests, params) => {
 };
 
 /**
+ * @param  {object} params - params object
+ * @param  {String} type - source type
+ * @param  {Function} done - done callback
+ * @returns {Function} - done or boolean value
+ */
+const checksumSaltVerification = (params) => {
+    if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
+        const payloads = [];
+        payloads.push(params.href.substr(params.fullPath.length + 1));
+
+        if (params.req.method.toLowerCase() === 'post') {
+            payloads.push(params.req.body);
+        }
+        if (typeof params.qstring.checksum !== "undefined") {
+            for (let i = 0; i < payloads.length; i++) {
+                payloads[i] = (payloads[i] + "").replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
+                payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+            }
+            if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
+                common.returnMessage(params, 200, 'Request does not match checksum');
+                console.log("Checksum did not match", params.href, params.req.body, payloads);
+                params.cancelRequest = 'Request does not match checksum sha1';
+                plugins.dispatch("/sdk/cancel", {params: params});
+                return false;
+            }
+        }
+        else if (typeof params.qstring.checksum256 !== "undefined") {
+            for (let i = 0; i < payloads.length; i++) {
+                payloads[i] = (payloads[i] + "").replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
+                payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+            }
+            if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
+                common.returnMessage(params, 200, 'Request does not match checksum');
+                console.log("Checksum did not match", params.href, params.req.body, payloads);
+                params.cancelRequest = 'Request does not match checksum sha256';
+                plugins.dispatch("/sdk/cancel", {params: params});
+                return false;
+            }
+        }
+        else {
+            common.returnMessage(params, 200, 'Request does not have checksum');
+            console.log("Request does not have checksum", params.href, params.req.body);
+            params.cancelRequest = "Request does not have checksum";
+            plugins.dispatch("/sdk/cancel", {params: params});
+            return false;
+        }
+    }
+
+    return true;
+};
+
+
+/**
  * Validate App for Write API
  * Checks app_key from the http request against "apps" collection.
  * This is the first step of every write request to API.
@@ -2198,12 +2476,11 @@ const processBulkRequest = (i, requests, params) => {
  * @returns {void} void
  */
 const validateAppForWriteAPI = (params, done, try_times) => {
-    var sourceType = "WriteAPI";
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
 
-    common.db.collection('apps').findOne({'key': params.qstring.app_key + ""}, (err, app) => {
+    common.readBatcher.getOne("apps", {'key': params.qstring.app_key + ""}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -2231,7 +2508,20 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
-        if (!checksumSaltVerification(params, sourceType)) {
+
+        var time = Date.now().valueOf();
+        time = Math.round((time || 0) / 1000);
+        if (params.app && (!params.app.last_data || params.app.last_data < time - 60 * 60 * 24)) { //update if more than day passed
+            //set new value
+            common.db.collection("apps").update({"_id": common.db.ObjectID(params.app._id)}, {"$set": {"last_data": time}}, function(err1) {
+                if (err1) {
+                    console.log("Failed to update apps collection " + err1);
+                }
+                common.readBatcher.invalidate("apps", {"key": params.app.key}, {}, false); //because we load app by key  on incoming requests. so invalidate also by key
+            });
+        }
+
+        if (!checksumSaltVerification(params)) {
             return done ? done() : false;
         }
 
@@ -2240,17 +2530,22 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         }
 
         common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id}, (err2, user) => {
+            if (err2) {
+                common.returnMessage(params, 400, 'Cannot get app user');
+                params.cancelRequest = "Cannot get app user or no Database connection";
+                return done ? done() : false;
+            }
             params.app_user = user || {};
 
+            let payload = params.href.substr(3) || "";
+            if (params.req.method.toLowerCase() === 'post') {
+                payload += params.req.body;
+            }
+            params.request_hash = common.crypto.createHash('sha1').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
             if (plugins.getConfig("api", params.app && params.app.plugins, true).prevent_duplicate_requests) {
                 //check unique millisecond timestamp, if it is the same as the last request had,
                 //then we are having duplicate request, due to sudden connection termination
-                let payload = params.href.substr(3) || "";
-                if (params.req.method.toLowerCase() === 'post') {
-                    payload += params.req.body;
-                }
-                params.request_hash = common.crypto.createHash('sha512').update(payload).digest('hex') + (params.qstring.timestamp || params.time.mstimestamp);
-                if (params.app_user.last_req === params.request_hash) {
+                if (params.app_user.last_req === params.request_hash && (!plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.app_user.ingested)) {
                     params.cancelRequest = "Duplicate request";
                 }
             }
@@ -2270,79 +2565,27 @@ const validateAppForWriteAPI = (params, done, try_times) => {
             }, () => {
                 plugins.dispatch("/sdk/log", {params: params});
                 if (!params.cancelRequest) {
-                    if (!params.app_user.uid) {
-                        //first time we see this user, we need to id him with uid
-                        countlyApi.mgmt.appUsers.getUid(params.app_id, function(err3, uid) {
-                            if (uid) {
-                                params.app_user.uid = uid;
-                                if (!params.app_user._id) {
-                                    //if document was not yet created
-                                    //we try to insert one with uid
-                                    //even if paralel request already inserted uid
-                                    //this insert will fail
-                                    //but we will retry again and fetch new inserted document
-                                    common.db.collection('app_users' + params.app_id).insert({
-                                        _id: params.app_user_id,
-                                        uid: uid,
-                                        did: params.qstring.device_id
-                                    }, {ignore_errors: [11000]}, function() {
-                                        restartRequest(params, done, try_times);
-                                    });
-                                }
-                                else {
-                                    //document was created, but has no uid
-                                    //here we add uid only if it does not exist in db
-                                    //so if paralel request inserted it, we will not overwrite it
-                                    //and retrieve that uid on retry
-                                    common.db.collection('app_users' + params.app_id).update({
-                                        _id: params.app_user_id,
-                                        uid: {$exists: false}
-                                    }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
-                                        restartRequest(params, done, try_times);
-                                    });
-                                }
+                    processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
+                        if (userErr) {
+                            if (!params.res.finished) {
+                                common.returnMessage(params, 400, userErr);
                             }
-                            else {
-                                //cannot create uid, so cannot process request now
-                                console.log("Cannot create uid", err, uid);
-                                if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-                                    common.returnMessage(params, 400, "Cannot create uid");
-                                }
-                            }
-                        });
-                    }
-                    //check if device id was changed
-                    else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-                        const old_id = common.crypto.createHash('sha1')
-                            .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                            .digest('hex');
-
-                        countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
-                            //remove old device ID and retry request
-                            params.qstring.old_device_id = null;
-                            restartRequest(params, done, try_times);
-                        });
-
-                        //do not proceed with request
-                        return false;
-                    }
-                    else {
-                        processRequestData(params, app, done);
-                    }
+                        }
+                        else {
+                            processRequestData(params, app, done);
+                        }
+                    });
                 }
                 else {
-                    if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-                        common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                    if (!params.res.finished && !params.waitForResponse) {
+                        common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
+                        //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                     }
                     common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                     return done ? done() : false;
                 }
             });
         });
-        if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-            common.returnMessage(params, 200, 'Success');
-            return;
-        }
     });
 };
 
@@ -2354,12 +2597,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
  * @returns {function} done - done callback
  */
 const validateAppForFetchAPI = (params, done, try_times) => {
-    var sourceType = "FetchAPI";
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
-
-    common.db.collection('apps').findOne({'key': params.qstring.app_key}, (err, app) => {
+    common.readBatcher.getOne("apps", {'key': params.qstring.app_key}, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -2373,12 +2614,8 @@ const validateAppForFetchAPI = (params, done, try_times) => {
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
 
-        if (!checksumSaltVerification(params, sourceType)) {
+        if (!checksumSaltVerification(params)) {
             return done ? done() : false;
-        }
-
-        if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
-            params.user.tz = parseInt(params.qstring.tz);
         }
 
         if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
@@ -2390,7 +2627,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
             }
         }
 
-        var parallelTasks = [countlyApi.data.usage.setLocation.bind(null, params)];
+        var parallelTasks = [countlyApi.data.usage.setLocation(params)];
 
         var processThisUser = true;
 
@@ -2405,148 +2642,128 @@ const validateAppForFetchAPI = (params, done, try_times) => {
         }
 
         if (!processThisUser) {
-            parallelTasks.push(fetchAppUser.bind(null, params));
+            parallelTasks.push(fetchAppUser(params));
         }
         else {
-            parallelTasks.push(processUser.bind(null, params, done, try_times));
+            parallelTasks.push(fetchAppUser(params).then(() => {
+                return processUser(params, validateAppForFetchAPI, done, try_times);
+            }));
         }
 
         Promise.all(
-            parallelTasks.map((func) => func())).then(() => {
-            processFetchRequest(params, app, done);
-        }).catch(() => {
-            processFetchRequest(params, app, done);
-        });
+            parallelTasks
+        )
+            .catch((error) => {
+                console.error(error);
+            })
+            .finally(() => {
+                processFetchRequest(params, app, done);
+            });
     });
 };
+
+/**
+ * Restart Request
+ * @param {params} params - params object
+ * @param {function} initiator - function which initiated request
+ * @param {function} done - callback when processing done
+ * @param {number} try_times - how many times request was retried
+ * @param {function} fail - callback when restart limit reached
+ * @returns {void} void
+ */
+const restartRequest = (params, initiator, done, try_times, fail) => {
+    if (!try_times) {
+        try_times = 1;
+    }
+    else {
+        try_times++;
+    }
+    if (try_times > 5) {
+        console.log("Too many retries", try_times);
+        if (typeof fail === "function") {
+            fail("Cannot process request. Too many retries");
+        }
+        return;
+    }
+    params.retry_request = true;
+    //retry request
+    initiator(params, done, try_times);
+};
+
 /**
  * @param  {object} params - params object
+ * @param  {function} initiator - function which initiated request
  * @param  {function} done - callback when processing done
  * @param  {number} try_times - how many times request was retried
  * @returns {Promise} - resolved
  */
-function processUser(params, done, try_times) {
+function processUser(params, initiator, done, try_times) {
     return new Promise((resolve) => {
-        fetchAppUser(params).then(() => {
-            if (!params.app_user.uid) {
-                //first time we see this user, we need to id him with uid
-                countlyApi.mgmt.appUsers.getUid(params.app_id, function(err3, uid) {
-                    if (uid) {
-                        params.app_user.uid = uid;
-                        if (!params.app_user._id) {
-                            //if document was not yet created
-                            //we try to insert one with uid
-                            //even if paralel request already inserted uid
-                            //this insert will fail
-                            //but we will retry again and fetch new inserted document
-                            common.db.collection('app_users' + params.app_id).insert({
-                                _id: params.app_user_id,
-                                uid: uid,
-                                did: params.qstring.device_id
-                            }, {ignore_errors: [11000]}, function() {
-                                restartFetchRequest(params, done, try_times, function() {
-                                    return resolve();
-                                });
-                            });
-                        }
-                        else {
-                            //document was created, but has no uid
-                            //here we add uid only if it does not exist in db
-                            //so if paralel request inserted it, we will not overwrite it
-                            //and retrieve that uid on retry
-                            common.db.collection('app_users' + params.app_id).update({
-                                _id: params.app_user_id,
-                                uid: {$exists: false}
-                            }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
-                                restartFetchRequest(params, done, try_times, function() {
-                                    return resolve();
-                                });
-                            });
-                        }
+        if (!params.app_user.uid) {
+            //first time we see this user, we need to id him with uid
+            countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
+                plugins.dispatch("/i/app_users/create", {
+                    app_id: params.app_id,
+                    user: {uid: uid, did: params.qstring.device_id, _id: params.app_user_id },
+                    res: {uid: uid, did: params.qstring.device_id, _id: params.app_user_id },
+                    params: params
+                });
+                if (uid) {
+                    params.app_user.uid = uid;
+                    if (!params.app_user._id) {
+                        //if document was not yet created
+                        //we try to insert one with uid
+                        //even if paralel request already inserted uid
+                        //this insert will fail
+                        //but we will retry again and fetch new inserted document
+                        common.db.collection('app_users' + params.app_id).insert({
+                            _id: params.app_user_id,
+                            uid: uid,
+                            did: params.qstring.device_id
+                        }, {ignore_errors: [11000]}, function() {
+                            restartRequest(params, initiator, done, try_times, resolve);
+                        });
                     }
                     else {
-                        //cannot create uid
-                        return resolve();
+                        //document was created, but has no uid
+                        //here we add uid only if it does not exist in db
+                        //so if paralel request inserted it, we will not overwrite it
+                        //and retrieve that uid on retry
+                        common.db.collection('app_users' + params.app_id).update({
+                            _id: params.app_user_id,
+                            uid: {$exists: false}
+                        }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]}, function() {
+                            restartRequest(params, initiator, done, try_times, resolve);
+                        });
                     }
-                });
-            }
-            //check if device id was changed
-            else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
-                const old_id = common.crypto.createHash('sha1')
-                    .update(params.qstring.app_key + params.qstring.old_device_id + "")
-                    .digest('hex');
+                }
+                else {
+                    //cannot create uid, so cannot process request now
+                    console.log("Cannot create uid", err, uid);
+                    resolve("Cannot create uid");
+                }
+            });
+        }
+        //check if device id was changed
+        else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+            const old_id = common.crypto.createHash('sha1')
+                .update(params.qstring.app_key + params.qstring.old_device_id + "")
+                .digest('hex');
 
-                countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function() {
-                    //remove old device ID and retry request
-                    params.old_device_id = params.qstring.old_device_id; //Preserving old device id for logger
-                    params.qstring.old_device_id = null;
-                    restartFetchRequest(params, done, try_times, function() {
-                        return resolve();
-                    });
-                });
-            }
-            else {
-                return resolve();
-            }
-        });
-    });
-}
-/**
- * @param  {object} params - params object
- * @param  {String} type - source type
- * @param  {Function} done - done callback
- * @returns {Function} - done or boolean value
- */
-const checksumSaltVerification = (params, type) => {
-    if (params.app.checksum_salt && params.app.checksum_salt.length && !params.no_checksum) {
-        const payloads = [];
-        if (type === "WriteAPI") {
-            payloads.push(params.href.substr(3));
-        }
-        else if (type === "FetchAPI") {
-            payloads.push(params.href.substr(7));
-        }
-
-        if (params.req.method.toLowerCase() === 'post') {
-            payloads.push(params.req.body);
-        }
-        if (typeof params.qstring.checksum !== "undefined") {
-            for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = (payloads[i] + "").replace("&checksum=" + params.qstring.checksum, "").replace("checksum=" + params.qstring.checksum, "");
-                payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
-            }
-            if (payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1) {
-                common.returnMessage(params, 400, 'Request does not match checksum');
-                console.log("Checksum did not match", params.href, params.req.body, payloads);
-                params.cancelRequest = 'Request does not match checksum sha1';
-                plugins.dispatch("/sdk/cancel", {params: params});
-                return false;
-            }
-        }
-        else if (typeof params.qstring.checksum256 !== "undefined") {
-            for (let i = 0; i < payloads.length; i++) {
-                payloads[i] = (payloads[i] + "").replace("&checksum256=" + params.qstring.checksum256, "").replace("checksum256=" + params.qstring.checksum256, "");
-                payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
-            }
-            if (payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1) {
-                common.returnMessage(params, 400, 'Request does not match checksum');
-                console.log("Checksum did not match", params.href, params.req.body, payloads);
-                params.cancelRequest = 'Request does not match checksum sha256';
-                plugins.dispatch("/sdk/cancel", {params: params});
-                return false;
-            }
+            countlyApi.mgmt.appUsers.merge(params.app_id, params.app_user, params.app_user_id, old_id, params.qstring.device_id, params.qstring.old_device_id, function(err) {
+                if (err) {
+                    return common.returnMessage(params, 400, 'Cannot update user');
+                }
+                //remove old device ID and retry request
+                params.qstring.old_device_id = null;
+                restartRequest(params, initiator, done, try_times, resolve);
+            });
         }
         else {
-            common.returnMessage(params, 400, 'Request does not have checksum');
-            console.log("Request does not have checksum", params.href, params.req.body);
-            params.cancelRequest = "Request does not have checksum";
-            plugins.dispatch("/sdk/cancel", {params: params});
-            return false;
+            resolve();
         }
-    }
-
-    return true;
-};
+    });
+}
 
 /**
  * Function to fetch app user from db
@@ -2580,55 +2797,6 @@ const ignorePossibleDevices = (params) => {
 };
 
 /**
- * Restart Request
- * @param {params} params - params object
- * @param {function} done - callback when processing done
- * @param {number} try_times - how many times request was retried
- * @returns {void} void
- */
-const restartRequest = (params, done, try_times) => {
-    if (!try_times) {
-        try_times = 1;
-    }
-    else {
-        try_times++;
-    }
-    if (try_times > 5) {
-        console.log("Too many retries", try_times);
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-            common.returnMessage(params, 400, "Cannot process request");
-        }
-        return;
-    }
-    params.retry_request = true;
-    //retry request
-    validateAppForWriteAPI(params, done, try_times);
-};
-
-/**
- * Restart Fetch Request
- * @param {params} params - params object
- * @param {function} done - callback when processing done
- * @param {number} try_times - how many times request was retried
- * @param {function} cb - callback when restart limit reached
- * @returns {void} void
- */
-const restartFetchRequest = (params, done, try_times, cb) => {
-    if (!try_times) {
-        try_times = 1;
-    }
-    else {
-        try_times++;
-    }
-    if (try_times > 5) {
-        return cb();
-    }
-    params.retry_request = true;
-    //retry request
-    validateAppForFetchAPI(params, done, try_times);
-};
-
-/**
  * Fetches version mark history (filesystem)
  * @param {function} callback - callback when response is ready
  * @returns {void} void
@@ -2648,6 +2816,15 @@ function loadFsVersionMarks(callback) {
                 callback(parseErr, []);
             }
             if (Array.isArray(olderVersions)) {
+                //sort versions here.
+                olderVersions.sort(function(a, b) {
+                    if (typeof a.updated !== "undefined" && typeof b.updated !== "undefined") {
+                        return a.updated - b.updated;
+                    }
+                    else {
+                        return 1;
+                    }
+                });
                 callback(null, olderVersions);
             }
         }

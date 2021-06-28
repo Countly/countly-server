@@ -4,6 +4,7 @@ const job = require('../parts/jobs/job.js'),
     async = require('async'),
     plugins = require('../../plugins/pluginManager.js'),
     log = require('../utils/log.js')('job:appExpire'),
+    common = require('../utils/common.js'),
     crypto = require('crypto');
 
 
@@ -11,13 +12,12 @@ const job = require('../parts/jobs/job.js'),
 class AppExpireJob extends job.Job {
     /**
      * Run the job
-     * @param {Db} db connection
+     * @param {Db} database connection
      * @param {done} done callback
      */
-    run(db, done) {
+    run(database, done) {
         log.d('Removing expired data ...');
-        const database = plugins.dbConnection("countly");
-        const drillDatabase = plugins.dbConnection("countly_drill");
+        const drillDatabase = common.drillDb;
 
         /**
          * clear expired data
@@ -30,7 +30,7 @@ class AppExpireJob extends job.Job {
             const INDEX_NAME = "cd_1";
 
             let collections = [];
-            let events = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_star_rating"];
+            let events = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey"];
             let fromPlugins = plugins.getExpireList();
 
             // predefined drill events
@@ -111,14 +111,10 @@ class AppExpireJob extends job.Job {
             if (!appsErr && apps && apps.length) {
                 async.eachSeries(apps, clearExpiredData, function() {
                     log.d('Clearing data finished ...');
-                    database.close();
-                    drillDatabase.close();
                     done();
                 });
             }
             else {
-                database.close();
-                drillDatabase.close();
                 done(appsErr);
             }
         });

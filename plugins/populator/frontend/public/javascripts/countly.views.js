@@ -1,6 +1,7 @@
-/*global countlyPopulator, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, T, jQuery, PopulatorView, CountlyHelpers*/
+/*global countlyPopulator, countlyAuth, countlyGlobal, store, countlyCommon, $, moment, app, countlyView, T, jQuery, PopulatorView, CountlyHelpers*/
 
 window.PopulatorView = countlyView.extend({
+    featureName: 'populator',
     _tab: 'populator',
     templateTable: undefined,
     templateId: undefined,
@@ -72,25 +73,20 @@ window.PopulatorView = countlyView.extend({
 
         columnsDefine.push({
             mData: function(row) {
-                if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
-                    return '';
-                }
-                else {
-                    var editMenu = "<div class='populator-template-options-item options-item' data-id='" + row._id + "'>" +
+                var editMenu = "<div class='populator-template-options-item options-item' data-id='" + row._id + "'>" +
                         "<div class='edit-icon'></div>" +
                         "<div class='edit-menu populator-template-menu'>";
 
-                    if (row.isDefault) {
-                        editMenu += "<div class='duplicate-populator-template item' data-localize='populator.duplicate-template'><i class='fa fa-clone'></i>" + $.i18n.map["populator.duplicate-template"] + "</div>";
-                    }
-                    else {
-                        editMenu += "<div class='edit-populator-template item' data-localize='populator.edit-template'><i class='fa fa-pencil'></i>" + $.i18n.map["populator.edit-template"] + "</div>" +
-                            "<div class='duplicate-populator-template item' data-localize='populator.duplicate-template'><i class='fa fa-clone'></i>" + $.i18n.map["populator.duplicate-template"] + "</div>" +
-                            "<div class='delete-populator-template item' data-localize='populator.delete-template'><i class='fa fa-trash'></i>" + $.i18n.map["populator.delete-template"] + "</div>";
-                    }
-
-                    editMenu += "</div></div>";
+                if (row.isDefault && countlyAuth.validateCreate(self.featureName)) {
+                    editMenu += "<div class='duplicate-populator-template item' data-localize='populator.duplicate-template'><i class='fa fa-clone'></i>" + $.i18n.map["populator.duplicate-template"] + "</div>";
                 }
+                else {
+                    editMenu += (countlyAuth.validateUpdate(self.featureName) ? "<div class='edit-populator-template item' data-localize='populator.edit-template'><i class='fa fa-pencil'></i>" + $.i18n.map["populator.edit-template"] + "</div>" : "") +
+                        (countlyAuth.validateCreate(self.featureName) ? "<div class='duplicate-populator-template item' data-localize='populator.duplicate-template'><i class='fa fa-clone'></i>" + $.i18n.map["populator.duplicate-template"] + "</div>" : "") +
+                        (countlyAuth.validateDelete(self.featureName) ? "<div class='delete-populator-template item' data-localize='populator.delete-template'><i class='fa fa-trash'></i>" + $.i18n.map["populator.delete-template"] + "</div>" : "");
+                }
+
+                editMenu += "</div></div>";
 
                 return editMenu;
             },
@@ -113,6 +109,7 @@ window.PopulatorView = countlyView.extend({
 
         $("#templates-tab").off("click", ".edit-icon").on("click", ".edit-icon", function(e) {
             var menu = $(e.currentTarget).parents(".populator-template-options-item").find(".edit-menu");
+            $("#templates-tab .edit-menu").not(menu).hide();
             menu.toggle();
             /*
             if (!menu.is(":hidden")) {
@@ -205,40 +202,47 @@ window.PopulatorView = countlyView.extend({
         }
 
         Object.keys(templateData && templateData.events || {}).forEach(function(key) {
-            var event = templateData.events[key];
+            var eventVariants = templateData.events[key];
 
-            var row =
-                "<div class=\"populator-event-row\">" +
+            if (!Array.isArray(eventVariants)) {
+                eventVariants = [eventVariants];
+            }
+
+            eventVariants.forEach(function(event) {
+                var row =
+                    "<div class=\"populator-event-row\">" +
                     "<div class=\"populator-event-key-row\">" +
-                        "<div class=\"label\" data-localize=\"populator.event-key\"></div>" +
-                        "<input type=\"text\" class=\"input\" value=\"" + key + "\"/>" +
-                        "<div class=\"populator-template-remove-event text-link\" data-localize=\"populator.remove-event\"></div>" +
+                    "<div class=\"label\" data-localize=\"populator.event-key\"></div>" +
+                    "<input type=\"text\" class=\"input\" value=\"" + key + "\"/>" +
+                    "<div class=\"populator-template-remove-event text-link\" data-localize=\"populator.remove-event\"></div>" +
                     "</div>" +
                     "<div class=\"populator-event-segmentation-table\">" +
-                        "<div class=\"populator-event-segmentation-row header-row\">" +
-                            "<div class=\"label populator-event-segmentation-key\" data-localize=\"populator.segmentation-key\"></div>" +
-                            "<div class=\"label populator-event-segmentation-values\" data-localize=\"populator.segmentation-values\"></div>" +
-                        "</div>";
+                    "<div class=\"populator-event-segmentation-row header-row\">" +
+                    "<div class=\"label populator-event-segmentation-key\" data-localize=\"populator.segmentation-key\"></div>" +
+                    "<div class=\"label populator-event-segmentation-values\" data-localize=\"populator.segmentation-values\"></div>" +
+                    "</div>";
 
-            if (event.segments && Object.keys(event.segments).length > 0) {
-                Object.keys(event.segments).forEach(function(segmentationKey) {
-                    row +=
-                        "<div class=\"populator-event-segmentation-row\">" +
+                if (event.segments && Object.keys(event.segments).length > 0) {
+                    Object.keys(event.segments).forEach(function(segmentationKey) {
+                        row +=
+                            "<div class=\"populator-event-segmentation-row\">" +
                             "<input class=\"input populator-event-segmentation-key\" type=\"text\" class=\"input\"/ value=\"" + segmentationKey + "\">" +
                             "<input class=\"input populator-event-segmentation-values\" type=\"text\" class=\"input\"/ value=\"" + event.segments[segmentationKey].join(", ") + "\">" +
                             "<div class=\"icon-button remove text-light-gray\"><i class=\"material-icons\">highlight_off</i></div>" +
-                        "</div>";
-                });
-            }
+                            "</div>";
+                    });
+                }
 
-            row += "</div><div class=\"populator-event-add-segmentation text-link\" data-localize=\"populator.add-segmentation\"></div>";
-            row += "<div class=\"populator-event-property populator-template-event-duration\"><div class=\"fa check-green " + (event.duration ? "fa-check-square" : "fa-square-o") + "\"></div><div class=\"content\"><div class=\"help-title\" data-localize=\"populator.duration-help-title\"></div><div class=\"help-subtitle\" data-localize=\"populator.duration-help-subtitle\"></div><div class=\"event-property-inputs\"><input type=\"number\" class=\"input duration-start\" value=\"" + (event.duration && event.duration[0] || "") + "\"/><span> - </span><input type=\"number\" class=\"input duration-end\" value=\"" + (event.duration && event.duration[1] || "") + "\"/></div></div></div>";
-            row += "<div class=\"populator-event-property populator-template-event-sum\"><div class=\"fa check-green " + (event.sum ? "fa-check-square" : "fa-square-o") + "\"></div><div class=\"content\"><div class=\"help-title\" data-localize=\"populator.sum-help-title\"></div><div class=\"help-subtitle\" data-localize=\"populator.sum-help-subtitle\"></div><div class=\"event-property-inputs\"><input type=\"number\" class=\"input sum-start\" value=\"" + (event.sum && event.sum[0] || "") + "\"/><span> - </span><input type=\"number\" class=\"input sum-end\" value=\"" + (event.sum && event.sum[1] || "") + "\"/></div></div></div>";
+                row += "</div><div class=\"populator-event-add-segmentation text-link\" data-localize=\"populator.add-segmentation\"></div>";
+                row += "<div class=\"populator-event-property populator-template-event-duration\"><div class=\"fa check-green " + (event.duration ? "fa-check-square" : "fa-square-o") + "\"></div><div class=\"content\"><div class=\"help-title\" data-localize=\"populator.duration-help-title\"></div><div class=\"help-subtitle\" data-localize=\"populator.duration-help-subtitle\"></div><div class=\"event-property-inputs\"><input type=\"number\" class=\"input duration-start\" value=\"" + (event.duration && event.duration[0] || "") + "\"/><span> - </span><input type=\"number\" class=\"input duration-end\" value=\"" + (event.duration && event.duration[1] || "") + "\"/></div></div></div>";
+                row += "<div class=\"populator-event-property populator-template-event-sum\"><div class=\"fa check-green " + (event.sum ? "fa-check-square" : "fa-square-o") + "\"></div><div class=\"content\"><div class=\"help-title\" data-localize=\"populator.sum-help-title\"></div><div class=\"help-subtitle\" data-localize=\"populator.sum-help-subtitle\"></div><div class=\"event-property-inputs\"><input type=\"number\" class=\"input sum-start\" value=\"" + (event.sum && event.sum[0] || "") + "\"/><span> - </span><input type=\"number\" class=\"input sum-end\" value=\"" + (event.sum && event.sum[1] || "") + "\"/></div></div></div>";
 
-            $("#populator-template-add-event").before(row);
-            if (!(event.segments && Object.keys(event.segments).length > 0)) {
-                $("#populator-template-drawer .populator-event-row:last .populator-event-segmentation-table .header-row").hide();
-            }
+                $("#populator-template-add-event").before(row);
+
+                if (!(event.segments && Object.keys(event.segments).length > 0)) {
+                    $("#populator-template-drawer .populator-event-row:last .populator-event-segmentation-table .header-row").hide();
+                }
+            });
         });
         app.localize($("#populator-template-drawer"));
 
@@ -424,23 +428,29 @@ window.PopulatorView = countlyView.extend({
 
             $(".populator-event-row").each(function(index, row) {
                 var eventKey = $(row).find(".populator-event-key-row input").val();
-                templateData.events[eventKey] = {};
+                var eventData = {};
 
                 if ($(row).find(".populator-event-segmentation-row:not(.header-row)").length > 0) {
-                    templateData.events[eventKey].segments = {};
+                    eventData.segments = {};
 
                     $(row).find(".populator-event-segmentation-row:not(.header-row)").each(function(segmentationIndex, segmentationRow) {
-                        templateData.events[eventKey].segments[$(segmentationRow).find("input.populator-event-segmentation-key").val()] = processValues($(segmentationRow).find("input.populator-event-segmentation-values").val().split(/\s*,\s*/));
+                        eventData.segments[$(segmentationRow).find("input.populator-event-segmentation-key").val()] = processValues($(segmentationRow).find("input.populator-event-segmentation-values").val().split(/\s*,\s*/));
                     });
                 }
 
                 if ($(row).find(".populator-template-event-duration .check-green").hasClass("fa-check-square")) {
-                    templateData.events[eventKey].duration = [parseInt($(row).find(".duration-start").val()) || 0, parseInt($(row).find(".duration-end").val()) || 0];
+                    eventData.duration = [parseInt($(row).find(".duration-start").val()) || 0, parseInt($(row).find(".duration-end").val()) || 0];
                 }
 
                 if ($(row).find(".populator-template-event-sum .check-green").hasClass("fa-check-square")) {
-                    templateData.events[eventKey].sum = [parseFloat($(row).find(".sum-start").val()) || 0, parseFloat($(row).find(".sum-end").val()) || 0];
+                    eventData.sum = [parseFloat($(row).find(".sum-start").val()) || 0, parseFloat($(row).find(".sum-end").val()) || 0];
                 }
+
+                if (!Object.prototype.hasOwnProperty.call(templateData.events, eventKey)) {
+                    templateData.events[eventKey] = [];
+                }
+
+                templateData.events[eventKey].push(eventData);
             });
         }
 
@@ -460,7 +470,7 @@ window.PopulatorView = countlyView.extend({
 
         $(this.el).html(this.template(this.templateData));
 
-        if (!(countlyGlobal.member.admin_of && (countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) && !(countlyGlobal.member.global_admin)) {
+        if (!countlyAuth.validateCreate('populator')) {
             $("#create-populator-template-button").hide();
         }
         else {
@@ -598,6 +608,10 @@ window.PopulatorView = countlyView.extend({
         /*if (this.state === "/autostart") {
             $("#start-populate").click();
         }*/
+        if (!countlyAuth.validateCreate(self.featureName)) {
+            $('#populator-tab').hide();
+            $('#create-populator-template-button').hide();
+        }
     },
     refresh: function() {}
 });
@@ -606,7 +620,7 @@ window.PopulatorView = countlyView.extend({
 app.populatorView = new PopulatorView();
 
 app.route('/manage/populate*state', 'populate', function(state) {
-    if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
+    if (countlyAuth.validateRead(app.populatorView.featureName)) {
         this.populatorView.state = state;
         this.renderWhenReady(this.populatorView);
     }
@@ -634,22 +648,24 @@ app.addPageScript("/manage/apps", function() {
         '<div class="clear:both"></div><br>' +
         '</div>';
 
-    $("#add-new-app table .table-add").before(populateApp);
-    $('#save-first-app-add').before(populateFirstApp);
+    if (countlyAuth.validateRead(app.populatorView.featureName)) {
+        $("#add-new-app table .table-add").before(populateApp);
+        $('#save-first-app-add').before(populateFirstApp);
 
-    var saveBtn = store.get('first_app') ? '#save-first-app-add' : '#save-app-add';
-    $(saveBtn).click(function() {
-        var isFirstApp = store.get('first_app'),
-            isFirstAppPopulateChecked = $("#add-first-app #populate-first-app-after").is(':checked'),
-            isNewAppPopulateChecked = $("#add-new-app table #populate-app-after").is(':checked');
+        var saveBtn = store.get('first_app') ? '#save-first-app-add' : '#save-app-add';
+        $(saveBtn).click(function() {
+            var isFirstApp = store.get('first_app'),
+                isFirstAppPopulateChecked = $("#add-first-app #populate-first-app-after").is(':checked'),
+                isNewAppPopulateChecked = $("#add-new-app table #populate-app-after").is(':checked');
 
-        if ((isFirstApp && isFirstAppPopulateChecked) || (!isFirstApp && isNewAppPopulateChecked)) {
-            start_populating = true;
-            setTimeout(function() {
-                start_populating = false;
-            }, 5000);
-        }
-    });
+            if ((isFirstApp && isFirstAppPopulateChecked) || (!isFirstApp && isNewAppPopulateChecked)) {
+                start_populating = true;
+                setTimeout(function() {
+                    start_populating = false;
+                }, 5000);
+            }
+        });
+    }
 });
 
 app.addAppManagementSwitchCallback(function() {
@@ -665,12 +681,9 @@ app.addAppManagementSwitchCallback(function() {
 });
 
 $(document).ready(function() {
-    var style = "display:none;";
-    if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
-        style = "";
+    if (countlyAuth.validateRead(app.populatorView.featureName)) {
+        app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.title", priority: 70, classes: "populator-menu"});
     }
-    app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.title", priority: 70, classes: "populator-menu", style: style});
-
     //listen for UI app change
     app.addAppSwitchCallback(function(appId) {
         if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[appId]) {
@@ -678,6 +691,29 @@ $(document).ready(function() {
         }
         else {
             $(".populator-menu").hide();
+        }
+    });
+});
+
+app.addPageScript("/manage/export/export-features", function() {
+    countlyPopulator.getTemplates(function(templates) {
+        var templateList = [];
+        templates.forEach(function(template) {
+            if (!template.isDefault) {
+                templateList.push({
+                    id: template._id,
+                    name: template.name
+                });
+            }
+        });
+
+        var selectItem = {
+            id: "populator",
+            name: "Populator Templates",
+            children: templateList
+        };
+        if (templateList.length) {
+            app.exportView.addSelectTable(selectItem);
         }
     });
 });

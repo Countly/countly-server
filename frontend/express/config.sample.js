@@ -67,7 +67,7 @@ var countlyConfig = {
     * @type {object} 
     * @property {number} [port=6001] - dashboard port number to use, default 6001
     * @property {string} [host=localhost] - host to which to bind connection
-    * @property {boolean} use_intercom - true, to use intercom in dashboard for communication with Countly
+    * @property {boolean} use_intercom - true, to use internal communication in dashboard for communication with Countly
     * @property {boolean} secure_cookies - true, to use secure cookies, enable only if you have https enabled
     * @property {string} session_secret - secret used to sign the session ID cookie.
     * @property {string} [session_name=connect.sid] - name of the session cookie

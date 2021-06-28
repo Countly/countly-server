@@ -7,12 +7,12 @@ const J = require('../../../../api/parts/jobs/job.js'),
     Loader = require('../parts/store.js').Loader,
     N = require('../parts/note.js');
 
-const FORK_WHEN_MORE_THAN = 100000,
+const FORK_WHEN_MORE_THAN = 300000,
     FORK_MAX = 5,
     SEND_AHEAD = 1 * 60000,
     DROP_BEFORE = 3600000,
     DROP_BEFORE_EVENTS = 120000,
-    BATCH = 50000;
+    BATCH = 100000;
 /** proces jo class */
 // for tests-api-multi-pers.js
 // const FORK_WHEN_MORE_THAN = 3,
@@ -254,6 +254,7 @@ class ProcessJob extends J.IPCJob {
      */
     compile(notes, msgs) {
         // let pm, pn, pp, po;
+        this.log.d('Compiling notes %j, messages %j', notes, msgs);
 
         let invalid = [];
 
@@ -323,10 +324,10 @@ class ProcessJob extends J.IPCJob {
             if (count === 0) {
                 return done();
             }
-            else if (this.isFork && count < FORK_WHEN_MORE_THAN) {
-                this.log.i('Won\'t run fork since there\'s less than forkable number of tokens');
-                return done();
-            }
+            // else if (this.isFork && count < FORK_WHEN_MORE_THAN) {
+            //     this.log.i('Won\'t run fork since there\'s less than forkable number of tokens');
+            //     return done();
+            // }
 
 
             do {
@@ -366,6 +367,11 @@ class ProcessJob extends J.IPCJob {
                 if (!msgs.length) {
                     break;
                 }
+
+                // reload notes for msgs
+                let ids = msgs.map(m => m.n.toString());
+                ids = ids.filter((id, i) => ids.indexOf(id) === i);
+                notes = await this.loader.notes(ids);
 
                 // mark messages as being sent
                 await Promise.all(Object.values(notes).map(json => this.loader.updateNote(json._id, {$addToSet: {jobs: this._id}, $bit: {'result.status': {or: N.Status.Sending}}})));
@@ -599,7 +605,7 @@ class ProcessJob extends J.IPCJob {
                 count = await this.loader.count(this.now());
 
                 // fork if parallel processing needed
-                if (!this.maxFork && !resourceError && count > FORK_WHEN_MORE_THAN) {
+                if (!this.maxFork && !this.isFork && !resourceError && count > FORK_WHEN_MORE_THAN) {
                     for (let i = 0; i < Math.min(Math.floor(count / FORK_WHEN_MORE_THAN), FORK_MAX); i++) {
                         this.log.i('Forking %d since %d > %d', i, count, FORK_WHEN_MORE_THAN);
                         await this.fork();

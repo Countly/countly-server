@@ -21,12 +21,17 @@ window.component('push.popup', function(popup) {
         m.startComputation();
         var message = prefilled instanceof push.Message ? prefilled : new push.Message(prefilled || {});
         if (!duplicate) {
-            message.sound('default');
-            if (message.auto()) {
+            if (!message.sound()) {
+                message.sound('default');
+            }
+            if (!message.expiration()) {
+                message.expiration(1000 * 3600 * 24 * 7);
+            }
+            if (message.auto() || message.tx()) {
                 if (message._id()) {
                     message.editingAuto = true;
                 }
-                else {
+                else if (!message.tx()) {
                     message.autoOnEntry(true);
                     message.autoCapMessages(2);
                     message.autoCapSleep(1000 * 3600 * 24);
@@ -52,20 +57,29 @@ window.component('push.popup', function(popup) {
             }
         }
 
+        var aid = message.apps()[0];
+        if (aid && !(CC.dot(CG.apps[aid], 'plugins.push.' + push.C.PLATFORMS.HUAWEI + '._id') ||
+            CC.dot(CG.apps[aid], 'plugins.push.' + push.C.PLATFORMS.ANDROID + '._id') ||
+            CC.dot(CG.apps[aid], 'plugins.push.' + push.C.PLATFORMS.IOS + '._id'))) {
+            m.endComputation();
+            return window.CountlyHelpers.alert(t('push.error.no-app-credentials'), 'popStyleGreen', {title: t('push.error.no.credentials'), image: 'empty-icon', button_title: t('push.error.i.understand')});
+        }
+
+
         if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length) && (!push.dashboard.events || !push.dashboard.events.length)) {
             m.endComputation();
             return window.CountlyHelpers.alert(t('push.error.no-cohorts'), 'popStyleGreen', {title: t('push.error.no.cohorts'), image: 'empty-icon', button_title: t('push.error.i.understand')});
         }
 
         push.popup.slider = C.slider.show({
-            key: 'meow',
+            key: 'meow' + Math.random(),
             title: function () {
                 var els = [
                     t('pu.po.title')
                 ];
                 return m('h3', els);
             },
-            desc: message.auto() ? t('pu.po.desc').replace('4', '5') : t('pu.po.desc'),
+            desc: message.auto() || message.tx() ? t('pu.po.desc').replace('4', '5') : t('pu.po.desc'),
             // onclose: function() {
             //  console.log('slider closed');
             // },
@@ -102,7 +116,7 @@ window.component('push.popup', function(popup) {
             events = push.dashboard.events.map(function (event) {
                 return new C.selector.Option({ value: event.key, title: event.name, selected: message.autoEvents().indexOf(event.name) !== -1 });
             });
-        } else {
+        } else if (!message.tx()) {
             onetimeCohorts = push.dashboard.cohorts.map(function (cohort) {
                 return new C.selector.Option({ value: cohort._id, title: cohort.name, selected: message.cohorts().indexOf(cohort._id) !== -1 });
             }); 
@@ -116,12 +130,12 @@ window.component('push.popup', function(popup) {
         this.message = message;
         this.renderTab = function (i, active) {
             var tab;
-            if ((message.auto() && i <= 2) || (!message.auto() && i <= 1)) {
+            if (((message.auto() || message.tx()) && i <= 2) || (!message.auto() && !message.tx() && i <= 1)) {
                 tab = 'tab' + i;
             } else {
-                if ((message.auto() && i === 3) || (!message.auto() && i === 2)) {
+                if (((message.auto() || message.tx()) && i === 3) || (!message.auto() && !message.tx() && i === 2)) {
                     tab = 'compose';
-                } else if ((message.auto() && i === 4) || (!message.auto() && i === 3)) {
+                } else if (((message.auto() || message.tx()) && i === 4) || (!message.auto() && !message.tx() && i === 3)) {
                     tab = 'review';
                 }
             }
@@ -131,8 +145,8 @@ window.component('push.popup', function(popup) {
                     i < 2 ? push.ICON.WARN('comp-push-tab-warn') : m('.comp-push-tab-num', i + 1)
                     // i < 2 ? m('svg.comp-push-tab-warn[width=21][height=18]', m('path[fill="#FF9E43"][d="M20,18c0.6,0,0.8-0.4,0.5-0.9L11,0.9c-0.3-0.5-0.7-0.5-1,0L0.5,17.1C0.2,17.6,0.4,18,1,18H20zM10,13h2v2h-2V13z M10,8h2v4h-2V8z"]')) : m('.comp-push-tab-num', i + 1)
                     : i < this.tabs.tab() ? m('.comp-push-tab-num.ion-checkmark') : m('.comp-push-tab-num', i + 1),
-                m('.comp-push-tab-title', t('pu.po.' + tab + '.title' + (message.auto() ? '.auto' : ''), t('pu.po.' + tab + '.title'))),
-                m('.comp-push-tab-desc', t('pu.po.' + tab + '.desc' + (message.auto() ? '.auto' : ''), t('pu.po.' + tab + '.desc')))
+                m('.comp-push-tab-title', t('pu.po.' + tab + '.title' + (message.auto() || message.tx() ? '.auto' : ''), t('pu.po.' + tab + '.title'))),
+                m('.comp-push-tab-desc', t('pu.po.' + tab + '.desc' + (message.auto() || message.tx() ? '.auto' : ''), t('pu.po.' + tab + '.desc')))
             ]);
         };
 
@@ -152,7 +166,7 @@ window.component('push.popup', function(popup) {
             }
 
             var enabled = true;
-            if ((message.auto() && tab >= 4) || (!message.auto() && tab >= 3)) {
+            if (((message.auto() || message.tx()) && tab >= 4) || (!message.auto() && !message.tx() && tab >= 3)) {
                 if (message.type() === push.C.TYPE.MESSAGE) {
                     enabled = enabled && message.messagePerLocale().default;
                 } else if (message.type() === push.C.TYPE.DATA) {
@@ -168,7 +182,7 @@ window.component('push.popup', function(popup) {
                     enabled = false;
                 }
             }
-            if (enabled && message.auto() && tab >= 3) {
+            if (enabled && (message.auto() || message.tx()) && tab >= 3) {
                 if (message.autoDelay() === null ||
                     message.autoTime() === null ||
                     message.autoCapMessages() === null || 
@@ -176,13 +190,15 @@ window.component('push.popup', function(popup) {
                     enabled = false;
                 }
             }
-            if (enabled && !message.auto() && tab >= 2) {
+            if (enabled && !message.auto() && !message.tx() && tab >= 2) {
                 if (message.date() === null) {
                     enabled = enabled && !!message.date();
                 }
             }
-            if (enabled && message.auto() && tab >= 2) {
-                if (message.autoOnEntry() === 'events'){
+            if (enabled && (message.auto() || message.tx()) && tab >= 2) {
+                if (message.tx()) {
+                    enabled = true;
+                } else if (message.autoOnEntry() === 'events'){
                     if (message.autoEvents().length === 0 ||
                         message.date() === null ||
                         message.autoEnd() === null) {
@@ -251,10 +267,10 @@ window.component('push.popup', function(popup) {
                 //      message.tz(false);
                 //  }
                 // }
-                if (((message.auto() && tab >= 3) || (!message.auto() && tab >= 2)) && !message.count()) {
+                if ((((message.auto() || message.tx()) && tab >= 3) || (!message.auto() && !message.tx() && tab >= 2)) && !message.count()) {
                     C.slider.instance.loading(true);
                     message.remotePrepare(this.checkForNoUsers.bind(this, true)).then(function () {
-                        setTimeout(function () {
+                        var done = function () {
                             m.startComputation();
                             C.slider.instance.loading(false);
                             this.checkForNoUsers();
@@ -262,7 +278,14 @@ window.component('push.popup', function(popup) {
                                 popup.tabs.set(tab);
                             }
                             m.endComputation();
-                        }.bind(this), 400);
+                        }.bind(this);
+                        setTimeout(function(){
+                            if (message.auto() && message.autoOnEntry() === 'events') {
+                                Promise.all(message.autoEvents().map(function(key) { return C.push.initEvent(key); })).then(done, done);
+                            } else {
+                                done();
+                            }
+                        }, 400);
                     }.bind(this), C.slider.instance.loading.bind(C.slider.instance, false));
                 } else {
                     this.tabs.customComponent = null;
@@ -282,11 +305,15 @@ window.component('push.popup', function(popup) {
             }
         }.bind(this);
 
+        var sending = false;
         this.send = function (ev) {
             ev.preventDefault();
             if (!message.ack() && !message.editingAuto) { return; }
+            if (sending) { return; }
+            sending = true;
             C.slider.instance.loading(true);
             message.remoteCreate().then(function () {
+                sending = false;
                 message.saved(true);
 
                 setTimeout(function () {
@@ -298,11 +325,12 @@ window.component('push.popup', function(popup) {
                     window.app.recordEvent({
                         "key": "push-create",
                         "count": 1,
-                        "segmentation": {type: (message.auto() === true) ? "auto" : "one-time" }
+                        "segmentation": {type: (message.auto() === true) ? "auto" : message.tx() === true ? 'tx' : "one-time" }
                     });
                     m.endComputation();
                 }, 1000);
             }, function (error) {
+                sending = false;
                 C.slider.instance.loading(false);
                 window.CountlyHelpers.alert(error.error || error.result || error, 'popStyleGreen', {title: t('pu.po.tab3.errors.message'), image: 'empty-icon', button_title: t('push.error.i.understand')});
             });
@@ -343,6 +371,9 @@ window.component('push.popup', function(popup) {
                 k = (locale || activeLocale()) + (index === undefined ? (push.C.S + key) : (push.C.S + index + push.C.S + key));
 
                 if (arguments.length) {
+                    if (v && key === 'l') {
+                        v = v.trim();
+                    }
                     message.messagePerLocale()[k] = v;
                 }
 
@@ -400,6 +431,16 @@ window.component('push.popup', function(popup) {
                         l.buttonUrl0 = buttonTitle(0, 'l', l.value);
                         l.buttonUrl1 = buttonTitle(1, 'l', l.value);
 
+                        var persOpts = push.PERS_OPTS.slice();
+                        if (message.auto() && message.autoOnEntry() === 'events') {
+                            message.autoEvents().forEach(function(key) {
+                                var data = push.PERS_EVENTS[key];
+                                if (data && data.length) {
+                                    persOpts = persOpts.concat([new C.selector.Option({title: key})]).concat(data);
+                                }
+                            });
+                        }
+
                         l.titleCtrl = new C.emoji.controller({
                             key: 't' + l.value, 
                             value: l.messageTitle, 
@@ -407,7 +448,7 @@ window.component('push.popup', function(popup) {
                             valuePers: l.messageTitlePers, 
                             valueCompiled: message.titleCompile.bind(message, l.value, true), 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); },
-                            persOpts: push.PERS_OPTS && push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
+                            persOpts: persOpts && persOpts.length ? persOpts : undefined,
                             onToggle: function(v) { emojiPersOpen = v; }
                         });
                         l.messageCtrl = new C.emoji.controller({
@@ -418,7 +459,7 @@ window.component('push.popup', function(popup) {
                             valueCompiled: message.messageCompile.bind(message, l.value, true), 
                             textarea: true, 
                             placeholder: function () { return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); },
-                            persOpts: push.PERS_OPTS && push.PERS_OPTS.length ? push.PERS_OPTS : undefined,
+                            persOpts: persOpts && persOpts.length ? persOpts : undefined,
                             onToggle: function(v) { emojiPersOpen = v; }
                         });
 
@@ -539,6 +580,8 @@ window.component('push.popup', function(popup) {
                 this.typ = opts.typ || 'text';
                 this.help = opts.help;
                 this.textarea = opts.textarea;
+                this.comp = opts.comp;
+                this.cls = opts.cls;
                 this.oncheck = function (ev) {
                     if (ev && ev instanceof MouseEvent && ev.target.tagName.toLowerCase() === 'input') {
                         return true;
@@ -572,7 +615,7 @@ window.component('push.popup', function(popup) {
                 };
                 if (ctrl.value() === undefined) { inp.disabled = 'disabled'; }
 
-                return m('.comp-push-extra', { class: !ctrl.textarea || ctrl.value() === undefined ? '' : 'expanded' }, [
+                return m('.comp-push-extra', { class: (!ctrl.textarea || ctrl.value() === undefined ? '' : 'expanded') + ' ' + (ctrl.cls || '') }, [
                     m('.comp-push-extra-check', { onclick: ctrl.oncheck }, [
                         m('input[type=checkbox]', check),
                         m('label', typeof ctrl.title === 'string' ?
@@ -590,7 +633,7 @@ window.component('push.popup', function(popup) {
                         class: ctrl.value() === undefined ? '' : 'active', onclick: function () {
                             if (ctrl.value() === undefined) { ctrl.oncheck(); }
                         }
-                    }, [
+                    }, ctrl.comp ? ctrl.comp() : [
                         m(ctrl.textarea ? 'textarea' : 'input[type=' + ctrl.typ + ']', inp),
                         ctrl.value() !== undefined && !ctrl.value.valid ?
                             m('.error', C.tooltip.config(ctrl.value.errorText), push.ICON.WARN())
@@ -700,14 +743,14 @@ window.component('push.popup', function(popup) {
                                     ]);
                                 })
                             ]),
-                            !message.auto() && push.dashboard.geos && push.dashboard.geos.length ?
+                            !message.auto() && !message.tx() && push.dashboard.geos && push.dashboard.geos.length ?
                                 m('.form-group', [
                                     m('h4', t('pu.po.tab1.geos')),
                                     C.multiselect.view(ctrl.selectGeos),
                                     m('.desc', t('pu.po.tab1.geos-desc')),
                                 ])
                                 : '',
-                            !message.auto() && push.dashboard.cohorts && push.dashboard.cohorts.length ?
+                            !message.auto() && !message.tx() && push.dashboard.cohorts && push.dashboard.cohorts.length ?
                                 m('.form-group', [
                                     m('h4', t('pu.po.tab1.chr')),
                                     C.multiselect.view(ctrl.selectOnetimeCohorts),
@@ -730,7 +773,7 @@ window.component('push.popup', function(popup) {
             }
         ];
 
-        if (message.auto()) {
+        if (message.auto() || message.tx()) {
             // Campaign Rules
             tabs.push({
                 tab: this.renderTab.bind(this, 1),
@@ -750,10 +793,18 @@ window.component('push.popup', function(popup) {
                             { value: true, title: t('pu.po.tab1.trigger-type.entry'), desc: t('pu.po.tab1.cohort-entry-desc') },
                             { value: false, title: t('pu.po.tab1.trigger-type.exit'), desc: t('pu.po.tab1.cohort-exit-desc') },
                             { value: 'events', title: t('pu.po.tab1.trigger-type.event'), desc: t('pu.po.tab1.cohort-event-desc') },
-                        ], value: message.autoOnEntry, onchange: function(){
-                            message.autoEvents([]);
-                            message.autoCohorts([]);
-                        }
+                        ], value: message.autoOnEntry, onchange: function(neo, old){
+                            neo = typeof neo === 'boolean';
+                            old = typeof old === 'boolean';
+                            if (neo ^ old) {
+                                message.autoEvents([]);
+                                message.autoCohorts([]);
+                                cohorts.forEach(function(c){ c.selected(false); });
+                                events.forEach(function(c){ c.selected(false); });
+                                this.selectCohorts.value([]);
+                                this.selectEvents.value([]);
+                            }
+                        }.bind(this)
                     });
                     this.selectEvents = new C.multiselect.controller({
                         placeholder: t('pu.po.tab1.select-event-placeholder'),
@@ -821,6 +872,20 @@ window.component('push.popup', function(popup) {
                         ], value: message.actualDates
                     });
 
+                    this.radioCancelTriggerEntry = new C.radio.controller({
+                        options: [
+                            { value: false, title: t('pu.po.tab2.trc.dont') },
+                            { value: true, title: t('pu.po.tab2.trc.true') }
+                        ], value: message.autoCancelTrigger
+                    });
+
+                    this.radioCancelTriggerExit = new C.radio.controller({
+                        options: [
+                            { value: false, title: t('pu.po.tab2.trc.dont') },
+                            { value: true, title: t('pu.po.tab2.trc.false') }
+                        ], value: message.autoCancelTrigger
+                    });
+
                     this.checkAutoEnd = new C.checkbox.controller({
                         class: 'comp-grid-row',
                         group: 'comp-grid-cell',
@@ -838,46 +903,54 @@ window.component('push.popup', function(popup) {
                 },
                 view: function (ctrl) {
                     return m('.comp-push-tab-content',
-                        m('.comp-panel', [
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab1.trigger-type')),
-                                C.radio.view(ctrl.radioType)
-                            ]),
-                            message.autoOnEntry() === 'events' ?
+                        m('.comp-panel', 
+                            (message.tx() ? [] : [
                                 m('.form-group', [
-                                    m('h4', t('pu.po.tab1.select-event')),
-                                    C.multiselect.view(ctrl.selectEvents),
-                                ]) :
+                                    m('h4', t('pu.po.tab1.trigger-type')),
+                                    C.radio.view(ctrl.radioType)
+                                ]),
+                                message.autoOnEntry() === 'events' ?
+                                    m('.form-group', [
+                                        m('h4', t('pu.po.tab1.select-event')),
+                                        C.multiselect.view(ctrl.selectEvents),
+                                    ]) :
+                                    m('.form-group', [
+                                        m('h4', t('pu.po.tab1.select-cohort')),
+                                        C.multiselect.view(ctrl.selectCohorts),
+                                        m('.desc', t('pu.po.tab1.select-cohort-desc')),
+                                    ]),
+    
+                                message.autoOnEntry() === 'events' ? m('.form-group', [
+                                    m('h4', t('pu.po.tab2.ddc')),
+                                    C.radio.view(ctrl.radioActualDates),
+                                    // m('.desc', t('pu.po.tab2.ddc.h'))
+                                ]) : '',
+    
+                                message.autoOnEntry() !== 'events' ? m('.form-group', [
+                                    m('h4', t('pu.po.tab2.trc')),
+                                    message.autoOnEntry() === true ? C.radio.view(ctrl.radioCancelTriggerEntry) : C.radio.view(ctrl.radioCancelTriggerExit),
+                                    // m('.desc', t('pu.po.tab2.ddc.h'))
+                                ]) : '',
+                            ]).concat([
                                 m('.form-group', [
-                                    m('h4', t('pu.po.tab1.select-cohort')),
-                                    C.multiselect.view(ctrl.selectCohorts),
-                                    m('.desc', t('pu.po.tab1.select-cohort-desc')),
+                                    m('h4', t('pu.po.tab1.campaign-start-date')),
+                                    C.radio.view(ctrl.radioStartDate)
                                 ]),
 
-                            message.autoOnEntry() === 'events' ? m('.form-group', [
-                                m('h4', t('pu.po.tab2.ddc')),
-                                C.radio.view(ctrl.radioActualDates),
-                                // m('.desc', t('pu.po.tab2.ddc.h'))
-                            ]) : '',
-
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab1.campaign-start-date')),
-                                C.radio.view(ctrl.radioStartDate)
-                            ]),
-
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab1.additional-options')),
-                                m('.comp-grid.comp-unpadded', [
-                                    C.checkbox.view(ctrl.checkAutoEnd)
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab1.additional-options')),
+                                    m('.comp-grid.comp-unpadded', [
+                                        C.checkbox.view(ctrl.checkAutoEnd)
+                                    ]),
+                                    m('.desc', t('pu.po.tab2.delivery-end-desc')),
                                 ]),
-                                m('.desc', t('pu.po.tab2.delivery-end-desc')),
-                            ]),
 
-                            m('.btns', {key: 'btns'}, [
-                                m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
-                                popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
+                                m('.btns', {key: 'btns'}, [
+                                    m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
+                                    popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
+                                ])
                             ])
-                        ]));
+                        ));
                 }
             });
 
@@ -887,6 +960,7 @@ window.component('push.popup', function(popup) {
                 controller: function () {
                     this.delay = new C.delay.controller({days: true, hours: true, value: message.autoDelay});
                     this.sleep = new C.delay.controller({days: true, hours: true, value: message.autoCapSleep});
+                    this.expiration = new C.delay.controller({days: true, hours: true, value: message.expiration});
                     this.messageCapped = function(){
                         if (arguments.length) {
                             if (arguments[0]) {
@@ -948,7 +1022,7 @@ window.component('push.popup', function(popup) {
 
                     this.radioCap = new C.radio.controller({
                         options: [
-                            { value: false, title: t('pu.po.tab2.capping.no'),  desc: t('pu.po.tab2.capping.no-desc' + (message.autoOnEntry() === 'events' ? '-event' : ''))  },
+                            { value: false, title: t('pu.po.tab2.capping.no'),  desc: t('pu.po.tab2.capping.no-desc' + (message.autoOnEntry() === 'events' ? '-event' : message.tx() ? '-tx' : ''))  },
                             { value: true,  title: t('pu.po.tab2.capping.yes'), desc: t('pu.po.tab2.capping.yes-desc') }
                         ], value: this.messageCapped
                     });
@@ -968,67 +1042,79 @@ window.component('push.popup', function(popup) {
                 },
                 view: function (ctrl) {
                     return m('.comp-push-tab-content',
-                        m('.comp-panel', [
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab2.delivery-method')),
-                                C.radio.view(ctrl.radioDelay),
-                                m('.desc', t('pu.po.tab2.delivery-method-desc')),
-                            ]),
-
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab2.delivery-time')),
-                                m('.comp-grid.comp-unpadded', [
-                                    C.checkbox.view(ctrl.checkTime)
+                        m('.comp-panel', 
+                            (message.tx() ? [] : [
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab2.delivery-method')),
+                                    C.radio.view(ctrl.radioDelay),
+                                    m('.desc', t('pu.po.tab2.delivery-method-desc')),
                                 ]),
-                                m('.desc', t('pu.po.tab2.delivery-time-desc')),
-                            ]),
 
-                            m('.form-group', [
-                                m('h4', t('pu.po.tab2.capping')),
-                                C.radio.view(ctrl.radioCap),
-                                m('.desc', t('pu.po.tab2.capping-desc')),
-                            ]),
-
-                            ctrl.messageCapped() ? m('.form-group', [
-                                m('.comp-grid', [
-                                    m('.comp-grid-row', [
-                                        m('.comp-grid-cell', t('pu.po.tab2.message-per-user')),
-                                        m('.comp-grid-cell', m('.comp-delay.single', [
-                                            m('input.comp-delay-days', {
-                                                type: 'number', 
-                                                value: message.autoCapMessages(),
-                                                min: 0,
-                                                oninput: function(){
-                                                    if (!('' + this.value).length) {
-                                                        message.autoCapMessages(undefined);
-                                                    } else if (('' + this.value).length && !isNaN(parseInt(this.value)) && parseInt(this.value) >= 0) {
-                                                        message.autoCapMessages(parseInt(this.value));
-                                                    }
-                                                },
-                                                placeholder: 'unlimited'
-                                            }),
-                                            m('label.comp-delay-days', t.n('pu.messages', message.autoCapMessages()))
-                                        ]))
-                                    ])
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab2.delivery-time')),
+                                    m('.comp-grid.comp-unpadded', [
+                                        C.checkbox.view(ctrl.checkTime)
+                                    ]),
+                                    m('.desc', t('pu.po.tab2.delivery-time-desc')),
+                                ])
+                            ]).concat([
+                                m('.form-group', [
+                                    m('h4', t('pu.po.tab2.capping')),
+                                    C.radio.view(ctrl.radioCap),
+                                    m('.desc', t('pu.po.tab2.capping-desc')),
                                 ]),
-                                m('.desc', t('pu.po.tab2.message-per-user-desc'))
-                            ]) : '',
-
-                            ctrl.messageCapped() ? m('.form-group', [
-                                m('.comp-grid', [
-                                    m('.comp-grid-row', [
-                                        m('.comp-grid-cell', t('pu.po.tab2.sleep')),
-                                        m('.comp-grid-cell', C.delay.view(ctrl.sleep))
-                                    ])
+    
+                                ctrl.messageCapped() ? m('.form-group', [
+                                    m('.comp-grid', [
+                                        m('.comp-grid-row', [
+                                            m('.comp-grid-cell', t('pu.po.tab2.message-per-user')),
+                                            m('.comp-grid-cell', m('.comp-delay.single', [
+                                                m('input.comp-delay-days', {
+                                                    type: 'number', 
+                                                    value: message.autoCapMessages(),
+                                                    min: 0,
+                                                    oninput: function(){
+                                                        if (!('' + this.value).length) {
+                                                            message.autoCapMessages(undefined);
+                                                        } else if (('' + this.value).length && !isNaN(parseInt(this.value)) && parseInt(this.value) >= 0) {
+                                                            message.autoCapMessages(parseInt(this.value));
+                                                        }
+                                                    },
+                                                    placeholder: 'unlimited'
+                                                }),
+                                                m('label.comp-delay-days', t.n('pu.messages', message.autoCapMessages()))
+                                            ]))
+                                        ])
+                                    ]),
+                                    m('.desc', t('pu.po.tab2.message-per-user-desc'))
+                                ]) : '',
+    
+                                ctrl.messageCapped() ? m('.form-group', [
+                                    m('.comp-grid', [
+                                        m('.comp-grid-row', [
+                                            m('.comp-grid-cell', t('pu.po.tab2.sleep')),
+                                            m('.comp-grid-cell', C.delay.view(ctrl.sleep))
+                                        ])
+                                    ]),
+                                    m('.desc', t('pu.po.tab2.sleep-desc'))
+                                ]) : '',
+    
+                                m('.form-group', [
+                                    m('.comp-grid', [
+                                        m('.comp-grid-row', [
+                                            m('.comp-grid-cell', t('pu.po.tab2.expiry')),
+                                            m('.comp-grid-cell', C.delay.view(ctrl.expiration))
+                                        ])
+                                    ]),
+                                    m('.desc', t('pu.po.tab2.expiry-desc'))
                                 ]),
-                                m('.desc', t('pu.po.tab2.sleep-desc'))
-                            ]) : '',
-
-                            m('.btns', {key: 'btns'}, [
-                                m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(3) ? false : 'disabled' }, t('pu.po.next')),
-                                popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
+    
+                                m('.btns', {key: 'btns'}, [
+                                    m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(3) ? false : 'disabled' }, t('pu.po.next')),
+                                    popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
+                                ])
                             ])
-                        ])
+                        )
                     );
                 }
             });
@@ -1067,6 +1153,8 @@ window.component('push.popup', function(popup) {
                         }.bind(this)
                     });
 
+                    this.expiration = new C.delay.controller({days: true, hours: true, value: message.expiration});
+
                     this.radioTz = new C.radio.controller({
                         options: [
                             { value: false, title: t('pu.no'), desc: t('pu.po.tab1.tz-no-desc') },
@@ -1104,6 +1192,17 @@ window.component('push.popup', function(popup) {
                                     ]),
                                     C.radio.view(ctrl.radioTz)
                                 ]) : '',
+
+                            m('.form-group', [
+                                m('.comp-grid', [
+                                    m('.comp-grid-row', [
+                                        m('.comp-grid-cell', t('pu.po.tab2.expiry')),
+                                        m('.comp-grid-cell', C.delay.view(ctrl.expiration))
+                                    ])
+                                ]),
+                                m('.desc', t('pu.po.tab2.expiry-desc'))
+                            ]),
+
                             m('.btns', {key: 'btns'}, [
                                 m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
                                 popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
@@ -1145,6 +1244,30 @@ window.component('push.popup', function(popup) {
                         { value: push.C.PLATFORMS.IOS, view: m.bind(m, 'span.ion-social-apple') },
                         { value: push.C.PLATFORMS.ANDROID, view: m.bind(m, 'span.ion-social-android') },
                     ].filter(function (o) { return message.platforms().indexOf(o.value) !== -1; }), value: popup.previewPlatform
+                });
+
+                C.push.initPersOpts();
+                var persOpts = push.PERS_OPTS;
+                persOpts.forEach(function(op){
+                    op.selected(message.userProps() && message.userProps().indexOf(op.value()) !== -1);
+                });
+                if (message.auto() && message.autoOnEntry() === 'events') {
+                    message.autoEvents().forEach(function(key) {
+                        var data = push.PERS_EVENTS[key];
+                        if (data && data.length) {
+                            persOpts = persOpts.concat([new C.selector.Option({title: key})]).concat(data);
+                        }
+                    });
+                }
+                this.userProps = new C.multiselect.controller({
+                    placeholder: t('pu.po.tab2.extras.props.placeholder'),
+                    options: persOpts,
+                    value: function () {
+                        if (arguments.length) {
+                            message.userProps(persOpts.filter(function (o) { return o.selected(); }).map(function(o){ return o.value(); }));
+                        }
+                        return persOpts;
+                    }
                 });
             },
             view: function (ctrl) {
@@ -1215,6 +1338,9 @@ window.component('push.popup', function(popup) {
                                         }
                                     }, valuePlaceholder: t('pu.po.tab2.extras.data.placeholder'), help: t('pu.po.tab2.extras.data.help')
                                 }),
+                                m(extra, {cls: 'nopad', title: t('pu.po.tab2.extras.props'), help: t('pu.po.tab2.extras.props.help'), value: message.userProps, comp: function(){
+                                    return message.userProps() === undefined ? '' : C.multiselect.view(ctrl.userProps);
+                                }}),
                             ]),
                         ]),
                         message.type() === push.C.TYPE.MESSAGE ?
@@ -1240,14 +1366,22 @@ window.component('push.popup', function(popup) {
                                                 el.querySelectorAll('.pers').forEach(function(el){
                                                     el.textContent = el.getAttribute('data-fallback');
 
-                                                    var name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === el.getAttribute('data-key'); })[0];
+                                                    var key = el.getAttribute('data-key'),
+                                                    name = push.PERS_OPTS && push.PERS_OPTS.filter(function(opt){ return opt.value() === key; })[0];
                                                     if (name) {
-                                                        name = name.title();
+                                                        name =  t.p('pu.po.tab2.tt', name.title(), el.getAttribute('data-fallback'));
+                                                    } else if (message.auto() && message.autoOnEntry() === 'events') {
+                                                        name = message.autoEvents().map(function(event){
+                                                            return push.PERS_EVENTS && push.PERS_EVENTS[event] && push.PERS_EVENTS[event].filter(function(opt){ return opt.value() === key; })[0];
+                                                        }).filter(function(opt) { return !!opt; })[0];
+                                                        if (name) {
+                                                            name = name.desc() || t.p('pu.po.tab2.tt', name.title(), el.getAttribute('data-fallback'));
+                                                        }
                                                     }
                                                     if (!name) {
-                                                        name = el.getAttribute('data-key');
+                                                        name = t.p('pu.po.tab2.tt', el.getAttribute('data-key'), el.getAttribute('data-fallback'));
                                                     }
-                                                    el.title = t.p('pu.po.tab2.tt', name, el.getAttribute('data-fallback'));
+                                                    el.title = name;
                                                     $(el).tooltipster({
                                                         animation: 'fade',
                                                         animationDuration: 100,

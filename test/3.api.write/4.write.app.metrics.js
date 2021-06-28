@@ -390,7 +390,7 @@ describe('Writing app metrics', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 8, total_users: 8, new_users: 8, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 66}, {"name": "IOS", "value": 1, "percent": 34}], resolutions: [{"name": "1200x800", "value": 1, "percent": 50}, {"name": "2048x1536", "value": 1, "percent": 50}], carriers: [{"name": "Telecom", "value": 1, "percent": 50}, {"name": "Vodafone", "value": 1, "percent": 50}]});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 8, total_users: 8, new_users: 8, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 66.7}, {"name": "IOS", "value": 1, "percent": 33.3}], resolutions: [{"name": "1200x800", "value": 1, "percent": 50}, {"name": "2048x1536", "value": 1, "percent": 50}], carriers: [{"name": "Telecom", "value": 1, "percent": 50}, {"name": "Vodafone", "value": 1, "percent": 50}]});
                     });
             });
         });
@@ -458,7 +458,7 @@ describe('Writing app metrics', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 9, total_users: 9, new_users: 9, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 50}, {"name": "IOS", "value": 2, "percent": 50}], resolutions: [{"name": "2048x1536", "value": 2, "percent": 66}, {"name": "1200x800", "value": 1, "percent": 34}], carriers: [{"name": "Telecom", "value": 2, "percent": 66}, {"name": "Vodafone", "value": 1, "percent": 34}]});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 9, total_users: 9, new_users: 9, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 50}, {"name": "IOS", "value": 2, "percent": 50}], resolutions: [{"name": "2048x1536", "value": 2, "percent": 66.7}, {"name": "1200x800", "value": 1, "percent": 33.3}], carriers: [{"name": "Telecom", "value": 2, "percent": 66.7}, {"name": "Vodafone", "value": 1, "percent": 33.3}]});
                     });
             });
         });
@@ -466,7 +466,7 @@ describe('Writing app metrics', function() {
     describe('reset app', function() {
         describe('reseting data', function() {
             it('should reset data', function(done) {
-                var params = {app_id: APP_ID};
+                var params = {app_id: APP_ID, "period": "reset"};
                 request
                     .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                     .expect(200)

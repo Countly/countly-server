@@ -29,7 +29,7 @@ describe('Reseting app', function() {
     });
     describe('without permission', function() {
         it('should not authorized', function(done) {
-            var params = {app_id: APP_ID};
+            var params = {app_id: APP_ID, "period": "reset"};
             request
                 .get('/i/apps/reset?api_key=' + API_KEY_USER + "&args=" + JSON.stringify(params))
                 .expect(401)
@@ -38,14 +38,14 @@ describe('Reseting app', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'User does not have admin rights for this app');
+                    ob.should.have.property('result', 'User does not have right');
                     done();
                 });
         });
     });
     describe('reseting app', function() {
         it('should reset data', function(done) {
-            var params = {app_id: APP_ID};
+            var params = {app_id: APP_ID, "period": "reset"};
             request
                 .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)
@@ -222,7 +222,13 @@ describe('Checking if app data reset', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.eql({});
+                    ob.should.eql({
+                        limits: {
+                            event_limit: 500,
+                            event_segmentation_limit: 100,
+                            event_segmentation_value_limit: 1000
+                        }
+                    });
                     done();
                 });
         });

@@ -1,14 +1,20 @@
 var exported = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    fetch = require('../../../api/parts/data/fetch.js');
+    fetch = require('../../../api/parts/data/fetch.js'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'browser';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     plugins.register("/worker", function() {
         common.dbUserMap.browser = 'brw';
     });
     plugins.register("/o/method/total_users", function(ob) {
-        ob.shortcodesForMetrics.browsers = "brw";
+        ob.shortcodesForMetrics.browser = "brw";
     });
     plugins.register("/session/metrics", function(ob) {
         var predefinedMetrics = ob.predefinedMetrics;
@@ -30,9 +36,9 @@ var exported = {},
     });
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+
         if (params.qstring.method === "browser") {
-            validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'browser');
+            validateRead(params, FEATURE_NAME, fetch.fetchTimeObj, 'browser');
             return true;
         }
         return false;

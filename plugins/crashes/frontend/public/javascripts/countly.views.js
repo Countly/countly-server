@@ -1,5 +1,12 @@
-/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,T,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon */
+/*globals countlyView,countlyAuth,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,T,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon, Handlebars, CrashBinaryView, Dropzone */
 window.CrashesView = countlyView.extend({
+    featureName: 'crashes',
+    isAppleOs: function(val) {
+        return ["ios", "macos", "tvos", "watchos"].indexOf((val + "").toLowerCase()) !== -1;
+    },
+    symbolicationEnabled: function() {
+        return (typeof app.crashSymbolicationView !== "undefined") && (typeof countlyCrashSymbols !== "undefined");
+    },
     convertFilter: {
         "sg.crash": {prop: "_id", type: "string"},
         "sg.cpu": {prop: "cpu", type: "segment"},
@@ -716,6 +723,8 @@ window.CrashesView = countlyView.extend({
             "active-filter": jQuery.i18n.map["crashes.all"],
             "active-action": jQuery.i18n.map["crashes.make-action"]
         };
+        var self = this;
+
         if (crashData.loss) {
             this.templateData.loss = true;
             this.templateData["big-numbers"].items.push({
@@ -724,7 +733,7 @@ window.CrashesView = countlyView.extend({
                 "help": "crashes.help-loss"
             });
         }
-        var self = this;
+
         if (!isRefresh) {
             countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
             chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric], self.showOnGraph);
@@ -813,6 +822,17 @@ window.CrashesView = countlyView.extend({
             });
         }
 
+        if (!countlyAuth.validateDelete(self.featureName)) {
+            $('.delete-action').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(self.featureName)) {
+            $('.update-action').hide();
+        }
+
+        if (!countlyAuth.validateDelete(self.featureName) && !countlyAuth.validateUpdate(self.featureName)) {
+            $('.action-segmentation').hide();
+        }
     },
     buildQuery: function() {
         var self = this;
@@ -1089,7 +1109,7 @@ window.CrashesView = countlyView.extend({
         countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
         this.pageScripts();
     },
-    getFilters: function(currEvent) {
+    getFilters: function() {
         var self = this;
         var usedFilters = {};
 
@@ -1101,7 +1121,7 @@ window.CrashesView = countlyView.extend({
             }
         });
 
-        var defaultFilters = countlySegmentation.getFilters(currEvent),
+        var defaultFilters = countlySegmentation.getFilters(),
             allFilters = "";
         var filters = [];
         for (var i = 0; i < defaultFilters.length; i++) {
@@ -1250,6 +1270,7 @@ window.CrashesView = countlyView.extend({
 });
 
 window.CrashgroupView = countlyView.extend({
+    featureName: 'crashes',
     initialize: function() {
         this.loaded = true;
     },
@@ -1481,6 +1502,10 @@ window.CrashgroupView = countlyView.extend({
         var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+
+            if (app.crashesView.isAppleOs(crashData.os)) {
+                $(".error-details-menu[data-id=\"" + crashData.lrid + "\"] .error-download-stracktrace").after('<div class="error-show-binaries item" id="show-binaries-' + crashData._id + '">' + jQuery.i18n.map['crashes.show-binary-images'] + '</div>');
+            }
 
             changeResolveStateText(crashData);
 
@@ -1918,6 +1943,14 @@ window.CrashgroupView = countlyView.extend({
                 }
             });
 
+            $(".routename-crashgroup").off("click", ".error-show-binaries").on("click", ".error-show-binaries", function() {
+                var menu = $(this).closest(".error-details-menu");
+                var id = menu.attr("data-id");
+                if (id) {
+                    app.navigate('/crash/symbols/' + app.crashgroupView.id + "/" + id, true);
+                }
+            });
+
             $(".routename-crashgroup").off("click", ".error-download-binary").on("click", ".error-download-binary", function() {
                 var menu = $(this).closest(".error-details-menu");
                 menu.find(".cly-button-menu-trigger").toggleClass("active");
@@ -1931,6 +1964,31 @@ window.CrashgroupView = countlyView.extend({
             if (crashData.native_cpp) {
                 $(".error-download-binary").show();
             }
+        }
+
+        if (!countlyAuth.validateCreate(this.featureName)) {
+            $('#add_comment').hide();
+            $('#comment').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(this.featureName)) {
+            $('.crash-comment-edit').hide();
+        }
+
+        if (!countlyAuth.validateDelete(this.featureName)) {
+            $('.crash-comment-delete').hide();
+        }
+
+        if (!countlyAuth.validateDelete(self.featureName)) {
+            $('.delete-action').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(self.featureName)) {
+            $('.update-action').hide();
+        }
+
+        if (!countlyAuth.validateDelete(self.featureName) && !countlyAuth.validateUpdate(self.featureName)) {
+            $('#crashgroup-manipulation-trigger').hide();
         }
     },
     highlightStacktrace: function(code, callback) {
@@ -2075,6 +2133,9 @@ window.CrashgroupView = countlyView.extend({
                         '<a class="right icon-button cly-button-menu-trigger"></a>' +
                         '<div class="cly-button-menu" tabindex="100">' +
                             '<div class="error-download-stracktrace item">' + jQuery.i18n.map["crashes.download-stacktrace"] + '</div>';
+            if (app.crashesView.isAppleOs(data.os)) {
+                str += '<div class="error-show-binaries item" id="show-binaries-' + data._id + '">' + jQuery.i18n.map['crashes.show-binary-images'] + '</div>';
+            }
             if (data.native_cpp) {
                 str += '<div class="error-download-binary item">' + jQuery.i18n.map["crashes.download-binary"] + '</div>';
             }
@@ -2220,34 +2281,1305 @@ window.CrashgroupView = countlyView.extend({
     }
 });
 
-//register views
+window.CrashBinaryView = countlyView.extend({
+    initialize: function() {
+        this.template = Handlebars.compile($("#table-template").html());
+    },
+    beforeRender: function() {
+        if (app.crashesView.symbolicationEnabled()) {
+            if (this.formPartial) {
+                // eslint-disable-next-line no-undef
+                return $.when(countlyCrashSymbols.loadList(countlyCommon.ACTIVE_APP_ID), countlyCrashes.initialize(this.group)).then(function() {});
+            }
+            else {
+                var self = this;
+                return $.when(T.get('/crash_symbolication/templates/symbol_drawer.html', function(src) {
+                    self.formPartial = src;
+                // eslint-disable-next-line no-undef
+                }), countlyCrashSymbols.loadList(countlyCommon.ACTIVE_APP_ID), countlyCrashes.initialize(this.group)).then(function() {});
+            }
+        }
+        else {
+            return $.when(countlyCrashes.initialize(this.group)).then(function() {});
+        }
+    },
+    checkMount: function() {
+        var self = this;
+        if (app.crashesView.symbolicationEnabled()) {
+            if (typeof $('.cly-drawer')[0] === 'undefined') {
+                setTimeout(function() {
+                    self.checkMount();
+                }, 1000);
+            }
+            else {
+                self.dropZone = new Dropzone("#symbol-upload-drop", {
+                    url: '/',
+                    autoQueue: false,
+                    param_name: "symbols",
+                    parallelUploads: 0,
+                    maxFiles: 1,
+                    addedfile: function(file) {
+                        self.dropZone.disable();
+                        $('#symbol-upload-drop').removeClass('file-hovered');
+                        $('#symbol-upload-drop').addClass('file-selected');
+
+                        $(".dz-filechosen").html('<div class="dz-file-preview"><table><tr><td><i class="fa fa-archive" aria-hidden="true"></i></td><td style="width: 20px;"></td><td><p class="sline">' + countlyCommon.encodeHtml(file.name) + '</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> ' + jQuery.i18n.map["crash_symbolication.remove"] + '</p></td></tr></table></div>');
+                        app.crashSymbolicationView.validate(self);
+
+                    },
+                    dragover: function() {
+                        $('#symbol-upload-drop').addClass('file-hovered');
+                    },
+                    dragleave: function() {
+                        $('#symbol-upload-drop').removeClass('file-hovered');
+                    }
+                });
+            }
+        }
+    },
+    renderCommon: function(isRefresh) {
+        var self = this;
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+            var crashData = countlyCrashes.getReportData(this.id);
+            if (typeof crashData === 'undefined') {
+                app.navigate('/crashes', true);
+            }
+
+            this.templateData = {
+                "page-title": jQuery.i18n.map['crash_symbolication.binary-images'],
+                "crash": crashData
+            };
+
+            var images;
+            try {
+                images = JSON.parse(crashData.binary_images);
+            }
+            catch (ex) {
+                images = [];
+            }
+            var imagesArray = [];
+            for (var i in images) {
+                imagesArray.push([i, images[i]]);
+            }
+
+            $(this.el).html(this.template(this.templateData));
+            $('#content > div.widget > div > div.left > div > div.title').css('padding', '0');
+            $('#content > div.widget > div > div.left > div').append('<div class="subtitle" style="clear:both;margin-left:3px;">' + crashData.name.substr(0, 80) + '</div>');
+            $('#content > div.widget > div').append('<div id="binary-image-info-section" class="right"><div class="binary-image-info"><div class="binary-image-info-title">' + jQuery.i18n.map["crashes.app_version"] + '</div><div class="binary-image-info-data">' + crashData.app_version + '</div></div><div class="binary-image-info"><div class="binary-image-info-title">' + jQuery.i18n.map["crashes.platform_version"] + '</div><div class="binary-image-info-data">' + (crashData.os_version || "") + '</div></div></div>');
+            if (app.crashesView.isAppleOs(crashData.os)) {
+                $('#binary-image-info-section').prepend('<div class="binary-image-info"><div class="binary-image-info-title">' + jQuery.i18n.map["crashes.build_id"] + '</div><div class="binary-image-info-data">' + (crashData.app_build || "") + '</div></div>');
+            }
+            $('#content').prepend('<a href="#/crashes/' + this.group + '" class="back-link" style="margin-bottom: 25px;"><span data-localize="common.back">Back</span></a>');
+            $(".back-link").click(function(e) {
+                e.preventDefault();
+                app.back("/crashes/" + this.group);
+                return false;
+            });
+            $('#date-selector').remove();
+
+            var coreImages = [
+                "ABMHelper",
+                "Accelerate",
+                "Accessibility",
+                "AccessibilityPlatformTranslation",
+                "AccessibilitySharedSupport",
+                "AccessibilityUI",
+                "AccessibilityUIService",
+                "AccessibilityUIShared",
+                "AccessibilityUIUtilities",
+                "AccessibilityUIViewServices",
+                "AccessibilityUtilities",
+                "AccessoryAssistiveTouch",
+                "AccessoryAudio",
+                "AccessoryBLEPairing",
+                "AccessoryCommunications",
+                "AccessoryHID",
+                "AccessoryiAP2Shim",
+                "AccessoryMediaLibrary",
+                "AccessoryNavigation",
+                "AccessoryNowPlaying",
+                "AccessoryOOBBTPairing",
+                "AccessoryVoiceOver",
+                "AccountNotification",
+                "Accounts",
+                "AccountsDaemon",
+                "AccountSettings",
+                "AccountsUI",
+                "ACTFramework",
+                "ActionPredictionHeuristics",
+                "ActionPredictionHeuristicsInternal",
+                "ActivityAchievements",
+                "ActivityAchievementsUI",
+                "ActivitySharing",
+                "AdAnalytics",
+                "AdCore",
+                "AddressBook",
+                "AddressBookLegacy",
+                "AddressBookUI",
+                "AdID",
+                "AdminLite",
+                "AdPlatforms",
+                "AdPlatformsInternal",
+                "AdSupport",
+                "AggregateDictionary",
+                "AggregateDictionaryHistory",
+                "AGXCompilerConnection",
+                "AGXCompilerCore",
+                "AirPlayReceiver",
+                "AirPlaySender",
+                "AirPlaySupport",
+                "AirPortAssistant",
+                "AirTraffic",
+                "AirTrafficDevice",
+                "AMPCoreUI",
+                "ANECompiler",
+                "ANEServices",
+                "AnnotationKit",
+                "AOPHaptics",
+                "AOSKit",
+                "APFS",
+                "AppAnalytics",
+                "AppConduit",
+                "AppLaunchStats",
+                "AppleAccount",
+                "AppleAccountUI",
+                "AppleBasebandManager",
+                "AppleBasebandServices",
+                "AppleCV3D",
+                "AppleCV3DModels",
+                "AppleCVA",
+                "AppleCVAPhoto",
+                "AppleFSCompression",
+                "AppleHIDTransportSupport",
+                "AppleIDAuthSupport",
+                "AppleIDSSOAuthentication",
+                "AppleJPEG",
+                "AppleLDAP",
+                "AppleMediaServices",
+                "AppleNeuralEngine",
+                "ApplePDPHelper",
+                "ApplePushService",
+                "AppleSauce",
+                "AppleServiceToolkit",
+                "AppleSRP",
+                "AppNotificationsLoggingClient",
+                "AppPredictionClient",
+                "AppPredictionInternal",
+                "AppPredictionUI",
+                "AppPredictionWidget",
+                "AppPreferenceClient",
+                "AppServerSupport",
+                "AppStoreDaemon",
+                "AppStoreUI",
+                "AppSupport",
+                "AppSupportUI",
+                "APTransport",
+                "ARKit",
+                "ASEProcessing",
+                "AskPermission",
+                "AssertionServices",
+                "AssetCacheServices",
+                "AssetCacheServicesExtensions",
+                "AssetExplorer",
+                "AssetsLibrary",
+                "AssetsLibraryServices",
+                "AssetViewer",
+                "AssistantCardServiceSupport",
+                "AssistantServices",
+                "AssistantUI",
+                "ATFoundation",
+                "AttentionAwareness",
+                "AudioCodecs",
+                "AudioPasscode",
+                "AudioServerApplication",
+                "AudioServerDriver",
+                "AudioToolbox",
+                "AuthenticationServices",
+                "AuthKit",
+                "AuthKitUI",
+                "AutoLoop",
+                "AvatarKit",
+                "AvatarUI",
+                "AVConference",
+                "AVFAudio",
+                "AVFoundation",
+                "AVKit",
+                "AXAggregateStatisticsServices",
+                "AXContainerServices",
+                "AXCoreUtilities",
+                "AXElementInteraction",
+                "AXFrontBoardUtils",
+                "AXHearingSupport",
+                "AXLocalizationCaptionService",
+                "AXMediaUtilities",
+                "AXRuntime",
+                "AXSpeechAssetServices",
+                "AXSpringBoardServerInstance",
+                "BackBoardServices",
+                "BackgroundTaskAgent",
+                "BarcodeSupport",
+                "BaseBoard",
+                "BaseBoardUI",
+                "BatteryCenter",
+                "BioKitAggD",
+                "BiometricKit",
+                "BiometricKitUI",
+                "BiometricSupport",
+                "BluetoothManager",
+                "Bom",
+                "BookDataStore",
+                "BookLibrary",
+                "BookmarkDAV",
+                "BridgePreferences",
+                "BulletinBoard",
+                "BulletinDistributorCompanion",
+                "BusinessChat",
+                "ButtonResolver",
+                "C2",
+                "CacheDelete",
+                "Calculate",
+                "CalDAV",
+                "CalendarDaemon",
+                "CalendarDatabase",
+                "CalendarFoundation",
+                "CalendarNotification",
+                "CalendarUIKit",
+                "CallHistory",
+                "CallKit",
+                "CameraEffectsKit",
+                "CameraKit",
+                "CameraUI",
+                "CaptiveNetwork",
+                "CardKit",
+                "CARDNDUI",
+                "Cards",
+                "CardServices",
+                "CarKit",
+                "CarPlay",
+                "CarPlaySupport",
+                "Catalyst",
+                "Categories",
+                "Celestial",
+                "CellularBridgeUI",
+                "CellularPlanManager",
+                "CertInfo",
+                "CertUI",
+                "CFNetwork",
+                "ChatKit",
+                "CheckerBoardServices",
+                "ChunkingLibrary",
+                "ClassKit",
+                "ClassKitUI",
+                "ClassroomKit",
+                "ClockKit",
+                "ClockKitUI",
+                "CloudDocs",
+                "CloudDocsDaemon",
+                "CloudDocsUI",
+                "CloudKit",
+                "CloudKitCode",
+                "CloudKitCodeProtobuf",
+                "CloudKitDaemon",
+                "CloudPhotoLibrary",
+                "CloudPhotoServices",
+                "CloudServices",
+                "ColorSync",
+                "CommonAuth",
+                "CommonUtilities",
+                "CommunicationsFilter",
+                "CommunicationsSetupUI",
+                "CompanionCamera",
+                "CompanionSync",
+                "CompassUI",
+                "ConfigurationEngineModel",
+                "ConstantClasses",
+                "Contacts",
+                "ContactsAutocomplete",
+                "ContactsDonation",
+                "ContactsDonationFeedback",
+                "ContactsFoundation",
+                "ContactsUI",
+                "ContactsUICore",
+                "ContentIndex",
+                "ContextKit",
+                "ContinuousDialogManagerService",
+                "ControlCenterServices",
+                "ControlCenterUI",
+                "ControlCenterUIKit",
+                "ConversationKit",
+                "CoreAccessories",
+                "CoreAnalytics",
+                "CoreAppleCVA",
+                "CoreAUC",
+                "CoreAudio",
+                "CoreAudioKit",
+                "CoreBluetooth",
+                "CoreBrightness",
+                "CoreCapture",
+                "CoreCaptureControl",
+                "CoreCaptureDaemon",
+                "CoreCDP",
+                "CoreCDPInternal",
+                "CoreCDPUI",
+                "CoreCDPUIInternal",
+                "CoreData",
+                "CoreDAV",
+                "CoreDuet",
+                "CoreDuetContext",
+                "CoreDuetDaemonProtocol",
+                "CoreDuetDataModel",
+                "CoreDuetDebugLogging",
+                "CoreDuetStatistics",
+                "CoreEmoji",
+                "CoreFollowUp",
+                "CoreFollowUpUI",
+                "CoreFoundation",
+                "CoreGPSTest",
+                "CoreGraphics",
+                "CoreHandwriting",
+                "CoreHAP",
+                "CoreImage",
+                "CoreIndoor",
+                "CoreKnowledge",
+                "CoreLocation",
+                "CoreLocationProtobuf",
+                "CoreMedia",
+                "CoreMediaStream",
+                "CoreMIDI",
+                "CoreML",
+                "CoreMotion",
+                "CoreNameParser",
+                "CoreNavigation",
+                "CoreNFC",
+                "CoreNLP",
+                "CoreOptimization",
+                "CoreParsec",
+                "CorePDF",
+                "CorePhoneNumbers",
+                "CorePrediction",
+                "CoreRecents",
+                "CoreRecognition",
+                "CoreRoutine",
+                "CoreSDB",
+                "CoreServices",
+                "CoreServicesInternal",
+                "CoreSpeech",
+                "CoreSpotlight",
+                "CoreSuggestions",
+                "CoreSuggestionsInternals",
+                "CoreSuggestionsUI",
+                "CoreSymbolication",
+                "CoreTelephony",
+                "CoreText",
+                "CoreThemeDefinition",
+                "CoreTime",
+                "CoreUI",
+                "CoreUtils",
+                "CoreVideo",
+                "CourseKit",
+                "CPMLBestShim",
+                "CrashReporterSupport",
+                "CryptoTokenKit",
+                "CTCarrierSpace",
+                "DAAPKit",
+                "DABookmarkDAV",
+                "DACalDAV",
+                "DACardDAV",
+                "DACoreDAVGlue",
+                "DADaemonSupport",
+                "DAEAS",
+                "DAEASOAuthFramework",
+                "DaemonUtils",
+                "DAIMAPNotes",
+                "DALDAP",
+                "DASubCal",
+                "DataAccess",
+                "DataAccessExpress",
+                "DataAccessUI",
+                "DataDetectorsCore",
+                "DataDetectorsNaturalLanguage",
+                "DataDetectorsUI",
+                "DataMigration",
+                "DCIMServices",
+                "DeviceCheck",
+                "DeviceCheckInternal",
+                "DeviceIdentity",
+                "DeviceManagement",
+                "DeviceOMatic",
+                "DeviceToDeviceManager",
+                "DiagnosticExtensions",
+                "DiagnosticExtensionsDaemon",
+                "DiagnosticLogCollection",
+                "DiagnosticsKit",
+                "DiagnosticsSupport",
+                "DictionaryServices",
+                "DictionaryUI",
+                "DifferentialPrivacy",
+                "DigitalTouchShared",
+                "DiskImages",
+                "DiskSpaceDiagnostics",
+                "DistributedEvaluation",
+                "DocumentCamera",
+                "DocumentManager",
+                "DocumentManagerCore",
+                "DocumentManagerUICore",
+                "DoNotDisturb",
+                "DoNotDisturbKit",
+                "DoNotDisturbServer",
+                "DragUI",
+                "DrawingKit",
+                "DuetActivityScheduler",
+                "DuetActivitySchedulerUI",
+                "DuetExpertCenter",
+                "DuetRecommendation",
+                "EAFirmwareUpdater",
+                "EAP8021X",
+                "EasyConfig",
+                "EditScript",
+                "Email",
+                "EmailAddressing",
+                "EmailCore",
+                "EmbeddedAcousticRecognition",
+                "EmojiFoundation",
+                "EmojiKit",
+                "Engram",
+                "Espresso",
+                "EventKit",
+                "EventKitUI",
+                "ExternalAccessory",
+                "FaceCore",
+                "FamilyCircle",
+                "FamilyCircleUI",
+                "FamilyNotification",
+                "FileProvider",
+                "FileProviderUI",
+                "FindMyDevice",
+                "FindMyDeviceUI",
+                "Fitness",
+                "FitnessUI",
+                "FlightUtilities",
+                "Fluid",
+                "FMClient",
+                "FMCore",
+                "FMCoreLite",
+                "FMCoreUI",
+                "FMF",
+                "FMFUI",
+                "FMIPSiriActions",
+                "FontServices",
+                "Foundation",
+                "FoundationODR",
+                "FoundInAppsPlugins",
+                "FriendKit",
+                "FrontBoard",
+                "FrontBoardServices",
+                "FrontBoardUIServices",
+                "FTAWD",
+                "FTClientServices",
+                "FTServices",
+                "FuseUI",
+                "Futhark",
+                "GameCenter",
+                "GameCenterFoundation",
+                "GameCenterPrivateUI",
+                "GameCenterUI",
+                "GameController",
+                "GameKit",
+                "GameKitServices",
+                "GameplayKit",
+                "GenerationalStorage",
+                "GeoServices",
+                "GKSPerformance",
+                "GLKit",
+                "GraphicsServices",
+                "GraphVisualizer",
+                "GSS",
+                "H10ISPServices",
+                "HangTracer",
+                "Haptics",
+                "HardwareDiagnostics",
+                "HardwareSupport",
+                "HDRProcessing",
+                "HealthDaemon",
+                "HealthKit",
+                "HealthKitUI",
+                "HealthRecordServices",
+                "HealthUI",
+                "HearingCore",
+                "HearingUI",
+                "HearingUtilities",
+                "HeartRhythmUI",
+                "Heimdal",
+                "HelpKit",
+                "HMFoundation",
+                "Home",
+                "HomeKit",
+                "HomeKitDaemon",
+                "HomeSharing",
+                "HomeUI",
+                "HSAAuthentication",
+                "iAd",
+                "iAdCore",
+                "iAdDeveloper",
+                "iAdServices",
+                "IAP",
+                "IAPAuthentication",
+                "iCalendar",
+                "ICE",
+                "iCloudNotification",
+                "iCloudQuota",
+                "iCloudQuotaDaemon",
+                "iCloudQuotaUI",
+                "IconServices",
+                "IdentityLookup",
+                "IdentityLookupUI",
+                "IdleTimerServices",
+                "IDS",
+                "IDSFoundation",
+                "IDSHashPersistence",
+                "IDSKVStore",
+                "ImageCapture",
+                "ImageIO",
+                "IMAP",
+                "IMAssistantCore",
+                "IMAVCore",
+                "IMCore",
+                "IMDaemonCore",
+                "IMDMessageServices",
+                "IMDPersistence",
+                "iMessageApps",
+                "IMFoundation",
+                "IMSharedUI",
+                "IMSharedUtilities",
+                "IMTranscoderAgent",
+                "IMTranscoding",
+                "IMTransferAgent",
+                "IMTransferServices",
+                "InAppMessages",
+                "IncomingCallFilter",
+                "InputContext",
+                "InstallCoordination",
+                "Intents",
+                "IntentsCore",
+                "IntentsFoundation",
+                "IntentsUI",
+                "IntentsUICardKitProviderSupport",
+                "InternationalSupport",
+                "InternationalTextSearch",
+                "IntlPreferences",
+                "IOAccelerator",
+                "IOAccelMemoryInfo",
+                "IOAccessoryManager",
+                "IOCEC",
+                "IOImageLoader",
+                "IOImageLoaderDaemon",
+                "IOKit",
+                "IOMobileFramebuffer",
+                "iOSDiagnostics",
+                "iOSScreenSharing",
+                "IOSurface",
+                "IOSurfaceAccelerator",
+                "iPhotoMigrationSupport",
+                "ITMLKit",
+                "iTunesCloud",
+                "iTunesStore",
+                "iTunesStoreUI",
+                "iWorkXPC",
+                "JavaScriptCore",
+                "Jet",
+                "JITAppKit",
+                "KeyboardArbiter",
+                "KeyboardServices",
+                "KeychainCircle",
+                "KnowledgeGraphKit",
+                "KnowledgeMonitor",
+                "kperf",
+                "kperfdata",
+                "ktrace",
+                "LanguageModeling",
+                "LatentSemanticMapping",
+                "LegacyGameKit",
+                "LegacyHandle",
+                "Lexicon",
+                "libEDR",
+                "LimitAdTracking",
+                "LinguisticData",
+                "LinkPresentation",
+                "LocalAuthentication",
+                "LocalAuthenticationPrivateUI",
+                "LoggingSupport",
+                "LoginKit",
+                "MailServices",
+                "MailSupport",
+                "ManagedConfiguration",
+                "ManagedConfigurationUI",
+                "ManagedEvent",
+                "MapKit",
+                "MapsSuggestions",
+                "MapsSupport",
+                "Marco",
+                "MarkupUI",
+                "MaterialKit",
+                "MDM",
+                "MechanismBase",
+                "MediaAccessibility",
+                "MediaControls",
+                "MediaControlSender",
+                "MediaKit",
+                "MediaLibraryCore",
+                "MediaMiningKit",
+                "MediaPlatform",
+                "MediaPlaybackCore",
+                "MediaPlayer",
+                "MediaPlayerUI",
+                "MediaRemote",
+                "MediaServices",
+                "MediaSocial",
+                "MediaStream",
+                "MediaToolbox",
+                "Memories",
+                "Message",
+                "MessageProtection",
+                "Messages",
+                "MessageSecurity",
+                "MessageSupport",
+                "MessageUI",
+                "MetadataUtilities",
+                "Metal",
+                "MetalKit",
+                "MetalPerformanceShaders",
+                "MetalTools",
+                "MetricsKit",
+                "MFAAuthentication",
+                "MIME",
+                "MMCS",
+                "MMCSServices",
+                "MobileAccessoryUpdater",
+                "MobileActivation",
+                "MobileAsset",
+                "MobileAssetUpdater",
+                "MobileBackup",
+                "MobileBluetooth",
+                "MobileContainerManager",
+                "MobileCoreServices",
+                "MobileDeviceLink",
+                "MobileIcons",
+                "MobileInstallation",
+                "MobileKeyBag",
+                "MobileLookup",
+                "MobileObliteration",
+                "MobileSoftwareUpdate",
+                "MobileSpotlightIndex",
+                "MobileStorage",
+                "MobileStoreDemoKit",
+                "MobileSync",
+                "MobileSystemServices",
+                "MobileTimer",
+                "MobileTimerUI",
+                "MobileWiFi",
+                "ModelIO",
+                "ModuleBase",
+                "Montreal",
+                "MPSCore",
+                "MPSImage",
+                "MPSMatrix",
+                "MPSNeuralNetwork",
+                "MPSRayIntersector",
+                "MPUFoundation",
+                "MTLCompiler",
+                "MTLSpline",
+                "MultipeerConnectivity",
+                "MultitouchSupport",
+                "MusicCarDisplayUI",
+                "MusicLibrary",
+                "MusicStoreUI",
+                "NanoAppRegistry",
+                "NanoAudioControl",
+                "NanoBackup",
+                "NanoComplicationSettings",
+                "NanoLeash",
+                "NanoMailKitServer",
+                "NanoMediaBridgeUI",
+                "NanoMediaRemote",
+                "NanoMusicSync",
+                "NanoPassKit",
+                "NanoPhonePerfTesting",
+                "NanoPhotosUICompanion",
+                "NanoPreferencesSync",
+                "NanoRegistry",
+                "NanoResourceGrabber",
+                "NanoSystemSettings",
+                "NanoTimeKitCompanion",
+                "NanoUniverse",
+                "NaturalLanguage",
+                "Navigation",
+                "NCLaunchStats",
+                "NearField",
+                "NetAppsUtilities",
+                "NetAppsUtilitiesUI",
+                "Netrb",
+                "Network",
+                "NetworkExtension",
+                "NetworkServiceProxy",
+                "NetworkStatistics",
+                "NeutrinoCore",
+                "NeutrinoKit",
+                "NewDeviceOutreach",
+                "NewDeviceOutreachUI",
+                "NewsAnalytics",
+                "NewsAnalyticsUpload",
+                "NewsArticles",
+                "NewsCore",
+                "NewsDaemon",
+                "NewsFeed",
+                "NewsFeedLayout",
+                "NewsFoundation",
+                "NewsServices",
+                "NewsServicesInternal",
+                "NewsstandKit",
+                "NewsSubscription",
+                "NewsToday",
+                "NewsTransport",
+                "NewsUI",
+                "NewsUI2",
+                "NLFoundInAppsPlugin",
+                "NLP",
+                "Notes",
+                "NotesShared",
+                "NotesUI",
+                "NotificationCenter",
+                "OAuth",
+                "OfficeImport",
+                "OnBoardingKit",
+                "oncrpc",
+                "OpenAL",
+                "OpenGLES",
+                "OpusFoundation",
+                "OpusKit",
+                "OSAnalytics",
+                "OSASyncProxyClient",
+                "OTSVG",
+                "PacketFilter",
+                "PairedSync",
+                "PairedUnlock",
+                "PairingProximity",
+                "PaperKit",
+                "ParsecModel",
+                "ParsecSubscriptionServiceSupport",
+                "PASampling",
+                "PassKit",
+                "PassKitCore",
+                "PassKitUI",
+                "PassKitUIFoundation",
+                "Pasteboard",
+                "PBBridgeSupport",
+                "PDFKit",
+                "Pegasus",
+                "PencilKit",
+                "PencilPairingUI",
+                "perfdata",
+                "PersistentConnection",
+                "PersonaKit",
+                "PersonalizationPortrait",
+                "PersonalizationPortraitInternals",
+                "PersonaUI",
+                "PhoneNumbers",
+                "PhotoAnalysis",
+                "PhotoBoothEffects",
+                "PhotoEditSupport",
+                "PhotoFoundation",
+                "PhotoImaging",
+                "PhotoLibrary",
+                "PhotoLibraryServices",
+                "Photos",
+                "PhotosEditUI",
+                "PhotosFormats",
+                "PhotosGraph",
+                "PhotosImagingFoundation",
+                "PhotosPlayer",
+                "PhotosUI",
+                "PhotosUICore",
+                "PhotoVision",
+                "PhysicsKit",
+                "PipelineKit",
+                "PlacesKit",
+                "PlatterKit",
+                "PLShutdown",
+                "PLSnapshot",
+                "PlugInKit",
+                "POP",
+                "PowerLog",
+                "PowerlogAccounting",
+                "PowerlogControl",
+                "PowerlogCore",
+                "PowerlogDatabaseReader",
+                "PowerlogFullOperators",
+                "PowerlogHelperdOperators",
+                "PowerlogLiteOperators",
+                "PowerUI",
+                "PPTopicExtractionPlugin",
+                "Preferences",
+                "PreferencesUI",
+                "PrintKit",
+                "PrivateFederatedLearning",
+                "ProactiveEventTracker",
+                "ProactiveMagicalMoments",
+                "ProactiveML",
+                "ProactiveSupport",
+                "ProactiveSupportStubs",
+                "ProactiveWidgetTracker",
+                "ProgressUI",
+                "ProofReader",
+                "ProtectedCloudStorage",
+                "ProtocolBuffer",
+                "PrototypeTools",
+                "PrototypeToolsUI",
+                "ProVideo",
+                "PushKit",
+                "QLCharts",
+                "Quagga",
+                "QuartzCore",
+                "QueryPredictionInternal",
+                "QuickLook",
+                "QuickLookSupport",
+                "QuickLookThumbnailing",
+                "Radio",
+                "Rapport",
+                "RapportUI",
+                "RelevanceEngine",
+                "RelevanceEngineUI",
+                "RemindersUI",
+                "RemoteConfiguration",
+                "RemoteManagement",
+                "RemoteManagementProtocol",
+                "RemoteMediaServices",
+                "RemoteStateDumpKit",
+                "RemoteTextInput",
+                "RemoteUI",
+                "ReplayKit",
+                "ResponseKit",
+                "RevealCore",
+                "ROCKit",
+                "RTCReporting",
+                "RTTUI",
+                "RTTUtilities",
+                "SafariCore",
+                "SafariFoundation",
+                "SafariSafeBrowsing",
+                "SafariServices",
+                "SafariShared",
+                "SAML",
+                "SampleAnalysis",
+                "SAObjects",
+                "SceneKit",
+                "ScreenReaderBrailleDriver",
+                "ScreenReaderCore",
+                "ScreenReaderOutput",
+                "ScreenshotServices",
+                "ScreenTimeUI",
+                "SDAPI",
+                "Search",
+                "SearchAds",
+                "SearchFoundation",
+                "SearchToSharePredictions",
+                "SearchToSharePredictionsInternals",
+                "SearchUI",
+                "SearchUICardKitProviderSupport",
+                "SecureChannel",
+                "Security",
+                "SecurityFoundation",
+                "Sentry",
+                "ServerAccounts",
+                "ServiceManagement",
+                "SetupAssistant",
+                "SetupAssistantSupport",
+                "SetupAssistantUI",
+                "SharedUtils",
+                "SharedWebCredentials",
+                "Sharing",
+                "SharingHUD",
+                "ShortcutUIKit",
+                "SignpostCollection",
+                "SignpostMetrics",
+                "SignpostNotification",
+                "SignpostSupport",
+                "Silex",
+                "SilexText",
+                "SilexVideo",
+                "SimpleKeyExchange",
+                "SIMSetupSupport",
+                "SiriClientFlow",
+                "SiriCore",
+                "SiriInstrumentation",
+                "SiriTape",
+                "SiriTasks",
+                "SiriTTS",
+                "SiriUI",
+                "SiriUICardKitProviderSupport",
+                "SiriUICore",
+                "SlideshowKit",
+                "Snappy",
+                "snatmap",
+                "Social",
+                "SocialServices",
+                "SoftwareUpdateBridge",
+                "SoftwareUpdateServices",
+                "SoftwareUpdateServicesUI",
+                "SOS",
+                "SoundAutoConfig",
+                "SpeakThisServices",
+                "SpeakTypingServices",
+                "Speech",
+                "SplashBoard",
+                "Spotlight",
+                "SpotlightDaemon",
+                "SpotlightReceiver",
+                "SpotlightServices",
+                "SpotlightUI",
+                "SpringBoardFoundation",
+                "SpringBoardServices",
+                "SpringBoardUI",
+                "SpringBoardUIServices",
+                "SpriteKit",
+                "StatsKit",
+                "Stocks",
+                "StocksAnalytics",
+                "StocksCore",
+                "StocksUI",
+                "StoreBookkeeper",
+                "StoreBookkeeperClient",
+                "StoreKit",
+                "StoreKitUI",
+                "StoreServices",
+                "StoreServicesCore",
+                "StreamingZip",
+                "StudyLog",
+                "SuggestionsSpotlightMetrics",
+                "Symbolication",
+                "SymptomAnalytics",
+                "SymptomDiagnosticReporter",
+                "SymptomEvaluator",
+                "SymptomNetworkUsage",
+                "SymptomPresentationFeed",
+                "SymptomPresentationLite",
+                "SymptomReporter",
+                "Symptoms",
+                "SyncedDefaults",
+                "SystemConfiguration",
+                "TCC",
+                "TeaActivities",
+                "TeaCharts",
+                "TeaDB",
+                "TeaFoundation",
+                "TeaSettings",
+                "TeaTemplate",
+                "TeaUI",
+                "TelephonyPreferences",
+                "TelephonyRPC",
+                "TelephonyUI",
+                "TelephonyUtilities",
+                "TelephonyXPCClient",
+                "TelephonyXPCServer",
+                "TemplateKit",
+                "TextInput",
+                "TextInputCore",
+                "TextInputUI",
+                "TextToSpeech",
+                "TextureIO",
+                "ThermalMonitorExporter",
+                "TimeSync",
+                "TinCanShared",
+                "Tips",
+                "ToneKit",
+                "ToneLibrary",
+                "TouchML",
+                "TouchRemote",
+                "TransparencyDetailsView",
+                "TSReading",
+                "TSUtility",
+                "TTYUtilities",
+                "TVMLKit",
+                "TVRemoteCore",
+                "TVRemoteUI",
+                "Twitter",
+                "UIAccessibility",
+                "UIFoundation",
+                "UIKit",
+                "UIKitCore",
+                "UIKitServices",
+                "UITriggerVC",
+                "UpNextWidget",
+                "URLFormatting",
+                "UsageTracking",
+                "UserActivity",
+                "UserFS",
+                "UserManagement",
+                "UserManagementUI",
+                "UserNotifications",
+                "UserNotificationsKit",
+                "UserNotificationsServer",
+                "UserNotificationsUI",
+                "UserNotificationsUIKit",
+                "vCard",
+                "vecLib",
+                "VectorKit",
+                "ViceroyTrace",
+                "VideoProcessing",
+                "VideosExtras",
+                "VideoSubscriberAccount",
+                "VideoSubscriberAccountUI",
+                "VideosUI",
+                "VideosUICore",
+                "VideoToolbox",
+                "vImage",
+                "Vision",
+                "VisualAlert",
+                "VisualPairing",
+                "VisualVoicemail",
+                "VoicemailStore",
+                "VoiceMemos",
+                "VoiceOverServices",
+                "VoiceServices",
+                "VoiceShortcutClient",
+                "VoiceShortcuts",
+                "VoiceShortcutsUI",
+                "VoiceTrigger",
+                "VoiceTriggerUI",
+                "VPNUtilities",
+                "WatchConnectivity",
+                "WatchKit",
+                "WatchListKit",
+                "WatchListKitUI",
+                "WatchReplies",
+                "Weather",
+                "WeatherFoundation",
+                "WeatherUI",
+                "WebApp",
+                "WebBookmarks",
+                "WebContentAnalysis",
+                "WebCore",
+                "WebInspector",
+                "WebKit",
+                "WebKitLegacy",
+                "WebUI",
+                "WelcomeKit",
+                "WelcomeKitCore",
+                "WelcomeKitUI",
+                "Widgets",
+                "WiFiCloudSyncEngine",
+                "WiFiKit",
+                "WiFiKitUI",
+                "WiFiLogCapture",
+                "WiFiVelocity",
+                "WirelessCoexManager",
+                "WirelessDiagnostics",
+                "WirelessProximity",
+                "WorkflowKit",
+                "XCTTargetBootstrap",
+                "XPCKit",
+                "YouTube",
+                "ZoomServices",
+                "zudp"
+            ];
+
+            var columns = [
+                {
+                    "mData": function(row) {
+                        if (coreImages.indexOf(row[0]) === -1 && row[0].substr(row[0].length - 6, 6) !== '.dylib') {
+                            return row[0];
+                        }
+                        else {
+                            return row[0] + '<span title="' + jQuery.i18n.map["crash_symbolication.os-image"] + '" class="countly-os-indicator">' + jQuery.i18n.map["crashes.os"] + '</span>';
+                        }
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["crash_symbolication.binary-images"]
+                },
+                {
+                    "mData": function(row) {
+                        return row[1].id;
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["crash_symbolication.builds"]
+                },
+                {
+                    "mData": function(row) {
+                        return row[1].la;
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["crash_symbolication.la"]
+                },
+            ];
+
+            if (app.crashesView.symbolicationEnabled()) {
+                // eslint-disable-next-line no-undef
+                var symbols = countlyCrashSymbols.getData();
+
+                columns.push({
+                    "mData": function(row) {
+                        for (var k = 0; k < symbols.length; k++) {
+                            if (symbols[k].build === row[1].id) {
+                                return '<span style="color:#b3b3b3; margin-right: 10px">' + jQuery.i18n.map["crash_symbolication.symbol-added"] + '</span>';
+                            }
+                        }
+                        return '<span class="add-symbol-from-binary-image-table" style="color:#2EB52B; margin-right: 10px;cursor:pointer" data-uuid="' + row[1].id + '" data-image="' + row[0] + '">' + jQuery.i18n.map["crash_symbolication.add-symbol"] + '</span>';
+                    },
+                    "sType": "string",
+                    "sTitle": ""
+                });
+
+                $('body').off('click', '.add-symbol-from-binary-image-table').on('click', '.add-symbol-from-binary-image-table', function() {
+                    var uuid = $(this).data('uuid');
+                    var image = $(this).data('image');
+                    $(".cly-drawer").removeClass("open editing");
+                    $("#add-symbol-widget-drawer").addClass("open");
+                    $("#upload-symbol-file-form").attr("action", "/i/crash_symbols/add_symbol");
+                    $("#add-symbol-widget-drawer").find(".no-edit").show();
+                    $(".cly-drawer").find(".close").off("click").on("click", function() {
+                        $(this).parents(".cly-drawer").removeClass("open");
+                        $("#save-widget").removeClass("disabled");
+                    });
+
+                    $(".cly-drawer").find(".tline").text(jQuery.i18n.map["crash_symbolication.upload-description"]);
+                    $("#add-symbol-widget-drawer .title span").text(jQuery.i18n.map["crash_symbolication.add-new-file"]);
+                    $("#save-widget").text(jQuery.i18n.map["crash_symbolication.upload-file"]);
+
+                    $('#single-app-dropdown').clySelectSetSelection((crashData.os + "").toLowerCase(), crashData.os);
+                    $('#single-app-dropdown').addClass('disabled');
+
+                    $('#symbol-build-id').val(uuid);
+                    $('#symbol-build-id').attr('disabled', 'disabled');
+                    $('#symbol-build-id').css({'background-color': 'white'});
+                    $('#symbol-build-id').css({'opacity': '0.4'});
+                    $('#symbol-note').val(image);
+                });
+            }
+
+            $('#data-table').attr("id", "binary-images-table");
+
+            var noDataTable = '<div class="symb-no-data">\n' +
+            '    <div class="inner-symb-table">\n' +
+            '        <div class="symb-text-column">' +
+            '            <div class="text text-symb-top" data-localize="crash_symbolication.empty_table.symbols-top"></div>' +
+            '            <div class="text text-symb-bottom" data-localize="crash_symbolication.empty_table.symbols-bottom"></div>' +
+            '        </div>\n' +
+            '        <img src="crash_symbolication/images/symbols-empty.svg">\n' +
+            '    </div>\n' +
+            '</div>';
+
+            this.dtable = $('#binary-images-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": imagesArray,
+                "aoColumns": columns,
+                "oLanguage": {
+                    "sEmptyTable": noDataTable
+                }
+            }));
+
+            $('.countly-os-indicator').tipsy({'gravity': 'n'});
+
+            if (app.crashesView.symbolicationEnabled()) {
+                $(".widget").after(this.formPartial);
+                for (var type in app.crashSymbolicationView.types) {
+                    $("#add-symbol-widget-drawer").find("#single-app-dropdown .select-items").append("<div class='item' data-value='" + type + "'>" + app.crashSymbolicationView.types[type] + "</div>");
+                }
+
+                //fallback(if drag&drop not available)
+                $("#symbol-map-file").change(function() {
+                    var pp = $(this).val().split('\\');
+                    $('#symbol-upload-drop').addClass('file-selected');
+                    $(".dz-filechosen").html('<div class="dz-file-preview"><table><tr><td><i class="fa fa-archive" aria-hidden="true"></i></td><td style="width: 20px;"></td><td><p class="sline">' + pp[pp.length - 1] + '</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> ' + jQuery.i18n.map["crash_symbolication.remove"] + '</p></td></tr></table></div>');
+                });
+
+                this.checkMount();
+
+                $('.dz-filechosen').on('click', function(e) {
+                    if (e.target.id === 'remove-files') {
+                        app.crashSymbolicationView.dzRemoveFiles(self);
+                    }
+                });
+
+                $("#add-symbol-widget-drawer").find('.fa-info').tipsy({
+                    gravity: $.fn.tipsy.autoNS,
+                    title: function() {
+                        return ($(this).data("help")) ? jQuery.i18n.map[$(this).data("help")] : "";
+                    },
+                    fade: true,
+                    offset: 5,
+                    cssClass: 'yellow',
+                    opacity: 1,
+                    html: true
+                });
+
+                $("#symbol-build-id").on("keyup", function() {
+                    app.crashSymbolicationView.validate(self);
+                });
+                $("#symbol-map-file").on("change", function() {
+                    app.crashSymbolicationView.validate(self);
+                });
+                $(".cly-drawer").find(".cly-select").on("cly-select-change", function() {
+                    app.crashSymbolicationView.validate(self);
+                });
+
+                $("#save-widget").off("click").on("click", function() {
+                    app.crashSymbolicationView.saveWidget(self);
+                });
+            }
+
+            this.dtable.stickyTableHeaders();
+
+            CountlyHelpers.initializeTableOptions();
+        }
+    },
+    refresh: function(force) {
+        if (force) {
+            var self = this;
+            $.when(self.beforeRender()).then(function() {
+                self.renderCommon();
+            });
+        }
+    }
+});
+
 app.crashesView = new CrashesView();
 app.crashgroupView = new CrashgroupView();
+app.crashBinaryView = new CrashBinaryView();
 
-app.route('/crashes', 'crashes', function() {
-    this.crashesView._filter = false;
-    this.crashesView._query = null;
-    this.renderWhenReady(this.crashesView);
-});
+if (countlyAuth.validateRead(app.crashesView.featureName)) {
+    app.route('/crashes', 'crashes', function() {
+        this.crashesView._filter = false;
+        this.crashesView._query = null;
+        this.renderWhenReady(this.crashesView);
+    });
 
-app.route('/crashes/filter/*query', 'userdata', function(query) {
-    try {
-        query = JSON.parse(query);
-    }
-    catch (ex) {
-        query = null;
-    }
-    this.crashesView._query = query;
-    this.crashesView._filter = true;
-    this.renderWhenReady(this.crashesView);
-});
+    app.route('/crashes/filter/*query', 'userdata', function(query) {
+        try {
+            query = JSON.parse(query);
+        }
+        catch (ex) {
+            query = null;
+        }
+        this.crashesView._query = query;
+        this.crashesView._filter = true;
+        this.renderWhenReady(this.crashesView);
+    });
 
-app.route('/crashes/:group', 'crashgroup', function(group) {
-    this.crashgroupView.id = group;
-    this.renderWhenReady(this.crashgroupView);
-});
+    app.route('/crashes/:group', 'crashgroup', function(group) {
+        this.crashgroupView.id = group;
+        this.renderWhenReady(this.crashgroupView);
+    });
+
+    app.route('/crash/symbols/:group/:id', 'binary_images', function(group, id) {
+        this.crashBinaryView.group = group;
+        this.crashBinaryView.id = id;
+        this.renderWhenReady(this.crashBinaryView);
+    });
+}
 
 app.addPageScript("/drill#", function() {
+    if (!countlyAuth.validateRead(app.crashesView.featureName)) {
+        return;
+    }
     var drillClone;
     var self = app.drillView;
     var record_crashes = countlyGlobal.record_crashes;
@@ -2283,7 +3615,7 @@ app.addPageScript("/drill#", function() {
             $("#drill-navigation").find(".menu[data-open=table-view]").hide();
 
             $.when(countlySegmentation.initialize(currEvent)).then(function() {
-                $("#drill").replaceWith(drillClone.clone(true));
+                $("#drill-filter-view").replaceWith(drillClone.clone(true));
                 self.adjustFilters();
                 if (!self.keepQueryTillExec) {
                     self.draw(true, false);
@@ -2291,13 +3623,14 @@ app.addPageScript("/drill#", function() {
             });
         });
         setTimeout(function() {
-            drillClone = $("#drill").clone(true);
+            // drillClone = $("#drill").clone(true);
+            drillClone = $("#drill-filter-view").clone(true);
         }, 0);
     }
 });
 
 app.addPageScript("/users/#", function() {
-    if (app.activeView && app.activeView.tabs) {
+    if (app.activeView && app.activeView.tabs && countlyAuth.validateRead(app.crashesView.featureName)) {
         var ul = app.activeView.tabs.find("ul");
         $("<li><a href='#usertab-crashes'>" + jQuery.i18n.map["crashes.title"] + "</a></li>").appendTo(ul);
         $("<div id='usertab-crashes'></div>").appendTo(app.activeView.tabs);
@@ -2308,11 +3641,14 @@ app.addPageScript("/users/#", function() {
         app.activeView.tabs.on("tabsactivate", function(event, ui) {
             if (ui && ui.newPanel) {
                 var tab = ($(ui.newPanel).attr("id") + "").replace("usertab-", "");
-                if (tab === "crashes" && !app.activeView.shouldLoadCrashes) {
-                    app.activeView.shouldLoadCrashes = true;
-                    if (app.activeView.dtablecrashes) {
-                        app.activeView.dtablecrashes.fnDraw(false);
+                if (tab === "crashes") {
+                    if (!app.activeView.shouldLoadCrashes) {
+                        app.activeView.shouldLoadCrashes = true;
+                        if (app.activeView.dtablecrashes) {
+                            app.activeView.dtablecrashes.fnDraw(false);
+                        }
                     }
+                    app.activeView.dtablecrashes.stickyTableHeaders();
                 }
             }
         });
@@ -2381,11 +3717,40 @@ $(document).ready(function() {
         }
     });
 
-    app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-    app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+    if (countlyAuth.validateRead(app.crashesView.featureName)) {
+        app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+        app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+    }
 
     //check if configuration view exists
     if (app.configurationsView) {
         app.configurationsView.registerLabel("crashes", "crashes.title");
+        app.configurationsView.registerInput("crashes.grouping_strategy", function(value) {
+            var categories = ['error_and_file', 'stacktrace'];
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate(app.crashesView.featureName) ? '' : 'disabled') + '" crashes-group-input" id="crashes.grouping_strategy">' +
+                '<div class="select-inner">' +
+                '<div class="text-container">';
+            if (value && value.length) {
+                select += '<div class="text" data-localize="crashes.grouping_strategy.' + value + '">' + jQuery.i18n.map["crashes.grouping_strategy." + value] + '</div>';
+            }
+            else {
+                select += '<div class="text" data-localize="crashes.grouping_strategy.error_and_file">' + jQuery.i18n.map["crashes.grouping_strategy.error_and_file"] + '</div>';
+            }
+            select += '</div>' +
+                '<div class="right combo"></div>' +
+                '</div>' +
+                '<div class="select-items square">' +
+                '<div>';
+
+            for (var i = 0; i < categories.length; i++) {
+                select += '<div data-value="' + categories[i] + '" class="segmentation-option item" data-localize="crashes.grouping_strategy.' + categories[i] + '">' + jQuery.i18n.map["crashes.grouping_strategy." + categories[i]] + '</div>';
+            }
+
+            select += '</div>' +
+                '</div>' +
+                '</div>';
+            return select;
+        });
     }
 });
+

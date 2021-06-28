@@ -155,8 +155,6 @@ const UserAlert = {
                             alertList.push(result);
                         }
                     }
-
-
                 }
                 if (alertList.length > 0) {
                     self.alert(alertConfigs, alertList);
@@ -167,7 +165,6 @@ const UserAlert = {
                 log.e(e, e.stack);
             }
         })();
-
     }
 };
 
@@ -310,8 +307,8 @@ function getCompareValues(alertConfigs, data, index) {
     else if (alertConfigs.alertDataSubType === 'Bounce rate') {
         keyName = 'b';
     }
+
     return utils.compareValues(alertConfigs, data, keyName, index);
 }
-
 
 module.exports = UserAlert;
