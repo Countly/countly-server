@@ -990,6 +990,19 @@
         }
     }
 
+    .el-input {
+        .cly-vue-remover {
+            height: 32px;
+            font-size: 14px;
+            align-items: center;
+            display: none;
+        }
+        &:hover .cly-vue-remover {
+            display: flex;
+            cursor: pointer;
+        }
+    } 
+
     //drawer
     .cly-vue-drawer {
         position: fixed;
@@ -1008,6 +1021,16 @@
         */
 
         &-step {
+            &__line {
+                + .cly-vue-drawer-step__line {
+                    margin: 3px 0;
+                }
+                &--aligned {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+            }
             &__section {
                 padding: 12px 0;
             }
