@@ -887,14 +887,24 @@ exports.validateDelete = function(params, feature, callback, callbackParam) {
  * @returns {boolean} isAdmin - is that user has admin access on that app?
  */
 exports.hasAdminAccess = function(member, app_id) {
-    var types = ["c", "r", "u", "d"];
-    var isAdmin = true;
-    for (var i = 0; i < types.length; i++) {
-        if (!member.permission[types[i]][app_id].all) {
-            isAdmin = false;
+    if (!member.global_admin) {
+        if (member.permission) {
+            var types = ["c", "r", "u", "d"];
+            var isAdmin = true;
+            for (var i = 0; i < types.length; i++) {
+                if (!member.permission[types[i]][app_id].all) {
+                    isAdmin = false;
+                }
+            }
+            return isAdmin;
+        }
+        else {
+            return false;
         }
     }
-    return isAdmin || member.global_admin;
+    else {
+        return true;
+    }
 };
 
 exports.hasCreateRight = function(feature, app_id, member) {
