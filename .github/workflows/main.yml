@@ -39,7 +39,7 @@ jobs:
         
       - name: DistFiles
         shell: bash
-        run: countly task dist-all
+        run: sudo countly task dist-all
 
       - name: Tests
         shell: bash
