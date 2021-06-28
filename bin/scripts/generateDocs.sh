@@ -14,9 +14,6 @@ echo 'Setting up the script...'
 # Exit with nonzero exit code if anything fails
 set -e
 
-echo "Enabled Countly command line"
-bash "$DIR/detect.init.sh"
-
 echo "Creating needed directories"
 # Create a clean working directory for this script.
 mkdir "$DIR/../../code_docs"
