@@ -29,7 +29,12 @@ jobs:
         run: sudo bash ./bin/countly.install.sh
         
       - name: ShellCheck
+        shell: bash
         run: shellcheck --version
+        
+      - name: ShellCheck
+        shell: bash
+        run: which shellcheck
 
       - name: Tests
         run: sudo countly test
