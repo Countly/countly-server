@@ -71,13 +71,13 @@
                                 v-bind="passedScope">
                             </slot>
                         </div>
-                        <el-button @click="prevStep" v-if="currentStepIndex > 0">{{i18n('common.drawer.previous-step')}}</el-button>
-                        <el-button @click="nextStep" type="success" v-if="!isLastStep" :disabled="!isCurrentStepValid">{{i18n('common.drawer.next-step')}}</el-button>
-                        <el-button @click="submit" v-if="isLastStep" type="success" :disabled="!isSubmissionAllowed">{{saveButtonLabel}}</el-button>
+                        <el-button @click="prevStep" size="small" v-if="currentStepIndex > 0">{{i18n('common.drawer.previous-step')}}</el-button>
+                        <el-button @click="nextStep" size="small" type="success" v-if="!isLastStep" :disabled="!isCurrentStepValid">{{i18n('common.drawer.next-step')}}</el-button>
+                        <el-button @click="submit" size="small" v-if="isLastStep" type="success" :disabled="!isSubmissionAllowed">{{saveButtonLabel}}</el-button>
                     </div>
                     <div class="cly-vue-drawer__buttons is-single-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="!isMultiStep">
-                        <el-button @click="doClose" v-if="hasCancelButton">{{cancelButtonLabel}}</el-button>
-                        <el-button @click="submit" type="success" :disabled="!isSubmissionAllowed">{{saveButtonLabel}}</el-button>
+                        <el-button @click="doClose" size="small" v-if="hasCancelButton">{{cancelButtonLabel}}</el-button>
+                        <el-button @click="submit" size="small" type="success" :disabled="!isSubmissionAllowed">{{saveButtonLabel}}</el-button>
                     </div>
                 </div>
             </div>
