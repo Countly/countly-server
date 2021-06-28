@@ -34,6 +34,7 @@ jobs:
         run: countly shellcheck
 
       - name: Tests
+        shell: bash
         run: sudo countly test
 
       - name: Output API Logs
@@ -54,7 +55,9 @@ jobs:
       - uses: actions/checkout@v2
      
       - name: Deploy server
+        shell: bash
         run: bash ./bin/scripts/deploy.sh
 
       - name: Deploy documentation
+        shell: bash
         run: bash ./bin/scripts/generateDocs.sh
