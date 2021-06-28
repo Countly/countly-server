@@ -2,7 +2,7 @@
 
 #Original source https://gist.github.com/vidavidorra/548ffbcdae99d752da02
 
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$GITHUB_REF" == "refs/heads/feature/actions" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
+if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_REF" == "refs/heads/feature/actions" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
