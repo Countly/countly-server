@@ -32,6 +32,14 @@ jobs:
       - name: ShellCheck
         shell: bash
         run: countly shellcheck
+        
+      - name: ESLint
+        shell: bash
+        run: npx eslint .
+        
+      - name: DistFiles
+        shell: bash
+        run: countly task dist-all
 
       - name: Tests
         shell: bash
