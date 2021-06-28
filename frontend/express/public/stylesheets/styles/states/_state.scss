@@ -53,6 +53,26 @@
     }
 }
 
+.text-heading {
+    &.text-big {
+        line-height: t.$heading-4-line-height;
+        font-weight: t.$font-weight-primary !important;
+        margin-bottom: 16px;
+    }
+
+    &.text-medium {
+        line-height: t.$heading-5-line-height;
+        font-weight: t.$font-weight-primary !important;
+        margin-bottom: 8px;
+    }
+
+    &.text-small {
+        line-height: t.$heading-6-line-height;     
+        font-weight: t.$font-weight-primary !important;
+        margin-bottom: 4px;
+    }
+}
+
 .text-smaller {
     font-size: t.$text-smaller-size;
     font-weight: t.$font-weight-text;
