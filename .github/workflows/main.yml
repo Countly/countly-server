@@ -56,8 +56,8 @@ jobs:
      
       - name: Deploy server
         shell: bash
-        run: bash ./bin/scripts/deploy.sh
+        run: sudo bash ./bin/scripts/deploy.sh
 
       - name: Deploy documentation
         shell: bash
-        run: bash ./bin/scripts/generateDocs.sh
+        run: sudo bash ./bin/scripts/generateDocs.sh
