@@ -991,6 +991,13 @@
     }
 
     .el-input {
+        &__prefix, &__suffix {
+            .text-small, .text-medium, .text-big {
+                height: 32px;
+                align-items: center;
+                display: flex;
+            }
+        }
         .cly-vue-remover {
             height: 32px;
             font-size: 14px;
