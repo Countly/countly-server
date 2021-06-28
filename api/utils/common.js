@@ -580,14 +580,14 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
     // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer, handling also float timestamps with ms after dot
     if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 10 && common.isNumber(reqTimestamp)) {
         // If the received timestamp is greater than current time use the current time as timestamp
-        currTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.unix() : parseInt(reqTimestamp, 10);
-        curMsTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.valueOf() : parseFloat(reqTimestamp, 10) * 1000;
+        currTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix()) ? currDateWithoutTimestamp.unix() : parseInt(reqTimestamp, 10);
+        curMsTimestamp = (parseInt(reqTimestamp, 10) > currDateWithoutTimestamp.unix()) ? currDateWithoutTimestamp.valueOf() : parseFloat(reqTimestamp, 10) * 1000;
         tmpMoment = moment(currTimestamp * 1000);
     }
     else if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 13 && common.isNumber(reqTimestamp)) {
         var tmpTimestamp = Math.floor(parseInt(reqTimestamp, 10) / 1000);
-        currTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.unix() : tmpTimestamp;
-        curMsTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix() + (60 * 60)) ? currDateWithoutTimestamp.valueOf() : parseInt(reqTimestamp, 10);
+        currTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix()) ? currDateWithoutTimestamp.unix() : tmpTimestamp;
+        curMsTimestamp = (tmpTimestamp > currDateWithoutTimestamp.unix()) ? currDateWithoutTimestamp.valueOf() : parseInt(reqTimestamp, 10);
         tmpMoment = moment(currTimestamp * 1000);
     }
     else {

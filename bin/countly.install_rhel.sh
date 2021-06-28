@@ -15,7 +15,11 @@ yum -y install wget openssl-devel make git sqlite unzip bzip2
 
 if grep -q -i "release 8" /etc/redhat-release ; then
     yum -y group install "Development Tools"
-
+    
+    if [ ! -f "/etc/centos-release" ]; then
+        dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    fi
+    
     yum -y install epel-release
     # see https://github.com/koalaman/shellcheck/issues/1871
     wget https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz
@@ -23,7 +27,7 @@ if grep -q -i "release 8" /etc/redhat-release ; then
 
     yum install -y python3-pip
     pip3 install pip --upgrade
-    yum install -y python3-meld3
+    pip3 install meld3
     pip3 install supervisor --ignore-installed meld3
     yum -y install python3-setuptools
     yum -y install python3-policycoreutils
@@ -39,7 +43,7 @@ if grep -q -i "release 8" /etc/redhat-release ; then
     fi
 
     #Install raven-release for ipa-gothic-fonts required by puppeteer
-    yum -i install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-1.el8.noarch.rpm
+    yum -y install https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-1.el8.noarch.rpm
 elif grep -q -i "release 7" /etc/redhat-release ; then
     yum -y install policycoreutils-python
     #install nginx
@@ -52,8 +56,7 @@ enabled=1" > /etc/yum.repos.d/nginx.repo
 
     yum -y --enablerepo=extras install epel-release
     yum install -y python-pip
-    #pip install pip --upgrade
-    yum install -y python-meld3
+    pip install meld3
     pip install supervisor --ignore-installed meld3
     yum -y install python-setuptools
 
@@ -78,6 +81,8 @@ NODE_JS_CMD=$(which nodejs)
 set -e
 if [[ -z "$NODE_JS_CMD" ]]; then
 	ln -s "$(which node)" /usr/bin/nodejs
+elif [ ! -f "/usr/bin/node" ]; then
+    ln -s "$(which nodejs)" /usr/bin/node
 fi
 
 #install nginx
