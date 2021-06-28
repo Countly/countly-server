@@ -2,7 +2,11 @@
 
 #Original source https://gist.github.com/vidavidorra/548ffbcdae99d752da02
 
+echo "Starting documention deployment script"
+
 if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_REF" == "refs/heads/feature/actions" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
+
+echo "Action qualifies to be checked"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -10,16 +14,20 @@ echo 'Setting up the script...'
 # Exit with nonzero exit code if anything fails
 set -e
 
+echo "Enabled Countly command line"
 bash "$DIR/detect.init.sh"
 
+echo "Creating needed directories"
 # Create a clean working directory for this script.
 mkdir "$DIR/../../code_docs"
 cd "$DIR/../../code_docs"
 
+echo "Cloning gh-pages repo"
 # Get the current gh-pages branch
 git clone -b gh-pages "http://github.com/$GITHUB_REPOSITORY" repo
 cd repo
 
+echo "Configuring git"
 ##### Configure git.
 # Set the push default to simple i.e. push only the current branch.
 git config --global push.default simple
@@ -27,6 +35,7 @@ git config --global push.default simple
 git config user.name "Github Actions"
 git config user.email "actions@github.com"
 
+echo "Removing everything"
 # Remove everything currently in the gh-pages branch.
 # GitHub is smart enough to know which files have changed and which files have
 # stayed the same and will only update the changed files. So the gh-pages branch
@@ -38,6 +47,8 @@ rm -rf ./*
 # to be seen on the gh-pages site. Therefore creating an empty .nojekyll file.
 echo "" > .nojekyll
 
+
+echo "Generating documentation"
 ################################################################################
 ##### Generate JSDOC documents.          #####
 echo 'Generating JSDoc code documentation...'
