@@ -57,6 +57,10 @@ jobs:
       - name: Enable command line
         shell: bash
         run: sudo bash ./bin/scripts/detect.init.sh
+        
+      - name: Installing dependencies
+        shell: bash
+        run: npm install
      
       - name: Deploy server
         shell: bash
