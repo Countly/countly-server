@@ -1000,6 +1000,19 @@
         z-index: 2000;
         width: 100%;
 
+        /*
+            cly-vue-drawer-step block not to be confused with 
+            cly-vue-drawer__step* elements. The latter one is used for 
+            internal elements, while the block is a public utility for
+            plugin developers.
+        */
+
+        &-step {
+            &__section {
+                padding: 12px 0;
+            }
+        }
+
         &__sidecars-view {
             background-color: #A7AEB8;
             overflow-y: scroll;
