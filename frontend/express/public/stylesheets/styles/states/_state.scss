@@ -27,6 +27,7 @@
 }
 
 .text-big {
+    color: map.get(c.$colors, "cool-gray-100");
     font-size: t.$text-big-size;
     font-weight: t.$font-weight-text;
     line-height: t.$text-big-line-height;
@@ -36,6 +37,7 @@
 }
 
 .text-medium {
+    color: map.get(c.$colors, "cool-gray-100");
     font-size: t.$text-medium-size;
     font-weight: t.$font-weight-text;
     line-height: t.$text-medium-line-height;
@@ -45,6 +47,7 @@
 }
 
 .text-small {
+    color: map.get(c.$colors, "cool-gray-100");
     font-size: t.$text-small-size;
     font-weight: t.$font-weight-text;
     line-height: t.$text-small-line-height;
@@ -74,6 +77,7 @@
 }
 
 .text-smaller {
+    color: map.get(c.$colors, "cool-gray-100");
     font-size: t.$text-smaller-size;
     font-weight: t.$font-weight-text;
     line-height: t.$text-smaller-line-height;
