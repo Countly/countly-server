@@ -37,8 +37,8 @@
                                         <div @click="setStepSafe(i)" class="cly-vue-drawer__step-label" :class="{'is-locked': i > lastValidIndex, 'is-active': i === currentStepIndex,  'is-passed': i < currentStepIndex}">
                                             <div>
                                                 <div class="cly-vue-drawer__step-sign">
-                                                    <span class="index text-small">{{i + 1}}</span>
-                                                    <span class="done-icon text-small"><i class="fa fa-check"></i></span>
+                                                    <span class="index text-small" :class="{'color-white': i === currentStepIndex}">{{i + 1}}</span>
+                                                    <span class="done-icon text-small color-white"><i class="fa fa-check"></i></span>
                                                 </div>
                                                 <div class="cly-vue-drawer__step-title text-medium font-weight-bold">{{currentContent.name}}</div>
                                             </div>
