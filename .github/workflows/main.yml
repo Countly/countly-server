@@ -30,7 +30,7 @@ jobs:
         run: sudo bash ./bin/countly.install.sh
         
       - name: ShellCheck
-        run: sudo countly shellcheck
+        run: sudo bash ./bin/commands/scripts/shellcheck.sh
 
       - name: Tests
         run: sudo countly test
