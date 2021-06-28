@@ -10,6 +10,8 @@ echo 'Setting up the script...'
 # Exit with nonzero exit code if anything fails
 set -e
 
+bash "$DIR/detect.init.sh"
+
 # Create a clean working directory for this script.
 mkdir "$DIR/../../code_docs"
 cd "$DIR/../../code_docs"
