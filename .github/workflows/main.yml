@@ -25,7 +25,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Install Countly
       - name: Installing Countly
         run: sudo bash ./bin/countly.install.sh
         
@@ -43,3 +42,17 @@ jobs:
 
       - name: Output Dashboard Logs
         run: sudo cat /var/log/mongodb/mongod.log
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+     
+      - name: Deploy server
+        run: bash ./bin/scripts/deploy.sh
+
+      - name: Deploy documentation
+        run: bash ./bin/scripts/generateDocs.sh
