@@ -26,15 +26,12 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Installing Countly
+        shell: bash
         run: sudo bash ./bin/countly.install.sh
         
       - name: ShellCheck
         shell: bash
-        run: shellcheck --version
-        
-      - name: ShellCheck
-        shell: bash
-        run: which shellcheck
+        run: countly shellcheck
 
       - name: Tests
         run: sudo countly test
