@@ -1092,8 +1092,19 @@
             .cly-vue-drawer__steps-view {
                 width: 100%;
             }
+
+            .cly-vue-drawer__header,
+            .cly-vue-drawer__steps-container,
             .cly-vue-drawer__footer {
-                padding: 16px 0;
+                max-width: 700px;
+                margin: 0 auto;
+                > div {
+                    margin: 1rem !important;
+                }
+            }
+
+            .cly-vue-drawer__footer {
+                width: 100%;
             }
         }
 
