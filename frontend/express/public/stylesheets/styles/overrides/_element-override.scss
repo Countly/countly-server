@@ -63,3 +63,16 @@
 .el-table .sort-caret.descending {
     bottom: -1px;
 }
+
+.el-radio {
+    &.is-flex {
+        padding: 12px;
+        display: flex;
+        width: 100%;
+        margin-right: 0;
+        height: unset;
+    }
+    .el-radio.is-flex.is-bordered+.el-radio.is-flexs.is-bordered {
+        margin-left: 10px;
+    }
+}

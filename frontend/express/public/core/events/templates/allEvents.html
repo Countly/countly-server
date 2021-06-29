@@ -1,0 +1,41 @@
+<script type="text/x-template" id="all-events">
+	<div v-bind:class="[componentId]">
+		<cly-header>
+			<template v-slot:header-left>
+				<h2> {{i18n('events.all.title.new')}} 
+				</h2>
+				<span class="el-icon-info cly-vue-events-all-tooltip" v-tooltip.top-center="description">
+				</span>
+			</template>
+		</cly-header>
+		<div class="bu-columns bu-is-gapless">
+		<div class="bu-column bu-is-3">
+			Search bar
+        </div>
+		<div class="bu-column bu-is-9">
+				<div class="cly-vue-events-all-name">
+				{{selectedEventName}}<span class="cly-vue-events-group" v-if="isGroup">{{i18n('events.all.group')}}</span>
+				</div>
+				<div  class="cly-vue-events-all-description" v-if="isGroup">
+					{{selectedEventDescription}}
+				</div>
+				<div class="bu-is-flex">
+					<div><span class="cly-vue-events-all-period">{{i18n('events.all.period')}}</span>
+					<cly-date-picker classs="cly-vue-events-all-date-picker" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker></div>
+					<div v-if="hasSegments">
+						<span class="cly-vue-events-all-segmentation">{{i18n('events.all.segmentation')}}</span>
+						<el-select v-model="selectedSegment">
+						<el-option v-for="item in availableSegments" :key="item" :value="item">
+						</el-option>
+					</el-select>
+				</div>
+			    </div>  
+				<div class="cly-vue-events-all-charts">
+						<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData">	
+				</cly-chart-bar>
+				<cly-chart-time v-else  :option="chartData"></cly-chart-time>
+				</div>
+		</div>
+	</div>
+	</div>
+  </script>

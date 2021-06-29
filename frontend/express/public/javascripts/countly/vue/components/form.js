@@ -51,11 +51,28 @@
             };
         },
         computed: {
+            lastValidIndex: function() {
+                if (!this.isMounted) {
+                    return -1;
+                }
+                for (var i = 0; i < this.stepContents.length; i++) {
+                    if (this.stepContents[i].isStep && !this.stepContents[i].isValid) {
+                        return i;
+                    }
+                }
+                return i;
+            },
             activeContentId: function() {
                 if (this.activeContent) {
                     return this.activeContent.tId;
                 }
                 return null;
+            },
+            currentScreenMode: function() {
+                if (this.activeContent && this.activeContent.screen) {
+                    return this.activeContent.screen;
+                }
+                return "half";
             },
             currentStepId: function() {
                 return this.activeContentId;
@@ -121,6 +138,11 @@
                     this.currentStepIndex = newIndex;
                 }
             },
+            setStepSafe: function(newIndex) {
+                if (newIndex <= this.lastValidIndex) {
+                    this.setStep(newIndex);
+                }
+            },
             prevStep: function() {
                 this.setStep(this.currentStepIndex - 1);
             },
@@ -176,6 +198,13 @@
     Vue.component("cly-form-step", BaseStep.extend({
         props: {
             validatorFn: {type: Function},
+            screen: {
+                type: String,
+                default: "half",
+                validator: function(value) {
+                    return ['half', 'full', 'custom'].indexOf(value) !== -1;
+                }
+            }
         },
         mounted: function() {
             var self = this;

@@ -61,6 +61,10 @@
             skin: {
                 type: String,
                 default: "primary"
+            },
+            noHistory: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -113,9 +117,8 @@
                         window.location.hash = tab[0].route;
                     }
                 }
-                else {
-                    this.$emit("input", name);
-                }
+
+                this.$emit("input", name);
             },
             activeClasses: function(tab) {
                 if (this.value === tab) {

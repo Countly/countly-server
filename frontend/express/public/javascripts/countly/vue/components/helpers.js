@@ -154,4 +154,27 @@
         template: '<i v-bind:class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltip"></i>'
     }));
 
+    Vue.component("cly-remover", countlyBaseComponent.extend({
+        props: {
+            disabled: {
+                type: Boolean,
+                default: false
+            }
+        },
+        methods: {
+            remove: function() {
+                if (!this.disabled) {
+                    this.$emit("remove");
+                }
+            }
+        },
+        template: '<div class="cly-vue-remover"\n' +
+                        'v-if="!disabled"\n' +
+                        '@click="remove">\n' +
+                        '<slot>\n' +
+                            '<i class="el-icon-delete"></i>\n' +
+                        '</slot>\n' +
+                    '</div>\n'
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));
