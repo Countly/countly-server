@@ -65,14 +65,14 @@
 }
 
 .el-radio {
-    &.is-flex {
+    &.is-autosized {
         padding: 12px;
         display: flex;
         width: 100%;
         margin-right: 0;
         height: unset;
     }
-    .el-radio.is-flex.is-bordered+.el-radio.is-flexs.is-bordered {
+    .el-radio.is-autosized.is-bordered + .el-radio.is-autosized.is-bordered {
         margin-left: 10px;
     }
 }
