@@ -13,8 +13,6 @@ if [ "$totalm" -lt "1800" ]; then
 fi
 if [ -f "$DIR/offline_installer.sh" ]; then
     bash "$DIR/offline_installer.sh" 2>&1 | tee "$DIR/../log/countly-install-$DATE.log"
-elif [ -n "$CI" ] && [ -n "$GITHUB_WORKFLOW" ]; then
-    bash "$DIR/countly.install_github.sh"
 elif [ -f /etc/lsb-release ]; then
     bash "$DIR/countly.install_ubuntu.sh" 2>&1 | tee "$DIR/../log/countly-install-$DATE.log"
 elif [ -f /etc/redhat-release ]; then
