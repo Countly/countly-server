@@ -34,12 +34,13 @@
 
     &__images {
         & img {
-            width: 100%;
+            width: 275px;
+            border-radius:2px;
         }
     }
 
     &__ios-message {
-        width: calc(100% - 45px);
+        width: 230px;
         position: absolute;
         top: 120px;
         left: 22px;
@@ -132,7 +133,7 @@
     }
 
     &__android-message {
-        width: calc(100% - 35px);
+        width: 240px;
         position: absolute;
         background-color: rgba(250, 250, 250, .87);
         top: 148px;
@@ -284,6 +285,7 @@
 
 .cly-vue-push-notification-details-sub-header-title {
     font-size: typography.$text-medium-size;
+    color: #81868D;
 }
 
 .cly-vue-push-notification-details-summary-text {

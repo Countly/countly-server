@@ -256,8 +256,8 @@
         this.renderWhenReady(pushNotificationViewWrapper);
     });
 
-    var MessageSummaryContentTab = countlyVue.views.create({
-        template: CV.T('/push/templates/message-summary-content-tab.html'),
+    var PushNotificationDetailsMessageContentTab = countlyVue.views.create({
+        template: CV.T('/push/templates/push-notification-details-message-content-tab.html'),
         data: function() {
             return {
                 selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
@@ -271,8 +271,8 @@
         }
     });
 
-    var MessageSummaryTargetingTab = countlyVue.views.create({
-        template: CV.T('/push/templates/message-summary-targeting-tab.html'),
+    var PushNotificationDetailsTargetingTab = countlyVue.views.create({
+        template: CV.T('/push/templates/push-notification-details-targeting-tab.html'),
         data: function() {
             return {
                 DAY_TO_MS_RATIO: 86400 * 1000
@@ -290,8 +290,8 @@
         }
     });
 
-    var MessageSummaryErrorsTab = countlyVue.views.create({
-        template: CV.T('/push/templates/message-summary-errors-tab.html'),
+    var PushNotificationDetailsErrorsTab = countlyVue.views.create({
+        template: CV.T('/push/templates/push-notification-details-errors-tab.html'),
         computed: {
             errors: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.errors;
@@ -381,19 +381,19 @@
                 currentSummaryTab: "content",
                 summaryTabs: [
                     {
-                        title: CV.i18n('push-notification-details.summary-content-tab'),
+                        title: CV.i18n('push-notification-details.message-content-tab'),
                         name: "content",
-                        component: MessageSummaryContentTab
+                        component: PushNotificationDetailsMessageContentTab
                     },
                     {
-                        title: CV.i18n('push-notification-details.summary-targeting-tab'),
+                        title: CV.i18n('push-notification-details.targeting-tab'),
                         name: "targeting",
-                        component: MessageSummaryTargetingTab
+                        component: PushNotificationDetailsTargetingTab
                     },
                     {
-                        title: CV.i18n('push-notification-details.summary-errors-tab'),
+                        title: CV.i18n('push-notification-details.errors-tab'),
                         name: "errors",
-                        component: MessageSummaryErrorsTab
+                        component: PushNotificationDetailsErrorsTab
                     }
                 ]
             };
