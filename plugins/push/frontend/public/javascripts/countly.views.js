@@ -296,13 +296,10 @@
             errors: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.errors;
             },
-            errorRows: function() {
-                return this.errors.error;
-            }
         },
         methods: {
             hasErrors: function() {
-                return this.errors.numberOfErrors && this.errors.numberOfErrors > 0;
+                return this.$store.state.countlyPushNotification.details.pushNotification.failed > 0;
             }
         }
     });
@@ -405,58 +402,28 @@
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
+            message: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.message;
+            },
             usersTargetedOptions: function() {
                 return {
                     xAxis: {
                         type: "category",
-                        data: [0],
+                        data: [0, 1, 2, 3],
                         show: false
                     },
                     yAxis: {
                         type: "value",
+                        max: 100,
                     },
-                    series: [{data: [45], stack: "total"}, {data: [55], stack: "total", color: 'rgba(180, 180, 180, 0.2)'}]
+                    series: [
+                        {data: [ this.findTargetedUsers(), this.findSentPushNotifications(), this.findClickedPushNotifications(), this.findFailedPushNotifications()], showBackground: true, tooltip: {show: false}},
+                        {data: [0, 0, 0, 0], tooltip: {show: false}},
+                        {data: [0, 0, 0, 0], tooltip: {show: false}},
+                        {data: [0, 0, 0, 0], tooltip: {show: false}}
+                    ]
                 };
             },
-            sentMessagesOptions: function() {
-                return {
-                    xAxis: {
-                        type: "category",
-                        data: [0],
-                        show: false
-                    },
-                    yAxis: {
-                        type: "value",
-                    },
-                    series: [{data: [45], stack: "total"}, {data: [55], stack: "total", color: 'rgba(180, 180, 180, 0.2)'}]
-                };
-            },
-            clickedMessagesOptions: function() {
-                return {
-                    xAxis: {
-                        type: "category",
-                        data: [0],
-                        show: false
-                    },
-                    yAxis: {
-                        type: "value",
-                    },
-                    series: [{data: [45], stack: "total"}, {data: [55], stack: "total", color: 'rgba(180, 180, 180, 0.2)'}]
-                };
-            },
-            failedMessagesOptions: function() {
-                return {
-                    xAxis: {
-                        type: "category",
-                        data: [0],
-                        show: false
-                    },
-                    yAxis: {
-                        type: "value",
-                    },
-                    series: [{data: [45], stack: "total"}, {data: [55], stack: "total", color: 'rgba(180, 180, 180, 0.2)'}]
-                };
-            }
         },
         methods: {
             // eslint-disable-next-line no-unused-vars
@@ -483,6 +450,22 @@
                     }
                 }
                 return "#FFFFFF";
+            },
+            formatDateAgoText: function(date) {
+                return countlyCommon.formatTimeAgoText(date).text;
+            },
+            findTargetedUsers: function() {
+                //TODO: find how to calculate the targeted users;
+                return CountlyHelpers.formatPercentage(this.pushNotification.total / this.pushNotification.total);
+            },
+            findSentPushNotifications: function() {
+                return CountlyHelpers.formatPercentage(this.pushNotification.sent / this.pushNotification.total);
+            },
+            findClickedPushNotifications: function() {
+                return CountlyHelpers.formatPercentage(this.pushNotification.actioned / this.pushNotification.sent);
+            },
+            findFailedPushNotifications: function() {
+                return CountlyHelpers.formatPercentage(this.pushNotification.failed / this.pushNotification.total);
             }
         },
         components: {

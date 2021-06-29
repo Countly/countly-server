@@ -225,10 +225,16 @@
             return "never";
         },
         mapDeliveryType: function() {
+            //TODO: map push notification delivery type
             return null;
         },
         mapAudienceSelectionType: function() {
+            //TODO: map push notification audience selection type
             return null;
+        },
+        mapErrors: function(dto) {
+            //TODO: map push notification message errors;
+            return {codes: dto.result.errorCodes, messages: dto.result.error};
         },
         mapPushNotificationDtoToModel: function(dto) {
             var self = this;
@@ -238,16 +244,14 @@
                 type: pushNotificationType,
                 status: self.mapStatus(dto.result.status, dto.result.error),
                 createdDateTime: {
-                    date: moment(dto.created).format("MMMM Do YYYY"),
+                    date: moment(dto.created).valueOf(),
                     time: moment(dto.created).format("H:mm")
                 },
                 sent: dto.result.sent,
-                actioned: {
-                    openedDefaultUrl: dto.result["actioned|0"] || null,
-                    clickedFirstButton: dto.result["actioned|1"] || null,
-                    clickedSecondButton: dto.result["actioned|2"] || null
-                },
-                targeted: dto.result.total,
+                actioned: dto.result.actioned,
+                failed: dto.result.errors,
+                processed: dto.result.processed,
+                total: dto.result.total,
                 createdBy: dto.creator,
                 platforms: self.mapPlatforms(dto.platforms),
                 message: {
@@ -259,7 +263,7 @@
                     numberOfButtons: dto.buttons,
                     buttons: self.mapMessageButtons(dto.buttons, dto),
                 },
-                errors: {numberOfErrors: dto.result.errors, codes: dto.result.errorCodes, messages: dto.result.error},
+                errors: self.mapErrors(dto),
                 sound: dto.sound,
                 cohortIds: dto.cohorts,
                 geoIds: dto.geos,
@@ -365,8 +369,15 @@
     var getDetailsInitialState = function() {
         return {
             pushNotification: {
-                message: {},
+                message: {
+                    buttons: []
+                },
                 platforms: [],
+                processed: 0,
+                sent: 0,
+                total: 0,
+                errors: {},
+                actioned: {},
             },
             hasError: false,
             error: null,

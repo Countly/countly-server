@@ -1,6 +1,6 @@
 <script type="text/x-template" id="push-notification-details">
     <div v-bind:class="[componentId]">
-        <cly-header>
+        <cly-header class="cly-vue-push-notification-details-header">
             <template v-slot:header-left>
                 <h2> {{pushNotification.message.name }} </h2>
             </template>
@@ -15,18 +15,19 @@
                 </cly-more-options>
             </template>
             <template v-slot:header-bottom>
-                <div class="bu-level-item">
+                <div class="bu-level-item cly-vue-push-notification-details-sub-header">
                     <span class="blinker-wrapper" v-bind:style="{backgroundColor:getStatusBackgroundColor().concat(DEFAULT_ALPHA_COLOR_VALUE_HEX)}"> 
-                        <span class="blinker" v-bind:style="{backgroundColor:getStatusBackgroundColor()}">  </span>{{pushNotification.status && pushNotification.status.label}}
+                        <span class="blinker" v-bind:style="{backgroundColor:getStatusBackgroundColor()}">  </span>
+                        <span class="cly-vue-push-notification-details-sub-header-title"> {{pushNotification.status && pushNotification.status.label}} </span>
                     </span>
                 </div>
-                <div class="bu-level-item">
-                    <div class="ion ion-ios-time-outline"></div>
-                    <span> {{i18n('push-notification-details.created')}} {{pushNotification.createdDateTime && pushNotification.createdDateTime.date}} {{pushNotification.createdDateTime && pushNotification.createdDateTime.time}}  by  {{pushNotification.createdBy}}  </span>
+                <div class="bu-level-item cly-vue-push-notification-details-sub-header">
+                    <div class="ion ion-ios-time-outline cly-vue-push-notification-details-sub-header-icon"></div>
+                    <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.created')}} {{pushNotification.createdDateTime && formatDateAgoText(pushNotification.createdDateTime.date)}} by  {{pushNotification.createdBy}}  </span>
                 </div>
-                <div class="bu-level-item">
-                    <div class="ion ion-pricetag"></div>
-                    <span> {{i18n('push-notification-details.message-id')}} {{pushNotification.id}} </span>
+                <div class="bu-level-item cly-vue-push-notification-details-sub-header" >
+                    <div class="ion ion-pricetag cly-vue-push-notification-details-sub-header-icon"></div>
+                    <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.message-id')}} {{pushNotification.id}} </span>
                 </div>
             </template>
         </cly-header>
@@ -47,8 +48,10 @@
                             </el-option>
                         </el-select>
                     </div>
-                    <div class="cly-vue-platform-filter-label"> 
-                        <span>{{i18n('push-notification-details.and-label')}}</span> 
+                    <div class="bu-level-item">
+                        <div class="cly-vue-platform-filter-label"> 
+                            {{i18n('push-notification-details.and-label')}}
+                        </div>
                     </div>
                     <div class="bu-level-item">
                         <el-select v-model="selectedLocalizationFilter">
@@ -62,32 +65,26 @@
             </div>
             <cly-section>
                 <div class="bu-columns">
-                    <div class="bu-column bu-is-3">
-                        <cly-chart-bar :option="usersTargetedOptions" :height="400" :showZoom=false :showToggle=false :showDownload=false></cly-chart-bar>
-                    </div>
-                    <div class="bu-column bu-is-3">
-                        <cly-chart-bar :option="sentMessagesOptions" :height="400" :showZoom=false :showToggle=false :showDownload=false></cly-chart-bar>
-                    </div>
-                    <div class="bu-column bu-is-3">
-                        <cly-chart-bar :option="sentMessagesOptions" :height="400" :showZoom=false :showToggle=false :showDownload=false></cly-chart-bar>
-                    </div>
-                    <div class="bu-column bu-is-3">
-                        <cly-chart-bar :option="sentMessagesOptions" :height="400" :showZoom=false :showToggle=false :showDownload=false></cly-chart-bar>
+                    <div class="bu-column bu-is-12">
+                        <cly-chart-bar :option="usersTargetedOptions" :height="400" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
                     </div>
                 </div>
             </cly-section>
             <div class="cly-vue-push-notification-details-summary">
-                <div class="bu-columns">
+                <div class="bu-columns bu-is-mobile">
                     <div class="bu-column bu-is-10">
                         <cly-header title="Message Summary" class="cly-vue-push-notification-details-summary__header">
+                            <template v-slot:header-left>
+                                <h2> {{i18n('push-notification-details.summary-header')}} </h2>
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </template>
                             <template v-slot:header-tabs>
-                                <cly-dynamic-tabs v-model="currentSummaryTab" skin="secondary" :tabs="summaryTabs">
-                                </cly-dynamic-tabs>
+                                <cly-dynamic-tabs v-model="currentSummaryTab" skin="secondary" :tabs="summaryTabs"></cly-dynamic-tabs>
                             </template>
                         </cly-header>
                     </div>
-                    <div class="bu-column bu-is-2">
-                        <mobile-message-preview v-bind:platforms="pushNotification.platforms" media="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1200px-Image_created_with_a_mobile_phone.png" v-bind:buttons="['button1','button2']" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
+                    <div class="bu-column bu-is-2 ">
+                        <mobile-message-preview :title="message.name" :content="message.content" :platforms="pushNotification.platforms" :media="message.media" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
                     </div>
                 </div>
             </div>
