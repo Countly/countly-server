@@ -32,3 +32,17 @@
         }
     }
 }
+
+.cly-divider {
+    width: 100%;
+    border-top: 1px solid #ECECEC;
+    &.is-2 {
+        border-top-width: 2px;
+    }
+    &.is-dashed {
+        border-top-style: dashed;
+    }
+    &.is-dotted {
+        border-top-style: dotted;
+    }
+}
