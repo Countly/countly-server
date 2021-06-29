@@ -70,7 +70,7 @@ jobs:
           payload: "{\"url\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\",\"status\":\"$STATUS\"}" # This data can be any valid JSON from a previous step in the GitHub Action
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          STATUS=${STATUS:-':white_check_mark: '}
+          STATUS: ${STATUS:-':white_check_mark: '}
 
   deploy:
     runs-on: ubuntu-latest
