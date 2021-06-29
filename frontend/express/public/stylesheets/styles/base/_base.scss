@@ -2,7 +2,9 @@
     CSS for base DOM tags rests here
 */
 
+@use "sass:map";
 @use "./typography-variables" as t;
+@use "./colors" as c;
 
 button {
     font-family: t.$font-family !important;
@@ -14,6 +16,7 @@ h1 {
     font-weight: t.$heading-1-weight;
     margin: 0;
     padding: 10;
+    color: map.get(c.$colors, "cool-gray-100");
 }
 
 h2 {
@@ -22,6 +25,7 @@ h2 {
     font-weight: t.$heading-2-weight;
     margin: 0;
     padding: 0;
+    color: map.get(c.$colors, "cool-gray-100");
 }
 
 h3 {
@@ -30,6 +34,7 @@ h3 {
     font-weight: t.$heading-3-weight;
     margin: 0;
     padding: 0;
+    color: map.get(c.$colors, "cool-gray-100");
 }
 
 h4 {
@@ -38,6 +43,7 @@ h4 {
     font-weight: t.$heading-4-weight;
     margin: 0;
     padding: 0;
+    color: map.get(c.$colors, "cool-gray-100");
 }
 
 h5 {
@@ -46,6 +52,7 @@ h5 {
     font-weight: t.$heading-5-weight;
     margin: 0;
     padding: 0;
+    color: map.get(c.$colors, "cool-gray-100");
 }
 
 h6 {
@@ -54,4 +61,5 @@ h6 {
     font-weight: t.$heading-6-weight;
     margin: 0;
     padding: 0;
+    color: map.get(c.$colors, "cool-gray-100");
 }

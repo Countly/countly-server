@@ -76,3 +76,25 @@
         margin-left: 10px;
     }
 }
+
+
+.el-collapse {
+    &.is-bordered-box {
+        border-top: 0px;
+        border-bottom: 0px;
+    
+        .el-collapse-item__header {
+            border-radius: 4px;
+            padding: 0rem 1.5rem 0rem 1.5rem;
+            &.is-active {
+                border-bottom-color: #ececec;
+            }
+        }
+        .el-collapse-item__wrap {
+            background-color: transparent;
+        }
+        .el-collapse-item__content {
+            margin: 0rem 1.5rem 0rem 1.5rem;
+        }
+    }
+}
