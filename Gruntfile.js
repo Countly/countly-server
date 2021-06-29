@@ -1,4 +1,4 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
 
     grunt.initConfig({
         eslint: {
@@ -260,7 +260,7 @@ module.exports = function (grunt) {
     });
 
     //code coverage
-    grunt.event.on('coverage', function (lcovFileContents, done) {
+    grunt.event.on('coverage', function(lcovFileContents, done) {
         // Check below on the section "The coverage event"
         done();
     });
@@ -281,7 +281,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'cssmin']);
 
-    grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function () {
+    grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
         var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');
         console.log('Preparing production files for following plugins: %j', plugins);
 
@@ -311,7 +311,7 @@ module.exports = function (grunt) {
             }
         }
 
-        plugins.forEach(function (plugin) {
+        plugins.forEach(function(plugin) {
             var files, pluginPath = path.join(__dirname, 'plugins', plugin),
                 javascripts = path.join(pluginPath, 'frontend/public/javascripts'),
                 stylesheets = path.join(pluginPath, 'frontend/public/stylesheets'),
@@ -330,7 +330,7 @@ module.exports = function (grunt) {
                         }
                     }
 
-                    files.forEach(function (name) {
+                    files.forEach(function(name) {
                         var file = path.join(javascripts, name);
                         if (fs.statSync(file).isFile() && name.indexOf('.') !== 0 && name.endsWith('.js')) {
                             js.push('plugins/' + plugin + '/frontend/public/javascripts/' + name);
@@ -341,7 +341,7 @@ module.exports = function (grunt) {
 
             if (fs.existsSync(stylesheets) && fs.statSync(stylesheets).isDirectory()) {
                 files = fs.readdirSync(stylesheets);
-                files.forEach(function (name) {
+                files.forEach(function(name) {
                     var file = path.join(stylesheets, name);
                     if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0 && name.endsWith('.css')) {
                         css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
@@ -377,11 +377,11 @@ module.exports = function (grunt) {
         console.log('Done preparing production files');
     });
 
-    grunt.registerTask('locales', 'Concat all locale files into one', function () {
+    grunt.registerTask('locales', 'Concat all locale files into one', function() {
         var plugins = require('./plugins/plugins.json'), locales = {}, fs = require('fs'), path = require('path');
         console.log('Preparing locale files for core & plugins: %j', plugins);
 
-        var pushLocaleFile = function (name, path) {
+        var pushLocaleFile = function(name, path) {
             var lang = '';
             name = name.replace('.properties', '');
             if (name.indexOf('_') !== -1) {
@@ -402,7 +402,7 @@ module.exports = function (grunt) {
             if (!fs.existsSync(dir)) {
                 return;
             }
-            fs.readdirSync(dir).forEach(function (name) {
+            fs.readdirSync(dir).forEach(function(name) {
                 var file = path.join(dir, name);
                 if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
                     pushLocaleFile(name, dir + '/' + name);
@@ -412,12 +412,12 @@ module.exports = function (grunt) {
 
         [path.join(__dirname, 'frontend/express/public/localization/dashboard'), path.join(__dirname, 'frontend/express/public/localization/help'), path.join(__dirname, 'frontend/express/public/localization/mail')].forEach(processLocaleDir);
 
-        plugins.forEach(function (plugin) {
+        plugins.forEach(function(plugin) {
             var localization = path.join(__dirname, 'plugins', plugin, 'frontend/public/localization');
 
             try {
                 if (fs.statSync(localization).isDirectory()) {
-                    fs.readdirSync(localization).forEach(function (name) {
+                    fs.readdirSync(localization).forEach(function(name) {
                         var file = path.join(localization, name);
                         if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
                             pushLocaleFile(name, 'plugins/' + plugin + '/frontend/public/localization/' + name);
