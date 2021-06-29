@@ -29,6 +29,10 @@ jobs:
         shell: bash
         run: sudo bash ./bin/countly.install.sh
         
+      - name: Enable all plugins
+        shell: bash
+        run: sudo bash ./bin/scripts/countly.enable.all.plugins.sh
+        
       - name: ShellCheck
         shell: bash
         run: countly shellcheck
