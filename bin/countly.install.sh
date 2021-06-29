@@ -17,4 +17,6 @@ elif [ -f /etc/lsb-release ]; then
     bash "$DIR/countly.install_ubuntu.sh" 2>&1 | tee "$DIR/../log/countly-install-$DATE.log"
 elif [ -f /etc/redhat-release ]; then
     bash "$DIR/countly.install_rhel.sh" 2>&1 | tee "$DIR/../log/countly-install-$DATE.log"
+elif [ -n "$CI" ] && [ -n "$GITHUB_WORKFLOW" ]; then
+    bash "$DIR/countly.install_github.sh"
 fi
