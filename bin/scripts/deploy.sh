@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
-    GITHUB_BRANCH=${GITHUB_REF##*/}
+    GITHUB_BRANCH=${GITHUB_REF#refs/heads/}
     echo "$GITHUB_BRANCH"
     if [ "$GITHUB_BRANCH" == "master" ] || [ "$GITHUB_BRANCH" == "next" ]; then
         echo "$SSH_PRIVATE_KEY" > deploy-key;
