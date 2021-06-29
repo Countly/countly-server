@@ -2,7 +2,11 @@
 
 #Original source https://gist.github.com/vidavidorra/548ffbcdae99d752da02
 
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_REPO_SLUG" == "Countly/countly-server" ]; then
+echo "Starting documention deployment script"
+
+if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_REF" == "refs/heads/feature/actions" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
+
+echo "Action qualifies to be checked"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -10,21 +14,25 @@ echo 'Setting up the script...'
 # Exit with nonzero exit code if anything fails
 set -e
 
+echo "Creating needed directories"
 # Create a clean working directory for this script.
 mkdir "$DIR/../../code_docs"
 cd "$DIR/../../code_docs"
 
+echo "Cloning gh-pages repo"
 # Get the current gh-pages branch
-git clone -b gh-pages "http://github.com/$TRAVIS_REPO_SLUG" repo
+git clone -b gh-pages "http://github.com/$GITHUB_REPOSITORY" repo
 cd repo
 
+echo "Configuring git"
 ##### Configure git.
 # Set the push default to simple i.e. push only the current branch.
 git config --global push.default simple
-# Pretend to be an user called Travis CI.
-git config user.name "Travis CI"
-git config user.email "travis@travis-ci.org"
+# Pretend to be an user called Github Actions.
+git config user.name "Github Actions"
+git config user.email "actions@github.com"
 
+echo "Removing everything"
 # Remove everything currently in the gh-pages branch.
 # GitHub is smart enough to know which files have changed and which files have
 # stayed the same and will only update the changed files. So the gh-pages branch
@@ -36,6 +44,8 @@ rm -rf ./*
 # to be seen on the gh-pages site. Therefore creating an empty .nojekyll file.
 echo "" > .nojekyll
 
+
+echo "Generating documentation"
 ################################################################################
 ##### Generate JSDOC documents.          #####
 echo 'Generating JSDoc code documentation...'
@@ -57,12 +67,12 @@ if [ -f "index.html" ]; then
 
     # Commit the added files with a title and description containing the Travis CI
     # build number and the GitHub commit reference that issued this build.
-    git commit -m "Deploy code docs to GitHub Pages Travis build: ${TRAVIS_BUILD_NUMBER}" -m "Commit: ${TRAVIS_COMMIT}"
+    git commit -m "Deploy code docs to GitHub Pages build: ${GITHUB_RUN_ID}" -m "Commit: ${GITHUB_SHA}"
 
     # Force push to the remote gh-pages branch.
     # The ouput is redirected to /dev/null to hide any sensitive credential data
     # that might otherwise be exposed.
-    git push --force "https://${GH_REPO_TOKEN}@github.com/${TRAVIS_REPO_SLUG}"
+    git push --force "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 else
     echo '' >&2
     echo 'Warning: No documentation (html) files have been found!' >&2
