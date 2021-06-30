@@ -1,4 +1,164 @@
-/*global countlyCommon,countlyEvent,d3,jQuery */
+/*global countlyCommon,countlyEvent,d3,jQuery,CV,countlyVue,Promise */
+(function(countlyTimesOfDay) {
+
+    countlyTimesOfDay.service = {
+        HOURS: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+        WEEK_DAYS: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+        getHoursPeriod: function(hour) {
+            var nextHour = hour + 1;
+            if (hour < 10) {
+                if (nextHour < 10) {
+                    return "0" + hour.toString() + ":00-" + "0" + nextHour.toString() + ":00";
+                }
+                return "0" + hour.toString() + ":00-" + nextHour.toString() + ":00";
+            }
+            if (hour === 23) {
+                return hour.toString() + ":00-" + "00:00";
+            }
+            return hour.toString() + ":00-" + nextHour.toString() + ":00";
+        },
+        mapRows: function(weekArray) {
+            var self = this;
+            var rows = [];
+            this.HOURS.forEach(function(hour) {
+                var hoursPeriod = self.getHoursPeriod(hour);
+                var row = {
+                    period: hoursPeriod
+                };
+                self.WEEK_DAYS.forEach(function(day, dayIndex) {
+                    row[day] = weekArray[dayIndex][hour];
+                });
+                rows.push(row);
+            });
+            return rows;
+        },
+        mapSeries: function(weekArray) {
+            var self = this;
+            var series = [];
+            this.WEEK_DAYS.forEach(function(_, dayIndex) {
+                self.HOURS.forEach(function(hour) {
+                    series.push([hour, dayIndex, weekArray[dayIndex][hour]]);
+                });
+            });
+            return series;
+        },
+        mapTimesOfDayDtoToModel: function(dto) {
+            return {
+                rows: this.mapRows(dto),
+                series: this.mapSeries(dto)
+            };
+        },
+        // eslint-disable-next-line no-unused-vars
+        fetchAll: function(filters) {
+            var self = this;
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                method: 'times-of-day',
+            };
+            if (filters) {
+                data.date_range = filters.dateRange,
+                data.todType = filters.dataType;
+            }
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o",
+                    data: data
+                }, {disabledAutoCatch: true})
+                    .then(function(responseDto) {
+                        resolve(self.mapTimesOfDayDtoToModel(responseDto));
+                    }).catch(function(error) {
+                        reject(error);
+                    });
+            });
+
+        },
+
+        fetchEvents: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/o",
+            }, {disabledAutoCatch: true});
+        }
+    };
+
+    countlyTimesOfDay.getVuexModule = function() {
+
+        var getInitialState = function() {
+            return {
+                rows: [],
+                series: [],
+                timesOfDayFilters: {
+                    dateRange: null,
+                    dataType: 'sessions'
+                },
+                dataTypeFilterOptions: [{value: "sessions", label: "Sessions"}],
+                isLoading: false,
+                hasError: false,
+                error: null,
+            };
+        };
+
+        var countlyTimesOfDayActions = {
+            fetchAll: function(context) {
+                context.dispatch('onFetchInit');
+                countlyTimesOfDay.service.fetchAll(context.state.filters)
+                    .then(function(response) {
+                        context.commit('setTimesOfDay', response);
+                        context.dispatch('onFetchSuccess');
+                    }).catch(function(error) {
+                        context.dispatch('onFetchError', error);
+                    });
+            },
+            onFetchInit: function(context) {
+                context.commit('setFetchInit');
+            },
+            onFetchError: function(context, error) {
+                context.commit('setFetchError', error);
+            },
+            onFetchSuccess: function(context) {
+                context.commit('setFetchSuccess');
+            },
+            onSetTimesOfDayFilters: function(context, filters) {
+                context.commit('setTimesOfDayFilters', filters);
+            }
+        };
+
+        var countlyTimesOfDayMutations = {
+            setTimesOfDay: function(state, value) {
+                state.rows = value.rows;
+                state.series = value.series;
+            },
+            setTimesOfDayFilters: function(state, value) {
+                state.timesOfDayFilters = value;
+            },
+            setFetchInit: function(state) {
+                state.isLoading = true;
+                state.hasError = false;
+                state.error = null;
+            },
+            setFetchError: function(state, error) {
+                state.isLoading = false;
+                state.hasError = true;
+                state.error = error;
+            },
+            setFetchSuccess: function(state) {
+                state.isLoading = false;
+                state.hasError = false;
+                state.error = null;
+            }
+        };
+
+        return countlyVue.vuex.Module("countlyTimesOfDay", {
+            state: getInitialState,
+            actions: countlyTimesOfDayActions,
+            mutations: countlyTimesOfDayMutations,
+        });
+    };
+
+}(window.countlyTimesOfDay = window.countlyTimesOfDay || {}));
+
+
 (function(timesOfDayPlugin, $) {
 
     var _todData = {};
