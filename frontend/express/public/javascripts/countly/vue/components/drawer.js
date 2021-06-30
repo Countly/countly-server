@@ -20,7 +20,7 @@
                 saveButtonLabel: {type: String, required: true, default: ""},
                 cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
-                hasCancelButton: {type: Boolean, required: false, default: false},
+                hasCancelButton: {type: Boolean, required: false, default: true},
                 toggleTransition: {
                     type: String,
                     default: 'stdt-slide-right'
