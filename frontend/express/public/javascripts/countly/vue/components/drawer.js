@@ -24,7 +24,14 @@
                 toggleTransition: {
                     type: String,
                     default: 'stdt-slide-right'
-                }
+                },
+                size: {
+                    type: Number,
+                    default: 6,
+                    validator: function(value) {
+                        return value >= 1 && value <= 12;
+                    }
+                },
             },
             data: function() {
                 return {
@@ -42,6 +49,9 @@
                         'has-sidecars': this.hasSidecars
                     };
                     classes["cly-vue-drawer--" + this.currentScreenMode + "-screen"] = true;
+                    if (this.currentScreenMode === 'half') {
+                        classes["cly-vue-drawer--half-screen-" + this.size] = true;
+                    }
                     return classes;
                 }
             },

@@ -202,7 +202,7 @@
                 type: String,
                 default: "half",
                 validator: function(value) {
-                    return ['half', 'full', 'custom'].indexOf(value) !== -1;
+                    return ['half', 'full'].indexOf(value) !== -1;
                 }
             }
         },
