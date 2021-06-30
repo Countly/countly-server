@@ -456,7 +456,7 @@
             },
             findTargetedUsers: function() {
                 //TODO: find how to calculate the targeted users;
-                return CountlyHelpers.formatPercentage(this.pushNotification.total / this.pushNotification.total);
+                return CountlyHelpers.formatPercentage(100);
             },
             findSentPushNotifications: function() {
                 return CountlyHelpers.formatPercentage(this.pushNotification.sent / this.pushNotification.total);
