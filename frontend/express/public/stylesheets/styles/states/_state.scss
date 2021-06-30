@@ -86,6 +86,13 @@
     }
 }
 
+
+@for $i from 1 through 6 {
+    .icon-size-#{$i} {
+        font-size: #{$i*2 + 4}px;
+    }
+}
+
 .text-clickable {
     cursor: pointer;
 }
