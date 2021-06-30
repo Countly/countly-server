@@ -1250,6 +1250,17 @@
         }
     }
 
+    .cly-vue-draggable {
+        &--jumbo-lines .cly-vue-draggable-item {
+            background: #F6F6F6;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            height: 24px;
+            align-items: center;
+        }
+    }
+
     .cly-helper-steplist {
         list-style: none;
         padding: 0;
