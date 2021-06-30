@@ -65,14 +65,36 @@
 }
 
 .el-radio {
-    &.is-flex {
+    &.is-autosized {
         padding: 12px;
         display: flex;
         width: 100%;
         margin-right: 0;
         height: unset;
     }
-    .el-radio.is-flex.is-bordered+.el-radio.is-flexs.is-bordered {
+    .el-radio.is-autosized.is-bordered + .el-radio.is-autosized.is-bordered {
         margin-left: 10px;
+    }
+}
+
+
+.el-collapse {
+    &.is-bordered-box {
+        border-top: 0px;
+        border-bottom: 0px;
+    
+        .el-collapse-item__header {
+            border-radius: 4px;
+            padding: 0rem 1.5rem 0rem 1.5rem;
+            &.is-active {
+                border-bottom-color: #ececec;
+            }
+        }
+        .el-collapse-item__wrap {
+            background-color: transparent;
+        }
+        .el-collapse-item__content {
+            margin: 0rem 1.5rem 0rem 1.5rem;
+        }
     }
 }

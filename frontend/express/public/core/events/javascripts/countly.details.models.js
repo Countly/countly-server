@@ -1,8 +1,8 @@
 /*global window, countlyVue, CV, _, countlyCommon, jQuery */
-(function (countlyAllEvents) {
+(function(countlyAllEvents) {
 
     countlyAllEvents.helpers = {
-        getLineChartData: function (context, eventData) {
+        getLineChartData: function(context, eventData) {
             var chartData = eventData.chartData;
             var graphData = [[], [], [], []];
 
@@ -35,7 +35,7 @@
             };
             context.commit('setLineChartData', obj);
         },
-        getBarChartData: function (context, eventData) {
+        getBarChartData: function(context, eventData) {
             var arrCount = [];
             var arrSum = [];
             var arrDuration = [];
@@ -80,7 +80,7 @@
             obj["xAxis"] = xAxis;
             context.commit('setBarData', obj);
         },
-        clearEventsObject: function (obj) {
+        clearEventsObject: function(obj) {
             if (obj) {
                 if (!obj.c) {
                     obj.c = 0;
@@ -98,7 +98,7 @@
 
             return obj;
         },
-        getEventLongName: function (eventKey, eventMap) {
+        getEventLongName: function(eventKey, eventMap) {
             var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
             if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
                 return eventMap[mapKey].name;
@@ -107,7 +107,7 @@
                 return eventKey;
             }
         },
-        getEventsData: function (context, res) {
+        getEventsData: function(context, res) {
             var eventData = { chartData: {}, chartDP: { dp: [], ticks: [] } };
             var allEvents = context.state.allEventsData;
             var eventMap = allEvents["map"];
@@ -121,7 +121,7 @@
                 var tmpEventData = countlyCommon.extractTwoLevelData(res, segments, countlyAllEvents.helpers.clearEventsObject, [
                     {
                         name: "curr_segment",
-                        func: function (rangeArr) {
+                        func: function(rangeArr) {
                             return rangeArr.replace(/:/g, ".").replace(/\[CLY\]/g, "").replace(/.\/\//g, "://");
                         }
                     },
@@ -135,13 +135,13 @@
                 var segmentsSum = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN);
                 var segmentsDur = _.without(_.pluck(eventData.chartData, 'dur'), false, null, "", undefined, NaN);
 
-                if (_.reduce(segmentsSum, function (memo, num) {
+                if (_.reduce(segmentsSum, function(memo, num) {
                     return memo + num;
                 }, 0) === 0) {
                     segmentsSum = [];
                 }
 
-                if (_.reduce(segmentsDur, function (memo, num) {
+                if (_.reduce(segmentsDur, function(memo, num) {
                     return memo + num;
                 }, 0) === 0) {
                     segmentsDur = [];
@@ -170,17 +170,17 @@
                     }
                 }
                 else {
-                    _.each(eventData.chartData, function (element, index, list) {
+                    _.each(eventData.chartData, function(element, index, list) {
                         list[index] = _.pick(element, "curr_segment", "c");
                     });
                 }
             }
             else {
                 var chartData = [
-                    { data: [], label: countString },
-                    { data: [], label: sumString },
-                    { data: [], label: durString }
-                ],
+                        { data: [], label: countString },
+                        { data: [], label: sumString },
+                        { data: [], label: durString }
+                    ],
                     dataProps = [
                         { name: "c" },
                         { name: "s" },
@@ -207,10 +207,10 @@
                 var cleanSumCol = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN);
                 var cleanDurCol = _.without(_.pluck(eventData.chartData, 'dur'), false, null, "", undefined, NaN);
 
-                var reducedSum = _.reduce(cleanSumCol, function (memo, num) {
+                var reducedSum = _.reduce(cleanSumCol, function(memo, num) {
                     return memo + num;
                 }, 0);
-                var reducedDur = _.reduce(cleanDurCol, function (memo, num) {
+                var reducedDur = _.reduce(cleanDurCol, function(memo, num) {
                     return memo + num;
                 }, 0);
 
@@ -225,7 +225,7 @@
                 else {
                     eventData.chartDP[1] = false;
                     eventData.chartDP = _.compact(eventData.chartDP);
-                    _.each(eventData.chartData, function (element, index, list) {
+                    _.each(eventData.chartData, function(element, index, list) {
                         list[index] = _.pick(element, "date", "c");
                     });
                 }
@@ -233,7 +233,7 @@
             var countArr = _.pluck(eventData.chartData, "c");
 
             if (countArr.length) {
-                eventData.totalCount = _.reduce(countArr, function (memo, num) {
+                eventData.totalCount = _.reduce(countArr, function(memo, num) {
                     return memo + num;
                 }, 0);
             }
@@ -241,7 +241,7 @@
             var sumArr = _.pluck(eventData.chartData, "s");
 
             if (sumArr.length) {
-                eventData.totalSum = _.reduce(sumArr, function (memo, num) {
+                eventData.totalSum = _.reduce(sumArr, function(memo, num) {
                     return memo + num;
                 }, 0);
             }
@@ -249,14 +249,14 @@
             var durArr = _.pluck(eventData.chartData, "dur");
 
             if (durArr.length) {
-                eventData.totalDur = _.reduce(durArr, function (memo, num) {
+                eventData.totalDur = _.reduce(durArr, function(memo, num) {
                     return memo + num;
                 }, 0);
             }
             context.commit('setAllEventsProcessed', eventData);
             return eventData;
         },
-        getSegments: function (context, res) {
+        getSegments: function(context, res) {
             var segments = [];
             if (res.meta && res.meta.segments.length > 0) {
                 segments = res.meta.segments.slice();
@@ -278,7 +278,7 @@
     };
 
     countlyAllEvents.service = {
-        fetchAllEventsData: function (context) {
+        fetchAllEventsData: function(context) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -291,7 +291,7 @@
                 dataType: "json",
             });
         },
-        fetchAllEventsGroupData: function () {
+        fetchAllEventsGroupData: function() {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -303,7 +303,7 @@
                 dataType: "json",
             });
         },
-        fetchSelectedEventsData: function (context) {
+        fetchSelectedEventsData: function(context) {
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -320,9 +320,9 @@
         }
     };
 
-    countlyAllEvents.getVuexModule = function () {
+    countlyAllEvents.getVuexModule = function() {
 
-        var getInitialState = function () {
+        var getInitialState = function() {
             return {
                 allEventsData: {},
                 allEventsGroupsData: [],
@@ -341,13 +341,13 @@
         };
 
         var allEventsActions = {
-            fetchAllEventsData: function (context) {
+            fetchAllEventsData: function(context) {
                 return countlyAllEvents.service.fetchAllEventsData(context)
-                    .then(function (res) {
+                    .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsData", res);
                             countlyAllEvents.service.fetchSelectedEventsData(context)
-                                .then(function (res) {
+                                .then(function(res) {
                                     if (res) {
                                         context.commit("setSelectedEventsData", res);
                                         context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, res) || []);
@@ -356,117 +356,117 @@
                         }
                     });
             },
-            fetchAllEventsGroupData: function (context) {
+            fetchAllEventsGroupData: function(context) {
                 return countlyAllEvents.service.fetchAllEventsGroupData(context)
-                    .then(function (res) {
+                    .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsGroupData", res);
                         }
                     });
             },
-            fetchSelectedEventsData: function (context) {
+            fetchSelectedEventsData: function(context) {
                 return countlyAllEvents.service.fetchSelectedEventsData(context)
-                    .then(function (res) {
+                    .then(function(res) {
                         if (res) {
                             context.commit("setSelectedEventsData", res);
                             context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, res) || []);
                         }
                     });
             },
-            fetchSelectedDatePeriod: function (context, period) {
+            fetchSelectedDatePeriod: function(context, period) {
                 context.commit('setSelectedDatePeriod', period);
             },
-            fetchSelectedEventName: function (context, name) {
+            fetchSelectedEventName: function(context, name) {
                 context.commit('setSelectedEventName', name);
             },
-            fetchCurrentActiveSegmentation: function (context, name) {
+            fetchCurrentActiveSegmentation: function(context, name) {
                 context.commit('setCurrentActiveSegmentation', name);
             },
-            fetchHasSegments: function (context, hasSegments) {
+            fetchHasSegments: function(context, hasSegments) {
                 context.commit('setHasSegments', hasSegments);
             }
 
         };
 
         var allEventsMutations = {
-            setAllEventsData: function (state, value) {
+            setAllEventsData: function(state, value) {
                 state.allEventsData = value;
             },
-            setAllEventsGroupData: function (state, value) {
+            setAllEventsGroupData: function(state, value) {
                 state.allEventsGroupData = value;
             },
-            setSelectedEventsData: function (state, value) {
+            setSelectedEventsData: function(state, value) {
                 state.selectedEventsData = value;
             },
-            setSelectedDatePeriod: function (state, value) {
+            setSelectedDatePeriod: function(state, value) {
                 state.selectedDatePeriod = value;
             },
-            setSelectedEventName: function (state, value) {
+            setSelectedEventName: function(state, value) {
                 state.selectedEventName = value;
             },
-            setIsGroup: function (state, value) {
+            setIsGroup: function(state, value) {
                 state.isGroup = value;
             },
-            setDescription: function (state, value) {
+            setDescription: function(state, value) {
                 state.description = value;
             },
-            setCurrentActiveSegmentation: function (state, value) {
+            setCurrentActiveSegmentation: function(state, value) {
                 state.currentActiveSegmentation = value;
             },
-            setHasSegments: function (state, value) {
+            setHasSegments: function(state, value) {
                 state.hasSegments = value;
             },
-            setAvailableSegments: function (state, value) {
+            setAvailableSegments: function(state, value) {
                 state.availableSegments = value;
             },
-            setAllEventsProcessed: function (state, value) {
+            setAllEventsProcessed: function(state, value) {
                 state.allEventsProcessed = value;
             },
-            setBarData: function (state, value) {
+            setBarData: function(state, value) {
                 state.barData = value;
             },
-            setLineChartData: function (state, value) {
+            setLineChartData: function(state, value) {
                 state.lineChartData = value;
             }
         };
         var allEventsGetters = {
-            allEvents: function (_state) {
+            allEvents: function(_state) {
                 return _state.allEventsData;
             },
-            allEventsGroup: function (_state) {
+            allEventsGroup: function(_state) {
                 return _state.allEventsGroupData;
             },
-            selectedEvent: function (_state) {
+            selectedEvent: function(_state) {
                 return _state.selectedEventsData;
             },
-            selectedDatePeriod: function (_state) {
+            selectedDatePeriod: function(_state) {
                 return _state.selectedDatePeriod;
             },
-            selectedEventName: function (_state) {
+            selectedEventName: function(_state) {
                 return _state.selectedEventName;
             },
-            isGroup: function (_state) {
+            isGroup: function(_state) {
                 return _state.isGroup;
             },
-            description: function (_state) {
+            description: function(_state) {
                 return _state.description;
             },
-            currentActiveSegmentation: function (_state) {
+            currentActiveSegmentation: function(_state) {
                 return _state.currentActiveSegmentation;
             },
-            hasSegments: function (_state) {
+            hasSegments: function(_state) {
                 return _state.hasSegments;
             },
-            availableSegments: function (_state) {
+            availableSegments: function(_state) {
                 return _state.availableSegments;
             },
-            allEventsProcessed: function (_state) {
+            allEventsProcessed: function(_state) {
                 return _state.allEventsProcessed;
             },
-            barData: function (_state) {
+            barData: function(_state) {
                 return _state.barData;
             },
-            lineChartData: function (_state) {
+            lineChartData: function(_state) {
                 return _state.lineChartData;
             }
         };
