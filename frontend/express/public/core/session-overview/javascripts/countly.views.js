@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlySessionOverview,app*/
+/* global countlyVue,CV,countlySessionOverview,app,countlyCommon*/
 var SessionOverviewView = countlyVue.views.create({
     template: CV.T("/core/session-overview/templates/session-overview.html"),
     data: function() {
@@ -102,6 +102,7 @@ countlyVue.container.registerTab("/analytics/sessions", {
     priority: 1,
     name: "overview",
     title: "Session Overview",
+    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/overview",
     component: SessionOverviewView,
     vuex: [{
         clyModel: countlySessionOverview

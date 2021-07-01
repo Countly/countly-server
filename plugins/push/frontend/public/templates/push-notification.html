@@ -1,0 +1,26 @@
+<script type="text/x-template" id="push-notification">
+    <div v-bind:class="[componentId]">
+        <cly-header>
+            <template v-slot:header-left>
+                <h2> {{i18n('push-notification.title')}} 
+                </h2>
+                <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="i18n('push-notification.description')">
+                </span>
+            </template>
+            <template v-slot:header-right>
+                <div class="bu-level-item">
+                    <el-button @click="onCreatePushNotification" type="success" size="small" icon="el-icon-circle-plus">{{i18n('push-notification.create-button')}}</el-button>
+                </div>
+            </template>
+            <template v-slot:header-tabs>
+                <cly-dynamic-tabs v-model="selectedPushNotificationTab" :tabs="pushNotificationTabs">
+                    <template v-slot:tables="scope">
+                        <span>{{scope.tab.title}}</span>
+                    </template>
+                </cly-dynamic-tabs>
+            </template>
+        </cly-header>
+        <cly-main>
+        </cly-main>
+    </div>
+</script>
