@@ -4,6 +4,7 @@
 
 @use "../base/typography-variables" as t;
 @use "../base/colors" as c;
+@use "sass:map";
 
 //Element Table overrides
 .el-table {
@@ -19,6 +20,7 @@
     font-weight: 500;
     background-color: c.$table-th-bgcolor;
     border-bottom-width: 2px;
+    color: map.get(c.$colors, "cool-gray-100");
 }
 
 .el-table th .cell {

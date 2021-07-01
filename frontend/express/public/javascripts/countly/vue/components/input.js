@@ -644,7 +644,7 @@
                 }
             },
             template: '<div class="cly-vue-check" v-bind:class="topClasses">\n' +
-                            '<div class="check-wrapper">\n' +
+                            '<div class="check-wrapper text-clickable">\n' +
                                 '<input type="checkbox" class="check-checkbox" :checked="value">\n' +
                                 '<i v-bind:class="labelClass" @click.stop="setValue(!value)"></i>\n' +
                                 '<span v-if="label" class="check-text" @click.stop="setValue(!value)">{{label}}</span>\n' +
