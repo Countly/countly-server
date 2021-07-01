@@ -192,7 +192,9 @@
         mixins: [ELEMENT.utils.Emitter],
         template: '<cly-dropdown ref="dropdown" v-on="$listeners">\
                         <template v-slot:trigger>\
-                            <el-button :size="size" icon="el-icon-more"></el-button>\
+                            <el-button :size="size" :icon="icon" :type="type">\
+                            <span v-if="text">{{text}}</span>\
+                            </el-button>\
                         </template>\
                         <template v-slot>\
                             <slot>\
@@ -203,6 +205,18 @@
             size: {
                 type: String,
                 default: 'small'
+            },
+            icon: {
+                type: String,
+                default: 'el-icon-more'
+            },
+            text: {
+                type: String,
+                default: null
+            },
+            type: {
+                type: String,
+                default: 'default'
             }
         },
         mounted: function() {
