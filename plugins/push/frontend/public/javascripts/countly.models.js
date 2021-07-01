@@ -299,7 +299,7 @@
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
             };
-            Object.assign(data, this.mapType(type));
+            Object.assign(data, this.getTypeUrlParameter(type));
             return CV.$.ajax({
                 type: "POST",
                 url: countlyCommon.API_PARTS.data.r + "/pushes/all",
