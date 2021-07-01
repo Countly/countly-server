@@ -34,7 +34,7 @@
                 }
             },
             template: '<a @click="back" class="cly-vue-back-link"> \n' +
-                            '<span>{{innerTitle}}</span>\n' +
+                            '<span><i class="fas fa-arrow-left bu-pr-3"></i>{{innerTitle}}</span>\n' +
                         '</a>'
         }
     ));

@@ -20,12 +20,6 @@
         text-transform: uppercase;
     }
 
-    &:before {
-        content: "←";
-        margin-right: 5px;
-        color: #616161;
-    }
-
     &:hover {
         span {
             text-decoration: underline;
