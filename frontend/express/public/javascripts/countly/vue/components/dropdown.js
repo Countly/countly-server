@@ -49,7 +49,7 @@
         template: '<component\
                         :is="componentName"\
                         ref="elInput"\
-                        :class="{ \'is-focus\': focused, \'is-disabled\': disabled }"\
+                        :class="{ \'is-focus\': focused, \'is-disabled\': disabled, \'is-adaptive\': adaptiveLength }"\
                         v-bind="$attrs"\
                         readonly="readonly" \
                         v-model="description"\
