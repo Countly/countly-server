@@ -299,51 +299,33 @@
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
             };
-            Object.assign(data, this.getTypeUrlParameter(type));
-            return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    type: "POST",
-                    url: countlyCommon.API_PARTS.data.r + "/pushes/all",
-                    data: data,
-                    dataType: "json"
-                }).then(function(response) {
-                    resolve(response);
-                }).catch(function(error) {
-                    reject(error);
-                });
+            Object.assign(data, this.mapType(type));
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.r + "/pushes/all",
+                data: data,
+                dataType: "json"
             });
         },
         fetchById: function(id) {
-            return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    type: "GET",
-                    url: window.countlyCommon.API_URL + "/i/pushes/message",
-                    data: {
-                        args: JSON.stringify({_id: id, apps: [countlyCommon.ACTIVE_APP_ID]})
-                    },
-                    dataType: "json"
-                }).then(function(response) {
-                    resolve(response);
-                }).catch(function(error) {
-                    reject(error);
-                });
+            return CV.$.ajax({
+                type: "GET",
+                url: window.countlyCommon.API_URL + "/i/pushes/message",
+                data: {
+                    args: JSON.stringify({_id: id, apps: [countlyCommon.ACTIVE_APP_ID]})
+                },
+                dataType: "json"
             });
         },
         fetchDashboard: function() {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
             };
-            return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    type: "GET",
-                    url: window.countlyCommon.API_URL + '/i/pushes/dashboard',
-                    data: data,
-                    dataType: "json"
-                }).then(function(response) {
-                    resolve(response);
-                }).catch(function(error) {
-                    reject(error);
-                });
+            return CV.$.ajax({
+                type: "GET",
+                url: window.countlyCommon.API_URL + '/i/pushes/dashboard',
+                data: data,
+                dataType: "json"
             });
         },
         deleteById: function(id) {
@@ -351,17 +333,11 @@
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 _id: id
             };
-            return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    method: 'GET',
-                    url: window.countlyCommon.API_URL + '/i/pushes/delete',
-                    data: data,
-                    dataType: "json"
-                }).then(function(response) {
-                    resolve(response);
-                }).catch(function(error) {
-                    reject(error);
-                });
+            return CV.$.ajax({
+                method: 'GET',
+                url: window.countlyCommon.API_URL + '/i/pushes/delete',
+                data: data,
+                dataType: "json"
             });
         }
     };

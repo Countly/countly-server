@@ -1,6 +1,7 @@
 @use "../styles/base/typography-variables" as t;
 @use "../styles/base/colors" as c;
 @use "sass:map";
+@use "sass:math";
 
 .stdt {
     &-fade-enter-active, &-fade-leave-active {
@@ -1086,6 +1087,16 @@
             .cly-vue-drawer__footer {
                 padding: 16px;
             }
+            @for $i from 1 through 12 {
+                &-#{$i}{
+                    .cly-vue-drawer__steps-view {
+                        width: #{$i*math.div(100%, 12)}
+                    }
+                    .cly-vue-drawer__sidecars-view {
+                        width: #{(100 - $i*math.div(100, 12)) + '%'}
+                    }
+                }
+            }
         }
 
         &--full-screen {
@@ -1236,6 +1247,17 @@
             height: 100%;
             flex-direction: column;
             display: flex;
+        }
+    }
+
+    .cly-vue-draggable {
+        &--jumbo-lines .cly-vue-draggable-item {
+            background: #F6F6F6;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            height: 24px;
+            align-items: center;
         }
     }
 

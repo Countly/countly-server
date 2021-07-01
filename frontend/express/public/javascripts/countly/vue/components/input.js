@@ -632,21 +632,21 @@
                         }
                     }
                     else if (this.skin === "star") {
-                        classes.push("ion-icons");
+                        classes.push("fa fa-star");
                         if (value) {
-                            classes.push("ion-android-star");
+                            classes.push("color-yellow-100");
                         }
                         else {
-                            classes.push("ion-android-star-outline");
+                            classes.push("color-cool-gray-50");
                         }
                     }
                     return classes;
                 }
             },
             template: '<div class="cly-vue-check" v-bind:class="topClasses">\n' +
-                            '<div class="check-wrapper">\n' +
+                            '<div class="check-wrapper text-clickable">\n' +
                                 '<input type="checkbox" class="check-checkbox" :checked="value">\n' +
-                                '<div v-bind:class="labelClass" @click.stop="setValue(!value)"></div>\n' +
+                                '<i v-bind:class="labelClass" @click.stop="setValue(!value)"></i>\n' +
                                 '<span v-if="label" class="check-text" @click.stop="setValue(!value)">{{label}}</span>\n' +
                             '</div>\n' +
                         '</div>'
