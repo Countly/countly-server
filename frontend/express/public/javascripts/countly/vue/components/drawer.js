@@ -35,6 +35,7 @@
             },
             data: function() {
                 return {
+                    isToggleable: true,
                     sidecarContents: []
                 };
             },
