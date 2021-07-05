@@ -186,7 +186,9 @@
             number: {type: Number, default: 0},
             description: {type: String, default: ''},
             disableFormatting: {type: Boolean, default: false},
-            isPercentage: {type: Boolean, default: false}
+            isPercentage: {type: Boolean, default: false},
+            columnWidth: {type: [Number, String], default: -1},
+            isVertical: {type: Boolean, default: false}
         },
         computed: {
             formattedNumber: function() {
@@ -197,9 +199,18 @@
                     return this.formatNumber(this.number);
                 }
                 return this.number;
+            },
+            hasDescription: function() {
+                return !!this.$slots.description;
+            },
+            topClasses: function() {
+                if (this.isVertical || this.columnWidth === -1) {
+                    return "";
+                }
+                return "bu-is-" + this.columnWidth;
             }
         },
-        template: '<div class="cly-vue-metric-card bu-column bu-is-flex">\
+        template: '<div class="cly-vue-metric-card bu-column bu-is-flex" :class="topClasses">\
                         <div class="cly-vue-metric-card__wrapper bu-p-5 bu-is-flex bu-is-justify-content-space-between">\
                             <cly-progress-donut class="bu-pr-5 bu-is-flex" v-if="isPercentage" :percentage="number"></cly-progress-donut>\
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
@@ -214,7 +225,7 @@
     }));
 
     Vue.component("cly-metric-cards", countlyBaseComponent.extend({
-        template: '<div class="bu-columns bu-is-gapless bu-is-mobile"><slot></slot></div>'
+        template: '<div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline"><slot></slot></div>',
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
