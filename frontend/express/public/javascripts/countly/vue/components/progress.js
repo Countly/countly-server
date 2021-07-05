@@ -2,6 +2,14 @@
 (function(countlyVue) {
     var countlyBaseComponent = countlyVue.components.BaseComponent;
 
+    Vue.component("cly-progress-donut", countlyBaseComponent.extend({
+        props: {
+            percentage: {type: Number, default: 42},
+            color: {type: [String, Function, Array], default: '#00C3CA'}
+        },
+        template: '<el-progress :color="color" :percentage="percentage" type="circle" :width="56" stroke-linecap="butt" :stroke-width="8" :show-text="false"></el-progress>'
+    }));
+
     Vue.component("cly-progress-bar", countlyBaseComponent.extend({
         data: function() {
             return {
