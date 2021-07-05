@@ -190,10 +190,10 @@
         },
         computed: {
             formattedNumber: function() {
-                if (this.disableFormatting && this.isPercentage) {
+                if (!this.disableFormatting && this.isPercentage) {
                     return this.number + " %";
                 }
-                else if (this.disableFormatting && !this.isPercentage) {
+                else if (!this.disableFormatting && !this.isPercentage) {
                     return this.formatNumber(this.number);
                 }
                 return this.number;
