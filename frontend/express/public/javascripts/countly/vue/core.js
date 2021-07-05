@@ -93,6 +93,9 @@
                     },
                     periodLabel: function(state) {
                         return state.periodLabel;
+                    },
+                    getActiveApp: function(state) {
+                        return state.activeApp;
                     }
                 },
                 mutations: {

@@ -1,7 +1,6 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, setTimeout*/
+/* global app, jQuery, CV, Vue, countlyGlobal, _*/
 
 (function(countlyVue, $) {
-
 
     $(document).ready(function() {
 
@@ -27,19 +26,40 @@
                 });
 
                 return {
-                    appSelect: {
-                        selected: this.$store.state.countlyCommon.activeApp._id,
-                        mode: 'single-list',
-                    },
                     allApps: apps,
+                    selectMode: "single-list",
+                    selectedAppLocal: null
                 };
             },
             computed: {
+                selectedApp: {
+                    get: function() {
+                        var activeApp = this.$store.getters["countlyCommon/getActiveApp"];
+
+                        if (!this.selectedAppLocal) {
+                            if (!activeApp) {
+                                // eslint-disable-next-line no-undef
+                                console.log("sidebar:: active app not set");
+                            }
+
+                            this.selectedAppLocal = activeApp && activeApp._id;
+                        }
+
+                        return this.selectedAppLocal;
+                    },
+                    set: function(id) {
+                        this.selectedAppLocal = id;
+                    }
+                },
                 activeApp: function() {
-                    var self = this;
+                    var selectedAppId = this.selectedApp;
                     var active = this.allApps.find(function(a) {
-                        return a._id === self.appSelect.selected;
+                        return a._id === selectedAppId;
                     });
+
+                    if (active) {
+                        active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
+                    }
 
                     return active;
                 },
@@ -81,10 +101,10 @@
                         app.activeAppName = appName;
                         app.activeAppKey = appKey;
                         app.switchApp(appId);
-                        setTimeout(function() {
-                            window.location.reload();
-                        }, 1000);
                     }
+                },
+                suffixIconClass: function(dropdown) {
+                    return (dropdown.visible ? 'arrow-up is-reverse' : 'arrow-up');
                 }
             }
         });

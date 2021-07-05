@@ -32,36 +32,56 @@
             <i class="ion-chevron-left"></i>
         </div>
     </div>
-    <div class="cly-vue-sidebar__menu">
-        <div class="cly-vue-app-navigation">
+    <div class="cly-vue-sidebar__menu countly-vue-sidebar__app">
+        <div class="cly-vue-sidebar__app-navigation">
             <cly-select-x
                 search-placeholder=""
                 placeholder="Select App"
-                v-model="appSelect.selected"
-                :mode="appSelect.mode"
+                v-model="selectedApp"
+                :mode="selectMode"
                 :options="allApps"
-                @change="onChange">
+                @change="onChange"
+                popClass="cly-vue-sidebar__app-navigation-popper"
+                prefixIcon="el-icon-platform-eleme"
+                label="web"
+                :width="200">
+                <template v-slot:trigger="slotProps">
+                    <el-input
+                        placeholder="Please input"
+                        v-model="activeApp.name"
+                        readonly="readonly"
+                        clearable>
+                        <template slot="prefix">
+                            <div class="cly-vue-sidebar__app-image" :style="{backgroundImage: 'url(' + activeApp.image + ')'}"></div>
+                        </template>
+                        <template slot="suffix">
+                            <i class="el-select__caret el-input__icon" :class="['el-icon-' + suffixIconClass(slotProps.dropdown)]"></i>
+                        </template>
+                    </el-input>
+                </template>
             </cly-select-x>
         </div>
-        <div v-for="(cat, idx) in categories" :data-category="cat.name">
-            <ul>
-                <li v-for="(menu, idx) in categorizedMenus[cat.name]">
-                    <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
-                        <el-collapse accordion>
-                            <el-collapse-item :title="i18nM(menu.title)">
-                                <ul>
-                                    <li class="cly-vue-sidebar__submenu-items" v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
-                                        <a :href="submenu.url">{{i18nM(submenu.title)}}</a>
-                                    </li>
-                                </ul>
-                            </el-collapse-item>
-                        </el-collapse>
-                    </div>
-                    <div v-else class="cly-vue-sidebar__menu-items">
-                        <a :href="menu.url">{{i18nM(menu.title)}}</a>
-                    </div>
-                </li>
-            </ul>
+        <div class="cly-vue-sidebar__app-menu">
+            <div v-for="(cat, idx) in categories" :data-category="cat.name">
+                <ul>
+                    <li v-for="(menu, idx) in categorizedMenus[cat.name]">
+                        <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
+                            <el-collapse accordion>
+                                <el-collapse-item :title="i18nM(menu.title)">
+                                    <ul>
+                                        <li class="cly-vue-sidebar__submenu-items" v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
+                                            <a :href="submenu.url">{{i18nM(submenu.title)}}</a>
+                                        </li>
+                                    </ul>
+                                </el-collapse-item>
+                            </el-collapse>
+                        </div>
+                        <div v-else class="cly-vue-sidebar__menu-items">
+                            <a :href="menu.url">{{i18nM(menu.title)}}</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>

@@ -425,7 +425,7 @@
                         @show="handleDropdownShow"\
                         @hide="focusOnTrigger">\
                         <template v-slot:trigger="dropdown">\
-                            <slot name="trigger">\
+                            <slot name="trigger" v-bind:dropdown="dropdown">\
                                 <cly-input-dropdown-trigger\
                                     ref="trigger"\
                                     :size="size"\

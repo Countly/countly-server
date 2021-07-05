@@ -65,4 +65,13 @@
             color:black;
         }
       }
-} 
+}
+
+.cly-vue-dropdown {
+    &__pop {
+        padding: 0px;
+    }
+    &__pop-container {
+        word-break: initial;
+    }
+}

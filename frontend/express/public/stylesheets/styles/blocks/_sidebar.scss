@@ -1,3 +1,9 @@
+@use "../base/typography-variables" as t;
+@use "../base/colors" as c;
+@use "sass:map";
+
+$bg-color: #24292e;
+
 #cly-vue-sidebar {
     position: fixed;
     left: 0;
@@ -6,7 +12,7 @@
     height: 100%;
     z-index: 1998; //100000;
     user-select: none;
-    color: #D6D6D6;
+    color: map.get(c.$colors, "warm-gray-40");
 
     .cly-vue-sidebar {
         width: 100%;
@@ -31,7 +37,7 @@
             width: 48px;
             height: 100%;
             overflow: auto;
-            color: #A7AEB8;
+            color: map.get(c.$colors, "cool-gray-40");
         }
 
         &__options-list {
@@ -47,7 +53,7 @@
             bottom: 0;
             width: 48px;
             height: 48px;
-            background-color: #24292E;
+            background-color: $bg-color;
             border-top-left-radius: 50%;
             border-bottom-left-radius: 50%;
             display: flex;
@@ -64,12 +70,12 @@
 
         &__menu {
             width: 224px;
-            background-color: #24292E;
-            color: #D6D6D6;
+            background-color: $bg-color;
+            color: map.get(c.$colors, "warm-gray-40");
             padding-bottom: 25px;
             box-sizing: border-box;
             height: 100%;
-            overflow: auto;
+            overflow: hidden;
         }
 
         &__menu-items,
@@ -77,12 +83,13 @@
         .el-collapse-item__header {
             line-height: 20px;
             height: 20px;
-            background-color: #24292E;
-            color: #D6D6D6;
+            background-color: $bg-color;
+            color: map.get(c.$colors, "warm-gray-40");
             border: none;
             font-size: 14px;
             padding: 0;
-            font-weight: 400;
+            font-weight: t.$font-weight-text;
+            font-family: t.$font-family;
         }
 
         .el-collapse-item__content {
@@ -91,9 +98,91 @@
         }
 
         .el-collapse-item__wrap {
-            border-bottom: 1px solid #424243;
-            background-color: #24292E;
+            border-bottom: 1px solid map.get(c.$colors, "warm-gray-70");
+            background-color: $bg-color;
             box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
+        }
+
+        &__app-navigation {
+            padding: 16px 12px;
+
+            .el-input__inner {
+                height: 50px;
+                padding-left: 49px;
+            }
+
+            .el-input__prefix {
+                left: 0px;
+                margin: 0px 12px;
+                height: auto;
+                margin-top: 12px;
+            }
+        }
+
+        &__app-menu {
+            overflow: auto;
+            height: 100%;
+        }
+
+        &__app-image {
+            width: 26px;
+            height: 26px;
+            background-size: 26px 26px;
+            border-radius: 4px;
+            background-position: center;
+            display: inline-block;
+        }
+    }
+}
+
+.cly-vue-sidebar__app-navigation-popper {
+    box-shadow: 0px 11px 14px rgb(0, 0, 0, .37);
+    border: 1px solid map.get(c.$colors, "warm-gray-70");
+}
+
+.cly-vue-sidebar__app-navigation-popper,
+.cly-vue-sidebar__app-navigation {
+    background-color: $bg-color;
+    border-radius: 4px;
+    color: map.get(c.$colors, "white");
+
+    .el-select {
+        box-shadow: 0px 11px 14px rgb(0, 0, 0, .37);
+    }
+
+    .el-select-dropdown__item {
+        color: map.get(c.$colors, "white");
+        font-weight: t.$font-weight-text;
+        font-family: t.$font-family;
+
+        &.selected {
+            color: #2EFF00;
+            font-weight: t.$font-weight-text;
+        }
+
+        &:hover, &.hover {
+            background-color: transparent;
+            border: none;
+        }
+    }
+
+    .el-input__inner {
+        background-color: $bg-color;
+        border: 1px solid map.get(c.$colors, "warm-gray-70");
+        color: map.get(c.$colors, "white");
+        font-family: t.$font-family;
+        font-weight: t.$font-weight-text;
+
+        &:focus, &:hover {
+            border: 1px solid map.get(c.$colors, "warm-gray-70");
+        }
+    }
+
+    .el-input {
+        &.is-focus, &:focus {
+            .el-input__inner {
+                border: 1px solid map.get(c.$colors, "warm-gray-70");
+            }
         }
     }
 }
