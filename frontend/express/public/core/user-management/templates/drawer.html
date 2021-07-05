@@ -1,0 +1,173 @@
+<div>
+  <cly-drawer
+    ref="userDrawer"
+    :title="$props.settings.title"
+    @close="onClose"
+    @submit="onSubmit"
+    :hasCancelButton="$props.settings.hasCancelButton"
+    :cancelButtonLabel="$props.settings.cancelButtonLabel"
+    :width="$props.settings.drawerWidth"
+		:saveButtonLabel="$props.settings.saveButtonLabel"
+		v-bind="$props.controls">
+		<template v-slot:default="drawerScope">
+      <cly-form-step screen="full">
+        <div class="drawer-content">
+          <div class="bu-columns">
+            <div class="bu-column">
+              <div class="drawer-content__inputs-area__input-wrapper">
+                <div class="drawer-content__label">
+                  <div class="text-small text-heading">Full Name</div>
+                  <div class="drawer-content__help-text"></div>
+                </div>
+                <div class="drawer-content__input">
+                  <validation-provider rules="required" v-slot="v">
+                    <el-input v-model="drawerScope.editedObject.full_name" placeholder="Enter Full Name"></el-input>
+                  </validation-provider>
+                </div>
+              </div>
+              <div class="drawer-content__inputs-area__input-wrapper">
+                <div class="drawer-content__label">
+                  <div class="text-small text-heading">Username</div>
+                  <div class="drawer-content__help-text"></div>
+                </div>
+                <div class="drawer-content__input">
+                  <validation-provider rules="required" v-slot="v">
+                    <el-input v-model="drawerScope.editedObject.username" placeholder="Enter User Name"></el-input>
+                  </validation-provider>
+                </div>
+              </div>
+              <div class="drawer-content__inputs-area__input-wrapper">
+                <div class="drawer-content__label">
+                  <div class="text-small text-heading">E-mail</div>
+                  <div class="drawer-content__help-text"></div>
+                </div>
+                <div class="drawer-content__input">
+                  <validation-provider rules="required" v-slot="v">
+                    <el-input v-model="drawerScope.editedObject.email" placeholder="Enter E-mail"></el-input>
+                  </validation-provider>
+                </div>
+              </div>
+            </div>
+            <div class="bu-column drawer-content__profile-picture-area">
+              <div class="drawer-content__label">
+                <div class="text-small text-heading">Profile Picture</div>
+              </div>
+              <div class="drawer-content__profile-picture-area__upload-section">
+                <div class="drawer-content__profile-picture-area__upload-section__img-box"></div>
+                <div class="drawer-content__profile-picture-area__upload-section__description-box">
+                  <p class="drawer-content__profile-picture-area__upload-section__description-box--bold">Drag and drop or <span class="drawer-content__profile-picture-area__upload-section__description-box--link">browser</span> files to add picture</p>
+                  <p class="drawer-content__profile-picture-area__upload-section__size-warning">JPG, PNG and GIF files allowed. Maximum size is 5 MB.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-if="drawerScope.editedObject.permission" class="drawer-content__bottom-section">
+            <div class="drawer-content__drawer-sub-section">
+              <div class="drawer-content__section-title">
+                <div>
+                  <span class="drawer-content__section-header">ROLE</span>
+                </div>
+                <div>
+                  <span class="drawer-content__help-text">
+                    Some short description can be placed here.
+                  </span>
+                </div>
+              </div>
+              <div class="drawer-content__section-content drawer-content__role-section">
+                <cly-check skin="tick" v-model="drawerScope.editedObject.global_admin" v-bind:label="'Global Administrator'"></cly-check>
+              </div>
+            </div>
+            <div v-if="!drawerScope.editedObject.global_admin" class="drawer-content__drawer-sub-title">
+              Permission Settings
+            </div>
+            <div v-if="!drawerScope.editedObject.global_admin" class="drawer-content__drawer-sub-section">
+              <div class="drawer-content__section-title">
+                <div>
+                  <span class="drawer-content__section-header">GRANT ADMIN ACCESS TO APP(S) <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
+                </div>
+                <div>
+                  <span class="drawer-content__help-text"></span>
+                </div>
+              </div>
+              <div class="drawer-content__section-content">
+                <div class="drawer-content__label drawer-content__label--pl-10">
+                  <div class="text-small text-heading drawer-content__label--text-secondary">Some app selection related description can be placed here</div>
+                </div>
+                <div class="input" v-if="drawerScope.editedObject.permission">
+                  <el-select placement="bottom-start" @change="onAdminAppsChanged" class="drawer-content__app-selector" v-model="drawerScope.editedObject.permission._.a" multiple placeholder="Select apps">
+                    <el-option
+                      v-for="item in apps"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                </div>
+              </div>
+            </div>
+            <div v-if="!drawerScope.editedObject.global_admin" :key="index" v-for="(set, index) in permissionSets" class="drawer-content__drawer-sub-section">
+              <div class="drawer-content__section-title">
+                <div>
+                  <span class="drawer-content__section-header">GRANT USER ACCESS TO APP(S) <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
+                </div>
+                <div>
+                  <cly-more-options size="small" @command="handleCommand($event, index)">
+                    <el-dropdown-item command="remove-set">Remove permission set</el-dropdown-item>
+                  </cly-more-options>
+                </div>
+              </div>
+              <div class="drawer-content__section-content">
+                <div class="drawer-content__label drawer-content__label--pl-10">
+                  <div class="text-small text-heading drawer-content__label--text-secondary">Some app selection related description can be placed here</div>
+                </div>
+                <div class="drawer-content__input">
+                  <el-select placement="bottom-start" @change="onUserAppsChanged(index)" class="drawer-content__app-selector" v-model="drawerScope.editedObject.permission._.u[index]"  multiple placeholder="Select apps">
+                    <el-option
+                      v-for="item in apps"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value">
+                    </el-option>
+                  </el-select>
+                </div>
+                <div class="drawer-content__permission-table-header">
+                  <div class="drawer-content__feature-name-col">
+                    FEATURE
+                  </div>
+                  <div class="drawer-content__permission-type-cols">
+                    <div class="drawer-content__permission-type">
+                      <cly-check skin="tick" v-model="drawerScope.editedObject.global_admin" v-bind:label="'CREATE'"></cly-check>
+                    </div>
+                    <div class="drawer-content__permission-type">
+                      <cly-check skin="tick" v-model="drawerScope.editedObject.global_admin" v-bind:label="'READ'"></cly-check>
+                    </div>
+                    <div class="drawer-content__permission-type">
+                      <cly-check skin="tick" v-model="drawerScope.editedObject.global_admin" v-bind:label="'UPDATE'"></cly-check>
+                    </div>
+                    <div class="drawer-content__permission-type">
+                      <cly-check skin="tick" v-model="drawerScope.editedObject.global_admin" v-bind:label="'DELETE'"></cly-check>
+                    </div>
+                  </div>
+                </div>
+                <div class="drawer-content__permission-table-content">
+                  <div class="drawer-content__permission-row" v-for="feature in features">
+                    <div class="drawer-content__feature-name">{{featureBeautifier(feature)}}</div>
+                    <div class="drawer-content__feature-permissions">
+                      <div class="drawer-content__permission-box"><cly-check skin="tick" v-model="drawerScope.editedObject.global_admin"></cly-check></div>
+                      <div class="drawer-content__permission-box"><cly-check skin="tick" v-model="drawerScope.editedObject.global_admin"></cly-check></div>
+                      <div class="drawer-content__permission-box"><cly-check skin="tick" v-model="drawerScope.editedObject.global_admin"></cly-check></div>
+                      <div class="drawer-content__permission-box"><cly-check skin="tick" v-model="drawerScope.editedObject.global_admin"></cly-check></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-if="!drawerScope.editedObject.global_admin" class="drawer-content__add-permission-set" @click="addPermissionSet">
+              + Add Additional User Permission Set
+            </div>
+          </div>
+        </div>
+      </cly-form-step>
+		</template>
+	</cly-drawer>
+</div>
