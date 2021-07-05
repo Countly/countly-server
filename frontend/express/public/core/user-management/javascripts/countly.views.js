@@ -11,18 +11,18 @@
         data: function() {
             return {};
         },
+        created: function() {
+        },
         methods: {
             handleCommand: function(command, index) {
                 switch (command) {
                 case "delete-user":
                     // TODO: wrap it with popup
-                    countlyUserManagement.deleteUser(index, function(/*res*/) {
+                    countlyUserManagement.deleteUser(index, function() {
                         // TODO: show toast
-                        //alert('removed');
                     });
                     break;
                 case 'edit-user':
-                    // emit edit-user event to wrapper component
                     this.$emit('edit-user', index);
                     break;
                 }
@@ -38,9 +38,27 @@
                 apps: Object.values(countlyGlobal.apps).map(function(a) {
                     return { value: a._id, label: a.name };
                 }),
-                permissionSets: [{ c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}}],
+                permissionSets: [],
                 adminAppSelector: ''
             };
+        },
+        watch: {
+            // insert first permission set when features set for first time
+            features: function(features) {
+                if (this.permissionSets.length > 0) {
+                    return;
+                }
+                var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
+                var types = ['c', 'r', 'u', 'd'];
+
+                for (var type in types) {
+                    for (var feature in features) {
+                        permissionSet[types[type]].allowed[features[feature]] = false;
+                    }
+                }
+
+                this.permissionSets.push(permissionSet);
+            }
         },
         methods: {
             onAdminAppsChanged: function() {
@@ -50,12 +68,12 @@
                 var conflictSetIndex = -1;
 
                 // check conflicts
-                for (var i = 0; i < adminApps.length; i++) {
-                    for (var j = 0; j < userApps.length; j++) {
-                        for (var k = 0; k < userApps[j].length; k++) {
-                            if (adminApps[i] === userApps[j][k]) {
-                                conflictIndex = k;
-                                conflictSetIndex = j;
+                for (var i0 = 0; i0 < adminApps.length; i0++) {
+                    for (var j0 = 0; j0 < userApps.length; j0++) {
+                        for (var k0 = 0; k0 < userApps[j0].length; k0++) {
+                            if (adminApps[i0] === userApps[j0][k0]) {
+                                conflictIndex = k0;
+                                conflictSetIndex = j0;
                             }
                         }
                     }
@@ -86,12 +104,12 @@
                     // check conflict with user apps
                     for (var i0 = 0; i0 < appsInThisSet.length; i0++) {
                         for (var j0 = 0; j0 < userApps.length; j0++) {
-                            for (var k = 0; k < userApps[j0].length; k++) {
+                            for (var k0 = 0; k0 < userApps[j0].length; k0++) {
                                 if (j0 === index) {
                                     continue;
                                 }
-                                if (appsInThisSet[i0] === userApps[j0][k]) {
-                                    conflictIndex = k;
+                                if (appsInThisSet[i0] === userApps[j0][k0]) {
+                                    conflictIndex = k0;
                                     conflictSetIndex = j0;
                                 }
                             }
@@ -107,16 +125,25 @@
                 }
             },
             addPermissionSet: function() {
-                this.permissionSets.push(countlyUserManagement.getEmptyPermissionSet());
+                var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
+                var types = ['c', 'r', 'u', 'd'];
+
+                for (var type in types) {
+                    for (var feature in this.features) {
+                        permissionSet[types[type]].allowed[this.features[feature]] = false;
+                    }
+                }
+
+                this.permissionSets.push(permissionSet);
             },
             removePermissionSet: function(index) {
                 this.permissionSets.splice(index, 1);
             },
-            onClose: function() {
-            },
+            onClose: function() {},
             onSubmit: function(submitted) {
+                submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                 submitted.password = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
-                countlyUserManagement.createUser(submitted, function(/*cb*/) {
+                countlyUserManagement.createUser(submitted, function() {
                 // TODO: show toast
                 });
             },
@@ -134,7 +161,20 @@
                     this.removePermissionSet(index);
                     break;
                 }
+            },
+            setPermissionByFeature: function(index, type, feature) {
+                if (!this.permissionSets[index][type].allowed[feature] && this.permissionSets[index][type].all) {
+                    this.permissionSets[index][type].all = false;
+                }
+            },
+            setPermissionByType: function(index, type) {
+                for (var feature in this.features) {
+                    this.permissionSets[index][type].allowed[this.features[feature]] = this.permissionSets[index][type].all;
+                }
             }
+        },
+        created: function() {
+            this.permissionSets = [];
         }
     });
 
@@ -162,23 +202,23 @@
         },
         methods: {
             refresh: function() {
-                var that = this;
+                var self = this;
                 countlyUserManagement.fetchUsers()
                     .then(function() {
-                        that.users = Object.values(countlyUserManagement.getUsers());
+                        self.users = Object.values(countlyUserManagement.getUsers());
                     })
                     .catch(function() {
-                        // TODO: handle catch
+                        // TODO: Handle error
                     });
             },
             createUser: function() {
                 this.openDrawer("user", countlyUserManagement.getEmptyUser());
             },
             onEditUser: function(id) {
-                var that = this;
+                var self = this;
                 countlyUserManagement.fetchUserDetail(id)
                     .then(function() {
-                        that.openDrawer("user", countlyUserManagement.getUser());
+                        self.openDrawer("user", countlyUserManagement.getUser());
                     });
             }
         },
@@ -189,15 +229,14 @@
                     self.users = Object.values(countlyUserManagement.getUsers());
                 })
                 .catch(function() {
-                    // TODO: handle catch
+                    // TODO: Handle error
                 });
-
             countlyUserManagement.fetchFeatures()
                 .then(function() {
                     self.features = countlyUserManagement.getFeatures();
                 })
                 .catch(function() {
-                    // TODO: handle catch
+                    // TODO: Handle error
                 });
         }
     });
