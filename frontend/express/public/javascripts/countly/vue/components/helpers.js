@@ -188,7 +188,8 @@
             disableFormatting: {type: Boolean, default: false},
             isPercentage: {type: Boolean, default: false},
             columnWidth: {type: [Number, String], default: -1},
-            isVertical: {type: Boolean, default: false}
+            isVertical: {type: Boolean, default: false},
+            color: {type: [String, Function, Array], default: ''}
         },
         computed: {
             formattedNumber: function() {
@@ -212,7 +213,7 @@
         },
         template: '<div class="cly-vue-metric-card bu-column bu-is-flex" :class="topClasses">\
                         <div class="cly-vue-metric-card__wrapper bu-p-5 bu-is-flex bu-is-justify-content-space-between">\
-                            <cly-progress-donut class="bu-pr-5 bu-is-flex" v-if="isPercentage" :percentage="number"></cly-progress-donut>\
+                            <cly-progress-donut class="bu-pr-5 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
                                 <span class="text-medium"><slot>{{label}}</slot></span>\
                                 <div class="bu-is-flex bu-is-align-items-baseline">\
