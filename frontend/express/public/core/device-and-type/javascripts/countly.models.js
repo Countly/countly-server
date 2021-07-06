@@ -2,10 +2,10 @@
 (function(countlyDevicesAndTypes) {
 
     CountlyHelpers.createMetricModel(window.countlyDevicesAndTypes, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
-    countlyDevicesAndTypes.os_mapping = countlyOsMapping;
+    countlyDevicesAndTypes.os_mapping = countlyOsMapping; //./frontend/express/public/javascripts/countly/countly.device.osmapping.js
 
-    var countlyDevice = {};
-    CountlyHelpers.createMetricModel(countlyDevice, {name: "devices", estOverrideMetric: "devices"}, jQuery, getDeviceFullName);
+	//CountlyDeviceList - ./frontend/express/public/javascripts/countly/countly.device.list.js
+   
 
     countlyDevicesAndTypes.getCleanVersion = function(version) {
         for (var i in countlyDevicesAndTypes.os_mapping) {
@@ -14,16 +14,6 @@
         return version;
     };
 
-    function getDeviceFullName(shortName) {
-        if (shortName === "Unknown") {
-            return jQuery.i18n.map["common.unknown"];
-        }
-        if (countlyDeviceList && countlyDeviceList[shortName]) {
-            return countlyDeviceList[shortName];
-        }
-        return shortName;
-    }
-
     countlyDevicesAndTypes.getPlatforms = function() {
         return countlyDevicesAndTypes.getMeta("os");
     };
@@ -31,6 +21,7 @@
     countlyDevicesAndTypes.checkOS = function(os, data, osName) {
         return new RegExp("^" + osName + "([0-9]+|unknown)").test(data);
     };
+	
 
     countlyDevicesAndTypes.eliminateOSVersion = function(data, osSegmentation, segment, fullname) {
         var oSVersionData = JSON.parse(JSON.stringify(data));
@@ -91,8 +82,28 @@
             object.table = object.table || [];
             object.totals = object.totals || {};
             object.pie = object.pie || {"newUsers": [], "totalSessions": []};
-        }
+        },
+		getDeviceFullName: function(shortName) {
+			if (shortName === "Unknown") {
+				return jQuery.i18n.map["common.unknown"];
+			}
+			if (countlyDeviceList && countlyDeviceList[shortName]) {
+				return countlyDeviceList[shortName];
+			}
+			return shortName;
+		},
+		fixOSVersion: function(osName) {
+			osName = (osName + "").replace(/:/g, ".");
+
+			for (var i in countlyDeviceDetails.os_mapping) {
+				osName = osName.replace(new RegExp("^" + countlyDeviceDetails.os_mapping[i].short, "g"), countlyDeviceDetails.os_mapping[i].name + " ");
+			}
+			return osName;
+		}
     };
+	
+	var countlyDevice = {};
+    CountlyHelpers.createMetricModel(countlyDevice, {name: "devices", estOverrideMetric: "devices"}, jQuery, countlyDevicesAndTypes.helpers.getDeviceFullName);//Adds extra functions
 
 
     countlyDevicesAndTypes.service = {
@@ -140,7 +151,7 @@
             ], "platforms");
 
 
-            var totals = {"u": 0, "t": 0, "s": 0};
+            var totals = {"u": 0, "t": 0, "n": 0};
             chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, "os_");
 
             /*var sum = _.reduce(platformTotal, function(memo, num) {
@@ -167,7 +178,7 @@
         },
         calculateDevices: function() {
             var metric = "devices";
-            var tableData = countlyDevicesAndTypes.helpers.loadTableFromModel(countlyDevice, "devices", getDeviceFullName);
+            var tableData = countlyDevicesAndTypes.helpers.loadTableFromModel(countlyDevice, "devices", countlyDevicesAndTypes.helpers.getDeviceFullName);
             tableData = tableData.chartData || [];
             var totals = {"totalSessions": 0, "newUsers": 0, "totalUsers": 0};
             var graphs = {"newUsers": [], "totalSessions": []};
@@ -183,6 +194,11 @@
                 "platform": countlyDevicesAndTypes.getBarsWPercentageOfTotal("os", "u", "platforms"),
                 "resolution": countlyDevicesAndTypes.getBarsWPercentageOfTotal("resolutions", "u", "resolutions")
             };
+			
+			for (var i = 0; i < tops["version"].length; i++) {
+				tops["version"][i].name = countlyDevicesAndTypes.helpers.fixOSVersion(tops["version"][i].name);
+			}
+		
             for (var key in tops) {
                 for (var z = 0; z < tops[key].length; z++) {
                     tops[key][z]["bar"] = [{
@@ -384,4 +400,6 @@
             mutations: devicesAndTypesMutations
         });
     };
+	
+	
 }(window.countlyDevicesAndTypes = window.countlyDevicesAndTypes || {}));

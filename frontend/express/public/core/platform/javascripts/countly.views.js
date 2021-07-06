@@ -199,10 +199,8 @@ var AppPlatformView = countlyVue.views.create({
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 1,
     name: "platforms",
+    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/platforms",
     title: CV.i18n('platforms.title'),
-    component: AppPlatformView,
-    vuex: [{
-        clyModel: countlyDevicesAndTypes
-    }]
+    component: AppPlatformView
 });
 

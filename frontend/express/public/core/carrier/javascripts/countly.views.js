@@ -74,8 +74,9 @@ var AppCarrierView = countlyVue.views.create({
 
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 5,
-    name: "carrier",
+    name: "carriers",
     title: CV.i18n('carriers.title'),
+    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/carriers",
     component: AppCarrierView,
     vuex: [{
         clyModel: countlyAppCarrier

@@ -50,7 +50,7 @@ var DevicesTabView = countlyVue.views.create({
                         data: self.data.pie["newUsers"],
                         label: {
                             formatter: function() {
-                                return CV.i18n('common.table.new-users') + "</br>" + countlyCommon.getShortNumber(self.data.totals["newUsers"] || 0);
+                                return CV.i18n('common.table.new-users') + countlyCommon.getShortNumber(self.data.totals["newUsers"] || 0);
                             }
                         },
                         center: ["25%", "50%"] //Center should be passed as option
@@ -67,7 +67,7 @@ var DevicesTabView = countlyVue.views.create({
                         data: self.data.pie["totalSessions"],
                         label: {
                             formatter: function() {
-                                return CV.i18n('common.table.total-sessions') + "</br>" + countlyCommon.getShortNumber(self.data.totals["totalSessions"]);
+                                return CV.i18n('common.table.total-sessions') + countlyCommon.getShortNumber(self.data.totals["totalSessions"]);
                             }
                         },
                         center: ["25%", "50%"] //Center should be passed as option
@@ -193,21 +193,34 @@ var TehnologyAnalyticsView = countlyVue.views.create({
     }
 });
 
-
-app.route("/analytics/technology", "technology", function() {
+var getTechnologyAnalyticsView = function() {
     var tabsVuex = countlyVue.container.tabsVuex(["/analytics/technology"]);
-    var ViewWrapper = new countlyVue.views.BackboneWrapper({
+    return new countlyVue.views.BackboneWrapper({
         component: TehnologyAnalyticsView,
         vuex: tabsVuex,
         templates: []
     });
+};
+app.route("/analytics/technology", "technology", function() {
+    var tabsVuex = countlyVue.container.tabsVuex(["/analytics/technology"]);
+    var ViewWrapper = getTechnologyAnalyticsView();
     this.renderWhenReady(ViewWrapper);
 });
 
 
+app.route("/analytics/technology/*tab", "technology-tab", function(tab) {
+    var ViewWrapper = getTechnologyAnalyticsView();
+    var params = {
+        tab: tab
+    };
+    ViewWrapper.params = params;
+    this.renderWhenReady(ViewWrapper);
+});
+
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 2,
-    name: "devices_and_types",
+    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/devices-and-types",
+    name: "devices-and-types",
     title: "Devices and types",
     component: AllTabs,
     vuex: [{

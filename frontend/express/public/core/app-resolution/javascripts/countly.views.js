@@ -11,7 +11,7 @@ var AppResolutionView = countlyVue.views.create({
     },
     methods: {
         refresh: function() {
-            //this.$store.dispatch('countlyDevicesAndTypes/fetchResolution');
+            this.$store.dispatch('countlyDevicesAndTypes/fetchResolution');
         }
     },
     computed: {
@@ -74,11 +74,9 @@ var AppResolutionView = countlyVue.views.create({
 
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 3,
-    name: "resolution",
+    name: "resolutions",
     title: "App resolution",
-    component: AppResolutionView,
-    vuex: [{
-        clyModel: countlyDevicesAndTypes
-    }]
+	route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/resolutions",
+    component: AppResolutionView
 });
 

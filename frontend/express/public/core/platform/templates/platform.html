@@ -18,20 +18,16 @@
 			</div>
         </div>
 		<cly-section >
-			<div class="bu-columns bu-is-gapless"  >
-				<div class="bu-column bu-is-3 platformDonuts" :key="idx" v-for="(item, idx) in platformItems">
-					<div class="bu-p-5 bu-is-flex">
-						<cly-progress-donut :percentage=item.percent :color=item.color></cly-progress-donut>
-						<div class="bu-pl-5 bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
-							<div class="bu-level-left">
-								<span class="text-medium">{{item.name}}</span>
-								<span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="item.info"></span>
-							</div>
-							<h2>{{item.value}} <span>{{item.percentText}}</span></h2>
-						</div>
-					</div>
-				</div>
-			</div>
+			<cly-metric-cards>
+                <cly-metric-card :is-percentage="true" :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in platformItems">
+                    {{item.name}}
+					<template v-slot:number>{{item.value}}</template>
+					<template v-slot:description>
+                        <span class="text-medium">{{item.percentText}}</span>
+                    </template>
+                </cly-metric-card>
+            </cly-metric-cards>
+				
 		</cly-section>
 		<h5> {{i18n('platforms.version-distribution')}} </h5>
 		<cly-section >

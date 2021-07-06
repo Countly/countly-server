@@ -48,11 +48,9 @@ var AppVersionView = countlyVue.views.create({
 
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 4,
-    name: "version",
+    name: "versions",
     title: "App versions",
-    component: AppVersionView,
-    vuex: [{
-        clyModel: countlyDevicesAndTypes
-    }]
+    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/versions",
+    component: AppVersionView
 });
 
