@@ -108,7 +108,7 @@
                 {
                     namespace: "crashes",
                     mapping: {
-                        overview: "crashes-vue/templates/overview.html"
+                        overview: "crashes/templates/overview.html"
                     }
                 }
             ]
@@ -136,11 +136,11 @@
             }
         },
         template: '<div class="crash-stacktrace bu-p-5">\
-            <div class="bu-level is-mobile">\
-                <div class="bu-level-left"><slot name="header-left"></slot></div>\
-                <div class="bu-level-right"><slot name="header-right"></slot></div>\
-            </div>\
-            <pre><span class="crash-stacktrace__line-numbers">{{lineNumbers}}</span><code ref="code" class="crash-stacktrace__code" v-html="highlightedCode"></code></pre>\
+        <div class="bu-level is-mobile">\
+        <div class="bu-level-left"><slot name="header-left"></slot></div>\
+        <div class="bu-level-right"><slot name="header-right"></slot></div>\
+        </div>\
+        <pre><span class="crash-stacktrace__line-numbers">{{lineNumbers}}</span><code ref="code" class="crash-stacktrace__code" v-html="highlightedCode"></code></pre>\
         </div>'
     });
 
@@ -338,7 +338,7 @@
                 {
                     namespace: "crashes",
                     mapping: {
-                        crashgroup: "crashes-vue/templates/crashgroup.html"
+                        crashgroup: "crashes/templates/crashgroup.html"
                     }
                 }
             ]
@@ -403,7 +403,7 @@
                 {
                     namespace: "crashes",
                     mapping: {
-                        "binary-images": "crashes-vue/templates/binary-images.html"
+                        "binary-images": "crashes/templates/binary-images.html"
                     }
                 }
             ]
@@ -425,3 +425,11 @@
         this.renderWhenReady(getBinaryImagesView());
     });
 })();
+
+jQuery(document).ready(function() {
+    if (!jQuery("#crashes-menu").length) {
+        app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+    }
+
+    app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+});
