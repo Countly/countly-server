@@ -185,7 +185,7 @@
             label: {type: String, default: ''},
             number: {type: Number, default: 0},
             description: {type: String, default: ''},
-            disableFormatting: {type: Boolean, default: false},
+            formatting: {type: String, default: 'auto'},
             isPercentage: {type: Boolean, default: false},
             columnWidth: {type: [Number, String], default: -1},
             isVertical: {type: Boolean, default: false},
@@ -193,16 +193,34 @@
         },
         computed: {
             formattedNumber: function() {
-                if (!this.disableFormatting && this.isPercentage) {
+                if (this.isNumberSlotUsed) {
+                    // Avoid extra processing, it won't be shown anyway.
+                    return '';
+                }
+                if (this.formatting === 'auto' && this.isPercentage) {
                     return this.number + " %";
                 }
-                else if (!this.disableFormatting && !this.isPercentage) {
+                else if (this.formatting === 'auto' && !this.isPercentage) {
+                    if (Math.abs(this.number) >= 10000) {
+                        return this.getShortNumber(this.number);
+                    }
+                    else {
+                        return this.formatNumber(this.number);
+                    }
+                }
+                else if (this.formatting === 'short') {
+                    return this.getShortNumber(this.number);
+                }
+                else if (this.formatting === 'long') {
                     return this.formatNumber(this.number);
                 }
                 return this.number;
             },
-            hasDescription: function() {
+            isDescriptionSlotUsed: function() {
                 return !!this.$slots.description;
+            },
+            isNumberSlotUsed: function() {
+                return !!this.$slots.number;
             },
             topClasses: function() {
                 if (this.isVertical || this.columnWidth === -1) {
