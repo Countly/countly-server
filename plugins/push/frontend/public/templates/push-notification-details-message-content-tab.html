@@ -1,0 +1,57 @@
+<el-card class="box-card cly-vue-push-notification-details-summary-card">
+    <div slot="header" class="clearfix">
+        <span>{{i18n('push-notification-details.localization-filter-label')}}</span>
+        <el-select v-model="selectedLocalizationFilter">
+            <el-option :key="item.value" :value="item.value" :label="item.label"
+                v-for="item in localizationFilters"
+            >
+            </el-option>
+        </el-select>
+    </div>
+    <div>
+        <div class="bu-columns">
+            <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                {{i18n('push-notification-details.message-title')}}
+            </div>
+            <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                {{message.name}}
+            </div>
+        </div>
+        <div class="bu-columns">
+            <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                {{i18n('push-notification-details.message-content')}}
+            </div>
+            <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                {{message.content}}
+            </div>
+        </div>
+        <template v-if="message.numberOfButtons>0">
+            <template v-for="(button,index) in message.buttons">
+                <div class="bu-columns">
+                    <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                        {{index === 0?i18n('push-notification-details.message-first-button-label'):i18n('push-notification-details.message-second-button-label')}}
+                    </div>
+                    <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                        {{button.label}}
+                    </div>
+                </div>
+                <div class="bu-columns">
+                    <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                        {{index === 0?i18n('push-notification-details.message-first-button-url'):i18n('push-notification-details.message-second-button-url')}}
+                    </div>
+                    <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                        {{button.url}}
+                    </div>
+                </div>
+            </template>
+        </template>
+        <div class="bu-columns">
+            <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                {{i18n('push-notification-details.message-media-url')}}
+            </div>
+            <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                {{message.media}}
+            </div>
+        </div>
+    </div>
+</el-card>

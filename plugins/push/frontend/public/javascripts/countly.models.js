@@ -1,8 +1,8 @@
 /*global countlyVue, CV, countlyCommon, Promise, moment*/
 (function(countlyPushNotification) {
 
-    var messagesSentLabel = CV.i18n('push-notification.time-chart-serie-messages-sent');
-    var actionsPerformedLabel = CV.i18n('push-notification.time-chart-serie-actions-performed');
+    var messagesSentLabel = CV.i18n('push-notification.messages-sent-serie-name');
+    var actionsPerformedLabel = CV.i18n('push-notification.actions-performed-serie-name');
 
     var StatusFinderHelper = {
         STATUS_SHIFT_OPERATOR_ENUM: {
@@ -87,19 +87,31 @@
             STOPPED: "stopped",
             SCHEDULED: "scheduled"
         },
-        mapType: function(type) {
-            switch (type) {
-            case this.TypeEnum.AUTOMATIC: {
+        LocalizationEnum: {
+            ALL: "all"
+        },
+        UserEventEnum: {
+            RESEND: 'resend',
+            DUPLICATE: 'duplicate',
+            DELETE: 'delete'
+        },
+        getTypeUrlParameter: function(type) {
+            if (type === this.TypeEnum.AUTOMATIC) {
                 return {auto: true, tx: false};
             }
-            case this.TypeEnum.TRANSACTIONAL: {
+            if (type === this.TypeEnum.TRANSACTIONAL) {
                 return {auto: false, tx: true};
             }
-            default: {
-                return { auto: false, tx: false};
-
+            return { auto: false, tx: false};
+        },
+        mapType: function(dto) {
+            if (dto.tx === false && dto.auto === true) {
+                return this.TypeEnum.AUTOMATIC;
             }
+            if (dto.tx === true && dto.auto === false) {
+                return this.TypeEnum.TRANSACTIONAL;
             }
+            return this.TypeEnum.ONE_TIME;
         },
         mapStatus: function(status, error) {
             if (StatusFinderHelper.isSending(status)) {
@@ -164,12 +176,13 @@
             }
         },
         mapPlatforms: function(dto) {
+            var self = this;
             return dto.map(function(platformItem) {
                 if (platformItem === 'i') {
-                    return CV.i18n("push-notification.platform-ios");
+                    return {label: CV.i18n("push-notification.platform-filter-ios"), value: self.PlatformEnum.IOS};
                 }
                 if (platformItem === 'a') {
-                    return CV.i18n("push-notification.platform-android");
+                    return {label: CV.i18n("push-notification.platform-filter-android"), value: self.PlatformEnum.ANDROID};
                 }
             });
         },
@@ -192,11 +205,79 @@
                     sent: pushNotificationDtoItem.result.sent,
                     actioned: pushNotificationDtoItem.result.actioned,
                     createdBy: pushNotificationDtoItem.creator,
-                    platform: self.mapPlatforms(pushNotificationDtoItem.platforms),
+                    platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                     content: pushNotificationDtoItem.messagePerLocale.default,
                 };
             });
             return rowsModel;
+        },
+        mapMessageButtons: function(numberOfButtons, dto) {
+            if (numberOfButtons === 1) {
+                return [{label: dto.messagePerLocale["default|0|t"], url: dto.messagePerLocale["default|0|l"]}];
+            }
+            if (numberOfButtons === 2) {
+                return [
+                    {label: dto.messagePerLocale["default|0|t"], url: dto.messagePerLocale["default|0|l"]},
+                    {label: dto.messagePerLocale["default|1|t"], url: dto.messagePerLocale["default|1|l"]},
+                ];
+            }
+            return [];
+        },
+        mapEndDate: function(type, dto) {
+            if (type === this.TypeEnum.AUTOMATIC) {
+                return moment(dto.autoEnd).format("MMMM Do, YYYY, H:mm");
+            }
+            return "never";
+        },
+        mapDeliveryType: function() {
+            //TODO: map push notification delivery type
+            return null;
+        },
+        mapAudienceSelectionType: function() {
+            //TODO: map push notification audience selection type
+            return null;
+        },
+        mapErrors: function(dto) {
+            //TODO: map push notification message errors;
+            return {codes: dto.result.errorCodes, messages: dto.result.error};
+        },
+        mapPushNotificationDtoToModel: function(dto) {
+            var self = this;
+            var pushNotificationType = this.mapType(dto);
+            return {
+                id: dto._id,
+                type: pushNotificationType,
+                status: self.mapStatus(dto.result.status, dto.result.error),
+                createdDateTime: {
+                    date: moment(dto.created).valueOf(),
+                    time: moment(dto.created).format("H:mm")
+                },
+                sent: dto.result.sent,
+                actioned: dto.result.actioned,
+                failed: dto.result.errors,
+                processed: dto.result.processed,
+                total: dto.result.total,
+                createdBy: dto.creator,
+                platforms: self.mapPlatforms(dto.platforms),
+                message: {
+                    name: dto.messagePerLocale["default|t"] || "-",
+                    content: dto.messagePerLocale.default,
+                    media: dto.media,
+                    mediaMime: dto.mediaMime,
+                    onClickUrl: dto.url,
+                    numberOfButtons: dto.buttons,
+                    buttons: self.mapMessageButtons(dto.buttons, dto),
+                },
+                errors: self.mapErrors(dto),
+                sound: dto.sound,
+                cohortIds: dto.cohorts,
+                geoIds: dto.geos,
+                expirationDaysInMs: dto.expiration,
+                startDate: moment(dto.date).format("MMMM Do, YYYY, H:mm"),
+                endDate: self.mapEndDate(pushNotificationType, dto),
+                deliveryType: self.mapDeliveryType(pushNotificationType, dto),
+                audienceSelectionType: self.mapAudienceSelectionType(pushNotificationType, dto),
+            };
         },
         fetchAll: function(type) {
             var self = this;
@@ -223,7 +304,7 @@
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
             };
-            Object.assign(data, this.mapType(type));
+            Object.assign(data, this.getTypeUrlParameter(type));
             return CV.$.ajax({
                 type: "POST",
                 url: countlyCommon.API_PARTS.data.r + "/pushes/all",
@@ -234,9 +315,9 @@
         fetchById: function(id) {
             return CV.$.ajax({
                 type: "GET",
-                url: countlyCommon.API_PARTS.data.i + "/pushes/message",
+                url: window.countlyCommon.API_URL + "/i/pushes/message",
                 data: {
-                    args: JSON.stringify({_id: id})
+                    args: JSON.stringify({_id: id, apps: [countlyCommon.ACTIVE_APP_ID]})
                 },
                 dataType: "json"
             });
@@ -265,6 +346,89 @@
             });
         }
     };
+
+    var getDetailsInitialState = function() {
+        return {
+            pushNotification: {
+                message: {
+                    buttons: []
+                },
+                platforms: [],
+                processed: 0,
+                sent: 0,
+                total: 0,
+                errors: {},
+                actioned: {},
+            },
+            hasError: false,
+            error: null,
+            isLoading: false,
+            platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
+            localFilter: "de"
+        };
+    };
+
+    var detailsActions = {
+        fetchById: function(context, id) {
+            context.dispatch('onFetchInit');
+            countlyPushNotification.service.fetchById(id)
+                .then(function(response) {
+                    var model = countlyPushNotification.service.mapPushNotificationDtoToModel(response);
+                    context.commit('setPushNotification', model);
+                    context.dispatch('onFetchSuccess');
+                }).catch(function(error) {
+                    context.dispatch('onFetchError', error);
+                });
+        },
+        onSetLocalFilter: function(context, value) {
+            context.commit('setLocalFilter', value);
+        },
+        onSetPlatformFilter: function(context, value) {
+            context.commit('setPlatformFilter', value);
+        },
+        onFetchInit: function(context) {
+            context.commit('setFetchInit');
+        },
+        onFetchError: function(context, error) {
+            context.commit('setFetchError', error);
+        },
+        onFetchSuccess: function(context) {
+            context.commit('setFetchSuccess');
+        },
+    };
+
+    var detailsMutations = {
+        setPushNotification: function(state, value) {
+            state.pushNotification = value;
+        },
+        setLocalFilter: function(state, value) {
+            state.localFilter = value;
+        },
+        setPlatformFilter: function(state, value) {
+            state.platformFilter = value;
+        },
+        setFetchInit: function(state) {
+            state.isLoading = true;
+            state.hasError = false;
+            state.error = null;
+        },
+        setFetchError: function(state, error) {
+            state.isLoading = false;
+            state.hasError = true;
+            state.error = error;
+        },
+        setFetchSuccess: function(state) {
+            state.isLoading = false;
+            state.hasError = false;
+            state.error = null;
+        }
+    };
+
+    var pushNotificationDetailsModule = countlyVue.vuex.Module("details", {
+        state: getDetailsInitialState,
+        actions: detailsActions,
+        mutations: detailsMutations
+    });
 
     countlyPushNotification.getVuexModule = function() {
 
@@ -380,7 +544,8 @@
         return countlyVue.vuex.Module("countlyPushNotification", {
             state: getInitialState,
             actions: pushNotificationActions,
-            mutations: pushNotificationMutations
+            mutations: pushNotificationMutations,
+            submodules: [pushNotificationDetailsModule]
         });
     };
 

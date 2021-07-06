@@ -1,0 +1,62 @@
+<el-card class="box-card cly-vue-push-notification-details-summary-card">
+    <div>
+        <div class="cly-vue-push-notification-details-summary-header">
+            {{i18n('push-notification-details.targeting-sub-header')}}
+        </div>
+        <div class="cly-vue-push-notification-details-summary-section">
+            <div class="bu-columns">
+                <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                    {{i18n('push-notification-details.targeted-users')}}
+                </div>
+                <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                    {{pushNotification.cohortIds && pushNotification.cohortIds.toString()}}
+                </div>
+            </div>
+            <div class="bu-columns">
+                <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                    {{i18n('push-notification-details.geolocation')}}
+                </div>
+                <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                    {{pushNotification.geoIds && pushNotification.geoIds.toString()}}
+                </div>
+            </div>
+            <div class="bu-columns">
+                <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                    {{i18n('push-notification-details.when-to-determine')}}
+                </div>
+                <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                    {{pushNotification.audienceSelectionType}}
+                </div>
+            </div>
+        </div>
+        <div class="cly-vue-push-notification-details-summary-header">
+            {{i18n('push-notification-details.delivery-sub-header')}}
+        </div>
+        <div class="cly-vue-push-notification-details-summary-section">
+            <div class="bu-columns">
+                <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                    {{i18n('push-notification-details.delivery-type')}}
+                </div>
+                <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                    {{pushNotification.deliveryType}}
+                </div>
+            </div>
+            <div class="bu-columns">
+                <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                    {{i18n('push-notification-details.scheduled-for')}}
+                </div>
+                <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                    {{pushNotification.startDate}}
+                </div>
+            </div>
+            <div class="bu-columns">
+                <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                    {{i18n('push-notification-details.expiration-time')}}
+                </div>
+                <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                    {{i18n('push-notification-details.message-expires-after', convertDaysInMsToDays(pushNotification.expirationDaysInMs))}}
+                </div>
+            </div>
+        </div>
+    </div>
+</el-card>
