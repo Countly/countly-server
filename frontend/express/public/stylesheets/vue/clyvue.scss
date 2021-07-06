@@ -1020,6 +1020,13 @@
         }
     }
 
+    .cly-vue-metric-cards {
+        &:not(:last-of-type) {
+            margin-bottom: 0!important;
+            border-bottom: 1px solid #ececec;
+        }
+    }
+
 
     //drawer
     .cly-vue-drawer {

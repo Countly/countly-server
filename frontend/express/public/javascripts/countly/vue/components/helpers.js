@@ -225,7 +225,7 @@
     }));
 
     Vue.component("cly-metric-cards", countlyBaseComponent.extend({
-        template: '<div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline"><slot></slot></div>',
+        template: '<div class="cly-vue-metric-cards bu-columns bu-is-gapless bu-is-mobile bu-is-multiline"><slot></slot></div>',
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
