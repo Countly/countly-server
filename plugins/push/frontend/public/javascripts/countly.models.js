@@ -90,6 +90,11 @@
         LocalizationEnum: {
             ALL: "all"
         },
+        UserEventEnum: {
+            RESEND: 'resend',
+            DUPLICATE: 'duplicate',
+            DELETE: 'delete'
+        },
         getTypeUrlParameter: function(type) {
             if (type === this.TypeEnum.AUTOMATIC) {
                 return {auto: true, tx: false};
