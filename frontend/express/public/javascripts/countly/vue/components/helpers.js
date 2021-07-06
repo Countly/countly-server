@@ -197,11 +197,12 @@
                     // Avoid extra processing, it won't be shown anyway.
                     return '';
                 }
-                if (this.formatting === 'auto' && this.isPercentage) {
-                    return this.number + " %";
-                }
-                else if (this.formatting === 'auto' && !this.isPercentage) {
-                    if (Math.abs(this.number) >= 10000) {
+
+                if (this.formatting === 'auto') {
+                    if (this.isPercentage) {
+                        return this.number + " %";
+                    }
+                    else if (Math.abs(this.number) >= 10000) {
                         return this.getShortNumber(this.number);
                     }
                     else {
@@ -214,6 +215,7 @@
                 else if (this.formatting === 'long') {
                     return this.formatNumber(this.number);
                 }
+
                 return this.number;
             },
             isDescriptionSlotUsed: function() {
