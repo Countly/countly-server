@@ -52,7 +52,7 @@
     var commonFormattersMixin = {
         methods: {
             formatTimeAgo: countlyCommon.formatTimeAgo,
-            formatNumber: countlyCommon.formatTimeAgo
+            formatNumber: countlyCommon.formatNumber
         }
     };
 

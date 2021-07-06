@@ -1011,6 +1011,23 @@
         }
     } 
 
+    .cly-vue-metric-card {
+        &__wrapper {
+            min-height: 56px;
+        }
+        & + .cly-vue-metric-card .cly-vue-metric-card__wrapper {
+            border-left: 1px solid map.get(c.$colors, "warm-gray-30");
+        }
+    }
+
+    .cly-vue-metric-cards {
+        &:not(:last-of-type) {
+            margin-bottom: 0!important;
+            border-bottom: 1px solid #ececec;
+        }
+    }
+
+
     //drawer
     .cly-vue-drawer {
         position: fixed;

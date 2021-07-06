@@ -102,3 +102,15 @@
         }
     }
 }
+
+.el-input {
+    &.is-adaptive {
+        .el-input__inner {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 10px;
+            vertical-align: middle;
+        }
+    }
+}
