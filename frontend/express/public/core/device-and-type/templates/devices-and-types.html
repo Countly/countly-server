@@ -1,0 +1,14 @@
+<div v-bind:class="[componentId]">
+	 <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('devices.devices-and-types.title')}} </h2>
+            <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description"></span>
+        </template>
+		 <template v-slot:header-tabs>
+            <cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs">
+            </cly-dynamic-tabs>
+        </template>
+    </cly-header>
+</div>
+
+
