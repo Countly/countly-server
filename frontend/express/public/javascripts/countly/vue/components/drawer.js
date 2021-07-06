@@ -61,6 +61,9 @@
                     if (!newState) {
                         this.reset();
                     }
+                    else {
+                        this.$emit("open");
+                    }
                     this.setModalState(newState);
                 }
             },

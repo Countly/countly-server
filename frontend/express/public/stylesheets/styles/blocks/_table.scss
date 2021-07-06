@@ -82,3 +82,25 @@
 		}
 	}
 }
+
+//plain table
+.cly-vue-table {
+	width: 100%;
+	thead {
+		background-color: map.get(c.$colors, "warm-gray-20");
+		border-top: 1px solid map.get(c.$colors, "warm-gray-30");
+		border-bottom: 2px solid map.get(c.$colors, "warm-gray-30");
+		th {
+			color: map.get(c.$colors, "cool-gray-100");
+			font-weight: t.$font-weight-primary;
+			font-size: t.$text-sm-size;
+			padding: 9px;
+			text-align: left;
+		}
+	}
+	tbody {
+		td {
+			padding: 0px 9px;
+		}
+	}
+}
