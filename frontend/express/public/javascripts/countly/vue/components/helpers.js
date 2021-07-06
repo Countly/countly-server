@@ -189,7 +189,7 @@
             isPercentage: {type: Boolean, default: false},
             columnWidth: {type: [Number, String], default: -1},
             isVertical: {type: Boolean, default: false},
-            color: {type: String, default: ''}
+            color: {type: [String, Function, Array], default: ''}
         },
         computed: {
             formattedNumber: function() {
