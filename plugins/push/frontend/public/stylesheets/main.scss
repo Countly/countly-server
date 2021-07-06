@@ -1,5 +1,6 @@
+@use "sass:map";
 @use "../../../../../frontend/express/public/stylesheets/styles//base/typography-variables" as typography;
-
+@use "../../../../../frontend/express/public/stylesheets/styles//base/colors" as colors;
 
 .cly-vue-push-notification-card {
     border-radius: 0px;
@@ -308,4 +309,48 @@
     justify-content: center;
     height: 675px;
     align-items: center;
+}
+
+
+.cly-vue-push-notification-drawer {
+
+    &__radio-group { 
+        width:100%;
+    }
+
+    &__radio-button-container{
+        flex-basis:0;
+    }
+
+    &__radio-button {
+        width:100%;
+        height:100px !important;
+    }
+
+    &__radio-button-title {
+        display: inline-block;
+        color: map.get(colors.$colors,"text-primary");
+    }
+
+    &__radio-button-content {
+        color: map.get(colors.$colors,"text-secondary");
+    }
+
+    &__header-description {
+        color: map.get(colors.$colors,"text-secondary");
+    }
+
+
+}
+
+.left-side-accordion-arrow {
+    .collapse-title {
+        flex: 1 0 90%;
+        order: 1;
+    }
+        
+    .el-collapse-item__header {
+        flex: 1 0 auto;
+        order: -1;
+    }
 }

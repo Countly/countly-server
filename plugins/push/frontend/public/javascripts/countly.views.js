@@ -40,6 +40,259 @@
     var localizationFilterOptions = [
         {label: CV.i18n("push-notification-details.localization-filter-all"), value: countlyPushNotification.service.LocalizationEnum.ALL}
     ];
+
+    var MobileMessagePreview = countlyVue.views.create({
+        template: CV.T("/push/templates/mobile-message-preview.html"),
+        data: function() {
+            return {
+                selectedPlatform: this.getDefaultSelectedPlatform(),
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name')
+            };
+        },
+        props: {
+            platforms: {
+                type: Array,
+                default: []
+            },
+            title: {
+                type: String,
+                default: CV.i18n('push-notification.mobile-preview-default-title')
+            },
+            content: {
+                type: String,
+                default: CV.i18n('push-notification.mobile-preview-default-content'),
+            },
+            buttons: {
+                type: Array,
+                default: []
+            },
+            media: {
+                type: String,
+                default: null
+            }
+        },
+        watch: {
+            platforms: function() {
+                this.selectedPlatform = this.getDefaultSelectedPlatform();
+            }
+        },
+        methods: {
+            hasAndroidPlatform: function() {
+                return this.platforms.filter(function(platform) {
+                    return platform.value === countlyPushNotification.service.PlatformEnum.ANDROID;
+                }).length > 0;
+            },
+            hasIOSPlatform: function() {
+                return this.platforms.filter(function(platform) {
+                    return platform.value === countlyPushNotification.service.PlatformEnum.IOS;
+                }).length > 0;
+            },
+            timeNow: function() {
+                return moment().format("H:mm");
+            },
+            isAndroidPlatformSelected: function() {
+                return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.ANDROID;
+            },
+            isIOSPlatformSelected: function() {
+                return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.IOS;
+            },
+            getDefaultSelectedPlatform: function() {
+                return this.hasIOSPlatform() ? countlyPushNotification.service.PlatformEnum.IOS : countlyPushNotification.service.PlatformEnum.ANDROID;
+            },
+            setSelectedPlatform: function(value) {
+                this.selectedPlatform = value;
+            }
+        },
+    });
+
+    var TargetingEnum = {
+        ALL: 'all',
+        SEGMENTED: "segmented"
+    };
+    var WhenToDetermineEnum = {
+        NOW: 'now',
+        BEFORE: "before"
+    };
+    var DeliveryEnum = {
+        NOW: 'now',
+        LATER: 'later'
+    };
+    var TimeZoneEnum = {
+        SAME: 'same',
+        DEVICE: 'device'
+    };
+    var PastScheduleEnum = {
+        SKIP: 'skip',
+        NEXT_DAY: 'nextDay'
+    };
+    var MessageTypeEnum = {
+        SILENT: 'silent',
+        CONTENT: 'content'
+    };
+    var MessageTypeFilterOptions = [
+        {label: "Content message", value: MessageTypeEnum.CONTENT},
+        {label: "Silent message", value: MessageTypeEnum.SILENT}
+    ];
+
+    var PushNotificationDrawer = countlyVue.views.create({
+        template: CV.T("/push/templates/push-notification-drawer.html"),
+        mixins: [countlyVue.mixins.i18n],
+        data: function() {
+            return {
+                loading: false,
+                cohortOptions: [{label: "Users who logged in", value: "123456"}, {label: "Users who performed", value: "4523444"}],
+                locationOptions: [{label: "Canada", value: "CA"}],
+                localizationOptions: [{label: "Default", value: "default"}, {label: "English", value: "en"}, {label: "German", value: "ge"}],
+                saveButtonLabel: "Submit",
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                TargetingEnum: TargetingEnum,
+                WhenToDetermineEnum: WhenToDetermineEnum,
+                DeliveryEnum: DeliveryEnum,
+                TimeZoneEnum: TimeZoneEnum,
+                PastScheduleEnum: PastScheduleEnum,
+                messageTypeFilterOptions: MessageTypeFilterOptions,
+                activeLocalization: "default",
+                selectedLocalizationFilter: "default",
+                confirmation: false,
+                pushNotificationUnderEdit: {
+                    activePlatformSettings: [],
+                    multipleLocalizations: false,
+                    name: "",
+                    platforms: [],
+                    targeting: TargetingEnum.ALL,
+                    whenToDetermine: WhenToDetermineEnum.BEFORE,
+                    message: {
+                        default: {
+                            title: "",
+                            content: "",
+                            localizationLabel: "Default",
+                            buttons: [{label: "", value: ""}],
+                        },
+                        mediaUrl: "",
+                        type: MessageTypeEnum.CONTENT
+                    },
+                    localizations: ["default"],
+                    cohorts: [],
+                    locations: [],
+                    delivery: {
+                        type: DeliveryEnum.NOW,
+                        value: moment().valueOf().toString()
+                    },
+                    timeZone: TimeZoneEnum.SAME,
+                    pastSchedule: PastScheduleEnum.SKIP,
+                    expiration: {
+                        days: 7,
+                        hours: 0
+                    }
+                }
+            };
+        },
+        props: {
+            type: {
+                type: String,
+                default: countlyPushNotification.service.TypeEnum.ONE_TIME
+            },
+            controls: {
+                type: Object
+            }
+        },
+        computed: {
+            title: function() {
+                if (this.type === countlyPushNotification.service.TypeEnum.ONE_TIME) {
+                    return "Create One-Time Push Notification";
+                }
+                if (this.type === countlyPushNotification.service.TypeEnum.AUTOMATIC) {
+                    return "Create Automated Push Notification";
+                }
+                if (this.type === countlyPushNotification.service.TypeEnum.TRANSACTIONAL) {
+                    return "Create Transactional Push Notification";
+                }
+            },
+            addButtonLabel: function() {
+                if (this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.length === 0) {
+                    return "+Add First button";
+                }
+                return "+Add Second button";
+            },
+            isAddButtonDisabled: function() {
+                return this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.length === 2;
+            },
+            selectedLocalizationFilterOptions: function() {
+                var self = this;
+                return this.pushNotificationUnderEdit.localizations.map(function(selectedLocalization) {
+                    return {label: self.pushNotificationUnderEdit.message[selectedLocalization].localizationLabel, value: selectedLocalization};
+                });
+            },
+            selectedLocalizationMessage: function() {
+                return this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter];
+            }
+        },
+        methods: {
+            onSaveDraft: function() {},
+            onSubmit: function() {},
+            onClose: function() {},
+            onInfoAndTargetFormSubmit: function() {},
+            remoteMethod: function() {},
+            addButton: function() {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.push({label: "", url: ""});
+            },
+            removeButton: function(index) {
+                var filteredButtons = this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.filter(function(buttonItem, buttonIndex) {
+                    return buttonIndex !== index;
+                });
+                this.pushNotificationUnderEdit.message[this.activeLocalization].buttons = filteredButtons;
+            },
+            isLocalizationSelected: function(value) {
+                return this.pushNotificationUnderEdit.localizations.filter(function(activeLocalization) {
+                    return value === activeLocalization;
+                }).length > 0;
+            },
+            addEmptyLocalizationMessageIfNotFound: function(localization) {
+                var value = localization.value;
+                var label = localization.label;
+                if (!this.pushNotificationUnderEdit.message[value]) {
+                    this.$set(this.pushNotificationUnderEdit.message, value, {
+                        title: "",
+                        content: "",
+                        localizationLabel: label,
+                        buttons: [{label: "", value: ""}],
+                    });
+                }
+            },
+            addLocalizationIfNotSelected: function(value) {
+                if (!this.isLocalizationSelected(value)) {
+                    this.pushNotificationUnderEdit.localizations.push(value);
+                }
+            },
+            setActiveLocalization: function(value) {
+                this.activeLocalization = value;
+            },
+            removeLocalizationMessage: function(value) {
+                this.$delete(this.pushNotificationUnderEdit.message, value);
+                this.setActiveLocalization("default");
+            },
+            onLocalizationChange: function(localization) {
+                if (this.isLocalizationSelected(localization.value)) {
+                    this.addEmptyLocalizationMessageIfNotFound(localization);
+                    this.setActiveLocalization(localization.value);
+                }
+                else {
+                    this.removeLocalizationMessage(localization.value);
+                }
+            },
+            onLocalizationSelect: function(localization) {
+                this.addEmptyLocalizationMessageIfNotFound(localization);
+                this.setActiveLocalization(localization.value);
+                // this.addLocalizationIfNotSelected(localization.value);
+            },
+            onSendToTestUsers: function() {}
+        },
+        components: {
+            "mobile-message-preview": MobileMessagePreview
+        }
+    });
+
     var PushNotificationTabView = countlyVue.views.BaseView.extend({
         template: "#push-notification-tab",
         data: function() {
@@ -214,6 +467,7 @@
 
     var PushNotificationView = countlyVue.views.BaseView.extend({
         template: "#push-notification",
+        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer")],
         data: function() {
             return {
                 pushNotificationTabs: [
@@ -235,7 +489,12 @@
             }
         },
         methods: {
-            onCreatePushNotification: function() {},
+            onCreatePushNotification: function() {
+                this.openDrawer("pushNotificationDrawer");
+            },
+        },
+        components: {
+            "push-notification-drawer": PushNotificationDrawer
         }
     });
 
@@ -302,71 +561,6 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification.failed > 0;
             }
         }
-    });
-
-    var MobileMessagePreview = countlyVue.views.create({
-        template: CV.T("/push/templates/mobile-message-preview.html"),
-        data: function() {
-            return {
-                selectedPlatform: this.getDefaultSelectedPlatform(),
-                PlatformEnum: countlyPushNotification.service.PlatformEnum,
-                appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name')
-            };
-        },
-        props: {
-            platforms: {
-                type: Array,
-                default: []
-            },
-            title: {
-                type: String,
-                default: CV.i18n('push-notification.mobile-preview-default-title')
-            },
-            content: {
-                type: String,
-                default: CV.i18n('push-notification.mobile-preview-default-content'),
-            },
-            buttons: {
-                type: Array,
-                default: []
-            },
-            media: {
-                type: String,
-                default: null
-            }
-        },
-        watch: {
-            platforms: function() {
-                this.selectedPlatform = this.getDefaultSelectedPlatform();
-            }
-        },
-        methods: {
-            hasAndroidPlatform: function() {
-                return this.platforms.filter(function(platform) {
-                    return platform.value === countlyPushNotification.service.PlatformEnum.ANDROID;
-                }).length > 0;
-            },
-            hasIOSPlatform: function() {
-                return this.platforms.filter(function(platform) {
-                    return platform.value === countlyPushNotification.service.PlatformEnum.IOS;
-                }).length > 0;
-            },
-            timeNow: function() {
-                return moment().format("H:mm");
-            },
-            isAndroidPlatformSelected: function() {
-                return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.ANDROID;
-            },
-            isIOSPlatformSelected: function() {
-                return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.IOS;
-            },
-            getDefaultSelectedPlatform: function() {
-                return this.hasIOSPlatform() ? countlyPushNotification.service.PlatformEnum.IOS : countlyPushNotification.service.PlatformEnum.ANDROID;
-            },
-            setSelectedPlatform: function(value) {
-                this.selectedPlatform = value;
-            }
-        },
     });
 
     var PushNotificationDetailsView = countlyVue.views.BaseView.extend({
