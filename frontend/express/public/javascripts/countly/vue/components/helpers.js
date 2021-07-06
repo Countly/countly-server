@@ -1,4 +1,4 @@
-/* global Vue, app */
+/* global Vue, app, countlyCommon */
 
 (function(countlyVue) {
 
@@ -217,7 +217,7 @@
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
                                 <span class="text-medium"><slot>{{label}}</slot></span>\
                                 <div class="bu-is-flex bu-is-align-items-baseline">\
-                                    <h2><slot name="number">{{formattedNumber}}</slot></h2>\
+                                    <h2><slot name="number">{{countlyCommon.getShortNumber(formattedNumber)}}</slot></h2>\
                                     <div class="bu-pl-3"><slot name="description"><span class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
