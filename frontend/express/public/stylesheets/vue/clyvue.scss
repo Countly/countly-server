@@ -1015,7 +1015,7 @@
         &__wrapper {
             min-height: 56px;
         }
-        & + .cly-vue-metric-card {
+        & + .cly-vue-metric-card .cly-vue-metric-card__wrapper {
             border-left: 1px solid map.get(c.$colors, "warm-gray-30");
         }
     }
