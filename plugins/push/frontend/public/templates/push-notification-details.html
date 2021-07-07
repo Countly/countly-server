@@ -9,9 +9,9 @@
             </template>
             <template v-slot:header-right>
                 <cly-more-options size="small" @command="handleUserEvents($event, scope.row._id )">
-                    <el-dropdown-item command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
-                    <el-dropdown-item command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
-                    <el-dropdown-item command="UserEventEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
+                    <el-dropdown-item :command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
+                    <el-dropdown-item :command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
+                    <el-dropdown-item :command="UserEventEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
                 </cly-more-options>
             </template>
             <template v-slot:header-bottom>

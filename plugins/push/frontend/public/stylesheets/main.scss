@@ -30,7 +30,7 @@
     font-size: typography.$text-medium-size
 }
 
-.mobile-preview {
+.cly-vue-push-notification-mobile-preview {
     position: relative;
 
     &__images {
@@ -47,90 +47,90 @@
         left: 22px;
         right: 22px;
         color: black;
-        
-        &__header {
-            top: 0;
-            right: 0;
-            vertical-align: middle;
-            position: initial;
-            height: 30px;
-            font-size: 9px;
-            line-height: 30px;
-            background-color: white;
-            border-bottom: 1px solid rgba(0, 0, 0, .2);
-            border-radius: 6px 6px 0 0;
+    }
 
-            &__image {
-                width: 13px;
-                margin: 8px 3px 8px 8px;
-                border-radius: 4px;
-                float: left;
-            }
+    &__ios-header {
+        top: 0;
+        right: 0;
+        vertical-align: middle;
+        position: initial;
+        height: 30px;
+        font-size: 9px;
+        line-height: 30px;
+        background-color: white;
+        border-bottom: 1px solid rgba(0, 0, 0, .2);
+        border-radius: 6px 6px 0 0;
+    }
 
-            &__app-name {
-                display: inline-block;
-                max-width: 180px;
-                max-height: 25px;
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-            }
+    &__ios-header-image {
+        width: 13px;
+        margin: 8px 3px 8px 8px;
+        border-radius: 4px;
+        float: left;
+    }
 
-            &__close-button {
-                margin-right: 8px;
-                float: right;
-                color: black;
-                opacity: 0.5;
-                font-size: 8px;
-            }
-        }
+    &__ios-header-app-name {
+        display: inline-block;
+        max-width: 180px;
+        max-height: 25px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 
-        &__title {
-            background: white;
-            padding: 3px 8px 0;
-            font-size: 10px;
-            font-weight: bold;
-        }
+    &__ios-header-close-button {
+        margin-right: 8px;
+        float: right;
+        color: black;
+        opacity: 0.5;
+        font-size: 8px;
+    }
 
-        &__content {
-            font-size: 10.5px;
-            padding: 5px 8px 8px;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-            display: -webkit-box;
-            background-color: white;
-            border-radius: 0 0 6px 6px;
-        }
+    &__ios-title {
+        background: white;
+        padding: 3px 8px 0;
+        font-size: 10px;
+        font-weight: bold;
+    }
 
-        &__buttons-list {
-            background-color: rgba(255,255,255,.6);
-            border-radius: 6px;
-            color: black;
-            font-size: 16px;
-            font-weight: 100;
-            margin-top: 6px;
+    &__ios-content {
+        font-size: 10.5px;
+        padding: 5px 8px 8px;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        display: -webkit-box;
+        background-color: white;
+        border-radius: 0 0 6px 6px;
+    }
 
-            &__item {
-                position: relative;
-                height: 40px;
-                text-align: center;   
-                line-height: 42px; 
-            }
+    &__ios-buttons-list {
+        background-color: rgba(255,255,255,.6);
+        border-radius: 6px;
+        color: black;
+        font-size: 16px;
+        font-weight: 100;
+        margin-top: 6px;
+    }
 
-            &__item:first-child {
-                border-bottom: 1px solid rgba(255,255,255,.3);            
-            }
-        }
+    &__ios-button {
+        position: relative;
+        height: 40px;
+        text-align: center;   
+        line-height: 42px; 
+    }
 
-        &__media {
-            width: 100%;
-            margin: 0;
-            max-height: 140px;
-            border-radius: 0;
-            object-position: center;
-            object-fit: cover;
-            float: left;
-        }
+    &__ios-button:first-child {
+        border-bottom: 1px solid rgba(255,255,255,.3);            
+    }
+
+    &__ios-media {
+        width: 100%;
+        margin: 0;
+        max-height: 140px;
+        border-radius: 0;
+        object-position: center;
+        object-fit: cover;
+        float: left;
     }
 
     &__android-message {
@@ -140,84 +140,84 @@
         top: 148px;
         left: 18px;
         right: 15px;
+    }
 
-        &__header {
-            top: 0;
-            right: 0;
-            vertical-align: middle;
-            position: initial;
-            height: 25px;
-            font-size: 12px;
-            line-height: 25px;
-            color: #2B2B2B;
+    &__android-header {
+        top: 0;
+        right: 0;
+        vertical-align: middle;
+        position: initial;
+        height: 25px;
+        font-size: 12px;
+        line-height: 25px;
+        color: #2B2B2B;
+    }
 
-            &__image {
-                width: 13px;
-                margin: 8px 3px 8px 8px;
-                border-radius: 4px;
-                float: left;
-            }
+    &__android-header-image {
+        width: 13px;
+        margin: 8px 3px 8px 8px;
+        border-radius: 4px;
+        float: left;
+    }
 
-            &__app-name {
-                display: inline-block;
-                max-width: 180px;
-                max-height: 25px;
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-            }
-    
-            &__time {
-                margin-right: 8px;
-                float: right;
-                color: black;
-                opacity: 0.5;
-                font-size: 8px;
-            }
-        }
-        
-        &__title {
-            color: #2B2B2B;
-            padding: 0 8px 3px;
-            font-size: 11px;
-        }
+    &__android-header-app-name {
+        display: inline-block;
+        max-width: 180px;
+        max-height: 25px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 
-        &__content {
-            position: relative;
-            padding: 0 8px 5px;
-            font-size: 9px;
-            height: 16px;
-            color: #787878;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-            display: -webkit-box;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    &__android-header-time {
+        margin-right: 8px;
+        float: right;
+        color: black;
+        opacity: 0.5;
+        font-size: 8px;
+    }
 
-        &__media {
-            width: 100%;
-            margin: 0;
-            max-height: 140px;
-            border-radius: 0;
-            object-position: center;
-            object-fit: cover;
-            float: left;
-        }
+    &__android-title {
+        color: #2B2B2B;
+        padding: 0 8px 3px;
+        font-size: 11px;
+    }
 
-        &__buttons-list {
-            color: #737373;
-            font-size: 11px;
-            text-transform: uppercase;
-            display: table;
-            padding-bottom: 10px;
+    &__android-content {
+        position: relative;
+        padding: 0 8px 5px;
+        font-size: 9px;
+        height: 16px;
+        color: #787878;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        display: -webkit-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
-            &__item {
-                display: table-cell;
-                text-align: center;
-                width: 1%;
-            }
-        }
+    &__android-media {
+        width: 100%;
+        margin: 0;
+        max-height: 140px;
+        border-radius: 0;
+        object-position: center;
+        object-fit: cover;
+        float: left;
+    }
+
+    &__android-buttons-list {
+        color: #737373;
+        font-size: 11px;
+        text-transform: uppercase;
+        display: table;
+        padding-bottom: 10px;
+    }
+
+    &__android-button {
+        display: table-cell;
+        text-align: center;
+        width: 1%;
     }
 
     &__platforms {
@@ -227,30 +227,30 @@
         height: 27px;
         display: table;
         table-layout: fixed;
+    }
 
-        &__icon-container {
-            display: table-cell;
-            width: 2%;
-            max-width: 80px;
-            text-align: center;
-            font-size: 12px;
-            padding: 6px 9px;
-            color: #A7A8A8;
-            background-color: #F5F5F5;
-            border: 1px solid #D0D0D0;
-            transition: .6s ease-out;
-            line-height: 15px;
+    &__icon-container {
+        display: table-cell;
+        width: 2%;
+        max-width: 80px;
+        text-align: center;
+        font-size: 12px;
+        padding: 6px 9px;
+        color: #A7A8A8;
+        background-color: #F5F5F5;
+        border: 1px solid #D0D0D0;
+        transition: .6s ease-out;
+        line-height: 15px;
+    }
 
-            &--active {
-                color: #636363;
-                background-color: white;
-                border: 1px solid #37BB29;
-            }
-        }
+    &__icon-container:first-child {
+        border-radius: 2px 0 0 2px;
+    }
 
-        &__icon-container:first-child {
-            border-radius: 2px 0 0 2px;
-        }
+    &__active-icon {
+        color: #636363;
+        background-color: white;
+        border: 1px solid #37BB29;
     }
 }
 

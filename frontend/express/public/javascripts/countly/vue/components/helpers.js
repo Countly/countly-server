@@ -177,4 +177,76 @@
                     '</div>\n'
     }));
 
+    Vue.component("cly-metric-card", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.commonFormatters
+        ],
+        props: {
+            label: {type: String, default: ''},
+            number: {type: Number, default: 0},
+            description: {type: String, default: ''},
+            formatting: {type: String, default: 'auto'},
+            isPercentage: {type: Boolean, default: false},
+            columnWidth: {type: [Number, String], default: -1},
+            isVertical: {type: Boolean, default: false},
+            color: {type: [String, Function, Array], default: ''}
+        },
+        computed: {
+            formattedNumber: function() {
+                if (this.isNumberSlotUsed) {
+                    // Avoid extra processing, it won't be shown anyway.
+                    return '';
+                }
+
+                if (this.formatting === 'auto') {
+                    if (this.isPercentage) {
+                        return this.number + " %";
+                    }
+                    else if (Math.abs(this.number) >= 10000) {
+                        return this.getShortNumber(this.number);
+                    }
+                    else {
+                        return this.formatNumber(this.number);
+                    }
+                }
+                else if (this.formatting === 'short') {
+                    return this.getShortNumber(this.number);
+                }
+                else if (this.formatting === 'long') {
+                    return this.formatNumber(this.number);
+                }
+
+                return this.number;
+            },
+            isDescriptionSlotUsed: function() {
+                return !!this.$slots.description;
+            },
+            isNumberSlotUsed: function() {
+                return !!this.$slots.number;
+            },
+            topClasses: function() {
+                if (this.isVertical || this.columnWidth === -1) {
+                    return "";
+                }
+                return "bu-is-" + this.columnWidth;
+            }
+        },
+        template: '<div class="cly-vue-metric-card bu-column bu-is-flex" :class="topClasses">\
+                        <div class="cly-vue-metric-card__wrapper bu-p-5 bu-is-flex bu-is-justify-content-space-between">\
+                            <cly-progress-donut class="bu-pr-5 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
+                            <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
+                                <span class="text-medium"><slot>{{label}}</slot></span>\
+                                <div class="bu-is-flex bu-is-align-items-baseline">\
+                                    <h2><slot name="number">{{formattedNumber}}</slot></h2>\
+                                    <div class="bu-pl-3"><slot name="description"><span class="text-medium">{{description}}</span></slot></div>\
+                                </div>\
+                            </div>\
+                        </div>\
+                    </div>'
+    }));
+
+    Vue.component("cly-metric-cards", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-metric-cards bu-columns bu-is-gapless bu-is-mobile bu-is-multiline"><slot></slot></div>',
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));

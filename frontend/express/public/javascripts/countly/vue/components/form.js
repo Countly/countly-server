@@ -223,12 +223,20 @@
                 this.$refs.observer.validate();
             }
         },
+        computed: {
+            isParentReady: function() {
+                if (this.$parent.isToggleable) {
+                    return this.$parent.isOpened;
+                }
+                return true;
+            }
+        },
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
-                    '<div v-show="isActive">\n' +
-                        '<validation-observer ref="observer" v-slot="v">\n' +
+                    '<validation-observer ref="observer" v-slot="v">\n' +
+                        '<div v-show="isActive" v-if="isParentReady">\n' +
                             '<slot/>\n' +
-                        '</validation-observer>\n' +
-                    '</div>\n' +
+                        '</div>\n' +
+                    '</validation-observer>\n' +
                 '</div>'
     }));
 

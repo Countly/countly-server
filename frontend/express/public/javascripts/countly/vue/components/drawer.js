@@ -35,6 +35,7 @@
             },
             data: function() {
                 return {
+                    isToggleable: true,
                     sidecarContents: []
                 };
             },
@@ -59,6 +60,9 @@
                 isOpened: function(newState) {
                     if (!newState) {
                         this.reset();
+                    }
+                    else {
+                        this.$emit("open");
                     }
                     this.setModalState(newState);
                 }

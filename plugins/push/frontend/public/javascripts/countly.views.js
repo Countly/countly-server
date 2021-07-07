@@ -45,7 +45,7 @@
         template: CV.T("/push/templates/mobile-message-preview.html"),
         data: function() {
             return {
-                selectedPlatform: this.getDefaultSelectedPlatform(),
+                selectedPlatform: this.getDefaultSelectedPlatform,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name')
             };
@@ -72,12 +72,7 @@
                 default: null
             }
         },
-        watch: {
-            platforms: function() {
-                this.selectedPlatform = this.getDefaultSelectedPlatform();
-            }
-        },
-        methods: {
+        computed: {
             hasAndroidPlatform: function() {
                 return this.platforms.filter(function(platform) {
                     return platform.value === countlyPushNotification.service.PlatformEnum.ANDROID;
@@ -88,9 +83,6 @@
                     return platform.value === countlyPushNotification.service.PlatformEnum.IOS;
                 }).length > 0;
             },
-            timeNow: function() {
-                return moment().format("H:mm");
-            },
             isAndroidPlatformSelected: function() {
                 return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.ANDROID;
             },
@@ -98,7 +90,17 @@
                 return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.IOS;
             },
             getDefaultSelectedPlatform: function() {
-                return this.hasIOSPlatform() ? countlyPushNotification.service.PlatformEnum.IOS : countlyPushNotification.service.PlatformEnum.ANDROID;
+                return this.hasIOSPlatform ? countlyPushNotification.service.PlatformEnum.IOS : countlyPushNotification.service.PlatformEnum.ANDROID;
+            },
+        },
+        watch: {
+            platforms: function() {
+                this.selectedPlatform = this.getDefaultSelectedPlatform;
+            }
+        },
+        methods: {
+            timeNow: function() {
+                return moment().format("H:mm");
             },
             setSelectedPlatform: function(value) {
                 this.selectedPlatform = value;
@@ -312,11 +314,7 @@
                 transactionalPeriodFilters: transactionalPeriodFilterOptions,
                 selectedTransactionalPeriodFilter: countlyPushNotification.service.PeriodEnum.DAILY,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
-                UserRowEventEnum: {
-                    RESEND: 'resend',
-                    DUPLICATE: 'duplicate',
-                    DELETE: 'delete'
-                },
+                UserEventEnum: countlyPushNotification.service.UserEventEnum,
                 optionalTableColumns: [
                     {
                         value: "content",
@@ -411,11 +409,11 @@
             formatPercentage: function(value, decimalPlaces) {
                 return CountlyHelpers.formatPercentage(value, decimalPlaces);
             },
-            handleUserRowEvents: function(event, pushNotificationId) {
-                if (event === this.UserRowEventEnum.DUPLICATE) {
+            handleUserEvents: function(event, pushNotificationId) {
+                if (event === this.UserEventEnum.DUPLICATE) {
                     this.$store.dispatch('countlyPushNotification/onDuplicatePushNotification', pushNotificationId);
                 }
-                else if (event === this.UserRowEventEnum.RESEND) {
+                else if (event === this.UserEventEnum.RESEND) {
                     this.$store.dispatch('countlyPushNotification/onResendPushNotification', pushNotificationId);
                 }
                 else {
@@ -424,17 +422,17 @@
             },
             //TODO: use status action specifications when ready
             // eslint-disable-next-line no-unused-vars
-            shouldShowDuplicateUserRowEvent: function(status) {
+            shouldShowDuplicateUserEvent: function(status) {
                 return true;
             },
             //TODO: use status action specifications when ready
             // eslint-disable-next-line no-unused-vars
-            shouldShowResendUserRowEvent: function(status) {
+            shouldShowResendUserEvent: function(status) {
                 return true;
             },
             //TODO: use status action specifications when ready
             // eslint-disable-next-line no-unused-vars
-            shouldShowDeleteUserRowEvent: function(status) {
+            shouldShowDeleteUserEvent: function(status) {
                 return true;
             },
             getStatusBackgroundColor: function(status) {
@@ -573,6 +571,7 @@
                 localizationFilters: localizationFilterOptions,
                 DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
                 currentSummaryTab: "content",
+                UserEventEnum: countlyPushNotification.service.UserEventEnum,
                 summaryTabs: [
                     {
                         title: CV.i18n('push-notification-details.message-content-tab'),

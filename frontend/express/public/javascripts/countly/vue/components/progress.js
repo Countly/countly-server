@@ -2,6 +2,36 @@
 (function(countlyVue) {
     var countlyBaseComponent = countlyVue.components.BaseComponent;
 
+    Vue.component("cly-progress-donut", countlyBaseComponent.extend({
+        props: {
+            percentage: {type: Number, default: 42},
+            color: {type: [String, Function, Array], default: '#00C3CA'},
+            mode: {
+                type: String,
+                default: 'simple',
+                validator: function(val) {
+                    return val === 'simple' || val === 'advanced-tile';
+                }
+            },
+            label: {type: String, required: false, default: ''}
+        },
+        computed: {
+            topClasses: function() {
+                if (this.mode === 'advanced-tile') {
+                    return 'bu-p-5 bu-is-flex';
+                }
+                return '';
+            }
+        },
+        template: '<div :class="topClasses">\
+                    <el-progress :color="color" :percentage="percentage" type="circle" :width="56" stroke-linecap="butt" :stroke-width="9" :show-text="false"></el-progress>\
+                    <div v-if="mode === \'advanced-tile\'" class="bu-pl-5 bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
+                        <span class="text-medium"><slot>{{label}}</slot></span>\
+                        <h2>{{percentage}} %</h2>\
+                    </div>\
+                </div>'
+    }));
+
     Vue.component("cly-progress-bar", countlyBaseComponent.extend({
         data: function() {
             return {
@@ -21,6 +51,7 @@
             height: {type: Number, required: false},
             percentage: {type: Number, required: false},
             color: {type: String, required: false},
+            backgroundColor: {type: String, required: false},
             tooltip: {type: String, required: false, default: null}
         },
         computed: {
@@ -31,13 +62,16 @@
                 else {
                     return this.getBarStacksWhenEntitiesNotFound();
                 }
+            },
+            remainingBarStackColor: function() {
+                return this.backgroundColor || this.defaultRemainingBarStackColor;
             }
         },
         methods: {
             getBarStacksWhenEntitiesNotFound: function() {
                 var totalBarPercentage = this.percentage;
                 if (this.isBarEmpty(totalBarPercentage)) {
-                    return [{percentage: 0, color: this.defaultRemainingBarStackColor, tooltip: this.tooltip}];
+                    return [{percentage: 0, color: this.remainingBarStackColor, tooltip: this.tooltip}];
                 }
                 else if (this.isBarFull(totalBarPercentage)) {
                     return [{percentage: this.percentage, color: this.color, tooltip: this.tooltip}];
@@ -49,7 +83,7 @@
             getBarStacksWhenEntitiesFound: function() {
                 var totalBarPercentage = this.getEntitiesTotalPercentage();
                 if (this.isBarEmpty(totalBarPercentage)) {
-                    return [{percentage: 0, color: this.defaultRemainingBarStackColor}];
+                    return [{percentage: 0, color: this.remainingBarStackColor}];
                 }
                 else if (this.isBarFull(totalBarPercentage)) {
                     return this.entities;
@@ -59,7 +93,7 @@
                 }
             },
             getRemainingBarStack: function(totalBarPercentage) {
-                return {percentage: this.getRemainingPercentage(totalBarPercentage), color: this.defaultRemainingBarStackColor};
+                return {percentage: this.getRemainingPercentage(totalBarPercentage), color: this.remainingBarStackColor};
             },
             getRemainingPercentage: function(total) {
                 return 100 - total;
