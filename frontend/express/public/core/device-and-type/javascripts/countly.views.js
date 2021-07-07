@@ -4,6 +4,11 @@ var DevicesTabView = countlyVue.views.create({
     mounted: function() {
         this.$store.dispatch('countlyDevicesAndTypes/fetchDevices');
     },
+    methods: {
+        refresh: function() {
+            this.$store.dispatch('countlyDevicesAndTypes/fetchDevices');
+        }
+    },
     computed: {
         data: function() {
             return this.$store.state.countlyDevicesAndTypes.appDevices;
@@ -94,6 +99,11 @@ var AllTabs = countlyVue.views.create({
                         template: CV.T("/core/device-and-type/templates/types-tab.html"),
                         mounted: function() {
                             this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes');
+                        },
+                        methods: {
+                            refresh: function() {
+                                this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes');
+                            }
                         },
                         computed: {
                             data: function() {

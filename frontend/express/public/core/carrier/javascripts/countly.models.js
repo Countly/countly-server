@@ -76,8 +76,7 @@
                 nonEmptyBuckets: [],
                 isLoading: false,
                 hasError: false,
-                error: null,
-                selectedDatePeriod: "day"
+                error: null
             };
         };
 
@@ -113,10 +112,6 @@
                 state.appCarrier.pie = state.appCarrier.pie || {};
                 state.appCarrier.table = state.appCarrier.table || [];
                 state.appCarrier.totals = state.appCarrier.totals || {};
-            },
-            setSelectedDatePeriod: function(state, value) {
-                state.selectedDatePeriod = value;
-                countlyCommon.setPeriod(value);
             },
             setFetchInit: function(state) {
                 state.isLoading = true;
