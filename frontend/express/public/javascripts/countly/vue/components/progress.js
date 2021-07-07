@@ -51,6 +51,7 @@
             height: {type: Number, required: false},
             percentage: {type: Number, required: false},
             color: {type: String, required: false},
+            backgroundColor: {type: String, required: false},
             tooltip: {type: String, required: false, default: null}
         },
         computed: {
@@ -61,13 +62,16 @@
                 else {
                     return this.getBarStacksWhenEntitiesNotFound();
                 }
+            },
+            remainingBarStackColor: function() {
+                return this.backgroundColor || this.defaultRemainingBarStackColor;
             }
         },
         methods: {
             getBarStacksWhenEntitiesNotFound: function() {
                 var totalBarPercentage = this.percentage;
                 if (this.isBarEmpty(totalBarPercentage)) {
-                    return [{percentage: 0, color: this.defaultRemainingBarStackColor, tooltip: this.tooltip}];
+                    return [{percentage: 0, color: this.remainingBarStackColor, tooltip: this.tooltip}];
                 }
                 else if (this.isBarFull(totalBarPercentage)) {
                     return [{percentage: this.percentage, color: this.color, tooltip: this.tooltip}];
@@ -79,7 +83,7 @@
             getBarStacksWhenEntitiesFound: function() {
                 var totalBarPercentage = this.getEntitiesTotalPercentage();
                 if (this.isBarEmpty(totalBarPercentage)) {
-                    return [{percentage: 0, color: this.defaultRemainingBarStackColor}];
+                    return [{percentage: 0, color: this.remainingBarStackColor}];
                 }
                 else if (this.isBarFull(totalBarPercentage)) {
                     return this.entities;
@@ -89,7 +93,7 @@
                 }
             },
             getRemainingBarStack: function(totalBarPercentage) {
-                return {percentage: this.getRemainingPercentage(totalBarPercentage), color: this.defaultRemainingBarStackColor};
+                return {percentage: this.getRemainingPercentage(totalBarPercentage), color: this.remainingBarStackColor};
             },
             getRemainingPercentage: function(total) {
                 return 100 - total;
