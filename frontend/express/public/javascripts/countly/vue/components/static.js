@@ -61,7 +61,7 @@
                         active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
                     }
 
-                    return active;
+                    return active || {};
                 },
                 categorizedMenus: function() {
                     if (!this.activeApp) {
