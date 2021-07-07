@@ -1,0 +1,28 @@
+<el-card class="box-card cly-vue-push-notification-details-summary-card">
+    <div v-if="hasErrors()">
+        <el-table
+            :data="errors"
+            border
+            style="width: 100%">
+                <el-table-column
+                    prop="name"
+                    label="Name"
+                    width="180">
+                </el-table-column>
+                <el-table-column
+                    prop="code"
+                    label="Code"
+                    width="180">
+                </el-table-column>
+                <el-table-column
+                    prop="description"
+                    label="Description">
+                </el-table-column>
+        </el-table>
+    </div>
+    <div v-else class="bu-container">
+        <span class="cly-vue-push-notification-details-no-errors-text">
+            {{i18n('push-notification-details.no-errors-found')}}
+        </span>
+    </div>
+</el-card>

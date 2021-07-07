@@ -70,7 +70,7 @@
                                 :key="item.value"
                                 :value="item.value"
                                 :label="item.label"
-                                v-for="item in statusFilters">
+                                v-for="item in statusFilters[selectedPushNotificationType]">
                             </el-option>
                         </el-select>
                     </template>
@@ -79,7 +79,7 @@
                             <template slot-scope="scope">
                                 <span class="cly-vue-push-notification-multi-line-table-data__first-line">{{scope.row.name}}</span>
                                 <br />
-                                <span class="cly-vue-push-notification-multi-line-table-data__second-line">{{scope.row.platform.join(", ")}}</span>
+                                <span class="cly-vue-push-notification-multi-line-table-data__second-line">{{scope.row.platforms.map(function(platform){return platform.label}).join(", ")}}</span>
                             </template>
                         </el-table-column>
                         <template v-for="(col,idx) in scope.dynamicCols">
@@ -141,10 +141,10 @@
                                     </div>
                                     <div class="bu-level-right" >
                                         <div class="bu-level-item">
-                                            <cly-more-options size="small" @command="handleUserRowEvents($event, scope.row._id )">
-                                                <el-dropdown-item v-if="shouldShowDuplicateUserRowEvent('scope.row.status.value')" command="UserRowEventEnum.DUPLICATE">{{i18n('push-notification.table-duplicate')}}</el-dropdown-item>
-                                                <el-dropdown-item v-if="shouldShowDeleteUserRowEvent('scope.row.status.value')"  command="UserRowEventEnum.DELETE">{{i18n('push-notification.table-delete')}}</el-dropdown-item>
-                                                <el-dropdown-item v-if="shouldShowResendUserRowEvent('scope.row.status.value')" command="UserRowEventEnum.RESEND">{{i18n('push-notification.table-resend')}}</el-dropdown-item>
+                                            <cly-more-options size="small" @command="handleUserEvents($event, scope.row._id )">
+                                                <el-dropdown-item v-if="shouldShowDuplicateUserEvent('scope.row.status.value')" :command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
+                                                <el-dropdown-item v-if="shouldShowDeleteUserEvent('scope.row.status.value')"  :command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
+                                                <el-dropdown-item v-if="shouldShowResendUserEvent('scope.row.status.value')" :command="UserEventEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
                                             </cly-more-options>
                                         </div>
                                     </div>
