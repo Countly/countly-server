@@ -1,13 +1,15 @@
 <div>
   <cly-drawer
+    toggle-transition="stdt-fade"
     ref="userDrawer"
-    :title="$props.settings.title"
+    :title="$props.settings.editMode ? $props.settings.editTitle : $props.settings.createTitle"
     @close="onClose"
     @submit="onSubmit"
+    @open="onOpen"
     :hasCancelButton="$props.settings.hasCancelButton"
     :cancelButtonLabel="$props.settings.cancelButtonLabel"
     :width="$props.settings.drawerWidth"
-		:saveButtonLabel="$props.settings.saveButtonLabel"
+		:saveButtonLabel="$props.settings.editMode ? $props.settings.saveButtonLabel : $props.settings.createButtonLabel"
 		v-bind="$props.controls">
 		<template v-slot:default="drawerScope">
       <cly-form-step screen="full">
@@ -74,7 +76,7 @@
                 </div>
               </div>
               <div class="user-management-drawer-content__section-content user-management-drawer-content__role-section">
-                <cly-check skin="tick" v-model="drawerScope.editedObject.global_admin" v-bind:label="'Global Administrator'"></cly-check>
+                <el-checkbox v-model="drawerScope.editedObject.global_admin">Global Administrator</el-checkbox>
               </div>
             </div>
             <div v-if="!drawerScope.editedObject.global_admin" class="user-management-drawer-content__drawer-sub-title">
@@ -111,7 +113,7 @@
                   <span class="user-management-drawer-content__section-header">GRANT USER ACCESS TO APP(S) <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
                 </div>
                 <div>
-                  <cly-more-options size="small" @command="handleCommand($event, index)">
+                  <cly-more-options v-if="index > 0" size="small" @command="handleCommand($event, index)">
                     <el-dropdown-item command="remove-set">Remove permission set</el-dropdown-item>
                   </cly-more-options>
                 </div>
@@ -136,16 +138,16 @@
                   </div>
                   <div class="user-management-drawer-content__permission-type-cols">
                     <div class="user-management-drawer-content__permission-type">
-                      <cly-check skin="tick" @input="setPermissionByType(index, 'c')" v-model="permissionSets[index].c.all" v-bind:label="'CREATE'"></cly-check>
+                      <el-checkbox @change="setPermissionByType(index, 'c')" v-model="permissionSets[index].c.all">CREATE</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <cly-check skin="tick" @input="setPermissionByType(index, 'r')" v-model="permissionSets[index].r.all" v-bind:label="'READ'"></cly-check>
+                      <el-checkbox @change="setPermissionByType(index, 'r')" v-model="permissionSets[index].r.all">READ</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <cly-check skin="tick" @input="setPermissionByType(index, 'u')" v-model="permissionSets[index].u.all" v-bind:label="'UPDATE'"></cly-check>
+                      <el-checkbox @change="setPermissionByType(index, 'u')" v-model="permissionSets[index].u.all">UPDATE</el-checkbox>
                     </div>
                     <div class="user-management-drawer-content__permission-type">
-                      <cly-check skin="tick" @input="setPermissionByType(index, 'd')" v-model="permissionSets[index].d.all" v-bind:label="'DELETE'"></cly-check>
+                      <el-checkbox @change="setPermissionByType(index, 'd')" v-model="permissionSets[index].d.all">DELETE</el-checkbox>
                     </div>
                   </div>
                 </div>
@@ -153,10 +155,18 @@
                   <div class="user-management-drawer-content__permission-row" v-for="feature in features">
                     <div class="user-management-drawer-content__feature-name">{{featureBeautifier(feature)}}</div>
                     <div class="user-management-drawer-content__feature-permissions">
-                      <div class="user-management-drawer-content__permission-box"><cly-check skin="tick" @input="setPermissionByFeature(index, 'c', feature)" v-model="permissionSets[index].c.allowed[feature]"></cly-check></div>
-                      <div class="user-management-drawer-content__permission-box"><cly-check skin="tick" @input="setPermissionByFeature(index, 'r', feature)" v-model="permissionSets[index].r.allowed[feature]"></cly-check></div>
-                      <div class="user-management-drawer-content__permission-box"><cly-check skin="tick" @input="setPermissionByFeature(index, 'u', feature)" v-model="permissionSets[index].u.allowed[feature]"></cly-check></div>
-                      <div class="user-management-drawer-content__permission-box"><cly-check skin="tick" @input="setPermissionByFeature(index, 'd', feature)" v-model="permissionSets[index].d.allowed[feature]"></cly-check></div>
+                      <div class="user-management-drawer-content__permission-box">
+                        <el-checkbox @change="setPermissionByFeature(index, 'c', feature)" v-model="permissionSets[index].c.allowed[feature]"></el-checkbox>
+                      </div>
+                      <div class="user-management-drawer-content__permission-box">
+                        <el-checkbox @change="setPermissionByFeature(index, 'r', feature)" v-model="permissionSets[index].r.allowed[feature]"></el-checkbox>
+                      </div>
+                      <div class="user-management-drawer-content__permission-box">
+                        <el-checkbox @change="setPermissionByFeature(index, 'u', feature)" v-model="permissionSets[index].u.allowed[feature]"></el-checkbox>
+                      </div>
+                      <div class="user-management-drawer-content__permission-box">
+                        <el-checkbox @change="setPermissionByFeature(index, 'd', feature)" v-model="permissionSets[index].d.allowed[feature]"></el-checkbox>
+                      </div>
                     </div>
                   </div>
                 </div>

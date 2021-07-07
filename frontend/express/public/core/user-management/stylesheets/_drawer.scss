@@ -130,7 +130,6 @@
     justify-content: space-between;
     margin-top: 10px;
     font-size: 12px;
-    font-weight: 500;
     border-bottom: 1px solid #ebebeb;
     padding-bottom: 10px;
     box-shadow: 0px 3px 5px rgb(0 0 0 / 8%);
@@ -262,5 +261,9 @@
 
   .el-icon-close:hover {
     color: #81868D !important;
+  }
+
+  .el-checkbox__label {
+    font-weight: normal !important;
   }
 }

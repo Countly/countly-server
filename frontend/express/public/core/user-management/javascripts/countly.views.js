@@ -32,33 +32,31 @@
 
     var Drawer = countlyVue.views.create({
         template: CV.T("/core/user-management/templates/drawer.html"),
-        props: ['settings', 'controls', 'features'],
+        props: {
+            settings: Object,
+            controls: Object,
+            features: {
+                type: Array,
+                default: []
+            },
+            editMode: {
+                type: Boolean,
+                default: false
+            },
+            user: {
+                type: Object,
+                default: {}
+            }
+        },
         data: function() {
             return {
+                // TODO: remove Object.values usage
                 apps: Object.values(countlyGlobal.apps).map(function(a) {
                     return { value: a._id, label: a.name };
                 }),
                 permissionSets: [],
                 adminAppSelector: ''
             };
-        },
-        watch: {
-            // insert first permission set when features set for first time
-            features: function(features) {
-                if (this.permissionSets.length > 0) {
-                    return;
-                }
-                var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
-                var types = ['c', 'r', 'u', 'd'];
-
-                for (var type in types) {
-                    for (var feature in features) {
-                        permissionSet[types[type]].allowed[features[feature]] = false;
-                    }
-                }
-
-                this.permissionSets.push(permissionSet);
-            }
         },
         methods: {
             onAdminAppsChanged: function() {
@@ -138,14 +136,64 @@
             },
             removePermissionSet: function(index) {
                 this.permissionSets.splice(index, 1);
+                this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u.splice(index, 1));
             },
             onClose: function() {},
             onSubmit: function(submitted) {
-                submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
-                submitted.password = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
-                countlyUserManagement.createUser(submitted, function() {
-                // TODO: show toast
-                });
+                if (this.settings.editMode) {
+                    submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
+                    countlyUserManagement.editUser(this.user._id, submitted, function() {
+                    // TODO: show toast
+                    });
+                }
+                else {
+                    submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
+                    submitted.password = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
+                    countlyUserManagement.createUser(submitted, function() {
+                    // TODO: show toast
+                    });
+                }
+            },
+            onOpen: function() {
+                // types
+                var types = ['c', 'r', 'u', 'd'];
+
+                // clear permission sets
+                this.permissionSets = [];
+
+                // if it's in edit mode
+                if (this.settings.editMode) {
+                    var userAppsSets = this.user.permission._.u;
+
+                    for (var set in userAppsSets) {
+                        var appFromSet = userAppsSets[set][0];
+                        var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
+                        for (var type in types) {
+                            for (var feature in this.features) {
+                                permissionSet[types[type]].all = this.user.permission[types[type]][appFromSet].all;
+                                permissionSet[types[type]].allowed[this.features[feature]] = this.user.permission[types[type]][appFromSet].allowed[this.features[feature]];
+                            }
+                        }
+                        this.permissionSets.push(permissionSet);
+                    }
+
+                }
+                // initialize default permission sets for create mode
+                else {
+                    if (this.features.length === 0) {
+                        return;
+                    }
+
+                    var permissionSet_ = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
+
+                    for (var type_ in types) {
+                        for (var feature_ in this.features) {
+                            permissionSet_[types[type_]].allowed[this.features[feature_]] = false;
+                        }
+                    }
+
+                    this.permissionSets.push(permissionSet_);
+                }
             },
             featureBeautifier: function(featureName) {
                 var fa = featureName.split('_');
@@ -172,9 +220,6 @@
                     this.permissionSets[index][type].allowed[this.features[feature]] = this.permissionSets[index][type].all;
                 }
             }
-        },
-        created: function() {
-            this.permissionSets = [];
         }
     });
 
@@ -189,13 +234,17 @@
         data: function() {
             return {
                 users: [],
+                user: {},
                 currentTab: 'users',
                 appId: countlyCommon.ACTIVE_APP_ID,
                 drawerSettings: {
-                    title: 'Create new user',
-                    saveButtonLabel: 'Create User',
+                    createTitle: 'Create new user',
+                    editTitle: 'Edit user',
+                    saveButtonLabel: 'Save User',
+                    createButtonLabel: 'Create User',
                     hasCancelButton: true,
-                    cancelButtonLabel: 'Cancel'
+                    cancelButtonLabel: 'Cancel',
+                    editMode: false
                 },
                 features: []
             };
@@ -205,6 +254,7 @@
                 var self = this;
                 countlyUserManagement.fetchUsers()
                     .then(function() {
+                        // TODO: remove Object.values usage
                         self.users = Object.values(countlyUserManagement.getUsers());
                     })
                     .catch(function() {
@@ -212,12 +262,15 @@
                     });
             },
             createUser: function() {
+                this.drawerSettings.editMode = false;
                 this.openDrawer("user", countlyUserManagement.getEmptyUser());
             },
             onEditUser: function(id) {
                 var self = this;
                 countlyUserManagement.fetchUserDetail(id)
                     .then(function() {
+                        self.drawerSettings.editMode = true;
+                        self.user = countlyUserManagement.getUser();
                         self.openDrawer("user", countlyUserManagement.getUser());
                     });
             }
@@ -226,6 +279,7 @@
             var self = this;
             countlyUserManagement.fetchUsers()
                 .then(function() {
+                    // TODO: remove object.values usage
                     self.users = Object.values(countlyUserManagement.getUsers());
                 })
                 .catch(function() {

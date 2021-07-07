@@ -2,15 +2,6 @@
 
 (function(countlyUserManagement) {
     var _users = [],
-        _emptyUser = {
-            "_id": null,
-            "full_name": null,
-            "username": null,
-            "email": null,
-            "permission": { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] } },
-            "global_admin": false,
-            "created_at": null
-        },
         _user = {},
         _emptyPermissionObject = { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] } },
         _permissionSet = {c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}},
@@ -33,6 +24,15 @@
     };
 
     countlyUserManagement.getEmptyUser = function() {
+        var _emptyUser = {
+            "_id": null,
+            "full_name": null,
+            "username": null,
+            "email": null,
+            "permission": { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] } },
+            "global_admin": false,
+            "created_at": null
+        };
         return _emptyUser;
     };
 
@@ -94,13 +94,15 @@
     };
 
     countlyUserManagement.editUser = function(id, user, callback) {
+        // inject user_id property to user object
+        user.user_id = id;
+
         return $.ajax({
             type: "POST",
             url: countlyCommon.API_PARTS.data.w + '/users/update',
             dataType: "json",
             data: {
                 app_id: countlyCommon.ACTIVE_APP_ID,
-                id: id,
                 args: JSON.stringify(user)
             },
             success: function(json) {
