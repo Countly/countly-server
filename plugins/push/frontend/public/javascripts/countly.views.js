@@ -45,7 +45,7 @@
         template: CV.T("/push/templates/mobile-message-preview.html"),
         data: function() {
             return {
-                selectedPlatform: this.getDefaultSelectedPlatform,
+                selectedPlatform: this.findInitialSelectedPlatform(),
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name')
             };
@@ -73,38 +73,46 @@
             }
         },
         computed: {
-            hasAndroidPlatform: function() {
-                return this.platforms.filter(function(platform) {
-                    return platform.value === countlyPushNotification.service.PlatformEnum.ANDROID;
-                }).length > 0;
-            },
-            hasIOSPlatform: function() {
-                return this.platforms.filter(function(platform) {
-                    return platform.value === countlyPushNotification.service.PlatformEnum.IOS;
-                }).length > 0;
-            },
             isAndroidPlatformSelected: function() {
                 return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.ANDROID;
             },
             isIOSPlatformSelected: function() {
                 return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.IOS;
             },
-            getDefaultSelectedPlatform: function() {
-                return this.hasIOSPlatform ? countlyPushNotification.service.PlatformEnum.IOS : countlyPushNotification.service.PlatformEnum.ANDROID;
-            },
         },
         watch: {
             platforms: function() {
-                this.selectedPlatform = this.getDefaultSelectedPlatform;
+                if (!this.selectedPlatform) {
+                    this.selectedPlatform = this.findInitialSelectedPlatform();
+                }
             }
         },
         methods: {
             timeNow: function() {
                 return moment().format("H:mm");
             },
+            hasAndroidPlatform: function() {
+                return this.platforms.filter(function(platform) {
+                    return platform === countlyPushNotification.service.PlatformEnum.ANDROID;
+                }).length > 0;
+            },
+            hasIOSPlatform: function() {
+                return this.platforms.filter(function(platform) {
+                    return platform === countlyPushNotification.service.PlatformEnum.IOS;
+                }).length > 0;
+            },
+            findInitialSelectedPlatform: function() {
+                if (this.hasIOSPlatform()) {
+                    return countlyPushNotification.service.PlatformEnum.IOS;
+                }
+                if (this.hasAndroidPlatform()) {
+                    return countlyPushNotification.service.PlatformEnum.ANDROID;
+                }
+                return null;
+            },
             setSelectedPlatform: function(value) {
                 this.selectedPlatform = value;
-            }
+            },
         },
     });
 
@@ -157,6 +165,7 @@
                 activeLocalization: "default",
                 selectedLocalizationFilter: "default",
                 confirmation: false,
+                expandedPlatformSettings: [],
                 pushNotificationUnderEdit: {
                     activePlatformSettings: [],
                     multipleLocalizations: false,
