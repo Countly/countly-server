@@ -221,9 +221,9 @@
 			            	</table>\
                             </div>\
                             <div class="controls">\
-                            <el-button v-bind="$attrs" class="cly-vue-menubox-new--cancel" @click="close">  {{cancelLabel}}\
+                            <el-button v-bind="$attrs" class="cly-vue-menubox-new__cancel" @click="close">  {{cancelLabel}}\
                             </el-button>\
-                            <el-button v-bind="$attrs" class="cly-vue-menubox-new--confirm" @click="save">  {{confirmLabel}}\
+                            <el-button v-bind="$attrs" class="cly-vue-menubox-new__confirm" @click="save">  {{confirmLabel}}\
                             </el-button>\
                             </div>\
                         </div>\
