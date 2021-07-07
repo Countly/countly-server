@@ -1,0 +1,195 @@
+@use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
+@use "sass:map";
+
+.cly-vue-theme-clydef {
+	.crashes-statistics-dashboard {
+		margin-bottom: 0 !important;
+
+		&__tiles-container {
+			height: 314px;
+		}
+	}
+
+	.crashes-trend {
+		margin-top: auto;
+		margin-left: 0.5rem;
+		margin-bottom: 0.15rem;
+
+		i {
+			border: 0px solid;
+			border-radius: 100%;
+			text-align: center;
+			vertical-align: middle;
+			width: 14px;
+			height: 14px;
+			padding: 2px;
+			margin-top: -4px;
+		}
+
+		&--up {
+			color: map.get(c.$colors, "red-100");
+
+			i {
+				background-color: map.get(c.$colors, "red-10");
+			}
+		}
+
+		&--down {
+			color: map.get(c.$colors, "green-80");
+
+			i {
+				background-color: map.get(c.$colors, "green-10");
+			}
+		}
+
+		&--neutral {
+			color: map.get(c.$colors, "cool-gray-50");
+
+			i {
+				background-color: map.get(c.$colors, "cool-gray-20");
+			}
+		}
+	}
+
+	.crashes-tile {
+		flex-grow: 1;
+		align-items: center;
+
+		&__content {
+			margin-left: 1rem;
+		}
+
+		&__content--fill {
+			width: 100%;
+			height: 100%;
+		}
+
+		&__value-container {
+			flex: 0 0 6em;
+			margin: auto 1rem auto 0;
+		}
+
+		&__description-container {
+			margin-top: auto;
+		}
+
+		&--horizontal {
+			border-right: 1px solid #ECECEC;
+
+		}
+
+		&--vertical {
+			border-bottom: 1px solid #ECECEC;
+		}
+
+		&:last-of-type {
+			border-right: 0;
+			border-bottom: 0;
+		}
+	}
+
+	.crashes-statistics-graph {
+		.cly-vue-section__content {
+			border-bottom-width: 1px !important;
+		}
+
+		.el-tabs {
+			&--card > .el-tabs__header {
+				border-bottom: 2px solid #ECECEC;
+			}
+
+			&--card > .el-tabs__header .el-tabs__item {
+				border-bottom-width: 2px !important;
+			}
+
+			&--card > .el-tabs__header .el-tabs__nav {
+				border: none;
+			}
+
+			&__header .el-tabs__item.is-active {
+				border-bottom-color: #0166D6;
+				border-bottom-width: 2px;
+			}
+
+			&__item {
+				border-left: 1px solid #ECECEC !important;
+				height: auto;
+				text-align: left;
+			}
+
+			&__item:last-of-type {
+				border-right: 1px solid #ECECEC;
+			}
+		}
+	}
+
+	.crashgroup-mobile-diagnostics {
+		&__tiles-container {
+ 			height: 170px;
+		}
+
+		&__tile-content {
+			height: 122px;
+			margin-left: 24px;
+			margin-right: 24px;
+		}
+	}
+
+	.crashgroup-mobile-metrics {
+		&__tiles-container {
+ 			height: 104px;
+		}
+	}
+
+
+	.crash-stacktrace {
+		&__line-numbers {
+			font-family: "Roboto Mono", monospace;
+			font-size: 12px;
+			line-height: 16px;
+			color: map.get(c.$colors, "cool-gray-40");
+			float: left;
+			padding-right: 0.5em;
+			margin-right: 1em;
+			border-right: 1px solid map.get(c.$colors, "warm-gray-30");
+		}
+
+		&__code {
+			font-family: "Roboto Mono", monospace !important;
+			font-size: 12px;
+			line-height: 16px;
+		}
+	}
+
+	.crash-pre {
+		font-family: "Roboto Mono", monospace;
+		font-size: 12px;
+		line-height: 16px;
+		white-space: pre-wrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		max-width: 60em;
+	}
+
+	.crash-link {
+		text-decoration: underline;
+		cursor: pointer;
+	}
+
+	.crashgroup-common-metrics {
+		&__tiles-container {
+ 			height: 104px;
+		}
+	}
+
+	#crash-tabs {
+		.el-tabs__header {
+			margin-bottom: 0px;
+		}
+
+		.el-tabs__content {
+			border-left: 1px solid #ececec;
+			border-right: 1px solid #ececec;
+		}
+	}
+}

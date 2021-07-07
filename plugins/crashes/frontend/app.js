@@ -11,7 +11,7 @@ catch (err) {
 var trace = require('../api/parts/stacktrace.js');
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
-        app.get(countlyConfig.path + '/crash/*', function(req, res) {
+        app.get(countlyConfig.path + '/crashes/*', function(req, res) {
             var parts = req.url.split("/");
             var code = parts[parts.length - 1];
             countlyDb.collection('crash_share').findOne({_id: code}, function(err, crash) {
