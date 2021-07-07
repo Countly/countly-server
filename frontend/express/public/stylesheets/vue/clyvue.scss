@@ -1036,12 +1036,26 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            padding: 12px;
             background: #FFFFFF;
             border: 1px solid #ECECEC;
             box-sizing: border-box;
             box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.08);
             border-radius: 4px;
+            &--small {
+                padding: 4px;
+            }
+            &--medium {
+                width: 245px;
+                padding: 16px;
+            }
+            &--small-chart {
+                width: 175px;
+                padding: 12px;
+            }
+            &--medium-chart {
+                width: 186px;
+                padding: 12px;
+            }
         }
     }
 

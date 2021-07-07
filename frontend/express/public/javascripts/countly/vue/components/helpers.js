@@ -249,14 +249,34 @@
         template: '<div class="cly-vue-metric-cards bu-columns bu-is-gapless bu-is-mobile bu-is-multiline"><slot></slot></div>',
     }));
 
+    var popoverSizes = {
+        "small": true,
+        "medium": true,
+        "small-chart": true,
+        "medium-chart": true
+    };
+
     Vue.component("cly-popover", countlyBaseComponent.extend({
-        template: '<v-popover class="cly-vue-popover"\
+        props: {
+            size: {
+                type: String,
+                default: 'medium',
+                validator: function(val) {
+                    return val in popoverSizes;
+                }
+            }
+        },
+        computed: {
+            contentClasses: function() {
+                return "cly-vue-popover__content cly-vue-popover__content--" + this.size;
+            }
+        },
+        template: '<v-popover :popoverInnerClass="contentClasses" class="cly-vue-popover"\
                         v-bind="$attrs"\
                         v-on="$listeners">\
                         <slot></slot>\
-                        <template v-slot:popover><slot name=\'content\'></slot>\</template>\
+                        <template v-slot:popover><slot name=\'content\'></slot></template>\
                     </v-popover>',
-
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
