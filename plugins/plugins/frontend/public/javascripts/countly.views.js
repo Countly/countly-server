@@ -1731,5 +1731,15 @@ $(document).ready(function() {
             app.addMenu("management", {code: "plugins", url: "#/manage/plugins", text: "plugins.title", icon: '<div class="logo-icon fa fa-puzzle-piece"></div>', priority: 30});
         }
         app.addMenu("management", {code: "configurations", url: "#/manage/configurations", text: "plugins.configs", icon: '<div class="logo-icon ion-android-options"></div>', priority: 40});
+
+        var isCurrentHostnameIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(window.location.hostname);
+        if (!isCurrentHostnameIP && countlyGlobal.domain === "") {
+            countlyPlugins.updateConfigs({"api": {"domain": window.location.hostname}}, function(err) {
+                if (err) {
+                    // throw err
+                    console.log('An error has occurred: ', err);
+                }
+            });
+        }
     }
 });
