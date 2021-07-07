@@ -335,7 +335,7 @@ app.addAppManagementSwitchCallback(function(appId, type) {
 
 $(document).ready(function() {
     if (countlyAuth.validateRead('core')) {
-		app.addSubMenuForType("mobile", "analytics", {code: "analytics-technology", url: "#/analytics/technology", text: "sidebar.analytics.technology", priority: 40});
+        app.addSubMenuForType("mobile", "analytics", {code: "analytics-technology", url: "#/analytics/technology", text: "sidebar.analytics.technology", priority: 40});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions/overview", text: "sidebar.analytics.session", priority: 20});
         app.addSubMenuForType("mobile", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
