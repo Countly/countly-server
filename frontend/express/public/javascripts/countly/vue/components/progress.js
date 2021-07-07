@@ -163,14 +163,14 @@
         },
         template: '<div class="cly-progress-bar-container">\
                         <template v-for="(item, index) in barStacks">\
-                                <div :key="index" v-if="item.tooltipMode !== \'custom\'" v-tooltip="getBarStackTooltip(item)" class="cly-progress-bar-stack-container" v-bind:style="getBarStackStyleWidth(item)">\
+                                <div :key="index" v-if="item.tooltipMode !== \'popover\'" v-tooltip="getBarStackTooltip(item)" class="cly-progress-bar-stack-container" v-bind:style="getBarStackStyleWidth(item)">\
                                     <el-progress v-bind:class="getBarStackClasses(index)" :show-text="false" :stroke-width="height" :percentage="100" :color="item.color"> </el-progress>\
                                 </div>\
                                 <div v-else :key="index" class="cly-progress-bar-stack-container" v-bind:style="getBarStackStyleWidth(item)">\
-                                    <cly-tooltip>\
+                                    <cly-popover>\
                                         <el-progress v-bind:class="getBarStackClasses(index)" :show-text="false" :stroke-width="height" :percentage="100" :color="item.color"> </el-progress>\
-                                        <template v-slot:tooltip><slot :name="\'tooltip-\' + item.id"></slot></template>\
-                                    </cly-tooltip>\
+                                        <template v-slot:content><slot :name="\'popover-\' + item.id"></slot></template>\
+                                    </cly-popover>\
                                 </div>\
                         </template>\
                     </div>'

@@ -249,12 +249,12 @@
         template: '<div class="cly-vue-metric-cards bu-columns bu-is-gapless bu-is-mobile bu-is-multiline"><slot></slot></div>',
     }));
 
-    Vue.component("cly-tooltip", countlyBaseComponent.extend({
-        template: '<v-popover class="cly-vue-tooltip"\
+    Vue.component("cly-popover", countlyBaseComponent.extend({
+        template: '<v-popover class="cly-vue-popover"\
                         v-bind="$attrs"\
                         v-on="$listeners">\
                         <slot></slot>\
-                        <template v-slot:popover><slot name=\'tooltip\'></slot>\</template>\
+                        <template v-slot:popover><slot name=\'content\'></slot>\</template>\
                     </v-popover>',
 
     }));

@@ -5,6 +5,10 @@
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
     window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
     window.VTooltip.VTooltip.options.popover.defaultTrigger = 'hover';
+    window.VTooltip.VTooltip.options.popover.defaultOffset = 14;
+    window.VTooltip.VTooltip.options.popover.defaultBoundariesElement = 'window';
+    window.VTooltip.VTooltip.options.popover.defaultClass = 'cly-vue-popover';
+    window.VTooltip.VTooltip.options.popover.defaultInnerClass = 'cly-vue-popover__content';
 
     Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
 
