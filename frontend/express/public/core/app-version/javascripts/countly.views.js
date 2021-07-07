@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyDevicesAndTypes,*/
+/* global countlyVue,CV,countlyCommon*/
 var AppVersionView = countlyVue.views.create({
     template: CV.T("/core/app-version/templates/app-version.html"),
     data: function() {
@@ -19,15 +19,6 @@ var AppVersionView = countlyVue.views.create({
         },
     },
     computed: {
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlyDevicesAndTypes.selectedDatePeriod;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion');
-            }
-        },
         appVersion: function() {
             return this.$store.state.countlyDevicesAndTypes.appVersion;
         },

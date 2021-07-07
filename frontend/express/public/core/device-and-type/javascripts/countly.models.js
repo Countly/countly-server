@@ -1,11 +1,11 @@
-/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,window*/
+/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,window,countlyDeviceList,countlyOsMapping,countlyDeviceDetails*/
 (function(countlyDevicesAndTypes) {
 
     CountlyHelpers.createMetricModel(window.countlyDevicesAndTypes, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
     countlyDevicesAndTypes.os_mapping = countlyOsMapping; //./frontend/express/public/javascripts/countly/countly.device.osmapping.js
 
-	//CountlyDeviceList - ./frontend/express/public/javascripts/countly/countly.device.list.js
-   
+    //CountlyDeviceList - ./frontend/express/public/javascripts/countly/countly.device.list.js
+
 
     countlyDevicesAndTypes.getCleanVersion = function(version) {
         for (var i in countlyDevicesAndTypes.os_mapping) {
@@ -21,7 +21,7 @@
     countlyDevicesAndTypes.checkOS = function(os, data, osName) {
         return new RegExp("^" + osName + "([0-9]+|unknown)").test(data);
     };
-	
+
 
     countlyDevicesAndTypes.eliminateOSVersion = function(data, osSegmentation, segment, fullname) {
         var oSVersionData = JSON.parse(JSON.stringify(data));
@@ -83,26 +83,26 @@
             object.totals = object.totals || {};
             object.pie = object.pie || {"newUsers": [], "totalSessions": []};
         },
-		getDeviceFullName: function(shortName) {
-			if (shortName === "Unknown") {
-				return jQuery.i18n.map["common.unknown"];
-			}
-			if (countlyDeviceList && countlyDeviceList[shortName]) {
-				return countlyDeviceList[shortName];
-			}
-			return shortName;
-		},
-		fixOSVersion: function(osName) {
-			osName = (osName + "").replace(/:/g, ".");
+        getDeviceFullName: function(shortName) {
+            if (shortName === "Unknown") {
+                return jQuery.i18n.map["common.unknown"];
+            }
+            if (countlyDeviceList && countlyDeviceList[shortName]) {
+                return countlyDeviceList[shortName];
+            }
+            return shortName;
+        },
+        fixOSVersion: function(osName) {
+            osName = (osName + "").replace(/:/g, ".");
 
-			for (var i in countlyDeviceDetails.os_mapping) {
-				osName = osName.replace(new RegExp("^" + countlyDeviceDetails.os_mapping[i].short, "g"), countlyDeviceDetails.os_mapping[i].name + " ");
-			}
-			return osName;
-		}
+            for (var i in countlyDeviceDetails.os_mapping) {
+                osName = osName.replace(new RegExp("^" + countlyDeviceDetails.os_mapping[i].short, "g"), countlyDeviceDetails.os_mapping[i].name + " ");
+            }
+            return osName;
+        }
     };
-	
-	var countlyDevice = {};
+
+    var countlyDevice = {};
     CountlyHelpers.createMetricModel(countlyDevice, {name: "devices", estOverrideMetric: "devices"}, jQuery, countlyDevicesAndTypes.helpers.getDeviceFullName);//Adds extra functions
 
 
@@ -194,11 +194,11 @@
                 "platform": countlyDevicesAndTypes.getBarsWPercentageOfTotal("os", "u", "platforms"),
                 "resolution": countlyDevicesAndTypes.getBarsWPercentageOfTotal("resolutions", "u", "resolutions")
             };
-			
-			for (var i = 0; i < tops["version"].length; i++) {
-				tops["version"][i].name = countlyDevicesAndTypes.helpers.fixOSVersion(tops["version"][i].name);
-			}
-		
+
+            for (var i = 0; i < tops["version"].length; i++) {
+                tops["version"][i].name = countlyDevicesAndTypes.helpers.fixOSVersion(tops["version"][i].name);
+            }
+
             for (var key in tops) {
                 for (var z = 0; z < tops[key].length; z++) {
                     tops[key][z]["bar"] = [{
@@ -400,6 +400,6 @@
             mutations: devicesAndTypesMutations
         });
     };
-	
-	
+
+
 }(window.countlyDevicesAndTypes = window.countlyDevicesAndTypes || {}));

@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyDevicesAndTypes,*/
+/* global countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app*/
 var DevicesTabView = countlyVue.views.create({
     template: CV.T("/core/device-and-type/templates/devices-tab.html"),
     mounted: function() {
@@ -11,15 +11,6 @@ var DevicesTabView = countlyVue.views.create({
         appDevicesRows: function() {
             return this.data.table || [];
 
-        },
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlyDevicesAndTypes.selectedDatePeriod;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlyDevicesAndTypes/fetchDevices');
-            }
         },
         topData: function() {
             var tops = this.data.tops || {};
@@ -112,15 +103,6 @@ var AllTabs = countlyVue.views.create({
                                 return this.data.table || [];
 
                             },
-                            selectedDatePeriod: {
-                                get: function() {
-                                    return this.$store.state.countlyDevicesAndTypes.selectedDatePeriod;
-                                },
-                                set: function(value) {
-                                    this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDatePeriod', value);
-                                    this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes');
-                                }
-                            },
                             pieOptionsNew: function() {
                                 var self = this;
                                 return {
@@ -202,7 +184,6 @@ var getTechnologyAnalyticsView = function() {
     });
 };
 app.route("/analytics/technology", "technology", function() {
-    var tabsVuex = countlyVue.container.tabsVuex(["/analytics/technology"]);
     var ViewWrapper = getTechnologyAnalyticsView();
     this.renderWhenReady(ViewWrapper);
 });

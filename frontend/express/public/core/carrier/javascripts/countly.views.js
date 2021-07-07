@@ -15,15 +15,6 @@ var AppCarrierView = countlyVue.views.create({
         }
     },
     computed: {
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlyAppCarrier.selectedDatePeriod;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlyAppCarrier/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlyAppCarrier/fetchAll');
-            }
-        },
         appCarrier: function() {
             return this.$store.state.countlyAppCarrier.appCarrier;
         },

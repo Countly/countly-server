@@ -6,7 +6,7 @@
         </template>
     </cly-header>
     <cly-main>
-		<cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms" class="app-version-date-picker-container"></cly-date-picker>
+		<cly-date-picker-g class="app-version-date-picker-container"></cly-date-picker-g>
 		<cly-section>
 			<cly-chart-bar :option="appVersionOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
 		</cly-section>

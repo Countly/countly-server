@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyDevicesAndTypes,*/
+/* global countlyVue,CV,countlyCommon*/
 var AppPlatformView = countlyVue.views.create({
     template: CV.T("/core/platform/templates/platform.html"),
     data: function() {
@@ -65,7 +65,6 @@ var AppPlatformView = countlyVue.views.create({
                             appPlatformVersionRows: function() {
                                 var platforms = this.appPlatform.versions;
 
-                                var current = this.selectedPlatform;
                                 if (!this.selectedPlatform) {
                                     this.selectedPlatform = platforms[0]["label"];
                                     this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedPlatform', this.selectedPlatform);
@@ -84,8 +83,6 @@ var AppPlatformView = countlyVue.views.create({
                                 for (var k = 0; k < platforms.length; k++) {
                                     display.push({"value": platforms[k]["label"], "name": platforms[k]["label"]});
                                 }
-
-                                var current = this.selectedPlatform;
                                 if (!this.selectedPlatform) {
                                     this.selectedPlatform = display[0]["value"];
                                     this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedPlatform', this.selectedPlatform);
@@ -114,17 +111,6 @@ var AppPlatformView = countlyVue.views.create({
             set: function(value) {
                 this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDatePeriod', value);
                 this.$store.dispatch('countlyDevicesAndTypes/fetchPlatform');
-            }
-        },
-        selectedProperty: {
-            set: function(value) {
-                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedProperty', value);
-            },
-            get: function() {
-                return this.$store.state.countlyDevicesAndTypes.selectedProperty;
-            },
-            dropdownsDisabled: function() {
-                return "";
             }
         },
         graphColors: function() {
@@ -159,7 +145,6 @@ var AppPlatformView = countlyVue.views.create({
         },
         platformVersions: function() {
             var property = this.$store.state.countlyDevicesAndTypes.selectedProperty;
-            var colors = this.graphColors;
             var returnData = [];
             var platforms = this.appPlatform.versions || [];
             for (var z = 0; z < platforms.length; z++) {

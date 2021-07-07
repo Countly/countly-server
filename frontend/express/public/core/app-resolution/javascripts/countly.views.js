@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyDevicesAndTypes*/
+/* global countlyVue,CV,countlyCommon*/
 var AppResolutionView = countlyVue.views.create({
     template: CV.T("/core/app-resolution/templates/app-resolution.html"),
     data: function() {
@@ -15,15 +15,6 @@ var AppResolutionView = countlyVue.views.create({
         }
     },
     computed: {
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlyDevicesAndTypes.selectedDatePeriod;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlyDevicesAndTypes/fetchAll');
-            }
-        },
         appResolution: function() {
             return this.$store.state.countlyDevicesAndTypes.appResolution;
         },
@@ -76,7 +67,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     priority: 3,
     name: "resolutions",
     title: "App resolution",
-	route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/resolutions",
+    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/resolutions",
     component: AppResolutionView
 });
 
