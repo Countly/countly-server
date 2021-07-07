@@ -4,6 +4,7 @@
 
     window.VTooltip.VTooltip.options.defaultClass = 'cly-vue-tooltip';
     window.VTooltip.VTooltip.options.defaultBoundariesElement = 'window';
+    window.VTooltip.VTooltip.options.popover.defaultTrigger = 'hover';
 
     Vue.directive("click-outside", ELEMENT.utils.Clickoutside);
 

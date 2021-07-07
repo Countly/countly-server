@@ -162,9 +162,17 @@
             }
         },
         template: '<div class="cly-progress-bar-container">\
-                        <div v-for="(item, index) in barStacks" class="cly-progress-bar-stack-container" v-bind:style="getBarStackStyleWidth(item)" v-tooltip="getBarStackTooltip(item)">\
-                            <el-progress v-bind:class="getBarStackClasses(index)" :show-text="false" :stroke-width="height" :percentage="100" :color="item.color"> </el-progress>\
-                        </div>\
+                        <template v-for="(item, index) in barStacks">\
+                                <div :key="index" v-if="item.tooltipMode !== \'custom\'" v-tooltip="getBarStackTooltip(item)" class="cly-progress-bar-stack-container" v-bind:style="getBarStackStyleWidth(item)">\
+                                    <el-progress v-bind:class="getBarStackClasses(index)" :show-text="false" :stroke-width="height" :percentage="100" :color="item.color"> </el-progress>\
+                                </div>\
+                                <div v-else :key="index" class="cly-progress-bar-stack-container" v-bind:style="getBarStackStyleWidth(item)">\
+                                    <cly-tooltip>\
+                                        <el-progress v-bind:class="getBarStackClasses(index)" :show-text="false" :stroke-width="height" :percentage="100" :color="item.color"> </el-progress>\
+                                        <template v-slot:tooltip><slot :name="\'tooltip-\' + item.id"></slot></template>\
+                                    </cly-tooltip>\
+                                </div>\
+                        </template>\
                     </div>'
     }));
 }(window.countlyVue = window.countlyVue || {}));

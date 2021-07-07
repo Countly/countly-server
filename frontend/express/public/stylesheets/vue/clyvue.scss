@@ -1027,6 +1027,11 @@
         }
     }
 
+    .cly-vue-tooltip {
+        .trigger {
+            display: block!important;
+        }
+    }
 
     //drawer
     .cly-vue-drawer {
