@@ -181,7 +181,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                if (!(this.hasAdminAccess(member, params.qstring.app_id))) {
+                if (!(module.exports.hasAdminAccess(member, params.qstring.app_id))) {
                     common.returnMessage(params, 401, 'User does not have right');
                     reject('User does not have right');
                     return false;
@@ -779,7 +779,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                         }
                     }
                     else {
-                        if (!this.hasAdminAccess(member, params.qstring.app_id)) {
+                        if (!module.exports.hasAdminAccess(member, params.qstring.app_id)) {
                             common.returnMessage(params, 401, 'User does not have right');
                             reject('User does not have right');
                             return false;
