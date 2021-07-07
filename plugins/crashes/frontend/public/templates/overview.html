@@ -43,9 +43,9 @@
             </cly-header>
             <cly-main>
                 <cly-section class="crashes-statistics-dashboard">
-                    <div class="bu-columns bu-is-gapless bu-is-mobile" style="height: 314px;">
+                    <div class="crashes-statistics-dashboard__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                         <cly-crashes-dashboard-tile>
-                            <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column" style="width: 100%; height: 100%;">
+                            <div class="crashes-tile__content--fill bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column">
                                 <cly-crashes-dashboard-tile isVertical v-if="!!statistics.users">
                                     <template v-slot:title>Crash Effected Users</template>
                                     <template v-slot:value>{{statistics.users.affected.totalPercent.toFixed(2)}} %</template>
@@ -64,7 +64,7 @@
                             </div>
                         </cly-crashes-dashboard-tile>
                         <cly-crashes-dashboard-tile>
-                            <div class="bu-columns bu-is-mobile bu-is-flex-direction-column bu-m-0 bu-px-4" style="width: 100%; height: 100%">
+                            <div class="crashes-tile__content--fill bu-columns bu-is-mobile bu-is-flex-direction-column bu-m-0 bu-px-4">
                                 <div class="bu-columns bu-m-0 bu-is-align-items-center bu-column text-small text-uppercase font-weight-bold color-gray-100" style="letter-spacing: 0.5px;">
                                     <div>Top Platforms</div>
                                     <div class="bu-ml-1"><cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></div>
@@ -82,7 +82,7 @@
                             </div>
                         </cly-crashes-dashboard-tile>
                         <cly-crashes-dashboard-tile>
-                            <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column" style="width: 100%; height: 100%;" v-if="!!statistics.crashes">
+                            <div class="crashes-tile__content--fill bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column" v-if="!!statistics.crashes">
                                 <cly-crashes-dashboard-tile isVertical>
                                     <template v-slot:title>New Crashes</template>
                                     <template v-slot:value>{{statistics.crashes.new}}</template>

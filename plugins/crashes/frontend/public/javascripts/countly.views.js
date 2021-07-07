@@ -3,7 +3,7 @@
 (function() {
     var groupId, crashId;
 
-    var CrashStatisticsTabLabelView = countlyVue.views.BaseView.extend({
+    var CrashStatisticsTabLabelView = countlyVue.views.create({
         props: {
             title: {type: String},
             tooltip: {type: String},
@@ -29,30 +29,18 @@
 
             }
         },
-        template: '<div class="text-medium color-cool-gray-100 bu-mb-1">\
-        <div class="text-medium color-cool-gray-100 bu-mb-1">\
-        {{title}}\
-        <cly-tooltip-icon icon="ion ion-help-circled" :tooltip="tooltip"></cly-tooltip-icon>\
-        </div>\
-        <div class="text-medium color-cool-gray-100 bu-columns bu-is-gapless bu-is-mobile">\
-        <h2>{{data && data.total}}</h2>\
-        <div :class="\'text-medium font-weight-bold crashes-trend crashes-trend--\' + colorClass">\
-        <i class="ion" :class="\'ion-\' + iconClass"></i>\
-        {{data && data.change}}\
-        </div>\
-        </div>\
-        </div>'
+        template: countlyVue.T("/crashes/templates/tab-label.html")
     });
 
     // eslint-disable-next-line no-unused-vars
-    var CrashBadgeView = countlyVue.views.BaseView.extend({
+    var CrashBadgeView = countlyVue.views.create({
         props: {
             data: {type: Object, required: true}
         },
         template: '<span class="bu-tag"></span>'
     });
 
-    var CrashOverviewView = countlyVue.views.BaseView.extend({
+    var CrashOverviewView = countlyVue.views.create({
         template: "#crashes-overview",
         components: {"crash-tab-label": CrashStatisticsTabLabelView},
         data: function() {
@@ -115,7 +103,7 @@
         });
     };
 
-    var CrashStacktraceView = countlyVue.views.BaseView.extend({
+    var CrashStacktraceView = countlyVue.views.create({
         props: {
             code: {type: String, required: true}
         },
@@ -135,16 +123,10 @@
                 return hljs.highlightAuto(jQuery("<div/>").html(this.code).text()).value;
             }
         },
-        template: '<div class="crash-stacktrace bu-p-5">\
-        <div class="bu-level is-mobile">\
-        <div class="bu-level-left"><slot name="header-left"></slot></div>\
-        <div class="bu-level-right"><slot name="header-right"></slot></div>\
-        </div>\
-        <pre><span class="crash-stacktrace__line-numbers">{{lineNumbers}}</span><code ref="code" class="crash-stacktrace__code" v-html="highlightedCode"></code></pre>\
-        </div>'
+        template: countlyVue.T("/crashes/templates/stacktrace.html")
     });
 
-    var CrashgroupView = countlyVue.views.BaseView.extend({
+    var CrashgroupView = countlyVue.views.create({
         template: "#crashes-crashgroup",
         components: {"crash-stacktrace": CrashStacktraceView},
         data: function() {
@@ -345,7 +327,7 @@
         });
     };
 
-    var BinaryImagesView = countlyVue.views.BaseView.extend({
+    var BinaryImagesView = countlyVue.views.create({
         template: "#crashes-binary-images",
         data: function() {
             return {

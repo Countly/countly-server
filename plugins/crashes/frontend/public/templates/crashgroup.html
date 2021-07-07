@@ -11,8 +11,8 @@
         </template>
     </cly-header>
     <cly-main>
-        <cly-section v-if="!!commonMetrics">
-            <div class="bu-columns bu-is-gapless bu-is-mobile" style="height: 104px;">
+        <cly-section class="crashgroup-common-metrics" v-if="!!commonMetrics">
+            <div class="crashgroup-common-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile"">
                 <cly-crashes-dashboard-tile columnWidth="is-one-fifth">
                     <template v-slot:title>Platform</template>
                     <template v-slot:value>{{commonMetrics.platform}}</template>
@@ -50,7 +50,7 @@
                         Comments <span class="bu-tag" v-if="crashgroup && crashgroup.comments && (crashgroup.comments.length > 0)">{{crashgroup.comments.length}}</span>
                     </span>
                     <div class="bu-mx-5 bu-mt-5 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="!crashgroup || crashgroup && crashgroup.comments.length === 0">
-                        <h4 style="display: block;">No comments, yet...</h4>
+                        <div><h4>No comments, yet...</h4></div>
                         <div class="text-small color-cool-gray-50">No comments here right now. Add a comment to share your thoughts.</div>
                     </div>
                     <el-card class="bu-mx-5 bu-mt-5 bu-p-4" shadow="never" :body-style="{padding: '0px'}" v-for="comment in crashgroup.comments">
@@ -93,10 +93,10 @@
                 </el-tab-pane>
             </el-tabs>
         </cly-section>
-        <cly-section title="Crash Metrics" v-if="!!mobileMetrics">
-            <div class="bu-columns bu-is-gapless bu-is-mobile" style="height: 170px;">
+        <cly-section class="crashgroup-mobile-diagnostics" title="Crash Metrics" v-if="!!mobileMetrics">
+            <div class="crashgroup-mobile-diagnostics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                 <cly-crashes-dashboard-tile columnWidth="is-one-fifth" v-for="diagnosticKey in diagnosticsOrder">
-                    <div class="bu-column bu-columns bu-py-0 bu-m-0 bu-is-flex-direction-column bu-is-justify-content-space-between" style="height: 122px; margin-left: 24px; margin-right: 24px;">
+                    <div class="crashgroup-mobile-diagnostics__tile-content bu-column bu-columns bu-py-0 bu-m-0 bu-is-flex-direction-column bu-is-justify-content-space-between">
                         <div class="text-medium text-uppercase">{{diagnosticKey}}</div>
                         <div>
                             <h2>{{mobileDiagnostics[diagnosticKey].average.toFixed(2)}} %</h2>
@@ -116,8 +116,8 @@
                 </cly-crashes-dashboard-tile>
             </div>
         </cly-section>
-        <cly-section v-if="!!mobileMetrics">
-            <div class="bu-columns bu-is-gapless bu-is-mobile" style="height: 104px;">
+        <cly-section class="crashgroup-mobile-metrics" v-if="!!mobileMetrics">
+            <div class="crashgroup-mobile-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                 <cly-crashes-dashboard-tile columnWidth="3">
                     <template v-slot:title>Rooted / Jailbroken</template>
                     <template v-slot:value>{{mobileMetrics.rootedPercent.toFixed(2)}} %</template>

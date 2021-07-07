@@ -23,10 +23,10 @@
                            <div class="crashes-tile__content">\
                                <div class="text-medium color-cool-gray-100 bu-mb-1"><slot name="title"></slot> <cly-tooltip-icon v-if="hasTooltip" :tooltip="tooltip" icon="ion ion-help-circled"></cly-tooltip-icon></div>\
                                <div class="bu-columns bu-is-gapless bu-is-mobile">\
-                                   <div class="bu-column bu-is-6" style="flex: 0 0 6em; margin: auto 1rem auto 0;">\
+                                   <div class="crashes-tile__value-container bu-column bu-is-6">\
                                        <h2 class="color-cool-gray-100"><slot name="value"></slot></h2>\
                                    </div>\
-                                   <div class="bu-column bu-is-6" style="margin-top: auto;" v-if="hasDescription">\
+                                   <div class="crashes-tile__description-container bu-column bu-is-6" v-if="hasDescription">\
                                        <div class="text-medium color-cool-gray-100">\
                                            <slot name="description"></slot>\
                                        </div>\
