@@ -104,13 +104,15 @@ var AppPlatformView = countlyVue.views.create({
         }
     },
     computed: {
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlyDevicesAndTypes.selectedDatePeriod;
-            },
+        selectedProperty: {
             set: function(value) {
-                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlyDevicesAndTypes/fetchPlatform');
+                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedProperty', value);
+            },
+            get: function() {
+                return this.$store.state.countlyDevicesAndTypes.selectedProperty;
+            },
+            dropdownsDisabled: function() {
+                return "";
             }
         },
         graphColors: function() {
