@@ -126,7 +126,8 @@
     };
     var DeliveryEnum = {
         NOW: 'now',
-        LATER: 'later'
+        LATER: 'later',
+        DELAYED: 'delayed',
     };
     var TimeZoneEnum = {
         SAME: 'same',
@@ -140,7 +141,20 @@
         SILENT: 'silent',
         CONTENT: 'content'
     };
-    var MessageTypeFilterOptions = [
+    var TriggerEnum = {
+        COHORT_ENTRY: 'cohortEntry',
+        COHORT_EXIT: 'cohortExit',
+        EVENT: 'event'
+    };
+    var AutomaticDeliveryDateEnum = {
+        EVENT_SERVER_DATE: 'eventServerDate',
+        EVENT_DEVICE_DATE: 'eventDeviceDate'
+    };
+    var AutomaticWhenConditionNotMetEnum = {
+        SEND_ANYWAY: 'sendAnyway',
+        CANCEL_ON_EXIT: 'cancelOnExit'
+    };
+    var messageTypeFilterOptions = [
         {label: "Content message", value: MessageTypeEnum.CONTENT},
         {label: "Silent message", value: MessageTypeEnum.SILENT}
     ];
@@ -154,18 +168,24 @@
                 cohortOptions: [{label: "Users who logged in", value: "123456"}, {label: "Users who performed", value: "4523444"}],
                 locationOptions: [{label: "Canada", value: "CA"}],
                 localizationOptions: [{label: "Default", value: "default"}, {label: "English", value: "en"}, {label: "German", value: "ge"}],
+                eventOptions: [{label: "Users who performed log out", value: "123444df"}],
                 saveButtonLabel: "Submit",
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 TargetingEnum: TargetingEnum,
+                TypeEnum: countlyPushNotification.service.TypeEnum,
                 WhenToDetermineEnum: WhenToDetermineEnum,
                 DeliveryEnum: DeliveryEnum,
                 TimeZoneEnum: TimeZoneEnum,
                 PastScheduleEnum: PastScheduleEnum,
-                messageTypeFilterOptions: MessageTypeFilterOptions,
+                TriggerEnum: TriggerEnum,
+                AutomaticDeliveryDateEnum: AutomaticDeliveryDateEnum,
+                AutomaticWhenConditionNotMetEnum: AutomaticWhenConditionNotMetEnum,
+                messageTypeFilterOptions: messageTypeFilterOptions,
                 activeLocalization: "default",
                 selectedLocalizationFilter: "default",
                 confirmation: false,
                 expandedPlatformSettings: [],
+                isEndDateEnabled: false,
                 pushNotificationUnderEdit: {
                     activePlatformSettings: [],
                     multipleLocalizations: false,
@@ -188,13 +208,27 @@
                     locations: [],
                     delivery: {
                         type: DeliveryEnum.NOW,
-                        value: moment().valueOf().toString()
+                        startDate: moment().valueOf().toString(),
+                        endDate: moment().valueOf().toString(),
+                        method: DeliveryEnum.NOW
                     },
                     timeZone: TimeZoneEnum.SAME,
                     pastSchedule: PastScheduleEnum.SKIP,
                     expiration: {
                         days: 7,
                         hours: 0
+                    },
+                    automatic: {
+                        trigger: TriggerEnum.COHORT_ENTRY,
+                        deliveryDate: AutomaticDeliveryDateEnum.EVENT_SERVER_DATE,
+                        whenNotMet: AutomaticWhenConditionNotMetEnum.SEND_ANYWAY,
+                        events: [],
+                        capping: false,
+                        maximumMessagesPerUser: 1,
+                        minimumTimeBetweenMessages: {
+                            days: 0,
+                            hours: 0
+                        }
                     }
                 }
             };

@@ -34,45 +34,131 @@
                         <el-checkbox :label="PlatformEnum.IOS">IOS</el-checkbox>
                     </el-checkbox-group>
                 </div>
-                <div class="bu-column bu-is-full">
-                    <div class="bu-py-1 bu-my-1">Targeting</div>
-                    <el-radio-group v-model="pushNotificationUnderEdit.targeting" class="cly-vue-push-notification-drawer__radio-group">
-                        <div class="bu-level">
-                            <div class="bu-level-item bu-pr-1">
-                                <el-radio :label="TargetingEnum.ALL"  border class="cly-vue-push-notification-drawer__radio-button"> 
-                                    <div class="cly-vue-push-notification-drawer__radio-button-title">All push-enabled users</div>
-                                    <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Some description for option goes here</div>                               
-                                </el-radio>
+                <template v-if="type === TypeEnum.ONE_TIME">
+                    <div  class="bu-column bu-is-full">
+                        <div class="bu-py-1 bu-my-1">Targeting</div>
+                        <el-radio-group v-model="pushNotificationUnderEdit.targeting" class="cly-vue-push-notification-drawer__radio-group">
+                            <div class="bu-level">
+                                <div class="bu-level-item bu-pr-1">
+                                    <el-radio :label="TargetingEnum.ALL"  border class="cly-vue-push-notification-drawer__radio-button"> 
+                                        <div class="cly-vue-push-notification-drawer__radio-button-title">All push-enabled users</div>
+                                        <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Some description for option goes here</div>                               
+                                    </el-radio>
+                                </div>
+                                <div class="bu-level-item bu-pr-1">
+                                    <el-radio :label="TargetingEnum.SEGMENTED" border class="cly-vue-push-notification-drawer__radio-button"> 
+                                        <div class="cly-vue-push-notification-drawer__radio-button-title">Use segmentation</div>
+                                        <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Some description for option goes here</div>                               
+                                    </el-radio>
+                                </div>
                             </div>
-                            <div class="bu-level-item bu-pr-1">
-                                <el-radio :label="TargetingEnum.SEGMENTED" border class="cly-vue-push-notification-drawer__radio-button"> 
-                                    <div class="cly-vue-push-notification-drawer__radio-button-title">Use segmentation</div>
-                                    <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Some description for option goes here</div>                               
-                                </el-radio>
-                            </div>
-                        </div>
-                    </el-radio-group>
-                </div>
-                <template v-if="pushNotificationUnderEdit.targeting === TargetingEnum.SEGMENTED">
-                    <div class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">Send to the users currently in selected cohorts(s)</div>
-                        <el-select
-                            v-model="pushNotificationUnderEdit.cohorts"
-                            multiple
-                            filterable
-                            remote
-                            reserve-keyword
-                            placeholder="Please select a cohort"
-                            style="width:100%"
-                            :loading="loading">
-                            <el-option
-                                v-for="item in cohortOptions"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                            </el-option>
-                        </el-select>
+                        </el-radio-group>
                     </div>
+                    <template v-if="pushNotificationUnderEdit.targeting === TargetingEnum.SEGMENTED">
+                        <div class="bu-column bu-is-full">
+                            <div class="bu-py-1 bu-my-1">Send to the users currently in selected cohorts(s)</div>
+                            <el-select
+                                v-model="pushNotificationUnderEdit.cohorts"
+                                multiple
+                                filterable
+                                remote
+                                reserve-keyword
+                                placeholder="Please select a cohort"
+                                style="width:100%"
+                                :loading="loading">
+                                <el-option
+                                    v-for="item in cohortOptions"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                </el-option>
+                            </el-select>
+                        </div>
+                        <div class="bu-column bu-is-full">
+                            <div class="bu-py-1 bu-my-1">Send to the users currently in selected Geolocations</div>
+                            <el-select
+                                v-model="pushNotificationUnderEdit.locations"
+                                multiple
+                                filterable
+                                remote
+                                reserve-keyword
+                                style="width:100%"
+                                placeholder="Please select a location"
+                                :loading="loading">
+                                <el-option
+                                    v-for="item in locationOptions"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                </el-option>
+                            </el-select>                
+                        </div>
+                        <div class="bu-column bu-is-full">
+                            <div class="bu-py-1 bu-my-1">When to determine the uses?</div>
+                            <el-radio-group v-model="pushNotificationUnderEdit.whenToDetermine">
+                                <el-radio :label="WhenToDetermineEnum.BEFORE" class="bu-py-1 bu-my-1">Determine users right before sending the message</el-radio>
+                                <br />
+                                <el-radio :label="WhenToDetermineEnum.NOW" class="bu-py-1 bu-my-1">Determine users now</el-radio> 
+                            </el-radio-group>
+                        </div>
+                    </template>
+                </template>
+                <template v-else-if="type === TypeEnum.AUTOMATIC">
+                    <div class="bu-column bu-is-full">
+                        <div class="bu-py-1 bu-my-1">Triggers</div>
+                        <div class="cly-vue-push-notification-drawer__header-description"> Some trigger related description can be placed here</div>
+                        <el-radio-group v-model="pushNotificationUnderEdit.automatic.trigger">
+                            <el-radio :label="TriggerEnum.COHORT_ENTRY" class="bu-py-1 bu-my-1">Cohort(s) Entry</el-radio>
+                            <br />
+                            <el-radio :label="TriggerEnum.COHORT_EXIT" class="bu-py-1 bu-my-1">Cohort(s) Exit</el-radio> 
+                            <br />
+                            <el-radio :label="TriggerEnum.EVENT" class="bu-py-1 bu-my-1">Performed Event(s)</el-radio> 
+                        </el-radio-group>
+                    </div>
+                    <template v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT">
+                        <div class="bu-column bu-is-full">
+                            <div class="bu-py-1 bu-my-1">Select one or more events to set the trigger</div>
+                            <el-select
+                                v-model="pushNotificationUnderEdit.automatic.events"
+                                multiple
+                                filterable
+                                remote
+                                reserve-keyword
+                                style="width:100%"
+                                placeholder="Please select an event"
+                                :loading="loading">
+                                <el-option
+                                    v-for="item in eventOptions"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                </el-option>
+                            </el-select> 
+                        </div>
+
+                    </template>
+                    <template v-else>
+                        <div class="bu-column bu-is-full">
+                            <div class="bu-py-1 bu-my-1">Select one ore more cohorts to set the trigger</div>
+                            <div class="cly-vue-push-notification-drawer__header-description">Recalculation of cohorts above will trigger sending process automatically</div>
+                            <el-select
+                                v-model="pushNotificationUnderEdit.cohorts"
+                                multiple
+                                filterable
+                                remote
+                                reserve-keyword
+                                placeholder="Please select a cohort"
+                                style="width:100%"
+                                :loading="loading">
+                                <el-option
+                                    v-for="item in cohortOptions"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                </el-option>
+                            </el-select>               
+                        </div>
+                    </template>
                     <div class="bu-column bu-is-full">
                         <div class="bu-py-1 bu-my-1">Send to the users currently in selected Geolocations</div>
                         <el-select
@@ -92,14 +178,26 @@
                             </el-option>
                         </el-select>                
                     </div>
-                    <div class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">When to determine the uses?</div>
-                        <el-radio-group v-model="pushNotificationUnderEdit.whenToDetermine">
-                            <el-radio :label="WhenToDetermineEnum.BEFORE" class="bu-py-1 bu-my-1">Determine users right before sending the message</el-radio>
-                            <br />
-                            <el-radio :label="WhenToDetermineEnum.NOW" class="bu-py-1 bu-my-1">Determine users now</el-radio> 
-                        </el-radio-group>
-                    </div>
+                    <template v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT">
+                        <div class="bu-column bu-is-full">
+                            <div class="bu-py-1 bu-my-1">Delivery date calculation</div>
+                            <el-radio-group v-model="pushNotificationUnderEdit.automatic.deliveryDate">
+                                <el-radio :label="AutomaticDeliveryDateEnum.EVENT_SERVER_DATE" class="bu-py-1 bu-my-1">Relative to the date event arrived to the server</el-radio>
+                                <br />
+                                <el-radio :label="AutomaticDeliveryDateEnum.EVENT_DEVICE_DATE" class="bu-py-1 bu-my-1">Relative to the date event occurred on a device</el-radio> 
+                            </el-radio-group>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="bu-column bu-is-full">
+                            <div class="bu-py-1 bu-my-1">Behavior when trigger condition is no longer met</div>
+                            <el-radio-group v-model="pushNotificationUnderEdit.automatic.whenNotMet"">
+                                <el-radio :label="AutomaticWhenConditionNotMetEnum.SEND_ANYWAY" class="bu-py-1 bu-my-1">Send anyway</el-radio>
+                                <br />
+                                <el-radio :label="AutomaticWhenConditionNotMetEnum.CANCEL_ON_EXIT" class="bu-py-1 bu-my-1">Cancel when user exits selected cohort(s)</el-radio> 
+                            </el-radio-group>
+                        </div>
+                    </template>
                 </template>
             </cly-form-step>
             <cly-form-step id="step2" :name="i18n('push-notification.drawer-step-two')">
@@ -107,24 +205,29 @@
                     <div class="bu-py-1 bu-my-1">Delivery</div>
                     <el-radio-group v-model="pushNotificationUnderEdit.delivery.type" class="cly-vue-push-notification-drawer__radio-group">
                         <div class="bu-level">
-                            <div class="bu-level-item bu-pr-1">
+                            <div class="bu-level-item bu-pr-1 cly-vue-push-notification-drawer__radio-button-container">
                                 <el-radio :label="DeliveryEnum.NOW"  border class="cly-vue-push-notification-drawer__radio-button"> 
                                     <div class="cly-vue-push-notification-drawer__radio-button-title">Send now</div>
                                     <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Some description for send now option goes here</div>                               
                                 </el-radio>
                             </div>
-                            <div class="bu-level-item bu-pl-1">
+                            <div class="bu-level-item bu-pl-1 cly-vue-push-notification-drawer__radio-button-container">
                                 <el-radio :label="DeliveryEnum.LATER" border class="cly-vue-push-notification-drawer__radio-button">
                                     <div class="cly-vue-push-notification-drawer__radio-button-title"> Schedule for later</div>
                                     <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> 
-                                        <cly-date-picker v-bind:disabled="pushNotificationUnderEdit.delivery.type === DeliveryEnum.NOW" v-model="pushNotificationUnderEdit.delivery.value" timestampFormat="ms"></cly-date-picker>
+                                        <cly-date-picker v-bind:disabled="pushNotificationUnderEdit.delivery.type === DeliveryEnum.NOW" v-model="pushNotificationUnderEdit.delivery.startDate" timestampFormat="ms"></cly-date-picker>
                                     </div>
                                 </el-radio>  
                             </div>
                         </div>
                     </el-radio-group>
                 </div>
-                <template v-if="pushNotificationUnderEdit.delivery.type === DeliveryEnum.LATER">
+                <div v-if="type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL" class="bu-column bu-is-full">
+                    <el-switch v-model="isEndDateEnabled"></el-switch>
+                    <div>Add Something End Date</div>
+                    <cly-date-picker v-bind:disabled="!isEndDateEnabled" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms"></cly-date-picker>
+                </div>
+                <template v-if="type === TypeEnum.ONE_TIME && pushNotificationUnderEdit.delivery.type === DeliveryEnum.LATER">
                     <div class="bu-column bu-is-full">
                         <div class="bu-py-1 bu-my-1">Timezone</div>
                         <el-radio-group v-model="pushNotificationUnderEdit.timeZone" class="cly-vue-push-notification-drawer__radio-group">
@@ -151,6 +254,77 @@
                             <br />
                             <el-radio :label="PastScheduleEnum.NEXT_DAY" class="bu-py-1 bu-my-1">Deliver the message next day</el-radio> 
                         </el-radio-group>
+                    </div>
+                </template>
+                <template v-if="(type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL) && pushNotificationUnderEdit.delivery.type === DeliveryEnum.LATER">
+                    <div class="bu-column bu-is-full">
+                        <div class="bu-py-1 bu-my-1">Delivery Method</div>
+                        <el-radio-group v-model="pushNotificationUnderEdit.delivery.method" class="cly-vue-push-notification-drawer__radio-group">
+                            <div class="bu-level">
+                                <div class="bu-level-item bu-pr-1 cly-vue-push-notification-drawer__radio-button-container">
+                                    <el-radio :label="DeliveryEnum.NOW" border class="cly-vue-push-notification-drawer__radio-button">
+                                        <div class="cly-vue-push-notification-drawer__radio-button-title">Immediately</div>
+                                        <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Some description for option goes here</div>                               
+                                    </el-radio>
+                                </div>
+                                <div class="bu-level-item bu-pl-1 cly-vue-push-notification-drawer__radio-button-container">
+                                    <el-radio :label="DeliveryEnum.DELAYED" border class="cly-vue-push-notification-drawer__radio-button">
+                                        <div class="cly-vue-push-notification-drawer__radio-button-title">Delayed</div>                        
+                                    </el-radio>
+                                </div>
+                            </div>
+                        </el-radio-group>   
+                    </div>
+                    <div class="bu-column bu-is-full">
+                        <div class="bu-py-1 bu-my-1">Capping</div>
+                        <el-radio-group v-model="pushNotificationUnderEdit.automatic.capping" class="cly-vue-push-notification-drawer__radio-group">
+                            <div class="bu-level">
+                                <div class="bu-level-item bu-pr-1 cly-vue-push-notification-drawer__radio-button-container">
+                                    <el-radio :label="false" border class="cly-vue-push-notification-drawer__radio-button">
+                                        <div class="cly-vue-push-notification-drawer__radio-button-title">No capping</div>
+                                        <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Deliver this method as soon as triggering cohort is recalculated</div>                               
+                                    </el-radio>
+                                </div>
+                                <div class="bu-level-item bu-pl-1 cly-vue-push-notification-drawer__radio-button-container">
+                                    <el-radio :label="true" border class="cly-vue-push-notification-drawer__radio-button">
+                                        <div class="cly-vue-push-notification-drawer__radio-button-title">Capping</div>
+                                        <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Message is sent whenever user entered to or exited from the cohort</div>                               
+                                    </el-radio>
+                                </div>
+                            </div>
+                        </el-radio-group>   
+                    </div>
+                    <div class="bu-column bu-is-full">
+                        <div class="bu-py-1 bu-my-1">Maximum messages per user</div>
+                        <div class="bu-level">
+                            <div class="bu-level-left">
+                                <div class="bu-level-item">
+                                    <el-input v-model="pushNotificationUnderEdit.automatic.maximumMessagesPerUser" placeholder="0" :min="1"></el-input>
+                                </div>
+                                <div class="bu-level-item">
+                                    Messages
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bu-column bu-is-full">
+                        <div class="bu-py-1 bu-my-1">Minimum time between messages</div>
+                        <div class="bu-level">
+                            <div class="bu-level-left">
+                                <div class="bu-level-item">
+                                    Days
+                                </div>
+                                <div class="bu-level-item">
+                                    <el-input-number v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.days" controls-position="right" :min="0"></el-input-number>
+                                </div>
+                                <div class="bu-level-item">
+                                    Hours
+                                </div>
+                                <div class="bu-level-item">
+                                    <el-input-number v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.hours" controls-position="right" :min="0" :max="23"></el-input-number>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </template>
                 <div class="bu-column bu-is-full">
