@@ -11,7 +11,7 @@
 					</template>
 			</cly-header>
 			<data-table @edit-user="onEditUser" :rows="users"></data-table>
-			<drawer :features="features" :settings="drawerSettings" :controls="drawers.user"></drawer>
+			<drawer :user="user" :features="features" :settings="drawerSettings" :controls="drawers.user"></drawer>
 		</el-tab-pane>
 		<el-tab-pane class="tab-content" name="groups" lazy>
 			<span slot="label">User Groups</span>

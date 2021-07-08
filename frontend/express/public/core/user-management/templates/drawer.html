@@ -6,6 +6,7 @@
     @close="onClose"
     @submit="onSubmit"
     @open="onOpen"
+    :requires-async-submit="true"
     :hasCancelButton="$props.settings.hasCancelButton"
     :cancelButtonLabel="$props.settings.cancelButtonLabel"
     :width="$props.settings.drawerWidth"
@@ -54,13 +55,25 @@
               <div class="user-management-drawer-content__label">
                 <div class="text-small text-heading">Profile Picture</div>
               </div>
-              <div class="user-management-drawer-content__profile-picture-area__upload-section">
-                <div class="user-management-drawer-content__profile-picture-area__upload-section__img-box"></div>
-                <div class="user-management-drawer-content__profile-picture-area__upload-section__description-box">
-                  <p class="user-management-drawer-content__profile-picture-area__upload-section__description-box--bold">Drag and drop or <span class="user-management-drawer-content__profile-picture-area__upload-section__description-box--link">browser</span> files to add picture</p>
-                  <p class="user-management-drawer-content__profile-picture-area__upload-section__size-warning">JPG, PNG and GIF files allowed. Maximum size is 5 MB.</p>
-                </div>
-              </div>
+              <cly-dropzone 
+                @vdropzone-removed-file="onFileRemoved" 
+                @vdropzone-file-added="onFileAdded"
+                @vdropzone-sending="onSending"
+                @vdropzone-thumbnail="thumbnail"
+                @vdropzone-complete="onComplete"
+                ref="userDrawerDropzone" 
+                id="user-drawer-dropzone"
+                :useCustomSlot=true 
+                :options="dropzoneOptions">
+                    <div class="dropzone-custom-content">
+                      <img v-if="$props.settings.editMode" :src="'/memberimages/' + user._id + '.png'" class="user-management-drawer-content__profile-picture-area__upload-section__img-box"/>
+                      <div v-if="!$props.settings.editMode" class="user-management-drawer-content__profile-picture-area__upload-section__img-box"></div>
+                      <div class="user-management-drawer-content__profile-picture-area__upload-section__description-box">
+                        <p class="user-management-drawer-content__profile-picture-area__upload-section__description-box--bold">Drag and drop or <span class="user-management-drawer-content__profile-picture-area__upload-section__description-box--link">browser</span> files to add picture</p>
+                        <p class="user-management-drawer-content__profile-picture-area__upload-section__size-warning">JPG, PNG and GIF files allowed. Maximum size is 5 MB.</p>
+                      </div>
+                    </div>
+              </cly-dropzone>
             </div>
           </div>
           <div v-if="drawerScope.editedObject.permission" class="user-management-drawer-content__bottom-section">
