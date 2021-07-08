@@ -1,0 +1,32 @@
+<div>
+    <cly-header>
+        <template v-slot:header-top>
+            <cly-back-link></cly-back-link>
+        </template>
+        <template v-slot:header-left>
+            <h2>Binary Images</h2>
+        </template>
+    </cly-header>
+    <cly-main>
+        <cly-datatable-n :rows="binaryImages" ref="tableData">
+            <template v-slot:header-left>
+                <div class="text-medium">
+                    {{crash.name}}
+                </div>
+            </template>
+            <template v-slot:header-right>
+                <div class="text-medium">
+                    App Build Number: {{crash.app_build}}
+                    App Version: {{crash.app_version}}
+                    Platform Version: {{crash.os_version}}
+                </div>
+            </template>
+        </template>
+        <template v-slot="scope">
+            <el-table-column prop="name" width="210" sortable></el-table-column>
+            <el-table-column prop="uuid" label="Build UUID" width="400"></el-table-column>
+            <el-table-column prop="loadAddress" label="Load Address"></el-table-column>
+        </template>
+    </cly-datatable-n>
+</cly-main>
+</div>

@@ -2,6 +2,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
 
 @font-face {
+font-family: 'Roboto Mono';
+font-weight: 400;
+font-style: normal;
+src: url('../fonts/Roboto-Mono/RobotoMono-VariableFont_wght.ttf') format('truetype'),
+     local('Roboto Mono');
+}
+
+@font-face {
 font-family: 'Ubuntu';
 font-weight: 400;
 font-style: normal;
