@@ -1033,6 +1033,9 @@
             display: block!important;
         }
         &__content {
+            > div {
+                display: flex;
+            }
             display: flex;
             flex-direction: column;
             align-items: flex-start;

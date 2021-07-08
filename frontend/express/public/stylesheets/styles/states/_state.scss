@@ -127,3 +127,15 @@
     margin-right: 5px;
     animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
 }
+
+.has-tooltip {
+    cursor: pointer;
+}
+
+.has-ellipsis {
+    word-break: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
