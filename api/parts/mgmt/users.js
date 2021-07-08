@@ -87,17 +87,12 @@ usersApi.getAllUsers = function(params) {
                 common.returnOutput(params, {});
                 return false;
             }
-
-
             const bruteforceFails = plugins.getConfig("security").login_tries;
             const bruteforceWait = plugins.getConfig("security").login_wait;
 
             var membersObj = {};
 
             for (let i = 0; i < members.length; i++) {
-                const userApps = getUserApps(members[i]);
-                const adminApps = getAdminApps(members[i]);
-
                 const result = failedLogins.find(x => (x._id === JSON.stringify(["login", members[i].username]))) || { fails: 0 };
 
                 if (result.fails > 0 && result.fails % bruteforceFails === 0 && Math.floor(new Date().getTime() / 1000) < (((result.fails / bruteforceFails) * bruteforceWait) + result.lastFail)) {
@@ -105,13 +100,6 @@ usersApi.getAllUsers = function(params) {
                 }
                 else {
                     members[i].blocked = false;
-                }
-
-                if (adminApps[0] === "") {
-                    adminApps.splice(0, 1);
-                }
-                if (userApps[0] === "") {
-                    userApps[0].splice(0, 1);
                 }
 
                 members[i].global_admin = (members[i].global_admin === true);
