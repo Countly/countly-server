@@ -1034,7 +1034,7 @@
         }
         &__content {
             > div {
-                display: flex;
+                width: 100%;
             }
             display: flex;
             flex-direction: column;
@@ -1051,12 +1051,18 @@
                 width: 245px;
                 padding: 16px;
             }
+            &--auto {
+                padding: 16px;
+            }
             &--small-chart {
                 width: 175px;
                 padding: 12px;
             }
             &--medium-chart {
                 width: 186px;
+                padding: 12px;
+            }
+            &--auto-chart {
                 padding: 12px;
             }
         }

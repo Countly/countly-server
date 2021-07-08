@@ -252,8 +252,10 @@
     var popoverSizes = {
         "small": true,
         "medium": true,
+        "auto": true,
         "small-chart": true,
-        "medium-chart": true
+        "medium-chart": true,
+        "auto-chart": true
     };
 
     Vue.component("cly-popover", countlyBaseComponent.extend({

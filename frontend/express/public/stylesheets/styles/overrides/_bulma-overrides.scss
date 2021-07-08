@@ -5,3 +5,16 @@
 .bu-level:not(:last-child) {
     margin-bottom: 0px;
 }
+
+.bu-tag {
+    &.is-slim {
+        padding: 0 0.50em;
+        height: 1.5em;
+    }
+    &.is-legend {
+        padding: 0;
+        height: 0.5em;
+        width: 1em;
+        border-radius: 3px;
+    }
+}
