@@ -1,13 +1,13 @@
 @use "../base/typography-variables" as t;
 
-.cly-vue-menubox-new {
-    &.menubox-default-skin {
+.cly-fields-select {
+    &.default-skin {
         display: inline-block;
         .el-input__inner::placeholder{
             color:black;
         }
 
-        .menu-body {
+        .fields-select-body {
             box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08);
             background-color: #fff;
             position: absolute;
@@ -35,11 +35,10 @@
 		float: right;
 		font-size: 12px;
 		padding-bottom: 26px;
+    padding-top: 0px;
 		color: #D23F00;
 		cursor: pointer;
-        font-family:  t.$font-family;
-        line-height: 20px;
-        font-weight: 500;
+    line-height: 20px;
 	  }
       &__field{
         color: #333C48;
@@ -52,24 +51,14 @@
       &__field-dropdown{
         width:320px;
         height:32px;
-        border-radius:4px;
-        border:1px solid #E2E4E8;
         margin-bottom:16px;
 	  }
       &__confirm{
-		background-color: #12AF51;
-		color: white;
-        font-family: t.$font-family;
-        font-weight: 500;
-        font-size: 13px;
-        line-height: 13px;
+	      	background-color: #12AF51;
+		      color: white;
 	  }
       &__cancel {
-        width:67px;
-        height:32px;
-        border-radius: 4px;
         background: #F6F6F6;
-        padding: 10px 12px;
       }
       &__dropdown {
         .el-input__inner::placeholder{

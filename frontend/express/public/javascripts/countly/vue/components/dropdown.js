@@ -1,8 +1,9 @@
-/* global jQuery, Vue, ELEMENT */
+/* global jQuery, Vue, ELEMENT, CV */
 
 (function(countlyVue) {
 
-    var countlyBaseComponent = countlyVue.components.BaseComponent;
+    var countlyBaseComponent = countlyVue.components.BaseComponent,
+    _mixins = countlyVue.mixins;
 
     Vue.component("cly-input-dropdown-trigger", countlyBaseComponent.extend({
         props: {
@@ -187,8 +188,9 @@
         }
     }));
 
-    Vue.component("cly-vue-menubox", countlyBaseComponent.extend({
-        template: '<cly-dropdown ref="dropdown" v-on="$listeners" class="cly-vue-menubox-new__dropdown">\
+    Vue.component("cly-fields-select", countlyBaseComponent.extend({
+        mixins: [_mixins.i18n],
+        template: '<cly-dropdown ref="dropdown" v-on="$listeners" class="cly-fields-select__dropdown">\
                         <template v-slot:trigger="dropdown">\
                         <slot name="trigger">\
                             <cly-input-dropdown-trigger\
@@ -201,18 +203,18 @@
                             </cly-input-dropdown-trigger>\
                         </slot>\
                         </template>\
-                        <div class="cly-vue-menubox-new menubox-default-skin">\
-                        <div class="menu-body">\
+                        <div class="cly-fields-select default-skin">\
+                        <div class="fields-select-body">\
                             <div>\
                             <div>\
-                            <span class="cly-vue-menubox-new__title">{{title}}</span>\
-                            <span class="cly-vue-menubox-new__reset" @click="reset"> Reset Filters</span>\
+                            <span class="cly-fields-select__title">{{title}}</span>\
+                            <el-button class="cly-fields-select__reset" @click="reset" type="text">Reset Filters</el-button>\
                             </div>\
                             <table  \
                                 v-for="field in fields" :key="field.key">\
-					            <tr class="cly-vue-menubox-new__field">{{ field.label }}</tr>\
+					            <tr class="cly-fields-select__field">{{ field.label }}</tr>\
 					            <tr>\
-						            <el-select class="cly-vue-menubox-new__field-dropdown" :placeholder="internalValue[field.key].name?internalValue[field.key].name:internalValue[field.key]" v-model="internalValue[field.key]">\
+						            <el-select class="cly-fields-select__field-dropdown" :placeholder="internalValue[field.key].name?internalValue[field.key].name:internalValue[field.key]" v-model="internalValue[field.key]">\
 							            <el-option v-for="item in field.items" :key="item.key"\
 								        :value="item.name">\
 							            </el-option>\
@@ -221,9 +223,9 @@
 			            	</table>\
                             </div>\
                             <div class="controls">\
-                            <el-button v-bind="$attrs" class="cly-vue-menubox-new__cancel" @click="close">  {{cancelLabel}}\
+                            <el-button v-bind="$attrs" class="cly-fields-select__cancel" @click="close">  {{cancelLabel}}\
                             </el-button>\
-                            <el-button v-bind="$attrs" class="cly-vue-menubox-new__confirm" @click="save">  {{confirmLabel}}\
+                            <el-button v-bind="$attrs" class="cly-fields-select__confirm" @click="save">  {{confirmLabel}}\
                             </el-button>\
                             </div>\
                         </div>\
@@ -232,11 +234,11 @@
         props: {
             cancelLabel: {
                 type: String,
-                default: 'Cancel'
+                default: CV.i18n("events.general.cancel")
             },
             confirmLabel: {
                 type: String,
-                default: 'Confirm'
+                default: CV.i18n("events.general.confirm")
             },
             value: {
                 type: Object,
@@ -267,6 +269,7 @@
             value: {
                 immediate: true,
                 handler: function(newVal) {
+
                     this.internalValue = Object.assign({}, newVal);
                 }
             },
@@ -303,7 +306,6 @@
             }
         }
     }));
-
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
