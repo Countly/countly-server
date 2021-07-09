@@ -515,4 +515,24 @@ $(document).ready(function() {
             });
         }, 1000);
     });
+
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel('systemlogs', 'systemlogs.title');
+        app.configurationsView.registerLabel('systemlogs.preventIPTracking', 'systemlogs.prevent-ip-tracking');
+        app.configurationsView.registerInput("systemlogs.preventIPTracking", function(value) {
+            var input = '<div class="on-off-switch">';
+
+            if (value) {
+                input += '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox" id="systemlogs.preventIPTracking" checked>';
+            }
+            else {
+                input += '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox" id="systemlogs.preventIPTracking">';
+            }
+
+            input += '<label class="on-off-switch-label" for="systemlogs.preventIPTracking"></label>';
+            input += '<span class="text">' + jQuery.i18n.map["plugins.enable"] + '</span>';
+            input += "</div>";
+            return input;
+        });
+    }
 });
