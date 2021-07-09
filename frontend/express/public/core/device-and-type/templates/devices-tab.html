@@ -1,0 +1,46 @@
+<cly-main>
+	<cly-date-picker-g class="devices-date-picker-container"></cly-date-picker-g>
+	<cly-section>
+		<div class="bu-columns bu-is-gapless">
+			<div class="bu-column bu-is-6">
+				<cly-chart-pie :option="pieOptionsNew" :showToggle="false"></cly-chart-pie>
+			</div>
+			<div class="bu-column bu-is-6">
+				<cly-chart-pie :option="pieOptionsTotal" :showToggle="false"></cly-chart-pie>
+			</div>
+		</div>
+	</cly-section>
+	<cly-section>
+		<div class="bu-columns bu-is-gapless">
+			<div class="bu-column bu-is-4" :key="idx" v-for="(item, idx) in topData">
+				<div class="bu-p-3">
+					<div class="bu-level-left bu-p-5">
+						<span class="text-medium">{{item.title}}</span>
+						<span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="item.description"></span>
+					</div>
+					<div class="topData">
+						<div :key="idx2" v-for="(item2, idx2) in item.data" >
+							<div class="version-graph-block bu-p-3">
+								<div class="bu-columns version-graph-title">
+									<div class="bu-column">{{item2.name}}</div>
+									<div class="bu-column">{{item2.percent}} % </div>
+								</div>
+								<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</cly-section>
+	<cly-section>
+		<cly-datatable-n  :rows="appDevicesRows" :resizable="true" v-loading="isLoading">
+			<template v-slot="scope">
+				<el-table-column sortable="custom" prop="devices" :label="i18n('devices.table.device')"></el-table-column>
+				<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')"></el-table-column>
+				<el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')"></el-table-column>
+				<el-table-column sortable="custom" prop="n" :label="i18n('common.table.new-users')"></el-table-column>
+			</template>
+		</cly-datatable-n>
+	</cly-section>
+</cly-main>

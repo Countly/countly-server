@@ -1,0 +1,74 @@
+.technology-analytics-wrapper .allPlatformVersions {
+	border-left:1px solid #ECECEC;
+	height: 264px;
+}
+
+.technology-analytics-wrapper .emptyVersions {
+	height: 264px;
+	position:relative;
+}
+.technology-analytics-wrapper .emptyVersions div {
+	font-family: Inter;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 14px;
+	line-height: 20px;
+	color:#333C48;
+	position: absolute;
+    top: 50%;
+    text-align: center;
+    width: 100%;
+}
+
+.technology-analytics-wrapper .version-graph-title {
+	font-family: Inter;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 14px;
+	line-height: 20px;
+	color:#333C48;
+}
+
+.technology-analytics-wrapper .version-graph-title div:first-child {
+	text-align:left;
+}
+.technology-analytics-wrapper .version-graph-title div:nth-child(2) {
+	text-align:right;
+}
+
+.technology-analytics-wrapper .version-graph-block .version-graph-title{
+	margin:0px;
+	padding-bottom:4px;
+}
+.technology-analytics-wrapper .version-graph-title .bu-column {
+	padding:0px;
+}
+
+.technology-analytics-wrapper h4 {
+	font-family: Inter;
+	font-style: normal;
+	font-weight: 500;
+	font-size: 16px;
+	line-height: 24px;
+	color:#333C48;
+}
+
+.technology-analytics-wrapper h5 {
+	font-family: Inter;
+	font-style: normal;
+	font-weight: 500;
+	font-size: 14px;
+	line-height: 24px;
+	color: #333C48;
+	margin-bottom:20px;
+}
+
+.technology-analytics-wrapper .selector_wrapper{
+	position:relative;
+	top:-5px;
+	margin-left: 8px;
+}
+
+.technology-analytics-wrapper .app-resolution-date-picker-container {
+	margin-bottom:32px;
+}
