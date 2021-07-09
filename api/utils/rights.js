@@ -900,7 +900,7 @@ exports.hasAdminAccess = function(member, app_id) {
     // check legacy users who has admin_of property
     // users should have at least one app in admin_of array
     else {
-        isAdmin = member.admin_of.indexOf(app_id) > -1;
+        isAdmin = typeof member.admin_of !== "undefined" && member.admin_of.indexOf(app_id) > -1;
     }
     return isAdmin || member.global_admin;
 };
@@ -928,10 +928,15 @@ exports.getUserApps = function(member) {
         return userApps;
     }
     else {
-        for (var i = 0; i < member.permission._.u.length; i++) {
-            userApps = userApps.concat(member.permission._.u[i]);
+        if (typeof member.permission !== "undefined") {
+            for (var i = 0; i < member.permission._.u.length; i++) {
+                userApps = userApps.concat(member.permission._.u[i]);
+            }
+            return userApps.concat(member.permission._.a);
         }
-        return userApps.concat(member.permission._.a);
+        else {
+            return member.user_of;
+        }
     }
 };
 
@@ -941,6 +946,11 @@ exports.getAdminApps = function(member) {
         return [];
     }
     else {
-        return member.permission._.a;
+        if (typeof member.permission !== "undefined") {
+            return member.permission._.a;
+        }
+        else {
+            return member.admin_of;
+        }
     }
 };
