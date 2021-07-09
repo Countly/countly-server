@@ -411,14 +411,15 @@
     };
 
     var asyncCreate = function(base) {
-        return function(opts) {
+        return function(opts, baseOverride) {
+            var finalBase = baseOverride || base;
             if (typeof opts.template === "string") {
-                return base.extend(opts);
+                return finalBase.extend(opts);
             }
             return function() {
                 return templateUtil.load(opts.template.fileName).then(function(template) {
                     opts.template = template;
-                    return base.extend(opts);
+                    return finalBase.extend(opts);
                 });
             };
         };

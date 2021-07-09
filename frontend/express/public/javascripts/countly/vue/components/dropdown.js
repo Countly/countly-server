@@ -3,7 +3,7 @@
 (function(countlyVue) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
-    _mixins = countlyVue.mixins;
+        _mixins = countlyVue.mixins;
 
     Vue.component("cly-input-dropdown-trigger", countlyBaseComponent.extend({
         props: {
