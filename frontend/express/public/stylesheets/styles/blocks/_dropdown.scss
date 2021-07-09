@@ -1,0 +1,68 @@
+@use "../base/typography-variables" as t;
+
+.cly-fields-select {
+    &.default-skin {
+        display: inline-block;
+        .el-input__inner::placeholder{
+            color:black;
+        }
+
+        .fields-select-body {
+            box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08);
+            background-color: #fff;
+            position: absolute;
+            top: 0px;
+            z-index: 100;
+            border: 1px solid #d0d0d0;
+            border-radius: 2px;
+            padding: 16px;
+            width: max-content;
+            .controls {
+                float: right;
+                margin-top: 10px;
+            }
+        }
+
+    }
+    &__title{
+        color: #333C48;
+        font-family:  t.$font-family;
+        line-height: 24px;
+        font-weight: 500;
+        font-size: 16px;
+	  }
+	  &__reset{
+		float: right;
+		font-size: 12px;
+		padding-bottom: 26px;
+    padding-top: 0px;
+		color: #D23F00;
+		cursor: pointer;
+    line-height: 20px;
+	  }
+      &__field{
+        color: #333C48;
+        font-family:  t.$font-family;
+        line-height: 20px;
+        font-weight: 500;
+        font-size: 12px;
+        padding-bottom: 3px;
+	  }
+      &__field-dropdown{
+        width:320px;
+        height:32px;
+        margin-bottom:16px;
+	  }
+      &__confirm{
+	      	background-color: #12AF51;
+		      color: white;
+	  }
+      &__cancel {
+        background: #F6F6F6;
+      }
+      &__dropdown {
+        .el-input__inner::placeholder{
+            color:black;
+        }
+      }
+} 
