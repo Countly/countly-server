@@ -45,7 +45,7 @@
                   <div class="user-management-drawer-content__help-text"></div>
                 </div>
                 <div class="user-management-drawer-content__input">
-                  <validation-provider rules="required" v-slot="v">
+                  <validation-provider rules="required|email" v-slot="v">
                     <el-input v-model="drawerScope.editedObject.email" placeholder="Enter E-mail"></el-input>
                   </validation-provider>
                 </div>
