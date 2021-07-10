@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  name: {{ include "countly.fullname" . }}-api
+  labels:
+{{ include "countly.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        name: {{ include "countly.fullname" . }}-api
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+      - name: {{ include "countly.fullname" . }}-api
+        image: "{{ .Values.image.api.image }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        # TODO Remove configmap
+        envFrom:
+        - configMapRef:
+            name: {{ include "countly.fullname" . }}
+        env:
+        - name: COUNTLY_CONFIG_FRONTEND_MONGODB_HOST
+          value: $(COUNTLY_MONGODB_SERVICE_HOST)
+        - name: COUNTLY_CONFIG_FRONTEND_MONGODB_PORT
+          value: $(COUNTLY_MONGODB_SERVICE_PORT)
+        - name: COUNTLY_CONFIG_FRONTEND_MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: countly-mongodb
+              key: mongodb-root-password
+        - name: COUNTLY_CONFIG_API_MONGODB_HOST
+          value: $(COUNTLY_MONGODB_SERVICE_HOST)
+        - name: COUNTLY_CONFIG_API_MONGODB_PORT
+          value: $(COUNTLY_MONGODB_SERVICE_PORT)
+        - name: COUNTLY_CONFIG_API_MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: countly-mongodb
+              key: mongodb-root-password
+        ports:
+        - containerPort: 3001
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+  triggers:
+  - type: ConfigChange

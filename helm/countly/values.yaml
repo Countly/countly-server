@@ -1,0 +1,55 @@
+# Default values for countly.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  tag: latest
+  pullPolicy: IfNotPresent
+  api:
+    image: countly/api
+  frontend:
+    image: countly/frontend
+
+pods:
+  - name: api
+    image: countly/api
+    port: 3001
+  - name: frontend
+    image: countly/frontend
+    port: 6001
+
+mongodbUsername: root
+dbOptions: '{"authSource": "admin"}'
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+ingress:
+  annotations: {}
+    # kubernetes.io/ingress.class: countly
+    # kubernetes.io/tls-acme: "true"
+  host: countly.local
+
+  tls: []
+  #  - secretName: countly-tls
+  #    hosts:
+  #      - countly.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+mongodb:
+  mongodbRootPassword: ""
+  fullnameOverride: countly-mongodb

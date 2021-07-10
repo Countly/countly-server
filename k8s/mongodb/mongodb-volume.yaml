@@ -1,0 +1,13 @@
+objects:
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    labels:
+      app: countly
+    name: countly-mongodb-volume
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${COUNTLY_DATABASE_VOLUME_CAPACITY}

@@ -1,0 +1,22 @@
+objects:
+- apiVersion: extensions/v1beta1
+  kind: Ingress
+  metadata:
+    name: countly
+  spec:
+    rules:
+    - host: countly.example.com
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: countly-frontend
+            servicePort: 6001
+        - path: /o
+          backend:
+            serviceName: countly-api
+            servicePort: 3001
+        - path: /i
+          backend:
+            serviceName: countly-api
+            servicePort: 3001

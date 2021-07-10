@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "countly.fullname" . }}-frontend
+  labels:
+{{ include "countly.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 6001
+    targetPort: 6001
+  selector:
+    name: {{ include "countly.fullname" . }}-frontend
+    app.kubernetes.io/instance: {{ .Release.Name }}

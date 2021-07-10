@@ -1,0 +1,25 @@
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: countly
+    name: countly-api
+  spec:
+    ports:
+    - port: 3001
+      targetPort: 3001
+    selector:
+      name: countly-api
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: countly
+    name: countly-frontend
+  spec:
+    ports:
+    - port: 6001
+      targetPort: 6001
+    selector:
+      name: countly-frontend
