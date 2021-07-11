@@ -282,9 +282,8 @@
     }));
 
     Vue.component("cly-value", countlyBaseComponent.extend({
-        props: {
-            value: Object
-        }
+        template: '<span></span>',
+        props: ['value']
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
