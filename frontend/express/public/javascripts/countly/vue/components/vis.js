@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor */
+/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor, countlyGlobal */
 
 (function(countlyVue) {
 
@@ -848,6 +848,44 @@
                             </echarts>\
                         </div>\
                     </div>'
+    }));
+
+    Vue.component("cly-chart-geo", countlyBaseComponent.extend({
+        props: {
+            data: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            options: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            resizeDebounce: {
+                type: Number,
+                default: 500
+            }
+        },
+        data: function() {
+            return {
+                settings: {
+                    packages: ['geochart'],
+                    mapsApiKey: countlyGlobal.config.google_maps_api_key
+                }
+            };
+        },
+        template: '<GChart\
+                        type="GeoChart"\
+                        :resizeDebounce="resizeDebounce"\
+                        :settings="settings"\
+                        :data="data"\
+                        :options="options"\
+                        v-bind="$attrs"\
+                        v-on="$listeners"\
+                    />'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
