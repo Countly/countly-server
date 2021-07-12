@@ -39,7 +39,7 @@
                         if (!this.selectedAppLocal) {
                             if (!activeApp) {
                                 // eslint-disable-next-line no-undef
-                                console.log("sidebar:: active app not set");
+                                // console.log("sidebar:: active app not set");
                             }
 
                             this.selectedAppLocal = activeApp && activeApp._id;
