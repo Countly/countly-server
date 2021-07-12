@@ -53,6 +53,7 @@ class WriteBatcher extends EventEmitter {
      *  @param {string} collection - name of the collection for which to write data
      */
     async flush(db, collection) {
+        var no_fallback_errors = [10334, 17419];
         if (Object.keys(this.data[db][collection]).length) {
             var queries = [];
             for (let key in this.data[db][collection]) {
@@ -86,6 +87,9 @@ class WriteBatcher extends EventEmitter {
                 //trying to rollback operations to try again on next iteration
                 if (ex.writeErrors && ex.writeErrors.length) {
                     for (let i = 0; i < ex.writeErrors.length; i++) {
+                        if (no_fallback_errors.indexOf(ex.writeErrors[i].code) !== -1) {
+                            continue;
+                        }
                         let index = ex.writeErrors[i].index;
                         if (queries[index]) {
                             //if we don't have anything for this document yet just use query
