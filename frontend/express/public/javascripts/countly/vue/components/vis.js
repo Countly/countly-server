@@ -852,21 +852,15 @@
 
     Vue.component("cly-chart-geo", countlyBaseComponent.extend({
         props: {
-            data: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
+            resizeDebounce: {
+                type: Number,
+                default: 500
             },
             options: {
                 type: Object,
                 default: function() {
                     return {};
                 }
-            },
-            resizeDebounce: {
-                type: Number,
-                default: 500
             }
         },
         data: function() {
@@ -874,15 +868,25 @@
                 settings: {
                     packages: ['geochart'],
                     mapsApiKey: countlyGlobal.config.google_maps_api_key
+                },
+                defaultOptions: {
+                    legend: "none",
+                    backgroundColor: "transparent",
+                    datalessRegionColor: "#FFF",
                 }
             };
+        },
+        computed: {
+            chartOptions: function() {
+                var opt = _merge({}, this.defaultOptions, this.options);
+                return opt;
+            }
         },
         template: '<GChart\
                         type="GeoChart"\
                         :resizeDebounce="resizeDebounce"\
                         :settings="settings"\
-                        :data="data"\
-                        :options="options"\
+                        :options="chartOptions"\
                         v-bind="$attrs"\
                         v-on="$listeners"\
                     />'

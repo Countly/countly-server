@@ -371,7 +371,8 @@
                     ['Canada', 500],
                     ['France', 600],
                     ['RU', 700]
-                ]
+                ],
+                geoChartOptions: {}
             };
         },
         computed: {
