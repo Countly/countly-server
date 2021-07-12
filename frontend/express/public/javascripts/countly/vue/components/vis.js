@@ -865,6 +865,7 @@
         },
         data: function() {
             return {
+                forwardedSlots: ["chart-left", "chart-right"],
                 settings: {
                     packages: ['geochart'],
                     mapsApiKey: countlyGlobal.config.google_maps_api_key
@@ -876,20 +877,30 @@
                 }
             };
         },
+        components: {
+            'chart-header': ChartHeader,
+        },
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.defaultOptions, this.options);
                 return opt;
             }
         },
-        template: '<GChart\
-                        type="GeoChart"\
-                        :resizeDebounce="resizeDebounce"\
-                        :settings="settings"\
-                        :options="chartOptions"\
-                        v-bind="$attrs"\
-                        v-on="$listeners"\
-                    />'
+        template: '<div class="cly-vue-chart">\
+                        <chart-header>\
+                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                <slot :name="item" v-bind="slotScope"></slot>\
+                            </template>\
+                        </chart-header>\
+                        <GChart\
+                            type="GeoChart"\
+                            :resizeDebounce="resizeDebounce"\
+                            :settings="settings"\
+                            :options="chartOptions"\
+                            v-bind="$attrs"\
+                            v-on="$listeners"\
+                        />\
+                    </div>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
