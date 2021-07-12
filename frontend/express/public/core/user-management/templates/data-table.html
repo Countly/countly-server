@@ -1,54 +1,65 @@
 <div class="manage-users-table">
   <cly-datatable-n
-    :rows="rows">
+    :available-dynamic-cols="tableDynamicCols"
+    :rows="filteredRows">
+      <template v-slot:header-left="selectScope">
+        <el-select placement="bottom-start" v-model="tableFilter" placeholder="All roles">
+          <el-option key="0" label="All roles" :value="null"></el-option>
+          <el-option key="1" label="Global admin" value="global_admin"></el-option>
+          <el-option key="2" label="Admin" value="admin"></el-option>
+          <el-option key="3" label="User" value="user"></el-option>
+        </el-select>
+      </template>
       <template v-slot="scope">
-          <el-table-column sortable="true" prop="full_name" :label="i18n('management-users.user')">
+        <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
+          <el-table-column :key="idx" v-if="col.value === 'full_name'" sortable="true" prop="full_name" :label="i18n('management-users.user')">
               <template v-slot="rowScope">
                   <span class="text-medium">
                     {{rowScope.row.full_name}}
                   </span>
               </template>
           </el-table-column>
-          <el-table-column sortable="true" prop="username" :label="i18n('management-users.username')">
+          <el-table-column :key="idx" v-if="col.value === 'username'" sortable="true" prop="username" :label="i18n('management-users.username')">
             <template v-slot="rowScope">
                 <span class="text-medium">
                   {{rowScope.row.username}}
                 </span>
             </template>
           </el-table-column>
-          <el-table-column sortable="true" prop="role" :label="i18n('management-users.role')">
+          <el-table-column :key="idx" v-if="col.value === 'global_admin'" sortable="true" prop="role" :label="i18n('management-users.role')">
             <template v-slot="rowScope">
                 <span class="text-medium">
-                  {{ rowScope.row.global_admin ? 'Global Admin' : 'User' }}
+                  {{ rowScope.row.global_admin ? 'Global Admin' : ((rowScope.row.permission._.a.length > 0) ? 'Admin' : 'User') }}
                 </span>
             </template>
           </el-table-column>
-          <el-table-column sortable="true" prop="email" :label="i18n('management-users.email')">
+          <el-table-column :key="idx" v-if="col.value === 'email'" sortable="true" prop="email" :label="i18n('management-users.email')">
             <template v-slot="rowScope">
                 <span class="text-medium">
                   {{ rowScope.row.email }}
                 </span>
             </template>
           </el-table-column>
-          <el-table-column sortable="true" prop="created_at" :label="i18n('management-users.created')">
+          <el-table-column :key="idx" v-if="col.value === 'created_at'" sortable="true" prop="created_at" :label="i18n('management-users.created')">
             <template v-slot="rowScope">
                 <span class="text-medium" v-html="formatTimeAgo(rowScope.row.created_at)"></span>
             </template>
           </el-table-column>
-          <el-table-column sortable="true" prop="last_login" :label="i18n('management-users.last_login')">
+          <el-table-column :key="idx" v-if="col.value === 'last_login'" sortable="true" prop="last_login" :label="i18n('management-users.last_login')">
             <template v-slot="rowScope">
                 <span class="text-medium" v-html="rowScope.row.last_login === 0 ? 'Not logged in yet' : formatTimeAgo(rowScope.row.last_login)">
                 </span>
             </template>
           </el-table-column>
-          <el-table-column>
-            <template v-slot="rowScope">
-              <cly-more-options size="small" @command="handleCommand($event, rowScope.row._id)">
-                <el-dropdown-item command="delete-user">Delete user</el-dropdown-item>
-                <el-dropdown-item command="edit-user">Edit user</el-dropdown-item>
-              </cly-more-options>
-            </template>
-          </el-table-column>
-      </template>
+        </template> 
+        <el-table-column>
+          <template v-slot="rowScope">
+            <cly-more-options size="small" @command="handleCommand($event, rowScope.row._id)">
+              <el-dropdown-item command="delete-user">Delete user</el-dropdown-item>
+              <el-dropdown-item command="edit-user">Edit user</el-dropdown-item>
+            </cly-more-options>
+          </template>
+        </el-table-column>
+      </template> 
   </cly-datatable-n>
 </div>

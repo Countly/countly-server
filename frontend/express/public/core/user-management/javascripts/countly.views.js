@@ -1,4 +1,4 @@
-/*global countlyAuth, app, countlyGlobal, setTimeout, setInterval, clearInterval, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
+/*global countlyAuth, app, countlyGlobal, setTimeout, setInterval, clearInterval, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers, groupsModel */
 (function() {
     var FEATURE_NAME = "global_users";
 
@@ -9,9 +9,68 @@
             rows: Array
         },
         data: function() {
-            return {};
+            return {
+                tableFilter: null,
+                tableDynamicCols: [
+                    {
+                        label: "User",
+                        value: "full_name",
+                        default: true,
+                        required: true
+                    },
+                    {
+                        label: "Username",
+                        value: "username",
+                        default: true,
+                        required: true
+                    },
+                    {
+                        label: 'Role',
+                        value: 'global_admin',
+                        default: true,
+                        required: true
+                    },
+                    {
+                        value: "email",
+                        label: "E-mail",
+                        default: true,
+                        required: true
+                    },
+                    {
+                        value: "created_at",
+                        label: "Created at",
+                        default: true,
+                        required: true
+                    },
+                    {
+                        value: "last_login",
+                        label: "Last login",
+                        default: true,
+                        required: true
+                    }
+                ]
+            }
         },
-        created: function() {
+        computed: {
+            filteredRows: function() {
+                var self = this;
+                if (this.tableFilter) {
+                    return this.rows.filter(function(row) {
+                        if (self.tableFilter === 'global_admin') {
+                            return row.global_admin;
+                        }
+                        else if (self.tableFilter === 'admin') {
+                            return !row.global_admin && row.permission._.a.length > 0;
+                        }
+                        else {
+                            return !row.global_admin && row.permission._.a.length === 0;
+                        }
+                    });
+                }
+                else {
+                    return this.rows;
+                }
+            }
         },
         methods: {
             handleCommand: function(command, index) {
@@ -25,6 +84,7 @@
                     })
                         .then(function() {
                             countlyUserManagement.deleteUser(index, function() {
+                                self.$emit('refresh-table');
                                 self.$message({
                                     message: 'User deleted successfully.',
                                     type: 'success'
@@ -64,6 +124,12 @@
                 default: {}
             }
         },
+        mixins: [
+            // call groups plugin input mixin for drawer
+            countlyVue.container.tabsMixin({
+                "groupsInput": "groups/input"
+            })
+        ],
         data: function() {
             return {
                 // TODO: remove Object.values usage
@@ -87,7 +153,8 @@
                     params: { _csrf: countlyGlobal.csrf_token }
                 },
                 uploadCompleted: false,
-                fileAdded: false
+                fileAdded: false,
+                group: {}
             };
         },
         methods: {
@@ -237,23 +304,39 @@
                 if (this.settings.editMode) {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.editUser(this.user._id, submitted, function() {
-                        self.dropzoneOptions.member = { _id: self.user._id };
-                        self.$refs.userDrawerDropzone.processQueue();
-                        var checkUploadProcess = setInterval(function() {
-                            if (self.uploadCompleted) {
-                                // show success message
-                                self.$message({
-                                    message: 'User updated successfully.',
-                                    type: 'success'
-                                });
-                                clearCheck();
-                                done();
-                            }
-                        }, 1000);
+                        if (typeof self.group._id !== "undefined") {
+                            groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
+                            .then(function() {})
+                        }
+                        self.$emit('refresh-table');
+                        self.group = {};
+                        if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
+                            self.dropzoneOptions.member = { _id: self.user._id };
+                            self.$refs.userDrawerDropzone.processQueue();
+                            var checkUploadProcess = setInterval(function() {
+                                if (self.uploadCompleted) {
+                                    // show success message
+                                    self.$message({
+                                        message: 'User updated successfully.',
+                                        type: 'success'
+                                    });
+                                    clearCheck();
+                                    done();
+                                }
+                            }, 1000);
 
-                        var clearCheck = function() {
-                            clearInterval(checkUploadProcess);
-                        };
+                            var clearCheck = function() {
+                                clearInterval(checkUploadProcess);
+                            };
+                        }
+                        else {
+                            // show success message
+                            self.$message({
+                                message: 'User updated successfully.',
+                                type: 'success'
+                            });
+                            done();
+                        }
                     // TODO: show toast
                     });
                 }
@@ -261,22 +344,37 @@
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     submitted.password = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
                     countlyUserManagement.createUser(submitted, function(res) {
-                        self.dropzoneOptions.member = { _id: res._id };
-                        self.$refs.userDrawerDropzone.processQueue();
-                        var checkUploadProcess = setInterval(function() {
-                            if (self.uploadCompleted) {
-                                self.$message({
-                                    message: 'User created successfully.',
-                                    type: 'success'
-                                });
-                                clearCheck();
-                                done();
-                            }
-                        }, 1000);
+                        if (typeof self.group._id !== "undefined") {
+                            groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
+                            .then(function() {})
+                        }
+                        self.group = {};
+                        self.$emit('refresh-table');
+                        if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
+                            self.dropzoneOptions.member = { _id: res._id };
+                            self.$refs.userDrawerDropzone.processQueue();
+                            var checkUploadProcess = setInterval(function() {
+                                if (self.uploadCompleted) {
+                                    self.$message({
+                                        message: 'User created successfully.',
+                                        type: 'success'
+                                    });
+                                    clearCheck();
+                                    done();
+                                }
+                            }, 1000);
 
-                        var clearCheck = function() {
-                            clearInterval(checkUploadProcess);
-                        };
+                            var clearCheck = function() {
+                                clearInterval(checkUploadProcess);
+                            };
+                        }
+                        else {
+                            self.$message({
+                                message: 'User created successfully.',
+                                type: 'success'
+                            });
+                            done();
+                        }
                     });
                 }
             },
@@ -289,28 +387,44 @@
 
                 // if it's in edit mode
                 if (this.settings.editMode) {
-                    var userAppsSets = this.user.permission._.u;
-
-                    if (!this.user.global_admin) {
-                        for (var set in userAppsSets) {
-                            var appFromSet = userAppsSets[set][0];
-                            var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
-                            for (var type in types) {
-                                for (var feature in this.features) {
-                                    permissionSet[types[type]].all = this.user.permission[types[type]][appFromSet].all;
-                                    permissionSet[types[type]].allowed[this.features[feature]] = this.user.permission[types[type]][appFromSet].allowed[this.features[feature]];
-                                }
-                            }
-                            this.permissionSets.push(permissionSet);
-                        }
-                    }
-                    else {
+                    // is user member of a group?
+                    if (this.user.group_id) {
+                        // set group state
+                        this.group = { _id: this.user.group_id[0] };
+                        // add initial permission state for cases who unselected group
                         this.permissionSets.push({ c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+                    }
+                    // user isn't member of a group?
+                    else {
+                        // is user non-global admin and has user permissions for at least one app?
+                        if (!this.user.global_admin && this.user.permission._.u[0].length > 0) {
+                            var userAppsSets = this.user.permission._.u;
+    
+                            for (var set in userAppsSets) {
+                                var appFromSet = userAppsSets[set][0];
+                                var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
+                                for (var type in types) {
+                                    for (var feature in this.features) {
+                                        permissionSet[types[type]].all = this.user.permission[types[type]][appFromSet].all;
+                                        permissionSet[types[type]].allowed[this.features[feature]] = this.user.permission[types[type]][appFromSet].allowed[this.features[feature]];
+                                    }
+                                }
+                                this.permissionSets.push(permissionSet);
+                            }
+                        }
+                        // is user global admin?
+                        else {
+                            this.permissionSets.push({ c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}});
+                        }
                     }
                 }
                 // initialize default permission sets for create mode
                 else {
                     if (this.features.length === 0) {
+                        this.$message({
+                            message: 'Somethings went wrong when fetching feature list.',
+                            type: 'error'
+                        });
                         return;
                     }
 
@@ -333,6 +447,9 @@
                     ret += fa[i].substr(0, 1).toUpperCase() + fa[i].substr(1, fa[i].length - 1) + ' ';
                 }
                 return ret;
+            },
+            onGroupChange: function(groupVal) {
+                this.group = groupVal;
             }
         }
     });
@@ -344,7 +461,13 @@
             'data-table': DataTable,
             'drawer': Drawer
         },
-        mixins: [countlyVue.mixins.hasDrawers("user")],
+        mixins: [
+            countlyVue.mixins.hasDrawers("user"),
+            // call groups tab mixin from groups plugin and inject it to view
+            countlyVue.container.tabsMixin({
+                "externalTabs": "groups/tab"
+            })
+        ],
         data: function() {
             return {
                 users: [],
