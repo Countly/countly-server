@@ -156,7 +156,7 @@
                                 </div>\
                             </div>\
                         </div>\
-                        <component v-bind:is="currentTab" class="cly-vue-tab"></component>\
+                        <component v-bind:is="currentTab" v-on="$listeners" class="cly-vue-tab"></component>\
                     </div>'
     }));
 

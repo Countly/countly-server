@@ -59,7 +59,6 @@
                             <i v-if="arrow" class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
                         </template>\
                     </component>'
-
     }));
 
     var triggerProxy = countlyBaseComponent.extend({
@@ -88,6 +87,9 @@
             placement: {
                 type: String,
                 default: 'bottom-start'
+            },
+            popClass: {
+                type: String
             }
         },
         inject: {
@@ -100,6 +102,9 @@
         computed: {
             popperUid: function() {
                 return "popper-" + this.componentId;
+            },
+            popperClass: function() {
+                return "cly-vue-dropdown__pop" + (this.popClass ? " " + this.popClass : "");
             }
         },
         provide: function() {
@@ -138,8 +143,7 @@
         data: function() {
             return {
                 visible: false,
-                focused: false,
-                popperClass: 'cly-vue-dropdown__pop'
+                focused: false
             };
         },
         beforeDestroy: function() {

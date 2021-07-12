@@ -31,7 +31,7 @@
     }
 
     #top-bar {
-        z-index: 2000;
+        z-index: 1997;
     }
 
     #vue-common-overlay { 
@@ -3286,15 +3286,6 @@
 
     &__no-data {
         padding: 11px 7px 2px 7px;
-    }
-}
-
-.cly-vue-dropdown {
-    &__pop {
-        padding: 0px;
-    }
-    &__pop-container {
-        word-break: initial;
     }
 }
 

@@ -69,6 +69,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/vue/element-ui.js',
                     'frontend/express/public/javascripts/utils/vue/inViewportMixin.js',
                     'frontend/express/public/javascripts/utils/vue/vuescroll.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue-google-charts.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
                     'frontend/express/public/javascripts/utils/simpleUpload.min.js',
