@@ -18,7 +18,7 @@
             methods: {
                 back: function() {
                     if (this.link) {
-                        app.back(this.link);
+                        app.navigate(this.link, true);
                     }
                     else {
                         app.back();
