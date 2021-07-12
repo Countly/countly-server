@@ -170,8 +170,16 @@ usersApi.createUser = function(params) {
                 'type': 'String'
             },
             'permission': {
-                'required': true,
+                'required': false,
                 'type': 'Object'
+            },
+            'admin_of': {
+                'required': false,
+                'type': 'Array'
+            },
+            'user_of': {
+                'required': false,
+                'type': 'Array'
             },
             'global_admin': {
                 'required': false,
@@ -184,6 +192,34 @@ usersApi.createUser = function(params) {
     if (!(newMember = createUserValidation.obj)) {
         common.returnMessage(params, 400, 'Error: ' + createUserValidation.errors);
         return false;
+    }
+
+    //adding backwards compatability
+    newMember.permission = newMember.permission || {};
+    if (newMember.admin_of) {
+        if (Array.isArray(newMember.admin_of) && newMember.admin_of.length) {
+            newMember.permission.c = newMember.permission.c || {};
+            newMember.permission.r = newMember.permission.r || {};
+            newMember.permission.u = newMember.permission.u || {};
+            newMember.permission.d = newMember.permission.d || {};
+            for (let i = 0; i < newMember.admin_of.length; i++) {
+                newMember.permission.c[newMember.admin_of[i]] = newMember.permission.c[newMember.admin_of[i]] || {all: true, allowed: {}};
+                newMember.permission.r[newMember.admin_of[i]] = newMember.permission.r[newMember.admin_of[i]] || {all: true, allowed: {}};
+                newMember.permission.u[newMember.admin_of[i]] = newMember.permission.u[newMember.admin_of[i]] || {all: true, allowed: {}};
+                newMember.permission.d[newMember.admin_of[i]] = newMember.permission.d[newMember.admin_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete newMember.admin_of;
+    }
+
+    if (newMember.user_of) {
+        if (Array.isArray(newMember.user_of) && newMember.user_of.length) {
+            newMember.permission.r = newMember.permission.r || {};
+            for (let i = 0; i < newMember.user_of.length; i++) {
+                newMember.permission.r[newMember.user_of[i]] = newMember.permission.r[newMember.user_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete newMember.user_of;
     }
 
     common.db.collection('members').findOne({ $or: [{ email: newMember.email }, { username: newMember.username }] }, function(err, member) {
@@ -376,6 +412,35 @@ usersApi.updateUser = async function(params) {
 
     if (updatedMember.member_image && updatedMember.member_image === 'delete') {
         updatedMember.member_image = "";
+    }
+
+    //adding backwards compatability
+    if (updatedMember.admin_of) {
+        if (Array.isArray(updatedMember.admin_of) && updatedMember.admin_of.length) {
+            updatedMember.permission = updatedMember.permission || {};
+            updatedMember.permission.c = updatedMember.permission.c || {};
+            updatedMember.permission.r = updatedMember.permission.r || {};
+            updatedMember.permission.u = updatedMember.permission.u || {};
+            updatedMember.permission.d = updatedMember.permission.d || {};
+            for (let i = 0; i < updatedMember.admin_of.length; i++) {
+                updatedMember.permission.c[updatedMember.admin_of[i]] = updatedMember.permission.c[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+                updatedMember.permission.r[updatedMember.admin_of[i]] = updatedMember.permission.r[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+                updatedMember.permission.u[updatedMember.admin_of[i]] = updatedMember.permission.u[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+                updatedMember.permission.d[updatedMember.admin_of[i]] = updatedMember.permission.d[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete updatedMember.admin_of;
+    }
+
+    if (updatedMember.user_of) {
+        if (Array.isArray(updatedMember.user_of) && updatedMember.user_of.length) {
+            updatedMember.permission = updatedMember.permission || {};
+            updatedMember.permission.r = updatedMember.permission.r || {};
+            for (let i = 0; i < updatedMember.user_of.length; i++) {
+                updatedMember.permission.r[updatedMember.user_of[i]] = updatedMember.permission.r[updatedMember.user_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete updatedMember.user_of;
     }
 
 
