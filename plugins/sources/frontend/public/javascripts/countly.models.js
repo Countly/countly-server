@@ -60,8 +60,9 @@
             code = code.replace("://www.", "://");
             /*eslint-disable */
             var matches = code.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
+            var subDomains = code.split('.');
             /*eslint-enable */
-            var domain = matches && matches[1] || code;
+            var domain = matches && matches[1] || subDomains.length >= 4 ?  subDomains.slice(-3).join('.') : code;
             return domain.split("/")[0];
         }
     }
