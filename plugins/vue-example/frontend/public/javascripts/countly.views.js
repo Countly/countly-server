@@ -557,32 +557,7 @@
         }
     });
 
-    var MainView_0 = countlyVue.views.create({
-        template: CV.T('/vue-example/templates/main_0.html'),
-        mixins: [
-            countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.tabsMixin({
-                "externalTabs": "vue/example"
-            })
-        ].concat(countlyVue.container.mixins(["vue/example"])),
-        components: {
-            "table-view": TableView,
-            "form-basics": FormBasics,
-            "form-dropdown": FormDropdown,
-            "tg-view": TimeGraphView,
-            "date-view": DateView,
-            "drawer": ExampleDrawer,
-            "progress-bars-view": ProgressBarsView
-        },
-        data: function() {
-            return {
-                appId: countlyCommon.ACTIVE_APP_ID,
-                currentTab: (this.$route.params && this.$route.params.tab) || "tables",
-            };
-        }
-    });
-
-    var MainView_1 = countlyVue.views.create({
+    var MainView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/main.html'),
         mixins: [
             countlyVue.container.tabsMixin({
@@ -641,27 +616,8 @@
         }
     });
 
-    var getMainView_0 = function() {
-        var vuex = [{
-            clyModel: countlyVueExample
-        }];
-
-        var tabsVuex = countlyVue.container.tabsVuex(["vue/example"]);
-
-        vuex = vuex.concat(tabsVuex);
-
-        return new countlyVue.views.BackboneWrapper({
-            component: MainView_0,
-            vuex: vuex,
-            templates: [
-                "/vue-example/templates/empty.html",
-                "/vue-example/templates/form.html"
-            ]
-        });
-    };
-
     //This is the main view that we use in /vue/example
-    var getMainView_1 = function() {
+    var getMainView = function() {
         var vuex = [{
             clyModel: countlyVueExample
         }];
@@ -671,7 +627,7 @@
         vuex = vuex.concat(tabsVuex);
 
         return new countlyVue.views.BackboneWrapper({
-            component: MainView_1,
+            component: MainView,
             vuex: vuex,
             templates: [
                 "/vue-example/templates/empty.html",
@@ -681,31 +637,17 @@
     };
 
     app.route("/vue/example", 'vue-example', function() {
-        var exampleView = getMainView_1();
+        var exampleView = getMainView();
         this.renderWhenReady(exampleView);
     });
 
     app.route("/vue/example/*tab", 'vue-example-tab', function(tab) {
-        var exampleView = getMainView_1();
+        var exampleView = getMainView();
         var params = {
             tab: tab
         };
         exampleView.params = params;
         this.renderWhenReady(exampleView);
-    });
-
-    app.route("/vue-0", 'vue-0', function() {
-        var newExampleView = getMainView_0();
-        this.renderWhenReady(newExampleView);
-    });
-
-    app.route("/vue-0/*tab", 'vue-0-tab', function(tab) {
-        var newExampleView = getMainView_0();
-        var params = {
-            tab: tab
-        };
-        newExampleView.params = params;
-        this.renderWhenReady(newExampleView);
     });
 
     countlyVue.container.registerTab("vue/example", {
