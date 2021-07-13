@@ -50,6 +50,7 @@
                   </validation-provider>
                 </div>
               </div>
+              <component v-if="groupsInput.length > 0" :defaultGroup="group" @group-change="onGroupChange" :is="groupsInput[0].component"></component>
             </div>
             <div class="bu-column user-management-drawer-content__profile-picture-area">
               <div class="user-management-drawer-content__label">
@@ -76,7 +77,7 @@
               </cly-dropzone>
             </div>
           </div>
-          <div v-if="drawerScope.editedObject.permission" class="user-management-drawer-content__bottom-section">
+          <div v-if="!group._id" class="user-management-drawer-content__bottom-section">
             <div class="user-management-drawer-content__drawer-sub-section">
               <div class="user-management-drawer-content__section-title">
                 <div>
@@ -92,10 +93,10 @@
                 <el-checkbox v-model="drawerScope.editedObject.global_admin">Global Administrator</el-checkbox>
               </div>
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin" class="user-management-drawer-content__drawer-sub-title">
+            <div v-if="!drawerScope.editedObject.global_admin && !group._id" class="user-management-drawer-content__drawer-sub-title">
               Permission Settings
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin" class="user-management-drawer-content__drawer-sub-section">
+            <div v-if="!drawerScope.editedObject.global_admin && !group._id" class="user-management-drawer-content__drawer-sub-section">
               <div class="user-management-drawer-content__section-title">
                 <div>
                   <span class="user-management-drawer-content__section-header">GRANT ADMIN ACCESS TO APP(S) <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
@@ -120,7 +121,7 @@
                 </div>
               </div>
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin" :key="index" v-for="(set, index) in permissionSets" class="user-management-drawer-content__drawer-sub-section">
+            <div v-if="!drawerScope.editedObject.global_admin && !group._id" :key="index" v-for="(set, index) in permissionSets" class="user-management-drawer-content__drawer-sub-section">
               <div class="user-management-drawer-content__section-title">
                 <div>
                   <span class="user-management-drawer-content__section-header">GRANT USER ACCESS TO APP(S) <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
@@ -185,7 +186,7 @@
                 </div>
               </div>
             </div>
-            <div v-if="!drawerScope.editedObject.global_admin" class="user-management-drawer-content__add-permission-set" @click="addPermissionSet">
+            <div v-if="!drawerScope.editedObject.global_admin && !group._id" class="user-management-drawer-content__add-permission-set" @click="addPermissionSet">
               + Add Additional User Permission Set
             </div>
           </div>
