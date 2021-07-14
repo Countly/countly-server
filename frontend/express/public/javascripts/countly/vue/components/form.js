@@ -13,7 +13,8 @@
                     return {};
                 }
             },
-            beforeCopyFn: {type: Function}
+            beforeCopyFn: {type: Function},
+            requiresAsyncSubmit: {type: Boolean, default: false}
         },
         data: function() {
             return {
@@ -47,7 +48,8 @@
                 currentStepIndex: 0,
                 stepContents: [],
                 isMounted: false,
-                isSubmissionAllowed: true
+                isSubmissionAllowed: true,
+                isSubmitPending: false
             };
         },
         computed: {
@@ -159,9 +161,22 @@
             submit: function(force) {
                 this.beforeLeavingStep();
                 if (this.isSubmissionAllowed || force === true) {
-                    this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
-                    if (this.doClose) {
-                        this.doClose();
+                    if (this.requiresAsyncSubmit) {
+                        this.isSubmitPending = true;
+                        var self = this;
+                        var callback = function(err) {
+                            self.isSubmitPending = false;
+                            if (!err && self.doClose) {
+                                self.doClose();
+                            }
+                        };
+                        this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)), callback);
+                    }
+                    else {
+                        this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
+                        if (this.doClose) {
+                            this.doClose();
+                        }
                     }
                 }
             },

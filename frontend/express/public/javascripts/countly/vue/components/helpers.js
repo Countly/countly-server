@@ -18,7 +18,7 @@
             methods: {
                 back: function() {
                     if (this.link) {
-                        app.back(this.link);
+                        app.navigate(this.link, true);
                     }
                     else {
                         app.back();
@@ -252,8 +252,10 @@
     var popoverSizes = {
         "small": true,
         "medium": true,
+        "auto": true,
         "small-chart": true,
-        "medium-chart": true
+        "medium-chart": true,
+        "auto-chart": true
     };
 
     Vue.component("cly-popover", countlyBaseComponent.extend({
@@ -277,6 +279,11 @@
                         <slot></slot>\
                         <template v-slot:popover><slot name=\'content\'></slot></template>\
                     </v-popover>',
+    }));
+
+    Vue.component("cly-value", countlyBaseComponent.extend({
+        template: '<span></span>',
+        props: ['value']
     }));
 
 }(window.countlyVue = window.countlyVue || {}));

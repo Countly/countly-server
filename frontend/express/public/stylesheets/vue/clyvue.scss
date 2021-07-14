@@ -31,7 +31,7 @@
     }
 
     #top-bar {
-        z-index: 2000;
+        z-index: 1997;
     }
 
     #vue-common-overlay { 
@@ -1033,6 +1033,9 @@
             display: block!important;
         }
         &__content {
+            > div {
+                width: 100%;
+            }
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -1048,12 +1051,18 @@
                 width: 245px;
                 padding: 16px;
             }
+            &--auto {
+                padding: 16px;
+            }
             &--small-chart {
                 width: 175px;
                 padding: 12px;
             }
             &--medium-chart {
                 width: 186px;
+                padding: 12px;
+            }
+            &--auto-chart {
                 padding: 12px;
             }
         }
@@ -3277,15 +3286,6 @@
 
     &__no-data {
         padding: 11px 7px 2px 7px;
-    }
-}
-
-.cly-vue-dropdown {
-    &__pop {
-        padding: 0px;
-    }
-    &__pop-container {
-        word-break: initial;
     }
 }
 

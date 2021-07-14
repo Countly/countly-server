@@ -167,7 +167,7 @@
                                     <el-progress v-bind:class="getBarStackClasses(index)" :show-text="false" :stroke-width="height" :percentage="100" :color="item.color"> </el-progress>\
                                 </div>\
                                 <div v-else :key="index" class="cly-progress-bar-stack-container" v-bind:style="getBarStackStyleWidth(item)">\
-                                    <cly-popover>\
+                                    <cly-popover size="auto-chart">\
                                         <el-progress v-bind:class="getBarStackClasses(index)" :show-text="false" :stroke-width="height" :percentage="100" :color="item.color"> </el-progress>\
                                         <template v-slot:content><slot :name="\'popover-\' + item.id"></slot></template>\
                                     </cly-popover>\

@@ -266,4 +266,33 @@
   .el-checkbox__label {
     font-weight: normal !important;
   }
+
+  .dropzone-custom-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .dz-image > div {
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+  }
+
+  .dz-image-preview {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .dz-remove {
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .dz-image {
+      display: block !important;
+    }
+  }
 }

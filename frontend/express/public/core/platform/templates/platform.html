@@ -1,0 +1,57 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('platforms.title')}} 
+            </h2>
+            <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description">
+            </span>
+        </template>
+    </cly-header>
+    <cly-main>
+		<cly-date-picker-g class="devices-date-picker-container"></cly-date-picker-g>
+		<div class="bu-columns bu-is-gapless">
+			<h4>{{i18n('platforms.platforms-for')}}</h4>
+			<div class ="selector_wrapper">
+				<el-select v-model="selectedProperty">
+                    <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
+                </el-select>
+			</div>
+        </div>
+		<cly-section >
+			<cly-metric-cards>
+                <cly-metric-card :is-percentage="true" :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in platformItems">
+                    {{item.name}}
+					<template v-slot:number>{{item.value}}</template>
+					<template v-slot:description>
+                        <span class="text-medium">{{item.percentText}}</span>
+                    </template>
+                </cly-metric-card>
+            </cly-metric-cards>
+				
+		</cly-section>
+		<h5> {{i18n('platforms.version-distribution')}} </h5>
+		<cly-section >
+			<div class="bu-columns bu-is-gapless">
+				<div class="bu-column bu-is-3 " :key="idx" v-for="(item, idx) in platformVersions">
+					<div class="emptyVersions" v-if="item.itemCn === 0">
+						<div>{{i18n('common.table.no-data')}}</div>
+					</div>
+					<div class="allPlatformVersions bu-p-3" v-else>
+						<vue-scroll :ops="scrollOptions">
+							<div :key="idx2" v-for="(item2, idx2) in item.data" >
+								<div class="version-graph-block bu-p-3">
+									<div class="bu-columns version-graph-title">
+										<div class="bu-column">{{item2.name}}</div>
+										<div class="bu-column">{{item2.value}} | {{item2.percent}} % </div>
+									</div>
+									<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
+								</div>
+							</div>
+						</vue-scroll>
+					</div>
+				</div>
+			</div>
+		</cly-section>
+		<cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs"></cly-dynamic-tabs>
+    </cly-main>
+</div>

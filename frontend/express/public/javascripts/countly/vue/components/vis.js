@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor */
+/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor, countlyGlobal */
 
 (function(countlyVue) {
 
@@ -847,6 +847,59 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
+                    </div>'
+    }));
+
+    Vue.component("cly-chart-geo", countlyBaseComponent.extend({
+        props: {
+            resizeDebounce: {
+                type: Number,
+                default: 500
+            },
+            options: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        data: function() {
+            return {
+                forwardedSlots: ["chart-left", "chart-right"],
+                settings: {
+                    packages: ['geochart'],
+                    mapsApiKey: countlyGlobal.config.google_maps_api_key
+                },
+                defaultOptions: {
+                    legend: "none",
+                    backgroundColor: "transparent",
+                    datalessRegionColor: "#FFF",
+                }
+            };
+        },
+        components: {
+            'chart-header': ChartHeader,
+        },
+        computed: {
+            chartOptions: function() {
+                var opt = _merge({}, this.defaultOptions, this.options);
+                return opt;
+            }
+        },
+        template: '<div class="cly-vue-chart">\
+                        <chart-header>\
+                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                <slot :name="item" v-bind="slotScope"></slot>\
+                            </template>\
+                        </chart-header>\
+                        <GChart\
+                            type="GeoChart"\
+                            :resizeDebounce="resizeDebounce"\
+                            :settings="settings"\
+                            :options="chartOptions"\
+                            v-bind="$attrs"\
+                            v-on="$listeners"\
+                        />\
                     </div>'
     }));
 
