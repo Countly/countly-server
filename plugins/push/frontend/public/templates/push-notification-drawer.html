@@ -6,7 +6,7 @@
     :saveButtonLabel="saveButtonLabel"
     v-bind="controls">
     <template v-slot:sidecars="drawerScope">
-        <cly-content id="mainSidecar" role="sidecar" :always-active="true">
+        <cly-content id="mainSidecar" role="sidecar" :always-active="true" style="display: flex;justify-content: center;align-items: center; height:100%">
             <mobile-message-preview
                 v-if="drawerScope.currentStepId === 'step3' ||  drawerScope.currentStepId === 'step4'"
                 :title="pushNotificationUnderEdit.message[activeLocalization].title" 
@@ -17,18 +17,20 @@
                 >
             </mobile-message-preview>
         </cly-content>
+
     </template>
     <template v-slot:default="drawerScope">
         <div class="bu-column bu-is-10 bu-is-offset-1">
             <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')">
                 <div class="bu-column bu-is-full">
-                    <div class="bu-py-1 bu-my-1">Message Name</div>
+                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Message Name</div>
+                    <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for message name</div>
                     <validation-provider v-slot="v">
                         <el-input v-model="pushNotificationUnderEdit.name" placeholder="Enter Message Name"></el-input>
                     </validation-provider>
                 </div>
                 <div class="bu-column bu-is-full">
-                    <div class="bu-py-1 bu-my-1">Platform</div>
+                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__checkbox-group-header">Platforms</div>
                     <el-checkbox-group v-model="pushNotificationUnderEdit.platforms">
                         <el-checkbox :label="PlatformEnum.ANDROID">Android</el-checkbox>
                         <el-checkbox :label="PlatformEnum.IOS">IOS</el-checkbox>
@@ -36,13 +38,19 @@
                 </div>
                 <template v-if="type === TypeEnum.ONE_TIME">
                     <div  class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">Targeting</div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                            Targeting
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-targeting-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
                         <el-radio-group v-model="pushNotificationUnderEdit.targeting" class="cly-vue-push-notification-drawer__radio-group">
                             <div class="bu-level">
                                 <div class="bu-level-item bu-pr-1">
                                     <el-radio :label="TargetingEnum.ALL"  border class="cly-vue-push-notification-drawer__radio-button"> 
                                         <div class="cly-vue-push-notification-drawer__radio-button-title">All push-enabled users</div>
-                                        <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Some description for option goes here</div>                               
+                                        <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> 
+                                            <span class="cly-vue-push-notification-drawer__radio-button-content-header">{{enabledUsers}}</span> 
+                                            Push-enabled users
+                                        </div>                               
                                     </el-radio>
                                 </div>
                                 <div class="bu-level-item bu-pr-1">
@@ -56,7 +64,8 @@
                     </div>
                     <template v-if="pushNotificationUnderEdit.targeting === TargetingEnum.SEGMENTED">
                         <div class="bu-column bu-is-full">
-                            <div class="bu-py-1 bu-my-1">Send to the users currently in selected cohorts(s)</div>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Send to the users currently in selected cohorts(s)</div>
+                            <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for message name</div>
                             <el-select
                                 v-model="pushNotificationUnderEdit.cohorts"
                                 multiple
@@ -75,7 +84,8 @@
                             </el-select>
                         </div>
                         <div class="bu-column bu-is-full">
-                            <div class="bu-py-1 bu-my-1">Send to the users currently in selected Geolocations</div>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Send to the users currently in selected Geolocations</div>
+                            <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for message name</div>
                             <el-select
                                 v-model="pushNotificationUnderEdit.locations"
                                 multiple
@@ -94,30 +104,49 @@
                             </el-select>                
                         </div>
                         <div class="bu-column bu-is-full">
-                            <div class="bu-py-1 bu-my-1">When to determine the uses?</div>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-group-header">
+                                When to determine the uses?
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-targeting-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
                             <el-radio-group v-model="pushNotificationUnderEdit.whenToDetermine">
-                                <el-radio :label="WhenToDetermineEnum.BEFORE" class="bu-py-1 bu-my-1">Determine users right before sending the message</el-radio>
-                                <br />
-                                <el-radio :label="WhenToDetermineEnum.NOW" class="bu-py-1 bu-my-1">Determine users now</el-radio> 
+                                <el-radio :label="WhenToDetermineEnum.BEFORE" class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-button">Determine users right before sending the message</el-radio> 
+                                <el-radio :label="WhenToDetermineEnum.NOW" class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-button">Determine users now</el-radio> 
                             </el-radio-group>
                         </div>
                     </template>
                 </template>
                 <template v-else-if="type === TypeEnum.AUTOMATIC">
                     <div class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">Triggers</div>
-                        <div class="cly-vue-push-notification-drawer__header-description"> Some trigger related description can be placed here</div>
-                        <el-radio-group v-model="pushNotificationUnderEdit.automatic.trigger">
-                            <el-radio :label="TriggerEnum.COHORT_ENTRY" class="bu-py-1 bu-my-1">Cohort(s) Entry</el-radio>
-                            <br />
-                            <el-radio :label="TriggerEnum.COHORT_EXIT" class="bu-py-1 bu-my-1">Cohort(s) Exit</el-radio> 
-                            <br />
-                            <el-radio :label="TriggerEnum.EVENT" class="bu-py-1 bu-my-1">Performed Event(s)</el-radio> 
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                            Triggers
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-triggers-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
+                        <el-radio-group v-model="pushNotificationUnderEdit.automatic.trigger" class="cly-vue-push-notification-drawer__radio-group">
+                            <el-radio :label="TriggerEnum.COHORT_ENTRY" border class="bu-py-1 bu-my-1 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__full-line-bordered-radio-button">
+                                <div class="bu-is-flex bu-is-align-items-center">
+                                    <div class="bu-is-flex-grow-1 bu-is-flex-shrink-1 cly-vue-push-notification-drawer__radio-button-title">Cohort(s) Entry</div>
+                                    <div class="bu-is-flex-grow-0 bu-is-flex-shrink-1 cly-vue-push-notification-drawer__radio-button-content"> Some description for option goes here</div> 
+                                </div>
+                            </el-radio>
+                            <el-radio :label="TriggerEnum.COHORT_EXIT" border class="bu-py-1 bu-my-1 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__full-line-bordered-radio-button">
+                                <div  class="bu-is-flex bu-is-align-items-center">
+                                    <div class="bu-is-flex-grow-1 bu-is-flex-shrink-1 cly-vue-push-notification-drawer__radio-button-title">Cohort(s) Exit</div>
+                                    <div class="bu-is-flex-grow-0 bu-is-flex-shrink-1 cly-vue-push-notification-drawer__radio-button-content"> Some description for option goes here</div>       
+                                </div>
+                        
+                            </el-radio> 
+                            <el-radio :label="TriggerEnum.EVENT" border class="bu-py-1 bu-my-1 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__full-line-bordered-radio-button">
+                                <div class="bu-is-flex bu-is-align-items-center">
+                                    <div class="bu-is-flex-grow-1 bu-is-flex-shrink-1 cly-vue-push-notification-drawer__radio-button-title">Performed Event(s)</div>
+                                    <div class="bu-is-flex-grow-0 bu-is-flex-shrink-1 cly-vue-push-notification-drawer__radio-button-content"> Some description for option goes here</div>     
+                                </div>                          
+                            </el-radio> 
                         </el-radio-group>
                     </div>
                     <template v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT">
                         <div class="bu-column bu-is-full">
-                            <div class="bu-py-1 bu-my-1">Select one or more events to set the trigger</div>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Select one or more events to set the trigger</div>
+                            <div class="cly-vue-push-notification-drawer__input-description">Some description for selection goes here</div>
                             <el-select
                                 v-model="pushNotificationUnderEdit.automatic.events"
                                 multiple
@@ -139,8 +168,8 @@
                     </template>
                     <template v-else>
                         <div class="bu-column bu-is-full">
-                            <div class="bu-py-1 bu-my-1">Select one ore more cohorts to set the trigger</div>
-                            <div class="cly-vue-push-notification-drawer__header-description">Recalculation of cohorts above will trigger sending process automatically</div>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Select one ore more cohorts to set the trigger</div>
+                            <div class="cly-vue-push-notification-drawer__input-description">Recalculation of cohorts above will trigger sending process automatically</div>
                             <el-select
                                 v-model="pushNotificationUnderEdit.cohorts"
                                 multiple
@@ -160,7 +189,8 @@
                         </div>
                     </template>
                     <div class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">Send to the users currently in selected Geolocations</div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Send to the users currently in selected Geolocations</div>
+                        <div class="cly-vue-push-notification-drawer__input-description">Some description for selection goes here</div>
                         <el-select
                             v-model="pushNotificationUnderEdit.locations"
                             multiple
@@ -180,21 +210,26 @@
                     </div>
                     <template v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT">
                         <div class="bu-column bu-is-full">
-                            <div class="bu-py-1 bu-my-1">Delivery date calculation</div>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-group-header">
+                                Delivery date calculation
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-delivery-date-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
                             <el-radio-group v-model="pushNotificationUnderEdit.automatic.deliveryDate">
-                                <el-radio :label="AutomaticDeliveryDateEnum.EVENT_SERVER_DATE" class="bu-py-1 bu-my-1">Relative to the date event arrived to the server</el-radio>
-                                <br />
-                                <el-radio :label="AutomaticDeliveryDateEnum.EVENT_DEVICE_DATE" class="bu-py-1 bu-my-1">Relative to the date event occurred on a device</el-radio> 
+                                <el-radio :label="AutomaticDeliveryDateEnum.EVENT_SERVER_DATE" class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-button">Relative to the date event arrived to the server</el-radio>
+                                <el-radio :label="AutomaticDeliveryDateEnum.EVENT_DEVICE_DATE" class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-button">Relative to the date event occurred on a device</el-radio> 
                             </el-radio-group>
                         </div>
                     </template>
                     <template v-else>
                         <div class="bu-column bu-is-full">
-                            <div class="bu-py-1 bu-my-1">Behavior when trigger condition is no longer met</div>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-group-header">
+                                Behavior when trigger condition is no longer met
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-when-not-met-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
                             <el-radio-group v-model="pushNotificationUnderEdit.automatic.whenNotMet"">
-                                <el-radio :label="AutomaticWhenConditionNotMetEnum.SEND_ANYWAY" class="bu-py-1 bu-my-1">Send anyway</el-radio>
+                                <el-radio :label="AutomaticWhenConditionNotMetEnum.SEND_ANYWAY" class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-button">Send anyway</el-radio>
                                 <br />
-                                <el-radio :label="AutomaticWhenConditionNotMetEnum.CANCEL_ON_EXIT" class="bu-py-1 bu-my-1">Cancel when user exits selected cohort(s)</el-radio> 
+                                <el-radio :label="AutomaticWhenConditionNotMetEnum.CANCEL_ON_EXIT" class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-button">Cancel when user exits selected cohort(s)</el-radio> 
                             </el-radio-group>
                         </div>
                     </template>
@@ -202,7 +237,10 @@
             </cly-form-step>
             <cly-form-step id="step2" :name="i18n('push-notification.drawer-step-two')">
                 <div class="bu-column bu-is-full">
-                    <div class="bu-py-1 bu-my-1">Delivery</div>
+                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                        Delivery
+                        <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-delivery-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                    </div>
                     <el-radio-group v-model="pushNotificationUnderEdit.delivery.type" class="cly-vue-push-notification-drawer__radio-group">
                         <div class="bu-level">
                             <div class="bu-level-item bu-pr-1 cly-vue-push-notification-drawer__radio-button-container">
@@ -223,13 +261,27 @@
                     </el-radio-group>
                 </div>
                 <div v-if="type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL" class="bu-column bu-is-full">
-                    <el-switch v-model="isEndDateEnabled"></el-switch>
-                    <div>Add Something End Date</div>
-                    <cly-date-picker v-bind:disabled="!isEndDateEnabled" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms"></cly-date-picker>
+                    <div class="bu-level">
+                        <div class="bu-level-left">
+                            <div class="bu-level-item">
+                                <el-switch v-model="isEndDateEnabled"></el-switch>
+                            </div>
+                            <div class="bu-level-item">
+                                <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                                    Set End Date
+                                    <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <cly-date-picker class="bu-ml-6" v-bind:disabled="!isEndDateEnabled" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms"></cly-date-picker>
                 </div>
                 <template v-if="type === TypeEnum.ONE_TIME && pushNotificationUnderEdit.delivery.type === DeliveryEnum.LATER">
                     <div class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">Timezone</div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                            Timezone
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
                         <el-radio-group v-model="pushNotificationUnderEdit.timeZone" class="cly-vue-push-notification-drawer__radio-group">
                             <div class="bu-level">
                                 <div class="bu-level-item bu-pr-1 cly-vue-push-notification-drawer__radio-button-container">
@@ -248,17 +300,20 @@
                         </el-radio-group>   
                     </div>
                     <div class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">What if the user is past the scheduled time?</div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-group-header">
+                            What if the user is past the scheduled time?
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-past-schedule-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
                         <el-radio-group v-model="pushNotificationUnderEdit.pastSchedule">
-                            <el-radio :label="PastScheduleEnum.SKIP" class="bu-py-1 bu-my-1">Do not send the message</el-radio>
-                            <br />
-                            <el-radio :label="PastScheduleEnum.NEXT_DAY" class="bu-py-1 bu-my-1">Deliver the message next day</el-radio> 
+                            <el-radio :label="PastScheduleEnum.SKIP" class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-button">Do not send the message</el-radio>
+                            <el-radio :label="PastScheduleEnum.NEXT_DAY" class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__full-line-radio-button">Deliver the message next day</el-radio> 
                         </el-radio-group>
                     </div>
                 </template>
                 <template v-if="(type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL) && pushNotificationUnderEdit.delivery.type === DeliveryEnum.LATER">
                     <div class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">Delivery Method</div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">Delivery Method</div>
+                        <div class="cly-vue-push-notification-drawer__input-description">Choose when your message should be delivered</div>
                         <el-radio-group v-model="pushNotificationUnderEdit.delivery.method" class="cly-vue-push-notification-drawer__radio-group">
                             <div class="bu-level">
                                 <div class="bu-level-item bu-pr-1 cly-vue-push-notification-drawer__radio-button-container">
@@ -269,20 +324,41 @@
                                 </div>
                                 <div class="bu-level-item bu-pl-1 cly-vue-push-notification-drawer__radio-button-container">
                                     <el-radio :label="DeliveryEnum.DELAYED" border class="cly-vue-push-notification-drawer__radio-button">
-                                        <div class="cly-vue-push-notification-drawer__radio-button-title">Delayed</div>                        
+                                        <div class="cly-vue-push-notification-drawer__radio-button-title">Delayed</div>  
+                                        <div class="bu-level bu-ml-5 bu-mt-3">
+                                            <div class="bu-level-left">
+                                                <div class="bu-level-item">
+                                                    <el-input v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.days" controls-position="right" :min="0">
+                                                        <template slot="suffix">
+                                                            <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">Days</span>
+                                                        </template>
+                                                    </el-input>
+                                                </div>
+                                                <div class="bu-level-item">
+                                                    <el-input v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.hours" controls-position="right" :min="0" :max="23">
+                                                        <template slot="suffix">
+                                                            <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">Hours</span>
+                                                        </template>
+                                                    </el-input>
+                                                </div>
+                                            </div>
+                                        </div>                      
                                     </el-radio>
                                 </div>
                             </div>
                         </el-radio-group>   
                     </div>
                     <div class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">Capping</div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                            Capped
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-capping-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
                         <el-radio-group v-model="pushNotificationUnderEdit.automatic.capping" class="cly-vue-push-notification-drawer__radio-group">
                             <div class="bu-level">
                                 <div class="bu-level-item bu-pr-1 cly-vue-push-notification-drawer__radio-button-container">
                                     <el-radio :label="false" border class="cly-vue-push-notification-drawer__radio-button">
                                         <div class="cly-vue-push-notification-drawer__radio-button-title">No capping</div>
-                                        <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Deliver this method as soon as triggering cohort is recalculated</div>                               
+                                        <div class="cly-vue-push-notification-drawer__radio-button-content bu-ml-5 bu-mt-3"> Deliver this message as soon as triggering cohort is recalculated</div>                               
                                     </el-radio>
                                 </div>
                                 <div class="bu-level-item bu-pl-1 cly-vue-push-notification-drawer__radio-button-container">
@@ -295,64 +371,77 @@
                         </el-radio-group>   
                     </div>
                     <div class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">Maximum messages per user</div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                            Maximum messages per user
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-maximum-messages-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
                         <div class="bu-level">
                             <div class="bu-level-left">
                                 <div class="bu-level-item">
-                                    <el-input v-model="pushNotificationUnderEdit.automatic.maximumMessagesPerUser" placeholder="0" :min="1"></el-input>
-                                </div>
-                                <div class="bu-level-item">
-                                    Messages
+                                    <el-input v-model="pushNotificationUnderEdit.automatic.maximumMessagesPerUser" placeholder="0" :min="1">
+                                        <template slot="suffix">
+                                            <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">Messages</span>
+                                        </template>
+                                    </el-input>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="bu-column bu-is-full">
-                        <div class="bu-py-1 bu-my-1">Minimum time between messages</div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                            Minimum time between messages
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-minimum-time-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
                         <div class="bu-level">
                             <div class="bu-level-left">
                                 <div class="bu-level-item">
-                                    Days
+                                    <el-input v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.days" controls-position="right" :min="0">
+                                        <template slot="suffix">
+                                            <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">Days</span>
+                                        </template>
+                                    </el-input>
                                 </div>
                                 <div class="bu-level-item">
-                                    <el-input-number v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.days" controls-position="right" :min="0"></el-input-number>
-                                </div>
-                                <div class="bu-level-item">
-                                    Hours
-                                </div>
-                                <div class="bu-level-item">
-                                    <el-input-number v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.hours" controls-position="right" :min="0" :max="23"></el-input-number>
+                                    <el-input v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.hours" controls-position="right" :min="0" :max="23">
+                                        <template slot="suffix">
+                                            <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">Hours</span>
+                                        </template>
+                                    </el-input>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </template>
                 <div class="bu-column bu-is-full">
-                    <div class="bu-py-1 bu-my-1">Expiration Time</div>
-                    <div class="cly-vue-push-notification-drawer__header-description">Set expiration time for message sending </div>
+                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                        Expiration Time
+                        <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-expiration-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                    </div>
                     <div class="bu-level">
                         <div class="bu-level-left">
                             <div class="bu-level-item">
-                                Days
+                                <el-input v-model="pushNotificationUnderEdit.expiration.days" :min="0">
+                                    <template slot="suffix">
+                                        <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">Days</span>
+                                    </template>
+                                </el-input>
                             </div>
                             <div class="bu-level-item">
-                                <el-input-number v-model="pushNotificationUnderEdit.expiration.days" controls-position="right" :min="0"></el-input-number>
-                            </div>
-                            <div class="bu-level-item">
-                                Hours
-                            </div>
-                            <div class="bu-level-item">
-                                <el-input-number v-model="pushNotificationUnderEdit.expiration.hours" controls-position="right" :min="0" :max="23"></el-input-number>
+                                <el-input v-model="pushNotificationUnderEdit.expiration.hours" :min="0">
+                                    <template slot="suffix">
+                                        <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">Hours</span>
+                                    </template>
+                                </el-input>
                             </div>
                         </div>
                     </div>
                 </div>
             </cly-form-step>
-            <cly-form-step id="step3" :name="i18n('push-notification.drawer-step-three')">  
+            <cly-form-step id="step3" :name="i18n('push-notification.drawer-step-three')" class="bu-container">  
                 <div class="bu-column bu-is-full">
                     <div class="bu-level">
                         <div class="bu-level-left">
-                            <div class="bu-py-1 bu-my-1 bu-level-item">Message type</div>
+                            <div class="bu-py-1 bu-my-1 bu-level-item cly-vue-push-notification-drawer__checkbox-label">NOTIFICATION TYPE</div>
                             <div class="bu-level-item">
                                 <el-select v-model="pushNotificationUnderEdit.message.type">
                                     <el-option :key="item.value" :value="item.value" :label="item.label"
@@ -364,90 +453,88 @@
                         </div>
                     </div>
                 </div>
-                <div class="bu-column bu-is-full">
+                <div class="bu-column bu-is-full cly-vue-push-notification-drawer__radio-group-header">
                     Compose Message
+                    <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-compose-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                 </div>
                 <div class="bu-column bu-is-full">
-                    <el-checkbox v-model="pushNotificationUnderEdit.multipleLocalizations">Allow to set different message content for different localizations</el-checkbox>
+                    <el-checkbox v-model="pushNotificationUnderEdit.multipleLocalizations">
+                        <div class="cly-vue-push-notification-drawer__checkbox-text">Allow to set different message content for different localizations</div>
+                    </el-checkbox>
                 </div>
                 <div class="bu-column bu-is-full">
-                    <div class="bu-columns">
-                        <div v-if="pushNotificationUnderEdit.multipleLocalizations" class="bu-column bu-is-2">
+                    <div v-bind:class="pushNotificationUnderEdit.multipleLocalizations?'bu-columns bu-m-0':''">
+                        <div class="bu-column bu-is-2 bu-p-0 cly-vue-push-notification-drawer__section-inline-left" v-if="pushNotificationUnderEdit.multipleLocalizations">
                             <el-checkbox-group v-model="pushNotificationUnderEdit.localizations">
-                                <li v-for="localization in localizationOptions" @click="onLocalizationSelect(localization)" >
-                                    <el-checkbox :label="localization.value" :key="localization.value" @change="onLocalizationChange(localization)"></el-checkbox>
+                                <li v-for="localization in localizationOptions" @click="onLocalizationSelect(localization)" v-bind:class="['cly-vue-push-notification-drawer__checkbox-list-item', 'bu-px-3', 'bu-py-3',activeLocalization === localization.value?'cly-vue-push-notification-drawer__checkbox-list-item-active':'']">
+                                    <el-checkbox :label="localization.value" :key="localization.value" @change="onLocalizationChange(localization)">{{localization.label}}</el-checkbox>
                                     {{localization.label}}
                                 </li>
-                              </el-checkbox-group>
+                            </el-checkbox-group>
                         </div>
-                        <div v-bind:class="['bu-column', pushNotificationUnderEdit.multipleLocalizations?'bu-is-10':'bu-is-full']">
-                            <div class="bu-column bu-is-full">
-                                <div class="bu-columns bu-is-flex-wrap-wrap">
-                                    <div class="bu-column bu-is-full">
-                                        <div class="bu-level">
-                                            <div class="bu-level-left">
-                                                <div class="bu-level-item">
-                                                    <div class="bu-column bu-is-full">
-                                                        Message title
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="bu-level-right">
-                                                <div class="bu-level-item">
-                                                    <el-button type="text">Add Variable</el-button>
-                                                </div>
-                                            </div>
+                        <div class="bu-column cly-vue-push-notification-drawer__section-inline-right">
+                            <div class="bu-column">
+                                <div class="bu-level">
+                                    <div class="bu-level-left">
+                                        <div class="bu-level-item cly-vue-push-notification-drawer__input-label">
+                                            Message title
                                         </div>
                                     </div>
-                                    <div class="bu-column bu-is-full">
-                                        <validation-provider v-slot="v">
-                                            <el-input v-model="pushNotificationUnderEdit.message[activeLocalization].title" placeholder="Hello everyone!"></el-input>
-                                        </validation-provider>
-                                    </div>  
-                                </div>
-                            </div>
-                            <div class="bu-column bu-is-full">
-                                <div class="bu-columns bu-is-flex-wrap-wrap">
-                                    <div class="bu-column bu-is-full">
-                                        <div class="bu-level">
-                                            <div class="bu-level-left">
-                                                <div class="bu-level-item">
-                                                    Message Content
-                                                </div>
-                                            </div>
-                                            <div class="bu-level-right">
-                                                <div class="bu-level-item">
-                                                    <el-button type="text">Add Variable</el-button>
-                                                </div>
-                                            </div>
+                                    <div class="bu-level-right">
+                                        <div class="bu-level-item">
+                                            <el-button type="text" class="cly-vue-push-notification-drawer__input-label">Add Variable</el-button>
                                         </div>
                                     </div>
-                                    <div class="bu-column bu-is-full">
-                                        <validation-provider v-slot="v">
-                                            <el-input v-model="pushNotificationUnderEdit.message[activeLocalization].content" placeholder="Clear and shorter messages generally have more conversations..." type="textarea" :rows="2"></el-input>
-                                        </validation-provider>
-                                    </div>  
                                 </div>
+                                <validation-provider v-slot="v">
+                                    <el-input v-model="pushNotificationUnderEdit.message[activeLocalization].title" placeholder="Hello everyone!"></el-input>
+                                </validation-provider>
                             </div>
-                            <div class="bu-column bu-is-full">
-                                <div class="bu-column bu-is-full">
-                                    Buttons
+                            <div class="bu-column">
+                                <div class="bu-level">
+                                    <div class="bu-level-left">
+                                        <div class="bu-level-item cly-vue-push-notification-drawer__input-label">
+                                            Message Content
+                                        </div>
+                                    </div>
+                                    <div class="bu-level-right">
+                                        <div class="bu-level-item">
+                                            <el-button type="text" class="cly-vue-push-notification-drawer__input-label">Add Variable</el-button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <template v-for="(button,index) in pushNotificationUnderEdit.message[activeLocalization].buttons">
-                                    <div class="bu-column bu-is-full">
+                                <validation-provider v-slot="v">
+                                    <el-input v-model="pushNotificationUnderEdit.message[activeLocalization].content" placeholder="Clear and shorter messages generally have more conversations..." type="textarea" :rows="3"></el-input>
+                                </validation-provider>
+                            </div>
+                            <div class="bu-column">
+                                <div class="bu-level">
+                                    <div class="bu-level-left">
+                                        <div class="bu-level-item cly-vue-push-notification-drawer__input-label">
+                                            Buttons
+                                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-buttons-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bu-level bu-my-1" v-for="(button,index) in pushNotificationUnderEdit.message[activeLocalization].buttons">
+                                    <div class="bu-level-item bu-is-flex-grow-0 bu-pr-1">
                                         <validation-provider v-slot="v">
                                             <el-input v-model="pushNotificationUnderEdit.message[activeLocalization].buttons[index].label" placeholder="Enter xButton"></el-input>
                                         </validation-provider>
-                                        <validation-provider v-slot="v">
+                                    </div>
+                                    <div class="bu-level-item bu-is-flex-grow-1 bu-px-1">
+                                        <validation-provider v-slot="v" style="width:100%">
                                             <el-input v-model="pushNotificationUnderEdit.message[activeLocalization].buttons[index].url" placeholder="Enter Button URL or Deeplink"></el-input>
                                         </validation-provider>
+                                    </div>
+                                    <div class="bu-level-item bu-is-flex-grow-0 bu-px-1">
                                         <validation-provider v-slot="v">
-                                            <button @click="removeButton(index)">X</button>
+                                            <div class="ion ion-ios-close-outline" @click="removeButton(index)"></div>
                                         </validation-provider>
-                                    </div>  
-                                </template>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="bu-column bu-is-full">
+                            <div class="bu-column">
                                 <el-button type="text"
                                     :disabled="isAddButtonDisabled"
                                     @click="addButton"
@@ -459,47 +546,183 @@
                     </div>
                 </div>
                 <div class="bu-column bu-is-full">
-                    <div class="bu-column bu-is-full">
+                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">
                         Media URL
-                    </div>
-                    <div class="bu-column bu-is-full">
+                        <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-media-url-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for message name</div>
                         <validation-provider v-slot="v">
                             <el-input v-model="pushNotificationUnderEdit.message.mediaUrl" placeholder="Enter Image URL"></el-input>
                         </validation-provider>
-                    </div>  
+                    </div>
                 </div>
-
+                <div class="bu-column bu-is-full cly-vue-push-notification-drawer__radio-group-header">
+                    Platform Settings
+                    <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-platform-settings-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                    <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for platform settings.</div>
+                </div>
                 <div class="bu-column bu-is-full">
-                    <div class="bu-column bu-is-full">
-                        Platform Settings
-                    </div>
-                    <div class="bu-column bu-is-full">
-                        <el-collapse v-model="pushNotificationUnderEdit.expandedPlatformSettings" class="left-side-accordion-arrow">
-                            <el-collapse-item  name="PlatformEnum.IOS">
-                              <span class="collapse-title" slot="title"> IOS</span>
-                              <div>
+                    <el-collapse v-model="pushNotificationUnderEdit.expandedPlatformSettings" class="left-side-accordion-arrow">
+                        <el-collapse-item  name="PlatformEnum.IOS">
+                            <span class="collapse-title" slot="title"> IOS</span>
+                            <message-setting-element 
+                                :input="pushNotificationUnderEdit.message.settings.ios.subtitle"
+                                :toggle="settings.ios.isSubtitleEnabled"
+                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'subtitle',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isSubtitleEnabled',value)}"
+                                label="Subtitle"
+                                placeholder="Enter your subtitle"
+                                description="We can add some kind of description for platform settings."
+                            >
+                            </message-setting-element>
 
-                              </div>
-                            </el-collapse-item>
-                            <el-collapse-item  :name="PlatformEnum.ANDROID">
-                              <span class="collapse-title" slot="title"> Android</span>
-                              <div></div>
-                            </el-collapse-item>
-                        </el-collapse>
-                    </div>
+                            <message-setting-element 
+                                :input="pushNotificationUnderEdit.message.settings.ios.mediaUrl"
+                                :toggle="settings.ios.isMediaUrlEnabled"
+                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'mediaUrl',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isMediaUrlEnabled',value)}"
+                                label="Media URL"
+                                placeholder="Enter media URL"
+                                description="We can add some kind of description for platform settings."
+                            >
+                            </message-setting-element>
+
+                            <message-setting-element 
+                                :input="pushNotificationUnderEdit.message.settings.ios.soundFile"
+                                :toggle="settings.ios.isSoundFileEnabled"
+                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'soundFile',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isSoundFileEnabled',value)}"
+                                label="Sound File"
+                                placeholder="Enter sound file name"
+                                description="We can add some kind of description for platform settings."
+                            >
+                            </message-setting-element>
+
+                            <message-setting-element 
+                                :input="pushNotificationUnderEdit.message.settings.ios.badge"
+                                :toggle="settings.ios.isBadgeEnabled"
+                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'badge',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isBadgeEnabled',value)}"
+                                label="Add a badge"
+                                placeholder="Enter badge name"
+                                description="We can add some kind of description for adding badge"
+                            >
+                            </message-setting-element>
+
+                            <message-setting-element 
+                                :toggle="settings.ios.isJsonEnabled"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isJsonEnabled',value)}"
+                                label="Send JSON"
+                                description="We can add some kind of description for sending JSON data"
+                            >
+                                <el-input v-model="pushNotificationUnderEdit.message.settings.ios.json" type="textarea" @input="function(value){onSettingChange(PlatformEnum.IOS,'json',value)}" placeholder="Enter JSON data"></el-input>
+                            </message-setting-element>
+
+                            <message-setting-element 
+                            :toggle="settings.ios.isUserDataEnabled"
+                            @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isUserDataEnabled',value)}"
+                            label="Send User Data"
+                            description="We can add some kind of description for sending user data"
+                            >
+                                <el-select v-model="pushNotificationUnderEdit.message.settings.ios.userData" multiple placeholder="Select user data">
+                                    <el-option
+                                    v-for="item in userPropertiesOptions"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </message-setting-element>
+                        </el-collapse-item>
+                    </el-collapse>
+                </div>
+                <div class="bu-column bu-is-full">
+                    <el-collapse v-model="pushNotificationUnderEdit.expandedPlatformSettings" class="left-side-accordion-arrow">
+                        <el-collapse-item  :name="PlatformEnum.ANDROID">
+                            <span class="collapse-title" slot="title"> Android</span>
+                            <message-setting-element 
+                            :input="pushNotificationUnderEdit.message.settings.android.subtitle"
+                            :toggle="settings.android.isSubtitleEnabled"
+                            @onChange="function(value){onSettingChange(PlatformEnum.ANDROID,'subtitle',value)}"
+                            @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isSubtitleEnabled',value)}"
+                            label="Subtitle"
+                            placeholder="Enter your subtitle"
+                            description="We can add some kind of description for platform settings."
+                            >
+                            </message-setting-element>
+
+                            <message-setting-element 
+                                :input="pushNotificationUnderEdit.message.settings.android.mediaUrl"
+                                :toggle="settings.android.isMediaUrlEnabled"
+                                @onChange="function(value){onSettingChange(PlatformEnum.ANDROID,'mediaUrl',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isMediaUrlEnabled',value)}"
+                                label="Media URL"
+                                placeholder="Enter media URL"
+                                description="We can add some kind of description for platform settings."
+                            >
+                            </message-setting-element>
+
+                            <message-setting-element 
+                                :input="pushNotificationUnderEdit.message.settings.android.soundFile"
+                                :toggle="settings.android.isSoundFileEnabled"
+                                @onChange="function(value){onSettingChange(PlatformEnum.ANDROID,'soundFile',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isSoundFileEnabled',value)}"
+                                label="Sound File"
+                                placeholder="Enter sound file name"
+                                description="We can add some kind of description for platform settings."
+                            >
+                            </message-setting-element>
+
+                            <message-setting-element 
+                                :input="pushNotificationUnderEdit.message.settings.android.badge"
+                                :toggle="settings.android.isBadgeEnabled"
+                                @onChange="function(value){onSettingChange(PlatformEnum.ANDROID,'badge',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isBadgeEnabled',value)}"
+                                label="Add a badge"
+                                placeholder=""
+                                description="We can add some kind of description for adding badge"
+                            >
+                            </message-setting-element>
+
+                            <message-setting-element 
+                                :toggle="settings.android.isJsonEnabled"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isJsonEnabled',value)}"
+                                label="Send JSON"
+                                description="We can add some kind of description for sending JSON data"
+                            >
+                                <el-input v-model="pushNotificationUnderEdit.message.settings.android.json" type="textarea" @input="function(value){onSettingChange(PlatformEnum.ANDROID,'json',value)}" placeholder="Enter JSON data"></el-input>
+                            </message-setting-element>
+
+                            <message-setting-element 
+                            :toggle="settings.android.isUserDataEnabled"
+                            @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isUserDataEnabled',value)}"
+                            label="Send User Data"
+                            description="We can add some kind of description for sending user data"
+                            >
+                                <el-select v-model="pushNotificationUnderEdit.message.settings.android.userData" multiple placeholder="Select user data">
+                                    <el-option
+                                    v-for="item in userPropertiesOptions"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </message-setting-element>
+                        </el-collapse-item>
+                    </el-collapse>
                 </div>
             </cly-form-step>
             <cly-form-step id="step4" :name="i18n('push-notification.drawer-step-four')">
-                <div class="bu-column bu-is-full">
+                <div class="bu-column bu-is-full cly-vue-push-notification-drawer__review-header">
                    Review Message
+                   <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-review-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                 </div>
-                <div class="bu-column bu-is-full">
+                <div class="bu-column bu-is-full cly-vue-push-notification-drawer__review-section-header">
                     Message Content
                 </div>
                 <div class="bu-column bu-is-full">
                     <div class="bu-level">
                         <div class="bu-level-left">
-                            <div class="bu-py-1 bu-my-1 bu-level-item">                            
+                            <div class="bu-py-1 bu-my-1 bu-level-item cly-vue-push-notification-drawer__checkbox-label">                            
                                 {{i18n('push-notification-details.localization-filter-label')}}                            
                             </div>
                             <div class="bu-level-item">
@@ -513,40 +736,147 @@
                         </div>
                     </div>
                 </div>
-                <cly-section>
-                    <div>Title: {{pushNotificationUnderEdit.message[selectedLocalizationFilter].title}}</div>
-                    <div>Content: {{pushNotificationUnderEdit.message[selectedLocalizationFilter].content}}</div>
-                    <div v-for="(button,index) in pushNotificationUnderEdit.message[selectedLocalizationFilter].buttons">
-                        <div> Button Text: {{button.label}} </div>
-                        <div>Button URL: {{button.value}}</div>
+                <div class="bu-column cly-vue-push-notification-drawer__section bu-mb-3">
+                    <div class="bu-level bu-ml-2 bu-my-2">
+                        <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                            Title
+                        </div>
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+                            {{pushNotificationUnderEdit.message[selectedLocalizationFilter].title}}
+                        </div>
                     </div>
-                    <div>Media URL: {{pushNotificationUnderEdit.message.mediaUrl}}</div>
-                </cly-section>
-                <div>Targeting</div>
-                <cly-section>
-                    <div>Targeted users: {{pushNotificationUnderEdit.targeting}}</div>
-                    <div>Current number of users:</div>
-                    <div>When to determine: {{pushNotificationUnderEdit.whenToDetermine}}</div>
-                </cly-section>
-                <div>Delivery</div>
-                <cly-section>
-                    <div>Delivery Type: {{pushNotificationUnderEdit.delivery.type}}</div>
-                    <div>Scheduled For: </div>
-                    <div>Expiration time: Message will expire after {{pushNotificationUnderEdit.expiration.days}} and {{pushNotificationUnderEdit.expiration.hours}} hours</div>
-                </cly-section>
-                <div>Confirmation</div>
-                <cly-section>
-                    Testing
-                    <div>You can send the test message to test users</div>
-                    <el-button type="default" @click="onSendToTestUsers">Send to test users</el-button>
-                </cly-section>
-                <cly-section>
-                    CONFIRMATION
-                    <el-checkbox v-model="confirmation">I am ready to send this message to real-users</el-checkbox> 
-                </cly-section>
-                <cly-section>
+                    <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+                        <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                            Content
+                        </div>
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+                            {{pushNotificationUnderEdit.message[selectedLocalizationFilter].content}}
+                        </div>
+                    </div>
+                    <template v-for="(button,index) in pushNotificationUnderEdit.message[selectedLocalizationFilter].buttons">
+                        <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+                            <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                                Button Text
+                            </div>
+                            <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+                                {{button.label}}
+                            </div>
+                        </div>
+                        <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+                            <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                                Button URL
+                            </div>
+                            <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+                                {{button.value}}
+                            </div>
+                        </div>
+                    </template>
 
-                </cly-section>
+                    <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+                        <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                            Media URL
+                        </div>
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+                            {{pushNotificationUnderEdit.message.mediaUrl}}
+                        </div>
+                    </div>
+                </div>
+                <div class="bu-column bu-is-full cly-vue-push-notification-drawer__review-section-header">
+                    Targeting
+                </div>
+                <div class="bu-column cly-vue-push-notification-drawer__section bu-mb-3">
+                    <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+                        <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                            Targeted users
+                        </div>
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+                            {{pushNotificationUnderEdit.targeting}}
+                        </div>
+                    </div>
+                    <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+                        <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                            Current number of users
+                        </div>
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+                            {{pushNotificationUnderEdit.currentNumberOfUsers}}
+                        </div>
+                    </div>
+                    <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+                        <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                            When to determine
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-targeting-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+                            {{pushNotificationUnderEdit.whenToDetermine}}
+                        </div>
+                    </div>
+                </div>
+                <div class="bu-column bu-is-full cly-vue-push-notification-drawer__review-section-header">
+                    Delivery
+                </div>
+                <div class="bu-column cly-vue-push-notification-drawer__section bu-mb-3">
+                    <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+                        <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                            Delivery type
+                        </div>
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+                            {{pushNotificationUnderEdit.delivery.type}}
+                        </div>
+                    </div>
+                    <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+                        <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                            Scheduled for
+                        </div>
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+
+                        </div>
+                    </div>
+                    <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+                        <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
+                            Expiration time
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-expiration-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
+                            Message will expire after {{pushNotificationUnderEdit.expiration.days}} and {{pushNotificationUnderEdit.expiration.hours}} hours 
+                        </div>
+                    </div>
+                </div>
+                <div class="bu-column bu-is-full cly-vue-push-notification-drawer__review-section-header">
+                    Confirmation
+                </div>
+                <div class="bu-column cly-vue-push-notification-drawer__section bu-mb-3">
+                    <div class="bu-level bu-ml-2 bu-my-2">
+                        <div class="bu-level-left bu-is-flex-direction-column bu-is-align-items-flex-start">
+                            <div class="bu-level-item bu-my-2 cly-vue-push-notification-drawer__review-section-sub-header">
+                                TESTING
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-testing-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
+                            <div class="bu-level-item">
+                                <div class="cly-vue-push-notification-drawer__review-section-value">You can send the test message to test users</div>
+                            </div>
+                        </div>
+                        <div class="bu-level-right">
+                            <el-button type="default" @click="onSendToTestUsers">
+                                <div class="ion ion-android-send"></div>Send to test users
+                            </el-button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bu-column cly-vue-push-notification-drawer__section bu-mb-3">
+                    <div class="bu-level bu-ml-2 bu-my-2 bu-is-flex-direction-column bu-is-align-items-flex-start">
+                        <div class="bu-level-item bu-my-2 cly-vue-push-notification-drawer__review-section-sub-header">
+                            CONFIRMATION
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-confirmation-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        </div>
+                        <div class="bu-level-item">
+                            <el-checkbox v-model="isConfirmed">
+                                <div class="cly-vue-push-notification-drawer__review-section-value">
+                                    I am ready to send this message to real-users
+                                </div>
+                            </el-checkbox> 
+                        </div>
+                    </div>
+                </div>
             </cly-form-step>
         </div>
     </template>

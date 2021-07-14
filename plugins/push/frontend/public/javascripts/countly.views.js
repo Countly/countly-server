@@ -159,6 +159,69 @@
         {label: "Silent message", value: MessageTypeEnum.SILENT}
     ];
 
+    var MessageSettingElement = countlyVue.views.create({
+        template:CV.T("/push/templates/message-setting-element.html"),
+        props: {
+            input: {
+                type: String,
+                default: "",
+                required: false
+            },
+            toggle: {    
+                type: Boolean,
+                default: false,
+                required: true,
+            },
+            label: {
+                type: String,
+                default: "",
+                required: true
+            },
+            placeholder: {
+                type: String,
+                default: "",
+                required: false,
+            },
+            description: {
+                type: String,
+                default: "",
+                required: false,
+            },
+            rules: {
+                type: Array,
+                default: function(){return []},
+                required: false,
+            }
+        },
+        data: function() {
+            return {
+                innerInput: "",
+                innerToggle: false
+            }
+        },
+        computed:{
+            hasDefaultSlot: function() {
+                return Boolean(this.$slots.default);
+            }
+        },
+        watch: {
+            input: function(value) {
+                this.innerInput = value;
+            },
+            toggle: function(value) {
+                this.innerToggle = value;
+            }
+        },
+        methods: {
+            onToggle: function(value) {
+                this.$emit("onToggle",value)
+            },
+            onInput: function(value) {
+                this.$emit("onChange",value);
+            }
+        }
+    })
+
     var PushNotificationDrawer = countlyVue.views.create({
         template: CV.T("/push/templates/push-notification-drawer.html"),
         mixins: [countlyVue.mixins.i18n],
@@ -168,6 +231,7 @@
                 cohortOptions: [{label: "Users who logged in", value: "123456"}, {label: "Users who performed", value: "4523444"}],
                 locationOptions: [{label: "Canada", value: "CA"}],
                 localizationOptions: [{label: "Default", value: "default"}, {label: "English", value: "en"}, {label: "German", value: "ge"}],
+                userPropertiesOptions:[{label:"App version", value:"appVersion"}],
                 eventOptions: [{label: "Users who performed log out", value: "123444df"}],
                 saveButtonLabel: "Submit",
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
@@ -183,9 +247,27 @@
                 messageTypeFilterOptions: messageTypeFilterOptions,
                 activeLocalization: "default",
                 selectedLocalizationFilter: "default",
-                confirmation: false,
+                isConfirmed: false,
                 expandedPlatformSettings: [],
                 isEndDateEnabled: false,
+                settings: {
+                    ios: {
+                        isSubtitleEnabled: false,
+                        isMediaUrlEnabled: false,
+                        isSoundFileEnabled: false,
+                        isBadgeEnabled: false,
+                        isJsonEnabled: false,
+                        isUserDataEnabled: false,
+                    },
+                    android: {
+                        isSubtitleEnabled: false,
+                        isMediaUrlEnabled: false,
+                        isSoundFileEnabled: false,
+                        isBadgeEnabled: false,
+                        isJsonEnabled: false,
+                        isUserDataEnabled: false,
+                    }
+                },
                 pushNotificationUnderEdit: {
                     activePlatformSettings: [],
                     multipleLocalizations: false,
@@ -199,6 +281,24 @@
                             content: "",
                             localizationLabel: "Default",
                             buttons: [{label: "", value: ""}],
+                        },
+                        settings: {
+                            ios: {
+                                subtitle:"",
+                                mediaURL: "",
+                                soundFile: "",
+                                badge: "",
+                                json: null,
+                                userData:[]
+                            },
+                            android: {
+                                subtitle:"",
+                                mediaURL: "",
+                                soundFile: "",
+                                badge: "",
+                                json: null,
+                                userData:[]
+                            }
                         },
                         mediaUrl: "",
                         type: MessageTypeEnum.CONTENT
@@ -229,7 +329,8 @@
                             days: 0,
                             hours: 0
                         }
-                    }
+                    },
+                    
                 }
             };
         },
@@ -271,7 +372,10 @@
             },
             selectedLocalizationMessage: function() {
                 return this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter];
-            }
+            },
+            enabledUsers: function() {
+                return this.$store.state.countlyPushNotification.pushNotifications.enabledUsers;
+            },
         },
         methods: {
             onSaveDraft: function() {},
@@ -331,10 +435,20 @@
                 this.setActiveLocalization(localization.value);
                 // this.addLocalizationIfNotSelected(localization.value);
             },
-            onSendToTestUsers: function() {}
+            onSendToTestUsers: function() {},
+            onSettingChange: function(platform,property,value) {
+                this.pushNotificationUnderEdit.message.settings[platform][property] = value;
+            },
+            onSettingToggle: function(platform,property,value) {
+                this.settings[platform][property] = value;
+                if(!value) {
+                    this.pushNotificationUnderEdit.message.settings[platform][property] = "";
+                }
+            }
         },
         components: {
-            "mobile-message-preview": MobileMessagePreview
+            "mobile-message-preview": MobileMessagePreview,
+            "message-setting-element": MessageSettingElement
         }
     });
 

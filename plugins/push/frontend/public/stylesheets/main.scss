@@ -314,17 +314,83 @@
 
 .cly-vue-push-notification-drawer {
 
+    &__input-label {
+        font-size: typography.$text-button-size;
+        line-height: 13px;
+        font-weight: typography.$font-weight-primary;
+    }
+
+    &__input-description {
+        font-size: typography.$text-small-size;
+        line-height: 16px;
+        color: map.get(colors.$colors,"text-secondary");
+    }
+
+    &__input-suffix {
+        height:100%;
+        color: map.get(colors.$colors,"text-custom-1-active");
+    }
+
+    &__checkbox-group-header {
+        font-size: typography.$heading-5-size;
+        font-weight: typography.$font-weight-primary;
+        line-height: typography.$heading-5-line-height;
+    }
+
+    &__checkbox-label {
+        line-height: 15px;
+        font-size: typography.$text-sm-size;
+        font-weight: typography.$font-weight-primary;
+        letter-spacing: 0.5px;
+        color: map.get(colors.$colors,"text-secondary");
+    }
+
+    &__checkbox-text {
+        font-size: typography.$text-button-size;
+        line-height: typography.$text-button-line-height;
+        font-weight: normal;
+    }
+
+    &__checkbox-list-item {
+        padding: 5px;
+    }
+
+    &__checkbox-list-item-active {
+        background:#F6F6F6;
+    }
+
+    &__checkbox-list-item:hover {
+        background:darkgrey;
+    }
+
+    &__radio-group-header {
+        font-size: typography.$heading-4-size;
+        line-height: typography.$heading-5-line-height;
+        font-weight: typography.$font-weight-primary;
+    }   
+
     &__radio-group { 
         width:100%;
     }
 
-    &__radio-button-container{
+    &__radio-button-container {
         flex-basis:0;
     }
 
     &__radio-button {
         width:100%;
         height:100px !important;
+    }
+
+    &__full-line-bordered-radio-button {
+        width: 100%;
+        height: 50px;
+        margin-left: 0px !important;
+        .el-radio__label {
+            font-size: typography.$text-button-size;
+            line-height: 16px;
+            width: 100%;
+        }
     }
 
     &__radio-button-title {
@@ -334,11 +400,96 @@
 
     &__radio-button-content {
         color: map.get(colors.$colors,"text-secondary");
+        font-size: typography.$text-small-size;
+        line-height: typography.$heading-4-line-height;
+
+    }
+
+    &__radio-button-content-header {
+        font-size: typography.$heading-3-size;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
+    }
+
+    &__full-line-radio-group-header {
+        font-size: typography.$text-button-size;
+        line-height: 13px;
+        font-weight: typography.$font-weight-primary;
+    }
+
+    &__full-line-radio-button {
+        display: block;
+        .el-radio__label {
+            font-size: typography.$text-button-size;
+            line-height: 16px;
+        }
     }
 
     &__header-description {
         color: map.get(colors.$colors,"text-secondary");
     }
+
+    &__section {
+        border-radius: 6px;
+        border: 1px solid #E2E4E8;
+        background: #F8FAFD;
+    }
+
+    &__section-inline-left {
+        background: white; 
+        border-bottom-right-radius: 0px;
+        border-top-right-radius: 0px;  
+        border-bottom-left-radius: 6px;
+        border-top-left-radius: 6px;
+        border: 1px solid #E2E4E8;
+    }
+
+    &__section-inline-right {
+        background: #F8FAFD; 
+        border-bottom-left-radius: 0px;
+        border-top-left-radius: 0px;  
+        border-bottom-right-radius: 6px;
+        border-top-right-radius: 6px;
+        border: 1px solid #E2E4E8;
+    }
+
+    &__review-header {
+        font-size: typography.$heading-3-size;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
+        line-height: typography.$heading-3-line-height;
+    }
+
+    &__review-section-header {
+        font-size: 16px;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"black");
+        line-height: 24px;
+    }
+    
+    &__review-section-sub-header {
+        font-size: typography.$text-small-size;
+        line-height: 15px;
+        letter-spacing: 0.5px;
+        color: map.get(colors.$colors,"cool-gray-100");
+        font-weight: typography.$font-weight-primary;    
+    }
+
+    &__review-section-label {
+        flex-basis: 30%;
+        font-size: typography.$text-button-size;
+        line-height: 13px;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
+    }
+
+    &__review-section-value {
+        font-size: typography.$text-button-size;
+        line-height: 16px;
+        color: map.get(colors.$colors,"cool-gray-100");
+        font-weight: normal;
+    }
+
 }
 
 .left-side-accordion-arrow {
