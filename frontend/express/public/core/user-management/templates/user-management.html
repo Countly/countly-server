@@ -1,25 +1,13 @@
 <div v-bind:class="[componentId]" class="user-management-view">
-	<cly-tabs class="tab-bar" v-model="currentTab" :route-pattern="'#/' + appId + '/manage/users/:tab'" route-key="tab">
-		<el-tab-pane class="tab-content" name="users" lazy>
-			<span slot="label">Users</span>
-			<cly-header :title="i18n('management-users.view-title')">
-					<template v-slot:header-right>
-							<div class="bu-level-item">
-									<el-button class="manage-users-action-btn" @click="createUser()" type="success" size="small" icon="el-icon-circle-plus">New User
-									</el-button>
-							</div>
-					</template>
-			</cly-header>
-			<data-table @refresh-table="refresh" @edit-user="onEditUser" :rows="users"></data-table>
-			<drawer @refresh-table="refresh" :user="user" :features="features" :settings="drawerSettings" :controls="drawers.user"></drawer>
-		</el-tab-pane>
-		<el-tab-pane
-			v-for="(xtab, idx) in externalTabs"
-			:key="idx"
-			:name="xtab.name"
-			lazy>
-			<span slot="label">{{xtab.title}}</span>
-			<component :features="features" :is="xtab.component"></component>
-		</el-tab-pane>
-	</cly-tabs>
+	<cly-header :title="i18n('management-users.view-title')">
+			<template v-slot:header-right>
+					<div class="bu-level-item">
+							<el-button class="manage-users-action-btn" @click="createUser()" type="success" size="small" icon="el-icon-circle-plus"> 
+								{{ i18n('management-users.create-user') }}
+							</el-button>
+					</div>
+			</template>
+	</cly-header>
+	<data-table @refresh-table="refresh" @edit-user="onEditUser" :rows="users"></data-table>
+	<drawer @refresh-table="refresh" :user="user" :features="features" :settings="drawerSettings" :controls="drawers.user"></drawer>
 </div>

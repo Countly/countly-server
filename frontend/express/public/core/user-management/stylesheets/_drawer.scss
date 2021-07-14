@@ -13,14 +13,10 @@
     justify-content: space-between;
   }
 
-  &__inputs-area {
-    //width: calc(100% - 310px);
-
-    &__input-wrapper {
-      margin-top: 10px;
-    }
+  &__input-wrapper {
+    margin-top: 10px;
   }
-
+  
   &__label {
     display: flex;
     justify-content: space-between;

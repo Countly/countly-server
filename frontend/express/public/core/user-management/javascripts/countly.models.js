@@ -1,4 +1,4 @@
-/* global window, countlyCommon, $ */
+/* global window, countlyCommon, countlyGlobal, $ */
 
 (function(countlyUserManagement) {
     var _users = [],
@@ -133,14 +133,14 @@
 
     countlyUserManagement.fetchFeatures = function() {
         return $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r + '/users/permissions',
-            dataType: "json",
-            success: function(json) {
-                _features = json;
+            type: 'GET',
+            url: countlyCommon.API_URL + "/o/users/permissions",
+            data: {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyGlobal.defaultApp._id
             },
-            error: function(/*xhr, status, error*/) {
-                // TODO: handle error
+            success: function(res) {
+                _features = res;
             }
         });
     };

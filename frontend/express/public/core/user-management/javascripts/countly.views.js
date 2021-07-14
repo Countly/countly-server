@@ -1,4 +1,4 @@
-/*global countlyAuth, app, countlyGlobal, setTimeout, setInterval, clearInterval, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers, groupsModel */
+/*global countlyAuth, app, countlyGlobal, $, window, setTimeout, setInterval, clearInterval, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers, groupsModel */
 (function() {
     var FEATURE_NAME = "global_users";
 
@@ -11,45 +11,8 @@
         data: function() {
             return {
                 tableFilter: null,
-                tableDynamicCols: [
-                    {
-                        label: "User",
-                        value: "full_name",
-                        default: true,
-                        required: true
-                    },
-                    {
-                        label: "Username",
-                        value: "username",
-                        default: true,
-                        required: true
-                    },
-                    {
-                        label: 'Role',
-                        value: 'global_admin',
-                        default: true,
-                        required: true
-                    },
-                    {
-                        value: "email",
-                        label: "E-mail",
-                        default: true,
-                        required: true
-                    },
-                    {
-                        value: "created_at",
-                        label: "Created at",
-                        default: true,
-                        required: true
-                    },
-                    {
-                        value: "last_login",
-                        label: "Last login",
-                        default: true,
-                        required: true
-                    }
-                ]
-            }
+                showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1
+            };
         },
         computed: {
             filteredRows: function() {
@@ -77,16 +40,16 @@
                 var self = this;
                 switch (command) {
                 case "delete-user":
-                    self.$confirm('This will permanently delete the user. Continue?', 'Warning', {
-                        confirmButtonText: 'OK',
-                        cancelButtonText: 'Cancel',
+                    self.$confirm(CV.i18n('management-users.this-will-delete-user'), CV.i18n('management-users.warning'), {
+                        confirmButtonText: CV.i18n('common.ok'),
+                        cancelButtonText: CV.i18n('common.cancel'),
                         type: 'warning'
                     })
                         .then(function() {
                             countlyUserManagement.deleteUser(index, function() {
                                 self.$emit('refresh-table');
                                 self.$message({
-                                    message: 'User deleted successfully.',
+                                    message: CV.i18n('management-users.deleted-message'),
                                     type: 'success'
                                 });
                             });
@@ -94,12 +57,15 @@
                         .catch(function() {
                             self.$message({
                                 type: 'info',
-                                message: 'Delete canceled'
+                                message: CV.i18n('management-users.delete-canceled')
                             });
                         });
                     break;
                 case 'edit-user':
                     this.$emit('edit-user', index);
+                    break;
+                case 'show-logs':
+                    window.location.hash = "#/manage/systemlogs/query/" + JSON.stringify({"user_id": index});
                     break;
                 }
             }
@@ -132,10 +98,7 @@
         ],
         data: function() {
             return {
-                // TODO: remove Object.values usage
-                apps: Object.values(countlyGlobal.apps).map(function(a) {
-                    return { value: a._id, label: a.name };
-                }),
+                apps: [],
                 permissionSets: [],
                 adminAppSelector: '',
                 dropzoneOptions: {
@@ -147,7 +110,7 @@
                     thumbnailWidth: 100,
                     thumbnailHeight: 100,
                     addRemoveLinks: true,
-                    dictRemoveFile: 'Remove image',
+                    dictRemoveFile: CV.i18n('management-users.remove-image'),
                     previewTemplate: this.template(),
                     paramName: "member_image",
                     params: { _csrf: countlyGlobal.csrf_token }
@@ -165,8 +128,8 @@
                 template += '<div data-dz-thumbnail-bg></div>';
                 template += '</div>';
                 template += '<div class="user-management-drawer-content__profile-picture-area__upload-section__description-box">';
-                template += '<p class="user-management-drawer-content__profile-picture-area__upload-section__description-box--bold">Drag and drop or <span class="user-management-drawer-content__profile-picture-area__upload-section__description-box--link">browser</span> files <br> to add picture</p>';
-                template += '<p class="user-management-drawer-content__profile-picture-area__upload-section__size-warning">JPG, PNG and GIF files allowed. Maximum size is 5 MB.</p>';
+                template += '<p class="user-management-drawer-content__profile-picture-area__upload-section__description-box--bold">' + CV.i18n('management-users.drag-and-drop-or') + '<span class="user-management-drawer-content__profile-picture-area__upload-section__description-box--link">' + CV.i18n('management-users.browser') + '</span>' + CV.i18n('management-users.files-to-add-picture') + '</p>';
+                template += '<p class="user-management-drawer-content__profile-picture-area__upload-section__size-warning">' + CV.i18n('management-users.pp-size-warning') + '</p>';
                 template += '</div>';
                 template += '</div>';
                 return template;
@@ -300,80 +263,114 @@
             // drawer event handlers
             onClose: function() {},
             onSubmit: function(submitted, done) {
+                var atLeastOneAppSelected = false;
+
+                for (var i = 0; i < submitted.permission._.u.length; i++) {
+                    if (submitted.permission._.u[i].length > 0) {
+                        atLeastOneAppSelected = true;
+                    }
+                }
+
+                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0) {
+                    this.$message({
+                        message: CV.i18n('groups.at-least-one-app-required'),
+                        type: 'error'
+                    });
+                    done(CV.i18n('groups.at-least-one-app-required'));
+                    return;
+                }
+
                 var self = this;
                 if (this.settings.editMode) {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
-                    countlyUserManagement.editUser(this.user._id, submitted, function() {
-                        if (typeof self.group._id !== "undefined") {
-                            groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
-                            .then(function() {})
-                        }
-                        self.$emit('refresh-table');
-                        self.group = {};
-                        if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
-                            self.dropzoneOptions.member = { _id: self.user._id };
-                            self.$refs.userDrawerDropzone.processQueue();
-                            var checkUploadProcess = setInterval(function() {
-                                if (self.uploadCompleted) {
-                                    // show success message
-                                    self.$message({
-                                        message: 'User updated successfully.',
-                                        type: 'success'
-                                    });
-                                    clearCheck();
-                                    done();
-                                }
-                            }, 1000);
+                    countlyUserManagement.editUser(this.user._id, submitted, function(res) {
+                        if (!res.result) {
+                            if (typeof self.group._id !== "undefined") {
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
+                                    .then(function() {});
+                            }
+                            self.$emit('refresh-table');
+                            self.group = {};
+                            if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
+                                self.dropzoneOptions.member = { _id: self.user._id };
+                                self.$refs.userDrawerDropzone.processQueue();
+                                var checkUploadProcess = setInterval(function() {
+                                    if (self.uploadCompleted) {
+                                        // show success message
+                                        self.$message({
+                                            message: CV.i18n('management-users.updated-message'),
+                                            type: 'success'
+                                        });
+                                        clearCheck();
+                                        done();
+                                    }
+                                }, 1000);
 
-                            var clearCheck = function() {
-                                clearInterval(checkUploadProcess);
-                            };
+                                var clearCheck = function() {
+                                    clearInterval(checkUploadProcess);
+                                };
+                            }
+                            else {
+                                // show success message
+                                self.$message({
+                                    message: CV.i18n('management-users.updated-message'),
+                                    type: 'success'
+                                });
+                                done();
+                            }
                         }
                         else {
-                            // show success message
                             self.$message({
-                                message: 'User updated successfully.',
-                                type: 'success'
+                                message: res.result,
+                                type: 'error'
                             });
-                            done();
+                            done(res.result);
                         }
-                    // TODO: show toast
                     });
                 }
                 else {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     submitted.password = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
                     countlyUserManagement.createUser(submitted, function(res) {
-                        if (typeof self.group._id !== "undefined") {
-                            groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
-                            .then(function() {})
-                        }
-                        self.group = {};
-                        self.$emit('refresh-table');
-                        if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
-                            self.dropzoneOptions.member = { _id: res._id };
-                            self.$refs.userDrawerDropzone.processQueue();
-                            var checkUploadProcess = setInterval(function() {
-                                if (self.uploadCompleted) {
-                                    self.$message({
-                                        message: 'User created successfully.',
-                                        type: 'success'
-                                    });
-                                    clearCheck();
-                                    done();
-                                }
-                            }, 1000);
+                        if (!res.result) {
+                            if (typeof self.group._id !== "undefined") {
+                                groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
+                                    .then(function() {});
+                            }
+                            self.group = {};
+                            self.$emit('refresh-table');
+                            if (self.$refs.userDrawerDropzone.getAcceptedFiles().length > 0) {
+                                self.dropzoneOptions.member = { _id: res._id };
+                                self.$refs.userDrawerDropzone.processQueue();
+                                var checkUploadProcess = setInterval(function() {
+                                    if (self.uploadCompleted) {
+                                        self.$message({
+                                            message: CV.i18n('management-users.created-message'),
+                                            type: 'success'
+                                        });
+                                        clearCheck();
+                                        done();
+                                    }
+                                }, 1000);
 
-                            var clearCheck = function() {
-                                clearInterval(checkUploadProcess);
-                            };
+                                var clearCheck = function() {
+                                    clearInterval(checkUploadProcess);
+                                };
+                            }
+                            else {
+                                self.$message({
+                                    message: CV.i18n('management-users.created-message'),
+                                    type: 'success'
+                                });
+                                done();
+                            }
                         }
                         else {
                             self.$message({
-                                message: 'User created successfully.',
-                                type: 'success'
+                                message: res.result,
+                                type: 'error'
                             });
-                            done();
+                            done(res.result);
                         }
                     });
                 }
@@ -384,7 +381,7 @@
 
                 // clear permission sets
                 this.permissionSets = [];
-
+                this.group = {};
                 // if it's in edit mode
                 if (this.settings.editMode) {
                     // is user member of a group?
@@ -399,14 +396,16 @@
                         // is user non-global admin and has user permissions for at least one app?
                         if (!this.user.global_admin && this.user.permission._.u[0].length > 0) {
                             var userAppsSets = this.user.permission._.u;
-    
+
                             for (var set in userAppsSets) {
                                 var appFromSet = userAppsSets[set][0];
                                 var permissionSet = { c: {all: false, allowed: {}}, r: {all: false, allowed: { core: true }}, u: {all: false, allowed: {}}, d: {all: false, allowed: {}}};
                                 for (var type in types) {
                                     for (var feature in this.features) {
                                         permissionSet[types[type]].all = this.user.permission[types[type]][appFromSet].all;
-                                        permissionSet[types[type]].allowed[this.features[feature]] = this.user.permission[types[type]][appFromSet].allowed[this.features[feature]];
+                                        if (this.features[feature] !== 'core') {
+                                            permissionSet[types[type]].allowed[this.features[feature]] = this.user.permission[types[type]][appFromSet].allowed[this.features[feature]];
+                                        }
                                     }
                                 }
                                 this.permissionSets.push(permissionSet);
@@ -432,7 +431,9 @@
 
                     for (var type_ in types) {
                         for (var feature_ in this.features) {
-                            permissionSet_[types[type_]].allowed[this.features[feature_]] = false;
+                            if (this.features[feature_] !== 'core') {
+                                permissionSet_[types[type_]].allowed[this.features[feature_]] = false;
+                            }
                         }
                     }
 
@@ -451,6 +452,11 @@
             onGroupChange: function(groupVal) {
                 this.group = groupVal;
             }
+        },
+        beforeCreated: function() {
+            for (var app in countlyGlobal.apps) {
+                this.apps.push({value: countlyGlobal.apps[app]._id, label: countlyGlobal.apps[app].name });
+            }
         }
     });
 
@@ -462,11 +468,7 @@
             'drawer': Drawer
         },
         mixins: [
-            countlyVue.mixins.hasDrawers("user"),
-            // call groups tab mixin from groups plugin and inject it to view
-            countlyVue.container.tabsMixin({
-                "externalTabs": "groups/tab"
-            })
+            countlyVue.mixins.hasDrawers("user")
         ],
         data: function() {
             return {
@@ -475,10 +477,10 @@
                 currentTab: 'users',
                 appId: countlyCommon.ACTIVE_APP_ID,
                 drawerSettings: {
-                    createTitle: 'Create new user',
-                    editTitle: 'Edit user',
-                    saveButtonLabel: 'Save User',
-                    createButtonLabel: 'Create User',
+                    createTitle: CV.i18n('management-users.create-new-user'),
+                    editTitle: CV.i18n('management-users.edit-user'),
+                    saveButtonLabel: CV.i18n('management-users.save-changes'),
+                    createButtonLabel: CV.i18n('management-users.create-user'),
                     editMode: false
                 },
                 features: []
@@ -489,8 +491,10 @@
                 var self = this;
                 countlyUserManagement.fetchUsers()
                     .then(function() {
-                        // TODO: remove Object.values usage
-                        self.users = Object.values(countlyUserManagement.getUsers());
+                        var usersObj = countlyUserManagement.getUsers();
+                        for (var user in usersObj) {
+                            self.users.push(usersObj[user]);
+                        }
                     })
                     .catch(function() {});
             },
@@ -508,25 +512,51 @@
                     });
             }
         },
-        beforeCreate: function() {
+        mounted: function() {
             var self = this;
-            countlyUserManagement.fetchUsers()
-                .then(function() {
-                    // TODO: remove object.values usage
-                    self.users = Object.values(countlyUserManagement.getUsers());
-                })
-                .catch(function() {});
-            countlyUserManagement.fetchFeatures()
-                .then(function() {
-                    self.features = countlyUserManagement.getFeatures();
-                })
-                .catch(function() {});
+            $.when(countlyUserManagement.fetchUsers(), countlyUserManagement.fetchFeatures()).then(function() {
+                var usersObj = countlyUserManagement.getUsers();
+                for (var user in usersObj) {
+                    self.users.push(usersObj[user]);
+                }
+                self.features = countlyUserManagement.getFeatures();
+            });
+        }
+    });
+
+    var MainView = countlyVue.views.create({
+        template: CV.T('/core/user-management/templates/main.html'),
+        mixins: [
+            // call groups tab mixin from groups plugin and inject it to view
+            countlyVue.container.tabsMixin({
+                "externalTabs": "groups/tab"
+            })
+        ].concat(countlyVue.container.mixins(["vue/example"])),
+        data: function() {
+            return {
+                appId: countlyCommon.ACTIVE_APP_ID,
+                dynamicTab: (this.$route.params && this.$route.params.tab) || "users",
+                localTabs: [
+                    {
+                        title: "Users",
+                        name: "users",
+                        component: ManageUsersContainer,
+                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/users"
+                    }
+                ]
+            };
+        },
+        computed: {
+            tabs: function() {
+                var allTabs = this.localTabs.concat(this.externalTabs);
+                return allTabs;
+            }
         }
     });
 
     // wrap vue object with backbone wrapper
     var ManageUsersView = new countlyVue.views.BackboneWrapper({
-        component: ManageUsersContainer
+        component: MainView
     });
 
     app.ManageUsersView = ManageUsersView;
