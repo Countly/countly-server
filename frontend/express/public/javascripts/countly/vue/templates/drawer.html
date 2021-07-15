@@ -72,12 +72,12 @@
                             </slot>
                         </div>
                         <el-button @click="prevStep" size="small" v-if="currentStepIndex > 0" :disabled="isSubmitPending">{{i18n('common.drawer.previous-step')}}</el-button>
-                        <el-button @click="nextStep" size="small" type="success" v-if="!isLastStep" :disabled="!isCurrentStepValid || isSubmitPending">{{i18n('common.drawer.next-step')}}</el-button>
-                        <el-button @click="submit" :loading="isSubmitPending" size="small" v-if="isLastStep" type="success" :disabled="!isSubmissionAllowed || isSubmitPending">{{saveButtonLabel}}</el-button>
+                        <el-button @click="nextStep" size="small" type="success" v-if="!isLastStep" :class="{'is-disabled':!isCurrentStepValid}" :disabled="isSubmitPending">{{i18n('common.drawer.next-step')}}</el-button>
+                        <el-button @click="submit" :loading="isSubmitPending" size="small" v-if="isLastStep" :class="{'is-disabled':!isSubmissionAllowed}" type="success" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
                     </div>
                     <div class="cly-vue-drawer__buttons is-single-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="!isMultiStep">
                         <el-button @click="doClose" size="small" v-if="hasCancelButton" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>
-                        <el-button @click="submit" :loading="isSubmitPending" size="small" type="success" :disabled="!isSubmissionAllowed || isSubmitPending">{{saveButtonLabel}}</el-button>
+                        <el-button @click="submit" :loading="isSubmitPending" size="small" type="success" :class="{'is-disabled':!isSubmissionAllowed}" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
                     </div>
                 </div>
             </div>
