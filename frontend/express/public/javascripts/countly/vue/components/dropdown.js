@@ -216,15 +216,15 @@
                             </div>\
                             <table  \
                                 v-for="field in fields" :key="field.key">\
-					            <tr class="cly-fields-select__field">{{ field.label }}</tr>\
-					            <tr>\
-						            <el-select class="cly-fields-select__field-dropdown" :placeholder="internalValue[field.key].name?internalValue[field.key].name:internalValue[field.key]" v-model="internalValue[field.key]">\
-							            <el-option v-for="item in field.items" :key="item.key"\
-								        :value="item.name">\
-							            </el-option>\
-						            </el-select>\
-					            </tr>\
-			            	</table>\
+                                <tr class="cly-fields-select__field">{{ field.label }}</tr>\
+                                <tr>\
+                                    <el-select class="cly-fields-select__field-dropdown" :placeholder="internalValue[field.key].name?internalValue[field.key].name:internalValue[field.key]" v-model="internalValue[field.key]">\
+                                        <el-option v-for="item in field.items" :key="item.key"\
+                                            :value="item.name">\
+                                        </el-option>\
+                                    </el-select>\
+                                </tr>\
+                            </table>\
                             </div>\
                             <div class="controls">\
                             <el-button v-bind="$attrs" class="cly-fields-select__cancel" @click="close">  {{cancelLabel}}\
