@@ -1,36 +1,36 @@
-<div class="cly-vue-sidebar">
-    <div class="cly-vue-sidebar__options">
-        <div class="cly-vue-sidebar__options-list">
-            <div>
-                <div class="cly-vue-sidebar__option">
-                    <div style="background-color: green; border-radius: 4px; height: 100%; width: 100%;"></div>
-                </div>
-                <div class="cly-vue-sidebar__option">
-                    <i class="ion-ios-search-strong"></i>
-                </div>
-                <div class="cly-vue-sidebar__option">
-                    <i class="ion-stats-bars"></i>
-                </div>
-                <div style="border: 1px solid #424243; margin-top: 30px;"></div>
-                <div class="cly-vue-sidebar__option">
-                    <i class="ion-wrench"></i>
-                </div>
-            </div>
-            <div style="margin-bottom: 60px">
-                <div class="cly-vue-sidebar__option">
-                    <i class="ion-ios-bookmarks"></i>
-                </div>
-                <div class="cly-vue-sidebar__option">
-                    <i class="ion-ios-bell"></i>
-                </div>
-                <div class="cly-vue-sidebar__option">
-                    <i class="ion-person"></i>
-                </div>
-            </div>
-        </div>
-        <div class="cly-vue-sidebar__options-toggle">
-            <i class="ion-chevron-left"></i>
-        </div>
+<div class="cly-vue-sidebar bu-is-flex">
+    <div class="cly-vue-sidebar__options bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-space-between">
+        <ul class="bu-is-flex bu-is-flex-direction-column bu-is-flex-align-items-center bu-is-flex-justify-content-center">
+            <li class="cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
+                <div style="background-color: green; border-radius: 4px; height: 24px; width: 24px;"></div>
+            </li>
+            <li class="cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
+                <i class="ion-ios-search-strong"></i>
+            </li>
+            <li class="cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
+                <i class="ion-stats-bars"></i>
+            </li>
+            <li class="cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center" style="height: 0px;">
+                <div class="cly-vue-sidebar__option_divider"></div>
+            </li>
+            <li class="cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
+                <i class="ion-wrench"></i>
+            </li>
+        </ul>
+        <ul class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">
+            <li class="cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
+                <i class="ion-ios-bookmarks"></i>
+            </li>
+            <li class="cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
+                <i class="ion-ios-bell"></i>
+            </li>
+            <li class="cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
+                <i class="ion-person"></i>
+            </li>
+            <li class="cly-vue-sidebar__option cly-vue-sidebar__option-toggle bu-is-flex bu-is-align-items-center bu-is-justify-content-center">
+                <i class="ion-chevron-left"></i>
+            </li>
+        </ul>
     </div>
     <div class="cly-vue-sidebar__menu countly-vue-sidebar__app">
         <div class="cly-vue-sidebar__app-navigation">
@@ -47,7 +47,6 @@
                 :width="200">
                 <template v-slot:trigger="slotProps">
                     <el-input
-                        placeholder="Please input"
                         v-model="activeApp.name"
                         readonly="readonly"
                         clearable>

@@ -17,7 +17,6 @@ $bg-color: #24292e;
     .cly-vue-sidebar {
         width: 100%;
         height: 100%;
-        display: flex;
 
         ul {
             list-style: none;
@@ -25,7 +24,7 @@ $bg-color: #24292e;
             margin: 0;
 
             li {
-                padding: 8px 16px 8px 24px;
+                padding: 0px;
             }
         }
 
@@ -40,32 +39,23 @@ $bg-color: #24292e;
             color: map.get(c.$colors, "cool-gray-40");
         }
 
-        &__options-list {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            height: 100%;
+        &__option {
+            width: 48px;
+            height: 24px;
+            margin-top: 25px;
+            font-size: 20px;
         }
 
-        &__options-toggle {
-            position: absolute;
-            bottom: 0;
-            width: 48px;
+        &__option-toggle {
             height: 48px;
             background-color: $bg-color;
             border-top-left-radius: 50%;
             border-bottom-left-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        &__option {
+        &__option_divider {
             width: 24px;
-            height: 24px;
-            margin-top: 25px;
-            font-size: 20px;
+            border: 1px solid map.get(c.$colors, "warm-gray-70");
         }
 
         &__menu {
@@ -122,6 +112,12 @@ $bg-color: #24292e;
         &__app-menu {
             overflow: auto;
             height: 100%;
+
+            ul {
+                li {
+                    padding: 8px 16px 8px 24px;
+                }
+            }
         }
 
         &__app-image {
