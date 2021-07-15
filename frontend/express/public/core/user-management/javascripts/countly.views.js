@@ -538,7 +538,7 @@
                 dynamicTab: (this.$route.params && this.$route.params.tab) || "users",
                 localTabs: [
                     {
-                        title: "Users",
+                        title: CV.i18n('management-users.users'),
                         name: "users",
                         component: ManageUsersContainer,
                         route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/users"
