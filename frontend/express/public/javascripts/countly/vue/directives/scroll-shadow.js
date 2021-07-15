@@ -8,7 +8,7 @@
 
     Vue.directive('scroll-shadow', {
         inserted: function(el) {
-            var checkFn = function() {
+            var checkFn = _.debounce(function() {
                 el.classList.remove("is-scroll-shadow-at-top");
                 el.classList.remove("is-scroll-shadow-at-middle");
                 el.classList.remove("is-scroll-shadow-at-bottom");
@@ -28,7 +28,7 @@
                     }
                     $(el).find(".scroll-shadow-container").css("top", (el.offsetTop + $(el).height()) + "px");
                 }
-            };
+            }, 50);
 
             $(el).prepend("<div class='scroll-shadow-container'></div>");
 
