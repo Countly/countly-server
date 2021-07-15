@@ -10,7 +10,7 @@ const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
-const {WriteBatcher, ReadBatcher} = require('./parts/data/batcher.js');
+const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
 const pack = require('../package.json');
 
 var t = ["countly:", "api"];
@@ -36,6 +36,7 @@ process.title = t.join(' ');
 plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
+    common.insertBatcher = new InsertBatcher(common.db);
 
     let workers = [];
 
