@@ -10,88 +10,32 @@
                 selected: {
                     type: String,
                     default: "analytics"
+                },
+                mainOptions: {
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
+                },
+                otherOptions: {
+                    type: Array,
+                    default: function() {
+                        return [];
+                    }
                 }
             },
-            mixins: [
-                countlyVue.container.dataMixin({
-                    "externalMainOptions": "/sidebar/options/main"
-                })
-            ],
             data: function() {
                 return {
                     selectedOption: this.selected
                 };
             },
-            computed: {
-                mainOptions: function() {
-                    var options = [
-                        {
-                            name: "app"
-                        },
-                        {
-                            name: "search",
-                            icon: "ion-ios-search-strong"
-                        },
-                        {
-                            name: "analytics",
-                            icon: "ion-stats-bars"
-                        },
-                        {
-                            name: "divider"
-                        },
-                        {
-                            name: "settings",
-                            icon: "ion-wrench"
-                        }
-                    ];
-
-                    var externalOptions = this.externalMainOptions;
-
-                    if (externalOptions && externalOptions.length) {
-                        for (var i = 0; i < externalOptions.length; i++) {
-                            options.splice(2, 0, externalOptions[i]);
-                        }
-                    }
-
-                    return options;
-                },
-                otherOptions: function() {
-                    var options = [
-                        {
-                            name: "clipboard",
-                            icon: "ion-clipboard"
-                        },
-                        {
-                            name: "notifications",
-                            icon: "ion-android-notifications"
-                        },
-                        {
-                            name: "user",
-                            icon: "ion-person"
-                        },
-                        {
-                            name: "toggle",
-                            icon: "ion-chevron-left"
-                        }
-                    ];
-
-                    return options;
-                }
-            },
             methods: {
                 onClick: function(option) {
-                    switch (option.name) {
-                    case 'search':
-                    case 'analytics':
-                    case 'dashboards':
-                    case 'settings':
+                    if (!option.noSelect) {
                         this.selectedOption = option.name;
-                        break;
-                    default:
-                        break;
                     }
 
-                    this.$emit("click", option.name);
+                    this.$emit("click", option);
                 }
             }
         });
@@ -201,38 +145,125 @@
             }
         });
 
-        var DashboardsMenu = countlyVue.views.create({
-            template: CV.T('/javascripts/countly/vue/templates/sidebar/dashboards-menu.html'),
-        });
-
         var SettingsMenu = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/settings-menu.html'),
         });
 
         var SidebarView = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar.html'),
+            mixins: [
+                countlyVue.container.dataMixin({
+                    "externalMainOptions": "/sidebar/options/main",
+                    "externalOtherOptions": "/sidebar/options/other"
+                })
+            ],
             data: function() {
                 return {
                     selectedOption: "analytics"
                 };
             },
+            computed: {
+                components: function() {
+                    var options = [
+                        {
+                            name: "analytics",
+                            component: AnalyticsMenu
+                        },
+                        {
+                            name: "settings",
+                            component: SettingsMenu
+                        }
+                    ];
+
+                    var externalMainOptions = this.externalMainOptions;
+                    var externalOtherOptions = this.externalOtherOptions;
+
+                    if (externalMainOptions && externalMainOptions.length) {
+                        options = options.concat(externalMainOptions);
+                    }
+
+                    if (externalOtherOptions && externalOtherOptions.length) {
+                        options = options.concat(externalOtherOptions);
+                    }
+
+                    return options;
+                },
+                mainOptions: function() {
+                    var options = [
+                        {
+                            name: "app",
+                            noSelect: true
+                        },
+                        {
+                            name: "search",
+                            icon: "ion-ios-search-strong"
+                        },
+                        {
+                            name: "analytics",
+                            icon: "ion-stats-bars"
+                        },
+                        {
+                            name: "divider",
+                            noSelect: true
+                        },
+                        {
+                            name: "settings",
+                            icon: "ion-wrench"
+                        }
+                    ];
+
+                    var externalMainOptions = this.externalMainOptions;
+
+                    if (externalMainOptions && externalMainOptions.length) {
+                        for (var i = 0; i < externalMainOptions.length; i++) {
+                            options.splice(2, 0, externalMainOptions[i]);
+                        }
+                    }
+
+                    return options;
+                },
+                otherOptions: function() {
+                    var options = [
+                        {
+                            name: "clipboard",
+                            icon: "ion-clipboard",
+                            noSelect: true
+                        },
+                        {
+                            name: "notifications",
+                            icon: "ion-android-notifications",
+                            noSelect: true
+                        },
+                        {
+                            name: "user",
+                            icon: "ion-person",
+                            noSelect: true
+                        },
+                        {
+                            name: "toggle",
+                            icon: "ion-chevron-left",
+                            noSelect: true
+                        }
+                    ];
+
+                    var externalOtherOptions = this.externalOtherOptions;
+
+                    if (externalOtherOptions && externalOtherOptions.length) {
+                        for (var i = 0; i < externalOtherOptions.length; i++) {
+                            options.splice(2, 0, externalOtherOptions[i]);
+                        }
+                    }
+
+                    return options;
+                }
+            },
             components: {
-                "sidebar-options": SidebarOptions,
-                "analytics-menu": AnalyticsMenu,
-                "dashboards-menu": DashboardsMenu,
-                "settings-menu": SettingsMenu
+                "sidebar-options": SidebarOptions
             },
             methods: {
                 onClick: function(option) {
-                    switch (option) {
-                    case 'search':
-                    case 'analytics':
-                    case 'dashboards':
-                    case 'settings':
-                        this.selectedOption = option;
-                        break;
-                    default:
-                        break;
+                    if (!option.noSelect) {
+                        this.selectedOption = option.name;
                     }
                 }
             }
