@@ -141,6 +141,7 @@
                 }
             },
             setStepSafe: function(newIndex) {
+                this.beforeLeavingStep();
                 if (newIndex <= this.lastValidIndex) {
                     this.setStep(newIndex);
                 }
