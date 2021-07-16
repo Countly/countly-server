@@ -137,6 +137,7 @@ plugins.connectToAllDatabases().then(function() {
     async function storeBatchedData(code) {
         try {
             await common.writeBatcher.flushAll();
+            await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
         }
         catch (ex) {
