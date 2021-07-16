@@ -146,7 +146,7 @@ class InsertBatcher {
  *  Class for batching database operations for aggregated data 
  *  @example
  *  let batcher = new WriteBatcher(common.db);
- *  batcher.set("eventsa8bb6a86cc8026768c0fbb8ed5689b386909ee5c", "no-segment_2020:0_2", {"$set":{"segments.name":true, "name.Runner":true}});
+ *  batcher.add("eventsa8bb6a86cc8026768c0fbb8ed5689b386909ee5c", "no-segment_2020:0_2", {"$set":{"segments.name":true, "name.Runner":true}});
  */
 class WriteBatcher {
     /**
