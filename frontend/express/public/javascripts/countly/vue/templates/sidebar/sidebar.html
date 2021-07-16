@@ -1,0 +1,6 @@
+<div class="cly-vue-sidebar bu-is-flex">
+    <sidebar-options :selected="selectedOption" @click="onClick"></sidebar-options>
+    <analytics-menu v-show="selectedOption === 'analytics'"></analytics-menu>
+    <dashboards-menu v-show="selectedOption === 'dashboards'"></dashboards-menu>
+    <settings-menu v-show="selectedOption === 'settings'"></settings-menu>
+</div>
