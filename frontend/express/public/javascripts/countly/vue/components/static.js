@@ -12,6 +12,11 @@
                     default: "analytics"
                 }
             },
+            mixins: [
+                countlyVue.container.dataMixin({
+                    "externalMainOptions": "/sidebar/options/main"
+                })
+            ],
             data: function() {
                 return {
                     selectedOption: this.selected
@@ -32,10 +37,6 @@
                             icon: "ion-stats-bars"
                         },
                         {
-                            name: "dashboards",
-                            icon: "ion-android-apps"
-                        },
-                        {
                             name: "divider"
                         },
                         {
@@ -43,6 +44,14 @@
                             icon: "ion-wrench"
                         }
                     ];
+
+                    var externalOptions = this.externalMainOptions;
+
+                    if (externalOptions && externalOptions.length) {
+                        for (var i = 0; i < externalOptions.length; i++) {
+                            options.splice(2, 0, externalOptions[i]);
+                        }
+                    }
 
                     return options;
                 },
@@ -91,9 +100,9 @@
             template: CV.T('/javascripts/countly/vue/templates/sidebar/app-menu.html'),
             mixins: [
                 countlyVue.container.dataMixin({
-                    "categories": "/sidebar/menuCategory",
-                    "menus": "/sidebar/menu",
-                    "submenus": "/sidebar/submenu"
+                    "categories": "/sidebar/analytics/menuCategory",
+                    "menus": "/sidebar/analytics/menu",
+                    "submenus": "/sidebar/analytics/submenu"
                 })
             ],
             data: function() {
