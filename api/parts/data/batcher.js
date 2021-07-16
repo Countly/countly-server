@@ -116,7 +116,7 @@ class InsertBatcher {
     /**
      *  Provide provide a document to insert into collection
      *  @param {string} collection - name of the collection where to update data
-     *  @param {Object} doc - document to insert
+     *  @param {Object|Array} doc - one document or array of documents to insert
      *  @param {string} db - name of the database for which to write data
      */
     insert(collection, doc, db = "countly") {
@@ -124,7 +124,14 @@ class InsertBatcher {
             if (!this.data[db][collection]) {
                 this.data[db][collection] = [];
             }
-            this.data[db][collection].push(doc);
+            if (Array.isArray(doc)) {
+                for (let i = 0; i < doc.length; i++) {
+                    this.data[db][collection].push(doc[i]);
+                }
+            }
+            else {
+                this.data[db][collection].push(doc);
+            }
             if (!this.process) {
                 this.flush(db, collection);
             }

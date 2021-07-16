@@ -214,6 +214,10 @@ plugins.connectToAllDatabases().then(function() {
             else if (msg.cmd === "endPlugins") {
                 plugins.stopSyncing();
             }
+            else if (msg.cmd === "batch_insert") {
+                const {collection, doc, db} = msg.data;
+                common.insertBatcher.insert(collection, doc, db);
+            }
             else if (msg.cmd === "batch_write") {
                 const {collection, id, operation, db} = msg.data;
                 common.writeBatcher.add(collection, id, operation, db);
