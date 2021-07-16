@@ -37,6 +37,10 @@ $bg-color: #24292e;
             height: 100%;
             overflow: auto;
             color: map.get(c.$colors, "cool-gray-40");
+
+            ul:first-child li:first-child {
+                margin-top: 28px;
+            }
         }
 
         &__option {
@@ -44,6 +48,24 @@ $bg-color: #24292e;
             height: 24px;
             margin-top: 25px;
             font-size: 20px;
+            cursor: pointer;
+
+            > i:hover,
+            &--selected {
+                color: #12AF51;
+            }
+        }
+
+        &__option_app {
+            background-color: green;
+            border-radius: 4px;
+            height: 24px;
+            width: 24px;
+        }
+
+        &__option_divider {
+            width: 24px;
+            border: 1px solid map.get(c.$colors, "warm-gray-70");
         }
 
         &__option-toggle {
@@ -53,16 +75,11 @@ $bg-color: #24292e;
             border-bottom-left-radius: 50%;
         }
 
-        &__option_divider {
-            width: 24px;
-            border: 1px solid map.get(c.$colors, "warm-gray-70");
-        }
-
         &__menu {
             width: 224px;
             background-color: $bg-color;
             color: map.get(c.$colors, "warm-gray-40");
-            padding-bottom: 25px;
+            padding-bottom: 50px;
             box-sizing: border-box;
             height: 100%;
             overflow: hidden;
@@ -93,8 +110,9 @@ $bg-color: #24292e;
             box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
         }
 
-        &__app-navigation {
+        &__header {
             padding: 16px 12px;
+            position: relative;
 
             .el-input__inner {
                 height: 50px;
@@ -109,7 +127,21 @@ $bg-color: #24292e;
             }
         }
 
-        &__app-menu {
+        &__header-title {
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: 500;
+            display: inline-block;
+            margin-top: 12px;
+        }
+
+        &__header-button {
+            float: right;
+            top: 5px;
+            position: relative;
+        }
+
+        &__main-menu {
             overflow: auto;
             height: 100%;
 
@@ -131,13 +163,13 @@ $bg-color: #24292e;
     }
 }
 
-.cly-vue-sidebar__app-navigation-popper {
+.cly-vue-sidebar__analytics-popper {
     box-shadow: 0px 11px 14px rgb(0, 0, 0, .37);
     border: 1px solid map.get(c.$colors, "warm-gray-70");
 }
 
-.cly-vue-sidebar__app-navigation-popper,
-.cly-vue-sidebar__app-navigation {
+.cly-vue-sidebar__analytics-popper,
+.cly-vue-sidebar__header {
     background-color: $bg-color;
     border-radius: 4px;
     color: map.get(c.$colors, "white");

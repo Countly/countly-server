@@ -4,8 +4,91 @@
 
     $(document).ready(function() {
 
-        var SidebarView = countlyVue.views.create({
-            template: CV.T('/javascripts/countly/vue/templates/sidebar.html'),
+        var SidebarOptions = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar-options.html'),
+            props: {
+                selected: {
+                    type: String,
+                    default: "analytics"
+                }
+            },
+            data: function() {
+                return {
+                    selectedOption: this.selected
+                };
+            },
+            computed: {
+                mainOptions: function() {
+                    var options = [
+                        {
+                            name: "app"
+                        },
+                        {
+                            name: "search",
+                            icon: "ion-ios-search-strong"
+                        },
+                        {
+                            name: "analytics",
+                            icon: "ion-stats-bars"
+                        },
+                        {
+                            name: "dashboards",
+                            icon: "ion-android-apps"
+                        },
+                        {
+                            name: "divider"
+                        },
+                        {
+                            name: "settings",
+                            icon: "ion-wrench"
+                        }
+                    ];
+
+                    return options;
+                },
+                otherOptions: function() {
+                    var options = [
+                        {
+                            name: "clipboard",
+                            icon: "ion-clipboard"
+                        },
+                        {
+                            name: "notifications",
+                            icon: "ion-android-notifications"
+                        },
+                        {
+                            name: "user",
+                            icon: "ion-person"
+                        },
+                        {
+                            name: "toggle",
+                            icon: "ion-chevron-left"
+                        }
+                    ];
+
+                    return options;
+                }
+            },
+            methods: {
+                onClick: function(option) {
+                    switch (option.name) {
+                    case 'search':
+                    case 'analytics':
+                    case 'dashboards':
+                    case 'settings':
+                        this.selectedOption = option.name;
+                        break;
+                    default:
+                        break;
+                    }
+
+                    this.$emit("click", option.name);
+                }
+            }
+        });
+
+        var AnalyticsMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/app-menu.html'),
             mixins: [
                 countlyVue.container.dataMixin({
                     "categories": "/sidebar/menuCategory",
@@ -105,6 +188,43 @@
                 },
                 suffixIconClass: function(dropdown) {
                     return (dropdown.visible ? 'arrow-up is-reverse' : 'arrow-up');
+                }
+            }
+        });
+
+        var DashboardsMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/dashboards-menu.html'),
+        });
+
+        var SettingsMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/settings-menu.html'),
+        });
+
+        var SidebarView = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar.html'),
+            data: function() {
+                return {
+                    selectedOption: "analytics"
+                };
+            },
+            components: {
+                "sidebar-options": SidebarOptions,
+                "analytics-menu": AnalyticsMenu,
+                "dashboards-menu": DashboardsMenu,
+                "settings-menu": SettingsMenu
+            },
+            methods: {
+                onClick: function(option) {
+                    switch (option) {
+                    case 'search':
+                    case 'analytics':
+                    case 'dashboards':
+                    case 'settings':
+                        this.selectedOption = option;
+                        break;
+                    default:
+                        break;
+                    }
                 }
             }
         });
