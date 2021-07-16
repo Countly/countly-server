@@ -772,7 +772,7 @@
                 this.$root.$emit("cly-date-change");
             }
         },
-        template: '<cly-date-picker timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-date-picker>'
+        template: '<cly-date-picker v-bind="$attrs" timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-date-picker>'
     });
 
     Vue.component("cly-date-picker-g", globalDatepicker);
