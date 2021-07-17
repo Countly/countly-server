@@ -139,16 +139,6 @@ function sha512Hash(str, addSalt) {
 }
 
 /**
-* Create md5 hash string
-* @param {string} str - string to hash
-* @returns {string} hashed string
-**/
-function md5Hash(str) {
-    return crypto.createHash('md5').update(str + "").digest('hex');
-}
-
-
-/**
  * Verify member for Argon2 Hash
  * @param {string} username | User name
  * @param {password} password | Password string
@@ -692,12 +682,10 @@ membersUtility.setup = function(req, callback) {
                 if (req.body.lang) {
                     doc.lang = req.body.lang;
                 }
-                membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
-                    member = member.ops;
-                    var a = {};
-                    a.api_key = md5Hash(member[0]._id + (new Date).getTime());
-
-                    membersUtility.db.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
+                crypto.randomBytes(48, function(errorBuff, buffer) {
+                    doc.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
+                    membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
+                        member = member.ops;
                         setLoggedInVariables(req, member[0], membersUtility.db, function() {
                             req.session.install = true;
                             callback();
