@@ -1,0 +1,38 @@
+<div v-bind:class="[componentId]" class="ratings-tab-view">
+	<cly-header :title="i18n('feedback.ratings')">
+			<template v-slot:header-right></template>
+	</cly-header>
+  <div class="bu-level bu-m-5">
+    <div class="bu-level-left">
+      <div class="bu-level-item">
+        Results for
+        <!-- <el-select class="bu-ml-3" placement="bottom-start" :placeholder="'All Ratings, Versions and Widgets'">
+          <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
+          <el-option key="1" :label="i18n('management-users.global-admin')" value="global_admin"></el-option>
+          <el-option key="2" :label="i18n('management-users.admin')" value="admin"></el-option>
+          <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
+        </el-select>
+      -->
+      </div>
+    </div>
+    <div class="bu-level-right">
+      <div class="bu-level-item">
+        <!-- <cly-date-picker></cly-date-picker> -->
+      </div>
+    </div>
+  </div>
+  <cly-metric-cards class="ratings-wrapper__cards bu-has-background-white bu-m-5">
+    <cly-metric-card :number="sum">
+        Total Ratings
+    </cly-metric-card>
+    <cly-metric-card :number="middle">
+        Average Rating Score
+    </cly-metric-card>
+  </cly-metric-cards>
+  <cly-chart-bar class="ratings-wrapper__bar-chart bu-has-background-white bu-m-5" :option="barOptions"></cly-chart-bar>
+  <cly-dynamic-tabs class="bu-m-5" skin="secondary" v-model="dynamicTab" :tabs="tabs">
+      <template v-slot:tables="scope">
+          <span>{{scope.tab.title}}</span>
+      </template>
+  </cly-dynamic-tabs>
+</div>

@@ -1,0 +1,60 @@
+<div v-bind:class="[componentId]" class="ratings-tab-view">
+	<cly-header :title="i18n('feedback.widgets')">
+			<template v-slot:header-right>
+        <div class="bu-level-item">
+          <el-button class="manage-users-action-btn" @click="createUser()" type="success" size="small" icon="el-icon-circle-plus">Add new widget
+          </el-button>
+        </div>
+      </template>
+	</cly-header>
+  <cly-datatable-n
+    class="bu-mx-5"
+    :rows="rows">
+      <template v-slot="scope">
+          <el-table-column sortable="true" prop="status" :label="'Status'">
+              <template v-slot="rowScope">
+                <el-switch :value="rowScope.row.status"
+                  @input="scope.patch(rowScope.row, {status: !rowScope.row.status})">
+                </el-switch>
+              </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="name" :label="'Name'">
+              <template v-slot="rowScope">
+                  <span class="text-medium">
+                    {{rowScope.row.name}}
+                  </span>
+              </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="location" :label="'Location'">
+            <template v-slot="rowScope">
+                <span class="text-medium">
+                  {{rowScope.row.location}}
+                </span>
+            </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="target_pages" :label="'Target Pages'">
+            <template v-slot="rowScope">
+                <span class="text-medium">
+                  {{ rowScope.row.target_pages }}
+                </span>
+            </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="target_devices" :label="'Target Devices'">
+            <template v-slot="rowScope">
+                <span class="text-medium">
+                  {{ rowScope.row.target_devices }}
+                </span>
+            </template>
+          </el-table-column>
+          <el-table-column>
+            <template v-slot="rowScope">
+              <cly-more-options size="small" @command="handleCommand($event, rowScope.row._id)">
+                <el-dropdown-item command="delete-widget">Delete widget</el-dropdown-item>
+                <el-dropdown-item command="edit-widget">Edit widget</el-dropdown-item>
+                <el-dropdown-item command="show-instructions">Show instructions</el-dropdown-item>
+              </cly-more-options>
+            </template>
+          </el-table-column>
+      </template>
+  </cly-datatable-n>
+</div>
