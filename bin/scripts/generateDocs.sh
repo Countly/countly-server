@@ -3,8 +3,9 @@
 #Original source https://gist.github.com/vidavidorra/548ffbcdae99d752da02
 
 echo "Starting documention deployment script"
+GITHUB_BRANCH=${GITHUB_REF##*/}
 
-if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_REF" == "refs/heads/feature/actions" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
+if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_BRANCH" == "master" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
 
 echo "Action qualifies to be checked"
 
