@@ -1,5 +1,6 @@
 var exported = {},
-    countlyConfig = require('../../../api/config', 'dont-enclose');
+    countlyConfig = require('../../../api/config', 'dont-enclose'),
+    plugins = require('../../../plugins/pluginManager');
 
 (function(plugin) {
     var countlyDb;
@@ -223,7 +224,13 @@ var exported = {},
         log.ts = getTimestamp();
         log.cd = new Date();
         log.u = user.email || user.username || "";
-        log.ip = getIpAddress(req);
+        var PreventIPTracking = plugins.getConfig("systemlogs").preventIPTracking;
+        if (PreventIPTracking) {
+            log.ip = null;
+        }
+        else {
+            log.ip = getIpAddress(req);
+        }
         if (typeof data.app_id !== "undefined") {
             log.app_id = data.app_id;
         }
