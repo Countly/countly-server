@@ -145,8 +145,11 @@
             }
         });
 
-        var SettingsMenu = countlyVue.views.create({
-            template: CV.T('/javascripts/countly/vue/templates/sidebar/settings-menu.html'),
+        var ManagementMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/management-menu.html'),
+            data: function() {
+                return {};
+            }
         });
 
         var SidebarView = countlyVue.views.create({
@@ -170,8 +173,8 @@
                             component: AnalyticsMenu
                         },
                         {
-                            name: "settings",
-                            component: SettingsMenu
+                            name: "management",
+                            component: ManagementMenu
                         }
                     ];
 
@@ -207,7 +210,7 @@
                             noSelect: true
                         },
                         {
-                            name: "settings",
+                            name: "management",
                             icon: "ion-wrench"
                         }
                     ];
