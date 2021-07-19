@@ -41,7 +41,7 @@
         });
 
         var AnalyticsMenu = countlyVue.views.create({
-            template: CV.T('/javascripts/countly/vue/templates/sidebar/app-menu.html'),
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/analytics-menu.html'),
             mixins: [
                 countlyVue.container.dataMixin({
                     "categories": "/sidebar/analytics/menuCategory",
