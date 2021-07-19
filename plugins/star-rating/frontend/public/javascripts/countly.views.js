@@ -299,22 +299,65 @@ var RatingsMain = countlyVue.views.create({
     }
 });
 
-// wrap vue object with backbone wrapper
+var WidgetDetail = countlyVue.views.create({
+    template: CV.T("/star-rating/templates/widget-detail.html"),
+    data: function() {
+        return {
+            dynamicTab: (this.$route.params && this.$route.params.tab) || "ratings-table",
+            barOptions: {
+                xAxis: {
+                    data: [1, 2, 3, 4, 5]
+                },
+                series: [
+                    {
+                        data: [58000, 39000, 18000, 3000, 95000]
+                    }
+                ]
+            },
+            tabs: [
+                {
+                    title: CV.i18n('feedback.ratings'),
+                    name: 'ratings-table',
+                    component: RatingsTable
+                },
+                {
+                    title: CV.i18n('feedback.comments'),
+                    name: 'comments-table',
+                    component: CommentsTable
+                }
+            ]
+        }
+    }
+});
+
+// wrap vue objects with backbone wrappers
 var RatingsMainView = new countlyVue.views.BackboneWrapper({
     component: RatingsMain
 });
 
+var WidgetDetailView = new countlyVue.views.BackboneWrapper({
+    component: WidgetDetail
+})
+
 app.ratingsMainView = RatingsMainView;
+app.widgetDetailView = WidgetDetailView;
 
 if (countlyAuth.validateRead(FEATURE_NAME)) {
     app.route("/analytics/star-rating", 'star', function() {
         this.renderWhenReady(this.ratingsMainView);
     });
 
+    app.route("/analytics/star-rating/:widget", 'widget-detail', function(widget) {
+        console.log('widget id: ' + widget);
+        this.renderWhenReady(this.widgetDetailView);
+    });
+
+    /*
     app.route("/analytics/star-rating/:tab", 'star', function(tab) {
         // TODO: handle tab mechanism
         this.renderWhenReady(this.ratingsMainView);
     });
+    */
 
     app.addPageScript("/manage/reports", function() {
         countlyReporting.addMetric({name: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
