@@ -1,4 +1,4 @@
-/* global Vue, Backbone */
+/* global Vue, Backbone, app */
 
 (function(countlyVue) {
 
@@ -102,19 +102,12 @@
                     return t.name === name;
                 });
 
-                /*
-                    So if we are changing the url location, we dont need to emit the input event.
-                    Because it will rerender the view with the updated tab info and value will be
-                    reset automatically.
-
-                    Only emit input event when no route provided
-                */
                 if (tab.length && tab[0].route) {
                     if (this.noHistory) {
                         Backbone.history.noHistory(tab[0].route);
                     }
                     else {
-                        window.location.hash = tab[0].route;
+                        app.navigate(tab[0].route, true);
                     }
                 }
 
