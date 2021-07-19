@@ -1,0 +1,16 @@
+<div class="cly-vue-sidebar__menu">
+    <div class="cly-vue-sidebar__header">
+        <span class="cly-vue-sidebar__header-title">Management</span>
+    </div>
+    <div class="cly-vue-sidebar__main-menu">
+        <ul>
+            <li v-for="item in items" :key="item.name">
+                <div class="cly-vue-sidebar__menu-items">
+                    <a>
+                        <div class="has-ellipsis">{{item.name}}</div>
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
