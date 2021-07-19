@@ -216,7 +216,7 @@
 
                     if (externalMainOptions && externalMainOptions.length) {
                         for (var i = 0; i < externalMainOptions.length; i++) {
-                            options.splice(2, 0, externalMainOptions[i]);
+                            options.splice(3, 0, externalMainOptions[i]);
                         }
                     }
 
@@ -250,7 +250,7 @@
 
                     if (externalOtherOptions && externalOtherOptions.length) {
                         for (var i = 0; i < externalOtherOptions.length; i++) {
-                            options.splice(2, 0, externalOtherOptions[i]);
+                            options.splice(3, 0, externalOtherOptions[i]);
                         }
                     }
 
