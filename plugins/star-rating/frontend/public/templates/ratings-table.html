@@ -1,0 +1,28 @@
+<div class="ratings-table">
+  <cly-datatable-n
+    :rows="rows">
+      <template v-slot="scope">
+          <el-table-column sortable="true" prop="rating" :label="'Rating'">
+              <template v-slot="rowScope">
+                  <span class="text-medium">
+                    {{rowScope.row.rating}}
+                  </span>
+              </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="numberOfRatings" :label="'Number of Ratings'">
+            <template v-slot="rowScope">
+                <span class="text-medium">
+                  {{rowScope.row.numberOfRatings}}
+                </span>
+            </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="percentage" :label="'Percentage'">
+            <template v-slot="rowScope">
+                <span class="text-medium">
+                  {{ rowScope.row.percentage }}
+                </span>
+            </template>
+          </el-table-column>
+      </template>
+  </cly-datatable-n>
+</div>

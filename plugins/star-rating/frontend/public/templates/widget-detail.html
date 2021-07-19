@@ -1,0 +1,71 @@
+<div v-bind:class="[componentId]" class="widget-detail-view">
+	<cly-header>
+    <template v-slot:header-left>
+      <div class="widget-detail-view__widget-information">
+        <div class="widget-detail-view__back-link bu-is-size-7">
+          <i class="el-icon-back"></i> Back to Rating Widgets
+        </div>
+        <div class="widget-detail-view__widget-name bu-mt-3">
+          <h3 class="widget-detail-view__widget-name">Did you like this web page?</h3>
+        </div>
+        <div class="widget-detail-view__widget-informations bu-mt-3">
+          <div class="widget-detail-view__widget-status bu-tag"> • Running</div>
+          <div class="widget-detail-view__created-at bu-is-size-7 bu-p-1 bu-ml-2"> <i class="el-icon-time"></i> Created at 24 days ago by Lucia Deptova</div>
+          <div class="widget-detail-view__widget-id bu-is-size-7 bu-p-1 bu-ml-2"> <i class="el-icon-folder"></i> Widget ID 5fca1064e9b434744e1df82a</div>
+        </div>
+      </div>
+    </template>
+    <template v-slot:header-right>
+      <el-button class="manage-users-action-btn" size="small" icon="el-icon-video-pause">Stop Widget
+      </el-button>
+      <el-button class="manage-users-action-btn" size="small" icon="el-icon-edit">Edit Widget
+      </el-button>
+      <cly-more-options class="bu-ml-2" size="small" @command="handleCommand($event, rowScope.row._id)">
+        <el-dropdown-item command="delete-widget">Delete widget</el-dropdown-item>
+        <el-dropdown-item command="edit-widget">Edit widget</el-dropdown-item>
+        <el-dropdown-item command="show-instructions">Show instructions</el-dropdown-item>
+      </cly-more-options>
+    </template>
+  </cly-header>
+  <div class="bu-level bu-m-5 bu-has-background-white">
+    <div class="bu-level-item widget-detail-view__targeting bu-p-3 bu-is-size-7">
+      <div class="el-icon-caret-right"></div> &nbsp; TARGETING
+    </div>
+  </div>
+  <div class="bu-level bu-m-5">
+    <div class="bu-level-left">
+      <div class="bu-level-item">
+        Results for
+        <!-- <el-select class="bu-ml-3" placement="bottom-start" :placeholder="'All Ratings, Versions and Widgets'">
+          <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
+          <el-option key="1" :label="i18n('management-users.global-admin')" value="global_admin"></el-option>
+          <el-option key="2" :label="i18n('management-users.admin')" value="admin"></el-option>
+          <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
+        </el-select>
+      -->
+      </div>
+    </div>
+    <div class="bu-level-right">
+      <div class="bu-level-item">
+        <!-- <cly-date-picker></cly-date-picker> -->
+      </div>
+    </div>
+  </div>
+  <cly-metric-cards class="widget-detail-view__cards bu-has-background-white bu-m-5">
+    <cly-metric-card :number="2723">
+      Ratings
+    </cly-metric-card>
+    <cly-metric-card :number="88">
+      Ratings Rate
+    </cly-metric-card>
+    <cly-metric-card :number="12">
+      Times Shown
+    </cly-metric-card>
+  </cly-metric-cards>
+  <cly-chart-bar class="ratings-wrapper__bar-chart bu-has-background-white bu-m-5" :option="barOptions"></cly-chart-bar>
+  <cly-dynamic-tabs class="bu-m-5" skin="secondary" v-model="dynamicTab" :tabs="tabs">
+    <template v-slot:tables="scope">
+        <span>{{scope.tab.title}}</span>
+    </template>
+  </cly-dynamic-tabs>
+</div>
