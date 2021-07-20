@@ -30,12 +30,12 @@
                 };
             },
             methods: {
-                onClick: function(option) {
+                onClick: function(option, e) {
                     if (!option.noSelect) {
                         this.selectedOption = option.name;
                     }
 
-                    this.$emit("click", option);
+                    this.$emit("click", option, e);
                 }
             }
         });
@@ -167,6 +167,43 @@
             }
         });
 
+        var UsersMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/users-menu.html'),
+            data: function() {
+                return {
+                    visible: true
+                };
+            },
+            computed: {
+                member: function() {
+                    var userImage = {};
+                    var member = JSON.parse(JSON.stringify(countlyGlobal.member));
+                    if (member) {
+                        userImage.url = member.member_image;
+                        userImage.found = true;
+                    }
+                    else {
+                        var defaultAvatarSelector = (member.created_at || Date.now()) % 16 * 30;
+                        var name = member.full_name.split(" ");
+
+                        userImage.found = false;
+                        userImage.url = "images/avatar-sprite.png";
+                        userImage.position = defaultAvatarSelector;
+                        userImage.initials = name[0][0] + name[name.length - 1][0];
+                    }
+
+                    member.image = userImage;
+
+                    return member;
+                }
+            },
+            methods: {
+                clickOutside: function() {
+                    this.visible = false;
+                }
+            }
+        });
+
         var SidebarView = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar.html'),
             mixins: [
@@ -175,9 +212,18 @@
                     "externalOtherOptions": "/sidebar/options/other"
                 })
             ],
+            components: {
+                "sidebar-options": SidebarOptions,
+                "users-menu": UsersMenu
+            },
             data: function() {
                 return {
-                    selectedOption: "analytics"
+                    selectedOption: "analytics",
+                    noSelectOption: "",
+                    position: {
+                        x: 0,
+                        y: 0
+                    }
                 };
             },
             computed: {
@@ -256,7 +302,6 @@
                             name: "user",
                             icon: "ion-person",
                             noSelect: true,
-                            member: this.member
                         },
                         {
                             name: "toggle",
@@ -274,36 +319,20 @@
                     }
 
                     return options;
-                },
-                member: function() {
-                    var userImage = {};
-                    var member = JSON.parse(JSON.stringify(countlyGlobal.member));
-                    if (member) {
-                        userImage.url = member.member_image;
-                        userImage.found = true;
-                    }
-                    else {
-                        var defaultAvatarSelector = (member.created_at || Date.now()) % 16 * 30;
-                        var name = member.full_name.split(" ");
-
-                        userImage.found = false;
-                        userImage.url = "images/avatar-sprite.png";
-                        userImage.position = defaultAvatarSelector;
-                        userImage.initials = name[0][0] + name[name.length - 1][0];
-                    }
-
-                    member.image = userImage;
-
-                    return member;
                 }
             },
-            components: {
-                "sidebar-options": SidebarOptions
-            },
             methods: {
-                onClick: function(option) {
+                onClick: function(option, e) {
                     if (!option.noSelect) {
                         this.selectedOption = option.name;
+                        this.noSelectOption = "";
+                        this.position.x = 0;
+                        this.position.y = 0;
+                    }
+                    else {
+                        this.noSelectOption = option.name;
+                        this.position.x = e.clientX;
+                        this.position.y = e.clientY;
                     }
                 }
             }

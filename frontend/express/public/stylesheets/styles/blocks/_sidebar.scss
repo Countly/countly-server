@@ -240,6 +240,10 @@ $bg-color: #24292e;
         font-size: t.$text-lg-size;
     }
 
+    &__popups {
+        position: absolute;
+    }
+
     &__analytics-popper,
     &__header {
         background-color: $bg-color;
