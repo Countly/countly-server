@@ -170,14 +170,41 @@ $bg-color: #24292e;
     &__user-popper {
         box-sizing: border-box;
         font-family: t.$font-family;
-        padding: 14px 16px;
+        padding: 14px 0px;
         box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.18815);
         color: map.get(c.$colors, "cool-gray-100");
+    }
 
-        > div {
-            .bu-level {
-                &:last-child {
-                    margin-top: 18px;
+    &__user-details {
+        .bu-level {
+            padding: 6px 12px;
+        }
+    }
+
+    &__user-links {
+        .bu-level {
+            padding: 6px;
+            margin: 0px 6px;
+
+            &:hover {
+                background-color: #F1F3F4;
+                color: map.get(c.$colors, "blue-100");
+                border-radius: 2px;
+
+                .bu-level-item {
+                    i {
+                        color: map.get(c.$colors, "text-custom-1-active");
+                    }
+                }
+            }
+
+            .bu-level-item {
+                &:first-child {
+                    width: 15px;
+                }
+
+                i {
+                    color: map.get(c.$colors, "cool-gray-40");
                 }
             }
         }
@@ -238,6 +265,12 @@ $bg-color: #24292e;
         text-transform: uppercase;
         color: map.get(c.$colors, "white");
         font-size: t.$text-lg-size;
+    }
+
+    &__user-divider {
+        border: 1px solid map.get(c.$colors, "warm-gray-30");;
+        margin-top: 5px;
+        position: relative;
     }
 
     &__analytics-popper,

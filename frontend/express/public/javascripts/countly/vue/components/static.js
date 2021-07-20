@@ -4,6 +4,34 @@
 
     $(document).ready(function() {
 
+        var UsersMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/users-menu.html'),
+            props: {
+                item: {
+                    type: Object
+                }
+            },
+            data: function() {
+                return {
+                    helpCenterLink: {
+                        isString: typeof countlyGlobal.usermenu.helpCenterLink === "string" ? countlyGlobal.usermenu.helpCenterLink : false,
+                        isBoolean: typeof countlyGlobal.usermenu.helpCenterLink === "boolean" && countlyGlobal.usermenu.helpCenterLink
+                    },
+                    documentationLink: {
+                        isString: typeof countlyGlobal.usermenu.documentationLink === "string" ? countlyGlobal.usermenu.documentationLink : false,
+                        isBoolean: typeof countlyGlobal.usermenu.documentationLink === "boolean" && countlyGlobal.usermenu.documentationLink
+                    },
+                    feedbackLink: {
+                        isString: typeof countlyGlobal.usermenu.feedbackLink === "string" ? countlyGlobal.usermenu.feedbackLink : false
+                    },
+                    featureRequestLink: {
+                        isString: typeof countlyGlobal.usermenu.featureRequestLink === "string" ? countlyGlobal.usermenu.featureRequestLink : false,
+                        isBoolean: typeof countlyGlobal.usermenu.featureRequestLink === "boolean" && countlyGlobal.usermenu.featureRequestLink
+                    }
+                }
+            }
+        });
+
         var SidebarOptions = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar-options.html'),
             props: {
@@ -23,6 +51,9 @@
                         return [];
                     }
                 }
+            },
+            components: {
+                "users-menu": UsersMenu
             },
             data: function() {
                 return {
@@ -276,14 +307,17 @@
                     return options;
                 },
                 member: function() {
+                    //We should fetch the user from vuex
+                    //So that updates are reactive
+
                     var userImage = {};
                     var member = JSON.parse(JSON.stringify(countlyGlobal.member));
-                    if (member) {
+                    if (member.member_image) {
                         userImage.url = member.member_image;
                         userImage.found = true;
                     }
                     else {
-                        var defaultAvatarSelector = (member.created_at || Date.now()) % 16 * 30;
+                        var defaultAvatarSelector = (member.created_at || Date.now()) % 16 * 60;
                         var name = member.full_name.split(" ");
 
                         userImage.found = false;

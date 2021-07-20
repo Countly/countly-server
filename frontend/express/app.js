@@ -859,7 +859,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 cdn: countlyConfig.cdn || "",
                 message: req.flash("message"),
                 ssr: serverSideRendering,
-                timezones: timezones
+                timezones: timezones,
+                usermenu: {
+                    feedbackLink: COUNTLY_FEEDBACK_LINK,
+                    documentationLink: COUNTLY_DOCUMENTATION_LINK,
+                    helpCenterLink: COUNTLY_HELPCENTER_LINK,
+                    featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
+                }
             };
 
             var toDashboard = {

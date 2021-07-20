@@ -1,0 +1,173 @@
+<el-popover
+    placement="right"
+    width="224"
+    :visible-arrow="false"
+    popper-class="cly-vue-sidebar__user-popper">
+    <div class="cly-vue-sidebar__user-details">
+        <div class="bu-level">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <div class="cly-vue-sidebar__user-info">
+                        <p class="has-ellipsis">{{item.member.full_name}}</p>
+                        <p class="has-ellipsis">{{item.member.email}}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bu-level-right">
+                <div class="bu-level-item">
+                    <div v-if="item.member.image.found"
+                        :class="['cly-vue-sidebar__user-image']"
+                        :style="{
+                            backgroundImage: 'url(' + item.member.image.url + ')',
+                            backgroundSize: '100%'
+                        }">
+                    </div>
+                    <div v-else
+                        :class="['cly-vue-sidebar__user-image','bu-is-flex',
+                                'bu-is-align-items-center', 'bu-is-justify-content-center']"
+                        :style="{
+                                backgroundImage: 'url(' + item.member.image.url + ')',
+                                backgroundPosition: item.member.image.position + 'px',
+                                backgroundSize: '1020px 60px'
+                            }">
+                        <span class="cly-vue-sidebar__user-initials has-ellipsis">{{item.member.image.initials}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bu-level">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <div class="cly-vue-sidebar__user-api">
+                        <p class="has-ellipsis">{{i18nM('sidebar.api_key')}}</p>
+                        <p class="has-ellipsis">{{item.member.api_key}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="cly-vue-sidebar__user-divider"></div>
+    <div class="cly-vue-sidebar__user-links">
+        <div class="bu-level">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <i class="ion-gear-a"></i>
+                </div>
+                <div class="bu-level-item">
+                    <a href="#/manage/user-settings">
+                        <div>{{i18nM('plugins.user-configs')}}</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="bu-level">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <i class="ion-key"></i>
+                </div>
+                <div class="bu-level-item">
+                    <a href="#/manage/token_manager">
+                        <div>{{i18nM('token_manager.page-title')}}</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="bu-level" v-if="helpCenterLink.isString">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <i class="ion-help-buoy"></i>
+                </div>
+                <div class="bu-level-item">
+                    <a :href="helpCenterLink.isString" target="_blank">
+                        <div>{{i18nM('common.help-center')}}</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="bu-level" v-if="helpCenterLink.isBoolean">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <i class="ion-help-buoy"></i>
+                </div>
+                <div class="bu-level-item">
+                    <a href="https://support.count.ly" target="_blank">
+                        <div>{{i18nM('common.help-center')}}</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="bu-level" v-if="documentationLink.isString">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <i class="ion-android-document"></i>
+                </div>
+                <div class="bu-level-item">
+                    <a :href="documentationLink.isString" target="_blank">
+                        <div>{{i18nM('common.documentation')}}</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="bu-level" v-if="documentationLink.isBoolean">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <i class="ion-android-document"></i>
+                </div>
+                <div class="bu-level-item">
+                    <a href="https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base" target="_blank">
+                        <div>{{i18nM('common.documentation')}}</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="bu-level" v-if="feedbackLink.isString">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <i class="ion-ios-star"></i>
+                </div>
+                <div class="bu-level-item">
+                    <a :href="feedbackLink.isString" target="_blank">
+                        <div>{{i18nM('common.provide-feedback')}}</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="bu-level" v-if="featureRequestLink.isString">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <i class="ion-android-textsms"></i>
+                </div>
+                <div class="bu-level-item">
+                    <a :href="featureRequestLink.isString" target="_blank">
+                        <div>{{i18nM('common.feature-request')}}</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="bu-level" v-if="featureRequestLink.isBoolean">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <i class="ion-android-textsms"></i>
+                </div>
+                <div class="bu-level-item">
+                    <a href="https://support.count.ly/hc/en-us/community/topics/360001464272-Feature-Requests" target="_blank">
+                        <div>{{i18nM('common.feature-request')}}</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="bu-level">
+            <div class="bu-level-left">
+                <div class="bu-level-item">
+                    <i class="ion-android-exit"></i>
+                </div>
+                <div class="bu-level-item">
+                    <a href="#" target="_blank">
+                        <div>{{i18nM('sidebar.logout')}}</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <i slot="reference" :class="[item.icon]"></i>
+</el-popover>
