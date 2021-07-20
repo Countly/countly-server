@@ -104,24 +104,26 @@
                         return {};
                     }
                     var self = this;
-                    return this.menus.reduce(function(acc, val) {
+                    var menus = this.menus.reduce(function(acc, val) {
                         if (val.app_type === self.activeApp.type) {
                             (acc[val.category] = acc[val.category] || []).push(val);
                         }
                         return acc;
                     }, {});
+                    return menus;
                 },
                 categorizedSubmenus: function() {
                     if (!this.activeApp) {
                         return {};
                     }
                     var self = this;
-                    return this.submenus.reduce(function(acc, val) {
+                    var submenus = this.submenus.reduce(function(acc, val) {
                         if (val.app_type === self.activeApp.type) {
                             (acc[val.parent_code] = acc[val.parent_code] || []).push(val);
                         }
                         return acc;
                     }, {});
+                    return submenus;
                 }
             },
             methods: {
@@ -147,8 +149,21 @@
 
         var ManagementMenu = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/management-menu.html'),
-            data: function() {
-                return {};
+            mixins: [
+                countlyVue.container.dataMixin({
+                    "menus": "/sidebar/analytics/menu"
+                })
+            ],
+            computed: {
+                menu: function() {
+                    var menu = this.menus.filter(function(val) {
+                        if (val.category === "management") {
+                            return true;
+                        }
+                        return false;
+                    });
+                    return menu;
+                },
             }
         });
 

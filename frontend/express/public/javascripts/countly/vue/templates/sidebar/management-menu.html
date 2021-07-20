@@ -4,10 +4,10 @@
     </div>
     <div class="cly-vue-sidebar__main-menu">
         <ul>
-            <li v-for="item in items" :key="item.name">
+            <li v-for="item in menu" :key="item.name">
                 <div class="cly-vue-sidebar__menu-items">
-                    <a>
-                        <div class="has-ellipsis">{{item.name}}</div>
+                    <a :href="item.url">
+                        <div class="has-ellipsis">{{i18nM(item.title)}}</div>
                     </a>
                 </div>
             </li>
