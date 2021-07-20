@@ -5,18 +5,5 @@
         :otherOptions="otherOptions"
         @click="onClick">
     </sidebar-options>
-
-    <component
-        v-for="item in components"
-        :is="item.component"
-        v-show="selectedOption === item.name"
-        v-on="$listeners"
-        :key="item.name">
-    </component>
-
-    <users-menu
-        class="cly-vue-sidebar__popups"
-        :style="{top: position.y + 'px', left: position.x + 'px'}"
-        v-show="noSelectOption === 'user'">
-    </users-menu>
+    <component v-for="item in components" :is="item.component" v-show="selectedOption === item.name" v-on="$listeners" :key="item.name"></component>
 </div>
