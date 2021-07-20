@@ -255,7 +255,8 @@
                         {
                             name: "user",
                             icon: "ion-person",
-                            noSelect: true
+                            noSelect: true,
+                            member: this.member
                         },
                         {
                             name: "toggle",
@@ -273,6 +274,27 @@
                     }
 
                     return options;
+                },
+                member: function() {
+                    var userImage = {};
+                    var member = JSON.parse(JSON.stringify(countlyGlobal.member));
+                    if (member) {
+                        userImage.url = member.member_image;
+                        userImage.found = true;
+                    }
+                    else {
+                        var defaultAvatarSelector = (member.created_at || Date.now()) % 16 * 30;
+                        var name = member.full_name.split(" ");
+
+                        userImage.found = false;
+                        userImage.url = "images/avatar-sprite.png";
+                        userImage.position = defaultAvatarSelector;
+                        userImage.initials = name[0][0] + name[name.length - 1][0];
+                    }
+
+                    member.image = userImage;
+
+                    return member;
                 }
             },
             components: {

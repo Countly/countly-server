@@ -8,7 +8,59 @@
     </ul>
     <ul class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">
         <li v-for="item in otherOptions" :key="item.name" @click="onClick(item)" :class="[{'cly-vue-sidebar__option-toggle': item.name === 'toggle'}, 'cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center']">
-            <i :class="[item.icon, {'cly-vue-sidebar__option--selected': item.name === selectedOption}]"></i>
+            <el-popover
+                v-if="item.name === 'user'"
+                placement="right"
+                width="224"
+                :visible-arrow="false"
+                popper-class="cly-vue-sidebar__user-popper"
+                content="this is content, this is content, this is content">
+                <div>
+                    <div class="bu-level">
+                        <div class="bu-level-left">
+                            <div class="bu-level-item">
+                                <div class="cly-vue-sidebar__user-info">
+                                    <p class="has-ellipsis">{{item.member.full_name}}</p>
+                                    <p class="has-ellipsis">{{item.member.email}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bu-level-right">
+                            <div class="bu-level-item">
+                                <div v-if="item.member.image.found"
+                                    :class="['cly-vue-sidebar__user-image']"
+                                    :style="{
+                                        backgroundImage: 'url(' + item.member.image.url + ')',
+                                        backgroundSize: '100%'
+                                    }">
+                                </div>
+                                <div v-else
+                                    :class="['cly-vue-sidebar__user-image','bu-is-flex',
+                                            'bu-is-align-items-center', 'bu-is-justify-content-center']"
+                                    :style="{
+                                            backgroundImage: 'url(' + item.member.image.url + ')',
+                                            backgroundPosition: item.member.image.position + 'px',
+                                            backgroundSize: '1020px 60px'
+                                        }">
+                                    <span class="cly-vue-sidebar__user-initials has-ellipsis">{{item.member.image.initials}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bu-level">
+                        <div class="bu-level-left">
+                            <div class="bu-level-item">
+                                <div class="cly-vue-sidebar__user-api">
+                                    <p class="has-ellipsis">{{i18nM('sidebar.api_key')}}</p>
+                                    <p class="has-ellipsis">{{item.member.api_key}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <i slot="reference" :class="[item.icon, {'cly-vue-sidebar__option--selected': item.name === selectedOption}]"></i>
+            </el-popover>
+            <i v-else :class="[item.icon, {'cly-vue-sidebar__option--selected': item.name === selectedOption}]"></i>
         </li>
     </ul>
 </div>
