@@ -31,8 +31,8 @@
             <ul>
                 <li v-for="(menu, idx) in categorizedMenus[cat.name]">
                     <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
-                        <el-collapse accordion>
-                            <el-collapse-item :title="i18nM(menu.title)">
+                        <el-collapse v-model="selectedAnalyticsMenu" accordion>
+                            <el-collapse-item :title="i18nM(menu.title)" :name="menu.name">
                                 <ul>
                                     <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
                                         <div
