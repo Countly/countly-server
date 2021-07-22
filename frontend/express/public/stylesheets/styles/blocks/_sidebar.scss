@@ -13,175 +13,334 @@ $bg-color: #24292e;
     z-index: 1998; //100000;
     user-select: none;
     color: map.get(c.$colors, "warm-gray-40");
+}
 
-    .cly-vue-sidebar {
-        width: 100%;
+.cly-vue-sidebar {
+    width: 100%;
+    height: 100%;
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            padding: 0px;
+        }
+    }
+
+    .el-collapse {
+        border: none;
+    }
+
+    &__options {
+        width: 48px;
         height: 100%;
-        display: flex;
+        overflow: auto;
+        color: map.get(c.$colors, "cool-gray-40");
+
+        ul:first-child li:first-child {
+            margin-top: 28px;
+        }
+    }
+
+    &__option {
+        width: 48px;
+        height: 24px;
+        margin-top: 25px;
+        font-size: t.$text-2xl-size;
+        cursor: pointer;
+
+        i:hover,
+        &--selected {
+            color: map.get(c.$colors, "primary-green");
+        }
+    }
+
+    &__option_app {
+        background-color: map.get(c.$colors, "primary-green");
+        border-radius: 4px;
+        height: 24px;
+        width: 24px;
+    }
+
+    &__option_divider {
+        width: 24px;
+        border: 1px solid map.get(c.$colors, "warm-gray-70");
+    }
+
+    &__option-toggle {
+        height: 48px;
+        background-color: $bg-color;
+        border-top-left-radius: 50%;
+        border-bottom-left-radius: 50%;
+    }
+
+    &__menu {
+        width: 224px;
+        background-color: $bg-color;
+        color: map.get(c.$colors, "warm-gray-40");
+        padding-bottom: 50px;
+        box-sizing: border-box;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    &__menu-items,
+    &__submenu-items,
+    .el-collapse-item__header {
+        line-height: 20px;
+        height: 20px;
+        background-color: $bg-color;
+        color: map.get(c.$colors, "warm-gray-40");
+        border: none;
+        font-size: t.$text-md-size;
+        padding: 0;
+        font-weight: t.$font-weight-text;
+        font-family: t.$font-family;
+        padding: 6px 10px 6px 10px;
+
+        .el-collapse-item__arrow {
+            margin-right: 0px;
+        }
+
+        &:hover {
+            background-color: map.get(c.$colors, "warm-gray-80");
+            border-radius: 4px;
+        }
+
+        &--selected {
+            background-color: map.get(c.$colors, "primary-green");
+            border-radius: 4px;
+            color: map.get(c.$colors, "white");
+
+            &:hover {
+                background-color: map.get(c.$colors, "primary-green");
+                border-radius: 4px;
+            }
+        }
+    }
+
+    .el-collapse-item__content {
+        margin: 0;
+        padding: 0;
+    }
+
+    .el-collapse-item__wrap {
+        border-bottom: 1px solid map.get(c.$colors, "warm-gray-70");
+        background-color: $bg-color;
+        box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
+    }
+
+    &__header {
+        padding: 16px 12px;
+        position: relative;
+
+        .el-input__inner {
+            height: 50px;
+            padding-left: 49px;
+        }
+
+        .el-input__prefix {
+            left: 0px;
+            margin: 0px 12px;
+            height: auto;
+            margin-top: 12px;
+        }
+    }
+
+    &__header-title {
+        font-size: t.$text-lg-size;
+        line-height: 24px;
+        font-weight: t.$font-weight-primary;
+        display: inline-block;
+        margin-top: 12px;
+    }
+
+    &__header-button {
+        float: right;
+        top: 5px;
+        position: relative;
+    }
+
+    &__main-menu {
+        overflow: auto;
+        height: 100%;
 
         ul {
-            list-style: none;
+            li {
+                padding: 2px 14px 2px 14px;
+            }
+        }
+    }
+
+    &__app-image {
+        width: 26px;
+        height: 26px;
+        background-size: 26px 26px;
+        border-radius: 4px;
+        background-position: center;
+        display: inline-block;
+    }
+
+    &__analytics-popper {
+        box-shadow: 0px 11px 14px rgb(0, 0, 0, .37);
+        border: 1px solid map.get(c.$colors, "warm-gray-70");
+    }
+
+    &__user-popper {
+        box-sizing: border-box;
+        font-family: t.$font-family;
+        padding: 14px 0px;
+        box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.18815);
+        color: map.get(c.$colors, "cool-gray-100");
+    }
+
+    &__user-details {
+        .bu-level {
+            padding: 6px 12px;
+        }
+    }
+
+    &__user-links {
+        .bu-level {
+            padding: 6px;
+            margin: 0px 6px;
+
+            &:hover {
+                background-color: #F1F3F4;
+                color: map.get(c.$colors, "blue-100");
+                border-radius: 4px;
+
+                .bu-level-item {
+                    i {
+                        color: map.get(c.$colors, "text-custom-1-active");
+                    }
+                }
+            }
+
+            .bu-level-item {
+                &:first-child {
+                    width: 15px;
+                }
+
+                i {
+                    color: map.get(c.$colors, "cool-gray-40");
+                }
+            }
+        }
+    }
+
+    &__user-info {
+        width: 140px;
+
+        p {
             padding: 0;
             margin: 0;
 
-            li {
-                padding: 8px 16px 8px 24px;
+            &:first-child {
+                font-size: t.$text-lg-size;
+                line-height: 14px;
+                font-weight: t.$font-weight-primary;
+            }
+
+            &:last-child {
+                margin-top: 7px;
+                line-height: 17px;
+                font-size: t.$text-md-size;
+                font-weight: t.$font-weight-text;
             }
         }
+    }
 
-        .el-collapse {
-            border: none;
-        }
+    &__user-api {
+        width: 192px;
 
-        &__options {
-            width: 48px;
-            height: 100%;
-            overflow: auto;
-            color: map.get(c.$colors, "cool-gray-40");
-        }
-
-        &__options-list {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            height: 100%;
-        }
-
-        &__options-toggle {
-            position: absolute;
-            bottom: 0;
-            width: 48px;
-            height: 48px;
-            background-color: $bg-color;
-            border-top-left-radius: 50%;
-            border-bottom-left-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        &__option {
-            width: 24px;
-            height: 24px;
-            margin-top: 25px;
-            font-size: 20px;
-        }
-
-        &__menu {
-            width: 224px;
-            background-color: $bg-color;
-            color: map.get(c.$colors, "warm-gray-40");
-            padding-bottom: 25px;
-            box-sizing: border-box;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        &__menu-items,
-        &__submenu-items,
-        .el-collapse-item__header {
-            line-height: 20px;
-            height: 20px;
-            background-color: $bg-color;
-            color: map.get(c.$colors, "warm-gray-40");
-            border: none;
-            font-size: 14px;
+        p {
             padding: 0;
+            margin: 0;
+
+            &:first-child {
+                font-size: t.$text-sm-size;
+                line-height: 14px;
+                font-weight: t.$font-weight-primary;
+            }
+
+            &:last-child {
+                margin-top: 7px;
+                line-height: 17px;
+                font-size: t.$text-sm-size;
+                font-weight: t.$font-weight-text;
+            }
+        }
+    }
+
+    &__user-image {
+        height: 50px;
+        width: 50px;
+        border-radius: 25px;
+        text-align: center;
+
+        &:hover {
+            box-shadow: 0px 0px 12px map.get(c.$colors, "primary-green");
+        }
+    }
+
+    &__user-initials {
+        text-transform: uppercase;
+        color: map.get(c.$colors, "white");
+        font-size: t.$text-lg-size;
+    }
+
+    &__user-divider {
+        border: 1px solid map.get(c.$colors, "warm-gray-30");;
+        margin-top: 5px;
+        position: relative;
+    }
+
+    &__analytics-popper,
+    &__header {
+        background-color: $bg-color;
+        border-radius: 4px;
+        color: map.get(c.$colors, "white");
+
+        .el-select {
+            box-shadow: 0px 11px 14px rgb(0, 0, 0, .37);
+        }
+
+        .el-select-dropdown__item {
+            color: map.get(c.$colors, "white");
             font-weight: t.$font-weight-text;
             font-family: t.$font-family;
+
+            &.selected {
+                color: #2EFF00;
+                font-weight: t.$font-weight-text;
+            }
+
+            &:hover, &.hover {
+                background-color: transparent;
+                border: none;
+            }
         }
 
-        .el-collapse-item__content {
-            margin: 0;
-            padding: 0;
-        }
-
-        .el-collapse-item__wrap {
-            border-bottom: 1px solid map.get(c.$colors, "warm-gray-70");
+        .el-input__inner {
             background-color: $bg-color;
-            box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
-        }
-
-        &__app-navigation {
-            padding: 16px 12px;
-
-            .el-input__inner {
-                height: 50px;
-                padding-left: 49px;
-            }
-
-            .el-input__prefix {
-                left: 0px;
-                margin: 0px 12px;
-                height: auto;
-                margin-top: 12px;
-            }
-        }
-
-        &__app-menu {
-            overflow: auto;
-            height: 100%;
-        }
-
-        &__app-image {
-            width: 26px;
-            height: 26px;
-            background-size: 26px 26px;
-            border-radius: 4px;
-            background-position: center;
-            display: inline-block;
-        }
-    }
-}
-
-.cly-vue-sidebar__app-navigation-popper {
-    box-shadow: 0px 11px 14px rgb(0, 0, 0, .37);
-    border: 1px solid map.get(c.$colors, "warm-gray-70");
-}
-
-.cly-vue-sidebar__app-navigation-popper,
-.cly-vue-sidebar__app-navigation {
-    background-color: $bg-color;
-    border-radius: 4px;
-    color: map.get(c.$colors, "white");
-
-    .el-select {
-        box-shadow: 0px 11px 14px rgb(0, 0, 0, .37);
-    }
-
-    .el-select-dropdown__item {
-        color: map.get(c.$colors, "white");
-        font-weight: t.$font-weight-text;
-        font-family: t.$font-family;
-
-        &.selected {
-            color: #2EFF00;
-            font-weight: t.$font-weight-text;
-        }
-
-        &:hover, &.hover {
-            background-color: transparent;
-            border: none;
-        }
-    }
-
-    .el-input__inner {
-        background-color: $bg-color;
-        border: 1px solid map.get(c.$colors, "warm-gray-70");
-        color: map.get(c.$colors, "white");
-        font-family: t.$font-family;
-        font-weight: t.$font-weight-text;
-
-        &:focus, &:hover {
             border: 1px solid map.get(c.$colors, "warm-gray-70");
-        }
-    }
+            color: map.get(c.$colors, "white");
+            font-family: t.$font-family;
+            font-weight: t.$font-weight-text;
 
-    .el-input {
-        &.is-focus, &:focus {
-            .el-input__inner {
+            &:focus, &:hover {
                 border: 1px solid map.get(c.$colors, "warm-gray-70");
+            }
+        }
+
+        .el-input {
+            &.is-focus, &:focus {
+                .el-input__inner {
+                    border: 1px solid map.get(c.$colors, "warm-gray-70");
+                }
             }
         }
     }
