@@ -34,10 +34,12 @@
                         <el-collapse accordion>
                             <el-collapse-item :title="i18nM(menu.title)">
                                 <ul>
-                                    <li class="cly-vue-sidebar__submenu-items" v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
-                                        <a :href="submenu.url">
-                                            <div class="has-ellipsis">{{i18nM(submenu.title)}}</div>
-                                        </a>
+                                    <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
+                                        <div class="cly-vue-sidebar__submenu-items">
+                                            <a :href="submenu.url">
+                                                <div class="has-ellipsis">{{i18nM(submenu.title)}}</div>
+                                            </a>
+                                        </div>
                                     </li>
                                 </ul>
                             </el-collapse-item>

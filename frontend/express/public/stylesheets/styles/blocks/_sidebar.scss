@@ -98,6 +98,21 @@ $bg-color: #24292e;
         padding: 0;
         font-weight: t.$font-weight-text;
         font-family: t.$font-family;
+        padding: 6px 10px 6px 10px;
+
+        .el-collapse-item__arrow {
+            margin-right: 0px;
+        }
+
+        &--selected {
+            background-color: map.get(c.$colors, "primary-green");
+            border-radius: 4px;
+        }
+
+        &:hover {
+            background-color: map.get(c.$colors, "warm-gray-80");
+            border-radius: 4px;
+        }
     }
 
     .el-collapse-item__content {
@@ -148,7 +163,7 @@ $bg-color: #24292e;
 
         ul {
             li {
-                padding: 8px 16px 8px 24px;
+                padding: 2px 14px 2px 14px;
             }
         }
     }
@@ -189,7 +204,7 @@ $bg-color: #24292e;
             &:hover {
                 background-color: #F1F3F4;
                 color: map.get(c.$colors, "blue-100");
-                border-radius: 2px;
+                border-radius: 4px;
 
                 .bu-level-item {
                     i {
