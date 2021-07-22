@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _*/
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone*/
 
 (function(countlyVue, $) {
 
@@ -148,6 +148,55 @@
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
                 }
+            },
+            mounted: function() {
+                var currLink = Backbone.history.fragment;
+
+                if (/^\/custom/.test(currLink) === true) {
+                    return;
+                }
+
+                var menus = this.categorizedMenus;
+                var submenus = this.categorizedSubmenus;
+                var foundMenu = false;
+                var currMenu = {};
+                var menu;
+
+                for (var k in menus) {
+                    for (var i = 0; i < menus[k].length; i++) {
+                        menu = menus[k][i];
+                        if (menu.url === "#" + currLink) {
+                            foundMenu = true;
+                            currMenu = menu;
+                            break;
+                        }
+                    }
+
+                    if (foundMenu) {
+                        break;
+                    }
+                }
+
+                if (!foundMenu) {
+                    for (var l in submenus) {
+                        for (var j = 0; j < submenus[l].length; j++) {
+                            menu = submenus[l][j];
+                            if (menu.url === "#" + currLink) {
+                                foundMenu = true;
+                                currMenu = menu;
+                                break;
+                            }
+                        }
+
+                        if (foundMenu) {
+                            break;
+                        }
+                    }
+                }
+
+                if (foundMenu) {
+                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: currMenu});
+                }
             }
         });
 
@@ -182,6 +231,22 @@
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
                 }
+            },
+            mounted: function() {
+                var currLink = Backbone.history.fragment;
+
+                if (/^\/custom/.test(currLink) === true) {
+                    return;
+                }
+
+                var menu = this.menu;
+                var currMenu = menu.filter(function(m) {
+                    return m.url === "#" + currLink;
+                });
+
+                if (currMenu.length) {
+                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: currMenu[0]});
+                }
             }
         });
 
@@ -200,7 +265,7 @@
             },
             data: function() {
                 return {
-                    selectedOption: "analytics"
+                    selectedOptionLocal: null
                 };
             },
             computed: {
@@ -312,12 +377,21 @@
                     member.image = userImage;
 
                     return member;
+                },
+                selectedOption: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    if (!this.selectedOptionLocal) {
+                        return selected.menu;
+                    }
+
+                    return this.selectedOptionLocal;
                 }
             },
             methods: {
                 onClick: function(option) {
                     if (!option.noSelect) {
-                        this.selectedOption = option.name;
+                        this.selectedOptionLocal = option.name;
                     }
                 }
             }

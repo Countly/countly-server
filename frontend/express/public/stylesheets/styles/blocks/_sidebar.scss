@@ -112,6 +112,7 @@ $bg-color: #24292e;
         &--selected {
             background-color: map.get(c.$colors, "primary-green");
             border-radius: 4px;
+            color: map.get(c.$colors, "white");
 
             &:hover {
                 background-color: map.get(c.$colors, "primary-green");

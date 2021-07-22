@@ -125,7 +125,7 @@
             countlySidebar: {
                 namespaced: true,
                 state: {
-                    selectedMenuItem: {menu: "analytics", item: {name: "overview"}}
+                    selectedMenuItem: {}
                 },
                 getters: {
                     getSelectedMenuItem: function(state) {

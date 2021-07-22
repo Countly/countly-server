@@ -190,6 +190,8 @@ var countlyView = Backbone.View.extend({
             }
         }
 
+        /*
+        Vue update - remove following
         if (countlyGlobal.member.member_image) {
             $('.member_image').html("");
             $('.member_image').css({'background-image': 'url(' + countlyGlobal.member.member_image + '?now=' + Date.now() + ')', 'background-size': '100%'});
@@ -203,6 +205,7 @@ var countlyView = Backbone.View.extend({
         }
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
         $("#top-bar").find(".dropdown").fadeIn(2000);
+        */
 
         return this;
     },
