@@ -28,46 +28,7 @@
                         isString: typeof countlyGlobal.usermenu.featureRequestLink === "string" ? countlyGlobal.usermenu.featureRequestLink : false,
                         isBoolean: typeof countlyGlobal.usermenu.featureRequestLink === "boolean" && countlyGlobal.usermenu.featureRequestLink
                     }
-                }
-            }
-        });
-
-        var SidebarOptions = countlyVue.views.create({
-            template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar-options.html'),
-            props: {
-                selected: {
-                    type: String,
-                    default: "analytics"
-                },
-                mainOptions: {
-                    type: Array,
-                    default: function() {
-                        return [];
-                    }
-                },
-                otherOptions: {
-                    type: Array,
-                    default: function() {
-                        return [];
-                    }
-                }
-            },
-            components: {
-                "users-menu": UsersMenu
-            },
-            data: function() {
-                return {
-                    selectedOption: this.selected
                 };
-            },
-            methods: {
-                onClick: function(option) {
-                    if (!option.noSelect) {
-                        this.selectedOption = option.name;
-                    }
-
-                    this.$emit("click", option);
-                }
             }
         });
 
@@ -206,6 +167,11 @@
                     "externalOtherOptions": "/sidebar/options/other"
                 })
             ],
+            components: {
+                "users-menu": UsersMenu,
+                "analytics-menu": AnalyticsMenu,
+                "management-menu": ManagementMenu
+            },
             data: function() {
                 return {
                     selectedOption: "analytics"
@@ -213,16 +179,7 @@
             },
             computed: {
                 components: function() {
-                    var options = [
-                        {
-                            name: "analytics",
-                            component: AnalyticsMenu
-                        },
-                        {
-                            name: "management",
-                            component: ManagementMenu
-                        }
-                    ];
+                    var options = [];
 
                     var externalMainOptions = this.externalMainOptions;
                     var externalOtherOptions = this.externalOtherOptions;
@@ -330,9 +287,6 @@
 
                     return member;
                 }
-            },
-            components: {
-                "sidebar-options": SidebarOptions
             },
             methods: {
                 onClick: function(option) {
