@@ -121,6 +121,27 @@
                         }
                     }
                 }
+            },
+            countlySidebar: {
+                namespaced: true,
+                state: {
+                    selectedMenuItem: {menu: "analytics", item: {name: "overview"}}
+                },
+                getters: {
+                    getSelectedMenuItem: function(state) {
+                        return state.selectedMenuItem;
+                    }
+                },
+                mutations: {
+                    setSelectedMenuItem: function(state, payload) {
+                        state.selectedMenuItem = payload;
+                    }
+                },
+                actions: {
+                    updateSelectedMenuItem: function(context, payload) {
+                        context.commit('setSelectedMenuItem', payload);
+                    }
+                }
             }
         }
     });

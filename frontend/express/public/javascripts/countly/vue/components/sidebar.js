@@ -56,8 +56,7 @@
                 return {
                     allApps: apps,
                     selectMode: "single-list",
-                    selectedAppLocal: null,
-                    selectedMenuItem: {name: "overview"}
+                    selectedAppLocal: null
                 };
             },
             computed: {
@@ -117,6 +116,15 @@
                         return acc;
                     }, {});
                     return submenus;
+                },
+                selectedMenuItem: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    if (selected.menu === "analytics") {
+                        return selected.item;
+                    }
+
+                    return {};
                 }
             },
             methods: {
@@ -138,7 +146,7 @@
                     return (dropdown.visible ? 'arrow-up is-reverse' : 'arrow-up');
                 },
                 onMenuItemClick: function(item) {
-                    this.selectedMenuItem = item;
+                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
                 }
             }
         });
@@ -150,11 +158,6 @@
                     "menus": "/sidebar/analytics/menu"
                 })
             ],
-            data: function() {
-                return {
-                    selectedMenuItem: {}
-                };
-            },
             computed: {
                 menu: function() {
                     var menu = this.menus.filter(function(val) {
@@ -164,11 +167,20 @@
                         return false;
                     });
                     return menu;
+                },
+                selectedMenuItem: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    if (selected.menu === "management") {
+                        return selected.item;
+                    }
+
+                    return {};
                 }
             },
             methods: {
                 onMenuItemClick: function(item) {
-                    this.selectedMenuItem = item;
+                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
                 }
             }
         });
