@@ -104,14 +104,19 @@ $bg-color: #24292e;
             margin-right: 0px;
         }
 
-        &--selected {
-            background-color: map.get(c.$colors, "primary-green");
-            border-radius: 4px;
-        }
-
         &:hover {
             background-color: map.get(c.$colors, "warm-gray-80");
             border-radius: 4px;
+        }
+
+        &--selected {
+            background-color: map.get(c.$colors, "primary-green");
+            border-radius: 4px;
+
+            &:hover {
+                background-color: map.get(c.$colors, "primary-green");
+                border-radius: 4px;
+            }
         }
     }
 

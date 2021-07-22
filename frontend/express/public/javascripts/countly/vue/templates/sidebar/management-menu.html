@@ -5,7 +5,10 @@
     <div class="cly-vue-sidebar__main-menu">
         <ul>
             <li v-for="item in menu" :key="item.name">
-                <div class="cly-vue-sidebar__menu-items">
+                <div
+                    :class="['cly-vue-sidebar__menu-items',
+                    {'cly-vue-sidebar__menu-items--selected': selectedMenuItem.name === item.name}]"
+                    @click="onMenuItemClick(item)">
                     <a :href="item.url">
                         <div class="has-ellipsis">{{i18nM(item.title)}}</div>
                     </a>

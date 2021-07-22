@@ -35,7 +35,10 @@
                             <el-collapse-item :title="i18nM(menu.title)">
                                 <ul>
                                     <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
-                                        <div class="cly-vue-sidebar__submenu-items">
+                                        <div
+                                            :class="['cly-vue-sidebar__submenu-items',
+                                                    {'cly-vue-sidebar__submenu-items--selected': selectedMenuItem.name === submenu.name}]"
+                                                    @click="onMenuItemClick(submenu)">
                                             <a :href="submenu.url">
                                                 <div class="has-ellipsis">{{i18nM(submenu.title)}}</div>
                                             </a>
@@ -45,7 +48,10 @@
                             </el-collapse-item>
                         </el-collapse>
                     </div>
-                    <div v-else class="cly-vue-sidebar__menu-items">
+                    <div v-else
+                        :class="['cly-vue-sidebar__menu-items',
+                                {'cly-vue-sidebar__menu-items--selected': selectedMenuItem.name === menu.name}]"
+                                @click="onMenuItemClick(menu)">
                         <a :href="menu.url">
                             <div class="has-ellipsis">{{i18nM(menu.title)}}</div>
                         </a>

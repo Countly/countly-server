@@ -56,7 +56,8 @@
                 return {
                     allApps: apps,
                     selectMode: "single-list",
-                    selectedAppLocal: null
+                    selectedAppLocal: null,
+                    selectedMenuItem: {name: "overview"}
                 };
             },
             computed: {
@@ -135,6 +136,9 @@
                 },
                 suffixIconClass: function(dropdown) {
                     return (dropdown.visible ? 'arrow-up is-reverse' : 'arrow-up');
+                },
+                onMenuItemClick: function(item) {
+                    this.selectedMenuItem = item;
                 }
             }
         });
@@ -146,6 +150,11 @@
                     "menus": "/sidebar/analytics/menu"
                 })
             ],
+            data: function() {
+                return {
+                    selectedMenuItem: {}
+                };
+            },
             computed: {
                 menu: function() {
                     var menu = this.menus.filter(function(val) {
@@ -155,7 +164,12 @@
                         return false;
                     });
                     return menu;
-                },
+                }
+            },
+            methods: {
+                onMenuItemClick: function(item) {
+                    this.selectedMenuItem = item;
+                }
             }
         });
 
