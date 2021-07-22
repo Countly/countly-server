@@ -1220,8 +1220,7 @@ var pluginManager = function pluginManager() {
             waitQueueTimeoutMS: 0,
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            auto_reconnect: true,
-            w: 1
+            auto_reconnect: true
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);
@@ -1344,7 +1343,6 @@ var pluginManager = function pluginManager() {
         countlyDb.decode = function(str) {
             return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
         };
-        countlyDb.on('error', console.log);
         countlyDb.onOpened = function(callback) {
             callback();
         };
@@ -1778,7 +1776,7 @@ var pluginManager = function pluginManager() {
             ob._findAndModify = function(query, sort, doc, options, callback) {
                 if (options && typeof options === "object") {
                     if (options.new) {
-                        options.returnOriginal = false;
+                        options.returnDocument = "after";
                     }
                     if (options.remove) {
                         return ob.findOneAndDelete(query, options, callback);

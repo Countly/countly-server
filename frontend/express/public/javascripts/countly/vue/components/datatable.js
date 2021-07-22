@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _ */
+/* global jQuery, Vue, _, CV */
 
 (function(countlyVue) {
 
@@ -221,6 +221,9 @@
             checkPageBoundaries: function() {
                 if (this.lastPage > 0 && this.controlParams.page > this.lastPage) {
                     this.controlParams.page = this.lastPage;
+                }
+                if (this.controlParams.page < 1) {
+                    this.controlParams.page = 1;
                 }
             },
             goToFirstPage: function() {
@@ -469,7 +472,7 @@
         }
     };
 
-    Vue.component("cly-datatable-n", countlyBaseComponent.extend({
+    Vue.component("cly-datatable-n", countlyVue.components.create({
         mixins: [
             _mixins.i18n,
             TableExtensionsMixin,
@@ -551,100 +554,7 @@
                 };
             }
         },
-        template: '<div class="cly-vue-eldatatable" :class="classes">\
-                        <div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">\
-                            <div class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white">\
-                                <div class="bu-level-left">\
-                                    <slot v-bind="commonScope" name="header-left"></slot>\
-                                </div>\
-                                <slot v-bind="commonScope" name="header-full"></slot>\
-                                <div class="bu-level-right">\
-                                    <slot v-bind="commonScope" name="header-right"></slot>\
-                                    <div class="bu-level-item">\
-                                        <cly-select-x\
-                                            v-if="hasDynamicCols"\
-                                            search-placeholder="Search in Columns"\
-                                            placeholder="Edit columns" \
-                                            title="Edit columns"\
-                                            mode="multi-check-sortable"\
-                                            placement="bottom-end"\
-                                            :width="300"\
-                                            :auto-commit="false"\
-                                            :hide-default-tabs="true"\
-                                            :hide-all-options-tab="true"\
-                                            :options="availableDynamicCols"\
-                                            v-model="controlParams.selectedDynamicCols">\
-                                            <template v-slot:trigger>\
-                                                <el-button size="small" icon="el-icon-s-operation"></el-button>\
-                                            </template>\
-                                        </cly-select-x>\
-                                    </div>\
-                                    <div class="bu-level-item" v-if="displaySearch">\
-                                        <el-input size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>\
-                                    </div>\
-                                </div>\
-                            </div>\
-                            <el-table\
-                                :border="border"\
-                                :row-key="keyFn"\
-                                :data="mutatedRows"\
-                                :span-method="tableSpanMethod"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                @sort-change="onSortChange"\
-                                ref="elTable">\
-                                    <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
-                                        <slot :name="name" v-bind="commonScope"/>\
-                                    </template>\
-                            </el-table>\
-                            <div class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white">\
-                                <div class="bu-level-left">\
-                                    <div class="bu-level-item">\
-                                        {{ i18n("common.items-per-page") }}:\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        <el-select v-model="controlParams.perPage" size="mini">\
-                                            <el-option v-for="pageSize in availablePageSizes" :key="pageSize" :value="pageSize" :label="pageSize"></el-option>\
-                                        </el-select>\
-                                    </div>\
-                                    <div class="bu-level-item cly-vue-eldatatable__vertical-divider">\
-                                    </div>\
-                                    <div class="bu-level-item" style="font-size: 11px">\
-                                        {{ paginationInfo }}\
-                                    </div>\
-                                    <slot v-bind="commonScope" name="footer-left"></slot>\
-                                </div>\
-                                <div class="bu-level-right">\
-                                    <slot v-bind="commonScope" name="footer-right"></slot>\
-                                    <div class="bu-level-item">\
-                                        <div class="cly-vue-eldatatable__table-page-selector">\
-                                            <el-select v-model="controlParams.page" size="mini">\
-                                                <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>\
-                                            </el-select>\
-                                        </div>\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        of {{totalPages}} pages\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\
-                                    </div>\
-                                </div>\
-                            </div>\
-                            <div>\
-                                <slot name="bottomline" v-bind="commonScope"></slot>\
-                            </div>\
-                        </div>\
-                    </div>'
+        template: CV.T('/javascripts/countly/vue/templates/datatable.html')
     }));
 
     Vue.component("cly-datatable-undo-row", countlyBaseComponent.extend({

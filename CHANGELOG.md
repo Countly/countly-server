@@ -1,3 +1,18 @@
+## Version 20.11.2.7
+
+**Fixes**
+- [block] backward compatibility for regex filters - filtering rules
+- [block] blocking rules contains and doesn't contain bugfix
+- [cohorts] deleting a cohort breaks dependent cohorts if any
+- [encryption] do not process incorrect values
+- [events] remove omited segments limitation
+- [export] added debbuging information on app_user export
+- [gateway] updated grpc and pubsub package
+- [remote-config] do not encode remote config response while sending response to the sdk
+- [surveys] changes to add other option for surveys
+*- [views] pass server url also in case of dropdown menu for domains
+
+
 ## Version 20.11.2
 
 **Fixes**

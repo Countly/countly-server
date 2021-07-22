@@ -26,21 +26,18 @@ manager.dbConnection().then((db) => {
             }
             else {
                 var doc = {"full_name": myArgs[1], "username": myArgs[1], "password": sha512Hash(myArgs[2]), "email": myArgs[1], "global_admin": true};
-                db.collection('members').insert(doc, {safe: true}, function(err, member) {
-                    if (err) {
-                        console.log(err);
-                        db.close();
-                    }
-                    else {
-                        member = member.ops;
-                        var a = {};
-                        a.api_key = md5Hash(member[0]._id + (new Date).getTime());
-                        member[0].api_key = a.api_key;
-                        db.collection("members").update({_id: member[0]._id}, {$set: a}, function() {
+                crypto.randomBytes(48, function(errorBuff, buffer) {
+                    doc.api_key = md5Hash(buffer.toString('hex') + Math.random());
+                    db.collection('members').insert(doc, {safe: true}, function(err, member) {
+                        if (err) {
+                            console.log(err);
+                        }
+                        else {
+                            member = member.ops;
                             console.log(member[0]);
-                            db.close();
-                        });
-                    }
+                        }
+                        db.close();
+                    });
                 });
             }
         });
