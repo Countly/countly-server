@@ -53,12 +53,12 @@ $bg-color: #24292e;
 
         i:hover,
         &--selected {
-            color: #12AF51;
+            color: map.get(c.$colors, "primary-green");
         }
     }
 
     &__option_app {
-        background-color: green;
+        background-color: map.get(c.$colors, "primary-green");
         border-radius: 4px;
         height: 24px;
         width: 24px;
@@ -274,6 +274,10 @@ $bg-color: #24292e;
         width: 50px;
         border-radius: 25px;
         text-align: center;
+
+        &:hover {
+            box-shadow: 0px 0px 12px map.get(c.$colors, "primary-green");
+        }
     }
 
     &__user-initials {
