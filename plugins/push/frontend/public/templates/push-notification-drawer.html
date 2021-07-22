@@ -486,9 +486,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <validation-provider v-slot="v">
-                                    <el-input v-model="pushNotificationUnderEdit.message[activeLocalization].title" placeholder="Hello everyone!"></el-input>
-                                </validation-provider>
+                                <input-element-with-emoji-picker 
+                                    :input="pushNotificationUnderEdit.message[activeLocalization].title" 
+                                    @onChange="onTitleChange">
+                                </input-element-with-emoji-picker>
                             </div>
                             <div class="bu-column">
                                 <div class="bu-level">
@@ -503,9 +504,12 @@
                                         </div>
                                     </div>
                                 </div>
-                                <validation-provider v-slot="v">
-                                    <el-input v-model="pushNotificationUnderEdit.message[activeLocalization].content" placeholder="Clear and shorter messages generally have more conversations..." type="textarea" :rows="3"></el-input>
-                                </validation-provider>
+                                <input-element-with-emoji-picker 
+                                    :input="pushNotificationUnderEdit.message[activeLocalization].content" 
+                                    placeholder="Clear and shorter messages generally have more conversations..." 
+                                    type="textarea"
+                                    @onChange="onContentChange">
+                                </input-element-with-emoji-picker>
                             </div>
                             <div class="bu-column">
                                 <div class="bu-level">

@@ -220,7 +220,57 @@
                 this.$emit("onChange",value);
             }
         }
-    })
+    });
+
+    var InputElementWithEmojiPicker = countlyVue.views.create({
+        template: CV.T("/push/templates/input-element-with-emoji-picker.html"),
+        props: {
+            input: {
+                type: String,
+                required: false
+            },
+            placeholder: {
+                type: String,
+                required: false,
+                default: ""
+            },
+            type: {
+                type: String,
+                required: false,
+                default: "text"
+            }
+        },
+        data: function() {
+            return {
+                search:"",
+                innerInput: ""
+            }
+        },
+        computed:{
+            hasDefaultSlot: function() {
+                return Boolean(this.$slots.default);
+            }
+        },
+        watch: {
+            input: function(value) {
+                this.innerInput = value;
+            }
+        },
+        methods: {
+            append: function(emoji) {
+                this.innerInput = this.innerInput + emoji;
+                this.$emit('onChange', this.innerInput);
+
+            },
+            onInput: function(value) {
+                this.$emit('onChange', value);
+            }
+        },
+        components: {
+            'emoji-picker': countlyPushNotificationComponent.EmojiPicker
+        }
+    });
+
 
     var PushNotificationDrawer = countlyVue.views.create({
         template: CV.T("/push/templates/push-notification-drawer.html"),
@@ -444,12 +494,19 @@
                 if(!value) {
                     this.pushNotificationUnderEdit.message.settings[platform][property] = "";
                 }
+            },
+            onTitleChange: function(value) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].title = value;
+            },
+            onContentChange: function(value) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].content = value;
             }
         },
         components: {
             "mobile-message-preview": MobileMessagePreview,
-            "message-setting-element": MessageSettingElement
-        }
+            "message-setting-element": MessageSettingElement,
+            "input-element-with-emoji-picker": InputElementWithEmojiPicker
+        },
     });
 
     var PushNotificationTabView = countlyVue.views.BaseView.extend({
