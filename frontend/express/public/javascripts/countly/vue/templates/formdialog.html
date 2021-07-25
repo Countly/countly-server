@@ -1,9 +1,9 @@
 <transition :name="toggleTransition" @enter="onViewEntered">
-    <div class="cly-vue-formdialog" tabindex="0" v-show="isOpened" @keydown.esc="escKeyEvent" ref="rootEl" :class="rootClasses">
+    <div class="cly-vue-formdialog" tabindex="0" v-show="isOpened" v-click-outside="onClickOutside" @keydown.esc="escKeyEvent" ref="rootEl" :class="rootClasses">
         <div class="cly-vue-formdialog__header bu-p-4">
             <h3 class="color-cool-gray-100">{{title}}</h3>
         </div>
-        <div class="cly-vue-formdialog__steps-container bu-p-4 bg-warm-gray-10" v-scroll-shadow :class="{'is-multi-step':isMultiStep}">
+        <div class="cly-vue-formdialog__steps-container bu-px-4 bg-warm-gray-10" v-scroll-shadow :class="{'is-multi-step':isMultiStep}">
             <div class="bu-columns bu-is-gapless bu-is-mobile">
                 <div class="bu-column bu-is-12">
                     <slot name="default"

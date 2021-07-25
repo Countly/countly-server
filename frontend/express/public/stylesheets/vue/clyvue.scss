@@ -1335,6 +1335,47 @@
         }
     }
 
+    .cly-vue-form {
+        &-field {
+            &__inner.el-form-item {
+                margin-bottom: 0;
+                &::before, &::after {
+                    content: none;
+                }
+            } 
+        }
+        &-step {
+            &__line {
+                + .cly-vue-form-step__line {
+                    margin: 3px 0;
+                }
+                &--aligned {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+            }
+            &__section {
+                padding: 12px 0;
+            }
+            &__section-group {
+                padding: 12px 24px;
+                &--filled {
+                    background: #F8FAFD;
+                    border: 1px solid #F6F6F6;
+                    box-sizing: border-box;
+                    border-radius: 6px;
+                }
+                + .cly-vue-form-step__section-group {
+                    margin-top: 16px;
+                }
+                .cly-vue-form-step__section {
+                    padding: 8px 0;
+                }
+            }
+        }
+    }
+
     .cly-vue-draggable {
         &--jumbo-lines .cly-vue-draggable-item {
             background: #F6F6F6;

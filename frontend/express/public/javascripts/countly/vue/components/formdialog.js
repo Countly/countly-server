@@ -57,6 +57,9 @@
                         this.closeFn();
                     }
                 },
+                onClickOutside: function() {
+                    this.doClose();
+                },
                 escKeyEvent: function() {
                     this.doClose();
                 },
