@@ -214,6 +214,7 @@
     Vue.component("cly-form-step", BaseStep.extend({
         props: {
             validatorFn: {type: Function},
+            id: { type: String, required: true },
             screen: {
                 type: String,
                 default: "half",

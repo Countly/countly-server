@@ -1307,6 +1307,34 @@
         }
     }
 
+    //formdialog
+    .cly-vue-formdialog {
+        position: fixed;
+        z-index: 2000;
+        width: 520px;
+        background: #fff;
+        border-radius: 2px;
+        box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
+        box-sizing: border-box;
+
+        &__header {
+            border-bottom: 1px solid #CFD6E4;
+        }
+
+        &__footer {
+            border-top: 2px solid #ECECEC;
+        }
+
+        &__steps-container {
+        }
+
+        &__controls-left-pc {
+            display: inline-block;
+            height: 30px;
+            padding-top: 10px;
+        }
+    }
+
     .cly-vue-draggable {
         &--jumbo-lines .cly-vue-draggable-item {
             background: #F6F6F6;

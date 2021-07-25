@@ -137,6 +137,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/input.js',
                     'frontend/express/public/javascripts/countly/vue/datatable-legacy.js',
                     'frontend/express/public/javascripts/countly/vue/components/datatable.js',
+                    'frontend/express/public/javascripts/countly/vue/components/formdialog.js',
                     'frontend/express/public/javascripts/countly/vue/components/drawer.js',
                     'frontend/express/public/javascripts/countly/vue/components/vis.js',
                     'frontend/express/public/javascripts/countly/vue/components/helpers.js',
