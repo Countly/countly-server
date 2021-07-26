@@ -251,7 +251,7 @@ module.exports = function(grunt) {
             dist: { // Target
                 options: { // Target options
                     style: 'compressed',
-                    update: true // only compile when scss file is newer than css file
+                    update: false // only compile when scss file is newer than css file
                 },
                 files: [
                     { src: 'frontend/express/public/stylesheets/vue/clyvue.scss', dest: 'frontend/express/public/stylesheets/vue/clyvue.css' },
