@@ -189,7 +189,8 @@
             isPercentage: {type: Boolean, default: false},
             columnWidth: {type: [Number, String], default: -1},
             isVertical: {type: Boolean, default: false},
-            color: {type: [String, Function, Array], default: ''}
+            color: {type: [String, Function, Array], default: ''},
+            numberClasses: {type: String, default: 'bu-is-flex bu-is-align-items-baseline'}
         },
         computed: {
             formattedNumber: function() {
@@ -236,9 +237,9 @@
                             <cly-progress-donut class="bu-pr-5 bu-is-flex" v-if="isPercentage" :color="color" :percentage="number"></cly-progress-donut>\
                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
                                 <span class="text-medium"><slot>{{label}}</slot></span>\
-                                <div class="bu-is-flex bu-is-align-items-baseline">\
+                                <div :class=numberClasses>\
                                     <h2><slot name="number">{{formattedNumber}}</slot></h2>\
-                                    <div class="bu-pl-3"><slot name="description"><span class="text-medium">{{description}}</span></slot></div>\
+                                    <div class="bu-pl-3 bu-is-flex-grow-1"><slot name="description"><span class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
                         </div>\
