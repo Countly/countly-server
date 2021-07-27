@@ -1,4 +1,4 @@
-/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,window,countlyDeviceList,countlyOsMapping,countlyDeviceDetails*/
+/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails*/
 (function(countlyDevicesAndTypes) {
 
     CountlyHelpers.createMetricModel(window.countlyDevicesAndTypes, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
@@ -159,9 +159,9 @@
 			}, 0);*/
 
             for (var k = 0; k < chartData.chartData.length; k++) {
-                totals["u"] += chartData.chartData[k].u || 0;
-                totals["t"] += chartData.chartData[k].t || 0;
-                totals["n"] += chartData.chartData[k].n || 0;
+                totals.u += chartData.chartData[k].u || 0;
+                totals.t += chartData.chartData[k].t || 0;
+                totals.n += chartData.chartData[k].n || 0;
             }
 
             //chartData.chartDP = {};
@@ -171,8 +171,8 @@
                 var tmpOsVersion = countlyDevicesAndTypes.getOSSegmentedData(chartData.chartData[i].os_, false, "os_versions", "platform_versions");
                 stacked_version.push({"label": chartData.chartData[i].os_, "u": chartData.chartData[i].u, "t": chartData.chartData[i].t, "n": chartData.chartData[i].n, "data": tmpOsVersion.chartData});
             }
-            chartData["versions"] = stacked_version;
-            chartData["totals"] = totals;
+            chartData.versions = stacked_version;
+            chartData.totals = totals;
             return chartData;
 
         },
@@ -185,8 +185,8 @@
             for (var k = 0; k < tableData.length; k++) {
                 graphs.newUsers.push({"name": tableData[k][metric], "value": tableData[k].n});
                 graphs.totalSessions.push({"name": tableData[k][metric], "value": tableData[k].t});
-                totals["newUsers"] += tableData[k].n;
-                totals["totalSessions"] += tableData[k].t;
+                totals.newUsers += tableData[k].n;
+                totals.totalSessions += tableData[k].t;
             }
 
             var tops = {
@@ -195,13 +195,13 @@
                 "resolution": countlyDevicesAndTypes.getBarsWPercentageOfTotal("resolutions", "u", "resolutions")
             };
 
-            for (var i = 0; i < tops["version"].length; i++) {
-                tops["version"][i].name = countlyDevicesAndTypes.helpers.fixOSVersion(tops["version"][i].name);
+            for (var i = 0; i < tops.version.length; i++) {
+                tops.version[i].name = countlyDevicesAndTypes.helpers.fixOSVersion(tops.version[i].name);
             }
 
             for (var key in tops) {
                 for (var z = 0; z < tops[key].length; z++) {
-                    tops[key][z]["bar"] = [{
+                    tops[key][z].bar = [{
                         percentage: tops[key][z].percent,
                         color: "#017AFF"
                     }
@@ -234,8 +234,8 @@
                 for (var k = 0; k < tableData.length; k++) {
                     graphs.newUsers.push({"name": tableData[k][metric], "value": tableData[k].n});
                     graphs.totalSessions.push({"name": tableData[k][metric], "value": tableData[k].t});
-                    totals["newUsers"] += tableData[k].n;
-                    totals["totalSessions"] += tableData[k].t;
+                    totals.newUsers += tableData[k].n;
+                    totals.totalSessions += tableData[k].t;
                 }
             }
             if (options.chart) {

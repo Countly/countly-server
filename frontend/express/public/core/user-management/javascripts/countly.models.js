@@ -1,4 +1,4 @@
-/* global window, countlyCommon, $ */
+/* global countlyCommon, $ */
 
 (function(countlyUserManagement) {
     var _users = [],

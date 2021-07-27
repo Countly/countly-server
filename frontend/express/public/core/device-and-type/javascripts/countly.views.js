@@ -23,17 +23,17 @@ var DevicesTabView = countlyVue.views.create({
                 {
                     "title": CV.i18n('common.bar.top-platform'),
                     "description": CV.i18n('common.bar.top-platform.description'),
-                    "data": tops["platform"] || []
+                    "data": tops.platform || []
                 },
                 {
                     "title": CV.i18n('common.bar.top-platform-version'),
                     "description": CV.i18n('common.bar.top-platform-version.description'),
-                    "data": tops["version"] || []
+                    "data": tops.version || []
                 },
                 {
                     "title": CV.i18n('common.bar.top-resolution'),
                     "description": CV.i18n('common.bar.top-resolution.description'),
-                    "data": tops["resolution"] || []
+                    "data": tops.resolution || []
                 }
             ];
         },
@@ -43,10 +43,10 @@ var DevicesTabView = countlyVue.views.create({
                 series: [
                     {
                         name: CV.i18n('common.table.new-users'),
-                        data: self.data.pie["newUsers"],
+                        data: self.data.pie.newUsers,
                         label: {
                             formatter: function() {
-                                return CV.i18n('common.table.new-users') + countlyCommon.getShortNumber(self.data.totals["newUsers"] || 0);
+                                return CV.i18n('common.table.new-users') + countlyCommon.getShortNumber(self.data.totals.newUsers || 0);
                             }
                         },
                         center: ["25%", "50%"] //Center should be passed as option
@@ -60,10 +60,10 @@ var DevicesTabView = countlyVue.views.create({
                 series: [
                     {
                         name: CV.i18n('common.table.total-sessions'),
-                        data: self.data.pie["totalSessions"],
+                        data: self.data.pie.totalSessions,
                         label: {
                             formatter: function() {
-                                return CV.i18n('common.table.total-sessions') + countlyCommon.getShortNumber(self.data.totals["totalSessions"]);
+                                return CV.i18n('common.table.total-sessions') + countlyCommon.getShortNumber(self.data.totals.totalSessions);
                             }
                         },
                         center: ["25%", "50%"] //Center should be passed as option
@@ -119,10 +119,10 @@ var AllTabs = countlyVue.views.create({
                                     series: [
                                         {
                                             name: CV.i18n('common.table.new-users'),
-                                            data: self.data.pie["newUsers"],
+                                            data: self.data.pie.newUsers,
                                             label: {
                                                 formatter: function() {
-                                                    return CV.i18n('common.table.new-users') + " " + countlyCommon.getShortNumber(self.data.totals["newUsers"] || 0);
+                                                    return CV.i18n('common.table.new-users') + " " + countlyCommon.getShortNumber(self.data.totals.newUsers || 0);
                                                 }
                                             },
                                             center: ["25%", "50%"] //Center should be passed as option
@@ -136,10 +136,10 @@ var AllTabs = countlyVue.views.create({
                                     series: [
                                         {
                                             name: CV.i18n('common.table.total-sessions'),
-                                            data: self.data.pie["totalSessions"],
+                                            data: self.data.pie.totalSessions,
                                             label: {
                                                 formatter: function() {
-                                                    return CV.i18n('common.table.total-sessions') + " " + countlyCommon.getShortNumber(self.data.totals["totalSessions"]);
+                                                    return CV.i18n('common.table.total-sessions') + " " + countlyCommon.getShortNumber(self.data.totals.totalSessions);
                                                 }
                                             },
                                             center: ["25%", "50%"] //Center should be passed as option

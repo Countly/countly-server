@@ -1,4 +1,4 @@
-/*global window, countlyVue, CV, _, countlyCommon, jQuery */
+/*global countlyVue, CV, _, countlyCommon, jQuery */
 (function(countlyAllEvents) {
 
     countlyAllEvents.helpers = {
@@ -57,27 +57,27 @@
                 }
                 xAxisData.push(eventData.chartData[i].curr_segment);
             }
-            obCount["name"] = "Count";
-            obCount["data"] = arrCount;
-            obCount["color"] = "#017AFF";
-            xAxis["data"] = xAxisData;
+            obCount.name = "Count";
+            obCount.data = arrCount;
+            obCount.color = "#017AFF";
+            xAxis.data = xAxisData;
             series.push(obCount);
             if (arrSum.length > 0) {
-                obSum["name"] = "Sum";
-                obSum["data"] = arrSum;
-                obSum["color"] = "#F96300";
+                obSum.name = "Sum";
+                obSum.data = arrSum;
+                obSum.color = "#F96300";
                 series.push(obSum);
             }
             if (arrDuration.length > 0) {
-                obDuration["name"] = "Duration";
-                obDuration["data"] = arrDuration;
-                obDuration["color"] = "#FF9382";
+                obDuration.name = "Duration";
+                obDuration.data = arrDuration;
+                obDuration.color = "#FF9382";
                 series.push(obDuration);
             }
-            legend["show"] = false;
-            obj["legend"] = legend;
-            obj["series"] = series;
-            obj["xAxis"] = xAxis;
+            legend.show = false;
+            obj.legend = legend;
+            obj.series = series;
+            obj.xAxis = xAxis;
             context.commit('setBarData', obj);
         },
         clearEventsObject: function(obj) {
@@ -110,7 +110,7 @@
         getEventsData: function(context, res) {
             var eventData = { chartData: {}, chartDP: { dp: [], ticks: [] } };
             var allEvents = context.state.allEventsData;
-            var eventMap = allEvents["map"];
+            var eventMap = allEvents.map;
             var mapKey = context.state.selectedEventName.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
             var countString = (allEvents[mapKey] && allEvents[mapKey].count) ? allEvents[mapKey].count : (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"];
             var sumString = (allEvents[mapKey] && allEvents[mapKey].sum) ? allEvents[mapKey].sum : (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"];
@@ -347,10 +347,10 @@
                         if (res) {
                             context.commit("setAllEventsData", res);
                             countlyAllEvents.service.fetchSelectedEventsData(context)
-                                .then(function(res) {
-                                    if (res) {
-                                        context.commit("setSelectedEventsData", res);
-                                        context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, res) || []);
+                                .then(function(response) {
+                                    if (response) {
+                                        context.commit("setSelectedEventsData", response);
+                                        context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);
                                     }
                                 });
                         }
