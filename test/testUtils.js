@@ -34,11 +34,17 @@ var testUtils = function testUtils() {
     };
     var RE = /^-{0,1}\d*\.{0,1}\d+$/;
 
-    this.url = "http://localhost" + (countlyConfig.path || "");
+    this.url = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "");
     this.name = "Test Test";
     this.username = "test";
     this.password = "Test1test$";
     this.email = "test@domain.com";
+    this.permission = {
+        "_": {
+            "u": [],
+            "a": []
+        }
+    };
     this.testScalingFactor = 1.5;//this is used to multiply the base timeout time for tests. Should be decreased of more powerful servers
     this.testWaitTimeForDrillEvents = 5300;//in ms, how long should the test wait for drill to finish it's actions
     this.testWaitTimeForResetApp = 1200;//in ms, how long should the test wait for a app reset
@@ -453,6 +459,12 @@ var testUtils = function testUtils() {
             }
         }
         done();
+    };
+
+    this.sleep = function(timeToSleepInMs = 5000) {
+        return new Promise(function(resolve) {
+            setTimeout(resolve, timeToSleepInMs);
+        });
     };
 };
 

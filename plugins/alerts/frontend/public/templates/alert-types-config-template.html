@@ -171,3 +171,34 @@
 </script>
 
 
+
+<script id="dataPoint-condition-template" type="text/x-handlebars-template">
+    <div id="single-target-dropdown" class="cly-select single-event-target-condition-dropdown-class" >
+        <div class="select-inner">
+            <div class="text-container">
+                <div class="text">
+                    <div class="default-text" data-localize='alert.Select_metric'></div>
+                </div>
+            </div>
+            <div class="right combo"></div>
+        </div>
+        <div class="select-items square" style="width: 100%;"></div>
+    </div>
+
+    <div id="single-target-condition-dropdown" class="cly-select single-target-condition-dropdown-class"  >
+        <div class="select-inner">
+            <div class="text-container">
+                <div class="text">
+                    <div class="default-text"   data-localize='alert.Define_variation'></div>
+                </div>
+            </div>
+            <div class="right combo"></div>
+        </div>
+        <div class="select-items square" style="width: 100%;"></div>
+    </div>
+    <div id="alert-compare-value"  class="alert-compare-value-class">
+        <input  id="alert-compare-value-input" class="input" onkeyup="this.value=this.value.replace(/[^\d^\.]/g,'');" placeholder="Add number" >
+    </div>
+</script>
+
+

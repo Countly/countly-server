@@ -3,9 +3,15 @@ var plugin = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     appUsers = require('../../../api/parts/mgmt/app_users.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'compliance_hub';
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     //write api call
     plugins.register("/sdk/user_properties", function(ob) {
         var params = ob.params;
@@ -94,9 +100,9 @@ var plugin = {},
 
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+
         if (params.qstring.method === "consents") {
-            validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'consents');
+            validateRead(params, FEATURE_NAME, fetch.fetchTimeObj, 'consents');
             return true;
         }
         return false;
@@ -106,14 +112,14 @@ var plugin = {},
     plugins.register("/o/consent", function(ob) {
         var params = ob.params;
         var paths = ob.paths;
-        var validateUserForRead = ob.validateUserForDataReadAPI;
+
         switch (paths[3]) {
         case 'current': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
                 return false;
             }
-            validateUserForRead(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 var query = params.qstring.query || {};
                 if (typeof query === "string" && query.length) {
                     try {
@@ -134,7 +140,7 @@ var plugin = {},
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
                 return false;
             }
-            validateUserForRead(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 var query = params.qstring.query || {};
                 if (typeof query === "string" && query.length) {
                     try {
@@ -166,7 +172,7 @@ var plugin = {},
                             params.qstring.query.device_id = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
                         }
 
-                        var columns = ["device_id", "uid", "type", "after", "ts"];
+                        var columns = ["device_id", "device_id", "uid", "type", "after", "ts"];
                         var checkOb;
                         if (params.qstring.iSortCol_0 && params.qstring.sSortDir_0 && columns[params.qstring.iSortCol_0]) {
                             checkOb = {};
@@ -242,14 +248,14 @@ var plugin = {},
     plugins.register("/o/app_users", function(ob) {
         var params = ob.params;
         var paths = ob.paths;
-        var validateUserForRead = ob.validateUserForDataReadAPI;
+
         switch (paths[3]) {
         case 'consents': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
                 return false;
             }
-            validateUserForRead(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 appUsers.count(params.qstring.app_id, {}, function(err, total) {
                     if (err) {
                         common.returnMessage(params, 400, err);
@@ -289,6 +295,40 @@ var plugin = {},
             });
             return true;
         }
+        }
+    });
+
+    plugins.register("/i/user_merge", function(ob) {
+        var newAppUser = ob.newAppUser;
+        var oldAppUser = ob.oldAppUser;
+        if (typeof oldAppUser.consent !== "undefined") {
+            if (typeof newAppUser.consent === "undefined") {
+                newAppUser.consent = oldAppUser.consent;
+            }
+            else {
+                for (var i in oldAppUser.consent) {
+                    if (typeof newAppUser.consent[i] === "undefined") {
+                        newAppUser.consent[i] = oldAppUser.consent[i];
+                    }
+                }
+            }
+        }
+    });
+
+    plugins.register("/i/device_id", function(ob) {
+        var appId = ob.app_id;
+        var oldUid = ob.oldUser.uid;
+        var newUid = ob.newUser.uid;
+        if (oldUid !== newUid) {
+            return new Promise(function(resolve, reject) {
+                common.db.collection('consent_history' + appId).update({uid: oldUid}, {'$set': {uid: newUid}}, {multi: true}, function(err) {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve();
+                });
+            });
         }
     });
 

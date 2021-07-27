@@ -1,9 +1,17 @@
 var plugin = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    moment = require('moment');
+    moment = require('moment'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'times_of_day';
 
 (function() {
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
     plugins.register("/i", function(ob) {
         var params = ob.params;
 
@@ -171,7 +179,6 @@ var plugin = {},
         var params = ob.params;
 
         if (params.qstring.method === "times-of-day") {
-            var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
             var appId = params.qstring.app_id;
             var todType = params.qstring.tod_type;
 
@@ -185,7 +192,7 @@ var plugin = {},
 
             var collectionName = "timesofday" + appId;
 
-            validateUserForDataReadAPI(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 fetchTodData(collectionName, criteria, function(err, result) {
                     if (err) {
                         console.log("Error while fetching times of day data: ", err.message);

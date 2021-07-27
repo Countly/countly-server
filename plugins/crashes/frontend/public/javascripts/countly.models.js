@@ -315,7 +315,8 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + '/crashes/add_comment',
             data: {
-                args: JSON.stringify(data)
+                args: JSON.stringify(data),
+                app_id: data.app_id
             },
             dataType: "json",
             success: function() {
@@ -344,7 +345,8 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + '/crashes/edit_comment',
             data: {
-                args: JSON.stringify(data)
+                args: JSON.stringify(data),
+                app_id: data.app_id
             },
             dataType: "json",
             success: function() {
@@ -368,7 +370,8 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + '/crashes/delete_comment',
             data: {
-                args: JSON.stringify(data)
+                args: JSON.stringify(data),
+                app_id: data.app_id
             },
             dataType: "json",
             success: function() {

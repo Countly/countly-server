@@ -47,6 +47,7 @@
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/countly-checkbox/countly.checkbox.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/jsoneditor/codemirror.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/pace/pace-theme-flash.css?<%= countlyVersion %>" />
@@ -110,7 +111,8 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/simpleUpload.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/Sortable.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuedraggable.umd.min.js?<%= countlyVersion %>"></script>
-
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/countly.checkbox.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.auth.js?<%= countlyVersion %>"></script>
     <% } %>
     <% if (themeFiles && themeFiles.css) { %>
         <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
@@ -1474,7 +1476,7 @@
                         <div class="label-desc" data-localize="events.edit.omit-event-segments-description" class="config-help"></div>
                         <div class="label-desc" style="margin-bottom: 12px;" data-localize="events.edit.omit-event-segments-description-drill" class="config-help"></div>
                         <div class="label" data-localize="events.edit.omit-event-segments-to-omit"></div>
-                        <div id="eb-multi-omit-segments-drop" class="cly-multi-select" data-max="10" style="width: 100%; box-sizing: border-box;">
+                        <div id="eb-multi-omit-segments-drop" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
                             <div class="select-inner">
                                 <div class="text-container">
                                     <div class="text">

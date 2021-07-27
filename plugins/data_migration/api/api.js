@@ -20,7 +20,7 @@ var Promise = require("bluebird");
 var authorize = require('../../../api/utils/authorizer.js'); //for token
 
 const request = require('request');
-
+const FEATURE_NAME = 'data_migration';
 /**
 *Function to delete all exported files in export folder
 * @returns {Promise} Promise
@@ -106,6 +106,10 @@ function trim_ending_slashes(address) {
 //update_progress
 //apply_redirect_to_apps
 (function() {
+
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
 
     //report import status from remote server
     plugins.register("/i/datamigration/report_import", function(ob) {

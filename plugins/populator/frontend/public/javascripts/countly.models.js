@@ -1,7 +1,7 @@
 /*global _, chance, CountlyHelpers, countlyGlobal, countlyCommon, countlyCohorts, $, jQuery, app*/
 (function(countlyPopulator) {
     var metric_props = {
-        mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_carrier", "_app_version", "_density", "_locale", "_store"],
+        mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_app_version", "_density", "_locale", "_store"],
         web: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_app_version", "_density", "_locale", "_store", "_browser"],
         desktop: ["_os", "_os_version", "_resolution", "_app_version", "_locale"]
     };
@@ -22,6 +22,9 @@
         _device_ios: ["iPhone8,1", "iPhone9,1", "iPhone9,2", "iPod7,1", "iPad3,6"],
         _device_windows_phone: ["Lumia 535", "Lumia 540", "Lumia 640 XL"],
         _device_type: ["console", "mobile", "tablet", "smarttv", "wearable", "embedded", "desktop"],
+        _manufacturer_android: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Huaiwei", "Lenovo", "Acer"],
+        _manufacturer_ios: ["Apple"],
+        _manufacturer_windows_phone: ["Nokia", "Microsoft"],
         _manufacture_android: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Huaiwei", "Lenovo", "Acer"],
         _manufacture_ios: ["Apple"],
         _manufacture_windows_phone: ["Nokia", "Microsoft"],
@@ -38,7 +41,7 @@
         _locale: ["en_CA", "fr_FR", "de_DE", "it_IT", "ja_JP", "ko_KR", "en_US"],
         _browser: ["Opera", "Chrome", "Internet Explorer", "Safari", "Firefox"],
         _store: ["com.android.vending", "com.google.android.feedback", "com.google.vending", "com.slideme.sam.manager", "com.amazon.venezia", "com.sec.android.app.samsungapps", "com.nokia.payment.iapenabler", "com.qihoo.appstore", "cn.goapk.market", "com.wandoujia.phoenix2", "com.hiapk.marketpho", "com.hiapk.marketpad", "com.dragon.android.pandaspace", "me.onemobile.android", "com.aspire.mm", "com.xiaomi.market", "com.miui.supermarket", "com.baidu.appsearch", "com.tencent.android.qqdownloader", "com.android.browser", "com.bbk.appstore", "cm.aptoide.pt", "com.nduoa.nmarket", "com.rim.marketintent", "com.lenovo.leos.appstore", "com.lenovo.leos.appstore.pad", "com.keenhi.mid.kitservice", "com.yingyonghui.market", "com.moto.mobile.appstore", "com.aliyun.wireless.vos.appstore", "com.appslib.vending", "com.mappn.gfan", "com.diguayouxi", "um.market.android", "com.huawei.appmarket", "com.oppo.market", "com.taobao.appcenter"],
-        _source: ["https://www.google.lv", "https://www.google.co.in/", "https://www.google.ru/", "http://stackoverflow.com/questions", "http://stackoverflow.com/unanswered", "http://stackoverflow.com/tags", "http://r.search.yahoo.com/"]
+        _source: ["https://www.google.lv/search?q=countly+analytics", "https://www.google.co.in/search?q=mobile+analytics", "https://www.google.ru/search?q=product+analytics", "http://stackoverflow.com/questions?search=what+is+mobile+analytics", "http://stackoverflow.com/unanswered?search=game+app+analytics", "http://stackoverflow.com/tags?search=product+dashboard", "http://r.search.yahoo.com/?query=analytics+product+manager"]
     };
     var ratingWidgetList = [], npsWidgetList = [], surveyWidgetList = {};
     var viewSegments = {
@@ -515,7 +518,7 @@
             return trace;
         };
 
-        this.getEvent = function(id, eventTemplate) {
+        this.getEvent = function(id, eventTemplates) {
             this.stats.e++;
 
             var event = {
@@ -528,6 +531,13 @@
 
             this.ts += 1000;
 
+            if (Array.isArray(eventTemplates)) {
+                var eventTemplate = eventTemplates[getRandomInt(0, eventTemplates.length - 1)];
+            }
+            else {
+                eventTemplate = eventTemplates;
+            }
+
             if (eventTemplate && eventTemplate.duration) {
                 event.dur = getRandomInt(eventTemplate.duration[0], eventTemplate.duration[1] || 10);
             }
@@ -539,7 +549,14 @@
                 event.sum = getRandomInt(eventTemplate.sum[0], eventTemplate.sum[1] || 10);
             }
 
-            if (id === "[CLY]_view") {
+            if (eventTemplate && eventTemplate.segments) {
+                event.segmentation = {};
+                Object.keys(eventTemplate.segments).forEach(function(key) {
+                    var values = eventTemplate.segments[key];
+                    event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
+                });
+            }
+            else if (id === "[CLY]_view") {
                 event.segmentation = {};
                 var populatorType = $(".populator-template-name.cly-select").clySelectGetSelection().substr(7).toLowerCase();
                 Object.keys(viewSegments).forEach(function(key) {
@@ -555,13 +572,6 @@
             }
             else if (id === "[CLY]_orientation") {
                 event.segmentation = {mode: (Math.random() > 0.5) ? "landscape" : "portrait"};
-            }
-            else if (eventTemplate && eventTemplate.segments) {
-                event.segmentation = {};
-                Object.keys(eventTemplate.segments).forEach(function(key) {
-                    var values = eventTemplate.segments[key];
-                    event.segmentation[key] = values[getRandomInt(0, values.length - 1)];
-                });
             }
 
             return [event];
@@ -801,7 +811,7 @@
                 this.isRegistered = true;
                 this.stats.u++;
                 // note login event was here
-                events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(4, template && template.events));
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
                 req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.5) {
                     this.hasPush = true;
@@ -815,7 +825,7 @@
                 }
             }
             else {
-                events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(4, template && template.events));
+                events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(4, template && template.events));
                 req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace()};
             }
 
@@ -843,7 +853,7 @@
                 this.ts = this.ts + 30;
                 this.stats.x++;
                 this.stats.d += 30;
-                var events = this.getEvent("[CLY]_view").concat(this.getEvent("[CLY]_orientation"), this.getEvents(2, template && template.events));
+                var events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"]).concat(this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"]), this.getEvents(2, template && template.events));
                 req = {timestamp: this.ts, session_duration: 30, events: events, apm: this.getTrace()};
                 if (Math.random() > 0.8) {
                     this.timer = setTimeout(function() {

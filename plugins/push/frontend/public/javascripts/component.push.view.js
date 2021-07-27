@@ -679,6 +679,15 @@ window.component('push.view', function(view) {
                                 m('.col-right', m.trust(ctrl.message.data()))
                             ])
                             : '',
+                        ctrl.message.userProps() ?
+                            m('.comp-push-view-row', [
+                                m('.col-left', t('pu.po.tab2.extras.props')),
+                                m('.col-right', m.trust(ctrl.message.userProps().map(function(k) {
+                                    var op = push.PERS_OPTS.filter(function(o){ return o.value() === k})[0];
+                                    return op && op.title() || undefined;
+                                }).filter(function(x) { return !!x; } ).join(', ')))
+                            ])
+                            : '',
                         // ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale()['default' + push.C.S + 't'] ? m('.comp-push-view-row', [
                         //     m('.col-left', t('pu.po.tab4.message-title')),
                         //     m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + 't']))

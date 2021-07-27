@@ -1,0 +1,25 @@
+<div class="table">
+    <div class="mongostat-mongotop-table-title">
+        {{title}}
+    </div>
+    <div class="mongotop-mongostat-table-wrapper">
+        <table class="mongostat-mongotop-table">
+            <thead>
+                <tr>
+                    {{#eachOfArray cols}}
+                        <th class="mongostat-mongotop-table-heading">{{this.value}}</th>
+                    {{/eachOfArray}}
+                </tr>
+            </thead>
+            <tbody>
+                {{#eachOfArray rows}}
+                    <tr>
+                        {{#eachOfArray this.value}}
+                            <td class="mongostat-mongotop-table-data">{{this.value}}</td>
+                        {{/eachOfArray}}
+                    </tr>
+                {{/eachOfArray}}
+            </tbody>
+        </table>
+    </div>
+</div>

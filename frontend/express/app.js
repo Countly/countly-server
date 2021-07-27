@@ -118,6 +118,7 @@ plugins.setConfigs("security", {
     password_symbol: true,
     password_expiration: 0,
     password_rotation: 3,
+    password_autocomplete: true,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
@@ -971,52 +972,82 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         var adminOfAppIds = [],
                             userOfAppIds = [];
 
-                        if (member.admin_of.length === 1 && member.admin_of[0] === "") {
-                            member.admin_of = [];
-                        }
-
-                        for (let i = 0; i < member.admin_of.length; i++) {
-                            if (member.admin_of[i] === "") {
-                                continue;
+                        /*
+                        We keep this section for backward compatibility.
+                        This block will run if member has legacy permission properties like user_of, admin_of.
+                        */
+                        if (typeof member.permission === "undefined") {
+                            if (member.admin_of.length === 1 && member.admin_of[0] === "") {
+                                member.admin_of = [];
                             }
 
-                            adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
-                        }
-
-                        for (let i = 0; i < member.user_of.length; i++) {
-                            if (member.user_of[i] === "") {
-                                continue;
+                            for (let i = 0; i < member.admin_of.length; i++) {
+                                if (member.admin_of[i] === "") {
+                                    continue;
+                                }
+                                adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
                             }
 
-                            userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
-                        }
-
-                        countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
-
-                            for (let i = 0; i < admin_of.length; i++) {
-                                countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
-                                countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
+                            for (let i = 0; i < member.user_of.length; i++) {
+                                if (member.user_of[i] === "") {
+                                    continue;
+                                }
+                                userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
                             }
 
-                            countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
-                                adminOfApps = admin_of;
-                                userOfApps = user_of;
+                            countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
+                                for (let i = 0; i < admin_of.length; i++) {
+                                    countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
+                                    countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
+                                }
 
-                                for (let i = 0; i < user_of.length; i++) {
-                                    if (user_of[i].apn) {
-                                        user_of[i].apn.forEach(a => a._id = '' + a._id);
+                                countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
+                                    adminOfApps = admin_of;
+                                    userOfApps = user_of;
+
+                                    for (let i = 0; i < user_of.length; i++) {
+                                        if (user_of[i].apn) {
+                                            user_of[i].apn.forEach(a => a._id = '' + a._id);
+                                        }
+                                        if (user_of[i].gcm) {
+                                            user_of[i].gcm.forEach(a => a._id = '' + a._id);
+                                        }
+                                        countlyGlobalApps[user_of[i]._id] = user_of[i];
+                                        countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
+                                        countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
                                     }
-                                    if (user_of[i].gcm) {
-                                        user_of[i].gcm.forEach(a => a._id = '' + a._id);
+
+                                    renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                });
+                            });
+                        }
+                        else {
+                            var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+                            var preparedAppIds = [];
+                            for (let i = 0; i < readableAppIds.length; i++) {
+                                if (readableAppIds[i] !== 'undefined' && (member.permission.r[readableAppIds[i]].all || Object.keys(member.permission.r[readableAppIds[i]].allowed).length > 0)) {
+                                    preparedAppIds.push(countlyDb.ObjectID(readableAppIds[i]));
+                                }
+                            }
+
+                            countlyDb.collection('apps').find({ _id: { '$in': preparedAppIds } }).toArray(function(err4, readableApps) {
+                                userOfApps = readableApps;
+
+                                for (let i = 0; i < readableApps.length; i++) {
+                                    if (readableApps[i].apn) {
+                                        readableApps[i].apn.forEach(a => a._id = '' + a._id);
                                     }
-                                    countlyGlobalApps[user_of[i]._id] = user_of[i];
-                                    countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
-                                    countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                                    if (readableApps[i].gcm) {
+                                        readableApps[i].gcm.forEach(a => a._id = '' + a._id);
+                                    }
+                                    countlyGlobalApps[readableApps[i]._id] = readableApps[i];
+                                    countlyGlobalApps[readableApps[i]._id]._id = "" + readableApps[i]._id;
+                                    countlyGlobalApps[readableApps[i]._id].type = countlyGlobalApps[readableApps[i]._id].type || "mobile";
                                 }
 
                                 renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
                             });
-                        });
+                        }
                     }
                 }
                 else {
@@ -1037,7 +1068,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.header('Expires', '0');
                 res.header('Pragma', 'no-cache');
                 var config = plugins.getConfig("security");
-                res.render('setup', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol}});
+                res.render('setup', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}});
             }
             else if (err) {
                 res.status(500).send('Server Error');
@@ -1064,7 +1095,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                     res.header('Expires', '0');
                     res.header('Pragma', 'no-cache');
-                    res.render('login', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": req.flash('info'), "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template });
+                    var config = plugins.getConfig("security");
+                    res.render('login', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "message": req.flash('info'), "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false}});
                 }
                 else {
                     res.redirect(countlyConfig.path + '/setup');
@@ -1106,7 +1138,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                         res.header('Expires', '0');
                         res.header('Pragma', 'no-cache');
-                        res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", password_min: req.query.password_min || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template });
+                        var config = plugins.getConfig("security");
+                        res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", password_min: req.query.password_min || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false}});
                     }
                 }
                 else {
@@ -1169,7 +1202,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.header('Expires', '0');
                 res.header('Pragma', 'no-cache');
                 var config = plugins.getConfig("security");
-                var data = { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: err || {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol}};
+                var data = { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", themeFiles: req.themeFiles, inject_template: req.template, params: {}, error: err || {}, security: {password_min: config.password_min, password_char: config.password_char, password_number: config.password_number, password_symbol: config.password_symbol, autocomplete: config.password_autocomplete || false}};
                 if (params.email) {
                     data.params.email = params.email;
                 }

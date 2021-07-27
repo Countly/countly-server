@@ -2,6 +2,7 @@
     Handlebars,
     CountlyHelpers,
     countlyGlobal,
+    countlyAuth,
     countlyView,
     countlyEvent,
     ReportingView,
@@ -14,6 +15,7 @@
  */
 
 window.ReportingView = countlyView.extend({
+    featureName: 'reports',
     statusChanged: {},
     emailInput: {},
     initialize: function() {
@@ -239,23 +241,40 @@ window.ReportingView = countlyView.extend({
                     },
                     {
                         "mData": function(row) {
+                            var createdByMe = true;
+                            if (countlyGlobal.member.global_admin === true || row.user === countlyGlobal.member._id) {
+                                createdByMe = false;
+                            }
+                            return createdByMe;
+                        },
+                        "sTitle": jQuery.i18n.map['report.report-created-by-me'],
+                        "bSortable": false,
+                    },
+                    {
+                        "mData": function(row) {
+                            var viewOnly = true;
+                            if (countlyGlobal.member.global_admin === true || row.user === countlyGlobal.member._id) {
+                                viewOnly = false;
+                            }
                             var menu = "<div class='options-item'>" +
                                             "<div class='edit'></div>" +
                                             "<div class='edit-menu reports-menu'>";
                             if (row.pluginEnabled && row.isValid) {
-                                menu += "<div class='edit-report item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i>Edit</div>" +
-                                                        "<div class='send-report item'" + " id='" + row._id + "'" + "><i class='fa fa-paper-plane'></i>Send Now</div>" +
-                                                        "<div class='preview-report item'" + " id='" + row._id + "'" + ">" +
-                                                            '<a href=\'' + countlyGlobal.path + '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: row._id}) + '\' target="_blank" class=""><i class="fa fa-eye"></i><span data-localize="reports.preview">' + jQuery.i18n.map["reports.preview"] + '</span></a>'
-                                                        + "</div>";
+
+                                menu += viewOnly ? "" : "<div class='edit-report item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i>Edit</div>";
+                                menu += "<div class='send-report item'" + " id='" + row._id + "'" +
+                                            "><i class='fa fa-paper-plane'></i>Send Now</div>" +
+                                        "<div class='preview-report item'" + " id='" + row._id + "'" + ">" +
+                                         '<a href=\'/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: row._id}) + '\' target="_blank" class=""><i class="fa fa-eye"></i><span data-localize="reports.preview">' + jQuery.i18n.map["reports.preview"] + '</span></a>' +
+                                          "</div>";
                             }
-                            menu += "<div class='delete-report item'" + " id='" + row._id + "'" + " data-name = '" + row.title + "' ><i class='fa fa-trash'></i>Delete</div>" +
+                            menu += viewOnly ? "" : "<div class='delete-report item'" + " id='" + row._id + "'" + " data-name = '" + row.title + "' ><i class='fa fa-trash'></i>Delete</div>" +
                                             "</div>" +
                                         "</div>";
                             return menu;
                         },
                         "bSortable": false,
-                    }
+                    },
                 ]
             }));
             self.dtable.fnSort([ [0, 'desc'] ]);
@@ -266,6 +285,18 @@ window.ReportingView = countlyView.extend({
             $("#add-report").on("click", function() {
                 self.widgetDrawer.init("core");
             });
+
+            if (!countlyAuth.validateCreate(self.featureName)) {
+                $('#add-report').hide();
+            }
+
+            if (!countlyAuth.validateUpdate(self.featureName)) {
+                $('.edit-report').hide();
+            }
+
+            if (!countlyAuth.validateDelete(self.featureName)) {
+                $('.delete-report').hide();
+            }
         }
     },
 
@@ -999,10 +1030,21 @@ app.addReportsCallbacks("reports", {
 //register views
 app.reportingView = new ReportingView();
 
-app.route('/manage/reports', 'reports', function() {
-    this.renderWhenReady(this.reportingView);
-});
+if (countlyAuth.validateRead(app.reportingView.featureName)) {
+    app.route('/manage/reports', 'reports', function() {
+        this.renderWhenReady(this.reportingView);
+    });
+}
 
 $(document).ready(function() {
-    app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+    if (countlyAuth.validateRead(app.reportingView.featureName)) {
+        app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+        if (app.configurationsView) {
+            app.configurationsView.registerLabel("reports", "reports.title");
+            app.configurationsView.registerLabel(
+                "reports.secretKey",
+                "reports.secretKey"
+            );
+        }
+    }
 });

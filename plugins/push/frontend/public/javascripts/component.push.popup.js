@@ -21,8 +21,12 @@ window.component('push.popup', function(popup) {
         m.startComputation();
         var message = prefilled instanceof push.Message ? prefilled : new push.Message(prefilled || {});
         if (!duplicate) {
-            message.sound('default');
-            message.expiration(1000 * 3600 * 24 * 7);
+            if (!message.sound()) {
+                message.sound('default');
+            }
+            if (!message.expiration()) {
+                message.expiration(1000 * 3600 * 24 * 7);
+            }
             if (message.auto() || message.tx()) {
                 if (message._id()) {
                     message.editingAuto = true;
@@ -367,6 +371,9 @@ window.component('push.popup', function(popup) {
                 k = (locale || activeLocale()) + (index === undefined ? (push.C.S + key) : (push.C.S + index + push.C.S + key));
 
                 if (arguments.length) {
+                    if (v && key === 'l') {
+                        v = v.trim();
+                    }
                     message.messagePerLocale()[k] = v;
                 }
 
@@ -573,6 +580,8 @@ window.component('push.popup', function(popup) {
                 this.typ = opts.typ || 'text';
                 this.help = opts.help;
                 this.textarea = opts.textarea;
+                this.comp = opts.comp;
+                this.cls = opts.cls;
                 this.oncheck = function (ev) {
                     if (ev && ev instanceof MouseEvent && ev.target.tagName.toLowerCase() === 'input') {
                         return true;
@@ -606,7 +615,7 @@ window.component('push.popup', function(popup) {
                 };
                 if (ctrl.value() === undefined) { inp.disabled = 'disabled'; }
 
-                return m('.comp-push-extra', { class: !ctrl.textarea || ctrl.value() === undefined ? '' : 'expanded' }, [
+                return m('.comp-push-extra', { class: (!ctrl.textarea || ctrl.value() === undefined ? '' : 'expanded') + ' ' + (ctrl.cls || '') }, [
                     m('.comp-push-extra-check', { onclick: ctrl.oncheck }, [
                         m('input[type=checkbox]', check),
                         m('label', typeof ctrl.title === 'string' ?
@@ -624,7 +633,7 @@ window.component('push.popup', function(popup) {
                         class: ctrl.value() === undefined ? '' : 'active', onclick: function () {
                             if (ctrl.value() === undefined) { ctrl.oncheck(); }
                         }
-                    }, [
+                    }, ctrl.comp ? ctrl.comp() : [
                         m(ctrl.textarea ? 'textarea' : 'input[type=' + ctrl.typ + ']', inp),
                         ctrl.value() !== undefined && !ctrl.value.valid ?
                             m('.error', C.tooltip.config(ctrl.value.errorText), push.ICON.WARN())
@@ -784,10 +793,18 @@ window.component('push.popup', function(popup) {
                             { value: true, title: t('pu.po.tab1.trigger-type.entry'), desc: t('pu.po.tab1.cohort-entry-desc') },
                             { value: false, title: t('pu.po.tab1.trigger-type.exit'), desc: t('pu.po.tab1.cohort-exit-desc') },
                             { value: 'events', title: t('pu.po.tab1.trigger-type.event'), desc: t('pu.po.tab1.cohort-event-desc') },
-                        ], value: message.autoOnEntry, onchange: function(){
-                            message.autoEvents([]);
-                            message.autoCohorts([]);
-                        }
+                        ], value: message.autoOnEntry, onchange: function(neo, old){
+                            neo = typeof neo === 'boolean';
+                            old = typeof old === 'boolean';
+                            if (neo ^ old) {
+                                message.autoEvents([]);
+                                message.autoCohorts([]);
+                                cohorts.forEach(function(c){ c.selected(false); });
+                                events.forEach(function(c){ c.selected(false); });
+                                this.selectCohorts.value([]);
+                                this.selectEvents.value([]);
+                            }
+                        }.bind(this)
                     });
                     this.selectEvents = new C.multiselect.controller({
                         placeholder: t('pu.po.tab1.select-event-placeholder'),
@@ -1228,6 +1245,30 @@ window.component('push.popup', function(popup) {
                         { value: push.C.PLATFORMS.ANDROID, view: m.bind(m, 'span.ion-social-android') },
                     ].filter(function (o) { return message.platforms().indexOf(o.value) !== -1; }), value: popup.previewPlatform
                 });
+
+                C.push.initPersOpts();
+                var persOpts = push.PERS_OPTS;
+                persOpts.forEach(function(op){
+                    op.selected(message.userProps() && message.userProps().indexOf(op.value()) !== -1);
+                });
+                if (message.auto() && message.autoOnEntry() === 'events') {
+                    message.autoEvents().forEach(function(key) {
+                        var data = push.PERS_EVENTS[key];
+                        if (data && data.length) {
+                            persOpts = persOpts.concat([new C.selector.Option({title: key})]).concat(data);
+                        }
+                    });
+                }
+                this.userProps = new C.multiselect.controller({
+                    placeholder: t('pu.po.tab2.extras.props.placeholder'),
+                    options: persOpts,
+                    value: function () {
+                        if (arguments.length) {
+                            message.userProps(persOpts.filter(function (o) { return o.selected(); }).map(function(o){ return o.value(); }));
+                        }
+                        return persOpts;
+                    }
+                });
             },
             view: function (ctrl) {
                 var d = moment();
@@ -1297,6 +1338,9 @@ window.component('push.popup', function(popup) {
                                         }
                                     }, valuePlaceholder: t('pu.po.tab2.extras.data.placeholder'), help: t('pu.po.tab2.extras.data.help')
                                 }),
+                                m(extra, {cls: 'nopad', title: t('pu.po.tab2.extras.props'), help: t('pu.po.tab2.extras.props.help'), value: message.userProps, comp: function(){
+                                    return message.userProps() === undefined ? '' : C.multiselect.view(ctrl.userProps);
+                                }}),
                             ]),
                         ]),
                         message.type() === push.C.TYPE.MESSAGE ?

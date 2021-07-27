@@ -451,7 +451,7 @@ window.component('push.dash', function (dash) {
             m.component(components.widget, {
                 header: {
                     title: 'pu.dash.users',
-                    view: (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) ?
+                    view: (countlyAuth.validateCreate('push')) ?
                         [
                             m('div', {
                                 style: {
@@ -590,12 +590,13 @@ window.component('push.dash', function (dash) {
                 }
             }),
             m('.cly-button-menu.message-menu', [
-                m('a.item.view-recipients', t('push.po.table.recipients')),
+                m('a.item.view-recipients', t('push.po.table.recipients'))
+            ].concat((countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) ? [
                 m('a.item.duplicate-message', t('push.po.table.dublicate')),
                 m('a.item.resend-message', t('push.po.table.resend')),
                 m('a.item.edit-message', t('push.po.table.edit')),
                 m('a.item.delete-message', t('push.po.table.delete'))
-            ])
+            ] : []))
         ]);
     };
 
@@ -728,7 +729,15 @@ window.MessagingDashboardView = countlyView.extend({
         m.startComputation();
         components.slider.instance.close();
         m.endComputation();
-        if (callback) {
+        if (window.countlySegmentation) {
+            window.countlySegmentation.initialize("[CLY]_session").then(function(){
+                window.components.push.initPersOpts();
+                if (callback) {
+                    callback();
+                }
+            });
+        }
+        else if (callback) {
             callback();
         }
     }

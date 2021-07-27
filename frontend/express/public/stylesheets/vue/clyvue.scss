@@ -2762,7 +2762,7 @@
 }
 .cly-vue-tooltip {
     display: block !important;
-    z-index: 10000;
+    z-index: 100000;
     font-size: 12px;
 
     $tooltip_color: rgba(10, 10, 10, 0.8);

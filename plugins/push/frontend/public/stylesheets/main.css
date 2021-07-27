@@ -287,11 +287,12 @@
     animation: border-pulsate 0.5s 3;
 }
 
-.cly-select .srch { top:100%; position:absolute; z-index:2; background-color: #FFF; width:100%; border:1px solid #D0D0D0; border-bottom:none; margin-left:-1px; cursor:default; overflow:auto; }
+.cly-select .srch { top:100%; position:absolute; z-index:2; color:#CCC; background-color: #FFF; width:100%; border:1px solid #D0D0D0; margin-left:-1px; cursor:default; overflow:auto; }
 .cly-select .srch .fa { position: absolute; right:0; top:5px; color:#CCC; font-size: 10px; }
 .cly-select .srch .inner { position:relative; margin:5px 8px; padding:4px 1px; padding-right:20px; background-color:#FFF; font:13px Ubuntu; line-height:111%; }
 .cly-select .srch input { height:14px; padding:0; margin:0; border:none; outline:none; width:100%; font:13px Ubuntu; line-height:111%; -webkit-appearance: textfield; }
 .cly-select .srch input::-webkit-srch-decoration { -webkit-appearance: none; }
+.cly-select .srch input::placeholder { color: #999; opacity: 1; }
 .cly-select .srch + .select-items { margin-top: 33px; border-top-left-radius: 0; border-top-right-radius: 0; }
 
 .pers-panel .cly-select .select-items .scroll-list {
@@ -717,12 +718,24 @@ input:disabled + label {
 .comp-push-extra.expanded .comp-push-extra-value { padding: 0 7px; }
 .comp-push-extra.expanded .comp-push-extra-value > textarea { height: 57px; padding: 7px 0; }
 
+.comp-push-extra.nopad .comp-push-extra-value { padding: 0; }
 .comp-push-extra-value > .error { position: absolute; top: 7px; right: 9px; opacity: 1; z-index: 10 }
 .comp-push-extra-value > .error .comp-tt { visibility: hidden; }
 .comp-push-extra-value > .error:hover { opacity: 1; }
 .comp-push-extra-value > .error:hover .comp-tt { opacity: 1; visibility: visible; }
 .comp-push-extra-value > input:focus + .error { opacity: 0.3; }
 .comp-push-extra-value > input:focus + .error:hover  { opacity: 1; }
+
+.comp-push .select-items { z-index: 1000000; }
+.comp-push-extra-value .cly-multi-select {
+    border: none;
+    height: 34px;
+    background-color: transparent;
+}
+.comp-push .comp-push-extra .cly-multi-select .text .default-text {
+    color: #999;
+}
+
 
 .help.pulsating { color: #5F6F84; }
 

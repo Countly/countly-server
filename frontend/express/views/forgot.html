@@ -97,7 +97,7 @@
 				
 				if (CountlyHelpers.validateEmail($('#remember-password-email').val())) {
 					$.ajax({
-						url: '/forgot',
+						url: './forgot',
 						type: 'POST',
 						data: {
 							email: $('#remember-password-email').val(),

@@ -14,6 +14,7 @@ var cp = require('child_process'); //call process
 var spawn = cp.spawn; //for calling comannd line
 const fse = require('fs-extra');
 var crypto = require('crypto');
+var log = common.log('core:app_users');
 
 var cohorts;
 try {
@@ -458,36 +459,37 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
             }
             newAppUserP.merges++;
             //update new user
-            common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function(err) {
-                if (err) {
-                    return callback(err, newAppUserP);
-                }
+            common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function(/*err*/) {
+                //if (err) {
+                //return callback(err, newAppUserP);
+                //}
+                callback(null, newAppUserP);
                 //let plugins know they need to merge user data
                 common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}}, {multi: true}, function() {});
                 plugins.dispatch("/i/device_id", {
                     app_id: app_id,
                     oldUser: oldAppUser,
                     newUser: newAppUserP
-                }, function(result) {
-                    var retry = false;
-                    if (result && result.length) {
-                        for (let index = 0; index < result.length; index++) {
-                            if (result[index].status === "rejected") {
-                                retry = true;
-                                break;
-                            }
-                        }
-                    }
+                }, function(/*result*/) {
+                    //var retry = false;
+                    //if (result && result.length) {
+                    //    for (let index = 0; index < result.length; index++) {
+                    //        if (result[index].status === "rejected") {
+                    //           retry = true;
+                    //            break;
+                    //        }
+                    //    }
+                    //}
 
-                    if (retry) {
-                        //all plugins could not merge data, we should retry
-                        return callback(new Error("Could not merge data in all plugins"), newAppUserP);
-                    }
+                    //if (retry) {
+                    //all plugins could not merge data, we should retry
+                    //return callback(new Error("Could not merge data in all plugins"), newAppUserP);
+                    //}
                     //delete old user
-                    common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(errRemoving) {
-                        if (callback) {
-                            callback(errRemoving, newAppUserP);
-                        }
+                    common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(/*errRemoving*/) {
+                        //if (callback) {
+                        //callback(errRemoving, newAppUserP);
+                        //}
                     });
                 });
             });
@@ -661,6 +663,7 @@ usersApi.deleteExport = function(filename, params, callback) {
 };
 
 var run_command = function(my_command, my_args) {
+    log.d("run_command:" + my_command + JSON.stringify(my_args));
     return new Promise(function(resolve, reject) {
         var child = spawn(my_command, my_args, {
             shell: false,
@@ -668,11 +671,12 @@ var run_command = function(my_command, my_args) {
             detached: false
         }, function(error) {
             if (error) {
+                log.e(error);
                 return reject(Error('error:' + JSON.stringify(error)));
             }
         });
         child.on('error', function(error) {
-            console.log(error);
+            log.e(error);
             return reject(error);
         });
         child.on('exit', function(code) {
@@ -848,13 +852,17 @@ usersApi.export = function(app_id, query, params, callback) {
                     resolve();
                 }
             }).then(function() {
+                log.d("collection marked");
                 //export data from metric_changes
                 return run_command('mongoexport', [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]);
+
             }).then(function() {
+                log.d("metric_changes exported");
                 //export data from app_users
                 return run_command('mongoexport', [...dbargs, "--collection", "app_users" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]);
             }).then(
                 function() {
+                    log.d("app_users exported");
                     //get other export commands from other plugins
                     plugins.dispatch("/i/app_users/export", {
                         app_id: app_id,
@@ -873,12 +881,15 @@ usersApi.export = function(app_id, query, params, callback) {
                         }
                         Promise.all(commands).then(
                             function() {
+                                log.d("plugins colections exported");
                                 //pack export
                                 clear_out_empty_files(path.resolve(__dirname, './../../../export/AppUser/' + export_filename))//remove empty files
                                     .then(function() {
+                                        log.d("empty files cleared");
                                         return run_command("tar", ["-zcvf", export_filename + ".tar.gz", export_filename]);
                                     }) //create archive
                                     .then(function() {
+                                        log.d("packed");
                                         return new Promise(function(resolve, reject) { /*save export in gridFS*/
                                             var my_filename = path.resolve(__dirname, './../../../export/AppUser/' + export_filename + '.tar.gz');
                                             countlyFs.gridfs.saveFile("appUsers", my_filename, my_filename, {

@@ -80,6 +80,7 @@ class Note {
         this.delayWhileIdle = data.delayWhileIdle; // delay_while_idle for Android
         this.url = data.url; // url to open
         this.data = typeof data.data === 'string' ? JSON.parse(data.data) : data.data; // Custom data
+        this.userProps = data.userProps; // Custom data
         this.sound = data.sound; // Sound
         this.badge = data.badge; // Badge
         this.buttons = data.buttons; // Number of buttons
@@ -157,6 +158,7 @@ class Note {
             delayWhileIdle: this.delayWhileIdle,
             url: this.url,
             data: this.data ? JSON.stringify(this.data) : undefined,
+            userProps: this.userProps,
             sound: this.sound,
             badge: this.badge,
             buttons: this.buttons,
@@ -453,6 +455,7 @@ class Note {
             buttons = o.buttons || this.buttons || 0,
             mpl = o.messagePerLocale || this.messagePerLocale || null,
             data = o.data || this.data || null,
+            userProps = o.userProps || this.userProps || null,
             lang = p.la || 'default',
             alert = null,
             title = null,
@@ -522,6 +525,17 @@ class Note {
                 }
             }
 
+            if (userProps) {
+                userProps.forEach(k => {
+                    if (!compiled.u) {
+                        compiled.u = {};
+                    }
+                    if (k in p) {
+                        compiled.u[k.replace(S, '.')] = p[k];
+                    }
+                });
+            }
+
             if (Object.keys(compiled.aps).length === 0) {
                 delete compiled.aps;
             }
@@ -582,6 +596,16 @@ class Note {
             if (data) {
                 Object.assign(dt, data);
             }
+            if (userProps) {
+                userProps.forEach(k => {
+                    if (!dt.u) {
+                        dt.u = {};
+                    }
+                    if (k in p) {
+                        dt.u[k.replace(S, '.')] = p[k];
+                    }
+                });
+            }
             dt['c.i'] = this._id.toString();
 
             if (url) {
@@ -638,6 +662,20 @@ class Note {
                     compiled.data[k] = flattened[k];
                 }
             }
+            if (userProps) {
+                let tmp = {};
+                userProps.forEach(k => {
+                    if (k in p) {
+                        tmp['u.' + k.replace(S, '.')] = p[k];
+                    }
+                });
+                if (Object.keys(tmp).length) {
+                    tmp = flattenObject(tmp);
+                    for (let k in tmp) {
+                        compiled.data[k] = tmp[k];
+                    }
+                }
+            }
             compiled.data['c.i'] = this._id.toString();
 
             if (url) {
@@ -670,6 +708,11 @@ class Note {
                 ret[z.k.replace(S, '.')] = 1;
             });
         });
+        if (this.userProps && this.userProps.length) {
+            this.userProps.forEach(p => {
+                ret[p.replace(S, '.')] = 1;
+            });
+        }
         this._compilationDataFields = JSON.parse(JSON.stringify(ret));
 
         return ret;

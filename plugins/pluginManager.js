@@ -326,6 +326,31 @@ var pluginManager = function pluginManager() {
         }
     };
 
+    /**
+    * Update existing application level configuration
+    * @param {object} db -database connection for countly db
+    * @param {string} appId - id of application
+    * @param {string} namespace - name of plugin
+    * @param {object} config  - new configuration object for selected plugin 
+    * @param {function} callback - function that is called when updating has finished
+    **/
+    this.updateApplicationConfigs = function(db, appId, namespace, config, callback) {
+        var pluginName = 'plugins.'.concat(namespace);
+        db.collection('apps').updateOne({_id: appId}, {$set: {[pluginName]: config}}, function(error, result) {
+            if (error) {
+                log.e('Error updating application level %s plugin configuration.Got error:%j', namespace, error);
+            }
+            if (callback) {
+                if (error) {
+                    callback(error, null);
+                }
+                else {
+                    callback(null, result);
+                }
+            }
+        });
+    };
+
     var preventKillingNumberType = function(configsPointer, changes) {
         for (var k in changes) {
             if (!Object.prototype.hasOwnProperty.call(configsPointer, k) || !Object.prototype.hasOwnProperty.call(changes, k)) {
@@ -1195,8 +1220,7 @@ var pluginManager = function pluginManager() {
             waitQueueTimeoutMS: 0,
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            auto_reconnect: true,
-            w: 1
+            auto_reconnect: true
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);
@@ -1319,7 +1343,6 @@ var pluginManager = function pluginManager() {
         countlyDb.decode = function(str) {
             return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
         };
-        countlyDb.on('error', console.log);
         countlyDb.onOpened = function(callback) {
             callback();
         };
@@ -1753,7 +1776,7 @@ var pluginManager = function pluginManager() {
             ob._findAndModify = function(query, sort, doc, options, callback) {
                 if (options && typeof options === "object") {
                     if (options.new) {
-                        options.returnOriginal = false;
+                        options.returnDocument = "after";
                     }
                     if (options.remove) {
                         return ob.findOneAndDelete(query, options, callback);

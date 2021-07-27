@@ -1,24 +1,32 @@
 <div class="widget">
 	<div class="widget-header" id="dbviewer-header">
 		<div class="left">
-            <div style="overflow: auto;">
-                <div class="title small">{{page-title}}</div>
-            </div>
-            <div style="width:300px; display: inline-block;">
-                <div class="cly-select float">
-                    <div class="select-inner">
-                        <div class="text-container">
-                            <div class="text" id="app-selector"></div>
-                        </div>
-                        <div class="right combo"></div>
-                    </div>
-                    <div class="select-items square">
-                        <div id="app-list">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+			<div style="overflow: auto;">
+				<div class="title small">{{page-title}}</div>
+			</div>
+
+			<div style="width:300px; display: inline-block;">
+				<div class="cly-select float">
+					<div class="select-inner">
+						<div class="text-container">
+							<div class="text" id="app-selector"></div>
+						</div>
+						<div class="right combo"></div>
+					</div>
+					<div class="select-items square">
+						<div id="app-list">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="right" id="show-mongotop-mongostat-buttons" style="display: none">
+			<a style="float: right; margin-top: 6px; margin-right: 3px" class="icon-button green" id="show-mongostat"
+				data-localize="dbviewer.mongostat" target="_blank">Mongostat</a>
+			<a style="float: right; margin-top: 6px; margin-right: 3px" class="icon-button green" id="show-mongotop"
+				data-localize="dbviewer.mongotop">Mongotop</a>
+		</div>
+
 	</div>
 	<a href="javascript:void(0)" class="back-link" id="back_to_dbviewer">
 		<span data-localize="dbviewer.back-to-dbviewer"></span>
@@ -38,68 +46,96 @@
 	<div id="dbviewer" class="widget-content">
 		<div class="left-side">
 			<div id="accordion">
-			{{#eachOfArray dbs}}
-				<h3 id="{{value.name}}-db-selector">{{value.name}}</h3>
-				<div>
-					<div id="dbviewer-collection-input-filter-wrapper">
-						<input type="text" readonly="readonly" onfocus="javascript: this.removeAttribute('readonly')" class="dbviewer-collection-filter-input" data-db="{{value.name}}" placeholder="Search for a collection">
-						<i class="dbviewer-collection-filter-input-icon fa fa-search"></i>
+				{{#eachOfArray dbs}}
+					<h3 id="{{value.name}}-db-selector">{{value.name}}</h3>
+					<div>
+						<div id="dbviewer-collection-input-filter-wrapper">
+							<input type="text" readonly="readonly"
+								onfocus="javascript: this.removeAttribute('readonly')"
+								class="dbviewer-collection-filter-input" data-db="{{value.name}}"
+								placeholder="Search for a collection">
+							<i class="dbviewer-collection-filter-input-icon fa fa-search"></i>
+						</div>
+						<ul class="dbviewer-collection-list-{{value.name}}">
+							{{#eachOfArray value.list}}
+								<li data-db="{{../value.name}}"
+									data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}"
+									class="collection-list-item searchable"><a class="dbviewer-link-in-collection-list"
+										href="#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a>
+								</li>
+							{{/eachOfArray}}
+						</ul>
 					</div>
-					<ul class="dbviewer-collection-list-{{value.name}}">
-					{{#eachOfArray value.list}}
-					<li data-db="{{../value.name}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" class="collection-list-item searchable"><a class="dbviewer-link-in-collection-list" href="#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a></li>
-					{{/eachOfArray}}
-					</ul>
-				</div>
-			{{/eachOfArray}}
+				{{/eachOfArray}}
 			</div>
 		</div>
 		<div class="right-side">
 			<!-- Collection Back Button -->
 			{{#if document}}
-			<a class="dbviewer-go-back" href="#/manage/db/{{db}}/{{collection}}"><div class="icon-button light dbviewer-back-button"><i class="fa fa-chevron-left"></i> <span>{{back}}</span></div></a>
+				<a class="dbviewer-go-back" href="#/manage/db/{{db}}/{{collection}}">
+					<div class="icon-button light dbviewer-back-button"><i class="fa fa-chevron-left"></i>
+						<span>{{back}}</span></div>
+				</a>
 			{{else}}
-			<a class="dbviewer-go-back" href="#/manage/db"><div class="icon-button light dbviewer-back-button"><i class="fa fa-chevron-left"></i> <span>{{back}}</span></div></a>
+				<a class="dbviewer-go-back" href="#/manage/db">
+					<div class="icon-button light dbviewer-back-button"><i class="fa fa-chevron-left"></i>
+						<span>{{back}}</span></div>
+				</a>
 			{{/if}}
-			<a class="dbviewer-aggregate" href="#/manage/db/aggregate/{{db}}/{{collection}}"><div class="icon-button light dbviewer-aggregate-button"><i class="fa fa-bar-chart"></i> <span data-localize="dbviewer.aggregate"></span></div></a>
-			<a class="dbviewer-aggregate dbviewer-indexes" href="#/manage/db/indexes/{{db}}/{{collection}}"><div class="icon-button light dbviewer-aggregate-button"><i class="fa fa-table"></i> <span data-localize="dbviewer.indexes"></span></div></a>
+			<a class="dbviewer-aggregate" href="#/manage/db/aggregate/{{db}}/{{collection}}">
+				<div class="icon-button light dbviewer-aggregate-button"><i class="fa fa-bar-chart"></i> <span
+						data-localize="dbviewer.aggregate"></span></div>
+			</a>
+			<a class="dbviewer-aggregate dbviewer-indexes" href="#/manage/db/indexes/{{db}}/{{collection}}">
+				<div class="icon-button light dbviewer-aggregate-button"><i class="fa fa-table"></i> <span
+						data-localize="dbviewer.indexes"></span></div>
+			</a>
 			<div class="dbviewer-gray-area dbviewer-area-pos">
 				<div class="dbviewer-header-of-query-wrapper">
 					<div class="dbviewer-gray dbviewer-left-side-1">
 						<a id="dbviewer-go-back" href='javascript:void()'>/</a>
 						{{#if db}}
 							{{#if collection}}
-						<a class="dbviewer-gray dbviewer-go-back" id="dbviewer-go-collectionlist" data-db="{{db}}" href='#/manage/db/{{db}}'><strong>{{db}}</strong></a>
+								<a class="dbviewer-gray dbviewer-go-back" id="dbviewer-go-collectionlist"
+									data-db="{{db}}" href='#/manage/db/{{db}}'><strong>{{db}}</strong></a>
 								{{#if document}}
-						<a class="dbviewer-gray" href='#/manage/db/{{db}}/{{collection}}'>/ {{collection}}</a>
+									<a class="dbviewer-gray" href='#/manage/db/{{db}}/{{collection}}'>/
+										{{collection}}</a>
 								{{else}}
-						/{{collection}}
+									/{{collection}}
 								{{/if}}
 							{{else}}
-						{{db}}
+								{{db}}
 							{{/if}}
 						{{/if}}
 					</div>
 					<div class="dbviewer-button-right-side">
-							<a id="dbviewer-export-button"><span data-localize="dbviewer.export"></span> <i class="ion-ios-arrow-down dbviewer-export-button-icon"></i></a>
+						<a id="dbviewer-export-button"><span data-localize="dbviewer.export"></span> <i
+								class="ion-ios-arrow-down dbviewer-export-button-icon"></i></a>
 					</div>
 				</div>
 				<div class="dbviewer-gray dbviewer-left-side-2">
 					<div class="dbviewer-filter-toggle">
-						<span class="dbviewer-filter-show"><i class="fa fa-chevron-down"></i>&nbsp;&nbsp;<span data-localize="dbviewer.show-query-options"></span></span>
-						<span class="dbviewer-filter-hide"><i class="fa fa-chevron-up"></i>&nbsp;&nbsp;<span data-localize="dbviewer.hide-query-options"></span></span>
+						<span class="dbviewer-filter-show"><i class="fa fa-chevron-down"></i>&nbsp;&nbsp;<span
+								data-localize="dbviewer.show-query-options"></span></span>
+						<span class="dbviewer-filter-hide"><i class="fa fa-chevron-up"></i>&nbsp;&nbsp;<span
+								data-localize="dbviewer.hide-query-options"></span></span>
 						<span class="dbviewer-filter-status" data-localize="dbviewer.filter-is-applied"></span>
 					</div>
 					<div class="dbviewer-filter-area">
 						<p class="dbviewer-subtitle" data-localize="dbviewer.filter-query"></p>
-						<p><textarea class="dbviewer-collection-filter" placeholder='{{prettyJSON placeholder}}'></textarea><br>
-						<span class="dbviewer-incorrect-json"><i class="fa fa-exclamation-circle">&nbsp;</i><span data-localize="dbviewer.invalid-json"></span></span>
-						<span class="dbviewer-correct-json"><i class="fa fa-check">&nbsp;</i><span data-localize="dbviewer.valid-json"></span></span></p>
+						<p><textarea class="dbviewer-collection-filter"
+								placeholder='{{prettyJSON placeholder}}'></textarea><br>
+							<span class="dbviewer-incorrect-json"><i class="fa fa-exclamation-circle">&nbsp;</i><span
+									data-localize="dbviewer.invalid-json"></span></span>
+							<span class="dbviewer-correct-json"><i class="fa fa-check">&nbsp;</i><span
+									data-localize="dbviewer.valid-json"></span></span></p>
 						<p>
 							<label class="dbviewer-custom-checkbox-container">
 								<input id="dbviewer-show-projection" type="checkbox">
 								<span class="dbviewer-return-checkbox fa fa-square-o check-green"></span>
-								<span id="dbviewer-projection-checkbox-title" data-localize="dbviewer.select-fields-to-return"></span>
+								<span id="dbviewer-projection-checkbox-title"
+									data-localize="dbviewer.select-fields-to-return"></span>
 							</label>
 						</p>
 						<div id="dbviewer-projection-area">
@@ -109,143 +145,171 @@
 							<label class="dbviewer-custom-checkbox-container">
 								<input id="dbviewer-show-sort" type="checkbox">
 								<span class="dbviewer-sort-checkbox fa fa-square-o check-green"></span>
-								<span id="dbviewer-sort-checkbox-title" data-localize="dbviewer.select-fields-to-sort"></span>
+								<span id="dbviewer-sort-checkbox-title"
+									data-localize="dbviewer.select-fields-to-sort"></span>
 							</label>
 						</p>
 						<div id="dbviewer-sort-area">
 							<div class="dbviewer-sort-wrapper">
-								<input type="text" style="width: 75%;display: inline-block !important;" id="dbviewer-sort-select" autocomplete="nope">
+								<input type="text" style="width: 75%;display: inline-block !important;"
+									id="dbviewer-sort-select" autocomplete="nope">
 								<div class="dbviewer-sort-property" style="float:right;margin-top:-27px;">
-										<span data-localize="dbviewer.sorting"></span>
-										<span class="dbviewer-sort-type-select dbviewer-sort-active dbviewer-first-sort-item" id="dbviewer-sort-ascend" data-type="1" data-localize="dbviewer.ascending"></span>
-										<span class="dbviewer-sort-type-select" id="dbviewer-sort-descend" data-type="-1" data-localize="dbviewer.descending"></span>
+									<span data-localize="dbviewer.sorting"></span>
+									<span
+										class="dbviewer-sort-type-select dbviewer-sort-active dbviewer-first-sort-item"
+										id="dbviewer-sort-ascend" data-type="1"
+										data-localize="dbviewer.ascending"></span>
+									<span class="dbviewer-sort-type-select" id="dbviewer-sort-descend" data-type="-1"
+										data-localize="dbviewer.descending"></span>
 								</div>
 							</div>
 						</div>
 						<div id="dbviewer-apply-filter-button-wrapper">
-							<a id="dbviewer-apply-filter-button" class="dbviewer-green-button" data-localize="dbviewer.apply-filter"></a>
+							<a id="dbviewer-apply-filter-button" class="dbviewer-green-button"
+								data-localize="dbviewer.apply-filter"></a>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="dbviewer-documents-area">
 				{{#if document}}
-				<div id="json-wrapper">
-					<pre id="json-renderer"></pre>
-				</div>
-				</table>
+					<div id="json-wrapper">
+						<pre id="json-renderer"></pre>
+					</div>
+					</table>
 				{{else}}
 					{{#if collection}}
-					<br>
-					<p class="dbviewer-inline">Showing {{data.start}} - {{data.end}} from {{data.total}} documents</p>
-					<p id='dbviewer-result-count-selector'>Show results: <select class='result-limit'>
-							<option value='10'>10</option>
-							<option value='20'>20</option>
-							<option value='30'>30</option>
-							<option value='40'>40</option>
-							<option value='50'>50</option>
-						</select>
-					</p>
-					<p class='pagination'>
-					{{#ifCond data.pages ">" 1}}
-						<a class="dbviewer-pagination-item" data-page='1' href='javascript:void(0)'>First</a>
-						<a class="dbviewer-pagination-item" data-page='{{prev}}' href='javascript:void(0)'>Prev</a>
-						&nbsp;
-						{{#ifCond start ">" 1}}
-						...
-						&nbsp;
-						{{/ifCond}}
-						{{#for start end 1}}
-							{{#ifCond this "==" ../data.curPage}}
-							<a data-page='{{this}}' href='javascript:void(0)' class="current dbviewer-pagination-item">{{this}}</a>
-							{{else}}
-							<a class="dbviewer-pagination-item" data-page='{{this}}' href='javascript:void(0)'>{{this}}</a>
+						<br>
+						<p class="dbviewer-inline">Showing {{data.start}} - {{data.end}} from {{data.total}} documents
+						</p>
+						<p id='dbviewer-result-count-selector'>Show results: <select class='result-limit'>
+								<option value='10'>10</option>
+								<option value='20'>20</option>
+								<option value='30'>30</option>
+								<option value='40'>40</option>
+								<option value='50'>50</option>
+							</select>
+						</p>
+						<p class='pagination'>
+							{{#ifCond data.pages ">" 1}}
+								<a class="dbviewer-pagination-item" data-page='1' href='javascript:void(0)'>First</a>
+								<a class="dbviewer-pagination-item" data-page='{{prev}}'
+									href='javascript:void(0)'>Prev</a>
+								&nbsp;
+								{{#ifCond start ">" 1}}
+									...
+									&nbsp;
+								{{/ifCond}}
+								{{#for start end 1}}
+									{{#ifCond this "==" ../data.curPage}}
+										<a data-page='{{this}}' href='javascript:void(0)'
+											class="current dbviewer-pagination-item">{{this}}</a>
+					{{else}}
+						<a class="dbviewer-pagination-item" data-page='{{this}}' href='javascript:void(0)'>{{this}}</a>
+									{{/ifCond}}
+								{{/for}}
+								{{#ifCond end "<" data.pages}}
+									&nbsp;
+									...
+								{{/ifCond}}
+								&nbsp;
+								<a class="dbviewer-pagination-item" data-page='{{next}}'
+									href='javascript:void(0)'>Next</a>
+								<a class="dbviewer-pagination-item" data-page='{{data.pages}}'
+									href='javascript:void(0)'>Last</a>
 							{{/ifCond}}
-						{{/for}}
-						{{#ifCond end "<" data.pages}}
-						&nbsp;
-						...
-						{{/ifCond}}
-						&nbsp;
-						<a class="dbviewer-pagination-item" data-page='{{next}}' href='javascript:void(0)'>Next</a>
-						<a class="dbviewer-pagination-item" data-page='{{data.pages}}' href='javascript:void(0)'>Last</a>
-					{{/ifCond}}
-					</p>
-					<table class="jh-type-object jh-root" id="dbviewer-collections">
-					{{#eachOfArray data.collections}}
-					<tr>
-						<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}}
-							<span class="document-detail-link-wrapper">
-								<span class="dbviewer-view-link" class="jh-type-string">
-									<a data-db="{{../db}}" data-collection="{{../collection}}" data-id="{{value._id}}" href="#/manage/db/{{../db}}/{{../collection}}/{{#clearObjectId value}}{{/clearObjectId}}" class="dbviewer-document-detail">
-										View
-									</a>
-								</span>
-							</span>
-						</th>
-					</tr>
-					<tr>
-						<td class="jh-value jh-object-value">{{prettyJSON value}}</td>
-					</tr>
-					{{/eachOfArray}}
-					</table>
-					<p class='pagination'>
-					{{#ifCond data.pages ">" 1}}
-						<a class="dbviewer-pagination-item" data-page='1' href='javascript:void(0)'>First</a>
-						<a class="dbviewer-pagination-item" data-page='{{prev}}' href='javascript:void(0)'>Prev</a>
-						&nbsp;
-						{{#ifCond start ">" 1}}
-						...
-						&nbsp;
-						{{/ifCond}}
-						{{#for start end 1}}
-							{{#ifCond this "==" ../data.curPage}}
-							<a data-page='{{this}}' href='javascript:void(0)' class="current dbviewer-pagination-item">{{this}}</a>
-							{{else}}
-							<a class="dbviewer-pagination-item" data-page='{{this}}' href='javascript:void(0)'>{{this}}</a>
+						</p>
+						<table class="jh-type-object jh-root" id="dbviewer-collections">
+							{{#eachOfArray data.collections}}
+								<tr>
+									<th class="jh-key jh-object-key">
+										<p><strong>_id:</strong> {{value._id}}
+											<span class="document-detail-link-wrapper">
+												<span class="dbviewer-view-link" class="jh-type-string">
+													<a data-db="{{../db}}" data-collection="{{../collection}}"
+														data-id="{{value._id}}"
+														href="#/manage/db/{{../db}}/{{../collection}}/{{#clearObjectId value}}{{/clearObjectId}}"
+														class="dbviewer-document-detail">
+														View
+													</a>
+												</span>
+											</span>
+									</th>
+								</tr>
+								<tr>
+									<td class="jh-value jh-object-value">{{prettyJSON value}}</td>
+								</tr>
+							{{/eachOfArray}}
+						</table>
+						<p class='pagination'>
+							{{#ifCond data.pages ">" 1}}
+								<a class="dbviewer-pagination-item" data-page='1' href='javascript:void(0)'>First</a>
+								<a class="dbviewer-pagination-item" data-page='{{prev}}'
+									href='javascript:void(0)'>Prev</a>
+								&nbsp;
+								{{#ifCond start ">" 1}}
+									...
+									&nbsp;
+								{{/ifCond}}
+								{{#for start end 1}}
+									{{#ifCond this "==" ../data.curPage}}
+										<a data-page='{{this}}' href='javascript:void(0)'
+											class="current dbviewer-pagination-item">{{this}}</a>
+					{{else}}
+						<a class="dbviewer-pagination-item" data-page='{{this}}' href='javascript:void(0)'>{{this}}</a>
+									{{/ifCond}}
+								{{/for}}
+								{{#ifCond end "<" data.pages}}
+									&nbsp;
+									...
+								{{/ifCond}}
+								&nbsp;
+								<a class="dbviewer-pagination-item" data-page='{{next}}'
+									href='javascript:void(0)'>Next</a>
+								<a class="dbviewer-pagination-item" data-page='{{data.pages}}'
+									href='javascript:void(0)'>Last</a>
 							{{/ifCond}}
-						{{/for}}
-						{{#ifCond end "<" data.pages}}
-						&nbsp;
-						...
-						{{/ifCond}}
-						&nbsp;
-						<a class="dbviewer-pagination-item" data-page='{{next}}' href='javascript:void(0)'>Next</a>
-						<a class="dbviewer-pagination-item" data-page='{{data.pages}}' href='javascript:void(0)'>Last</a>
-					{{/ifCond}}
-					&nbsp;
-					</p>
-					<p class="dbviewer-inline">Showing {{data.start}} - {{data.end}} from {{data.total}} documents</p>
-					<p id='dbviewer-result-count-selector'>
-						Show results: <select class='result-limit'>
-							<option value='10'>10</option>
-							<option value='20'>20</option>
-							<option value='30'>30</option>
-							<option value='40'>40</option>
-							<option value='50'>50</option>
-						</select>
-					</p>
+							&nbsp;
+						</p>
+						<p class="dbviewer-inline">Showing {{data.start}} - {{data.end}} from {{data.total}} documents
+						</p>
+						<p id='dbviewer-result-count-selector'>
+							Show results: <select class='result-limit'>
+								<option value='10'>10</option>
+								<option value='20'>20</option>
+								<option value='30'>30</option>
+								<option value='40'>40</option>
+								<option value='50'>50</option>
+							</select>
+						</p>
 					{{else}}
 						{{#if db}}
-						{{#eachOfArray dbs}}
-							{{#ifCond value.name "==" ../db}}
-										<div class="dbviewer-db-area-title">/ {{../../../db}}</div>
-										<div class="dbviewer-collection-list">
+							{{#eachOfArray dbs}}
+								{{#ifCond value.name "==" ../db}}
+									<div class="dbviewer-db-area-title">/ {{../../../db}}</div>
+									<div class="dbviewer-collection-list">
 										{{#eachOfArray value.list}}
 											<div class="dbviewer-collection-list-item">
-												<a class="collection-list-item" data-db="{{../../../db}}" data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}" href="#/manage/db/{{../../../db}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a>
+												<a class="collection-list-item" data-db="{{../../../db}}"
+													data-collection="{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}"
+													href="#/manage/db/{{../../../db}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a>
 											</div>
 										{{/eachOfArray}}
-										</div>
-							{{/ifCond}}
-						{{/eachOfArray}}
+									</div>
+								{{/ifCond}}
+							{{/eachOfArray}}
 						{{else}}
 							{{#eachOfArray dbs}}
 								<a href="#/manage/db/{{value.name}}">
-									<div class="dbviewer-db-square db-detail" id="{{value.name}}-box" data-db="{{value.name}}">
-										<img class="dbviewer-box-svg" src="./dbviewer/images/dbviewer/{{value.name}}.svg">
-										<h3 class="dbviewer-db-title" data-localize="dbviewer.{{value.name}}-database"></h3>
-										<p class="dbviewer-db-description" data-localize="dbviewer.{{value.name}}-database-description"></p>
+									<div class="dbviewer-db-square db-detail" id="{{value.name}}-box"
+										data-db="{{value.name}}">
+										<img class="dbviewer-box-svg"
+											src="./dbviewer/images/dbviewer/{{value.name}}.svg">
+										<h3 class="dbviewer-db-title" data-localize="dbviewer.{{value.name}}-database">
+										</h3>
+										<p class="dbviewer-db-description"
+											data-localize="dbviewer.{{value.name}}-database-description">
+										</p>
 									</div>
 								</a>
 							{{/eachOfArray}}
@@ -253,13 +317,17 @@
 					{{/if}}
 				{{/if}}
 			</div>
+			<div class="mongotop-mongostat-table-area" id="mongotop-mongostat-display-area" style="display: none">
+
+			</div>
 		</div>
 		<div class="clear"></div>
 	</div>
 	<div id="aggregate-view">
 		<div class="aggregate-prepare-area">
 			<h4 class="countly-aggregate-header" data-localize="dbviewer.aggregation-pipeline"></h4>
-			<textarea placeholder="[{'$match':{'key':'val'}},{'$group':{'_id':'$key'}}]" id="aggregation_pipeline"></textarea>
+			<textarea placeholder="[{'$match':{'key':'val'}},{'$group':{'_id':'$key'}}]"
+				id="aggregation_pipeline"></textarea>
 			<button id="generate_aggregate_report"></button>
 			<div style="clear:both"></div>
 		</div>

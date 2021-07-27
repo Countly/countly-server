@@ -1,0 +1,347 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  reviewers:
+  - ar2rsawseen
+  assignees:
+  - ar2rsawseen
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+  ignore:
+  - dependency-name: puppeteer
+    versions:
+    - 6.0.0
+    - 7.0.0
+    - 7.0.1
+    - 7.0.3
+    - 7.0.4
+    - 7.1.0
+    - 8.0.0
+  - dependency-name: uglify-js
+    versions:
+    - 3.12.5
+    - 3.12.6
+    - 3.12.7
+    - 3.12.8
+    - 3.13.0
+    - 3.13.1
+    - 3.13.2
+    - 3.13.3
+  - dependency-name: grunt-cli
+    versions:
+    - 1.4.0
+  - dependency-name: mcc-mnc-list
+    versions:
+    - 1.1.6
+- package-ecosystem: npm
+  directory: "/plugins/EChartMap"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/alerts"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/assistant"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/browser"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/compare"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/compliance-hub"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/crashes"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/data_migration"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/dbviewer"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/density"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/desktop"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/enterpriseinfo"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/errorlogs"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/locale"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/logger"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/mobile"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/onboarding"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/plugin-upload"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  reviewers:
+  - Cookiezaurs
+  assignees:
+  - Cookiezaurs
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/plugins"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/populator"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/push"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  reviewers:
+  - iartem
+  assignees:
+  - iartem
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/reports"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/server-stats"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/slipping-away-users"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/sources"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/star-rating"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/system-utility"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/systemlogs"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/times-of-day"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/two-factor-auth"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  reviewers:
+  - LVMBDV
+  assignees:
+  - LVMBDV
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/views"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  reviewers:
+  - Cookiezaurs
+  assignees:
+  - Cookiezaurs
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+- package-ecosystem: npm
+  directory: "/plugins/web"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: next
+  labels:
+  - dependencies
+  versioning-strategy: increase-if-necessary
+  ignore:
+  - dependency-name: ua-parser-js
+    versions:
+    - 0.7.25

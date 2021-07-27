@@ -1,5 +1,6 @@
-/*globals countlyView,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,T,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon, Handlebars, CrashBinaryView, Dropzone */
+/*globals countlyView,countlyAuth,_,countlyDeviceDetails,countlyDeviceList,marked,addDrill,extendViewWithFilter,hljs,countlyUserdata,moment,store,jQuery,countlySession,$,countlyGlobal,T,countlyCrashes,app,CountlyHelpers,CrashesView,CrashgroupView,countlySegmentation,countlyCommon, Handlebars, CrashBinaryView, Dropzone */
 window.CrashesView = countlyView.extend({
+    featureName: 'crashes',
     isAppleOs: function(val) {
         return ["ios", "macos", "tvos", "watchos"].indexOf((val + "").toLowerCase()) !== -1;
     },
@@ -722,6 +723,8 @@ window.CrashesView = countlyView.extend({
             "active-filter": jQuery.i18n.map["crashes.all"],
             "active-action": jQuery.i18n.map["crashes.make-action"]
         };
+        var self = this;
+
         if (crashData.loss) {
             this.templateData.loss = true;
             this.templateData["big-numbers"].items.push({
@@ -730,7 +733,7 @@ window.CrashesView = countlyView.extend({
                 "help": "crashes.help-loss"
             });
         }
-        var self = this;
+
         if (!isRefresh) {
             countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
             chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric], self.showOnGraph);
@@ -819,6 +822,17 @@ window.CrashesView = countlyView.extend({
             });
         }
 
+        if (!countlyAuth.validateDelete(self.featureName)) {
+            $('.delete-action').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(self.featureName)) {
+            $('.update-action').hide();
+        }
+
+        if (!countlyAuth.validateDelete(self.featureName) && !countlyAuth.validateUpdate(self.featureName)) {
+            $('.action-segmentation').hide();
+        }
     },
     buildQuery: function() {
         var self = this;
@@ -1256,6 +1270,7 @@ window.CrashesView = countlyView.extend({
 });
 
 window.CrashgroupView = countlyView.extend({
+    featureName: 'crashes',
     initialize: function() {
         this.loaded = true;
     },
@@ -1949,6 +1964,31 @@ window.CrashgroupView = countlyView.extend({
             if (crashData.native_cpp) {
                 $(".error-download-binary").show();
             }
+        }
+
+        if (!countlyAuth.validateCreate(this.featureName)) {
+            $('#add_comment').hide();
+            $('#comment').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(this.featureName)) {
+            $('.crash-comment-edit').hide();
+        }
+
+        if (!countlyAuth.validateDelete(this.featureName)) {
+            $('.crash-comment-delete').hide();
+        }
+
+        if (!countlyAuth.validateDelete(self.featureName)) {
+            $('.delete-action').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(self.featureName)) {
+            $('.update-action').hide();
+        }
+
+        if (!countlyAuth.validateDelete(self.featureName) && !countlyAuth.validateUpdate(self.featureName)) {
+            $('#crashgroup-manipulation-trigger').hide();
         }
     },
     highlightStacktrace: function(code, callback) {
@@ -3503,31 +3543,43 @@ window.CrashBinaryView = countlyView.extend({
 
 app.crashesView = new CrashesView();
 app.crashgroupView = new CrashgroupView();
+app.crashBinaryView = new CrashBinaryView();
 
-app.route('/crashes', 'crashes', function() {
-    this.crashesView._filter = false;
-    this.crashesView._query = null;
-    this.renderWhenReady(this.crashesView);
-});
+if (countlyAuth.validateRead(app.crashesView.featureName)) {
+    app.route('/crashes', 'crashes', function() {
+        this.crashesView._filter = false;
+        this.crashesView._query = null;
+        this.renderWhenReady(this.crashesView);
+    });
 
-app.route('/crashes/filter/*query', 'userdata', function(query) {
-    try {
-        query = JSON.parse(query);
-    }
-    catch (ex) {
-        query = null;
-    }
-    this.crashesView._query = query;
-    this.crashesView._filter = true;
-    this.renderWhenReady(this.crashesView);
-});
+    app.route('/crashes/filter/*query', 'userdata', function(query) {
+        try {
+            query = JSON.parse(query);
+        }
+        catch (ex) {
+            query = null;
+        }
+        this.crashesView._query = query;
+        this.crashesView._filter = true;
+        this.renderWhenReady(this.crashesView);
+    });
 
-app.route('/crashes/:group', 'crashgroup', function(group) {
-    this.crashgroupView.id = group;
-    this.renderWhenReady(this.crashgroupView);
-});
+    app.route('/crashes/:group', 'crashgroup', function(group) {
+        this.crashgroupView.id = group;
+        this.renderWhenReady(this.crashgroupView);
+    });
+
+    app.route('/crash/symbols/:group/:id', 'binary_images', function(group, id) {
+        this.crashBinaryView.group = group;
+        this.crashBinaryView.id = id;
+        this.renderWhenReady(this.crashBinaryView);
+    });
+}
 
 app.addPageScript("/drill#", function() {
+    if (!countlyAuth.validateRead(app.crashesView.featureName)) {
+        return;
+    }
     var drillClone;
     var self = app.drillView;
     var record_crashes = countlyGlobal.record_crashes;
@@ -3563,7 +3615,7 @@ app.addPageScript("/drill#", function() {
             $("#drill-navigation").find(".menu[data-open=table-view]").hide();
 
             $.when(countlySegmentation.initialize(currEvent)).then(function() {
-                $("#drill").replaceWith(drillClone.clone(true));
+                $("#drill-filter-view").replaceWith(drillClone.clone(true));
                 self.adjustFilters();
                 if (!self.keepQueryTillExec) {
                     self.draw(true, false);
@@ -3571,13 +3623,14 @@ app.addPageScript("/drill#", function() {
             });
         });
         setTimeout(function() {
-            drillClone = $("#drill").clone(true);
+            // drillClone = $("#drill").clone(true);
+            drillClone = $("#drill-filter-view").clone(true);
         }, 0);
     }
 });
 
 app.addPageScript("/users/#", function() {
-    if (app.activeView && app.activeView.tabs) {
+    if (app.activeView && app.activeView.tabs && countlyAuth.validateRead(app.crashesView.featureName)) {
         var ul = app.activeView.tabs.find("ul");
         $("<li><a href='#usertab-crashes'>" + jQuery.i18n.map["crashes.title"] + "</a></li>").appendTo(ul);
         $("<div id='usertab-crashes'></div>").appendTo(app.activeView.tabs);
@@ -3664,15 +3717,17 @@ $(document).ready(function() {
         }
     });
 
-    app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-    app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+    if (countlyAuth.validateRead(app.crashesView.featureName)) {
+        app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+        app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+    }
 
     //check if configuration view exists
     if (app.configurationsView) {
         app.configurationsView.registerLabel("crashes", "crashes.title");
         app.configurationsView.registerInput("crashes.grouping_strategy", function(value) {
             var categories = ['error_and_file', 'stacktrace'];
-            var select = '<div class="cly-select crashes-group-input" id="crashes.grouping_strategy">' +
+            var select = '<div class="cly-select ' + (countlyAuth.validateUpdate(app.crashesView.featureName) ? '' : 'disabled') + '" crashes-group-input" id="crashes.grouping_strategy">' +
                 '<div class="select-inner">' +
                 '<div class="text-container">';
             if (value && value.length) {
@@ -3699,10 +3754,3 @@ $(document).ready(function() {
     }
 });
 
-app.crashBinaryView = new CrashBinaryView();
-
-app.route('/crash/symbols/:group/:id', 'binary_images', function(group, id) {
-    this.crashBinaryView.group = group;
-    this.crashBinaryView.id = id;
-    this.renderWhenReady(this.crashBinaryView);
-});

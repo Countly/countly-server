@@ -1,14 +1,21 @@
 var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    plugins = require('../../pluginManager.js');
+    plugins = require('../../pluginManager.js'),
+    { validateRead } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'systemlogs';
+plugins.setConfigs("systemlogs", {
+    preventIPTracking: false
+});
 
 (function() {
-
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
     //read api call
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring.method === 'systemlogs') {
             var query = {};
             if (typeof params.qstring.query === "string") {
@@ -37,7 +44,7 @@ var pluginOb = {},
                 countlyCommon.getPeriodObj(params);
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
-            validate(params, function(paramsNew) {
+            validateRead(params, FEATURE_NAME, function(paramsNew) {
                 var columns = [null, "ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
                     total--;
@@ -82,7 +89,7 @@ var pluginOb = {},
             return true;
         }
         else if (params.qstring.method === 'systemlogs_meta') {
-            validate(params, function(paramsNew) {
+            validateRead(params, FEATURE_NAME, function(paramsNew) {
                 //get all users
                 common.db.collection('members').find({}, {username: 1, email: 1, full_name: 1}).toArray(function(err1, users) {
                     common.db.collection('systemlogs').findOne({_id: "meta_v2"}, {_id: 0}, function(err2, res) {
@@ -192,24 +199,6 @@ var pluginOb = {},
         ob.data = JSON.parse(JSON.stringify(ob.data));
         delete ob.data.password;
         recordAction(ob.params, ob.params.member, "user_deleted", ob.data);
-    });
-
-    plugins.register("/i/app_users/create", function(ob) {
-        ob.params = ob.params || {};
-        var data = {app_id: ob.app_id, user: ob.user, uids: ob.user.uid || "", res: ob.res};
-        recordAction(ob.params, ob.params.member || {_id: "", username: "[code]"}, "app_user_created", data);
-    });
-
-    plugins.register("/i/app_users/update", function(ob) {
-        ob.params = ob.params || {};
-        var data = {app_id: ob.app_id, query: ob.query, update: JSON.stringify(ob.update), result: ob.user};
-        recordAction(ob.params, ob.params.member || {_id: "", username: "[code]"}, "app_user_updated", data);
-    });
-
-    plugins.register("/i/app_users/delete", function(ob) {
-        ob.params = ob.params || {};
-        var data = {app_id: ob.app_id, query: ob.query, uids: ob.uids};
-        recordAction(ob.params, ob.params.member || {_id: "", username: "[code]"}, "app_user_deleted", data);
     });
 
     plugins.register("/systemlogs", function(ob) {
@@ -352,7 +341,16 @@ var pluginOb = {},
         log.ts = Math.round(new Date().getTime() / 1000);
         log.cd = new Date();
         log.u = user.email || user.username || "";
-        log.ip = common.getIpAddress(params.req);
+
+        var PreventIPTracking = plugins.getConfig("systemlogs").preventIPTracking;
+
+        if (PreventIPTracking) {
+            log.ip = null;
+        }
+        else {
+            log.ip = common.getIpAddress(params.req);
+        }
+
         if (typeof data.app_id !== "undefined") {
             log.app_id = data.app_id;
         }

@@ -107,6 +107,39 @@
         });
     };
 
+    countlyTaskManager.fetchTaskInfo = function(id, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r + "/tasks/task",
+            data: {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "task_id": id,
+                "display_loader": false,
+                "only_info": true
+            },
+            dataType: "json",
+            success: function(json) {
+                if (json.data) {
+                    try {
+                        json.data = JSON.parse(json.data);
+                    }
+                    catch (e) { /**/ }
+                }
+                if (json.request) {
+                    json.request = JSON.parse(json.request);
+                }
+                _data[id] = json;
+                if (callback) {
+                    callback(json);
+                }
+            },
+            error: function() {
+                if (callback) {
+                    callback(false);
+                }
+            }
+        });
+    };
 
 
     countlyTaskManager.fetchSubtaskResult = function(id, options, callback) {
@@ -325,7 +358,12 @@
 
                     //notify task completed
                     if (res && res.result === "completed") {
-                        countlyTaskManager.fetchResult(id, function(res1) {
+                        countlyTaskManager.fetchTaskInfo(id, function(res1) {
+                            if (res1 && res1.type === "tableExport") {
+                                if (res1.report_name) {
+                                    res1.name = "<span style='overflow-wrap: break-word;'>" + res1.report_name + "</span>";
+                                }
+                            }
                             if (res1 && res1.manually_create === false) {
                                 $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
                                 app.haveUnreadReports = true;
@@ -354,9 +392,14 @@
                         });
                     }
                     else if (res && res.result === "errored") {
-                        countlyTaskManager.fetchResult(id, function(res1) {
+                        countlyTaskManager.fetchTaskInfo(id, function(res1) {
+                            if (res1 && res1.type === "tableExport") {
+                                if (res1.report_name) {
+                                    res1.name = "<span style='overflow-wrap: break-word;'>" + res1.report_name + "</span>";
+                                }
+                            }
                             if (res1 && res1.view) {
-                                if (res1 && res1.manually_create === false) {
+                                if (res1.manually_create === false) {
                                     $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
                                     app.haveUnreadReports = true;
                                     app.updateLongTaskViewsNofification();

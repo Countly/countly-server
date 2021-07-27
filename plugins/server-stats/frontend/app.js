@@ -3,6 +3,7 @@ var countlyConfig = require('../../../frontend/express/config');
 var versionInfo = require('../../../frontend/express/version.info');
 var request = require('request');
 var moment = require('moment');
+const { getUserApps } = require('../../../api/utils/rights');
 
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
@@ -11,7 +12,7 @@ var moment = require('moment');
             if (!countlyConfig.web.track || countlyConfig.web.track === "GA" && member.global_admin || countlyConfig.web.track === "noneGA" && !member.global_admin) {
                 var match = {};
                 if (versionInfo.trial) {
-                    match.a = {$in: member.user_of || []};
+                    match.a = {$in: getUserApps(member) || []};
                 }
                 countlyDb.collection("server_stats_data_points").aggregate([
                     {

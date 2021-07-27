@@ -253,7 +253,7 @@ describe('Testing user merge scenarios', function() {
     describe('reset app', function() {
         describe('reseting data', function() {
             it('should reset data', function(done) {
-                var params = {app_id: APP_ID};
+                var params = {app_id: APP_ID, "period": "reset"};
                 request
                     .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                     .expect(200)

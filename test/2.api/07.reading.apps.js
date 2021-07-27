@@ -34,7 +34,7 @@ describe('Reading apps', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Invalid path, must be one of /all , /mine or /details');
+                    ob.should.have.property('result', 'Invalid path, must be one of /all, /mine, /details or /plugins');
                     done();
                 });
         });
@@ -49,7 +49,7 @@ describe('Reading apps', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'User is not a global administrator');
+                    ob.should.have.property('result', 'User does not have right');
                     done();
                 });
         });
@@ -64,8 +64,8 @@ describe('Reading apps', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('admin_of').be.empty;
-                    ob.should.have.property('user_of').be.empty;
+                    ob.should.have.property('user_of');
+                    ob.should.have.property('admin_of');
                     done();
                 });
         });
@@ -80,8 +80,8 @@ describe('Reading apps', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('admin_of').be.empty;
-                    ob.should.have.property('user_of').be.empty;
+                    ob.should.have.property('user_of');
+                    ob.should.have.property('admin_of');
                     done();
                 });
         });

@@ -152,17 +152,6 @@ Countly is extensible using the [plugin architecture](https://count.ly/plugins).
 
 Also, you are encouraged to read an extended contribution section on [how to contribute to Countly](https://github.com/Countly/countly-server/blob/master/CONTRIBUTING.md)
 
-[![0](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/0)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/0)
-[![1](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/1)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/1)
-[![2](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/2)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/2)
-[![3](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/3)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/3)
-[![4](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/4)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/4)
-[![5](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/5)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/5)
-[![6](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/6)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/6)
-[![7](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/images/7)](https://sourcerer.io/fame/ar2rsawseen/Countly/countly-server/links/7) 
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/Countly/countly-server.svg)](https://greenkeeper.io/)
-
 ## Badges
 
 If you liked Countly, [why not use one of our badges](https://count.ly/brand-assets) and give a link back to us, so others know about this wonderful platform? 

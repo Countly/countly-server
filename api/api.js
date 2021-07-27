@@ -10,10 +10,11 @@ const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
-const {WriteBatcher, ReadBatcher} = require('./parts/data/batcher.js');
+const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
 const pack = require('../package.json');
 
 var t = ["countly:", "api"];
+common.processRequest = processRequest;
 
 if (cluster.isMaster) {
     console.log("Starting master", "version", pack.version);
@@ -35,6 +36,7 @@ process.title = t.join(' ');
 plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
+    common.insertBatcher = new InsertBatcher(common.db);
 
     let workers = [];
 
@@ -95,8 +97,12 @@ plugins.connectToAllDatabases().then(function() {
         password_number: true,
         password_symbol: true,
         password_expiration: 0,
-        dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
-        api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*"
+        password_rotation: 3,
+        password_autocomplete: true,
+        dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
+        api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
+        dashboard_rate_limit_window: 60,
+        dashboard_rate_limit_requests: 500
     });
 
     /**
@@ -131,6 +137,7 @@ plugins.connectToAllDatabases().then(function() {
     async function storeBatchedData(code) {
         try {
             await common.writeBatcher.flushAll();
+            await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
         }
         catch (ex) {
@@ -207,6 +214,10 @@ plugins.connectToAllDatabases().then(function() {
             }
             else if (msg.cmd === "endPlugins") {
                 plugins.stopSyncing();
+            }
+            else if (msg.cmd === "batch_insert") {
+                const {collection, doc, db} = msg.data;
+                common.insertBatcher.insert(collection, doc, db);
             }
             else if (msg.cmd === "batch_write") {
                 const {collection, id, operation, db} = msg.data;

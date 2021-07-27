@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const {validateUser, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection} = require('./rights.js');
+const { validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -18,7 +18,7 @@ const fs = require('fs');
 var countlyFs = require('./countlyFs.js');
 var path = require('path');
 const validateUserForWriteAPI = validateUser;
-const validateUserForDataReadAPI = validateUserForRead;
+const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
@@ -232,16 +232,16 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.createUser, params);
+                    validateCreate(params, 'global_users', countlyApi.mgmt.users.createUser);
                     break;
                 case 'update':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.updateUser, params);
+                    validateUpdate(params, 'global_users', countlyApi.mgmt.users.updateUser);
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.deleteUser, params);
+                    validateDelete(params, 'global_users', countlyApi.mgmt.users.deleteUser);
                     break;
                 case 'deleteOwnAccount':
-                    validateUserForWriteAPI(countlyApi.mgmt.users.deleteOwnAccount, params);
+                    validateDelete(params, 'global_users', countlyApi.mgmt.users.deleteOwnAccount);
                     break;
                 case 'ack':
                     validateUserForWriteAPI(countlyApi.mgmt.users.ackNotification, params);
@@ -273,12 +273,12 @@ const processRequest = (params) => {
                 }
                 switch (paths[3]) {
                 case 'save':
-                    validateUserForWriteAPI(params, () => {
+                    validateCreate(params, 'core', () => {
                         countlyApi.mgmt.users.saveNote(params);
                     });
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(params, () => {
+                    validateDelete(params, 'core', () => {
                         countlyApi.mgmt.users.deleteNote(params);
                     });
                     break;
@@ -537,27 +537,21 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForWriteAPI(() => {
-                        if (!(params.member.global_admin)) {
-                            common.returnMessage(params, 401, 'User is not a global administrator');
-                            return false;
-                        }
-                        countlyApi.mgmt.apps.createApp(params);
-                    }, params);
+                    validateCreate(params, 'global_applications', countlyApi.mgmt.apps.createApp);
                     break;
                 case 'update':
                     if (paths[4] === 'plugins') {
-                        validateUserForDataWriteAPI(params, countlyApi.mgmt.apps.updateAppPlugins);
+                        validateUpdate(params, 'global_applications', countlyApi.mgmt.apps.updateAppPlugins);
                     }
                     else {
-                        validateUserForWriteAPI(countlyApi.mgmt.apps.updateApp, params);
+                        validateUpdate(params, 'global_applications', countlyApi.mgmt.apps.updateApp);
                     }
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(countlyApi.mgmt.apps.deleteApp, params);
+                    validateDelete(params, 'global_applications', countlyApi.mgmt.apps.deleteApp);
                     break;
                 case 'reset':
-                    validateUserForWriteAPI(countlyApi.mgmt.apps.resetApp, params);
+                    validateDelete(params, 'global_applications', countlyApi.mgmt.apps.resetApp);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -578,13 +572,13 @@ const processRequest = (params) => {
             case '/i/event_groups':
                 switch (paths[3]) {
                 case 'create':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.create);
+                    validateCreate(params, 'core', countlyApi.mgmt.eventGroups.create);
                     break;
                 case 'update':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.update);
+                    validateUpdate(params, 'core', countlyApi.mgmt.eventGroups.update);
                     break;
                 case 'delete':
-                    validateUserForWriteAPI(params, countlyApi.mgmt.eventGroups.remove);
+                    validateDelete(params, 'core', countlyApi.mgmt.eventGroups.remove);
                     break;
                 default:
                     break;
@@ -672,7 +666,7 @@ const processRequest = (params) => {
                 switch (paths[3]) {
                 case 'whitelist_segments':
                 {
-                    validateUserForWrite(params, function() {
+                    validateUpdate(params, "events", function() {
                         common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
@@ -745,7 +739,7 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "app_id"');
                         return false;
                     }
-                    validateUserForWrite(params, function() {
+                    validateUpdate(params, 'events', function() {
                         common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
@@ -1006,7 +1000,7 @@ const processRequest = (params) => {
                 }
                 case 'delete_events':
                 {
-                    validateUserForWrite(params, function() {
+                    validateDelete(params, 'events', function() {
                         var idss = [];
                         try {
                             idss = JSON.parse(params.qstring.events);
@@ -1128,7 +1122,7 @@ const processRequest = (params) => {
                 }
                 case 'change_visibility':
                 {
-                    validateUserForWrite(params, function() {
+                    validateUpdate(params, 'events', function() {
                         common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
@@ -1286,16 +1280,24 @@ const processRequest = (params) => {
             case '/o/users': {
                 switch (paths[3]) {
                 case 'all':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.getAllUsers, params);
+                    validateRead(params, 'global_users', countlyApi.mgmt.users.getAllUsers);
                     break;
                 case 'me':
                     validateUserForMgmtReadAPI(countlyApi.mgmt.users.getCurrentUser, params);
                     break;
                 case 'id':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.getUserById, params);
+                    validateRead(params, 'global_users', countlyApi.mgmt.users.getUserById);
                     break;
                 case 'reset_timeban':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.resetTimeBan, params);
+                    validateUpdate(params, 'global_users', countlyApi.mgmt.users.resetTimeBan);
+                    break;
+                case 'permissions':
+                    validateRead(params, 'core', function() {
+                        var features = ["core", "events", "global_configurations", "global_applications", "global_users", "global_jobs"];
+                        plugins.dispatch("/permissions/features", {params: params, features: features}, function() {
+                            common.returnOutput(params, features);
+                        });
+                    });
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1376,13 +1378,16 @@ const processRequest = (params) => {
             case '/o/apps': {
                 switch (paths[3]) {
                 case 'all':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getAllApps, params);
+                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAllApps);
                     break;
                 case 'mine':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getCurrentUserApps, params);
+                    validateUser(params, countlyApi.mgmt.apps.getCurrentUserApps);
                     break;
                 case 'details':
-                    validateUserForDataReadAPI(params, countlyApi.mgmt.apps.getAppsDetails);
+                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAppsDetails);
+                    break;
+                case 'plugins':
+                    validateRead(params, 'global_applications', countlyApi.mgmt.apps.getAppPlugins);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1393,7 +1398,7 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /all, /mine, /details or /plugins');
                     }
                     break;
                 }
@@ -1403,7 +1408,7 @@ const processRequest = (params) => {
             case '/o/tasks': {
                 switch (paths[3]) {
                 case 'all':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1440,10 +1445,10 @@ const processRequest = (params) => {
                         }, (err, res) => {
                             common.returnOutput(params, res || []);
                         });
-                    }, params);
+                    });
                     break;
                 case 'count':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1472,10 +1477,10 @@ const processRequest = (params) => {
                         }, (err, res) => {
                             common.returnOutput(params, res || []);
                         });
-                    }, params);
+                    });
                     break;
                 case 'list':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1520,10 +1525,10 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 500, '"Query failed"');
                             }
                         });
-                    }, params);
+                    });
                     break;
                 case 'task':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (!params.qstring.task_id) {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
@@ -1540,10 +1545,10 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'Task does not exist');
                             }
                         });
-                    }, params);
+                    });
                     break;
                 case 'check':
-                    validateUserForMgmtReadAPI(() => {
+                    validateRead(params, 'core', () => {
                         if (!params.qstring.task_id) {
                             common.returnMessage(params, 400, 'Missing parameter "task_id"');
                             return false;
@@ -1559,7 +1564,7 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, 'Task does not exist');
                             }
                         });
-                    }, params);
+                    });
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1710,6 +1715,110 @@ const processRequest = (params) => {
                         });
                     }, params);
                     break;
+                case 'requestQuery':
+                    validateUserForMgmtReadAPI(() => {
+                        if (!params.qstring.path) {
+                            common.returnMessage(params, 400, 'Missing parameter "path"');
+                            return false;
+                        }
+                        if (typeof params.qstring.data === "string") {
+                            try {
+                                params.qstring.data = JSON.parse(params.qstring.data);
+                            }
+                            catch (ex) {
+                                console.log("Error parsing export request data", params.qstring.data, ex);
+                                params.qstring.data = {};
+                            }
+                        }
+                        var my_name = JSON.stringify(params.qstring);
+
+                        var ff = taskmanager.longtask({
+                            db: common.db,
+                            threshold: plugins.getConfig("api").request_threshold,
+                            force: true,
+                            gridfs: true,
+                            binary: true,
+                            app_id: params.qstring.app_id,
+                            params: params,
+                            type: "tableExport",
+                            report_name: params.qstring.filename + "." + params.qstring.type,
+                            meta: JSON.stringify({
+                                "app_id": params.qstring.app_id,
+                                "query": params.qstring.query || {}
+                            }),
+                            name: my_name,
+                            view: "#/exportedData/tableExport/",
+                            processData: function(err, res, callback) {
+                                if (!err) {
+                                    callback(null, res);
+                                }
+                                else {
+                                    callback(err, '');
+                                }
+                            },
+                            outputData: function(err, data) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
+                                }
+                                else {
+                                    common.returnMessage(params, 200, data);
+                                }
+                            }
+                        });
+
+                        countlyApi.data.exports.fromRequestQuery({
+                            params: params,
+                            path: params.qstring.path,
+                            data: params.qstring.data,
+                            method: params.qstring.method,
+                            prop: params.qstring.prop,
+                            type: params.qstring.type,
+                            filename: params.qstring.filename + "." + params.qstring.type,
+                            output: function(data) {
+                                ff(null, data);
+                            }
+                        });
+                    }, params);
+                    break;
+                case 'download': {
+                    if (paths[4] && paths[4] !== '') {
+                        common.db.collection("long_tasks").findOne({_id: paths[4]}, function(err, data) {
+
+                            var filename = data.report_name;
+                            var type = filename.split(".");
+                            type = type[type.length - 1];
+                            var myfile = paths[4];
+
+                            countlyFs.gridfs.getSize("task_results", myfile, {id: paths[4]}, function(error, size) {
+                                if (error) {
+                                    common.returnMessage(params, 400, error);
+                                }
+                                else if (parseInt(size) === 0) {
+                                    common.returnMessage(params, 400, "Export size is 0");
+                                }
+                                else {
+                                    countlyFs.gridfs.getStream("task_results", myfile, {id: paths[4]}, function(err5, stream) {
+                                        if (err5) {
+                                            common.returnMessage(params, 400, "Export strem does not exist");
+                                        }
+                                        else {
+                                            var headers = {};
+                                            headers["Content-Type"] = countlyApi.data.exports.getType(type);
+                                            headers["Content-Disposition"] = "attachment;filename=" + encodeURIComponent(filename);
+                                            params.res.writeHead(200, headers);
+                                            stream.pipe(params.res);
+                                        }
+                                    });
+                                }
+                            });
+
+                        });
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing filename');
+                    }
+                    break;
+                }
                 case 'data':
                     validateUserForMgmtReadAPI(() => {
                         if (!params.qstring.data) {
@@ -1894,40 +2003,40 @@ const processRequest = (params) => {
 
                 switch (params.qstring.method) {
                 case 'jobs':
-                    validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
+                    validateRead(params, "global_jobs", countlyApi.data.fetch.fetchJobs('jobs', params));
                     break;
                 case 'total_users':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                     break;
                 case 'get_period_obj':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.getPeriodObj, 'users');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.getPeriodObj, 'users');
                     break;
                 case 'locations':
                 case 'sessions':
                 case 'users':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, 'users');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, 'users');
                     break;
                 case 'app_versions':
                 case 'device_details':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, 'device_details');
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, 'device_details');
                     break;
                 case 'devices':
                 case 'carriers':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                     break;
                 case 'cities':
                     if (plugins.getConfig("api", params.app && params.app.plugins, true).city_data !== false) {
-                        validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
+                        validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTimeObj, params.qstring.method);
                     }
                     else {
                         common.returnOutput(params, {});
                     }
                     break;
                 case 'get_event_groups':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchEventGroups);
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchEventGroups);
                     break;
                 case 'get_event_group':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchEventGroupById);
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchEventGroupById);
                     break;
                 case 'events':
                     if (params.qstring.events) {
@@ -1938,35 +2047,35 @@ const processRequest = (params) => {
                             console.log('Parse events array failed', params.qstring.events, params.req.url, params.req.body);
                         }
                         if (params.qstring.overview) {
-                            validateUserForDataReadAPI(params, function() {
-                                countlyApi.data.fetch.fetchDataEventsOverview(params);
-                            });
+                            // TODO: handle here, what permission should be required for here?
+                            countlyApi.data.fetch.fetchDataEventsOverview(params);
                         }
                         else {
-                            validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
+                            // TODO: handle here what permission should be required for here?
+                            validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventData);
                         }
                     }
                     else {
                         if (params.qstring.event && params.qstring.event.startsWith('[CLY]_group_')) {
-                            validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventGroups);
+                            validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventGroups, params.qstring.method);
                         }
                         else {
                             params.truncateEventValuesList = true;
-                            validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                            validateRead(params, 'core', countlyApi.data.fetch.prefetchEventData, params.qstring.method);
                         }
                     }
                     break;
                 case 'get_events':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
                     break;
                 case 'top_events':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDataTopEvents);
+                    validateRead(params, 'core', countlyApi.data.fetch.fetchDataTopEvents);
                     break;
                 case 'all_apps':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchAllApps);
+                    validateRead(params, 'global_applications', countlyApi.data.fetch.fetchAllApps);
                     break;
                 case 'notes':
-                    validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
+                    validateRead(params, 'core', countlyApi.mgmt.users.fetchNotes);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -1991,31 +2100,31 @@ const processRequest = (params) => {
 
                 switch (paths[3]) {
                 case 'dashboard':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDashboard);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDashboard);
                     break;
                 case 'countries':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCountries);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchCountries);
                     break;
                 case 'sessions':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchSessions);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchSessions);
                     break;
                 case 'metric':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMetric);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchMetric);
                     break;
                 case 'tops':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTops);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTops);
                     break;
                 case 'loyalty':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchLoyalty);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchLoyalty);
                     break;
                 case 'frequency':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchFrequency);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchFrequency);
                     break;
                 case 'durations':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDurations);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchDurations);
                     break;
                 case 'events':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchEvents);
+                    validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchEvents);
                     break;
                 default:
                     if (!plugins.dispatch(apiPath, {
@@ -2083,7 +2192,7 @@ const processRequest = (params) => {
                 break;
             }
             case '/o/notes': {
-                validateUserForDataReadAPI(params, countlyApi.mgmt.users.fetchNotes);
+                validateUserForDataReadAPI(params, 'core', countlyApi.mgmt.users.fetchNotes);
                 break;
             }
             default:
@@ -2398,6 +2507,19 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         params.appTimezone = app.timezone;
         params.app = app;
         params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+
+
+        var time = Date.now().valueOf();
+        time = Math.round((time || 0) / 1000);
+        if (params.app && (!params.app.last_data || params.app.last_data < time - 60 * 60 * 24)) { //update if more than day passed
+            //set new value
+            common.db.collection("apps").update({"_id": common.db.ObjectID(params.app._id)}, {"$set": {"last_data": time}}, function(err1) {
+                if (err1) {
+                    console.log("Failed to update apps collection " + err1);
+                }
+                common.readBatcher.invalidate("apps", {"key": params.app.key}, {}, false); //because we load app by key  on incoming requests. so invalidate also by key
+            });
+        }
 
         if (!checksumSaltVerification(params)) {
             return done ? done() : false;

@@ -71,7 +71,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/jsoneditor/minify.json.js',
                     'frontend/express/public/javascripts/utils/jsoneditor/jsoneditor.js',
                     'frontend/express/public/javascripts/utils/Sortable.min.js',
-                    'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js'
+                    'frontend/express/public/javascripts/utils/vue/vuedraggable.umd.min.js',
+                    'frontend/express/public/javascripts/utils/countly.checkbox.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
             },
@@ -97,6 +98,7 @@ module.exports = function(grunt) {
             },
             lib: {
                 src: [
+                    'frontend/express/public/javascripts/countly/countly.auth.js',
                     'frontend/express/public/javascripts/countly/countly.helpers.js',
                     'frontend/express/public/javascripts/countly/countly.map.helper.js',
                     'frontend/express/public/javascripts/countly/countly.event.js',
@@ -157,6 +159,7 @@ module.exports = function(grunt) {
                         'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
                         'frontend/express/public/stylesheets/jsoneditor/codemirror.css',
+                        'frontend/express/public/stylesheets/countly-checkbox/countly.checkbox.css',
                         'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
                         'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
                         'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
@@ -198,6 +201,16 @@ module.exports = function(grunt) {
                     }
                 }
             }
+        },
+        sass: { // Task
+            dist: { // Target
+                options: { // Target options
+                    style: 'expanded'
+                },
+                files: { // Dictionary of files
+                    'frontend/express/public/stylesheets/vue/clyvue.css': 'frontend/express/public/stylesheets/vue/clyvue.scss'
+                }
+            }
         }
     });
 
@@ -210,6 +223,7 @@ module.exports = function(grunt) {
     grunt.registerTask('coverage', ['mocha_nyc:coverage']);
     //-----------code coverage-----------
 
+    grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-copy');
@@ -217,12 +231,12 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-mocha-test');
 
-    grunt.registerTask('default', ['eslint', 'mochaTest']);
+    grunt.registerTask('default', ['mochaTest']);
 
-    grunt.registerTask('dist', ['concat', 'uglify', 'cssmin']);
+    grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'cssmin']);
 
     grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
-        var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');
+        var plugins = require('./plugins/plugins.json'), js = [], css = [], scss = {}, img = [], fs = require('fs'), path = require('path');
         console.log('Preparing production files for following plugins: %j', plugins);
 
         if (plugins.indexOf('push') !== -1) {
@@ -286,6 +300,9 @@ module.exports = function(grunt) {
                     if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0 && name.endsWith('.css')) {
                         css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
                     }
+                    else if (fs.statSync(file).isFile() && name.indexOf('.') !== 0 && name.endsWith('.scss')) {
+                        scss['plugins/' + plugin + '/frontend/public/stylesheets/' + name.replace(".scss", ".css")] = 'plugins/' + plugin + '/frontend/public/stylesheets/' + name;
+                    }
                 });
             }
 
@@ -309,10 +326,11 @@ module.exports = function(grunt) {
         grunt.config('uglify.plugins.files.frontend/express/public/javascripts/min/countly\\.plugins\\.js', 'frontend/express/public/javascripts/min/countly.plugins.concat.js');
 
         grunt.config('cssmin.plugins.files.frontend/express/public/stylesheets/plugins\\.min\\.css', css);
+        grunt.config('sass.plugins.files', scss);
 
         // grunt.task.loadTasks(['copy:plugins', 'concat:plugins', 'uglify:plugins']);
         // grunt.task.run(['concat', 'uglify']);
-        grunt.task.run(['concat:plugins', 'uglify:plugins', 'copy:plugins', 'cssmin:plugins']);
+        grunt.task.run(['concat:plugins', 'uglify:plugins', 'copy:plugins', 'sass:plugins', 'cssmin:plugins']);
 
         console.log('Done preparing production files');
     });
