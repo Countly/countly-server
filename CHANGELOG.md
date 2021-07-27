@@ -1,3 +1,31 @@
+## Version 20.11.2.8
+
+**Fixes**
+- [batcher] handle BSON overflow correctly
+- [docker] fixing invalid CE plugin list
+- [nginx] update blocking paths example
+- [push] fix recording data points
+- [security] cryptographically secure random string generation
+
+**Enterprise fixes**
+- [attribution] fixed conversion for web apps
+- [gateway_processor] fix traffic job query
+- [surveys] production file generation fix
+
+**Improvements**
+- [audit-logs] add option not to record and show IP address
+- [populator] add search keywords
+- [settings] set api.domain in settings automatically
+- [sources] update web domain group logic to ignore fourth level subdomains
+
+**Enterprise Improvements**
+- [cognito] added cognito client id and secret in cofig
+- [cognito] revoke cognito token on logout
+- [drill] allow to batch inserts for higher rate but lower consistency
+- [drill] record message in Audit logs after meta regeneration called via API is finished
+- [gateway_processor] ignore app does not exist errors setting
+- [ldap] ldap group authentication
+
 ## Version 20.11.2.7
 
 **Fixes**
@@ -10,7 +38,7 @@
 - [gateway] updated grpc and pubsub package
 - [remote-config] do not encode remote config response while sending response to the sdk
 - [surveys] changes to add other option for surveys
-*- [views] pass server url also in case of dropdown menu for domains
+- [views] pass server url also in case of dropdown menu for domains
 
 
 ## Version 20.11.2

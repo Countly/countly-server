@@ -807,6 +807,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                         }
                         else if (app) {
                             params.app_id = app._id;
+                            params.app = app;
                             params.appTimezone = app.timezone;
                             params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                         }
