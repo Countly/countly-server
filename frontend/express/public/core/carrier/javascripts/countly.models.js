@@ -1,4 +1,4 @@
-/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,window*/
+/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue*/
 (function(countlyAppCarrier) {
 
     var _carrierCodeMap = {"46000": "中国移动(GSM)", "46001": "中国联通(GSM)", "46002": "中国移动(TD-S)", "46003": "中国电信(CDMA)", "46005": "中国电信(CDMA)", "46006": "中国联通(WCDMA)", "46007": "中国移动(TD-S)", "46011": "中国电信(FDD-LTE)", "460 11": "中国电信(FDD-LTE)"};
@@ -13,8 +13,8 @@
 
         findNonEmptyBuckets: function(data) {
             var nonEmptybuckets = [];
-            for (var p = 0; p < data["totalSessions"].length; p++) {
-                nonEmptybuckets.push(data["totalSessions"][p]._id);
+            for (var p = 0; p < data.totalSessions.length; p++) {
+                nonEmptybuckets.push(data.totalSessions[p]._id);
             }
             return nonEmptybuckets;
         },
@@ -60,8 +60,8 @@
             for (var k = 0; k < tableData.length; k++) {
                 graphs.newUsers.push({"name": tableData[k][metric], "value": tableData[k].n});
                 graphs.totalSessions.push({"name": tableData[k][metric], "value": tableData[k].t});
-                totals["newUsers"] += tableData[k].n;
-                totals["totalSessions"] += tableData[k].t;
+                totals.newUsers += tableData[k].n;
+                totals.totalSessions += tableData[k].t;
             }
             return {"table": tableData, "pie": graphs, totals: totals};
         },

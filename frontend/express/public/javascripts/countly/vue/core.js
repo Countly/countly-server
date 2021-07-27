@@ -51,7 +51,8 @@
     // @vue/component
     var commonFormattersMixin = {
         methods: {
-            formatTimeAgo: countlyCommon.formatTimeAgoText,
+            parseTimeAgo: countlyCommon.formatTimeAgoText,
+            formatTimeAgo: countlyCommon.formatTimeAgo,
             formatNumber: countlyCommon.formatNumber,
             getShortNumber: countlyCommon.getShortNumber
         }
