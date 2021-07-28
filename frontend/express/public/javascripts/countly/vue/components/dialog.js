@@ -3,6 +3,13 @@
 (function(countlyVue) {
 
     Vue.component("cly-dialog", countlyVue.components.create({
+        props: {
+            title: {
+                type: String,
+                required: false,
+                default: ''
+            }
+        },
         computed: {
             forwardedSlots: function() {
                 var self = this;
@@ -12,7 +19,8 @@
                 }, {});
             }
         },
-        template: '<el-dialog class="cly-vue-dialog" v-on="$listeners" v-bind="$attrs">\
+        template: '<el-dialog class="cly-vue-dialog" v-on="$listeners" v-bind="$attrs" :title="title">\
+                        <template v-slot:title><h3 class="color-cool-gray-100">{{title}}</h3></template>\
                         <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
                             <slot :name="name"/>\
                         </template>\
