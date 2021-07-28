@@ -1307,6 +1307,17 @@
         }
     }
 
+    //dialog
+
+    .cly-vue-dialog {
+        .el-dialog__header {
+            padding: 16px;
+        }
+        .el-dialog__body {
+            padding: 0;
+        }
+    }
+
     //formdialog
     .cly-vue-formdialog {
         position: fixed;

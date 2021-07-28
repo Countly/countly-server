@@ -2,6 +2,24 @@
 
 (function(countlyVue) {
 
+    Vue.component("cly-dialog", countlyVue.components.create({
+        computed: {
+            forwardedSlots: function() {
+                var self = this;
+                return Object.keys(this.$scopedSlots).reduce(function(slots, slotKey) {
+                    slots[slotKey] = self.$scopedSlots[slotKey];
+                    return slots;
+                }, {});
+            }
+        },
+        template: '<el-dialog class="cly-vue-dialog" v-on="$listeners" v-bind="$attrs">\
+                        <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
+                            <slot :name="name"/>\
+                        </template>\
+                    </el-dialog>'
+    }));
+    
+
     var _mixins = countlyVue.mixins;
 
     Vue.component("cly-form-dialog", countlyVue.components.create(
