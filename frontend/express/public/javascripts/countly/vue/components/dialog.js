@@ -18,7 +18,7 @@
                         </template>\
                     </el-dialog>'
     }));
-    
+
 
     var _mixins = countlyVue.mixins;
 
