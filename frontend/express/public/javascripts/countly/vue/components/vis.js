@@ -63,6 +63,15 @@
             showDownload: {
                 type: Boolean,
                 default: true
+            },
+            customLegend: {
+                type: Object,
+                default: function() {
+                    return {
+                        show: false,
+                        data: []
+                    };
+                }
             }
         },
         data: function() {
@@ -77,12 +86,13 @@
                     grid: {
                         top: 30,
                         bottom: 65,
-                        left: 35,
-                        right: 35,
+                        left: 36,
+                        right: 36,
                         containLabel: true
                     },
                     legend: {
                         show: true,
+                        type: 'scroll',
                         bottom: 10,
                         padding: 15,
                         itemGap: 25,
@@ -302,7 +312,14 @@
                     legendData.push(series[i].name);
                 }
 
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                if (this.customLegend.show) {
+                    opt.legend.show = false;
+                    opt.grid.bottom = 35;
+                }
+                else {
+                    opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                }
+
                 opt.series = series;
                 return opt;
             }
@@ -341,7 +358,14 @@
                     legendData.push(series[i].name);
                 }
 
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                if (this.customLegend.show) {
+                    opt.legend.show = false;
+                    opt.grid.bottom = 35;
+                }
+                else {
+                    opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                }
+
                 opt.series = series;
                 return opt;
             }
@@ -615,19 +639,108 @@
                     </div>'
     });
 
+    /*
+        Custom legend class
+        Structure of the object in data array -
+        {
+            name: name of the series to which this legend maps
+            value: value of the series to display
+            trend: accepted values are "up" and "down"
+            percentage: percentage of the trend
+            tooltip: tooltip text,
+            color: color for the legend
+        }
+    */
     var CustomLegend = countlyBaseComponent.extend({
+        props: {
+            echartRef: {
+                type: Object
+            },
+            data: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
+        },
+        computed: {
+            legendData: function() {
+                var chartOptions = this.echartRef && this.echartRef.getOption && this.echartRef.getOption();
+                var data = this.data;
+
+                if (chartOptions) {
+                    var series = chartOptions.series || [];
+
+                    if (series.length !== data.length) {
+                        // eslint-disable-next-line no-console
+                        console.log("Series length and legend length should be same");
+                        return [];
+                    }
+
+                    var colors = chartOptions.color || [];
+                    var colorIndex = 0;
+                    for (var i = 0; i < series.length; i++) {
+                        var serie = series[i];
+
+                        if (!data[i].color) {
+                            if (serie.color) {
+                                data[i].color = serie.color;
+                            }
+                            else {
+                                data[i].color = colors[colorIndex];
+                                colorIndex++;
+                            }
+                        }
+
+                        data[i].permanentColor = data[i].color;
+                    }
+
+                    return data;
+                }
+
+                return [];
+            }
+        },
+        methods: {
+            onLegendClick: function(item, index) {
+                this.echartRef.dispatchAction({
+                    type: "legendToggleSelect",
+                    name: item.name
+                });
+
+                //For the first time, item.status does not exist
+                //So we set it to off
+                //On subsequent click we toggle between on and off
+                if (item.status === "off") {
+                    item.status = "on";
+                    item.color = this.data[index].permanentColor;
+                }
+                else {
+                    item.status = "off";
+                    item.color = "#fff";
+                }
+            }
+        },
         template: '<div class="cly-vue-chart-legend">\
-                        <div class="cly-vue-chart-legend__first-row">\
-                            <div class="cly-vue-chart-legend__checkbox"></div>\
-                            <div class="cly-vue-chart-legend__title">Total sessions</div>\
-                            <cly-tooltip-icon class="cly-vue-chart-legend__tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
-                        </div>\
-                        <div class="cly-vue-chart-legend__second-row">\
-                            <div class="cly-vue-chart-legend__number">123</div>\
-                            <div class="cly-vue-chart-legend__trend cly-vue-chart-legend--trend-up">\
-                                <i class="fas fa-arrow-circle-up"></i>\
-                                <i class="fas fa-arrow-circle-down"></i>\
-                                <span>4.5%</span>\
+                        <div v-for="(item, index) in legendData" :key="item.name" :data-series="item.name" class="cly-vue-chart-legend__series" @click="onLegendClick(item, index)">\
+                            <div class="cly-vue-chart-legend__first-row">\
+                                <div class="cly-vue-chart-legend__checkbox" :style="{backgroundColor: item.color}"></div>\
+                                <div class="cly-vue-chart-legend__title">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__tooltip" v-if="item.tooltip">\
+                                    <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
+                                </div>\
+                            </div>\
+                            <div class="cly-vue-chart-legend__second-row">\
+                                <div class="cly-vue-chart-legend__number">{{item.value}}</div>\
+                                <div\
+                                    :class="[\'cly-vue-chart-legend__trend\', \
+                                            {\'cly-vue-chart-legend--trend-up\': item.trend === \'up\'}, \
+                                            {\'cly-vue-chart-legend--trend-down\': item.trend === \'down\'}]"\
+                                >\
+                                    <i class="fas fa-arrow-circle-up" v-if="item.trend === \'up\'"></i>\
+                                    <i class="fas fa-arrow-circle-down" v-if="item.trend === \'down\'"></i>\
+                                    <span v-if="item.percentage">{{item.percentage}}%</span>\
+                                </div>\
                             </div>\
                         </div>\
                     </div>'
@@ -636,8 +749,7 @@
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right"],
-                showCustomLegend: false
+                forwardedSlots: ["chart-left", "chart-right"]
             };
         },
         mounted: function() {
@@ -668,7 +780,7 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        <custom-legend :echartRef="echartRef" v-if="showCustomLegend">\
+                        <custom-legend :echartRef="echartRef" v-if="customLegend.show" :data="customLegend.data">\
                         </custom-legend>\
                     </div>'
     }));
@@ -697,7 +809,8 @@
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
@@ -774,7 +887,8 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        {{bucket}}\
+                        <custom-legend :echartRef="echartRef" v-if="customLegend.show" :data="customLegend.data">\
+                        </custom-legend>\
                     </div>'
     }));
 
@@ -788,7 +902,8 @@
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
@@ -811,6 +926,8 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
+                        <custom-legend :echartRef="echartRef" v-if="customLegend.show" :data="customLegend.data">\
+                        </custom-legend>\
                     </div>'
     }));
 

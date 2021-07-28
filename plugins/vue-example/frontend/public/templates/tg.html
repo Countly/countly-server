@@ -2,7 +2,7 @@
     <cly-header title="Chart components"></cly-header>
     <cly-main>
         <cly-section title="Line Chart">
-            <cly-chart-line :option="lineOptions">
+            <cly-chart-line :option="lineOptions" :customLegend="lineOptionsCustomLegend">
                 <template v-slot:chart-right="scope">
                     <!-- <div class="bu-level-item">
                         <el-select>

@@ -301,8 +301,8 @@
                     series: [
                         {
                             name: 'Series A',
-                            color: "pink",
-                            data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]]
+                            data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]],
+                            color: 'pink'
                         },
                         {
                             name: 'Series B',
@@ -310,7 +310,8 @@
                         },
                         {
                             name: 'Series C',
-                            data: [[0, 150], [1, 232], [2, 201], [3, 154], [4, 190], [5, 330], [6, 410]]
+                            data: [[0, 150], [1, 232], [2, 201], [3, 154], [4, 190], [5, 330], [6, 410]],
+                            color: "black"
                         },
                         {
                             name: 'Series D',
@@ -319,6 +320,42 @@
                         {
                             name: 'Series E',
                             data: [[0, 820], [1, 932], [2, 901], [3, 934], [4, 1290], [5, 1330], [6, 1320]]
+                        }
+                    ]
+                },
+                lineOptionsCustomLegend: {
+                    show: true,
+                    data: [
+                        {
+                            name: "Series A",
+                            value: "123",
+                            trend: "up",
+                            percentage: "3.4",
+                            tooltip: "Total no of series A.",
+                            color: "pink"
+                        },
+                        {
+                            name: "Series B",
+                            value: "32,231",
+                        },
+                        {
+                            name: "Series C",
+                            value: "123",
+                            trend: "down",
+                            percentage: "3.4",
+                            tooltip: "Total no of series C.",
+                        },
+                        {
+                            name: "Series D",
+                            value: "123",
+                            trend: "up",
+                            percentage: "3.4",
+                        },
+                        {
+                            name: "Series E",
+                            value: "123",
+                            trend: "down",
+                            percentage: "3.4",
                         }
                     ]
                 },
