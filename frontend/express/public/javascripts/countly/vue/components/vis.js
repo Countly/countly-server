@@ -392,7 +392,6 @@
                 seriesOptions: {
                     type: 'pie',
                     radius: ['45%', '70%'],
-                    center: ['50%', '50%'],
                     itemStyle: {
                         borderRadius: 0,
                         borderColor: '#fff',
@@ -646,6 +645,9 @@
                 type: String,
                 default: "secondary"
             },
+            series: {
+                type: String
+            },
             echartRef: {
                 type: Object,
                 default: function() {
@@ -666,6 +668,10 @@
 
                 if (chartOptions) {
                     var series = chartOptions.series || [];
+
+                    if (this.series === "pie") {
+                        series = series[0].data;
+                    }
 
                     if (series.length !== data.length) {
                         // eslint-disable-next-line no-console
@@ -700,10 +706,19 @@
                 return [];
             },
             legendClasses: function() {
-                return {
+                var classes = {
                     'cly-vue-chart-legend__primary': this.type === "primary",
                     'cly-vue-chart-legend__secondary': this.type === "secondary",
+                    'cly-vue-chart-legend__secondary--text-center': this.type === "secondary" && this.series !== "pie",
+                    'bu-is-flex': this.series === "pie",
+                    'bu-is-flex-direction-column': this.series === "pie",
+                    'bu-is-align-content-flex-start': this.series === "pie",
+                    'bu-is-justify-content-center': this.series === "pie"
                 };
+
+                classes["cly-vue-chart-legend__" + this.series] = true;
+
+                return classes;
             }
         },
         methods: {
@@ -816,7 +831,12 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        <custom-legend :type="legend.type" :echartRef="echartRef" v-if="legend.show" :data="legend.data">\
+                        <custom-legend\
+                            :type="legend.type"\
+                            :echartRef="echartRef"\
+                            v-if="legend.show"\
+                            series="line"\
+                            :data="legend.data">\
                         </custom-legend>\
                     </div>'
     }));
@@ -923,7 +943,12 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        <custom-legend :type="legend.type" :echartRef="echartRef" v-if="legend.show" :data="legend.data">\
+                        <custom-legend\
+                            :type="legend.type"\
+                            :echartRef="echartRef"\
+                            v-if="legend.show"\
+                            series="line"\
+                            :data="legend.data">\
                         </custom-legend>\
                     </div>'
     }));
@@ -962,7 +987,12 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        <custom-legend :type="legend.type" :echartRef="echartRef" v-if="legend.show" :data="legend.data">\
+                        <custom-legend\
+                            :type="legend.type"\
+                            :echartRef="echartRef"\
+                            v-if="legend.show"\
+                            series="bar"\
+                            :data="legend.data">\
                         </custom-legend>\
                     </div>'
     }));
@@ -977,7 +1007,8 @@
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
@@ -991,14 +1022,24 @@
                                 <slot :name="item" v-bind="slotScope"></slot>\
                             </template>\
                         </chart-header>\
-                        <div :style="{height: height + \'px\'}">\
-                            <echarts\
-                                ref="echarts"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                :option="chartOptions"\
-                                :autoresize="autoresize">\
-                            </echarts>\
+                        <div class="bu-columns bu-is-gapless" :style="{height: height + \'px\'}">\
+                            <div class="bu-column">\
+                                <echarts\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
+                            <custom-legend\
+                                :type="legend.type"\
+                                :echartRef="echartRef"\
+                                v-if="legend.show"\
+                                series="pie"\
+                                class="bu-column"\
+                                :data="legend.data">\
+                            </custom-legend>\
                         </div>\
                     </div>'
     }));
