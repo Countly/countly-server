@@ -64,11 +64,12 @@
                 type: Boolean,
                 default: true
             },
-            customLegend: {
+            legend: {
                 type: Object,
                 default: function() {
                     return {
-                        show: false,
+                        show: true,
+                        type: "secondary",
                         data: []
                     };
                 }
@@ -85,13 +86,13 @@
                     },
                     grid: {
                         top: 30,
-                        bottom: 65,
+                        bottom: 35,
                         left: 36,
                         right: 36,
                         containLabel: true
                     },
                     legend: {
-                        show: true,
+                        show: false,
                         type: 'scroll',
                         bottom: 10,
                         padding: 15,
@@ -312,13 +313,7 @@
                     legendData.push(series[i].name);
                 }
 
-                if (this.customLegend.show) {
-                    opt.legend.show = false;
-                    opt.grid.bottom = 35;
-                }
-                else {
-                    opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
-                }
+                this.legend.data = !this.legend.data.length ? legendData : this.legend.data;
 
                 opt.series = series;
                 return opt;
@@ -358,13 +353,7 @@
                     legendData.push(series[i].name);
                 }
 
-                if (this.customLegend.show) {
-                    opt.legend.show = false;
-                    opt.grid.bottom = 35;
-                }
-                else {
-                    opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
-                }
+                this.legend.data = !this.legend.data.length ? legendData : this.legend.data;
 
                 opt.series = series;
                 return opt;
@@ -440,7 +429,8 @@
                     }
                 }
 
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                this.legend.data = !this.legend.data.length ? legendData : this.legend.data;
+
                 opt.series = series;
                 return opt;
             }
@@ -652,8 +642,14 @@
     */
     var CustomLegend = countlyBaseComponent.extend({
         props: {
+            type: {
+                type: String
+            },
             echartRef: {
-                type: Object
+                type: Object,
+                default: function() {
+                    return {};
+                }
             },
             data: {
                 type: Array,
@@ -726,7 +722,7 @@
             }
         },
         template: '<div class="cly-vue-chart-legend">\
-                        <div v-for="(item, index) in legendData" :key="item.name" :data-series="item.name" class="cly-vue-chart-legend__series" @click="onLegendClick(item, index)">\
+                        <div v-if="type === \'primary\'" v-for="(item, index) in legendData" :key="item.name" :data-series="item.name" class="cly-vue-chart-legend__series" @click="onLegendClick(item, index)">\
                             <div class="cly-vue-chart-legend__first-row">\
                                 <div class="cly-vue-chart-legend__checkbox" :style="{backgroundColor: item.displayColor}"></div>\
                                 <div class="cly-vue-chart-legend__title">{{item.name}}</div>\
@@ -746,6 +742,8 @@
                                     <span v-if="item.percentage">{{item.percentage}}%</span>\
                                 </div>\
                             </div>\
+                        </div>\
+                        <div v-if="type === \'secondary\'" v-for="(item, index) in legendData" :key="item.name" :data-series="item.name" class="cly-vue-chart-legend__series" @click="onLegendClick(item, index)">\
                         </div>\
                     </div>'
     });
@@ -784,7 +782,7 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        <custom-legend :echartRef="echartRef" v-if="customLegend.show" :data="customLegend.data">\
+                        <custom-legend :type="legend.type" :echartRef="echartRef" v-if="legend.show" :data="legend.data">\
                         </custom-legend>\
                     </div>'
     }));
@@ -891,7 +889,7 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        <custom-legend :echartRef="echartRef" v-if="customLegend.show" :data="customLegend.data">\
+                        <custom-legend :type="legend.type" :echartRef="echartRef" v-if="legend.show" :data="legend.data">\
                         </custom-legend>\
                     </div>'
     }));
@@ -930,7 +928,7 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        <custom-legend :echartRef="echartRef" v-if="customLegend.show" :data="customLegend.data">\
+                        <custom-legend :type="legend.type" :echartRef="echartRef" v-if="legend.show" :data="legend.data">\
                         </custom-legend>\
                     </div>'
     }));
