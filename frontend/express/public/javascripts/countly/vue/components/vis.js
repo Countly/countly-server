@@ -708,6 +708,15 @@
         },
         methods: {
             onLegendClick: function(item, index) {
+                var offs = this.data.filter(function(d) {
+                    return d.status === "off";
+                });
+
+                if (item.status !== "off" && offs.length === (this.data.length - 1)) {
+                    //Always show in series and hence the legend
+                    return;
+                }
+
                 this.echartRef.dispatchAction({
                     type: "legendToggleSelect",
                     name: item.name
