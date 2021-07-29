@@ -647,8 +647,7 @@
             value: value of the series to display
             trend: accepted values are "up" and "down"
             percentage: percentage of the trend
-            tooltip: tooltip text,
-            color: color for the legend
+            tooltip: tooltip text
         }
     */
     var CustomLegend = countlyBaseComponent.extend({
@@ -682,14 +681,12 @@
                     for (var i = 0; i < series.length; i++) {
                         var serie = series[i];
 
-                        if (!data[i].color) {
-                            if (serie.color) {
-                                data[i].color = serie.color;
-                            }
-                            else {
-                                data[i].color = colors[colorIndex];
-                                colorIndex++;
-                            }
+                        if (serie.color) {
+                            data[i].color = serie.color;
+                        }
+                        else {
+                            data[i].color = colors[colorIndex];
+                            colorIndex++;
                         }
 
                         if (data[i].status === "off") {
