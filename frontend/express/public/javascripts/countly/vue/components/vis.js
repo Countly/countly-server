@@ -692,7 +692,12 @@
                             }
                         }
 
-                        data[i].permanentColor = data[i].color;
+                        if (data[i].status === "off") {
+                            data[i].displayColor = "#fff";
+                        }
+                        else {
+                            data[i].displayColor = data[i].color;
+                        }
                     }
 
                     return data;
@@ -708,23 +713,25 @@
                     name: item.name
                 });
 
+                var obj = this.data[index];
+
                 //For the first time, item.status does not exist
                 //So we set it to off
                 //On subsequent click we toggle between on and off
-                if (item.status === "off") {
-                    item.status = "on";
-                    item.color = this.data[index].permanentColor;
+                if (obj.status === "off") {
+                    obj.status = "on";
                 }
                 else {
-                    item.status = "off";
-                    item.color = "#fff";
+                    obj.status = "off";
                 }
+
+                this.$set(this.data, index, obj);
             }
         },
         template: '<div class="cly-vue-chart-legend">\
                         <div v-for="(item, index) in legendData" :key="item.name" :data-series="item.name" class="cly-vue-chart-legend__series" @click="onLegendClick(item, index)">\
                             <div class="cly-vue-chart-legend__first-row">\
-                                <div class="cly-vue-chart-legend__checkbox" :style="{backgroundColor: item.color}"></div>\
+                                <div class="cly-vue-chart-legend__checkbox" :style="{backgroundColor: item.displayColor}"></div>\
                                 <div class="cly-vue-chart-legend__title">{{item.name}}</div>\
                                 <div class="cly-vue-chart-legend__tooltip" v-if="item.tooltip">\
                                     <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
