@@ -12,7 +12,7 @@
         overflow-x: auto;
     }
 
-    &__secondary {
+    &__secondary--text-center {
         text-align: center;
     }
 
@@ -50,6 +50,13 @@
             .cly-vue-chart-legend__s-percentage {
                 color: #a7aeb8;
             }
+        }
+    }
+
+    &__pie {
+        .cly-vue-chart-legend__s-series {
+            margin-left: 0px;
+            padding: 7px 0px;
         }
     }
 
