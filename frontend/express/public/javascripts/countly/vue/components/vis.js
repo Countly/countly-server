@@ -310,7 +310,7 @@
 
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push(series[i].name);
+                    legendData.push({name: series[i].name});
                 }
 
                 this.legend.data = !this.legend.data.length ? legendData : this.legend.data;
@@ -350,7 +350,7 @@
 
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push(series[i].name);
+                    legendData.push({name: series[i].name});
                 }
 
                 this.legend.data = !this.legend.data.length ? legendData : this.legend.data;
@@ -424,7 +424,7 @@
                             Legend data in series comes from within series data names
                         */
                         for (var j = 0; j < seriesData.length; j++) {
-                            legendData.push(seriesData[j].name);
+                            legendData.push({name: seriesData[j].name});
                         }
                     }
                 }
@@ -633,7 +633,7 @@
         Custom legend class
         Structure of the object in data array -
         {
-            name: name of the series to which this legend maps
+            name: name of the series to which this legend maps (optional)
             value: value of the series to display
             trend: accepted values are "up" and "down"
             percentage: percentage of the trend
@@ -686,7 +686,7 @@
                         }
 
                         if (data[i].status === "off") {
-                            data[i].displayColor = "#fff";
+                            data[i].displayColor = "#a7aeb8";
                         }
                         else {
                             data[i].displayColor = data[i].color;
@@ -697,6 +697,15 @@
                 }
 
                 return [];
+            },
+            legendClasses: function() {
+                return {
+                    'cly-vue-chart-legend__primary': this.type === "primary",
+                    'cly-vue-chart-legend__secondary': this.type === "secondary",
+                    'bu-is-flex': this.type === "secondary",
+                    'bu-is-justify-content-center': this.type === "secondary",
+                    'bu-is-align-items-center': this.type === "secondary"
+                };
             }
         },
         methods: {
@@ -721,21 +730,27 @@
                 this.$set(this.data, index, obj);
             }
         },
-        template: '<div class="cly-vue-chart-legend">\
-                        <div v-if="type === \'primary\'" v-for="(item, index) in legendData" :key="item.name" :data-series="item.name" class="cly-vue-chart-legend__series" @click="onLegendClick(item, index)">\
+        template: '<div class="cly-vue-chart-legend" :class="legendClasses">\
+                        <div v-if="type === \'primary\'"\
+                            v-for="(item, index) in legendData"\
+                            :key="item.name"\
+                            :data-series="item.name"\
+                            :class="[\'cly-vue-chart-legend__p-series\',\
+                                    {\'cly-vue-chart-legend__p-series--deselected\': item.status === \'off\'}]"\
+                            @click="onLegendClick(item, index)">\
                             <div class="cly-vue-chart-legend__first-row">\
-                                <div class="cly-vue-chart-legend__checkbox" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__title">{{item.name}}</div>\
-                                <div class="cly-vue-chart-legend__tooltip" v-if="item.tooltip">\
+                                <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div class="cly-vue-chart-legend__p-title">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__p-tooltip" v-if="item.tooltip">\
                                     <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
                                 </div>\
                             </div>\
                             <div class="cly-vue-chart-legend__second-row">\
-                                <div class="cly-vue-chart-legend__number">{{item.value}}</div>\
+                                <div class="cly-vue-chart-legend__p-number">{{item.value}}</div>\
                                 <div\
-                                    :class="[\'cly-vue-chart-legend__trend\', \
-                                            {\'cly-vue-chart-legend--trend-up\': item.trend === \'up\'}, \
-                                            {\'cly-vue-chart-legend--trend-down\': item.trend === \'down\'}]"\
+                                    :class="[\'cly-vue-chart-legend__p-trend\', \
+                                            {\'cly-vue-chart-legend__p-trend--trend-up\': item.trend === \'up\'}, \
+                                            {\'cly-vue-chart-legend__p-trend--trend-down\': item.trend === \'down\'}]"\
                                 >\
                                     <i class="fas fa-arrow-circle-up" v-if="item.trend === \'up\'"></i>\
                                     <i class="fas fa-arrow-circle-down" v-if="item.trend === \'down\'"></i>\
@@ -743,7 +758,15 @@
                                 </div>\
                             </div>\
                         </div>\
-                        <div v-if="type === \'secondary\'" v-for="(item, index) in legendData" :key="item.name" :data-series="item.name" class="cly-vue-chart-legend__series" @click="onLegendClick(item, index)">\
+                        <div v-if="type === \'secondary\'"\
+                            v-for="(item, index) in legendData"\
+                            :key="item.name" :data-series="item.name"\
+                            :class="[\'cly-vue-chart-legend__s-series\',\
+                                    {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
+                            @click="onLegendClick(item, index)">\
+                            <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                            <div class="cly-vue-chart-legend__s-title">{{item.name}}</div>\
+                            <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}</div>\
                         </div>\
                     </div>'
     });

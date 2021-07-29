@@ -8,7 +8,7 @@
 .cly-vue-chart-legend {
     margin-left: 36px;
 
-    &__series {
+    &__p-series {
         display: inline-block;
         margin-left: 64px;
         cursor: pointer;
@@ -16,13 +16,40 @@
         &:first-child {
             margin-left: 0px;
         }
+
+        &--deselected {
+            .cly-vue-chart-legend__p-title,
+            .cly-vue-chart-legend__p-number,
+            .cly-vue-chart-legend__p-trend--trend-up,
+            .cly-vue-chart-legend__p-trend--trend-down {
+                color: #a7aeb8;
+            }
+        }
+    }
+
+    &__s-series {
+        display: inline-block;
+        margin-left: 48px;
+        cursor: pointer;
+
+        &:first-child {
+            margin-left: 0px;
+        }
+
+        &--deselected {
+            .cly-vue-chart-legend__s-rectangle,
+            .cly-vue-chart-legend__s-title,
+            .cly-vue-chart-legend__s-percentage {
+                color: #a7aeb8;
+            }
+        }
     }
 
     &__second-row {
         margin-top: 3px;
     }
 
-    &__checkbox {
+    &__p-checkbox {
         height: 16px;
         width: 16px;
         border: 1px solid #A7AEB8;
@@ -33,14 +60,14 @@
         box-sizing: border-box;
     }
 
-    &__title {
+    &__p-title {
         display: inline-block;
         vertical-align: middle;
         font-size: 14px;
         color: map.get(c.$colors, "cool-gray-100");
     }
 
-    &__tooltip {
+    &__p-tooltip {
         display: inline-block;
 
         i {
@@ -48,24 +75,41 @@
         }
     }
 
-    &__number {
+    &__p-number {
         display: inline-block;
         font-size: 24px;
         font-weight: 500;
         color: map.get(c.$colors, "cool-gray-100");
     }
 
-    &__trend {
+    &__p-trend {
         display: inline-block;
         font-size: 14px;
         font-weight: 500;
+
+        &--trend-up {
+            color: map.get(c.$colors, "green-80");
+        }
+
+        &--trend-down {
+            color: map.get(c.$colors, "red-100");
+        }
     }
 
-    &--trend-up {
-        color: map.get(c.$colors, "green-80");
+    &__s-rectangle {
+        width: 12px;
+        height: 6px;
+        border-radius: 3px;
+        display: inline-block;
+        vertical-align: middle;
     }
 
-    &--trend-down {
-        color: map.get(c.$colors, "red-100");
+    &__s-title {
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 3px;
+        font-size: 12px;
+        font-weight: 400;
+        color: #333C48;
     }
 }
