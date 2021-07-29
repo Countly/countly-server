@@ -2,7 +2,7 @@
     <cly-header title="Chart components"></cly-header>
     <cly-main>
         <cly-section title="Line Chart">
-            <cly-chart-line :option="lineOptions" :customLegend="lineOptionsCustomLegend">
+            <cly-chart-line :option="lineOptions" :legend="lineLegend">
                 <template v-slot:chart-right="scope">
                     <!-- <div class="bu-level-item">
                         <el-select>
@@ -26,7 +26,7 @@
             </cly-chart-time>
         </cly-section>
         <cly-section title="Bar Chart">
-            <cly-chart-bar :option="barOptions"></cly-chart-bar>
+            <cly-chart-bar :option="barOptions" :legend="barLegend"></cly-chart-bar>
         </cly-section>
         <cly-section title="Stacked Bar Chart">
             <cly-chart-bar :option="stackedBarOptions" :showToggle="false"></cly-chart-bar>

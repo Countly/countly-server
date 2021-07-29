@@ -323,8 +323,9 @@
                         }
                     ]
                 },
-                lineOptionsCustomLegend: {
+                lineLegend: {
                     show: true,
+                    type: "primary",
                     data: [
                         {
                             name: "Series A",
@@ -332,7 +333,6 @@
                             trend: "up",
                             percentage: "3.4",
                             tooltip: "Total no of series A.",
-                            color: "pink"
                         },
                         {
                             name: "Series B",
@@ -375,6 +375,30 @@
                         {
                             name: "Week old users",
                             data: [2, 90, 77, 50, 44, 110, 10],
+                        }
+                    ]
+                },
+                barLegend: {
+                    show: true,
+                    type: "primary",
+                    data: [
+                        {
+                            name: "Weekly users",
+                            value: "123",
+                            trend: "up",
+                            percentage: "3.4",
+                            tooltip: "Total no of series A.",
+                        },
+                        {
+                            name: "Weekly new users",
+                            value: "32,231",
+                        },
+                        {
+                            name: "Week old users",
+                            value: "123",
+                            trend: "down",
+                            percentage: "3.4",
+                            tooltip: "Total no of series C.",
                         }
                     ]
                 },
