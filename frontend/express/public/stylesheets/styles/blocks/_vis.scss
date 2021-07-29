@@ -6,7 +6,15 @@
 }
 
 .cly-vue-chart-legend {
-    margin-left: 36px;
+    &__primary,
+    &__secondary {
+        white-space: nowrap;
+        overflow-x: auto;
+    }
+
+    &__secondary {
+        text-align: center;
+    }
 
     &__p-series {
         display: inline-block;
@@ -14,7 +22,7 @@
         cursor: pointer;
 
         &:first-child {
-            margin-left: 0px;
+            margin-left: 36px;
         }
 
         &--deselected {
@@ -105,6 +113,15 @@
     }
 
     &__s-title {
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 3px;
+        font-size: 12px;
+        font-weight: 400;
+        color: #333C48;
+    }
+
+    &__s-percentage {
         display: inline-block;
         vertical-align: middle;
         margin-left: 3px;
