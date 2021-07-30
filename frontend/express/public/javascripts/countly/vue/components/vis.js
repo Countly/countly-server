@@ -930,13 +930,17 @@
                 required: false
             }
         },
+        created: function() {
+            var self = this;
+            this.loadGeo("http://localhost:8080/geojson").then(function(json) {
+                self.geojson = json;
+                self.handleViewChange();
+            });
+        },
         data: function() {
             return {
                 loading: false,
                 enableTooltip: true,
-                zoom: 3,
-                center: [47.413220, -1.219482],
-                bounds: null,
                 maxBounds: null,
                 minZoom: 0,
                 geojson: null,
@@ -974,6 +978,7 @@
                 if (!this.enableTooltip) {
                     return function() {};
                 }
+                var self = this;
                 return function(feature, layer) {
                     layer.bindTooltip(
                         "<div>code:" +
@@ -986,7 +991,7 @@
                         }
                     );
                     layer.on('click', function() {
-                        this.switchToDetail(feature.properties);
+                        self.switchToDetail(feature.properties);
                     });
                 };
             },
@@ -1041,30 +1046,17 @@
                 this.loadGeo("http://localhost:8080/geojson?c=" + properties.ADM0_A3).then(function(json) {
                     self.geojsonDetail = json;
                     self.inDetail = true;
-                    self.updateMaxBounds();
+                    self.handleViewChange();
                 });
             },
-            onGoBack: function() {
+            switchToHome: function() {
                 this.inDetail = false;
                 this.geojsonDetail = null;
+                this.handleViewChange();
+            },
+            handleViewChange: function() {
                 this.updateMaxBounds();
-            },
-            zoomUpdated: function(zoom) {
-                this.zoom = zoom;
-            },
-            centerUpdated: function(center) {
-                this.center = center;
-            },
-            boundsUpdated: function(bounds) {
-                this.bounds = bounds;
             }
-        },
-        created: function() {
-            var self = this;
-            this.loadGeo("http://localhost:8080/geojson").then(function(json) {
-                self.geojson = json;
-                self.updateMaxBounds();
-            });
         },
         template: CV.T('/javascripts/countly/vue/templates/worldmap.html')
     }));
