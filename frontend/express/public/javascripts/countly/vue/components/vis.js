@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor, countlyGlobal */
+/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV */
 
 (function(countlyVue) {
 
@@ -901,6 +901,172 @@
                             v-on="$listeners"\
                         />\
                     </div>'
+    }));
+
+    Vue.component("cly-worldmap", countlyVue.components.create({
+        components: {
+            'l-map': Vue2Leaflet.LMap,
+            'l-marker': Vue2Leaflet.LMarker,
+            'l-geo-json': Vue2Leaflet.LGeoJson,
+            'l-tile-layer': Vue2Leaflet.LTileLayer,
+            'l-control': Vue2Leaflet.LControl
+        },
+        props: {
+            showTile: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            markedPoints: {
+                type: Array,
+                default: function() {
+                    return []; // [L.latLng(47.41322, -1.219482)] // [{lat: 47.41322, lng: -1.219482}]
+                },
+                required: false
+            },
+            fillColor: {
+                type: String,
+                default: '#D6D6D6',
+                required: false
+            }
+        },
+        data: function() {
+            return {
+                loading: false,
+                enableTooltip: true,
+                zoom: 3,
+                center: [47.413220, -1.219482],
+                bounds: null,
+                maxBounds: null,
+                minZoom: 0,
+                geojson: null,
+                geojsonDetail: null,
+                tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+                inDetail: false
+            };
+        },
+        computed: {
+            options: function() {
+                return {
+                    onEachFeature: this.onEachFeatureFunction
+                };
+            },
+            optionsDetail: function() {
+                return {
+                    onEachFeature: this.onEachFeatureFunctionDetail
+                };
+            },
+            styleFunction: function() {
+                var fillColor = this
+                    .fillColor; // important! need touch fillColor in computed for re-calculate when change fillColor
+                return function() {
+                    return {
+                        weight: 2,
+                        color: "#ECEFF1",
+                        opacity: 1,
+                        fillColor: fillColor,
+                        fillOpacity: 1
+                    };
+                };
+            },
+            onEachFeatureFunction: function(/*params*/) {
+                if (!this.enableTooltip) {
+                    return function() {};
+                }
+                return function(feature, layer) {
+                    layer.bindTooltip(
+                        "<div>code:" +
+                        feature.properties.ADM0_A3 +
+                        "</div><div>nom: " +
+                        feature.properties.name +
+                        "</div>", {
+                            permanent: false,
+                            sticky: true
+                        }
+                    );
+                    layer.on('click', function() {
+                        this.switchToDetail(feature.properties);
+                    });
+                };
+            },
+            onEachFeatureFunctionDetail: function(/*params*/) {
+                if (!this.enableTooltip) {
+                    return function() {};
+                }
+                return function(feature, layer) {
+                    layer.bindTooltip(
+                        "<div>code:" +
+                        feature.properties.adm0_a3 +
+                        "</div><div>nom: " +
+                        feature.properties.name +
+                        "</div>", {
+                            permanent: false,
+                            sticky: true
+                        }
+                    );
+                };
+            }
+        },
+        methods: {
+            updateMaxBounds: function() {
+                var boundingBox = this.inDetail ? this.geojsonDetail.bbox : this.geojson.bbox;
+                if (boundingBox) {
+                    var x0 = boundingBox[0],
+                        y0 = boundingBox[1],
+                        x1 = boundingBox[2],
+                        y1 = boundingBox[3];
+
+                    this.maxBounds = [
+                        [y0, x0],
+                        [y1, x1]
+                    ];
+                    this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
+                }
+            },
+            loadGeo: function(target) {
+                var self = this;
+                this.loading = true;
+                return fetch(target).
+                    then(function(response) {
+                        return response.json();
+                    }).
+                    then(function(json) {
+                        self.loading = false;
+                        return json;
+                    });
+            },
+            switchToDetail: function(properties) {
+                var self = this;
+                this.loadGeo("http://localhost:8080/geojson?c=" + properties.ADM0_A3).then(function(json) {
+                    self.geojsonDetail = json;
+                    self.inDetail = true;
+                    self.updateMaxBounds();
+                });
+            },
+            onGoBack: function() {
+                this.inDetail = false;
+                this.geojsonDetail = null;
+                this.updateMaxBounds();
+            },
+            zoomUpdated: function(zoom) {
+                this.zoom = zoom;
+            },
+            centerUpdated: function(center) {
+                this.center = center;
+            },
+            boundsUpdated: function(bounds) {
+                this.bounds = bounds;
+            }
+        },
+        created: function() {
+            var self = this;
+            this.loadGeo("http://localhost:8080/geojson").then(function(json) {
+                self.geojson = json;
+                self.updateMaxBounds();
+            });
+        },
+        template: CV.T('/javascripts/countly/vue/templates/worldmap.html')
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
