@@ -398,7 +398,7 @@
                 },
                 seriesOptions: {
                     type: 'pie',
-                    radius: ['45%', '70%'],
+                    radius: ['60%', '95%'],
                     center: ['50%', '50%'],
                     itemStyle: {
                         borderRadius: 0,
@@ -815,7 +815,7 @@
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
                                 @click="onLegendClick(item, index)">\
                                 <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__s-title">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.name}}</div>\
                                 <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                             </div>\
                         </template>\

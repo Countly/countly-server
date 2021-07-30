@@ -129,6 +129,8 @@
         .cly-vue-chart-legend__s-series {
             margin-left: 0px;
             padding: 3px 7px;
+            margin-left: 10px;
+            box-sizing: border-box;
 
             &:hover {
                 background-color: #F6F6F6;
@@ -146,8 +148,13 @@
                 line-height: 30px;
             }
 
+            .cly-vue-chart-legend__s-title {
+                width: calc(100% - 80px);
+            }
+
             .cly-vue-chart-legend__s-percentage {
-                float: right;
+                min-width: 50px;
+                text-align: right;
             }
         }
     }
