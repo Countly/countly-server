@@ -128,7 +128,7 @@
     &__pie {
         .cly-vue-chart-legend__s-series {
             margin-left: 0px;
-            padding: 7px;
+            padding: 3px 7px;
 
             &:hover {
                 background-color: #F6F6F6;
@@ -143,6 +143,7 @@
             .cly-vue-chart-legend__s-title,
             .cly-vue-chart-legend__s-percentage {
                 font-size: 14px;
+                line-height: 30px;
             }
 
             .cly-vue-chart-legend__s-percentage {
