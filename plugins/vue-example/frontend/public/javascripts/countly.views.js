@@ -266,7 +266,7 @@
                                 { value: 310, name: "Email" },
                                 { value: 234, name: "Ad Networks" },
                                 { value: 135, name: "Video Ads" },
-                                { value: 1548, name: "Search Engines" }
+                                { value: 1548, name: "Search Engines is a long name" }
                             ],
                             label: {
                                 formatter: function() {
