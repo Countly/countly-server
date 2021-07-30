@@ -1077,6 +1077,20 @@
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 return opt;
+            },
+            chartClasses: function() {
+                var classes = {
+                    "bu-column": true
+                };
+
+                if (this.legend.show) {
+                    classes["bu-is-half"] = true;
+                }
+                else {
+                    classes["bu-is-full"] = true;
+                }
+
+                return classes;
             }
         },
         template: '<div class="cly-vue-chart">\
@@ -1087,7 +1101,7 @@
                         </chart-header>\
                         <div class="bu-columns bu-is-gapless"\
                             :style="{height: height + \'px\'}">\
-                            <div class="bu-column bu-is-half">\
+                            <div :class="chartClasses">\
                                 <echarts\
                                     ref="echarts"\
                                     v-bind="$attrs"\
@@ -1101,7 +1115,7 @@
                                 :echartRef="echartRef"\
                                 v-if="legend.show"\
                                 :chartOptions="chartOptions"\
-                                class="bu-column bu-is-half"\
+                                :class="chartClasses"\
                                 :data="legend.data">\
                             </custom-legend>\
                         </div>\
