@@ -12,7 +12,8 @@
     &__primary,
     &__secondary {
         white-space: nowrap;
-        overflow-x: auto;
+        overflow: auto;
+        margin: 10px;
     }
 
     &__secondary--text-center {
@@ -126,39 +127,41 @@
     }
 
     &__pie {
-        .cly-vue-chart-legend__s-series {
-            margin-left: 0px;
-            padding: 3px 7px;
-            box-sizing: border-box;
-            width: 100%;
+        .cly-vue-chart-legend__secondary {
+            margin: 30px 10px;
 
-            &:hover {
-                background-color: #F6F6F6;
-                border-radius: 8px;
+            .cly-vue-chart-legend__s-series {
+                margin-left: 0px;
+                padding: 3px 7px;
+                box-sizing: border-box;
+                width: 100%;
+                display: block;
+
+                &:hover {
+                    background-color: #F6F6F6;
+                    border-radius: 8px;
+
+                    .cly-vue-chart-legend__s-title,
+                    .cly-vue-chart-legend__s-percentage {
+                        font-weight: 500;
+                    }
+                }
 
                 .cly-vue-chart-legend__s-title,
                 .cly-vue-chart-legend__s-percentage {
-                    font-weight: 500;
+                    font-size: 14px;
+                    line-height: 30px;
                 }
-            }
 
-            .cly-vue-chart-legend__s-rectangle {
-                margin-left: 10px;
-            }
+                .cly-vue-chart-legend__s-title {
+                    width: calc(100% - 86px);
+                    text-align: left;
+                }
 
-            .cly-vue-chart-legend__s-title,
-            .cly-vue-chart-legend__s-percentage {
-                font-size: 14px;
-                line-height: 30px;
-            }
-
-            .cly-vue-chart-legend__s-title {
-                width: calc(100% - 86px);
-            }
-
-            .cly-vue-chart-legend__s-percentage {
-                min-width: 50px;
-                text-align: right;
+                .cly-vue-chart-legend__s-percentage {
+                    min-width: 50px;
+                    text-align: right;
+                }
             }
         }
     }
