@@ -92,7 +92,7 @@
         },
         mixins: [
             // call groups plugin input mixin for drawer
-            countlyVue.container.tabsMixin({
+            countlyVue.container.dataMixin({
                 "groupsInput": "groups/input"
             })
         ],
