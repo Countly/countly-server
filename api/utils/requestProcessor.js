@@ -2041,7 +2041,6 @@ const processRequest = (params) => {
                             });
                         }
                     });
-                    return true;
                     break;
                 }
                 case 'get_event_groups':
