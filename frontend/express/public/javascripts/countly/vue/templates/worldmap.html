@@ -1,0 +1,47 @@
+<div class="cly-vue-worldmap">
+    <div class="bu-columns bu-is-gapless">
+        <div class="bu-column bu-is-3">
+            <div class="cly-vue-worldmap__country-detail" v-if="inDetail">
+                <button @click="onGoBack">
+                    <- Go back 
+                </button>
+            </div>
+            <div class="cly-vue-worldmap__available-locations">
+
+                <div class="info" style="height: 15%">
+                    <span>Center: {{ center }}</span>
+                    <span>Zoom: {{ zoom }}</span>
+                    <span>Bounds: {{ bounds }}</span>
+                    <span>Area: {{ area }}</span>
+                  </div>
+            </div>
+        </div>
+        <div class="bu-column bu-is-9">
+            <l-map ref="lmap" :center="center" :min-zoom="minZoom" :max-bounds="maxBounds" 
+                @update:zoom="zoomUpdated"
+                @update:center="centerUpdated"
+                @update:bounds="boundsUpdated" 
+                style="height: 500px; width: 100%">
+
+                <l-tile-layer v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
+                
+                <l-geo-json 
+                    v-if="!inDetail" :geojson="geojson" :options="options" :options-style="styleFunction">
+                </l-geo-json>
+                
+                <l-geo-json 
+                    v-if="inDetail" :geojson="geojsonDetail" :options="optionsDetail" :options-style="styleFunction">
+                </l-geo-json>
+
+                <!-- <l-control position="topLeft" v-if="inDetail">
+                    <div class="cly-vue-worldmap__detail-switch">
+                        Regions|Cities
+                    </div>
+                </l-control> -->
+
+                <l-marker :lat-lng="point" :key="idx" v-for="(point, idx) in markedPoints"></l-marker>
+
+            </l-map>
+        </div>
+    </div>
+</div>
