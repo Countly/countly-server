@@ -1205,7 +1205,7 @@
         created: function() {
             var self = this;
             this.loadGeo("http://localhost:8080/geojson").then(function(json) {
-                self.geojson = json;
+                self.geojsonHome = json;
                 self.handleViewChange();
             });
         },
@@ -1215,7 +1215,7 @@
                 enableTooltip: true,
                 maxBounds: null,
                 minZoom: 0,
-                geojson: null,
+                geojsonHome: null,
                 geojsonDetail: null,
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
@@ -1287,7 +1287,7 @@
         },
         methods: {
             updateMaxBounds: function() {
-                var boundingBox = this.inDetail ? this.geojsonDetail.bbox : this.geojson.bbox;
+                var boundingBox = this.inDetail ? this.geojsonDetail.bbox : this.geojsonHome.bbox;
                 if (boundingBox) {
                     var x0 = boundingBox[0],
                         y0 = boundingBox[1],

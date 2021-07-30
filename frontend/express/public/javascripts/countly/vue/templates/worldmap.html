@@ -15,7 +15,7 @@
                 <l-tile-layer v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
                 
                 <l-geo-json 
-                    v-if="!inDetail" :geojson="geojson" :options="options" :options-style="styleFunction">
+                    v-if="!inDetail" :geojson="geojsonHome" :options="options" :options-style="styleFunction">
                 </l-geo-json>
                 
                 <l-geo-json 
