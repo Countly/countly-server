@@ -129,8 +129,8 @@
         .cly-vue-chart-legend__s-series {
             margin-left: 0px;
             padding: 3px 7px;
-            margin-left: 10px;
             box-sizing: border-box;
+            width: 100%;
 
             &:hover {
                 background-color: #F6F6F6;
@@ -142,6 +142,10 @@
                 }
             }
 
+            .cly-vue-chart-legend__s-rectangle {
+                margin-left: 10px;
+            }
+
             .cly-vue-chart-legend__s-title,
             .cly-vue-chart-legend__s-percentage {
                 font-size: 14px;
@@ -149,7 +153,7 @@
             }
 
             .cly-vue-chart-legend__s-title {
-                width: calc(100% - 80px);
+                width: calc(100% - 86px);
             }
 
             .cly-vue-chart-legend__s-percentage {

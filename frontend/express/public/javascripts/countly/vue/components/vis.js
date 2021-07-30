@@ -737,7 +737,6 @@
                     'cly-vue-chart-legend__secondary--text-center': this.type === "secondary" && this.seriesType !== "pie",
                     'bu-is-flex': this.seriesType === "pie",
                     'bu-is-flex-direction-column': this.seriesType === "pie",
-                    'bu-is-align-content-flex-start': this.seriesType === "pie",
                     'bu-is-justify-content-center': this.seriesType === "pie"
                 };
 
@@ -779,8 +778,7 @@
         },
         template: '<div class="cly-vue-chart-legend" :class="legendClasses">\
                         <template v-if="type === \'primary\'">\
-                            <div v-if="type === \'primary\'"\
-                                v-for="(item, index) in legendData"\
+                            <div v-for="(item, index) in legendData"\
                                 :key="item.name"\
                                 :data-series="item.name"\
                                 :class="[\'cly-vue-chart-legend__p-series\',\
@@ -808,8 +806,7 @@
                             </div>\
                         </template>\
                         <template v-if="type === \'secondary\'">\
-                            <div v-if="type === \'secondary\'"\
-                                v-for="(item, index) in legendData"\
+                            <div v-for="(item, index) in legendData"\
                                 :key="item.name" :data-series="item.name"\
                                 :class="[\'cly-vue-chart-legend__s-series\',\
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
