@@ -928,11 +928,16 @@
                 type: String,
                 default: '#D6D6D6',
                 required: false
+            },
+            borderColor: {
+                type: String,
+                default: '#FFF',
+                required: false
             }
         },
         created: function() {
             var self = this;
-            this.loadGeo("http://localhost:8080/geojson").then(function(json) {
+            this.loadGeojson("http://localhost:8080/geojson").then(function(json) {
                 self.geojsonHome = json;
                 self.handleViewChange();
             });
@@ -951,7 +956,7 @@
             };
         },
         computed: {
-            options: function() {
+            optionsHome: function() {
                 return {
                     onEachFeature: this.onEachFeatureFunction
                 };
@@ -962,12 +967,13 @@
                 };
             },
             styleFunction: function() {
-                var fillColor = this
-                    .fillColor; // important! need touch fillColor in computed for re-calculate when change fillColor
+                var fillColor = this.fillColor,
+                    borderColor = this.borderColor;
+
                 return function() {
                     return {
                         weight: 2,
-                        color: "#ECEFF1",
+                        color: borderColor,
                         opacity: 1,
                         fillColor: fillColor,
                         fillOpacity: 1
@@ -1029,7 +1035,7 @@
                     this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
                 }
             },
-            loadGeo: function(target) {
+            loadGeojson: function(target) {
                 var self = this;
                 this.loading = true;
                 return fetch(target).
@@ -1041,18 +1047,18 @@
                         return json;
                     });
             },
-            switchToDetail: function(properties) {
-                var self = this;
-                this.loadGeo("http://localhost:8080/geojson?c=" + properties.ADM0_A3).then(function(json) {
-                    self.geojsonDetail = json;
-                    self.inDetail = true;
-                    self.handleViewChange();
-                });
-            },
             switchToHome: function() {
                 this.inDetail = false;
                 this.geojsonDetail = null;
                 this.handleViewChange();
+            },
+            switchToDetail: function(properties) {
+                var self = this;
+                this.loadGeojson("http://localhost:8080/geojson?c=" + properties.ADM0_A3).then(function(json) {
+                    self.geojsonDetail = json;
+                    self.inDetail = true;
+                    self.handleViewChange();
+                });
             },
             handleViewChange: function() {
                 this.updateMaxBounds();
