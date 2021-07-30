@@ -39,6 +39,18 @@
                   </validation-provider>
                 </div>
               </div>
+              <div v-if="!$props.settings.editMode" class="user-management-drawer-content__input-wrapper">
+                <div class="user-management-drawer-content__label">
+                  <div class="text-small text-heading">{{ i18n('management-users.password') }}</div>
+                  <div class="user-management-drawer-content__help-text"></div>
+                </div>
+                <div class="user-management-drawer-content__input">
+                  <validation-provider rules="required" v-slot="v">
+                    <el-input v-model="drawerScope.editedObject.password" :placeholder="i18n('management-users.enter-password')"></el-input>
+                  </validation-provider>
+                  <div @click="generatePassword()" class="user-management-drawer-content__under-input-text bu-mt-1 bu-is-size-7">{{ i18n('management-users.generate-password') }}</div>
+                </div>
+              </div>
               <div class="user-management-drawer-content__input-wrapper">
                 <div class="user-management-drawer-content__label">
                   <div class="text-small text-heading">{{ i18n('management-users.email') }}</div>

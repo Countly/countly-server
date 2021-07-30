@@ -121,6 +121,16 @@
             };
         },
         methods: {
+            generatePassword: function() {
+                var generatedPassword = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
+                this.$refs.userDrawer.editedObject.password = generatedPassword;
+                //this.$clipboard(generatedPassword);
+                /*this.$message({
+                    message: 'Generated password copied to clipboard',
+                    type: 'success'
+                });
+                */
+            },
             // cly-dropzone handlers
             template: function() {
                 var template = '<div class="dz-preview dz-file-preview">';
@@ -271,12 +281,12 @@
                     }
                 }
 
-                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0) {
+                if (!atLeastOneAppSelected && submitted.permission._.a.length === 0 && !submitted.global_admin) {
                     this.$message({
-                        message: CV.i18n('groups.at-least-one-app-required'),
+                        message: CV.i18n('management-users.at-least-one-app-required'),
                         type: 'error'
                     });
-                    done(CV.i18n('groups.at-least-one-app-required'));
+                    done(CV.i18n('management-users.at-least-one-app-required'));
                     return;
                 }
 
@@ -330,7 +340,6 @@
                 }
                 else {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
-                    submitted.password = CountlyHelpers.generatePassword(countlyGlobal.security.password_min);
                     countlyUserManagement.createUser(submitted, function(res) {
                         if (!res.result) {
                             if (typeof self.group._id !== "undefined") {
@@ -492,6 +501,7 @@
                 countlyUserManagement.fetchUsers()
                     .then(function() {
                         var usersObj = countlyUserManagement.getUsers();
+                        self.users = [];
                         for (var user in usersObj) {
                             self.users.push(usersObj[user]);
                         }

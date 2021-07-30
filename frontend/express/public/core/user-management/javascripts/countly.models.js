@@ -29,6 +29,7 @@
             "full_name": null,
             "username": null,
             "email": null,
+            "password": null,
             "permission": { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] } },
             "global_admin": false,
             "created_at": null
