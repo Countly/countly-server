@@ -315,6 +315,9 @@
 
                 this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
 
+                //Set default legend show to false
+                opt.legend.show = false;
+
                 opt.series = series;
                 return opt;
             }
@@ -355,6 +358,9 @@
 
                 this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
 
+                //Set default legend show to false
+                opt.legend.show = false;
+
                 opt.series = series;
                 return opt;
             }
@@ -377,7 +383,8 @@
                         orient: 'vertical',
                         right: "25%",
                         top: "25%",
-                        bottom: 'auto'
+                        bottom: 'auto',
+                        show: false
                     },
                     tooltip: {
                         trigger: 'item'
@@ -392,6 +399,7 @@
                 seriesOptions: {
                     type: 'pie',
                     radius: ['45%', '70%'],
+                    center: ['50%', '50%'],
                     itemStyle: {
                         borderRadius: 0,
                         borderColor: '#fff',
@@ -418,17 +426,32 @@
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                     var seriesData = series[i].data;
 
-                    if (!opt.legend.data) {
-                        /*
-                            Legend data in series comes from within series data names
-                        */
-                        for (var j = 0; j < seriesData.length; j++) {
-                            legendData.push({name: seriesData[j].name});
-                        }
+                    var dataSum = seriesData.reduce(function(acc, val) {
+                        acc += val.value;
+                        return acc;
+                    }, 0);
+
+                    seriesData.sort(function(a, b) {
+                        return b.value - a.value;
+                    });
+
+                    /*
+                        Legend data in series comes from within series data names
+                    */
+                    for (var j = 0; j < seriesData.length; j++) {
+                        legendData.push({
+                            name: seriesData[j].name,
+                            percentage: ((seriesData[j].value / dataSum) * 100).toFixed(1)
+                        });
                     }
                 }
 
+                //Pie charts can only have secondary legend types
+                this.legend.type = "secondary";
                 this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
+
+                //Set default legend show to false
+                opt.legend.show = false;
 
                 opt.series = series;
                 return opt;
@@ -1022,7 +1045,8 @@
                                 <slot :name="item" v-bind="slotScope"></slot>\
                             </template>\
                         </chart-header>\
-                        <div class="bu-columns bu-is-gapless" :style="{height: height + \'px\'}">\
+                        <div class="bu-columns bu-is-gapless"\
+                            :style="{height: height + \'px\'}">\
                             <div class="bu-column">\
                                 <echarts\
                                     ref="echarts"\

@@ -273,7 +273,6 @@
                                     return "New users \n 12k";
                                 }
                             },
-                            center: ["25%", "50%"] //Center should be passed as option
                         }
                     ]
                 },
