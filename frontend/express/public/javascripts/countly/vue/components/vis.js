@@ -419,6 +419,7 @@
         computed: {
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+
                 var series = opt.series || [];
 
                 var legendData = [];
@@ -668,8 +669,11 @@
                 type: String,
                 default: "secondary"
             },
-            series: {
-                type: String
+            chartOptions: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
             },
             echartRef: {
                 type: Object,
@@ -685,61 +689,59 @@
             }
         },
         computed: {
+            seriesType: function() {
+                return this.chartOptions.series && this.chartOptions.series[0] && this.chartOptions.series[0].type;
+            },
             legendData: function() {
-                var chartOptions = this.echartRef && this.echartRef.getOption && this.echartRef.getOption();
                 var data = this.data;
 
-                if (chartOptions) {
-                    var series = chartOptions.series || [];
+                var series = this.chartOptions.series || [];
 
-                    if (this.series === "pie") {
-                        series = series[0].data;
-                    }
-
-                    if (series.length !== data.length) {
-                        // eslint-disable-next-line no-console
-                        console.log("Series length and legend length should be same");
-                        return [];
-                    }
-
-                    var colors = chartOptions.color || [];
-                    var colorIndex = 0;
-                    for (var i = 0; i < series.length; i++) {
-                        var serie = series[i];
-
-                        if (serie.color) {
-                            data[i].color = serie.color;
-                        }
-                        else {
-                            data[i].color = colors[colorIndex];
-                            colorIndex++;
-                        }
-
-                        if (data[i].status === "off") {
-                            data[i].displayColor = "#a7aeb8";
-                        }
-                        else {
-                            data[i].displayColor = data[i].color;
-                        }
-                    }
-
-                    return data;
+                if (this.seriesType === "pie") {
+                    series = series[0].data;
                 }
 
-                return [];
+                if (series.length !== data.length) {
+                    // eslint-disable-next-line no-console
+                    console.log("Series length and legend length should be same");
+                    return [];
+                }
+
+                var colors = this.chartOptions.color || [];
+                var colorIndex = 0;
+                for (var i = 0; i < series.length; i++) {
+                    var serie = series[i];
+
+                    if (serie.color) {
+                        data[i].color = serie.color;
+                    }
+                    else {
+                        data[i].color = colors[colorIndex];
+                        colorIndex++;
+                    }
+
+                    if (data[i].status === "off") {
+                        data[i].displayColor = "#a7aeb8";
+                    }
+                    else {
+                        data[i].displayColor = data[i].color;
+                    }
+                }
+
+                return data;
             },
             legendClasses: function() {
                 var classes = {
                     'cly-vue-chart-legend__primary': this.type === "primary",
                     'cly-vue-chart-legend__secondary': this.type === "secondary",
-                    'cly-vue-chart-legend__secondary--text-center': this.type === "secondary" && this.series !== "pie",
-                    'bu-is-flex': this.series === "pie",
-                    'bu-is-flex-direction-column': this.series === "pie",
-                    'bu-is-align-content-flex-start': this.series === "pie",
-                    'bu-is-justify-content-center': this.series === "pie"
+                    'cly-vue-chart-legend__secondary--text-center': this.type === "secondary" && this.seriesType !== "pie",
+                    'bu-is-flex': this.seriesType === "pie",
+                    'bu-is-flex-direction-column': this.seriesType === "pie",
+                    'bu-is-align-content-flex-start': this.seriesType === "pie",
+                    'bu-is-justify-content-center': this.seriesType === "pie"
                 };
 
-                classes["cly-vue-chart-legend__" + this.series] = true;
+                classes["cly-vue-chart-legend__" + this.seriesType] = true;
 
                 return classes;
             }
@@ -858,7 +860,7 @@
                             :type="legend.type"\
                             :echartRef="echartRef"\
                             v-if="legend.show"\
-                            series="line"\
+                            :chartOptions="chartOptions"\
                             :data="legend.data">\
                         </custom-legend>\
                     </div>'
@@ -970,7 +972,7 @@
                             :type="legend.type"\
                             :echartRef="echartRef"\
                             v-if="legend.show"\
-                            series="line"\
+                            :chartOptions="chartOptions"\
                             :data="legend.data">\
                         </custom-legend>\
                     </div>'
@@ -1014,7 +1016,7 @@
                             :type="legend.type"\
                             :echartRef="echartRef"\
                             v-if="legend.show"\
-                            series="bar"\
+                            :chartOptions="chartOptions"\
                             :data="legend.data">\
                         </custom-legend>\
                     </div>'
@@ -1060,7 +1062,7 @@
                                 :type="legend.type"\
                                 :echartRef="echartRef"\
                                 v-if="legend.show"\
-                                series="pie"\
+                                :chartOptions="chartOptions"\
                                 class="bu-column"\
                                 :data="legend.data">\
                             </custom-legend>\
