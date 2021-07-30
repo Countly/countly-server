@@ -30,7 +30,8 @@ const countlyApi = {
         usage: require('../parts/data/usage.js'),
         fetch: require('../parts/data/fetch.js'),
         events: require('../parts/data/events.js'),
-        exports: require('../parts/data/exports.js')
+        exports: require('../parts/data/exports.js'),
+        geoData: require('../parts/data/geoData.js')
     },
     mgmt: {
         users: require('../parts/mgmt/users.js'),
@@ -2032,6 +2033,17 @@ const processRequest = (params) => {
                         common.returnOutput(params, {});
                     }
                     break;
+                case 'geodata': {
+                    validateRead(params, 'core', function() {
+                        if (params.qstring.loadFor === "cities") {
+                            countlyApi.data.geoData.loadCityCoordiantes({"query": params.qstring.query}, function(err, data) {
+                                common.returnOutput(params, data);
+                            });
+                        }
+                    });
+                    return true;
+                    break;
+                }
                 case 'get_event_groups':
                     validateRead(params, 'core', countlyApi.data.fetch.fetchEventGroups);
                     break;
