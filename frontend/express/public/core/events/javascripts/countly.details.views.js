@@ -1,7 +1,36 @@
 /* global countlyVue, countlyAllEvents, countlyCommon, CV,app*/
+var EventsTable = countlyVue.views.BaseView.extend({
+    mixins: [countlyVue.mixins.i18n],
+    data: function() {
+        return {
+            scoreTableExportSettings: {
+                title: "AllEvents",
+                timeDependent: true
+            }
+        };
+    },
+    computed: {
+        eventsTableRows: function() {
+            return this.$store.getters["countlyAllEvents/tableRows"];
+        },
+    },
+    methods: {
+        isColumnAllowed: function(column) {
+            var events = this.$store.getters["countlyAllEvents/allEventsProcessed"];
+            if(events && events.tableColumns && events.tableColumns.indexOf(column)!==-1){
+                return true;
+            }
+            return false;
+        }
+    },
+    template: '#tables-events'
+});
 
 var AllEventsView = countlyVue.views.BaseView.extend({
     template: "#all-events",
+    components: {
+        "detail-tables": EventsTable
+    },
     computed: {
         selectedDatePeriod: {
             get: function() {
@@ -11,6 +40,7 @@ var AllEventsView = countlyVue.views.BaseView.extend({
                 this.$store.dispatch('countlyAllEvents/fetchSelectedDatePeriod', value);
                 countlyCommon.setPeriod(value);
                 this.$store.dispatch('countlyAllEvents/fetchSelectedEventsData');
+                this.$store.dispatch('countlyAllEvents/fetchSelectedEventsOverview');
             }
         },
         selectedSegment: {
@@ -50,6 +80,9 @@ var AllEventsView = countlyVue.views.BaseView.extend({
         },
         barData: function() {
             return this.$store.getters["countlyAllEvents/barData"];
+        },
+        selectedEventsOverview: function() {
+            return this.$store.getters["countlyAllEvents/selectedEventsOverview"];
         }
     },
     data: function() {
@@ -64,6 +97,7 @@ var AllEventsView = countlyVue.views.BaseView.extend({
         }
         this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
         this.$store.dispatch('countlyAllEvents/fetchAllEventsGroupData');
+        this.$store.dispatch('countlyAllEvents/fetchSelectedEventsOverview');
     }
 });
 

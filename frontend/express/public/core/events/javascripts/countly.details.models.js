@@ -35,6 +35,44 @@
             };
             context.commit('setLineChartData', obj);
         },
+        getTableRows: function(context, eventData){
+            var tableRows = eventData.chartData.slice();
+            if(eventData.tableColumns.indexOf("Sum")!==-1 && eventData.tableColumns.indexOf("Duration")!==-1){
+                tableRows.forEach(function(row){
+                    row["avgSum"] = (parseInt(row.c) === 0 || parseInt(row.s) === 0)? 0: countlyCommon.formatNumber(row.s/row.c);
+                    row["avgDur"] = (parseInt(row.c) === 0 || parseInt(row.dur) === 0)? 0: countlyCommon.formatNumber(row.dur/row.c);
+                    row["c"] = countlyCommon.formatNumber(row.c);
+                    row["s"] = countlyCommon.formatNumber(row.s);
+                    row["dur"] = countlyCommon.formatNumber(row.dur);
+                });
+                eventData.tableColumns.push("AvgSum");
+                eventData.tableColumns.push("AvgDur");
+            }
+            else if(eventData.tableColumns.indexOf("Sum")!==-1){
+                tableRows.forEach(function(row){
+                    row["avgSum"] = (parseInt(row.c) === 0 || parseInt(row.s) === 0)? 0: countlyCommon.formatNumber(row.s/row.c);
+                    row["c"] = countlyCommon.formatNumber(row.c);
+                    row["s"] = countlyCommon.formatNumber(row.s);
+                    row["dur"] = countlyCommon.formatNumber(row.dur);
+                });
+                eventData.tableColumns.push("AvgSum");
+            }
+            else if(eventData.tableColumns.indexOf("Duration")!==-1){
+                tableRows.forEach(function(row){
+                    row["avgDur"] = (parseInt(row.c) === 0 || parseInt(row.dur) === 0)? 0: countlyCommon.formatNumber(row.dur/row.c);
+                    row["c"] = countlyCommon.formatNumber(row.c);
+                    row["s"] = countlyCommon.formatNumber(row.s);
+                    row["dur"] = countlyCommon.formatNumber(row.dur);
+                });
+                eventData.tableColumns.push("AvgDur");
+            }
+            else{
+                tableRows.forEach(function(row){
+                    row["c"] = countlyCommon.formatNumber(row.c);
+                 });
+            }
+            context.commit('setTableRows', tableRows);
+        },
         getBarChartData: function(context, eventData) {
             var arrCount = [];
             var arrSum = [];
@@ -273,7 +311,11 @@
             else {
                 countlyAllEvents.helpers.getLineChartData(context, eventData);
             }
+            countlyAllEvents.helpers.getTableRows(context, eventData);
             return segments;
+        },
+        getSelectedEventsOverview: function(context, res) {
+            return res[context.state.selectedEventName].data;
         }
     };
 
@@ -317,6 +359,21 @@
                 },
                 dataType: "json",
             });
+        },
+        fetchSelectedEventsOverview: function(context) {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "events",
+                    "events": JSON.stringify([context.state.selectedEventName]),
+                    "period": context.state.selectedDatePeriod,
+                    "timestamp": new Date().getTime(),
+                    "overview": true
+                },
+                dataType: "json",
+            });
         }
     };
 
@@ -336,7 +393,9 @@
                 availableSegments: [],
                 allEventsProcessed: {},
                 barData: {},
-                lineChartData: {}
+                lineChartData: {},
+                selectedEventsOverview:{},
+                tableRows: []
             };
         };
 
@@ -370,6 +429,14 @@
                         if (res) {
                             context.commit("setSelectedEventsData", res);
                             context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, res) || []);
+                        }
+                    });
+            },
+            fetchSelectedEventsOverview: function(context) {
+                return countlyAllEvents.service.fetchSelectedEventsOverview(context)
+                    .then(function(res) {
+                        if (res) {
+                            context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, res) || {});
                         }
                     });
             },
@@ -427,6 +494,12 @@
             },
             setLineChartData: function(state, value) {
                 state.lineChartData = value;
+            },
+            setSelectedEventsOverview: function(state, value) {
+                state.selectedEventsOverview = value;
+            },
+            setTableRows: function(state, value) {
+                state.tableRows = value;
             }
         };
         var allEventsGetters = {
@@ -468,6 +541,12 @@
             },
             lineChartData: function(_state) {
                 return _state.lineChartData;
+            },
+            selectedEventsOverview: function(_state) {
+                return _state.selectedEventsOverview;
+            },
+            tableRows: function(_state) {
+                return _state.tableRows;
             }
         };
         return countlyVue.vuex.Module("countlyAllEvents", {
