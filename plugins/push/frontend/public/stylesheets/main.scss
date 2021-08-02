@@ -252,6 +252,13 @@
         background-color: white;
         border: 1px solid #37BB29;
     }
+
+    &__user-property {
+        border-bottom-color: black;
+        border-bottom: 1px dashed #2B2B2B;
+        padding-bottom: 1px;
+        display: inline-block;
+    }
 }
 
 .cly-vue-push-notification-details-summary {
@@ -504,6 +511,15 @@
     }
 }
 
+.cly-vue-push-notification-message-editor-with-emoji-picker {
+
+    &__user-property {
+        padding: 1px 5px 2px;
+        background: #ECECEC;
+        border-radius: 2px;
+        margin-right: 2px;
+    }
+}
 // Vue emoji-picker
 .cly-vue-push-notification-emoji-wrapper{
     position: relative;

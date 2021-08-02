@@ -1,6 +1,6 @@
 /*global CV, countlyVue*/
 (function(countlyPushNotificationComponent){
-    var escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var escapeRegExp = function(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');};
 
     var emojis = {
         'Frequently used': {
@@ -663,7 +663,7 @@
           emojiTable: {
             type: Object,
             required: false,
-            default() {
+            default: function() {
               return emojis
             },
           },
@@ -678,13 +678,13 @@
           }
         },
         computed: {
-          emojis() {
+          emojis: function() {
             if (this.search) {
               var obj = {}
               for (var category in this.emojiTable) {
                 obj[category] = {}
                 for (var emoji in this.emojiTable[category]) {
-                  if (new RegExp(`.*${escapeRegExp(this.search)}.*`).test(emoji)) {
+                  if (new RegExp(".*"+escapeRegExp(this.search)+".*").test(emoji)) {
                     obj[category][emoji] = this.emojiTable[category][emoji]
                   }
                 }
@@ -698,18 +698,19 @@
           },
         },
         methods: {
-          insert(emoji) {
+          insert: function(emoji) {
             this.$emit('emoji', emoji)
+            this.hide();
           },
-          toggle(e) {
+          toggle: function(e) {
             this.display.visible = ! this.display.visible
             this.display.x = e.clientX
             this.display.y = e.clientY
           },
-          hide() {
+          hide: function() {
             this.display.visible = false
           },
-          escape(e) {
+          escape: function(e) {
             if (this.display.visible === true && e.keyCode === 27) {
               this.display.visible = false
             }
@@ -717,12 +718,12 @@
         },
         directives: {
           'click-outside': {
-            bind(el, binding, vNode) {
+            bind:function(el, binding, vNode) {
               if (typeof binding.value !== 'function') {
                 return
               }
               var bubble = binding.modifiers.bubble
-              var handler = (e) => {
+              var handler = function(e){
                 if (bubble || (! el.contains(e.target) && el !== e.target)) {
                   binding.value(e)
                 }
@@ -730,16 +731,16 @@
               el.__vueClickOutside__ = handler
               document.addEventListener('click', handler)
             },
-            unbind(el, binding) {
+            unbind:function(el, binding) {
               document.removeEventListener('click', el.__vueClickOutside__)
               el.__vueClickOutside__ = null
             },
           },
         },
-        mounted() {
+        mounted: function() {
           document.addEventListener('keyup', this.escape)
         },
-        destroyed() {
+        destroyed: function() {
           document.removeEventListener('keyup', this.escape)
         },
         template: CV.T("/push/templates/emoji-picker.html")

@@ -13,11 +13,11 @@
                 :content="pushNotificationUnderEdit.message[activeLocalization].content" 
                 :platforms="pushNotificationUnderEdit.platforms" 
                 :media="pushNotificationUnderEdit.message.mediaUrl" 
+                :isHTML="true"
                 :buttons="pushNotificationUnderEdit.message[activeLocalization].buttons.map(function(item){return item.label})"
-                >
+            >
             </mobile-message-preview>
         </cly-content>
-
     </template>
     <template v-slot:default="drawerScope">
         <div class="bu-column bu-is-10 bu-is-offset-1">
@@ -482,14 +482,27 @@
                                     </div>
                                     <div class="bu-level-right">
                                         <div class="bu-level-item">
-                                            <el-button type="text" class="cly-vue-push-notification-drawer__input-label">Add Variable</el-button>
+                                            <el-button type="text" @click="onAddUserProperty('title')" class="cly-vue-push-notification-drawer__input-label">Add Variable</el-button>
                                         </div>
                                     </div>
                                 </div>
-                                <input-element-with-emoji-picker 
-                                    :input="pushNotificationUnderEdit.message[activeLocalization].title" 
-                                    @onChange="onTitleChange">
-                                </input-element-with-emoji-picker>
+                                <add-user-property-popover 
+                                    :isOpen="isAddUserPropertyPopoverOpen"
+                                    :id="selectedUserPropertyId"
+                                    :element="selectedUserPropertyElement"
+                                    :userProperty = "pushNotificationUnderEdit.message[activeLocalization].properties[selectedUserPropertyElement][selectedUserPropertyId]"
+                                    @select="onSelectUserProperty"
+                                    @input="onInputFallbackUserProperty"
+                                    @check="onCheckUppercaseUserProperty"
+                                    @remove="onRemoveUserProperty"
+                                    @close="closeAddUserPropertyPopover">
+                                </add-user-property-popover>
+                                <message-editor-with-emoji-picker 
+                                    ref="title"
+                                    @change="onTitleChange"
+                                    @click="onUserPropertyClick"
+                                    id="input-element-title">
+                                </message-editor-with-emoji-picker>
                             </div>
                             <div class="bu-column">
                                 <div class="bu-level">
@@ -500,16 +513,18 @@
                                     </div>
                                     <div class="bu-level-right">
                                         <div class="bu-level-item">
-                                            <el-button type="text" class="cly-vue-push-notification-drawer__input-label">Add Variable</el-button>
+                                            <el-button type="text" @click="onAddUserProperty('content')" class="cly-vue-push-notification-drawer__input-label">Add Variable</el-button>
                                         </div>
                                     </div>
                                 </div>
-                                <input-element-with-emoji-picker 
-                                    :input="pushNotificationUnderEdit.message[activeLocalization].content" 
+                                <message-editor-with-emoji-picker 
+                                    ref="content"
                                     placeholder="Clear and shorter messages generally have more conversations..." 
-                                    type="textarea"
-                                    @onChange="onContentChange">
-                                </input-element-with-emoji-picker>
+                                    @change="onContentChange"
+                                    @click="onUserPropertyClick"
+                                    id="input-element-content"
+                                    type="textarea">
+                                </message-editor-with-emoji-picker>
                             </div>
                             <div class="bu-column">
                                 <div class="bu-level">
