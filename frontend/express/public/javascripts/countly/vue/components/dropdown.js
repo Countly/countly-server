@@ -335,10 +335,14 @@
                                     </div>\
                                     <table v-for="field in fields" :key="field.key">\
                                         <tr class="cly-multi-select__field">{{field.label}}</tr>\
-                                        <tr>\
+                                        <tr v-if="\'items\' in field">\
                                             <el-select class="cly-multi-select__field-dropdown" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
                                                 <el-option v-for="item in field.items" :key="item.key" :value="item.key" :label="item.label"></el-option>\
                                             </el-select>\
+                                        </tr>\
+                                        <tr v-else-if="\'options\' in field">\
+                                            <cly-select-x v-bind="field" class="cly-multi-select__field-dropdown" :width="320" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                            </cly-select-x>\
                                         </tr>\
                                     </table>\
                                 </div>\
@@ -370,9 +374,16 @@
         computed: {
             optionLabel: function() {
                 return function(field, option) {
-                    return field.items.find(function(item) {
-                        return item.key === option;
-                    }).label;
+                    if ("items" in field) {
+                        return field.items.find(function(item) {
+                            return item.key === option;
+                        }).label;
+                    }
+                    else if ("options" in field) {
+                        return field.options.find(function(item) {
+                            return item.value === option;
+                        }).label;
+                    }
                 };
             },
             dropdownLabel: function() {
