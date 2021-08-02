@@ -10,7 +10,7 @@
             </div>
         </div>
         <div class="bu-column bu-is-9">
-            <l-map ref="lmap" :min-zoom="minZoom" :max-bounds="maxBounds" style="height: 500px; width: 100%">
+            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :max-bounds="maxBounds" style="height: 500px; width: 100%">
 
                 <l-tile-layer v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
                 

@@ -1209,8 +1209,11 @@
         },
         created: function() {
             var self = this;
-            this.loadGeojson("http://localhost:8080/geojson").then(function(json) {
+            this.loadGeojson().then(function(json) {
                 self.geojsonHome = json;
+                json.features.forEach(function(f) {
+                    self.boundingBoxes[f.properties.code] = f.bbox;
+                });
                 self.handleViewChange();
             });
         },
@@ -1224,7 +1227,9 @@
                 geojsonDetail: null,
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-                inDetail: false
+                inDetail: false,
+                boundingBoxes: {},
+                region: null
             };
         },
         computed: {
@@ -1260,7 +1265,7 @@
                 return function(feature, layer) {
                     layer.bindTooltip(
                         "<div>code:" +
-                        feature.properties.ADM0_A3 +
+                        feature.properties.code +
                         "</div><div>nom: " +
                         feature.properties.name +
                         "</div>", {
@@ -1280,7 +1285,7 @@
                 return function(feature, layer) {
                     layer.bindTooltip(
                         "<div>code:" +
-                        feature.properties.adm0_a3 +
+                        feature.properties.hasc +
                         "</div><div>nom: " +
                         feature.properties.name +
                         "</div>", {
@@ -1293,7 +1298,7 @@
         },
         methods: {
             updateMaxBounds: function() {
-                var boundingBox = this.inDetail ? this.geojsonDetail.bbox : this.geojsonHome.bbox;
+                var boundingBox = this.inDetail ? this.boundingBoxes[this.region] : this.geojsonHome.bbox;
                 if (boundingBox) {
                     var x0 = boundingBox[0],
                         y0 = boundingBox[1],
@@ -1307,28 +1312,40 @@
                     this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
                 }
             },
-            loadGeojson: function(target) {
+            loadGeojson: function(region) {
                 var self = this;
                 this.loading = true;
-                return fetch(target).
-                    then(function(response) {
-                        return response.json();
-                    }).
-                    then(function(json) {
-                        self.loading = false;
-                        return json;
-                    });
+
+                var url = '/geodata/world.geojson';
+
+                if (region) {
+                    url = '/geodata/region/' + region + '.geojson';
+                }
+
+                return CV.$.ajax({
+                    type: "GET",
+                    url: url,
+                    dataType: "json",
+                }).then(function(json) {
+                    self.loading = false;
+                    return json;
+                });
+
             },
             switchToHome: function() {
                 this.inDetail = false;
                 this.geojsonDetail = null;
+                this.region = null;
                 this.handleViewChange();
             },
             switchToDetail: function(properties) {
-                var self = this;
-                this.loadGeojson("http://localhost:8080/geojson?c=" + properties.ADM0_A3).then(function(json) {
+                var self = this,
+                    region = properties.code;
+
+                this.loadGeojson(region).then(function(json) {
                     self.geojsonDetail = json;
                     self.inDetail = true;
+                    self.region = region;
                     self.handleViewChange();
                 });
             },
