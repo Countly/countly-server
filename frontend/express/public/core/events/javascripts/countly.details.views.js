@@ -17,7 +17,7 @@ var EventsTable = countlyVue.views.BaseView.extend({
     methods: {
         isColumnAllowed: function(column) {
             var events = this.$store.getters["countlyAllEvents/allEventsProcessed"];
-            if(events && events.tableColumns && events.tableColumns.indexOf(column)!==-1){
+            if (events && events.tableColumns && events.tableColumns.indexOf(column) !== -1) {
                 return true;
             }
             return false;

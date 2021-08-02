@@ -35,41 +35,41 @@
             };
             context.commit('setLineChartData', obj);
         },
-        getTableRows: function(context, eventData){
+        getTableRows: function(context, eventData) {
             var tableRows = eventData.chartData.slice();
-            if(eventData.tableColumns.indexOf("Sum")!==-1 && eventData.tableColumns.indexOf("Duration")!==-1){
-                tableRows.forEach(function(row){
-                    row["avgSum"] = (parseInt(row.c) === 0 || parseInt(row.s) === 0)? 0: countlyCommon.formatNumber(row.s/row.c);
-                    row["avgDur"] = (parseInt(row.c) === 0 || parseInt(row.dur) === 0)? 0: countlyCommon.formatNumber(row.dur/row.c);
-                    row["c"] = countlyCommon.formatNumber(row.c);
-                    row["s"] = countlyCommon.formatNumber(row.s);
-                    row["dur"] = countlyCommon.formatNumber(row.dur);
+            if (eventData.tableColumns.indexOf("Sum") !== -1 && eventData.tableColumns.indexOf("Duration") !== -1) {
+                tableRows.forEach(function(row) {
+                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : countlyCommon.formatNumber(row.s / row.c);
+                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : countlyCommon.formatNumber(row.dur / row.c);
+                    row.c = countlyCommon.formatNumber(row.c);
+                    row.s = countlyCommon.formatNumber(row.s);
+                    row.dur = countlyCommon.formatNumber(row.dur);
                 });
                 eventData.tableColumns.push("AvgSum");
                 eventData.tableColumns.push("AvgDur");
             }
-            else if(eventData.tableColumns.indexOf("Sum")!==-1){
-                tableRows.forEach(function(row){
-                    row["avgSum"] = (parseInt(row.c) === 0 || parseInt(row.s) === 0)? 0: countlyCommon.formatNumber(row.s/row.c);
-                    row["c"] = countlyCommon.formatNumber(row.c);
-                    row["s"] = countlyCommon.formatNumber(row.s);
-                    row["dur"] = countlyCommon.formatNumber(row.dur);
+            else if (eventData.tableColumns.indexOf("Sum") !== -1) {
+                tableRows.forEach(function(row) {
+                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : countlyCommon.formatNumber(row.s / row.c);
+                    row.c = countlyCommon.formatNumber(row.c);
+                    row.s = countlyCommon.formatNumber(row.s);
+                    row.dur = countlyCommon.formatNumber(row.dur);
                 });
                 eventData.tableColumns.push("AvgSum");
             }
-            else if(eventData.tableColumns.indexOf("Duration")!==-1){
-                tableRows.forEach(function(row){
-                    row["avgDur"] = (parseInt(row.c) === 0 || parseInt(row.dur) === 0)? 0: countlyCommon.formatNumber(row.dur/row.c);
-                    row["c"] = countlyCommon.formatNumber(row.c);
-                    row["s"] = countlyCommon.formatNumber(row.s);
-                    row["dur"] = countlyCommon.formatNumber(row.dur);
+            else if (eventData.tableColumns.indexOf("Duration") !== -1) {
+                tableRows.forEach(function(row) {
+                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : countlyCommon.formatNumber(row.dur / row.c);
+                    row.c = countlyCommon.formatNumber(row.c);
+                    row.s = countlyCommon.formatNumber(row.s);
+                    row.dur = countlyCommon.formatNumber(row.dur);
                 });
                 eventData.tableColumns.push("AvgDur");
             }
-            else{
-                tableRows.forEach(function(row){
-                    row["c"] = countlyCommon.formatNumber(row.c);
-                 });
+            else {
+                tableRows.forEach(function(row) {
+                    row.c = countlyCommon.formatNumber(row.c);
+                });
             }
             context.commit('setTableRows', tableRows);
         },
@@ -394,7 +394,7 @@
                 allEventsProcessed: {},
                 barData: {},
                 lineChartData: {},
-                selectedEventsOverview:{},
+                selectedEventsOverview: {},
                 tableRows: []
             };
         };
