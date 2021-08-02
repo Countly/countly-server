@@ -31,7 +31,7 @@
                     </div>
                 </l-control>
 
-                <l-marker :lat-lng="point" :key="idx" v-for="(point, idx) in markedPoints"></l-marker>
+                <l-circle :lat-lng="nameToLatLng(name)" :key="name" v-for="(value, name) in activeData"></l-circle>
 
             </l-map>
         </div>
