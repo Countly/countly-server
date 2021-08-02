@@ -432,7 +432,25 @@
                     ['France', 600],
                     ['RU', 700]
                 ],
-                geoChartOptions: {}
+                geoChartOptions: {},
+                countriesData: {
+                    'US': {
+                        'sessions': 1000
+                    },
+                    'TR': {
+                        'sessions': 100
+                    }
+                },
+                regionsData: {
+                    'US-CO': {
+                        'sessions': 50
+                    }
+                },
+                citiesData: {
+                    'Seattle': {
+                        'sessions': 30
+                    }
+                }
             };
         },
         computed: {

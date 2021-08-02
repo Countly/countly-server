@@ -1189,10 +1189,24 @@
                 default: false,
                 required: false
             },
-            markedPoints: {
-                type: Array,
+            countriesData: {
+                type: Object,
                 default: function() {
-                    return []; // [L.latLng(47.41322, -1.219482)] // [{lat: 47.41322, lng: -1.219482}]
+                    return {};
+                },
+                required: false
+            },
+            regionsData: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
+            },
+            citiesData: {
+                type: Object,
+                default: function() {
+                    return {};
                 },
                 required: false
             },
@@ -1227,13 +1241,23 @@
                 geojsonDetail: null,
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-                inDetail: false,
                 boundingBoxes: {},
                 country: null,
                 detailMode: 'regions'
             };
         },
+        watch: {
+            country: function(newVal) {
+                this.$emit("countryChanged", newVal);
+            },
+            detailMode: function(newVal) {
+                this.$emit("detailModeChanged", newVal);
+            }
+        },
         computed: {
+            inDetail: function() {
+                return this.country !== null;
+            },
             optionsHome: function() {
                 return {
                     onEachFeature: this.onEachFeatureFunction
@@ -1331,10 +1355,8 @@
                     self.loading = false;
                     return json;
                 });
-
             },
             switchToHome: function() {
-                this.inDetail = false;
                 this.geojsonDetail = null;
                 this.country = null;
                 this.handleViewChange();
@@ -1345,13 +1367,15 @@
 
                 this.loadGeojson(country).then(function(json) {
                     self.geojsonDetail = json;
-                    self.inDetail = true;
                     self.country = country;
                     self.handleViewChange();
                 });
             },
             handleViewChange: function() {
                 this.updateMaxBounds();
+            },
+            nameToLatLng: function(name, type) {
+
             }
         },
         template: CV.T('/javascripts/countly/vue/templates/worldmap.html')
