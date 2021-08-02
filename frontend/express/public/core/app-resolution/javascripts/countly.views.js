@@ -30,7 +30,6 @@ var AppResolutionView = countlyVue.views.create({
                                 return CV.i18n('common.table.new-users') + " " + countlyCommon.getShortNumber(self.appResolution.totals.newUsers || 0);
                             }
                         },
-                        center: ["25%", "50%"] //Center should be passed as option
                     }
                 ]
             };
@@ -47,7 +46,6 @@ var AppResolutionView = countlyVue.views.create({
                                 return CV.i18n('common.table.total-sessions') + " " + countlyCommon.getShortNumber(self.appResolution.totals.totalSessions);
                             }
                         },
-                        center: ["25%", "50%"] //Center should be passed as option
                     }
                 ]
             };

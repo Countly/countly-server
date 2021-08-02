@@ -212,6 +212,10 @@
                 if (foundMenu) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: currMenu});
                 }
+                else {
+                    // eslint-disable-next-line no-console
+                    console.log("Analytics menu not found. ", currLink, menus, submenus);
+                }
             }
         });
 
@@ -261,6 +265,10 @@
 
                 if (currMenu.length) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: currMenu[0]});
+                }
+                else {
+                    // eslint-disable-next-line no-console
+                    console.log("Management menu not found. ", currLink, menu);
                 }
             }
         });
@@ -395,7 +403,6 @@
                 },
                 selectedOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
-
                     if (!this.selectedOptionLocal) {
                         return selected.menu;
                     }
