@@ -1178,7 +1178,7 @@
     Vue.component("cly-worldmap", countlyVue.components.create({
         components: {
             'l-map': Vue2Leaflet.LMap,
-            'l-marker': Vue2Leaflet.LMarker,
+            'l-circle': Vue2Leaflet.LCircle,
             'l-geo-json': Vue2Leaflet.LGeoJson,
             'l-tile-layer': Vue2Leaflet.LTileLayer,
             'l-control': Vue2Leaflet.LControl
@@ -1227,13 +1227,19 @@
                 self.geojsonHome = json;
                 json.features.forEach(function(f) {
                     self.boundingBoxes[f.properties.code] = f.bbox;
+                    var latLng2d = self.boxToLatLng2d(f.bbox);
+                    self.countriesToLatLng[f.properties.code] = [
+                        (latLng2d[0][0] + latLng2d[1][0]) / 2,
+                        (latLng2d[0][1] + latLng2d[1][1]) / 2
+                    ];
                 });
                 self.handleViewChange();
             });
         },
         data: function() {
             return {
-                loading: false,
+                loadingGeojson: false,
+                loadingCities: false,
                 enableTooltip: true,
                 maxBounds: null,
                 minZoom: 0,
@@ -1243,7 +1249,10 @@
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 boundingBoxes: {},
                 country: null,
-                detailMode: 'regions'
+                detailMode: 'regions',
+                countriesToLatLng: {},
+                regionsToLatLng: {},
+                citiesToLatLng: {},
             };
         },
         watch: {
@@ -1252,9 +1261,31 @@
             },
             detailMode: function(newVal) {
                 this.$emit("detailModeChanged", newVal);
+                if (newVal === 'cities') {
+                    this.indexCities();
+                }
+            },
+            citiesData: function() {
+                if (this.detailMode === 'cities') {
+                    this.indexCities();
+                }
             }
         },
         computed: {
+            activeData: function() {
+                if (!this.inDetail) {
+                    return this.countriesData;
+                }
+                else if (this.detailMode === 'regions') {
+                    return this.regionsData;
+                }
+                else if (this.detailMode === 'cities') {
+                    return this.citiesData;
+                }
+            },
+            loading: function() {
+                return this.loadingGeojson || this.loadingCities;
+            },
             inDetail: function() {
                 return this.country !== null;
             },
@@ -1322,24 +1353,35 @@
             }
         },
         methods: {
+            indexCities: function() {
+                var self = this;
+                this.loadCities(this.country, Object.keys(this.citiesData)).then(function(json) {
+                    json.forEach(function(f) {
+                        self.citiesToLatLng[f.name] = f.loc.coordinates;
+                    });
+                });
+            },
+            boxToLatLng2d: function(boundingBox) {
+                var x0 = boundingBox[0],
+                    y0 = boundingBox[1],
+                    x1 = boundingBox[2],
+                    y1 = boundingBox[3];
+
+                return [
+                    [y0, x0],
+                    [y1, x1]
+                ];
+            },
             updateMaxBounds: function() {
                 var boundingBox = this.inDetail ? this.boundingBoxes[this.country] : this.geojsonHome.bbox;
                 if (boundingBox) {
-                    var x0 = boundingBox[0],
-                        y0 = boundingBox[1],
-                        x1 = boundingBox[2],
-                        y1 = boundingBox[3];
-
-                    this.maxBounds = [
-                        [y0, x0],
-                        [y1, x1]
-                    ];
+                    this.maxBounds = this.boxToLatLng2d(boundingBox);
                     this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
                 }
             },
             loadGeojson: function(country) {
                 var self = this;
-                this.loading = true;
+                this.loadingGeojson = true;
 
                 var url = '/geodata/world.geojson';
 
@@ -1352,7 +1394,33 @@
                     url: url,
                     dataType: "json",
                 }).then(function(json) {
-                    self.loading = false;
+                    self.loadingGeojson = false;
+                    return json;
+                });
+            },
+            loadCities: function(country, cities) {
+                var self = this;
+                this.loadingCities = true;
+
+                var query = {"country": country};
+
+                if (cities) {
+                    query.name = {"$in": cities};
+                }
+
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "method": "geodata",
+                        "loadFor": "cities",
+                        "query": JSON.stringify(query),
+                        "preventRequestAbort": true
+                    },
+                    dataType: "json",
+                }).then(function(json) {
+                    self.loadingCities = false;
                     return json;
                 });
             },
@@ -1368,6 +1436,12 @@
                 this.loadGeojson(country).then(function(json) {
                     self.geojsonDetail = json;
                     self.country = country;
+                    json.features.forEach(function(f) {
+                        self.regionsToLatLng[f.properties.iso_3166_2] = [
+                            f.properties.lat,
+                            f.properties.lon
+                        ];
+                    });
                     self.handleViewChange();
                 });
             },
@@ -1375,7 +1449,17 @@
                 this.updateMaxBounds();
             },
             nameToLatLng: function(name, type) {
+                type = type || this.detailMode;
 
+                if (!type) { //countries
+                    return this.countriesToLatLng[name];
+                }
+                else if (type === 'regions') { //regions
+                    return this.regionsToLatLng[name];
+                }
+                else if (type === 'cities') { //cities
+                    return this.citiesToLatLng[name];
+                }
             }
         },
         template: CV.T('/javascripts/countly/vue/templates/worldmap.html')
