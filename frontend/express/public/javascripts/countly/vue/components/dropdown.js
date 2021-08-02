@@ -310,6 +310,119 @@
             }
         }
     }));
+
+    Vue.component("cly-multi-select", countlyBaseComponent.extend({
+        mixins: [_mixins.i18n],
+        template: '<cly-dropdown ref="dropdown" v-on="$listeners" class="cly-multi-select__dropdown">\
+                        <template v-slot:trigger="dropdown">\
+                            <slot name="trigger">\
+                                <cly-input-dropdown-trigger\
+                                ref="trigger"\
+                                :disabled="false"\
+                                :adaptive-length="false"\
+                                :focused="dropdown.focused"\
+                                :opened="dropdown.visible"\
+                                :placeholder="dropdownLabel"\>\
+                                </cly-input-dropdown-trigger>\
+                            </slot>\
+                        </template>\
+                        <div class="cly-multi-select default-skin">\
+                            <div class="cly-multi-select__body">\
+                                <div>\
+                                    <div>\
+                                        <span class="cly-multi-select__title">{{title}}</span>\
+                                        <el-button class="cly-multi-select__reset" @click="reset" type="text">{{resetLabel}}</el-button>\
+                                    </div>\
+                                    <table v-for="field in fields" :key="field.key">\
+                                        <tr class="cly-multi-select__field">{{field.label}}</tr>\
+                                        <tr v-if="\'items\' in field">\
+                                            <el-select class="cly-multi-select__field-dropdown" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                                <el-option v-for="item in field.items" :key="item.value" :value="item.value" :label="item.label"></el-option>\
+                                            </el-select>\
+                                        </tr>\
+                                        <tr v-else-if="\'options\' in field">\
+                                            <cly-select-x v-bind="field" class="cly-multi-select__field-dropdown" :width="320" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                            </cly-select-x>\
+                                        </tr>\
+                                    </table>\
+                                </div>\
+                                <div class="cly-multi-select__controls">\
+                                    <el-button v-bind="$attrs" class="cly-multi-select__cancel" @click="close">{{cancelLabel}}</el-button>\
+                                    <el-button v-bind="$attrs" class="cly-multi-select__confirm" @click="save">{{confirmLabel}}</el-button>\
+                                </div>\
+                            </div>\
+                        </div>\
+                    </cly-dropdown>',
+        props: {
+            cancelLabel: {type: String, default: CV.i18n("events.general.cancel")},
+            confirmLabel: {type: String, default: CV.i18n("events.general.confirm")},
+            resetLabel: {type: String, default: "Reset Filters"},
+            value: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            fields: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            title: {type: String, default: "Filter Parameters"}
+        },
+        computed: {
+            optionLabel: function() {
+                return function(field, option) {
+                    return (field.items || field.options || []).find(function(item) {
+                        return item.value === option;
+                    }).label;
+                };
+            },
+            dropdownLabel: function() {
+                var self = this;
+                return this.fields.map(function(field) {
+                    return self.optionLabel(field, self.value[field.key]);
+                }).join(", ");
+            }
+        },
+        data: function() {
+            return {
+                unsavedValue: Object.assign({}, this.value)
+            };
+        },
+        watch: {
+            value: {
+                immediate: true,
+                handler: function(newValue) {
+                    this.unsavedValue = Object.assign({}, newValue);
+                }
+            },
+        },
+        methods: {
+            close: function(dontSync) {
+                if (!dontSync) {
+                    this.unsavedValue = Object.assign({}, this.value);
+                }
+                this.$refs.dropdown.handleClose();
+            },
+            save: function() {
+                this.$emit("input", this.unsavedValue);
+                this.close();
+            },
+            reset: function() {
+                var self = this;
+                this.fields.forEach(function(field) {
+                    if ("default" in field) {
+                        self.$set(self.unsavedValue, field.key, field.default);
+                    }
+                });
+                this.save();
+            }
+        }
+    }));
+
+
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
