@@ -446,6 +446,9 @@
                 citiesData: {
                     'Istanbul': {
                         'sessions': 30
+                    },
+                    'Ankara': {
+                        'sessions': 30
                     }
                 }
             };

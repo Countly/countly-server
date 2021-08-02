@@ -31,7 +31,15 @@
                     </div>
                 </l-control>
 
-                <l-circle :lat-lng="nameToLatLng(name)" :key="name" v-for="(value, name) in activeData"></l-circle>
+                <template v-if="!inDetail">
+                    <l-circle :lat-lng="countriesToLatLng[name]" :key="unique(name)" v-for="(value, name) in countriesData"></l-circle>
+                </template>
+                <template v-if="inDetail && detailMode === 'regions'">
+                    <l-circle :lat-lng="regionsToLatLng[name]" :key="unique(name)" v-for="(value, name) in regionsData"></l-circle>
+                </template>
+                <template v-if="inDetail && detailMode === 'cities'">
+                    <l-circle :lat-lng="citiesToLatLng[name]" :key="unique(name)" v-for="(value, name) in citiesData"></l-circle>
+                </template>
 
             </l-map>
         </div>
