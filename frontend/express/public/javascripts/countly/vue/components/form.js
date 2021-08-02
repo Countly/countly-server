@@ -214,6 +214,7 @@
     Vue.component("cly-form-step", BaseStep.extend({
         props: {
             validatorFn: {type: Function},
+            id: { type: String, required: true },
             screen: {
                 type: String,
                 default: "half",
@@ -254,6 +255,21 @@
                         '</div>\n' +
                     '</validation-observer>\n' +
                 '</div>'
+    }));
+
+
+    Vue.component("cly-form-field", countlyBaseComponent.extend({
+        props: {
+            label: String
+        },
+        template: '<div class="cly-vue-form-field cly-vue-form-step__section">\
+                        <div class="text-small text-heading">{{label}}</div>\
+                        <validation-provider v-bind="$attrs" v-on="$listeners" v-slot="validation">\
+                            <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}">\
+                                <slot v-bind="validation"/>\
+                            </div>\
+                        </validation-provider>\
+                  </div>'
     }));
 
     countlyVue.mixins.MultiStepForm = MultiStepFormMixin;

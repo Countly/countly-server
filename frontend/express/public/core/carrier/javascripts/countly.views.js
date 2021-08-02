@@ -24,10 +24,10 @@ var AppCarrierView = countlyVue.views.create({
                 series: [
                     {
                         name: CV.i18n('common.table.new-users'),
-                        data: self.appCarrier.pie["newUsers"],
+                        data: self.appCarrier.pie.newUsers,
                         label: {
                             formatter: function() {
-                                return CV.i18n('common.table.new-users') + " " + countlyCommon.getShortNumber(self.appCarrier.totals["newUsers"] || 0);
+                                return CV.i18n('common.table.new-users') + " " + countlyCommon.getShortNumber(self.appCarrier.totals.newUsers || 0);
                             }
                         },
                         center: ["25%", "50%"] //Center should be passed as option
@@ -41,10 +41,10 @@ var AppCarrierView = countlyVue.views.create({
                 series: [
                     {
                         name: CV.i18n('common.table.total-sessions'),
-                        data: self.appCarrier.pie["totalSessions"],
+                        data: self.appCarrier.pie.totalSessions,
                         label: {
                             formatter: function() {
-                                return CV.i18n('common.table.total-sessions') + " " + countlyCommon.getShortNumber(self.appCarrier.totals["totalSessions"]);
+                                return CV.i18n('common.table.total-sessions') + " " + countlyCommon.getShortNumber(self.appCarrier.totals.totalSessions);
                             }
                         },
                         center: ["25%", "50%"] //Center should be passed as option

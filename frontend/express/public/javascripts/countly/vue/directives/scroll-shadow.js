@@ -1,4 +1,4 @@
-/* global Vue, $, ResizeObserver */
+/* global Vue, $, ResizeObserver, _ */
 
 (function() {
 

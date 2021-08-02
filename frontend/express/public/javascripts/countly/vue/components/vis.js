@@ -63,6 +63,16 @@
             showDownload: {
                 type: Boolean,
                 default: true
+            },
+            legend: {
+                type: Object,
+                default: function() {
+                    return {
+                        show: true,
+                        type: "secondary",
+                        data: []
+                    };
+                }
             }
         },
         data: function() {
@@ -76,13 +86,14 @@
                     },
                     grid: {
                         top: 30,
-                        bottom: 65,
-                        left: 35,
-                        right: 35,
+                        bottom: 35,
+                        left: 36,
+                        right: 36,
                         containLabel: true
                     },
                     legend: {
-                        show: true,
+                        show: false,
+                        type: 'scroll',
                         bottom: 10,
                         padding: 15,
                         itemGap: 25,
@@ -299,10 +310,14 @@
 
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push(series[i].name);
+                    legendData.push({name: series[i].name});
                 }
 
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
+
+                //Set default legend show to false
+                opt.legend.show = false;
+
                 opt.series = series;
                 return opt;
             }
@@ -338,10 +353,14 @@
 
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push(series[i].name);
+                    legendData.push({name: series[i].name});
                 }
 
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
+
+                //Set default legend show to false
+                opt.legend.show = false;
+
                 opt.series = series;
                 return opt;
             }
@@ -364,7 +383,8 @@
                         orient: 'vertical',
                         right: "25%",
                         top: "25%",
-                        bottom: 'auto'
+                        bottom: 'auto',
+                        show: false
                     },
                     tooltip: {
                         trigger: 'item'
@@ -378,7 +398,7 @@
                 },
                 seriesOptions: {
                     type: 'pie',
-                    radius: ['45%', '70%'],
+                    radius: ['60%', '95%'],
                     center: ['50%', '50%'],
                     itemStyle: {
                         borderRadius: 0,
@@ -399,6 +419,7 @@
         computed: {
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+
                 var series = opt.series || [];
 
                 var legendData = [];
@@ -406,17 +427,33 @@
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                     var seriesData = series[i].data;
 
-                    if (!opt.legend.data) {
-                        /*
-                            Legend data in series comes from within series data names
-                        */
-                        for (var j = 0; j < seriesData.length; j++) {
-                            legendData.push(seriesData[j].name);
-                        }
+                    var dataSum = seriesData.reduce(function(acc, val) {
+                        acc += val.value;
+                        return acc;
+                    }, 0);
+
+                    seriesData.sort(function(a, b) {
+                        return b.value - a.value;
+                    });
+
+                    /*
+                        Legend data in series comes from within series data names
+                    */
+                    for (var j = 0; j < seriesData.length; j++) {
+                        legendData.push({
+                            name: seriesData[j].name,
+                            percentage: ((seriesData[j].value / dataSum) * 100).toFixed(1)
+                        });
                     }
                 }
 
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                //Pie charts can only have secondary legend types
+                this.legend.type = "secondary";
+                this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
+
+                //Set default legend show to false
+                opt.legend.show = false;
+
                 opt.series = series;
                 return opt;
             }
@@ -615,29 +652,218 @@
                     </div>'
     });
 
-    var CustomLegend = countlyBaseComponent.extend({
-        template: '<div class="cly-vue-chart-legend">\
-                        <div class="cly-vue-chart-legend__first-row">\
-                            <div class="cly-vue-chart-legend__checkbox"></div>\
-                            <div class="cly-vue-chart-legend__title">Total sessions</div>\
-                            <cly-tooltip-icon class="cly-vue-chart-legend__tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
+    var SecondaryLegend = countlyBaseComponent.extend({
+        props: {
+            data: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            onClick: {
+                type: Function
+            }
+        },
+        template: '<div :class="[\'cly-vue-chart-legend__secondary\', \'cly-vue-chart-legend__secondary--text-center\']">\
+                        <div v-for="(item, index) in data"\
+                            :key="item.name" :data-series="item.name"\
+                            :class="[\'cly-vue-chart-legend__s-series\',\
+                                    {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
+                            @click="onClick(item, index)">\
+                            <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                            <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.name}}</div>\
+                            <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                         </div>\
-                        <div class="cly-vue-chart-legend__second-row">\
-                            <div class="cly-vue-chart-legend__number">123</div>\
-                            <div class="cly-vue-chart-legend__trend cly-vue-chart-legend--trend-up">\
-                                <i class="fas fa-arrow-circle-up"></i>\
-                                <i class="fas fa-arrow-circle-down"></i>\
-                                <span>4.5%</span>\
+                    </div>'
+    });
+
+    var PrimaryLegend = countlyBaseComponent.extend({
+        props: {
+            data: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            onClick: {
+                type: Function
+            }
+        },
+        template: '<div class="cly-vue-chart-legend__primary">\
+                        <div v-for="(item, index) in data"\
+                            :key="item.name"\
+                            :data-series="item.name"\
+                            :class="[\'cly-vue-chart-legend__p-series\',\
+                                    {\'cly-vue-chart-legend__p-series--deselected\': item.status === \'off\'}]"\
+                            @click="onClick(item, index)">\
+                            <div class="cly-vue-chart-legend__first-row">\
+                                <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div class="cly-vue-chart-legend__p-title">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__p-tooltip" v-if="item.tooltip">\
+                                    <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
+                                </div>\
+                            </div>\
+                            <div class="cly-vue-chart-legend__second-row">\
+                                <div class="cly-vue-chart-legend__p-number">{{item.value}}</div>\
+                                <div\
+                                    :class="[\'cly-vue-chart-legend__p-trend\', \
+                                            {\'cly-vue-chart-legend__p-trend--trend-up\': item.trend === \'up\'}, \
+                                            {\'cly-vue-chart-legend__p-trend--trend-down\': item.trend === \'down\'}]"\
+                                >\
+                                    <i class="fas fa-arrow-circle-up" v-if="item.trend === \'up\'"></i>\
+                                    <i class="fas fa-arrow-circle-down" v-if="item.trend === \'down\'"></i>\
+                                    <span v-if="item.percentage">{{item.percentage}}%</span>\
+                                </div>\
                             </div>\
                         </div>\
+                    </div>'
+    });
+
+    /*
+        Custom legend class
+        Structure of the object in data array -
+        {
+            name: name of the series to which this legend maps (optional)
+            value: value of the series to display
+            trend: accepted values are "up" and "down"
+            percentage: percentage of the trend
+            tooltip: tooltip text
+        }
+    */
+    var CustomLegend = countlyBaseComponent.extend({
+        props: {
+            type: {
+                type: String,
+                default: "secondary"
+            },
+            chartOptions: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            echartRef: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            data: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
+        },
+        computed: {
+            seriesType: function() {
+                return this.chartOptions.series && this.chartOptions.series[0] && this.chartOptions.series[0].type;
+            },
+            legendData: function() {
+                var data = this.data;
+
+                var series = this.chartOptions.series || [];
+
+                if (this.seriesType === "pie") {
+                    series = series[0].data;
+                }
+
+                if (series.length !== data.length) {
+                    // eslint-disable-next-line no-console
+                    console.log("Series length and legend length should be same");
+                    return [];
+                }
+
+                var colors = this.chartOptions.color || [];
+                var colorIndex = 0;
+                for (var i = 0; i < series.length; i++) {
+                    var serie = series[i];
+
+                    if (serie.color) {
+                        data[i].color = serie.color;
+                    }
+                    else {
+                        data[i].color = colors[colorIndex];
+                        colorIndex++;
+                    }
+
+                    if (data[i].status === "off") {
+                        data[i].displayColor = "#a7aeb8";
+                    }
+                    else {
+                        data[i].displayColor = data[i].color;
+                    }
+                }
+
+                return data;
+            },
+            legendClasses: function() {
+                var classes = {
+                    'bu-is-flex': true,
+                    'bu-is-flex-direction-column': true,
+                    'bu-is-justify-content-center': true
+                };
+
+                classes["cly-vue-chart-legend__" + this.seriesType] = true;
+
+                return classes;
+            }
+        },
+        components: {
+            "secondary-legend": SecondaryLegend,
+            "primary-legend": PrimaryLegend
+        },
+        methods: {
+            onLegendClick: function(item, index) {
+                var offs = this.data.filter(function(d) {
+                    return d.status === "off";
+                });
+
+                if (item.status !== "off" && offs.length === (this.data.length - 1)) {
+                    //Always show in series and hence the legend
+                    return;
+                }
+
+                this.echartRef.dispatchAction({
+                    type: "legendToggleSelect",
+                    name: item.name
+                });
+
+                var obj = this.data[index];
+
+                //For the first time, item.status does not exist
+                //So we set it to off
+                //On subsequent click we toggle between on and off
+                if (obj.status === "off") {
+                    obj.status = "on";
+                }
+                else {
+                    obj.status = "off";
+                }
+
+                this.$set(this.data, index, obj);
+            }
+        },
+        template: '<div class="cly-vue-chart-legend" :class="legendClasses">\
+                        <template v-if="type === \'primary\'">\
+                            <primary-legend\
+                                :data="legendData"\
+                                :onClick="onLegendClick">\
+                            </primary-legend>\
+                        </template>\
+                        <template v-if="type === \'secondary\'">\
+                            <secondary-legend\
+                                :data="legendData"\
+                                :onClick="onLegendClick">\
+                            </secondary-legend>\
+                        </template>\
                     </div>'
     });
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right"],
-                showCustomLegend: false
+                forwardedSlots: ["chart-left", "chart-right"]
             };
         },
         mounted: function() {
@@ -668,7 +894,12 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        <custom-legend :echartRef="echartRef" v-if="showCustomLegend">\
+                        <custom-legend\
+                            :type="legend.type"\
+                            :echartRef="echartRef"\
+                            v-if="legend.show"\
+                            :chartOptions="chartOptions"\
+                            :data="legend.data">\
                         </custom-legend>\
                     </div>'
     }));
@@ -697,7 +928,8 @@
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
@@ -774,7 +1006,13 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        {{bucket}}\
+                        <custom-legend\
+                            :type="legend.type"\
+                            :echartRef="echartRef"\
+                            v-if="legend.show"\
+                            :chartOptions="chartOptions"\
+                            :data="legend.data">\
+                        </custom-legend>\
                     </div>'
     }));
 
@@ -788,7 +1026,8 @@
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
@@ -811,6 +1050,13 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
+                        <custom-legend\
+                            :type="legend.type"\
+                            :echartRef="echartRef"\
+                            v-if="legend.show"\
+                            :chartOptions="chartOptions"\
+                            :data="legend.data">\
+                        </custom-legend>\
                     </div>'
     }));
 
@@ -824,12 +1070,27 @@
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 return opt;
+            },
+            chartClasses: function() {
+                var classes = {
+                    "bu-column": true
+                };
+
+                if (this.legend.show) {
+                    classes["bu-is-half"] = true;
+                }
+                else {
+                    classes["bu-is-full"] = true;
+                }
+
+                return classes;
             }
         },
         template: '<div class="cly-vue-chart">\
@@ -838,14 +1099,25 @@
                                 <slot :name="item" v-bind="slotScope"></slot>\
                             </template>\
                         </chart-header>\
-                        <div :style="{height: height + \'px\'}">\
-                            <echarts\
-                                ref="echarts"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                :option="chartOptions"\
-                                :autoresize="autoresize">\
-                            </echarts>\
+                        <div class="bu-columns bu-is-gapless"\
+                            :style="{height: height + \'px\'}">\
+                            <div :class="chartClasses">\
+                                <echarts\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
+                            <custom-legend\
+                                :type="legend.type"\
+                                :echartRef="echartRef"\
+                                v-if="legend.show"\
+                                :chartOptions="chartOptions"\
+                                :class="chartClasses"\
+                                :data="legend.data">\
+                            </custom-legend>\
                         </div>\
                     </div>'
     }));

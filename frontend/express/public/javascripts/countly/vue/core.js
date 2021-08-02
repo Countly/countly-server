@@ -51,6 +51,7 @@
     // @vue/component
     var commonFormattersMixin = {
         methods: {
+            parseTimeAgo: countlyCommon.formatTimeAgoText,
             formatTimeAgo: countlyCommon.formatTimeAgo,
             formatNumber: countlyCommon.formatNumber,
             getShortNumber: countlyCommon.getShortNumber
@@ -119,6 +120,27 @@
                         if (appObj) {
                             context.commit("setActiveApp", Object.freeze(JSON.parse(JSON.stringify(appObj))));
                         }
+                    }
+                }
+            },
+            countlySidebar: {
+                namespaced: true,
+                state: {
+                    selectedMenuItem: {}
+                },
+                getters: {
+                    getSelectedMenuItem: function(state) {
+                        return state.selectedMenuItem;
+                    }
+                },
+                mutations: {
+                    setSelectedMenuItem: function(state, payload) {
+                        state.selectedMenuItem = payload;
+                    }
+                },
+                actions: {
+                    updateSelectedMenuItem: function(context, payload) {
+                        context.commit('setSelectedMenuItem', payload);
                     }
                 }
             }

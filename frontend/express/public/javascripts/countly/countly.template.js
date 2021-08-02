@@ -190,6 +190,8 @@ var countlyView = Backbone.View.extend({
             }
         }
 
+        /*
+        Vue update - remove following
         if (countlyGlobal.member.member_image) {
             $('.member_image').html("");
             $('.member_image').css({'background-image': 'url(' + countlyGlobal.member.member_image + '?now=' + Date.now() + ')', 'background-size': '100%'});
@@ -203,6 +205,7 @@ var countlyView = Backbone.View.extend({
         }
         // Top bar dropdowns are hidden by default, fade them in when view render is complete
         $("#top-bar").find(".dropdown").fadeIn(2000);
+        */
 
         return this;
     },
@@ -710,7 +713,7 @@ var AppRouter = Backbone.Router.extend({
         }
 
         //New sidebar container hook
-        countlyVue.container.registerData("/sidebar/menuCategory", {
+        countlyVue.container.registerData("/sidebar/analytics/menuCategory", {
             name: category,
             priority: node.priority,
             title: node.text || countlyVue.i18n("sidebar.category." + category),
@@ -852,7 +855,7 @@ var AppRouter = Backbone.Router.extend({
         }
 
         //New sidebar container hook
-        countlyVue.container.registerData("/sidebar/menu", {
+        countlyVue.container.registerData("/sidebar/analytics/menu", {
             app_type: app_type,
             category: category,
             name: node.code,
@@ -970,7 +973,7 @@ var AppRouter = Backbone.Router.extend({
         }
 
         //New sidebar container hook
-        countlyVue.container.registerData("/sidebar/submenu", {
+        countlyVue.container.registerData("/sidebar/analytics/submenu", {
             app_type: app_type,
             parent_code: parent_code,
             name: node.code,

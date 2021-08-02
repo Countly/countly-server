@@ -1,4 +1,4 @@
-/*global window, countlyVue, CV, countlyCommon, countlySession, CountlyHelpers, Promise*/
+/*global countlyVue, CV, countlyCommon, countlySession, CountlyHelpers, Promise*/
 (function(countlySessionDurations) {
 
     countlySessionDurations.service = {

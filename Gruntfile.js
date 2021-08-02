@@ -137,10 +137,11 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/input.js',
                     'frontend/express/public/javascripts/countly/vue/datatable-legacy.js',
                     'frontend/express/public/javascripts/countly/vue/components/datatable.js',
+                    'frontend/express/public/javascripts/countly/vue/components/dialog.js',
                     'frontend/express/public/javascripts/countly/vue/components/drawer.js',
                     'frontend/express/public/javascripts/countly/vue/components/vis.js',
                     'frontend/express/public/javascripts/countly/vue/components/helpers.js',
-                    'frontend/express/public/javascripts/countly/vue/components/static.js',
+                    'frontend/express/public/javascripts/countly/vue/components/sidebar.js',
                     'frontend/express/public/javascripts/countly/vue/components/progress.js',
                     'frontend/express/public/javascripts/countly/vue/directives/scroll-shadow.js',
                     'frontend/express/public/javascripts/countly/vue/legacy.js',
@@ -250,7 +251,7 @@ module.exports = function(grunt) {
             dist: { // Target
                 options: { // Target options
                     style: 'compressed',
-                    update: true // only compile when scss file is newer than css file
+                    update: false // only compile when scss file is newer than css file
                 },
                 files: [
                     { src: 'frontend/express/public/stylesheets/vue/clyvue.scss', dest: 'frontend/express/public/stylesheets/vue/clyvue.css' },

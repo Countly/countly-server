@@ -1,4 +1,4 @@
-/*global countlyAuth, app, countlyGlobal, setTimeout, setInterval, clearInterval, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
+/*global countlyAuth, app, countlyGlobal, CV, countlyVue, countlyUserManagement, countlyCommon, CountlyHelpers */
 (function() {
     var FEATURE_NAME = "global_users";
 
