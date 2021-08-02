@@ -1272,17 +1272,6 @@
             }
         },
         computed: {
-            activeData: function() {
-                if (!this.inDetail) {
-                    return this.countriesData;
-                }
-                else if (this.detailMode === 'regions') {
-                    return this.regionsData;
-                }
-                else if (this.detailMode === 'cities') {
-                    return this.citiesData;
-                }
-            },
             loading: function() {
                 return this.loadingGeojson || this.loadingCities;
             },
@@ -1328,9 +1317,11 @@
         methods: {
             indexCities: function() {
                 var self = this;
-                this.loadCities(this.country, Object.keys(this.citiesData)).then(function(json) {
-                    json.forEach(function(f) {
-                        self.citiesToLatLng[f.name] = {lat: f.loc.coordinates[1], lon: f.loc.coordinates[0]};
+                this.$nextTick(function() {
+                    self.loadCities(this.country, Object.keys(this.citiesData)).then(function(json) {
+                        json.forEach(function(f) {
+                            self.citiesToLatLng[f.name] = {lat: f.loc.coordinates[1], lon: f.loc.coordinates[0]};
+                        });
                     });
                 });
             },
@@ -1421,16 +1412,8 @@
             handleViewChange: function() {
                 this.updateMaxBounds();
             },
-            nameToLatLng: function(name) {
-                if (!this.inDetail) { //countries
-                    return this.countriesToLatLng[name];
-                }
-                else if (this.detailMode === 'regions') { //regions
-                    return this.regionsToLatLng[name];
-                }
-                else if (this.detailMode === 'cities') { //cities
-                    return this.citiesToLatLng[name];
-                }
+            unique: function(name) {
+                return name + "_" + moment.now();
             }
         },
         template: CV.T('/javascripts/countly/vue/templates/worldmap.html')
