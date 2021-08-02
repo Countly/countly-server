@@ -12,17 +12,16 @@
         <div class="bu-column bu-is-9">
             <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :options="{zoomControl: false}" :max-bounds="maxBounds" style="height: 500px; width: 100%">
 
-                <l-tile-layer v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
+                <l-tile-layer pane="tilePane" v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
                 
-                <l-geo-json 
-                    v-if="!inDetail" :geojson="geojsonHome" :options="optionsHome" :options-style="styleFunction">
-                </l-geo-json>
-                
-                <l-geo-json 
-                    v-if="inDetail" :geojson="geojsonDetail" :options="optionsDetail" :options-style="styleFunction">
+                <l-geo-json
+                    pane="tilePane"
+                    :geojson="inDetail ? geojsonDetail:geojsonHome"
+                    :options="inDetail ? optionsDetail:optionsHome"
+                    :options-style="styleFunction">
                 </l-geo-json>
 
-                <l-control position="topLeft">
+                <l-control position="topLeft" pane="markerPane">
                     <div class="cly-vue-worldmap__detail-switch bu-m-3" v-show="inDetail">
                         <el-radio-group v-model="detailMode" size="small">
                             <el-radio-button label="regions">Regions</el-radio-button>
@@ -32,13 +31,13 @@
                 </l-control>
 
                 <template v-if="!inDetail">
-                    <l-circle :lat-lng="countriesToLatLng[name]" :key="unique(name)" v-for="(value, name) in countriesData"></l-circle>
+                    <l-circle pane="markerPane" :lat-lng="countriesToLatLng[name]" :key="unique(name)" v-for="(value, name) in countriesData"></l-circle>
                 </template>
                 <template v-if="inDetail && detailMode === 'regions'">
-                    <l-circle :lat-lng="regionsToLatLng[name]" :key="unique(name)" v-for="(value, name) in regionsData"></l-circle>
+                    <l-circle pane="markerPane" :lat-lng="regionsToLatLng[name]" :key="unique(name)" v-for="(value, name) in regionsData"></l-circle>
                 </template>
                 <template v-if="inDetail && detailMode === 'cities'">
-                    <l-circle :lat-lng="citiesToLatLng[name]" :key="unique(name)" v-for="(value, name) in citiesData"></l-circle>
+                    <l-circle pane="markerPane" :lat-lng="citiesToLatLng[name]" :key="unique(name)" v-for="(value, name) in citiesData"></l-circle>
                 </template>
 
             </l-map>
