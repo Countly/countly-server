@@ -337,7 +337,7 @@
                                         <tr class="cly-multi-select__field">{{field.label}}</tr>\
                                         <tr v-if="\'items\' in field">\
                                             <el-select class="cly-multi-select__field-dropdown" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
-                                                <el-option v-for="item in field.items" :key="item.key" :value="item.key" :label="item.label"></el-option>\
+                                                <el-option v-for="item in field.items" :key="item.value" :value="item.value" :label="item.label"></el-option>\
                                             </el-select>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
@@ -374,16 +374,9 @@
         computed: {
             optionLabel: function() {
                 return function(field, option) {
-                    if ("items" in field) {
-                        return field.items.find(function(item) {
-                            return item.key === option;
-                        }).label;
-                    }
-                    else if ("options" in field) {
-                        return field.options.find(function(item) {
-                            return item.value === option;
-                        }).label;
-                    }
+                    return (field.items || field.options || []).find(function(item) {
+                        return item.value === option;
+                    }).label;
                 };
             },
             dropdownLabel: function() {
