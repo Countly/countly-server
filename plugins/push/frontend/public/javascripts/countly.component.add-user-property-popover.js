@@ -1,18 +1,18 @@
 /*global CV, countlyVue*/
-(function(countlyPushNotificationComponent){
+(function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.AddUserPropertyPopover = countlyVue.views.create({
-        props:{
+        props: {
             userProperty: {
                 type: Object,
-                default: function(){
-                    return {                     
+                default: function() {
+                    return {
                         value: "",
                         fallback: "",
                         isUppercase: false,
-                    }
+                    };
                 }
             },
-            isOpen:{
+            isOpen: {
                 type: Boolean,
                 default: false
             },
@@ -23,35 +23,35 @@
                 type: String,
                 required: true
             },
-            options:{
+            options: {
                 type: Array,
-                default: function(){
-                    return [{label:"Browser",value:"br"},{label:"App version", value:"av"}]
+                default: function() {
+                    return [{label: "Browser", value: "br"}, {label: "App version", value: "av"}];
                 }
             },
         },
-        data: function(){
+        data: function() {
             return {
-            }
+            };
         },
         methods: {
-            onSelect: function(value){
-                this.$emit('select',this.userProperty.id,this.element,value)
+            onSelect: function(value) {
+                this.$emit('select', this.userProperty.id, this.element, value);
             },
-            onUppercase: function(value){
-                this.$emit('check',this.userProperty.id,this.element,value)
+            onUppercase: function(value) {
+                this.$emit('check', this.userProperty.id, this.element, value);
             },
-            onFallback: function(value){
-                this.$emit('input',this.userProperty.id,this.element,value)
+            onFallback: function(value) {
+                this.$emit('input', this.userProperty.id, this.element, value);
             },
-            onRemove: function(){
-                this.$emit('remove',id,this.element);
+            onRemove: function(id) {
+                this.$emit('remove', id, this.element);
             },
-            onClose: function(){
+            onClose: function() {
                 this.$emit('close');
             }
         },
         template: CV.T("/push/templates/add-user-property-popover.html")
     });
 
-})(window.countlyPushNotificationComponent = window.countlyPushNotificationComponent || {})
+})(window.countlyPushNotificationComponent = window.countlyPushNotificationComponent || {});

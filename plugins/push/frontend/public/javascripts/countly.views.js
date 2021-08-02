@@ -1,8 +1,8 @@
-/* global countlyVue,app,CV,countlyPushNotification,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment*/
 (function() {
 
     //TODO: move the nodelist foreach polyfill to the rest of polyfills
-    NodeList.prototype.forEach = function (callback, thisArg) {
+    NodeList.prototype.forEach = function(callback, thisArg) {
         thisArg = thisArg || window;
         for (var i = 0; i < this.length; i++) {
             callback.call(thisArg, this[i], i, this);
@@ -92,14 +92,14 @@
     ];
 
     var MessageSettingElement = countlyVue.views.create({
-        template:CV.T("/push/templates/message-setting-element.html"),
+        template: CV.T("/push/templates/message-setting-element.html"),
         props: {
             input: {
                 type: String,
                 default: "",
                 required: false
             },
-            toggle: {    
+            toggle: {
                 type: Boolean,
                 default: false,
                 required: true,
@@ -121,7 +121,9 @@
             },
             rules: {
                 type: Array,
-                default: function(){return []},
+                default: function() {
+                    return [];
+                },
                 required: false,
             }
         },
@@ -129,9 +131,9 @@
             return {
                 innerInput: "",
                 innerToggle: false
-            }
+            };
         },
-        computed:{
+        computed: {
             hasDefaultSlot: function() {
                 return Boolean(this.$slots.default);
             }
@@ -146,10 +148,10 @@
         },
         methods: {
             onToggle: function(value) {
-                this.$emit("onToggle",value)
+                this.$emit("onToggle", value);
             },
             onInput: function(value) {
-                this.$emit("onChange",value);
+                this.$emit("onChange", value);
             }
         }
     });
@@ -163,7 +165,7 @@
                 cohortOptions: [{label: "Users who logged in", value: "123456"}, {label: "Users who performed", value: "4523444"}],
                 locationOptions: [{label: "Canada", value: "CA"}],
                 localizationOptions: [{label: "Default", value: "default"}, {label: "English", value: "en"}, {label: "German", value: "ge"}],
-                userPropertiesOptions:[{label:"App version", value:"appVersion"}],
+                userPropertiesOptions: [{label: "App version", value: "appVersion"}],
                 eventOptions: [{label: "Users who performed log out", value: "123444df"}],
                 saveButtonLabel: "Submit",
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
@@ -217,27 +219,27 @@
                             content: "",
                             localizationLabel: "Default",
                             buttons: [{label: "", value: ""}],
-                            properties:{
-                                title:{},
-                                content:{}
+                            properties: {
+                                title: {},
+                                content: {}
                             }
                         },
                         settings: {
                             ios: {
-                                subtitle:"",
+                                subtitle: "",
                                 mediaURL: "",
                                 soundFile: "",
                                 badge: "",
                                 json: null,
-                                userData:[]
+                                userData: []
                             },
                             android: {
-                                subtitle:"",
+                                subtitle: "",
                                 mediaURL: "",
                                 soundFile: "",
                                 badge: "",
                                 json: null,
-                                userData:[]
+                                userData: []
                             }
                         },
                         mediaUrl: "",
@@ -270,7 +272,7 @@
                             hours: 0
                         }
                     },
-                    
+
                 }
             };
         },
@@ -350,8 +352,8 @@
                         localizationLabel: label,
                         buttons: [{label: "", value: ""}],
                         properties: {
-                            title:{},
-                            content:{}
+                            title: {},
+                            content: {}
                         }
                     });
                 }
@@ -378,9 +380,9 @@
                     this.removeLocalizationMessage(localization.value);
                 }
             },
-            resetMessageHTML: function(){
+            resetMessageHTML: function() {
                 this.$refs.title.reset(
-                    this.pushNotificationUnderEdit.message[this.activeLocalization].title, 
+                    this.pushNotificationUnderEdit.message[this.activeLocalization].title,
                     Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.title));
                 this.$refs.content.reset(
                     this.pushNotificationUnderEdit.message[this.activeLocalization].content,
@@ -392,12 +394,12 @@
                 this.resetMessageHTML();
             },
             onSendToTestUsers: function() {},
-            onSettingChange: function(platform,property,value) {
+            onSettingChange: function(platform, property, value) {
                 this.pushNotificationUnderEdit.message.settings[platform][property] = value;
             },
-            onSettingToggle: function(platform,property,value) {
+            onSettingToggle: function(platform, property, value) {
                 this.settings[platform][property] = value;
-                if(!value) {
+                if (!value) {
                     this.pushNotificationUnderEdit.message.settings[platform][property] = "";
                 }
             },
@@ -410,31 +412,31 @@
             setSelectedUserPropertyId: function(id) {
                 this.selectedUserPropertyId = id;
             },
-            setSelectedUserPropertyElement: function(element){
+            setSelectedUserPropertyElement: function(element) {
                 this.selectedUserPropertyElement = element;
             },
-            openAddUserPropertyPopover: function(){
+            openAddUserPropertyPopover: function() {
                 this.isAddUserPropertyPopoverOpen = true;
             },
-            closeAddUserPropertyPopover: function(){
+            closeAddUserPropertyPopover: function() {
                 this.isAddUserPropertyPopoverOpen = false;
             },
-            addUserPropertyInHTML: function(id,element){
+            addUserPropertyInHTML: function(id, element) {
                 this.$refs[element].addEmptyUserProperty(id);
             },
-            removeUserPropertyInHTML: function(id,element) {
+            removeUserPropertyInHTML: function(id, element) {
                 this.$refs[element].removeUserProperty(id);
             },
-            setUserPropertyInHTML: function(id,element,previewValue,value) {
-                this.$refs[element].setUserPropertyValue(id,previewValue,value);
+            setUserPropertyInHTML: function(id, element, previewValue, value) {
+                this.$refs[element].setUserPropertyValue(id, previewValue, value);
             },
-            setUserPropertyFallbackInHTML: function(id,element,previewValue,fallback) {
-                this.$refs[element].setUserPropertyFallbackValue(id,previewValue,fallback);
+            setUserPropertyFallbackInHTML: function(id, element, previewValue, fallback) {
+                this.$refs[element].setUserPropertyFallbackValue(id, previewValue, fallback);
             },
             onAddUserProperty: function(element) {
                 var propertyIndex = this.userPropertiesCounter;
                 this.userPropertiesCounter = this.userPropertiesIdCounter + 1;
-                this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element],propertyIndex,{
+                this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element], propertyIndex, {
                     id: propertyIndex,
                     value: "Select property",
                     fallback: "",
@@ -442,29 +444,29 @@
                 });
                 this.setSelectedUserPropertyId(propertyIndex);
                 this.setSelectedUserPropertyElement(element);
-                this.addUserPropertyInHTML(propertyIndex,element);
+                this.addUserPropertyInHTML(propertyIndex, element);
                 this.openAddUserPropertyPopover();
             },
-            onRemoveUserProperty: function(id,element){
+            onRemoveUserProperty: function(id, element) {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id] = null;
                 this.removeUserPropertyInHTML();
             },
-            onSelectUserProperty: function(id,element,value) {
+            onSelectUserProperty: function(id, element, value) {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id].value = value;
                 var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id].fallback;
-                var previewValue = value + "|"+ currentFallbackValue;
-                this.setUserPropertyInHTML(id,element,previewValue,value);
+                var previewValue = value + "|" + currentFallbackValue;
+                this.setUserPropertyInHTML(id, element, previewValue, value);
             },
-            onInputFallbackUserProperty: function(id,element,fallback) {
+            onInputFallbackUserProperty: function(id, element, fallback) {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id].fallback = fallback;
                 var currentValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id].value;
-                var previewValue = currentValue + "|"+ fallback;
-                this.setUserPropertyFallbackInHTML(id,element,previewValue,fallback);
+                var previewValue = currentValue + "|" + fallback;
+                this.setUserPropertyFallbackInHTML(id, element, previewValue, fallback);
             },
-            onCheckUppercaseUserProperty: function(id,element,isUppercase) {
+            onCheckUppercaseUserProperty: function(id, element, isUppercase) {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id].isUppercase = isUppercase;
             },
-            onUserPropertyClick: function(id){
+            onUserPropertyClick: function(id) {
                 this.setSelectedUserPropertyId(id);
                 this.openAddUserPropertyPopover();
             }
@@ -473,7 +475,7 @@
             "message-setting-element": MessageSettingElement,
             "mobile-message-preview": countlyPushNotificationComponent.MobileMessagePreview,
             "message-editor-with-emoji-picker": countlyPushNotificationComponent.MessageEditorWithEmojiPicker,
-            "add-user-property-popover" : countlyPushNotificationComponent.AddUserPropertyPopover
+            "add-user-property-popover": countlyPushNotificationComponent.AddUserPropertyPopover
         },
     });
 

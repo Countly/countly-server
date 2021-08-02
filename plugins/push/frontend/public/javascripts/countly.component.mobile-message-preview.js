@@ -1,6 +1,6 @@
 
-/*global CV, countlyVue*/
-(function(countlyPushNotificationComponent){
+/*global CV, countlyVue, countlyPushNotification,countlyGlobal,countlyCommon,moment*/
+(function(countlyPushNotificationComponent) {
 
     var UserPropertyTextPreview = countlyVue.views.create({
         template: '<span>{{value}}</span>',
@@ -21,14 +21,14 @@
             },
         },
         computed: {
-            userProperty: function(){
+            userProperty: function() {
                 return this.value.userProperty;
             },
-            fallback: function(){
+            fallback: function() {
                 return this.value.fallback;
             },
             description: function() {
-                return "User's \"" + this.userProperty+ "\" property which falls back to "+ this.fallback;
+                return "User's \"" + this.userProperty + "\" property which falls back to " + this.fallback;
             }
         }
     });
@@ -77,11 +77,11 @@
             isIOSPlatformSelected: function() {
                 return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.IOS;
             },
-            titlePreviewComponentsList: function(){
-                return this.getPreviewComponentsList(this.title)
+            titlePreviewComponentsList: function() {
+                return this.getPreviewComponentsList(this.title);
             },
-            contentPreviewComponentsList: function(){
-                return this.getPreviewComponentsList(this.content)
+            contentPreviewComponentsList: function() {
+                return this.getPreviewComponentsList(this.content);
             }
         },
         watch: {
@@ -117,24 +117,24 @@
             setSelectedPlatform: function(value) {
                 this.selectedPlatform = value;
             },
-            getPreviewComponentsList: function(content){
+            getPreviewComponentsList: function(content) {
                 var htmlTitle = document.createElement("div");
                 htmlTitle.innerHTML = content;
                 var components = [];
-                htmlTitle.childNodes.forEach(function(node,index){
-                    if(node.hasChildNodes()){
+                htmlTitle.childNodes.forEach(function(node, index) {
+                    if (node.hasChildNodes()) {
                         var withAttribues = htmlTitle.childNodes[index];
                         node.childNodes.forEach(function(childNode) {
-                            if(childNode.nodeValue){
+                            if (childNode.nodeValue) {
                                 var selectedProperty = withAttribues.getAttribute('data-user-property-label').value;
                                 var fallbackValue = withAttribues.getAttributeNode('data-user-property-fallback').value;
-                                components.push({name: 'user-property-preview', value: {fallback:fallbackValue , userProperty: selectedProperty}});
+                                components.push({name: 'user-property-preview', value: {fallback: fallbackValue, userProperty: selectedProperty}});
                             }
                         });
                     }
                     else {
-                        if(node.nodeValue){
-                            components.push({name:'user-property-text-preview', value: node.nodeValue});
+                        if (node.nodeValue) {
+                            components.push({name: 'user-property-text-preview', value: node.nodeValue});
                         }
                     }
                 });
@@ -147,4 +147,4 @@
         }
     });
 
-})(window.countlyPushNotificationComponent = window.countlyPushNotificationComponent || {})
+})(window.countlyPushNotificationComponent = window.countlyPushNotificationComponent || {});
