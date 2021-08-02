@@ -10,7 +10,7 @@
             </div>
         </div>
         <div class="bu-column bu-is-9">
-            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :max-bounds="maxBounds" style="height: 500px; width: 100%">
+            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :options="{zoomControl: false}" :max-bounds="maxBounds" style="height: 500px; width: 100%">
 
                 <l-tile-layer v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
                 
@@ -22,11 +22,14 @@
                     v-if="inDetail" :geojson="geojsonDetail" :options="optionsDetail" :options-style="styleFunction">
                 </l-geo-json>
 
-                <!-- <l-control position="topLeft" v-if="inDetail">
-                    <div class="cly-vue-worldmap__detail-switch">
-                        Regions|Cities
+                <l-control position="topLeft">
+                    <div class="cly-vue-worldmap__detail-switch bu-m-3" v-show="inDetail">
+                        <el-radio-group v-model="detailMode" size="small">
+                            <el-radio-button label="regions">Regions</el-radio-button>
+                            <el-radio-button label="cities">Cities</el-radio-button>
+                        </el-radio-group>
                     </div>
-                </l-control> -->
+                </l-control>
 
                 <l-marker :lat-lng="point" :key="idx" v-for="(point, idx) in markedPoints"></l-marker>
 

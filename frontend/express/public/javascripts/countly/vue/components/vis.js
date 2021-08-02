@@ -1229,7 +1229,8 @@
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 inDetail: false,
                 boundingBoxes: {},
-                region: null
+                country: null,
+                detailMode: 'regions'
             };
         },
         computed: {
@@ -1298,7 +1299,7 @@
         },
         methods: {
             updateMaxBounds: function() {
-                var boundingBox = this.inDetail ? this.boundingBoxes[this.region] : this.geojsonHome.bbox;
+                var boundingBox = this.inDetail ? this.boundingBoxes[this.country] : this.geojsonHome.bbox;
                 if (boundingBox) {
                     var x0 = boundingBox[0],
                         y0 = boundingBox[1],
@@ -1312,14 +1313,14 @@
                     this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
                 }
             },
-            loadGeojson: function(region) {
+            loadGeojson: function(country) {
                 var self = this;
                 this.loading = true;
 
                 var url = '/geodata/world.geojson';
 
-                if (region) {
-                    url = '/geodata/region/' + region + '.geojson';
+                if (country) {
+                    url = '/geodata/region/' + country + '.geojson';
                 }
 
                 return CV.$.ajax({
@@ -1335,17 +1336,17 @@
             switchToHome: function() {
                 this.inDetail = false;
                 this.geojsonDetail = null;
-                this.region = null;
+                this.country = null;
                 this.handleViewChange();
             },
             switchToDetail: function(properties) {
                 var self = this,
-                    region = properties.code;
+                    country = properties.code;
 
-                this.loadGeojson(region).then(function(json) {
+                this.loadGeojson(country).then(function(json) {
                     self.geojsonDetail = json;
                     self.inDetail = true;
-                    self.region = region;
+                    self.country = country;
                     self.handleViewChange();
                 });
             },
