@@ -1228,10 +1228,10 @@
                 json.features.forEach(function(f) {
                     self.boundingBoxes[f.properties.code] = f.bbox;
                     var latLng2d = self.boxToLatLng2d(f.bbox);
-                    self.countriesToLatLng[f.properties.code] = [
-                        (latLng2d[0][0] + latLng2d[1][0]) / 2,
-                        (latLng2d[0][1] + latLng2d[1][1]) / 2
-                    ];
+                    self.countriesToLatLng[f.properties.code] = {
+                        lat: (latLng2d[0][0] + latLng2d[1][0]) / 2,
+                        lon: (latLng2d[0][1] + latLng2d[1][1]) / 2
+                    };
                 });
                 self.handleViewChange();
             });
@@ -1314,42 +1314,15 @@
                 };
             },
             onEachFeatureFunction: function(/*params*/) {
-                if (!this.enableTooltip) {
-                    return function() {};
-                }
                 var self = this;
                 return function(feature, layer) {
-                    layer.bindTooltip(
-                        "<div>code:" +
-                        feature.properties.code +
-                        "</div><div>nom: " +
-                        feature.properties.name +
-                        "</div>", {
-                            permanent: false,
-                            sticky: true
-                        }
-                    );
                     layer.on('click', function() {
                         self.switchToDetail(feature.properties);
                     });
                 };
             },
-            onEachFeatureFunctionDetail: function(/*params*/) {
-                if (!this.enableTooltip) {
-                    return function() {};
-                }
-                return function(feature, layer) {
-                    layer.bindTooltip(
-                        "<div>code:" +
-                        feature.properties.hasc +
-                        "</div><div>nom: " +
-                        feature.properties.name +
-                        "</div>", {
-                            permanent: false,
-                            sticky: true
-                        }
-                    );
-                };
+            onEachFeatureFunctionDetail: function() {
+                return function() {};
             }
         },
         methods: {
@@ -1357,7 +1330,7 @@
                 var self = this;
                 this.loadCities(this.country, Object.keys(this.citiesData)).then(function(json) {
                     json.forEach(function(f) {
-                        self.citiesToLatLng[f.name] = f.loc.coordinates;
+                        self.citiesToLatLng[f.name] = {lat: f.loc.coordinates[1], lon: f.loc.coordinates[0]};
                     });
                 });
             },
@@ -1437,10 +1410,10 @@
                     self.geojsonDetail = json;
                     self.country = country;
                     json.features.forEach(function(f) {
-                        self.regionsToLatLng[f.properties.iso_3166_2] = [
-                            f.properties.lat,
-                            f.properties.lon
-                        ];
+                        self.regionsToLatLng[f.properties.iso_3166_2] = {
+                            lat: f.properties.lat || 0,
+                            lon: f.properties.lon || 0
+                        };
                     });
                     self.handleViewChange();
                 });
@@ -1448,16 +1421,14 @@
             handleViewChange: function() {
                 this.updateMaxBounds();
             },
-            nameToLatLng: function(name, type) {
-                type = type || this.detailMode;
-
-                if (!type) { //countries
+            nameToLatLng: function(name) {
+                if (!this.inDetail) { //countries
                     return this.countriesToLatLng[name];
                 }
-                else if (type === 'regions') { //regions
+                else if (this.detailMode === 'regions') { //regions
                     return this.regionsToLatLng[name];
                 }
-                else if (type === 'cities') { //cities
+                else if (this.detailMode === 'cities') { //cities
                     return this.citiesToLatLng[name];
                 }
             }
