@@ -434,20 +434,17 @@
                 ],
                 geoChartOptions: {},
                 countriesData: {
-                    'US': {
-                        'sessions': 1000
-                    },
                     'TR': {
                         'sessions': 100
                     }
                 },
                 regionsData: {
-                    'US-CO': {
+                    'TR-34': {
                         'sessions': 50
                     }
                 },
                 citiesData: {
-                    'Seattle': {
+                    'Istanbul': {
                         'sessions': 30
                     }
                 }
