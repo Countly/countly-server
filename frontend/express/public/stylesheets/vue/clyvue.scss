@@ -1387,6 +1387,13 @@
         }
     }
 
+    .cly-vue-worldmap {
+        .leaflet-container {
+            background: white;
+            outline: 0;
+        }
+    }
+
     .cly-vue-draggable {
         &--jumbo-lines .cly-vue-draggable-item {
             background: #F6F6F6;

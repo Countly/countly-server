@@ -1250,7 +1250,7 @@
 
                 return function() {
                     return {
-                        weight: 2,
+                        weight: 1,
                         color: borderColor,
                         opacity: 1,
                         fillColor: fillColor,
