@@ -1319,9 +1319,16 @@
             onEachFeatureFunctionDetail: function() {
                 return function() {};
             },
+            currentViewType: function() {
+                if (!this.inDetail) {
+                    return "main";
+                }
+                return this.detailMode;
+            },
             locations: function() {
                 var self = this;
-                if (!this.inDetail) {
+                switch (this.currentViewType) {
+                case "main":
                     var countryCodes = Object.keys(this.countriesData);
 
                     return countryCodes.map(function(code) {
@@ -1332,30 +1339,28 @@
                             value: self.countriesData[self.country]
                         };
                     });
-                }
-                else {
-                    if (this.detailMode === 'regions') {
-                        var regionCodes = Object.keys(this.regionsData[this.country] || {});
 
-                        return regionCodes.map(function(code) {
-                            return {
-                                name: countlyLocation.getRegionName(code, self.country),
-                                code: code,
-                                value: self.regionsData[self.country][code]
-                            };
-                        });
-                    }
-                    else if (this.detailMode === 'cities') {
-                        var cityNames = Object.keys(this.citiesData[this.country] || {});
+                case "regions":
+                    var regionCodes = Object.keys(this.regionsData[this.country] || {});
 
-                        return cityNames.map(function(name) {
-                            return {
-                                name: name,
-                                code: name,
-                                value: self.citiesData[self.country][name]
-                            };
-                        });
-                    }
+                    return regionCodes.map(function(code) {
+                        return {
+                            name: countlyLocation.getRegionName(code, self.country),
+                            code: code,
+                            value: self.regionsData[self.country][code]
+                        };
+                    });
+
+                case "cities":
+                    var cityNames = Object.keys(this.citiesData[this.country] || {});
+
+                    return cityNames.map(function(name) {
+                        return {
+                            name: name,
+                            code: name,
+                            value: self.citiesData[self.country][name]
+                        };
+                    });
                 }
             }
         },
