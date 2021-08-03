@@ -1422,6 +1422,9 @@
                 return countlyLocation.getCountryName(this.country);
             },
             countryValue: function() {
+                if (!this.countriesData[this.country]) {
+                    return "-";
+                }
                 return this.countriesData[this.country].value;
             }
         },
