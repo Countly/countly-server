@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV */
+/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
 
 (function(countlyVue) {
 
@@ -1316,13 +1316,17 @@
         methods: {
             indexCities: function() {
                 var self = this;
-                this.$nextTick(function() {
-                    self.loadCities(this.country, Object.keys(this.citiesData)).then(function(json) {
+                if (this.citiesData[this.country]) {
+                    self.loadCities(this.country, Object.keys(this.citiesData[this.country])).then(function(json) {
+                        self.citiesToLatLng = {};
                         json.forEach(function(f) {
                             self.citiesToLatLng[f.name] = {lat: f.loc.coordinates[1], lon: f.loc.coordinates[0]};
                         });
                     });
-                });
+                }
+                else {
+                    self.citiesToLatLng = {};
+                }
             },
             boxToLatLng2d: function(boundingBox) {
                 var x0 = boundingBox[0],
@@ -1399,6 +1403,7 @@
                 this.loadGeojson(country).then(function(json) {
                     self.geojsonDetail = json;
                     self.country = country;
+                    self.regionsToLatLng = {};
                     json.features.forEach(function(f) {
                         self.regionsToLatLng[f.properties.iso_3166_2] = {
                             lat: f.properties.lat || 0,

@@ -34,10 +34,10 @@
                     <l-circle pane="markerPane" :lat-lng="countriesToLatLng[name]" :key="unique(name)" v-for="(value, name) in countriesData"></l-circle>
                 </template>
                 <template v-if="inDetail && detailMode === 'regions'">
-                    <l-circle pane="markerPane" :lat-lng="regionsToLatLng[name]" :key="unique(name)" v-for="(value, name) in regionsData"></l-circle>
+                    <l-circle pane="markerPane" :lat-lng="regionsToLatLng[name]" :key="unique(name)" v-for="(value, name) in regionsData[country]"></l-circle>
                 </template>
                 <template v-if="inDetail && detailMode === 'cities'">
-                    <l-circle pane="markerPane" :lat-lng="citiesToLatLng[name]" :key="unique(name)" v-for="(value, name) in citiesData"></l-circle>
+                    <l-circle pane="markerPane" :lat-lng="citiesToLatLng[name]" :key="unique(name)" v-for="(value, name) in citiesData[country]"></l-circle>
                 </template>
 
             </l-map>

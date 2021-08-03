@@ -436,19 +436,26 @@
                 countriesData: {
                     'TR': {
                         'sessions': 100
+                    },
+                    'DE': {
+                        'sessions': 500
                     }
                 },
                 regionsData: {
-                    'TR-34': {
-                        'sessions': 50
+                    'TR': {
+                        'TR-34': {
+                            'sessions': 50
+                        }
                     }
                 },
                 citiesData: {
-                    'Istanbul': {
-                        'sessions': 30
-                    },
-                    'Ankara': {
-                        'sessions': 30
+                    'TR': {
+                        'Istanbul': {
+                            'sessions': 30
+                        },
+                        'Ankara': {
+                            'sessions': 30
+                        }
                     }
                 }
             };
