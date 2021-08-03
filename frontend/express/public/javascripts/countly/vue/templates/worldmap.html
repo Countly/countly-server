@@ -1,28 +1,40 @@
 <div class="cly-vue-worldmap">
     <div class="bu-columns bu-is-gapless">
-        <div class="bu-column bu-is-3">
-            <div v-if="inDetail" class="cly-vue-worldmap__country-detail">
-                <button @click="goToMain">
-                    <- Go back 
-                </button>
+        <div class="bu-column bu-is-3 cly-vue-worldmap__list">
+            <button @click="goToMain" v-if="inDetail">
+                <- Back to World Map
+            </button>
+            <div v-if="currentViewType === 'main'" class="cly-vue-worldmap__available-locations">
+                <div>
+                    <span class="text-uppercase text-medium font-weight-bold">{{countriesTitle}}</span>
+                </div>
                 <cly-listbox
-                    v-if="detailMode === 'regions'"
+                    :bordered="false"
+                    :options="locations"
+                    :value="country"
+                    @input="goToCountry($event)">
+                </cly-listbox>
+            </div>
+            <div v-else-if="currentViewType === 'regions'" class="cly-vue-worldmap__country-detail">
+                <div>
+                    <span class="text-uppercase text-medium font-weight-bold">{{regionsTitle}}</span>
+                </div>
+                <cly-listbox
+                    :bordered="false"
                     :options="locations"
                     :value="focusedRegion"
                     @input="focusToRegion($event)">
                 </cly-listbox>
+            </div>
+            <div v-else-if="currentViewType === 'cities'" class="cly-vue-worldmap__country-detail">
+                <div>
+                    <span class="text-uppercase text-medium font-weight-bold">{{citiesTitle}}</span>
+                </div>
                 <cly-listbox
-                    v-else-if="detailMode === 'cities'"
+                    :bordered="false"
                     :options="locations"
                     :value="focusedCity"
                     @input="focusToCity($event)">
-                </cly-listbox>
-            </div>
-            <div v-else class="cly-vue-worldmap__available-locations">
-                <cly-listbox
-                    :options="locations"
-                    :value="country"
-                    @input="goToCountry($event)">
                 </cly-listbox>
             </div>
         </div>
