@@ -1229,6 +1229,21 @@
                 type: Number,
                 default: 4,
                 required: false
+            },
+            countriesTitle: {
+                type: String,
+                default: '',
+                required: false
+            },
+            regionsTitle: {
+                type: String,
+                default: '',
+                required: false
+            },
+            citiesTitle: {
+                type: String,
+                default: '',
+                required: false
             }
         },
         created: function() {

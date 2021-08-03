@@ -1492,6 +1492,9 @@
             background: white;
             outline: 0;
         }
+        &__list {
+            border-right: 1px solid #ECECEC;
+        }
     }
 
     .cly-vue-draggable {
