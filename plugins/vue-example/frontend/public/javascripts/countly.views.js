@@ -435,31 +435,34 @@
                 geoChartOptions: {},
                 countriesData: {
                     'TR': {
-                        'value': 100,
-                        'sessions': 100
+                        'value': 250
                     },
                     'DE': {
-                        'value': 100,
-                        'sessions': 500
+                        'value': 500
+                    },
+                    'US': {
+                        'value': 1000
                     }
                 },
                 regionsData: {
                     'TR': {
                         'TR-34': {
-                            'value': 50,
-                            'sessions': 50
+                            'value': 50
                         }
                     }
                 },
                 citiesData: {
+                    'US': {
+                        'Los Angeles': {
+                            'value': 30
+                        },
+                    },
                     'TR': {
                         'Istanbul': {
-                            'value': 30,
-                            'sessions': 30
+                            'value': 100
                         },
                         'Ankara': {
-                            'value': 30,
-                            'sessions': 30
+                            'value': 30
                         }
                     }
                 }

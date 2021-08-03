@@ -1219,6 +1219,16 @@
                 type: String,
                 default: '#FFF',
                 required: false
+            },
+            maxMarkerRadius: {
+                type: Number,
+                default: 15,
+                required: false
+            },
+            minMarkerRadius: {
+                type: Number,
+                default: 4,
+                required: false
             }
         },
         created: function() {
@@ -1365,22 +1375,31 @@
             },
             activeMarkers: function() {
                 switch (this.currentViewType) {
-                    case "main":
-                        return this.countriesData;
-                    case "regions":
-                        return this.regionsData[this.country];
-                    case "cities":
-                        return this.citiesData[this.country];
+                case "main":
+                    return this.countriesData;
+                case "regions":
+                    return this.regionsData[this.country];
+                case "cities":
+                    return this.citiesData[this.country];
                 }
+            },
+            largestMarkerValue: function() {
+                if (!this.activeMarkers) {
+                    return 1;
+                }
+                var self = this;
+                return Object.keys(this.activeMarkers).reduce(function(acc, val) {
+                    return Math.max(acc, self.activeMarkers[val].value);
+                }, 0);
             },
             nameToLatLng: function() {
                 switch (this.currentViewType) {
-                    case "main":
-                        return this.countriesToLatLng;
-                    case "regions":
-                        return this.regionsToLatLng;
-                    case "cities":
-                        return this.citiesToLatLng;
+                case "main":
+                    return this.countriesToLatLng;
+                case "regions":
+                    return this.regionsToLatLng;
+                case "cities":
+                    return this.citiesToLatLng;
                 }
             }
         },
@@ -1409,6 +1428,9 @@
                     [y0, x0],
                     [y1, x1]
                 ];
+            },
+            getMarkerRadius: function(value) {
+                return Math.max(this.minMarkerRadius, (value / this.largestMarkerValue) * this.maxMarkerRadius);
             },
             updateMaxBounds: function() {
                 var boundingBox = this.inDetail ? this.boundingBoxes[this.country] : this.geojsonHome.bbox;
