@@ -1343,10 +1343,10 @@
 
                     return countryCodes.map(function(code) {
                         return {
-                            name: countlyLocation.getCountryName(code),
-                            code: code,
-                            flag: "url('" + countlyGlobal.cdn + "images/flags/" + code.toLowerCase() + ".png')",
-                            value: self.countriesData[self.country]
+                            label: countlyLocation.getCountryName(code),
+                            value: code,
+                            icon: countlyGlobal.cdn + "images/flags/" + code.toLowerCase() + ".png",
+                            custom: self.countriesData[self.country]
                         };
                     });
 
@@ -1355,9 +1355,9 @@
 
                     return regionCodes.map(function(code) {
                         return {
-                            name: countlyLocation.getRegionName(code, self.country),
-                            code: code,
-                            value: self.regionsData[self.country][code]
+                            label: countlyLocation.getRegionName(code, self.country),
+                            value: code,
+                            custom: self.regionsData[self.country][code]
                         };
                     });
 
@@ -1366,9 +1366,9 @@
 
                     return cityNames.map(function(name) {
                         return {
-                            name: name,
-                            code: name,
-                            value: self.citiesData[self.country][name]
+                            label: name,
+                            value: name,
+                            custom: self.citiesData[self.country][name]
                         };
                     });
                 }
@@ -1430,6 +1430,9 @@
                 ];
             },
             getMarkerRadius: function(value) {
+                if (this.minMarkerRadius >= this.maxMarkerRadius) {
+                    return this.minMarkerRadius;
+                }
                 return Math.max(this.minMarkerRadius, (value / this.largestMarkerValue) * this.maxMarkerRadius);
             },
             updateMaxBounds: function() {

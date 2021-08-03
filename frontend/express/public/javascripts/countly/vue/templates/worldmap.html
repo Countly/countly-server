@@ -1,12 +1,17 @@
 <div class="cly-vue-worldmap">
     <div class="bu-columns bu-is-gapless">
         <div class="bu-column bu-is-3">
-            <div class="cly-vue-worldmap__country-detail" v-if="inDetail">
+            <div v-if="inDetail" class="cly-vue-worldmap__country-detail">
                 <button @click="goToMain">
                     <- Go back 
                 </button>
             </div>
-            <div class="cly-vue-worldmap__available-locations">
+            <div v-else class="cly-vue-worldmap__available-locations">
+                <cly-listbox
+                    :options="locations"
+                    :value="country"
+                    @input="goToCountry($event)">
+                </cly-listbox>
                 <div v-for="location in locations" :style="{'background-image': location.flag}">{{location.name}}</div>
             </div>
         </div>
