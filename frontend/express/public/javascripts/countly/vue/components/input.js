@@ -653,6 +653,59 @@
         }
     ));
 
+    Vue.component('cly-radio-block', countlyVue.components.BaseComponent.extend({
+        props: {
+            value: {required: true, default: -1, type: [ String, Number ]},
+            items: {
+                required: true,
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            skin: { default: "main", type: String},
+            disabled: {type: Boolean, default: false}
+        },
+        computed: {
+            topClasses: function() {
+                var classes = [];
+                if (["main", "light"].indexOf(this.skin) > -1) {
+                    classes.push("radio-" + this.skin + "-skin");
+                }
+                else {
+                    classes.push("radio-main-skin");
+                }
+                if (this.disabled) {
+                    classes.push("disabled");
+                }
+                return classes;
+            }
+        },
+        methods: {
+            setValue: function(e) {
+                if (!this.disabled) {
+                    this.$emit('input', e);
+                }
+            }
+        },
+        template: '<div class="cly-vue-radio-block" v-bind:class="topClasses">\n' +
+                             '<div class="radio-wrapper">\n' +
+                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex">\n' +
+                                    '<div class="bu-is-flex"><div class="box"></div></div>\n' +
+                                    '<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between"><div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="item.description"></span></div>\n' +
+                                    '<div class="bu-is-flex bu-is-align-items-baseline number">' +
+										'<h2>{{item.number}}</h2>' +
+										'<div v-if="item.trend == \'u\'" class="trend-up">\n' +
+											'<i class="fas fa-arrow-up"></i><span>{{item.trendValue}}</span>\n' +
+										'</div>\n' +
+										'<div v-if="item.trend == \'d\'" class="trend-down">\n' +
+											'<i class="fas fa-arrow-down"></i><span>{{item.trendValue}}</span>\n' +
+										'</div>\n' +
+									'</div></div>\n' +
+                                '</div>\n' +
+                            '</div>\n' +
+                        '</div>'
+    }));
     Vue.component('cly-dynamic-textarea', countlyVue.components.BaseComponent.extend({
         template: '<div contenteditable="true" @input="update" v-html="content"></div>',
         props: ['content'],

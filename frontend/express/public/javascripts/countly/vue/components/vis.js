@@ -712,7 +712,7 @@
                                 >\
                                     <i class="fas fa-arrow-circle-up" v-if="item.trend === \'up\'"></i>\
                                     <i class="fas fa-arrow-circle-down" v-if="item.trend === \'down\'"></i>\
-                                    <span v-if="item.percentage">{{item.percentage}}%</span>\
+                                    <span v-if="item.percentage">{{item.percentage}}</span>\
                                 </div>\
                             </div>\
                         </div>\
