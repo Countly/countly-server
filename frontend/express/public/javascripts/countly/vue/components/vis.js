@@ -1362,6 +1362,26 @@
                         };
                     });
                 }
+            },
+            activeMarkers: function() {
+                switch (this.currentViewType) {
+                    case "main":
+                        return this.countriesData;
+                    case "regions":
+                        return this.regionsData[this.country];
+                    case "cities":
+                        return this.citiesData[this.country];
+                }
+            },
+            nameToLatLng: function() {
+                switch (this.currentViewType) {
+                    case "main":
+                        return this.countriesToLatLng;
+                    case "regions":
+                        return this.regionsToLatLng;
+                    case "cities":
+                        return this.citiesToLatLng;
+                }
             }
         },
         methods: {

@@ -31,29 +31,12 @@
                     </div>
                 </l-control>
 
-                <l-circle-marker 
-                    v-if="!inDetail"
+                <l-circle-marker
                     v-bind="circleMarkerConfig"
                     :radius="10" 
-                    :lat-lng="countriesToLatLng[name]" 
+                    :lat-lng="nameToLatLng[name]" 
                     :key="unique(name)"
-                    v-for="(value, name) in countriesData">
-                </l-circle-marker>
-                <l-circle-marker 
-                    v-else-if="inDetail && detailMode === 'regions'"
-                    v-bind="circleMarkerConfig"
-                    :radius="10" 
-                    :lat-lng="regionsToLatLng[name]" 
-                    :key="unique(name)"
-                    v-for="(value, name) in regionsData[country]">
-                </l-circle-marker>
-                <l-circle-marker 
-                    v-else-if="inDetail && detailMode === 'cities'"
-                    v-bind="circleMarkerConfig"
-                    :radius="10" 
-                    :lat-lng="citiesToLatLng[name]" 
-                    :key="unique(name)"
-                    v-for="(value, name) in citiesData[country]">
+                    v-for="(value, name) in activeMarkers">
                 </l-circle-marker>
             </l-map>
         </div>
