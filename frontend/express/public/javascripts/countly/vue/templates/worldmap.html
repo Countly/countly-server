@@ -33,10 +33,10 @@
 
                 <l-circle-marker
                     v-bind="circleMarkerConfig"
-                    :radius="10" 
+                    :radius="getMarkerRadius(item.value)"
                     :lat-lng="nameToLatLng[name]" 
                     :key="unique(name)"
-                    v-for="(value, name) in activeMarkers">
+                    v-for="(item, name) in activeMarkers">
                 </l-circle-marker>
             </l-map>
         </div>
