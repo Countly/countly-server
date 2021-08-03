@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
+/* global Vue, countlyCommon, countlyLocation, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
 
 (function(countlyVue) {
 
@@ -1311,6 +1311,43 @@
             },
             onEachFeatureFunctionDetail: function() {
                 return function() {};
+            },
+            locations: function() {
+                var self = this;
+                if (this.inDetail && this.detailMode === 'regions') {
+                    var regionCodes = Object.keys(this.regionsData[this.country] || {});
+
+                    return regionCodes.map(function(code) {
+                        return {
+                            name: code,
+                            code: code,
+                            value: self.regionsData[self.country][code]
+                        };
+                    });
+                }
+                else if (this.inDetail && this.detailMode === 'cities') {
+                    var cityNames = Object.keys(this.citiesData[this.country] || {});
+
+                    return cityNames.map(function(name) {
+                        return {
+                            name: name,
+                            code: name,
+                            value: self.citiesData[self.country][name]
+                        };
+                    });
+                }
+                else if (!this.inDetail) {
+                    var countryCodes = Object.keys(this.countriesData);
+
+                    return countryCodes.map(function(code) {
+                        return {
+                            name: countlyLocation.getCountryName(code),
+                            code: code,
+                            flag: "url('" + countlyGlobal.cdn + "images/flags/" + code.toLowerCase() + ".png')",
+                            value: self.countriesData[self.country]
+                        };
+                    });
+                }
             }
         },
         methods: {
