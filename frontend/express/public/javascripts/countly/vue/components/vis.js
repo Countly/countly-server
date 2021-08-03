@@ -1178,7 +1178,7 @@
     Vue.component("cly-worldmap", countlyVue.components.create({
         components: {
             'l-map': Vue2Leaflet.LMap,
-            'l-circle': Vue2Leaflet.LCircle,
+            'l-circle-marker': Vue2Leaflet.LCircleMarker,
             'l-geo-json': Vue2Leaflet.LGeoJson,
             'l-tile-layer': Vue2Leaflet.LTileLayer,
             'l-control': Vue2Leaflet.LControl
@@ -1252,6 +1252,13 @@
                 countriesToLatLng: {},
                 regionsToLatLng: {},
                 citiesToLatLng: {},
+                circleMarkerConfig: {
+                    pane: "markerPane",
+                    fillColor: "#017AFF",
+                    fillOpacity: 0.6,
+                    color: "transparent",
+
+                }
             };
         },
         watch: {
