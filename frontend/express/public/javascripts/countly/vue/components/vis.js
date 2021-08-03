@@ -1314,29 +1314,7 @@
             },
             locations: function() {
                 var self = this;
-                if (this.inDetail && this.detailMode === 'regions') {
-                    var regionCodes = Object.keys(this.regionsData[this.country] || {});
-
-                    return regionCodes.map(function(code) {
-                        return {
-                            name: code,
-                            code: code,
-                            value: self.regionsData[self.country][code]
-                        };
-                    });
-                }
-                else if (this.inDetail && this.detailMode === 'cities') {
-                    var cityNames = Object.keys(this.citiesData[this.country] || {});
-
-                    return cityNames.map(function(name) {
-                        return {
-                            name: name,
-                            code: name,
-                            value: self.citiesData[self.country][name]
-                        };
-                    });
-                }
-                else if (!this.inDetail) {
+                if (!this.inDetail) {
                     var countryCodes = Object.keys(this.countriesData);
 
                     return countryCodes.map(function(code) {
@@ -1347,6 +1325,30 @@
                             value: self.countriesData[self.country]
                         };
                     });
+                }
+                else {
+                    if (this.detailMode === 'regions') {
+                        var regionCodes = Object.keys(this.regionsData[this.country] || {});
+
+                        return regionCodes.map(function(code) {
+                            return {
+                                name: countlyLocation.getRegionName(code, self.country),
+                                code: code,
+                                value: self.regionsData[self.country][code]
+                            };
+                        });
+                    }
+                    else if (this.detailMode === 'cities') {
+                        var cityNames = Object.keys(this.citiesData[this.country] || {});
+
+                        return cityNames.map(function(name) {
+                            return {
+                                name: name,
+                                code: name,
+                                value: self.citiesData[self.country][name]
+                            };
+                        });
+                    }
                 }
             }
         },
