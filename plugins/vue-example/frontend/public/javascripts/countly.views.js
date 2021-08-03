@@ -435,15 +435,18 @@
                 geoChartOptions: {},
                 countriesData: {
                     'TR': {
+                        'value': 100,
                         'sessions': 100
                     },
                     'DE': {
+                        'value': 100,
                         'sessions': 500
                     }
                 },
                 regionsData: {
                     'TR': {
                         'TR-34': {
+                            'value': 50,
                             'sessions': 50
                         }
                     }
@@ -451,9 +454,11 @@
                 citiesData: {
                     'TR': {
                         'Istanbul': {
+                            'value': 30,
                             'sessions': 30
                         },
                         'Ankara': {
+                            'value': 30,
                             'sessions': 30
                         }
                     }
