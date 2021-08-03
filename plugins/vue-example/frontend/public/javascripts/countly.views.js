@@ -330,7 +330,7 @@
                             name: "Series A",
                             value: "123",
                             trend: "up",
-                            percentage: "3.4",
+                            percentage: "3.4%",
                             tooltip: "Total no of series A.",
                         },
                         {
@@ -341,20 +341,20 @@
                             name: "Series C",
                             value: "123",
                             trend: "down",
-                            percentage: "3.4",
+                            percentage: "3.4%",
                             tooltip: "Total no of series C.",
                         },
                         {
                             name: "Series D",
                             value: "123",
                             trend: "up",
-                            percentage: "3.4",
+                            percentage: "3.4%",
                         },
                         {
                             name: "Series E",
                             value: "123",
                             trend: "down",
-                            percentage: "3.4",
+                            percentage: "3.4%",
                         }
                     ]
                 },
@@ -385,7 +385,7 @@
                             name: "Weekly users",
                             value: "123",
                             trend: "up",
-                            percentage: "3.4",
+                            percentage: "3.4%",
                             tooltip: "Total no of series A.",
                         },
                         {
@@ -396,7 +396,7 @@
                             name: "Week old users",
                             value: "123",
                             trend: "down",
-                            percentage: "3.4",
+                            percentage: "3.4%",
                             tooltip: "Total no of series C.",
                         }
                     ]
