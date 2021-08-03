@@ -1258,6 +1258,8 @@
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 boundingBoxes: {},
                 country: null,
+                focusedRegion: null,
+                focusedCity: null,
                 detailMode: 'regions',
                 countriesToLatLng: {},
                 regionsToLatLng: {},
@@ -1267,7 +1269,6 @@
                     fillColor: "#017AFF",
                     fillOpacity: 0.6,
                     color: "transparent",
-
                 }
             };
         },
@@ -1507,6 +1508,12 @@
                     });
                     self.handleViewChange();
                 });
+            },
+            focusToRegion: function() {
+
+            },
+            focusToCity: function() {
+
             },
             handleViewChange: function() {
                 this.updateMaxBounds();
