@@ -56,6 +56,12 @@
                 :countries-data="countriesData"
                 :regions-data="regionsData"
                 :cities-data="citiesData">
+                <template v-slot:regions-info>
+                    <span class="text-medium">Sessions</span>
+                </template>
+                <template v-slot:cities-info>
+                    <span class="text-medium">Sessions</span>
+                </template>
             </cly-worldmap>
         </cly-section>
     </cly-main>
