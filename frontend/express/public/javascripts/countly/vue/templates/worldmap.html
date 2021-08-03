@@ -5,6 +5,18 @@
                 <button @click="goToMain">
                     <- Go back 
                 </button>
+                <cly-listbox
+                    v-if="detailMode === 'regions'"
+                    :options="locations"
+                    :value="focusedRegion"
+                    @input="focusToRegion($event)">
+                </cly-listbox>
+                <cly-listbox
+                    v-else-if="detailMode === 'cities'"
+                    :options="locations"
+                    :value="focusedCity"
+                    @input="focusToCity($event)">
+                </cly-listbox>
             </div>
             <div v-else class="cly-vue-worldmap__available-locations">
                 <cly-listbox
@@ -12,7 +24,6 @@
                     :value="country"
                     @input="goToCountry($event)">
                 </cly-listbox>
-                <div v-for="location in locations" :style="{'background-image': location.flag}">{{location.name}}</div>
             </div>
         </div>
         <div class="bu-column bu-is-9">
