@@ -1227,10 +1227,9 @@
                 self.geojsonHome = json;
                 json.features.forEach(function(f) {
                     self.boundingBoxes[f.properties.code] = f.bbox;
-                    var latLng2d = self.boxToLatLng2d(f.bbox);
                     self.countriesToLatLng[f.properties.code] = {
-                        lat: (latLng2d[0][0] + latLng2d[1][0]) / 2,
-                        lon: (latLng2d[0][1] + latLng2d[1][1]) / 2
+                        lat: f.properties.lat,
+                        lon: f.properties.lon
                     };
                 });
                 self.handleViewChange();
