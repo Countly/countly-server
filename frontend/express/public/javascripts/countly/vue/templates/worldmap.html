@@ -31,16 +31,30 @@
                     </div>
                 </l-control>
 
-                <template v-if="!inDetail">
-                    <l-circle pane="markerPane" :lat-lng="countriesToLatLng[name]" :key="unique(name)" v-for="(value, name) in countriesData"></l-circle>
-                </template>
-                <template v-if="inDetail && detailMode === 'regions'">
-                    <l-circle pane="markerPane" :lat-lng="regionsToLatLng[name]" :key="unique(name)" v-for="(value, name) in regionsData[country]"></l-circle>
-                </template>
-                <template v-if="inDetail && detailMode === 'cities'">
-                    <l-circle pane="markerPane" :lat-lng="citiesToLatLng[name]" :key="unique(name)" v-for="(value, name) in citiesData[country]"></l-circle>
-                </template>
-
+                <l-circle-marker 
+                    v-if="!inDetail"
+                    v-bind="circleMarkerConfig"
+                    :radius="10" 
+                    :lat-lng="countriesToLatLng[name]" 
+                    :key="unique(name)"
+                    v-for="(value, name) in countriesData">
+                </l-circle-marker>
+                <l-circle-marker 
+                    v-else-if="inDetail && detailMode === 'regions'"
+                    v-bind="circleMarkerConfig"
+                    :radius="10" 
+                    :lat-lng="regionsToLatLng[name]" 
+                    :key="unique(name)"
+                    v-for="(value, name) in regionsData[country]">
+                </l-circle-marker>
+                <l-circle-marker 
+                    v-else-if="inDetail && detailMode === 'cities'"
+                    v-bind="circleMarkerConfig"
+                    :radius="10" 
+                    :lat-lng="citiesToLatLng[name]" 
+                    :key="unique(name)"
+                    v-for="(value, name) in citiesData[country]">
+                </l-circle-marker>
             </l-map>
         </div>
     </div>
