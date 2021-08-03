@@ -39,8 +39,7 @@ var AllEventsView = countlyVue.views.BaseView.extend({
             set: function(value) {
                 this.$store.dispatch('countlyAllEvents/fetchSelectedDatePeriod', value);
                 countlyCommon.setPeriod(value);
-                this.$store.dispatch('countlyAllEvents/fetchSelectedEventsData');
-                this.$store.dispatch('countlyAllEvents/fetchSelectedEventsOverview');
+                this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
             }
         },
         selectedSegment: {
@@ -83,6 +82,9 @@ var AllEventsView = countlyVue.views.BaseView.extend({
         },
         selectedEventsOverview: function() {
             return this.$store.getters["countlyAllEvents/selectedEventsOverview"];
+        },
+        lineLegend: function() {
+            return this.$store.getters["countlyAllEvents/legendData"];
         }
     },
     data: function() {
@@ -97,7 +99,6 @@ var AllEventsView = countlyVue.views.BaseView.extend({
         }
         this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
         this.$store.dispatch('countlyAllEvents/fetchAllEventsGroupData');
-        this.$store.dispatch('countlyAllEvents/fetchSelectedEventsOverview');
     }
 });
 
