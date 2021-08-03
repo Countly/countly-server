@@ -1312,7 +1312,7 @@
                 var self = this;
                 return function(feature, layer) {
                     layer.on('click', function() {
-                        self.switchToDetail(feature.properties);
+                        self.goToCountry(feature.properties.code);
                     });
                 };
             },
@@ -1437,14 +1437,13 @@
                     return json;
                 });
             },
-            switchToHome: function() {
+            goToMain: function() {
                 this.geojsonDetail = null;
                 this.country = null;
                 this.handleViewChange();
             },
-            switchToDetail: function(properties) {
-                var self = this,
-                    country = properties.code;
+            goToCountry: function(country) {
+                var self = this;
 
                 this.loadGeojson(country).then(function(json) {
                     self.geojsonDetail = json;
