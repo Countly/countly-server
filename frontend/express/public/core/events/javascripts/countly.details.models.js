@@ -4,36 +4,81 @@
     countlyAllEvents.helpers = {
         getLineChartData: function(context, eventData) {
             var chartData = eventData.chartData;
-            var graphData = [[], [], [], []];
-
+            var graphData = [[], [], []];
             for (var i = 0; i < chartData.length; i++) {
                 graphData[0].push(chartData[i].c);
                 graphData[1].push(chartData[i].s);
                 graphData[2].push(chartData[i].dur);
             }
+            var series = [];
+            var itemsForLegend = eventData.tableColumns;
+            if (itemsForLegend.indexOf("Count") !== -1) {
+                var countObj = {
+                    name: eventData.chartDP[0].label,
+                    data: graphData[0],
+                    color: "#017AFF"
+                };
+                series.push(countObj);
+            }
+            if (itemsForLegend.indexOf("Sum") !== -1) {
+                var sumObj = {
+                    name: eventData.chartDP[1].label,
+                    data: graphData[1],
+                    color: "#F96300"
+                };
+                series.push(sumObj);
+            }
+            if (itemsForLegend.indexOf("Duration") !== -1) {
+                var durObj = {
+                    name: eventData.chartDP[2].label,
+                    data: graphData[2],
+                    color: "#FF9382"
+                };
+                series.push(durObj);
+            }
             var obj = {
-                series: [
-                    {
-                        name: jQuery.i18n.map['events.overview.count'],
-                        data: graphData[0],
-                        color: "#017AFF"
-                    },
-                    {
-                        name: jQuery.i18n.map['events.overview.sum'],
-                        data: graphData[1],
-                        color: "#F96300"
-                    },
-                    {
-                        name: jQuery.i18n.map['events.overview.duration'],
-                        data: graphData[2],
-                        color: "#FF9382"
-                    }
-                ],
-                legend: {
-                    show: false
-                }
+                series: series
             };
             context.commit('setLineChartData', obj);
+        },
+        getTableRows: function(context) {
+            var eventData = context.state.allEventsProcessed;
+            var tableRows = eventData.chartData.slice();
+            if (eventData.tableColumns.indexOf("Sum") !== -1 && eventData.tableColumns.indexOf("Duration") !== -1) {
+                tableRows.forEach(function(row) {
+                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : countlyCommon.formatNumber(row.s / row.c);
+                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : countlyCommon.formatNumber(row.dur / row.c);
+                    row.c = countlyCommon.formatNumber(row.c);
+                    row.s = countlyCommon.formatNumber(row.s);
+                    row.dur = countlyCommon.formatNumber(row.dur);
+                });
+                eventData.tableColumns.push("AvgSum");
+                eventData.tableColumns.push("AvgDur");
+            }
+            else if (eventData.tableColumns.indexOf("Sum") !== -1) {
+                tableRows.forEach(function(row) {
+                    row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : countlyCommon.formatNumber(row.s / row.c);
+                    row.c = countlyCommon.formatNumber(row.c);
+                    row.s = countlyCommon.formatNumber(row.s);
+                    row.dur = countlyCommon.formatNumber(row.dur);
+                });
+                eventData.tableColumns.push("AvgSum");
+            }
+            else if (eventData.tableColumns.indexOf("Duration") !== -1) {
+                tableRows.forEach(function(row) {
+                    row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : countlyCommon.formatNumber(row.dur / row.c);
+                    row.c = countlyCommon.formatNumber(row.c);
+                    row.s = countlyCommon.formatNumber(row.s);
+                    row.dur = countlyCommon.formatNumber(row.dur);
+                });
+                eventData.tableColumns.push("AvgDur");
+            }
+            else {
+                tableRows.forEach(function(row) {
+                    row.c = countlyCommon.formatNumber(row.c);
+                });
+            }
+            return tableRows;
         },
         getBarChartData: function(context, eventData) {
             var arrCount = [];
@@ -274,6 +319,52 @@
                 countlyAllEvents.helpers.getLineChartData(context, eventData);
             }
             return segments;
+        },
+        getLegendData: function(context) {
+            if (!context.state.allEventsProcessed) {
+                return;
+            }
+            var lineLegend = {};
+            var legendData = [];
+            var eventsOverview = context.state.selectedEventsOverview;
+            var itemsForLegend = context.state.allEventsProcessed.tableColumns;
+            var labels = context.state.allEventsProcessed.chartDP;
+            if (itemsForLegend.indexOf("Count") !== -1) {
+                var count = {};
+                count.name = labels[0].label;
+                count.value = eventsOverview.count.total;
+                count.trend = eventsOverview.count.trend === "u" ? "up" : "down";
+                count.percentage = eventsOverview.count.change;
+                count.tooltip = labels[0].label;
+                legendData.push(count);
+            }
+            if (itemsForLegend.indexOf("Sum") !== -1) {
+                var sum = {};
+                sum.name = labels[1].label;
+                sum.value = eventsOverview.sum.total;
+                sum.trend = eventsOverview.sum.trend === "u" ? "up" : "down";
+                sum.percentage = eventsOverview.sum.change;
+                sum.tooltip = labels[1].label;
+                legendData.push(sum);
+            }
+            if (itemsForLegend.indexOf("Duration") !== -1) {
+                var dur = {};
+                dur.name = labels[2].label;
+                dur.value = eventsOverview.dur.total;
+                dur.trend = eventsOverview.dur.trend === "u" ? "up" : "down";
+                dur.percentage = eventsOverview.dur.change;
+                dur.tooltip = labels[2].label;
+                legendData.push(dur);
+            }
+            if (legendData.length > 0) {
+                lineLegend.show = true;
+                lineLegend.type = "primary";
+                lineLegend.data = legendData;
+            }
+            return lineLegend;
+        },
+        getSelectedEventsOverview: function(context, res) {
+            return res[context.state.selectedEventName].data;
         }
     };
 
@@ -317,6 +408,21 @@
                 },
                 dataType: "json",
             });
+        },
+        fetchSelectedEventsOverview: function(context) {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "events",
+                    "events": JSON.stringify([context.state.selectedEventName]),
+                    "period": context.state.selectedDatePeriod,
+                    "timestamp": new Date().getTime(),
+                    "overview": true
+                },
+                dataType: "json",
+            });
         }
     };
 
@@ -336,7 +442,10 @@
                 availableSegments: [],
                 allEventsProcessed: {},
                 barData: {},
-                lineChartData: {}
+                lineChartData: {},
+                legendData: {},
+                tableRows: [],
+                selectedEventsOverview: {}
             };
         };
 
@@ -351,6 +460,15 @@
                                     if (response) {
                                         context.commit("setSelectedEventsData", response);
                                         context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);
+                                        context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
+
+                                        countlyAllEvents.service.fetchSelectedEventsOverview(context)
+                                            .then(function(resp) {
+                                                if (resp) {
+                                                    context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
+                                                    context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                }
+                                            });
                                     }
                                 });
                         }
@@ -427,7 +545,16 @@
             },
             setLineChartData: function(state, value) {
                 state.lineChartData = value;
-            }
+            },
+            setLegendData: function(state, value) {
+                state.legendData = value;
+            },
+            setTableRows: function(state, value) {
+                state.tableRows = value;
+            },
+            setSelectedEventsOverview: function(state, value) {
+                state.selectedEventsOverview = value;
+            },
         };
         var allEventsGetters = {
             allEvents: function(_state) {
@@ -468,6 +595,15 @@
             },
             lineChartData: function(_state) {
                 return _state.lineChartData;
+            },
+            legendData: function(_state) {
+                return _state.legendData;
+            },
+            tableRows: function(_state) {
+                return _state.tableRows;
+            },
+            selectedEventsOverview: function(_state) {
+                return _state.selectedEventsOverview;
             }
         };
         return countlyVue.vuex.Module("countlyAllEvents", {

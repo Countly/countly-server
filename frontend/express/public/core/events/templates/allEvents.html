@@ -1,41 +1,106 @@
 <script type="text/x-template" id="all-events">
 	<div v-bind:class="[componentId]">
 		<cly-header>
-			<template v-slot:header-left>
-				<h2> {{i18n('events.all.title.new')}} 
-				</h2>
-				<span class="el-icon-info cly-vue-events-all-tooltip" v-tooltip.top-center="description">
-				</span>
-			</template>
+		  <template v-slot:header-left>
+			<h2 class="cly-vue-events-header"> {{i18n('events.all.title.new')}} 
+			</h2>
+			<cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+		  </template>
 		</cly-header>
-		<div class="bu-columns bu-is-gapless">
-		<div class="bu-column bu-is-3">
-			Search bar
-        </div>
-		<div class="bu-column bu-is-9">
-				<div class="cly-vue-events-all-name">
+		<cly-main>
+		  <div class="bu-columns bu-is-gapless">
+			<div class="bu-column bu-is-3">
+			  Search bar
+			</div>
+			<div class="bu-column bu-is-9">
+			  <div class="cly-vue-events-all-name">
 				{{selectedEventName}}<span class="cly-vue-events-group" v-if="isGroup">{{i18n('events.all.group')}}</span>
+			  </div>
+			  <div  class="bu-pb-5" v-if="isGroup">
+				{{selectedEventDescription}}
+			  </div>
+			  <div class="bu-is-flex">
+				<div v-if="hasSegments">
+				  <span class="cly-vue-events-all-segmentation">{{i18n('events.all.segmentation')}}</span>
+				  <el-select v-model="selectedSegment">
+					<el-option v-for="item in availableSegments" :key="item" :value="item">
+					</el-option>
+				  </el-select>
 				</div>
-				<div  class="cly-vue-events-all-description" v-if="isGroup">
-					{{selectedEventDescription}}
+				<div>
+				  <span class="cly-vue-events-all-period">{{i18n('events.all.period')}}</span>
+				  <cly-date-picker classs="cly-vue-events-all-date-picker" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker>
 				</div>
-				<div class="bu-is-flex">
-					<div><span class="cly-vue-events-all-period">{{i18n('events.all.period')}}</span>
-					<cly-date-picker classs="cly-vue-events-all-date-picker" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker></div>
-					<div v-if="hasSegments">
-						<span class="cly-vue-events-all-segmentation">{{i18n('events.all.segmentation')}}</span>
-						<el-select v-model="selectedSegment">
-						<el-option v-for="item in availableSegments" :key="item" :value="item">
-						</el-option>
-					</el-select>
-				</div>
-			    </div>  
-				<div class="cly-vue-events-all-charts">
-						<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData">	
+			  </div>
+			  <cly-section class="bu-mt-5">
+				<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData" :legend="lineLegend">	
 				</cly-chart-bar>
-				<cly-chart-time v-else  :option="chartData"></cly-chart-time>
+				<cly-chart-time v-else  :option="chartData" :legend="lineLegend"></cly-chart-time>
+			  </cly-section>
+			  <cly-section class="bu-mt-5">
+				<detail-tables></detail-tables>
+			  </cly-section>
+			</div>
+		  </div>
+		</cly-main>
+	  </div>
+</script>
+<script type="text/x-template" id="tables-events">
+	<div>
+		<cly-datatable-n :rows="eventsTableRows">
+		  <template v-slot:header-left="selectScope">
+		  </template>
+		  <template v-slot="scope">
+			<el-table-column v-if="isColumnAllowed('Segmentation')" sortable="true" prop="segment" :label="i18n('events.table.segmentation')">
+			  <template v-slot="rowScope">
+				<div>
+				  {{rowScope.row.curr_segment}}
 				</div>
-		</div>
-	</div>
-	</div>
-  </script>
+			  </template>
+			</el-table-column>
+			<el-table-column v-if="isColumnAllowed('Date')" sortable="true" prop="event" :label="i18n('common.date')">
+			  <template v-slot="rowScope">
+				<div>
+				  {{rowScope.row.date}}
+				</div>
+			  </template>
+			</el-table-column>
+			<el-table-column v-if="isColumnAllowed('Count')" sortable="true" prop="count" :label="i18n('events.table.count')">
+			  <template v-slot="rowScope">
+				<div>
+				  {{rowScope.row.c}}
+				</div>
+			  </template>
+			</el-table-column>
+			<el-table-column v-if="isColumnAllowed('Sum')" sortable="true" prop="sum" :label="i18n('events.table.sum')">
+			  <template v-slot="rowScope">
+				<div>
+				  {{rowScope.row.s}}
+				</div>
+			  </template>
+			</el-table-column>
+			<el-table-column v-if="isColumnAllowed('Duration')" sortable="true" prop="duration" :label="i18n('events.table.dur')">
+			  <template v-slot="rowScope">
+				<div>
+				  {{rowScope.row.dur}}
+				</div>
+			  </template>
+			</el-table-column>
+			<el-table-column v-if="isColumnAllowed('AvgSum')" sortable="true" prop="avgSum" :label="i18n('events.table.avg-sum')">
+			  <template v-slot="rowScope">
+				<div>
+				  {{rowScope.row.avgSum}}
+				</div>
+			  </template>
+			</el-table-column>
+			<el-table-column v-if="isColumnAllowed('AvgDur')" sortable="true" prop="avgDur" :label="i18n('events.table.avg-dur')">
+			  <template v-slot="rowScope">
+				<div>
+				  {{rowScope.row.avgDur}}
+				</div>
+			  </template>
+			</el-table-column>
+		  </template>
+		</cly-datatable-n>
+	  </div>
+</script>
