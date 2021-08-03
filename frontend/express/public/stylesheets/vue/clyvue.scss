@@ -1495,6 +1495,13 @@
         &__list {
             border-right: 1px solid #ECECEC;
         }
+        &__list-title {
+            border-bottom: 1px solid #ECECEC;
+        }
+        &__back-button {
+            cursor: pointer;
+            border-bottom: 1px solid #ECECEC;
+        }
     }
 
     .cly-vue-draggable {

@@ -1,12 +1,12 @@
 <div class="cly-vue-worldmap">
     <div class="bu-columns bu-is-gapless">
         <div class="bu-column bu-is-3 cly-vue-worldmap__list">
-            <button @click="goToMain" v-if="inDetail">
-                <- Back to World Map
-            </button>
+            <div class="cly-vue-worldmap__back-button bu-p-4" @click="goToMain" v-if="inDetail">
+                <span class="text-medium"><- Back to World Map</span>
+            </div>
             <div v-if="currentViewType === 'main'" class="cly-vue-worldmap__available-locations">
-                <div>
-                    <span class="text-uppercase text-medium font-weight-bold">{{countriesTitle}}</span>
+                <div class="cly-vue-worldmap__list-title bu-p-2">
+                    <span class="bu-pl-2 text-uppercase text-small font-weight-bold">{{countriesTitle}}</span>
                 </div>
                 <cly-listbox
                     :bordered="false"
@@ -15,9 +15,9 @@
                     @input="goToCountry($event)">
                 </cly-listbox>
             </div>
-            <div v-else-if="currentViewType === 'regions'" class="cly-vue-worldmap__country-detail">
-                <div>
-                    <span class="text-uppercase text-medium font-weight-bold">{{regionsTitle}}</span>
+            <div v-else-if="currentViewType === 'regions'">
+                <div class="cly-vue-worldmap__list-title bu-p-2">
+                    <span class="bu-pl-2 text-uppercase text-small font-weight-bold">{{regionsTitle}}</span>
                 </div>
                 <cly-listbox
                     :bordered="false"
@@ -27,8 +27,8 @@
                 </cly-listbox>
             </div>
             <div v-else-if="currentViewType === 'cities'" class="cly-vue-worldmap__country-detail">
-                <div>
-                    <span class="text-uppercase text-medium font-weight-bold">{{citiesTitle}}</span>
+                <div class="cly-vue-worldmap__list-title bu-p-2">
+                    <span class="bu-pl-2 text-uppercase text-small font-weight-bold">{{citiesTitle}}</span>
                 </div>
                 <cly-listbox
                     :bordered="false"
