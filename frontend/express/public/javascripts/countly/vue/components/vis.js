@@ -1417,6 +1417,12 @@
                 case "cities":
                     return this.citiesToLatLng;
                 }
+            },
+            countryName: function() {
+                return countlyLocation.getCountryName(this.country);
+            },
+            countryValue: function() {
+                return this.countriesData[this.country].value;
             }
         },
         methods: {

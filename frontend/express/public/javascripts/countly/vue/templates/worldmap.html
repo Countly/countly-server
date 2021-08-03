@@ -4,7 +4,8 @@
             <div class="cly-vue-worldmap__back-button bu-p-4" @click="goToMain" v-if="inDetail">
                 <span class="text-medium"><- Back to World Map</span>
             </div>
-            <div v-if="currentViewType === 'main'" class="cly-vue-worldmap__available-locations">
+
+            <div v-if="!inDetail">
                 <div class="cly-vue-worldmap__list-title bu-p-2">
                     <span class="bu-pl-2 text-uppercase text-small font-weight-bold">{{countriesTitle}}</span>
                 </div>
@@ -15,10 +16,34 @@
                     @input="goToCountry($event)">
                 </cly-listbox>
             </div>
-            <div v-else-if="currentViewType === 'regions'">
-                <div class="cly-vue-worldmap__list-title bu-p-2">
-                    <span class="bu-pl-2 text-uppercase text-small font-weight-bold">{{regionsTitle}}</span>
+            <div v-else>
+                <div class="cly-vue-worldmap__country-info bu-p-4">
+                    <div class="bu-is-flex">
+                        <div class="bu-py-3">
+                            <div style="width:32px; height: 32px; border-radius:32px; background-color:gray">
+                            -
+                            </div>
+                        </div>
+                        <div class="bu-pl-4 bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
+                            <span class="text-medium">
+                                {{countryName}}
+                            </span>
+                            <div class="bu-is-flex bu-is-align-items-baseline">
+                                <h2 class="bu-pr-2">
+                                    {{countryValue}}
+                                </h2>
+                                <slot v-if="currentViewType === 'regions'" name="regions-info"></slot>
+                                <slot v-else-if="currentViewType === 'cities'" name="cities-info"></slot>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <div class="cly-vue-worldmap__list-title bu-p-2">
+                    <span class="bu-pl-2 text-uppercase text-small font-weight-bold">{{currentViewType === 'regions' ? regionsTitle:citiesTitle}}</span>
+                </div>
+            </div>
+
+            <div v-if="currentViewType === 'regions'">
                 <cly-listbox
                     :bordered="false"
                     :options="locations"
@@ -26,10 +51,7 @@
                     @input="focusToRegion($event)">
                 </cly-listbox>
             </div>
-            <div v-else-if="currentViewType === 'cities'" class="cly-vue-worldmap__country-detail">
-                <div class="cly-vue-worldmap__list-title bu-p-2">
-                    <span class="bu-pl-2 text-uppercase text-small font-weight-bold">{{citiesTitle}}</span>
-                </div>
+            <div v-else-if="currentViewType === 'cities'">
                 <cly-listbox
                     :bordered="false"
                     :options="locations"
