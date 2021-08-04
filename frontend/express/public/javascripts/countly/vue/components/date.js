@@ -859,9 +859,14 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            appendToBody: {
+                type: Boolean,
+                default: true,
+                required: false
             }
         },
-        template: '<el-time-picker :style="{\'width\': width + \'px\'}" class="cly-vue-time-picker" v-bind="$attrs" v-on="$listeners" :format="format" :clearable="clearable"></el-time-picker>'
+        template: '<el-time-picker :append-to-body="appendToBody" :style="{\'width\': width + \'px\'}" class="cly-vue-time-picker" v-bind="$attrs" v-on="$listeners" :format="format" :clearable="clearable"></el-time-picker>'
     });
 
 }(window.countlyVue = window.countlyVue || {}));
