@@ -808,4 +808,20 @@
     */
     Vue.component("cly-global-date-selector-w", globalDatepicker);
 
+    Vue.component("cly-time-picker", {
+        props: {
+            format: {
+                type: String,
+                default: 'HH:mm',
+                required: false
+            },
+            clearable: {
+                type: Boolean,
+                default: false,
+                required: false
+            }
+        },
+        template: '<el-time-picker class="cly-vue-time-picker" v-bind="$attrs" v-on="$listeners" :format="format" :clearable="clearable"></el-time-picker>'
+    });
+
 }(window.countlyVue = window.countlyVue || {}));

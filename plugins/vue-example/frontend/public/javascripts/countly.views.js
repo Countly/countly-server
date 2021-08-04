@@ -543,7 +543,8 @@
                 selectedDynamicRange: '10weeks',
                 selectedDynamicType: 'daterange',
                 selectedDate: moment.now(),
-                selectedMonth: moment().startOf("month").valueOf()
+                selectedMonth: moment().startOf("month").valueOf(),
+                selectedTime: new Date(2016, 9, 10, 18, 40),
             };
         }
     });

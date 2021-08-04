@@ -28,6 +28,13 @@
             <cly-date-picker v-model="selectedMonth" timestampFormat="ms" type="month"></cly-date-picker>
             <pre>{{selectedMonth}}</pre>
         </cly-section>
+        <cly-section title="Time">
+            <cly-time-picker
+                v-model="selectedTime"
+                placeholder="Arbitrary time">
+            </cly-time-picker>
+            <pre>{{selectedTime}}</pre>
+        </cly-section>
         <cly-section title="Dynamic type">
             <el-select size="small" v-model="selectedDynamicType">
                 <el-option label="Date range" value="daterange"></el-option>
