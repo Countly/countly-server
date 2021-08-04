@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, CV */
+/*global app, countlyVue, countlyVueExample, countlyCommon, CV, moment */
 
 (function() {
     var TableView = countlyVue.views.create({
@@ -542,6 +542,7 @@
                 selectedMonthRange: '10months',
                 selectedDynamicRange: '10weeks',
                 selectedDynamicType: 'daterange',
+                selectedDate: moment.now()
             };
         }
     });

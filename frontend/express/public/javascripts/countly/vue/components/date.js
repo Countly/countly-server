@@ -150,7 +150,7 @@
             tableType = "",
             globalRange = null;
 
-        if (instance.type === "monthrange") {
+        if (instance.type.includes("month")) {
             formatter = "YYYY-MM";
             tableType = "month";
             globalRange = globalMonthsRange;
@@ -504,15 +504,18 @@
                     }, []);
                 }
                 return [];
+            },
+            isRange: function() {
+                return this.type.includes('range');
             }
         },
         props: {
-            value: [Object, String, Array],
+            value: [Object, String, Array, Number],
             type: {
                 type: String,
                 default: "daterange",
                 validator: function(value) {
-                    return ['daterange', 'monthrange'].indexOf(value) !== -1;
+                    return ['date', 'daterange', 'monthrange'].includes(value);
                 }
             },
             displayShortcuts: {
@@ -536,14 +539,14 @@
                 type: String,
                 default: "mixed",
                 validator: function(value) {
-                    return ['mixed', 'absolute'].indexOf(value) !== -1;
+                    return ['mixed', 'absolute'].includes(value);
                 }
             },
             timestampFormat: {
                 type: String,
                 default: 's',
                 validator: function(value) {
-                    return ['s', 'ms'].indexOf(value) !== -1;
+                    return ['s', 'ms'].includes(value);
                 }
             },
             placement: {
@@ -595,6 +598,10 @@
                         selectedShortcut: value,
                         customRangeSelection: false
                     };
+                }
+
+                if (Number.isFinite(value) || !this.isRange) {
+                    value = [value, value];
                 }
 
                 var meta = countlyCommon.convertToTimePeriodObj(value),
@@ -739,14 +746,15 @@
             },
             doCommit: function(value, isShortcut) {
                 if (value) {
-                    this.$emit("input", value);
+                    var submittedVal = this.isRange ? value : value[0];
+                    this.$emit("input", submittedVal);
                     this.$emit("change", {
                         effectiveRange: [
                             this.fixTimestamp(this.minDate.valueOf(), "output"),
                             this.fixTimestamp(this.maxDate.valueOf(), "output")
                         ],
                         isShortcut: isShortcut,
-                        value: value
+                        value: submittedVal
                     });
                     this.doClose();
                 }
