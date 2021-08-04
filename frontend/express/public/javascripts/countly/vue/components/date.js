@@ -395,7 +395,15 @@
                         minDate = moment(val.minDate).startOf("month").toDate();
                         maxDate = moment(val.minDate).endOf("month").toDate();
                     }
-
+                    if (!this.isRange) {
+                        this.rangeState = {
+                            endDate: null,
+                            selecting: false,
+                            row: null,
+                            column: null,
+                            focusOn: null
+                        };
+                    }
                     this.setCurrentInBetween(minDate, maxDate);
                 }
                 else {
