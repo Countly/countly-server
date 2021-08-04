@@ -42,8 +42,10 @@
                         <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>
                         <div class="cly-vue-daterp__input-wrapper">
                             <el-input size="small" :class="{'is-active': isStartFocused, 'is-error': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>
-                            <span class="text-medium cly-vue-daterp__in-between-conj">and</span>
-                            <el-input size="small" :class="{'is-active': isEndFocused, 'is-error': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>
+                            <template v-if="isRange">
+                                <span class="text-medium cly-vue-daterp__in-between-conj">and</span>
+                                <el-input size="small" :class="{'is-active': isEndFocused, 'is-error': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>
+                            </template>
                         </div>
                     </el-tab-pane>
                     <el-tab-pane name="since">

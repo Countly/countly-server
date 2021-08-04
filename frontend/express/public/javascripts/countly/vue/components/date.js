@@ -349,6 +349,9 @@
         watch: {
             'inBetweenInput.raw.textStart': function(newVal) {
                 this.tryParsing(newVal, this.inBetweenInput, 0);
+                if (!this.isRange) {
+                    this.tryParsing(newVal, this.inBetweenInput, 1); // TODO: optimize this
+                }
             },
             'inBetweenInput.raw.textEnd': function(newVal) {
                 this.tryParsing(newVal, this.inBetweenInput, 1);
