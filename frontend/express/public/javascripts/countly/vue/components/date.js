@@ -269,19 +269,32 @@
 
     var InputControlsMixin = {
         methods: {
-            tryParsing: function(newVal, target, index) {
-                var parsedRange = target.parsed;
-                var needsSync = newVal !== moment(parsedRange[index]).format(this.formatter);
-                if (needsSync) {
-                    var parsed = moment(newVal);
-                    if (parsed && parsed.isValid() && (parsed >= this.globalMin) && (parsed <= this.globalMax)) {
-                        target.raw['invalid' + index] = false;
-                        parsedRange[index] = parsed.toDate();
-                        this.handleUserInputUpdate(parsedRange[index]);
+            tryParsing: function(newVal, target, sourceIndex, targetIndexes) {
+                var parsedRange = target.parsed,
+                    handleUpdate = false,
+                    self = this;
+
+                targetIndexes = targetIndexes || [sourceIndex];
+                // if no target specified, then it is just a self-update
+
+                var parsed = moment(newVal);
+                targetIndexes.forEach(function(targetIndex) {
+                    var needsSync = newVal !== moment(parsedRange[targetIndex]).format(self.formatter);
+                    if (needsSync) {
+                        if (parsed && parsed.isValid() && (parsed >= self.globalMin) && (parsed <= self.globalMax)) {
+                            target.raw['invalid' + targetIndex] = false;
+                            parsedRange[targetIndex] = parsed.toDate();
+                            if (targetIndex === sourceIndex) {
+                                handleUpdate = true;
+                            }
+                        }
+                        else {
+                            target.raw['invalid' + targetIndex] = true;
+                        }
                     }
-                    else {
-                        target.raw['invalid' + index] = true;
-                    }
+                });
+                if (handleUpdate) {
+                    this.handleUserInputUpdate(parsedRange[sourceIndex]);
                 }
             },
             handleTextStartFocus: function() {
@@ -349,9 +362,11 @@
         },
         watch: {
             'inBetweenInput.raw.textStart': function(newVal) {
-                this.tryParsing(newVal, this.inBetweenInput, 0);
-                if (!this.isRange) {
-                    this.tryParsing(newVal, this.inBetweenInput, 1); // TODO: optimize this
+                if (this.isRange) {
+                    this.tryParsing(newVal, this.inBetweenInput, 0);
+                }
+                else {
+                    this.tryParsing(newVal, this.inBetweenInput, 0, [0, 1]);
                 }
             },
             'inBetweenInput.raw.textEnd': function(newVal) {
