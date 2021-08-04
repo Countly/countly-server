@@ -797,10 +797,11 @@
             doCommit: function(value, isShortcut) {
                 if (value) {
                     var submittedVal = this.isRange ? value : value[0];
+                    var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     this.$emit("input", submittedVal);
                     this.$emit("change", {
                         effectiveRange: [
-                            this.fixTimestamp(this.minDate.valueOf(), "output"),
+                            this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
                             this.fixTimestamp(this.maxDate.valueOf(), "output")
                         ],
                         isShortcut: isShortcut,
