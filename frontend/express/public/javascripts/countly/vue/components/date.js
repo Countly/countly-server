@@ -99,6 +99,12 @@
                 },
                 parsed: [minDate, maxDate]
             },
+            onmInput: {
+                raw: {
+                    text: minDateText,
+                },
+                parsed: [minDate, maxDate]
+            },
             inTheLastInput: {
                 raw: {
                     text: '1',
@@ -207,9 +213,8 @@
             var effectiveRange = [moment(state.minDate), moment(state.maxDate)];
             switch (level) {
             case "date":
-                if (effectiveRange[0].isSame(effectiveRange[1])) {
+                if (effectiveRange[0].isSame(effectiveRange[1])) { // single point
                     return effectiveRange[0].format("lll");
-                    // !isRange case
                 }
                 else if (effectiveRange[1] - effectiveRange[0] > 86400000) {
                     return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
@@ -220,15 +225,17 @@
                 // case "week":
                 //     return;
             case "month":
-                if (effectiveRange[0].isSame(effectiveRange[1])) {
+                if (effectiveRange[0].isSame(effectiveRange[1])) { // single point
                     return effectiveRange[0].format("MMM YYYY");
-                    // !isRange case
                 }
                 return effectiveRange[0].format("MMM YYYY") + " - " + effectiveRange[1].format("MMM YYYY");
             }
         }
         else if (state.rangeMode === 'since') {
             return CV.i18n('common.time-period-name.since', moment(state.minDate).format("ll"));
+        }
+        else if (state.rangeMode === 'onm') {
+            return CV.i18n('common.time-period-name.on', moment(state.minDate).format("ll"));
         }
         else if (state.rangeMode === 'inTheLast') {
             var num = parseInt(state.inTheLastInput.raw.text, 10),
@@ -335,6 +342,12 @@
                     this.sinceInput.raw.invalid0 = false;
                 }
             },
+            handleOnmBlur: function() {
+                if (this.onmInput.raw.invalid0 && this.onmInput.parsed[0]) {
+                    this.onmInput.raw.text = moment(this.onmInput.parsed[0]).format(this.formatter);
+                    this.onmInput.raw.invalid0 = false;
+                }
+            },
             handleUserInputUpdate: function(scrollToDate) {
                 var inputObj = null;
 
@@ -344,6 +357,9 @@
                     break;
                 case 'since':
                     inputObj = this.sinceInput.parsed;
+                    break;
+                case 'onm':
+                    inputObj = this.onmInput.parsed;
                     break;
                 case 'inTheLast':
                     inputObj = this.inTheLastInput.parsed;
@@ -388,6 +404,9 @@
             },
             'sinceInput.raw.text': function(newVal) {
                 this.tryParsing(newVal, this.sinceInput, 0);
+            },
+            'onmInput.raw.text': function(newVal) {
+                this.tryParsing(newVal, this.onmInput, 0);
             },
             'inTheLastInput.raw': {
                 deep: true,
@@ -686,6 +705,17 @@
                         parsed: [state.minDate, state.maxDate]
                     };
                 }
+                else if (meta.type === "on") {
+                    state.rangeMode = 'onm';
+                    state.minDate = new Date(this.fixTimestamp(meta.value.on, "input"));
+                    state.maxDate = now;
+                    state.onmInput = {
+                        raw: {
+                            text: moment(state.minDate).format(this.formatter),
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                }
                 else if (meta.type === "last-n") {
                     state.rangeMode = 'inTheLast';
                     state.minDate = moment().subtract(meta.value, meta.level).startOf("day").toDate();
@@ -797,6 +827,9 @@
                 }
                 else if (this.rangeMode === 'inTheLast') {
                     this.doCommit(this.inTheLastInput.raw.text + this.inTheLastInput.raw.level, false);
+                }
+                else if (this.rangeMode === 'onm') {
+                    this.doCommit({ on: this.fixTimestamp(this.minDate.valueOf(), "output") }, false);
                 }
             },
             handleDiscardClick: function() {
