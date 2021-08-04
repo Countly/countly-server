@@ -103,7 +103,7 @@
                 raw: {
                     text: minDateText,
                 },
-                parsed: [minDate, maxDate]
+                parsed: [minDate, minDate]
             },
             inTheLastInput: {
                 raw: {
@@ -406,7 +406,7 @@
                 this.tryParsing(newVal, this.sinceInput, 0);
             },
             'onmInput.raw.text': function(newVal) {
-                this.tryParsing(newVal, this.onmInput, 0);
+                this.tryParsing(newVal, this.onmInput, 0, [0, 1]);
             },
             'inTheLastInput.raw': {
                 deep: true,
@@ -708,7 +708,7 @@
                 else if (meta.type === "on") {
                     state.rangeMode = 'onm';
                     state.minDate = new Date(this.fixTimestamp(meta.value.on, "input"));
-                    state.maxDate = now;
+                    state.maxDate = state.minDate;
                     state.onmInput = {
                         raw: {
                             text: moment(state.minDate).format(this.formatter),
