@@ -806,6 +806,7 @@
                 this.$refs.dropdown.handleClose();
             },
             doDiscard: function() {
+                this.handleDropdownHide(true);
                 this.doClose();
             },
             doCommit: function(value, isShortcut) {
