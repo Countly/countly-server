@@ -201,6 +201,10 @@
 
         if (!state.rangeMode || state.rangeMode === 'inBetween') {
             var effectiveRange = [moment(state.minDate), moment(state.maxDate)];
+            if (effectiveRange[0].isSame(effectiveRange[1])) {
+                return effectiveRange[0].format("lll");
+                // !isRange case
+            }
             if (effectiveRange[1] - effectiveRange[0] > 86400000) {
                 return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
             }
