@@ -85,6 +85,7 @@
             rangeMode: 'inBetween',
             minDate: minDate,
             maxDate: maxDate,
+            minTime: new Date(minDate.getTime()),
             inBetweenInput: {
                 raw: {
                     textStart: minDateText,
@@ -522,6 +523,9 @@
             },
             isRange: function() {
                 return this.type.includes('range');
+            },
+            isTimePickerEnabled: function() {
+                return this.type === 'date' && this.selectTime;
             }
         },
         props: {
@@ -567,6 +571,10 @@
             placement: {
                 type: String,
                 default: 'bottom-start'
+            },
+            selectTime: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
@@ -677,6 +685,7 @@
                         parsed: [state.minDate, state.maxDate]
                     };
                 }
+                state.minTime = new Date(state.minDate.getTime());
                 return state;
             },
             handleDropdownHide: function(aborted) {
@@ -736,10 +745,21 @@
                 }
                 return newValue;
             },
+            mergeDateTime: function(oDate, oTime) {
+                return new Date(
+                    oDate.getFullYear(),
+                    oDate.getMonth(),
+                    oDate.getDate(),
+                    oTime.getHours(),
+                    oTime.getMinutes(),
+                    oTime.getSeconds()
+                );
+            },
             handleConfirmClick: function() {
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
+                    var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     this.doCommit([
-                        this.fixTimestamp(this.minDate.valueOf(), "output"),
+                        this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
                         this.fixTimestamp(this.maxDate.valueOf(), "output")
                     ], false);
                 }

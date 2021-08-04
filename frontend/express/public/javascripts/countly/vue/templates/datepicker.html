@@ -110,6 +110,9 @@
                     </vue-scroll>
                 </div>
             </div>
+            <div v-if="isTimePickerEnabled" class="cly-vue-daterp__time-picker-section">
+                <cly-time-picker v-model="minTime"></cly-time-picker>
+            </div>
             <div class="cly-vue-daterp__commit-section">
                 <el-button @click="handleDiscardClick" size="small">{{ i18n("common.cancel") }}</el-button>
                 <el-button @click="handleConfirmClick" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>

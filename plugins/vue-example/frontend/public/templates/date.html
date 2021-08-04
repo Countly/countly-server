@@ -24,6 +24,10 @@
             <cly-date-picker v-model="selectedDate" timestampFormat="ms" type="date"></cly-date-picker>
             <pre>{{selectedDate}}</pre>
         </cly-section>
+        <cly-section title="Date with Time">
+            <cly-date-picker v-model="selectedDateWTime" timestampFormat="ms" type="date" :select-time="true"></cly-date-picker>
+            <pre>{{selectedDateWTime}}</pre>
+        </cly-section>
         <cly-section title="Month">
             <cly-date-picker v-model="selectedMonth" timestampFormat="ms" type="month"></cly-date-picker>
             <pre>{{selectedMonth}}</pre>
