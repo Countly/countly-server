@@ -13,7 +13,7 @@
     });
 
     var UserPropertyPreview = countlyVue.views.create({
-        template: '<span v-tooltip.top.center="description" class="cly-vue-push-notification-mobile-preview__user-property">{{fallback}}</span>',
+        template: '<span v-tooltip.bottom.center="description" class="cly-vue-push-notification-mobile-preview__user-property">{{fallback}}</span>',
         props: {
             value: {
                 type: Object,

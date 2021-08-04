@@ -518,7 +518,47 @@
         background: #ECECEC;
         border-radius: 2px;
         margin-right: 2px;
+
+        &:hover {
+            cursor: pointer;
+        }
     }
+}
+
+.cly-vue-push-notification-add-user-property-popover {
+    $tooltip_color: #ececec;
+
+    position: absolute;
+    z-index: 3005;
+    background-color: #{$tooltip_color};
+    border-radius: 5px;
+
+    &__inner {
+        border: none;
+        background: #{$tooltip_color};
+        border-radius: 4px;
+        padding: 6px 14px;
+        line-height: 18px;
+    }
+
+    &__arrow {
+        border-width: 8px 8px 8px 8px;
+        border-top-color: transparent !important;
+        border-right-color: transparent !important;
+        border-left-color: transparent !important;
+        left: calc(50% - 8px);
+        margin-top: 0;
+        margin-bottom: 0;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        position: absolute;
+        margin: 5px;
+        border-color: #{$tooltip_color};
+        z-index:1;
+        top:-21px;
+    }
+    
 }
 // Vue emoji-picker
 .cly-vue-push-notification-emoji-wrapper{

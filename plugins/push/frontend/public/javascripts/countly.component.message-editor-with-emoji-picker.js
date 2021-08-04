@@ -1,4 +1,4 @@
-/*global CV, countlyVue*/
+/*global CV,countlyVue*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.MessageEditorWithEmojiPicker = countlyVue.views.create({
         template: CV.T("/push/templates/message-editor-with-emoji-picker.html"),
@@ -41,16 +41,19 @@
                 selection.addRange(textRange);
                 this.$refs.element.focus();
             },
-            onPropertyClick: function(id) {
+            onUserPropertyClick: function(id, container, element) {
+                var elementBound = element.getBoundingClientRect();
+                var leftCoordinate = elementBound.left + (elementBound.width / 2);
+                this.$emit("click", id, container, {left: leftCoordinate, top: elementBound.top });
+            },
+            getOnUserPropertyClickEventListener: function(id, name) {
                 var self = this;
-                return function() {
-                    self.$emit("click", id);
+                return function(event) {
+                    self.onUserPropertyClick(id, name, event.target);
                 };
             },
-            addEmptyUserProperty: function(id, value) {
-                if (!value) {
-                    value = "Select property|";
-                }
+            addEmptyUserProperty: function(id, container) {
+                var value = "Select property|";
                 var newElement = document.createElement("span");
                 newElement.setAttribute("id", "id-" + id);
                 newElement.setAttribute("contentEditable", false);
@@ -59,10 +62,11 @@
                 newElement.setAttribute("data-user-property-value", value);
                 newElement.setAttribute("data-user-property-fallback", "");
                 newElement.innerText = value;
-                newElement.onclick = this.onPropertyClick(id);
+                newElement.onclick = this.getOnUserPropertyClickEventListener(id, container);
                 this.$refs.element.appendChild(newElement);
                 this.appendZeroWidthSpace();
                 this.$emit('change', this.$refs.element.innerHTML);
+                this.onUserPropertyClick(id, container, newElement);
             },
             removeUserProperty: function(id) {
                 this.$refs.element.querySelector("#id-" + id).remove();
@@ -82,15 +86,15 @@
                 element.innerText = previewValue;
                 this.$emit('change', this.$refs.element.innerHTML);
             },
-            addEventListeners: function(ids) {
+            addEventListeners: function(ids, container) {
                 var self = this;
                 ids.forEach(function(id) {
-                    document.querySelector("#id-" + id).onclick = self.onPropertyClick(id);
+                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id, container);
                 });
             },
-            reset: function(htmlContent, ids) {
+            reset: function(htmlContent, ids, container) {
                 this.$refs.element.innerHTML = htmlContent;
-                this.addEventListeners(ids);
+                this.addEventListeners(ids, container);
             },
             appendEmoji: function(emoji) {
                 this.$refs.element.appendChild(document.createTextNode(emoji));
@@ -112,9 +116,8 @@
                 });
             }
         },
-        destroyed: function() {
-            document.querySelector('#' + this.id).removeEventListener('textinput');
-            //TODO: remove all user properties elements event listeners
+        beforeDestroy: function() {
+            //TODO: remove all user properties elements' event listeners
         },
         components: {
             'emoji-picker': countlyPushNotificationComponent.EmojiPicker

@@ -20,6 +20,20 @@
         </cly-content>
     </template>
     <template v-slot:default="drawerScope">
+        <add-user-property-popover 
+            :isOpen="isAddUserPropertyPopoverOpen"
+            :width="350"
+            ref="addUserPropertyPopover"
+            :id="selectedUserPropertyId"
+            :container="selectedUserPropertyContainer"
+            :userProperty = "pushNotificationUnderEdit.message[activeLocalization].properties[selectedUserPropertyContainer][selectedUserPropertyId]"
+            :position="addUserPropertyPopoverPosition"
+            @select="onSelectUserProperty"
+            @input="onInputFallbackUserProperty"
+            @check="onCheckUppercaseUserProperty"
+            @remove="onRemoveUserProperty"
+            @close="closeAddUserPropertyPopover">
+        </add-user-property-popover>
         <div class="bu-column bu-is-10 bu-is-offset-1">
             <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')">
                 <div class="bu-column bu-is-full">
@@ -463,6 +477,7 @@
                     </el-checkbox>
                 </div>
                 <div class="bu-column bu-is-full">
+
                     <div v-bind:class="pushNotificationUnderEdit.multipleLocalizations?'bu-columns bu-m-0':''">
                         <div class="bu-column bu-is-2 bu-p-0 cly-vue-push-notification-drawer__section-inline-left" v-if="pushNotificationUnderEdit.multipleLocalizations">
                             <el-checkbox-group v-model="pushNotificationUnderEdit.localizations">
@@ -486,17 +501,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <add-user-property-popover 
-                                    :isOpen="isAddUserPropertyPopoverOpen"
-                                    :id="selectedUserPropertyId"
-                                    :element="selectedUserPropertyElement"
-                                    :userProperty = "pushNotificationUnderEdit.message[activeLocalization].properties[selectedUserPropertyElement][selectedUserPropertyId]"
-                                    @select="onSelectUserProperty"
-                                    @input="onInputFallbackUserProperty"
-                                    @check="onCheckUppercaseUserProperty"
-                                    @remove="onRemoveUserProperty"
-                                    @close="closeAddUserPropertyPopover">
-                                </add-user-property-popover>
                                 <message-editor-with-emoji-picker 
                                     ref="title"
                                     @change="onTitleChange"
@@ -760,16 +764,14 @@
                         <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
                             Title
                         </div>
-                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
-                            {{pushNotificationUnderEdit.message[selectedLocalizationFilter].title}}
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value" v-html="pushNotificationUnderEdit.message[selectedLocalizationFilter].title">
                         </div>
                     </div>
                     <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
                         <div class="bu-level-item bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-label">
                             Content
                         </div>
-                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value">
-                            {{pushNotificationUnderEdit.message[selectedLocalizationFilter].content}}
+                        <div class="bu-level-item bu-is-justify-content-flex-start cly-vue-push-notification-drawer__review-section-value" v-html="pushNotificationUnderEdit.message[selectedLocalizationFilter].content">
                         </div>
                     </div>
                     <template v-for="(button,index) in pushNotificationUnderEdit.message[selectedLocalizationFilter].buttons">

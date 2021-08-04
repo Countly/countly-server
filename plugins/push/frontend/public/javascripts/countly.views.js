@@ -204,8 +204,12 @@
                 },
                 userPropertiesIdCounter: 0,
                 selectedUserPropertyId: null,
-                selectedUserPropertyElement: "title",
+                selectedUserPropertyContainer: "title",
                 isAddUserPropertyPopoverOpen: false,
+                addUserPropertyPopoverPosition: {
+                    top: 0,
+                    left: 0
+                },
                 pushNotificationUnderEdit: {
                     activePlatformSettings: [],
                     multipleLocalizations: false,
@@ -383,10 +387,14 @@
             resetMessageHTML: function() {
                 this.$refs.title.reset(
                     this.pushNotificationUnderEdit.message[this.activeLocalization].title,
-                    Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.title));
+                    Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.title),
+                    'title'
+                );
                 this.$refs.content.reset(
                     this.pushNotificationUnderEdit.message[this.activeLocalization].content,
-                    Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.content));
+                    Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.content),
+                    'content'
+                );
             },
             onLocalizationSelect: function(localization) {
                 this.addEmptyLocalizationMessageIfNotFound(localization);
@@ -412,8 +420,8 @@
             setSelectedUserPropertyId: function(id) {
                 this.selectedUserPropertyId = id;
             },
-            setSelectedUserPropertyElement: function(element) {
-                this.selectedUserPropertyElement = element;
+            setSelectedUserPropertyContainer: function(container) {
+                this.selectedUserPropertyContainer = container;
             },
             openAddUserPropertyPopover: function() {
                 this.isAddUserPropertyPopoverOpen = true;
@@ -421,53 +429,57 @@
             closeAddUserPropertyPopover: function() {
                 this.isAddUserPropertyPopoverOpen = false;
             },
-            addUserPropertyInHTML: function(id, element) {
-                this.$refs[element].addEmptyUserProperty(id);
+            addUserPropertyInHTML: function(id, container) {
+                this.$refs[container].addEmptyUserProperty(id, container);
             },
-            removeUserPropertyInHTML: function(id, element) {
-                this.$refs[element].removeUserProperty(id);
+            removeUserPropertyInHTML: function(id, container) {
+                this.$refs[container].removeUserProperty(id);
             },
-            setUserPropertyInHTML: function(id, element, previewValue, value) {
-                this.$refs[element].setUserPropertyValue(id, previewValue, value);
+            setUserPropertyInHTML: function(id, container, previewValue, value) {
+                this.$refs[container].setUserPropertyValue(id, previewValue, value);
             },
-            setUserPropertyFallbackInHTML: function(id, element, previewValue, fallback) {
-                this.$refs[element].setUserPropertyFallbackValue(id, previewValue, fallback);
+            setUserPropertyFallbackInHTML: function(id, container, previewValue, fallback) {
+                this.$refs[container].setUserPropertyFallbackValue(id, previewValue, fallback);
             },
-            onAddUserProperty: function(element) {
-                var propertyIndex = this.userPropertiesCounter;
-                this.userPropertiesCounter = this.userPropertiesIdCounter + 1;
-                this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element], propertyIndex, {
+            setAddUserPropertyPopoverPosition: function(position) {
+                this.addUserPropertyPopoverPosition = position;
+            },
+            onAddUserProperty: function(container) {
+                var propertyIndex = this.userPropertiesIdCounter;
+                this.userPropertiesIdCounter = this.userPropertiesIdCounter + 1;
+                this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], propertyIndex, {
                     id: propertyIndex,
                     value: "Select property",
                     fallback: "",
                     isUppercase: false
                 });
                 this.setSelectedUserPropertyId(propertyIndex);
-                this.setSelectedUserPropertyElement(element);
-                this.addUserPropertyInHTML(propertyIndex, element);
-                this.openAddUserPropertyPopover();
+                this.setSelectedUserPropertyContainer(container);
+                this.addUserPropertyInHTML(propertyIndex, container);
             },
-            onRemoveUserProperty: function(id, element) {
-                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id] = null;
+            onRemoveUserProperty: function(id, container) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id] = null;
                 this.removeUserPropertyInHTML();
             },
-            onSelectUserProperty: function(id, element, value) {
-                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id].value = value;
-                var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id].fallback;
+            onSelectUserProperty: function(id, container, value) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value = value;
+                var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback;
                 var previewValue = value + "|" + currentFallbackValue;
-                this.setUserPropertyInHTML(id, element, previewValue, value);
+                this.setUserPropertyInHTML(id, container, previewValue, value);
             },
-            onInputFallbackUserProperty: function(id, element, fallback) {
-                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id].fallback = fallback;
-                var currentValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id].value;
+            onInputFallbackUserProperty: function(id, container, fallback) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback = fallback;
+                var currentValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value;
                 var previewValue = currentValue + "|" + fallback;
-                this.setUserPropertyFallbackInHTML(id, element, previewValue, fallback);
+                this.setUserPropertyFallbackInHTML(id, container, previewValue, fallback);
             },
-            onCheckUppercaseUserProperty: function(id, element, isUppercase) {
-                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[element][id].isUppercase = isUppercase;
+            onCheckUppercaseUserProperty: function(id, container, isUppercase) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].isUppercase = isUppercase;
             },
-            onUserPropertyClick: function(id) {
+            onUserPropertyClick: function(id, container, position) {
                 this.setSelectedUserPropertyId(id);
+                this.setSelectedUserPropertyContainer(container);
+                this.setAddUserPropertyPopoverPosition(position);
                 this.openAddUserPropertyPopover();
             }
         },
