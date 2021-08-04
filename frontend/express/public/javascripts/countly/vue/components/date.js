@@ -388,6 +388,22 @@
                     },
                     parsed: [minDate, maxDate]
                 };
+            },
+            setCurrentSince: function(minDate, maxDate) {
+                this.sinceInput = {
+                    raw: {
+                        text: moment(minDate).format(this.formatter)
+                    },
+                    parsed: [minDate, maxDate]
+                };
+            },
+            setCurrentOnm: function(minDate, maxDate) {
+                this.onmInput = {
+                    raw: {
+                        text: moment(minDate).format(this.formatter)
+                    },
+                    parsed: [minDate, maxDate]
+                };
             }
         },
         watch: {
@@ -429,8 +445,12 @@
                 return date > this.globalMax || date < this.globalMin;
             },
             handleRangePick: function(val) {
-                this.rangeMode = "inBetween";
-                var firstClick = !this.rangeState.selecting;
+                var firstClick = !this.rangeState.selecting,
+                    singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm";
+
+                if (!singleSelectRange) {
+                    this.rangeMode = "inBetween";
+                }
                 if (firstClick) {
                     this.rangeBackup = {
                         minDate: this.minDate,
@@ -447,15 +467,20 @@
                         minDate = moment(val.minDate).startOf("month").toDate();
                         maxDate = moment(val.minDate).endOf("month").toDate();
                     }
-                    if (!this.isRange) {
-                        this.rangeState = {
-                            endDate: null,
-                            selecting: false,
-                            row: null,
-                            column: null,
-                            focusOn: null
-                        };
+
+                    if (!this.isRange || singleSelectRange) {
+                        this.resetRangeState();
                     }
+
+                    if (this.rangeMode === 'since') {
+                        maxDate = moment().toDate();
+                        this.setCurrentSince(minDate, maxDate);
+                    }
+                    else if (this.rangeMode === 'onm') {
+                        maxDate = minDate;
+                        this.setCurrentOnm(minDate, maxDate);
+                    }
+
                     this.setCurrentInBetween(minDate, maxDate);
                 }
                 else {
@@ -509,15 +534,18 @@
                 }
                 this.$refs.vs.scrollIntoView(anchorClass);
             },
+            resetRangeState: function() {
+                this.rangeState = {
+                    endDate: null,
+                    selecting: false,
+                    row: null,
+                    column: null,
+                    focusOn: null
+                };
+            },
             abortPicking: function() {
                 if (this.rangeState.selecting) {
-                    this.rangeState = {
-                        endDate: null,
-                        selecting: false,
-                        row: null,
-                        column: null,
-                        focusOn: null
-                    };
+                    this.resetRangeState();
                     this.minDate = this.rangeBackup.minDate;
                     this.maxDate = this.rangeBackup.maxDate;
                     this.rangeBackup = {
