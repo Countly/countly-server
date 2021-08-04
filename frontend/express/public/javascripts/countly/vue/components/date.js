@@ -107,7 +107,7 @@
                 parsed: [minDate, maxDate]
             },
         };
-        state.label = getRangeLabel(state);
+        state.label = getRangeLabel(state, this.type);
         return state;
     }
 
@@ -196,21 +196,35 @@
     /**
      * Returns the range label for a given state object
      * @param {Object} state Current state of datepicker
+     * @param {String} type Datepicker type
      * @returns {String} Range label
      */
-    function getRangeLabel(state) {
+    function getRangeLabel(state, type) {
+        type = type || "date";
+        var level = type.replace("range", "");
 
         if (!state.rangeMode || state.rangeMode === 'inBetween') {
             var effectiveRange = [moment(state.minDate), moment(state.maxDate)];
-            if (effectiveRange[0].isSame(effectiveRange[1])) {
-                return effectiveRange[0].format("lll");
-                // !isRange case
-            }
-            if (effectiveRange[1] - effectiveRange[0] > 86400000) {
-                return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
-            }
-            else {
-                return effectiveRange[0].format("lll") + " - " + effectiveRange[1].format("lll");
+            switch (level) {
+            case "date":
+                if (effectiveRange[0].isSame(effectiveRange[1])) {
+                    return effectiveRange[0].format("lll");
+                    // !isRange case
+                }
+                else if (effectiveRange[1] - effectiveRange[0] > 86400000) {
+                    return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
+                }
+                else {
+                    return effectiveRange[0].format("lll") + " - " + effectiveRange[1].format("lll");
+                }
+                // case "week":
+                //     return;
+            case "month":
+                if (effectiveRange[0].isSame(effectiveRange[1])) {
+                    return effectiveRange[0].format("MMM YYYY");
+                    // !isRange case
+                }
+                return effectiveRange[0].format("MMM YYYY") + " - " + effectiveRange[1].format("MMM YYYY");
             }
         }
         else if (state.rangeMode === 'since') {
@@ -616,7 +630,7 @@
                 var changes = this.valueToInputState(value),
                     self = this;
 
-                changes.label = getRangeLabel(changes);
+                changes.label = getRangeLabel(changes, this.type);
 
                 Object.keys(changes).forEach(function(fieldKey) {
                     self[fieldKey] = changes[fieldKey];
