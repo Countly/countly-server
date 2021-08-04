@@ -1,11 +1,18 @@
 .technology-analytics-wrapper .allPlatformVersions {
 	border-left:1px solid #ECECEC;
 	height: 264px;
+	border-top: 1px solid #ECECEC;
+	border-bottom: 1px solid #ECECEC;
+	background-color: #fff;
 }
 
 .technology-analytics-wrapper .emptyVersions {
 	height: 264px;
 	position:relative;
+	border-left: 1px solid #ececec;
+	border-top: 1px solid #ECECEC;
+	border-bottom: 1px solid #ECECEC;
+	background-color: #fff;
 }
 .technology-analytics-wrapper .emptyVersions div {
 	font-family: Inter;
@@ -63,6 +70,10 @@
 	margin-bottom:20px;
 }
 
+.technology-analytics-wrapper .cly-vue-metric-card__wrapper .bu-is-flex-direction-column {
+	margin-right: -1.5rem
+}
+
 .technology-analytics-wrapper .selector_wrapper{
 	position:relative;
 	top:-5px;
@@ -71,4 +82,23 @@
 
 .technology-analytics-wrapper .app-resolution-date-picker-container {
 	margin-bottom:32px;
+}
+
+.technology-analytics-wrapper .metricCardsWrapper {
+	height: 117px;
+	padding-bottom:20px;
+}
+.technology-analytics-wrapper .platformVersionsWrapper {
+	height: 300px;
+	padding-botom:20px;
+}
+
+.technology-analytics-wrapper .metricCardsWrapper .bu-columns {
+	flex-wrap:nowrap;
+}
+
+.technology-analytics-wrapper .metricCardsWrapper .cly-vue-metric-card {
+	border-top: 1px solid #ECECEC;
+	border-bottom: 1px solid #ECECEC;
+	background-color: #fff;
 }

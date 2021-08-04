@@ -18,6 +18,21 @@ var AppPlatformView = countlyVue.views.create({
                     keepShow: true
                 }
             },
+            scrollCards: {
+                vuescroll: {},
+                scrollPanel: {
+                    initialScrollX: false,
+                },
+                rail: {
+                    gutterOfSide: "0px"
+                },
+                bar: {
+                    background: "#A7AEB8",
+                    size: "6px",
+                    specifyBorderRadius: "3px",
+                    keepShow: false
+                }
+            },
             description: CV.i18n('platforms.description'),
             dynamicTab: "platform-table",
             platformTabs: [
@@ -66,11 +81,11 @@ var AppPlatformView = countlyVue.views.create({
                                 var platforms = this.appPlatform.versions;
 
                                 if (!this.selectedPlatform) {
-                                    this.selectedPlatform = platforms[0].label;
+                                    this.selectedPlatform = platforms[0]["label"];
                                     this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedPlatform', this.selectedPlatform);
                                 }
                                 for (var k = 0; k < platforms.length; k++) {
-                                    if (platforms[k].label === this.selectedPlatform) {
+                                    if (platforms[k]["label"] === this.selectedPlatform) {
                                         return platforms[k].data || [];
                                     }
                                 }
@@ -81,10 +96,10 @@ var AppPlatformView = countlyVue.views.create({
                                 var platforms = this.appPlatform.versions;
                                 var display = [];
                                 for (var k = 0; k < platforms.length; k++) {
-                                    display.push({"value": platforms[k].label, "name": platforms[k].label});
+                                    display.push({"value": platforms[k]["label"], "name": platforms[k]["label"]});
                                 }
                                 if (!this.selectedPlatform) {
-                                    this.selectedPlatform = display[0].value;
+                                    this.selectedPlatform = display[0]["value"];
                                     this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedPlatform', this.selectedPlatform);
                                 }
                                 return display;
@@ -101,6 +116,20 @@ var AppPlatformView = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.$store.dispatch('countlyDevicesAndTypes/fetchPlatform');
+        },
+        handleCardsScroll: function() {
+            if (this.$refs && this.$refs.bottomSlider) {
+                var pos1 = this.$refs.topSlider.getPosition();
+                pos1 = pos1.scrollLeft;
+                this.$refs.bottomSlider.scrollTo({x: pos1}, 0);
+            }
+        },
+        handleBottomScroll: function() {
+            if (this.$refs && this.$refs.topSlider) {
+                var pos1 = this.$refs.bottomSlider.getPosition();
+                pos1 = pos1.scrollLeft;
+                this.$refs.topSlider.scrollTo({x: pos1}, 0);
+            }
         }
     },
     computed: {
@@ -133,16 +162,17 @@ var AppPlatformView = countlyVue.views.create({
 
             var data = this.appPlatform.chartData || [];
             for (var k = 0; k < data.length; k++) {
-                var percent = Math.round((data[k][property] || 0) * 1000 / (this.appPlatform.totals[property] || 1)) / 10;
+                var percent = Math.round((data[k][property] || 0) * 1000 / (this.appPlatform["totals"][property] || 1)) / 10;
                 display.push({
-                    "name": data[k].origos_,
+                    "name": data[k]["origos_"],
                     "value": countlyCommon.getShortNumber(data[k][property] || 0),
                     "percent": percent,
                     "percentText": percent + " % " + CV.i18n('common.of-total'),
                     "info": "some description",
-                    "color": this.graphColors[k]
+                    "color": this.graphColors[k % this.graphColors.length]
                 });
             }
+
             return display;
         },
         platformVersions: function() {
@@ -156,12 +186,12 @@ var AppPlatformView = countlyVue.views.create({
                 for (var k = 0; k < data.length; k++) {
                     var percent = Math.round((data[k][property] || 0) * 1000 / (platforms[z][property] || 1)) / 10;
                     display.push({
-                        "name": data[k].os_versions,
+                        "name": data[k]["os_versions"],
                         "value": countlyCommon.getShortNumber(data[k][property] || 0),
                         "percent": percent,
                         "bar": [{
                             percentage: percent,
-                            color: this.graphColors[z]
+                            color: this.graphColors[z % this.graphColors.length]
                         }
                         ]
                     });
