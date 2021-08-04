@@ -519,7 +519,7 @@
                 type: String,
                 default: "daterange",
                 validator: function(value) {
-                    return ['date', 'daterange', 'monthrange'].includes(value);
+                    return ['date', 'daterange', 'month', 'monthrange'].includes(value);
                 }
             },
             displayShortcuts: {
