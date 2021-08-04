@@ -830,6 +830,11 @@
 
     Vue.component("cly-time-picker", {
         props: {
+            width: {
+                type: Number,
+                default: 100,
+                required: false
+            },
             format: {
                 type: String,
                 default: 'HH:mm',
@@ -841,7 +846,7 @@
                 required: false
             }
         },
-        template: '<el-time-picker class="cly-vue-time-picker" v-bind="$attrs" v-on="$listeners" :format="format" :clearable="clearable"></el-time-picker>'
+        template: '<el-time-picker :style="{\'width\': width + \'px\'}" class="cly-vue-time-picker" v-bind="$attrs" v-on="$listeners" :format="format" :clearable="clearable"></el-time-picker>'
     });
 
 }(window.countlyVue = window.countlyVue || {}));
