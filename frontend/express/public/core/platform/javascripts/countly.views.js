@@ -18,6 +18,21 @@ var AppPlatformView = countlyVue.views.create({
                     keepShow: true
                 }
             },
+            scrollCards: {
+                vuescroll: {},
+                scrollPanel: {
+                    initialScrollX: false,
+                },
+                rail: {
+                    gutterOfSide: "0px"
+                },
+                bar: {
+                    background: "#A7AEB8",
+                    size: "6px",
+                    specifyBorderRadius: "3px",
+                    keepShow: false
+                }
+            },
             description: CV.i18n('platforms.description'),
             dynamicTab: "platform-table",
             platformTabs: [
@@ -101,6 +116,20 @@ var AppPlatformView = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.$store.dispatch('countlyDevicesAndTypes/fetchPlatform');
+        },
+        handleCardsScroll: function() {
+            if (this.$refs && this.$refs.bottomSlider) {
+                var pos1 = this.$refs.topSlider.getPosition();
+                pos1 = pos1.scrollLeft;
+                this.$refs.bottomSlider.scrollTo({x: pos1}, 0);
+            }
+        },
+        handleBottomScroll: function() {
+            if (this.$refs && this.$refs.topSlider) {
+                var pos1 = this.$refs.bottomSlider.getPosition();
+                pos1 = pos1.scrollLeft;
+                this.$refs.topSlider.scrollTo({x: pos1}, 0);
+            }
         }
     },
     computed: {
@@ -140,9 +169,10 @@ var AppPlatformView = countlyVue.views.create({
                     "percent": percent,
                     "percentText": percent + " % " + CV.i18n('common.of-total'),
                     "info": "some description",
-                    "color": this.graphColors[k]
+                    "color": this.graphColors[k % this.graphColors.length]
                 });
             }
+
             return display;
         },
         platformVersions: function() {
@@ -161,7 +191,7 @@ var AppPlatformView = countlyVue.views.create({
                         "percent": percent,
                         "bar": [{
                             percentage: percent,
-                            color: this.graphColors[z]
+                            color: this.graphColors[z % this.graphColors.length]
                         }
                         ]
                     });
