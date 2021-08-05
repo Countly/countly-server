@@ -1,104 +1,105 @@
 .technology-analytics-wrapper .allPlatformVersions {
-	border-left:1px solid #ececec;
-	height: 264px;
-	border-top: 1px solid #ececec;
-	border-bottom: 1px solid #ececec;
-	background-color: #fff;
+    border-left:1px solid #ececec;
+    height: 264px;
+    border-top: 1px solid #ececec;
+    border-bottom: 1px solid #ececec;
+    background-color: #fff;
 }
 
 .technology-analytics-wrapper .emptyVersions {
-	height: 264px;
-	position:relative;
-	border-left: 1px solid #ececec;
-	border-top: 1px solid #ececec;
-	border-bottom: 1px solid #ececec;
-	background-color: #fff;
+    height: 264px;
+    position:relative;
+    border-left: 1px solid #ececec;
+    border-top: 1px solid #ececec;
+    border-bottom: 1px solid #ececec;
+    background-color: #fff;
 }
 .technology-analytics-wrapper .emptyVersions div {
-	font-family: Inter;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 14px;
-	line-height: 20px;
-	color:#333C48;
-	position: absolute;
+    font-family: Inter;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 20px;
+    color:#333C48;
+    position: absolute;
     top: 50%;
     text-align: center;
     width: 100%;
 }
 
 .technology-analytics-wrapper .version-graph-title {
-	font-family: Inter;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 14px;
-	line-height: 20px;
-	color:#333C48;
+    font-family: Inter;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 20px;
+    color:#333C48;
 }
 
 .technology-analytics-wrapper .version-graph-title div:first-child {
-	text-align:left;
+    text-align:left;
 }
 .technology-analytics-wrapper .version-graph-title div:nth-child(2) {
-	text-align:right;
+    text-align:right;
 }
 
 .technology-analytics-wrapper .version-graph-block .version-graph-title{
-	margin:0px;
-	padding-bottom:4px;
+    margin:0px;
+    padding-bottom:4px;
 }
 .technology-analytics-wrapper .version-graph-title .bu-column {
-	padding:0px;
+    padding:0px;
 }
 
 .technology-analytics-wrapper h4 {
-	font-family: Inter;
-	font-style: normal;
-	font-weight: 500;
-	font-size: 16px;
-	line-height: 24px;
-	color:#333C48;
+    font-family: Inter;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+    color:#333C48;
 }
 
 .technology-analytics-wrapper h5 {
-	font-family: Inter;
-	font-style: normal;
-	font-weight: 500;
-	font-size: 14px;
-	line-height: 24px;
-	color: #333C48;
-	margin-bottom:20px;
+    font-family: Inter;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 24px;
+    color: #333C48;
+    margin-bottom:20px;
 }
 
 .technology-analytics-wrapper .cly-vue-metric-card__wrapper .bu-is-flex-direction-column {
-	margin-right: -1.5rem
+    margin-right: -1.5rem;
 }
 
-.technology-analytics-wrapper .selector_wrapper{
-	position:relative;
-	top:-5px;
-	margin-left: 8px;
+.technology-analytics-wrapper .selector_wrapper {
+    position:relative;
+    top:-5px;
+    margin-left: 8px;
 }
 
 .technology-analytics-wrapper .app-resolution-date-picker-container {
-	margin-bottom:32px;
+    margin-bottom:32px;
 }
 
 .technology-analytics-wrapper .metricCardsWrapper {
-	height: 117px;
-	padding-bottom:20px;
+    height: 117px;
+    padding-bottom: 20px;
 }
+
 .technology-analytics-wrapper .platformVersionsWrapper {
-	height: 300px;
-	padding-botom:20px;
+    height: 300px;
+    padding-bottom: 20px;
 }
 
 .technology-analytics-wrapper .metricCardsWrapper .bu-columns {
-	flex-wrap:nowrap;
+    flex-wrap: nowrap;
 }
 
 .technology-analytics-wrapper .metricCardsWrapper .cly-vue-metric-card {
-	border-top: 1px solid #ececec;
-	border-bottom: 1px solid #ececec;
-	background-color: #fff;
+    border-top: 1px solid #ececec;
+    border-bottom: 1px solid #ececec;
+    background-color: #fff;
 }
