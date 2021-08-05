@@ -3466,7 +3466,7 @@
         width: 100%;
     }
 
-    .cly-vue-listbox--bordered {
+    &.cly-vue-listbox--bordered {
         border-radius: 7px;
         border: 1px solid c.$border-color-base;
         &.is-focus,
@@ -3566,11 +3566,8 @@
             }
         }
         .cly-vue-listbox {
-            padding: 0 8px;
-            .el-scrollbar {
-                margin-right: -7px;
-            }
-            .el-select-dropdown__list,
+            padding: 8px;
+
             &__no-data {
                 margin: 8px 7px 25px 0;
             }

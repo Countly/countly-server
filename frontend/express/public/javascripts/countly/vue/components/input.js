@@ -136,7 +136,7 @@
             },
             wrapperStyle: function() {
                 return {
-                    height: "300px"
+                    'max-height': "300px"
                 };
             }
         }
