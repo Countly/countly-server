@@ -807,6 +807,23 @@
                 classes["cly-vue-chart-legend__" + this.seriesType] = true;
 
                 return classes;
+            },
+            scrollOptions: function() {
+                return {
+                    vuescroll: {},
+                    scrollPanel: {
+                        scrollingX: false
+                    },
+                    rail: {
+                        gutterOfSide: "0px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: true
+                    }
+                };
             }
         },
         components: {
@@ -852,10 +869,12 @@
                             </primary-legend>\
                         </template>\
                         <template v-if="type === \'secondary\'">\
-                            <secondary-legend\
+                            <vue-scroll :ops="scrollOptions">\
+							<secondary-legend\
                                 :data="legendData"\
                                 :onClick="onLegendClick">\
                             </secondary-legend>\
+							</vue-scroll>\
                         </template>\
                     </div>'
     });
