@@ -3461,27 +3461,12 @@
 }
 
 .cly-vue-listbox {
-    height: inherit;
-    .el-scrollbar {
-        height: inherit;
-        &__wrap {
-            overflow-x: hidden;
-        }
-    }
-    .el-select-dropdown__list {
-        padding: 0;
-    }
-
-    .el-select-dropdown__item {
-        padding: 0 7px;
-        border-radius: 7px;
-    }
 
     label.el-checkbox {
         width: 100%;
     }
 
-    &--bordered {
+    .cly-vue-listbox--bordered {
         border-radius: 7px;
         border: 1px solid c.$border-color-base;
         &.is-focus,
@@ -3490,8 +3475,25 @@
         }
     }
 
-    &__no-data {
+    .cly-vue-listbox__no-data {
         padding: 11px 7px 2px 7px;
+    }
+
+    .el-checkbox-group {
+        overflow: hidden;
+    }
+
+    &--has-default-skin {
+        .cly-vue-listbox__item {
+            padding: 0 7px;
+            border-radius: 7px;
+        }
+    }
+    &--has-jumbo-skin {
+        .cly-vue-listbox__item {
+            padding: 0 7px;
+            border-radius: 7px;
+        }
     }
 }
 
