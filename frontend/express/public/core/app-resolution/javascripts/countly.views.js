@@ -30,6 +30,7 @@ var AppResolutionView = countlyVue.views.create({
                                 return CV.i18n('common.table.new-users') + " " + countlyCommon.getShortNumber(self.appResolution.totals.newUsers || 0);
                             }
                         }
+
                     }
                 ]
             };

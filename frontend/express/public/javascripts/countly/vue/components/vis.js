@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor, countlyGlobal */
+/* global Vue, countlyCommon, countlyLocation, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
 
 (function(countlyVue) {
 
@@ -63,6 +63,16 @@
             showDownload: {
                 type: Boolean,
                 default: true
+            },
+            legend: {
+                type: Object,
+                default: function() {
+                    return {
+                        show: true,
+                        type: "secondary",
+                        data: []
+                    };
+                }
             }
         },
         data: function() {
@@ -76,13 +86,14 @@
                     },
                     grid: {
                         top: 30,
-                        bottom: 65,
-                        left: 35,
-                        right: 35,
+                        bottom: 35,
+                        left: 36,
+                        right: 36,
                         containLabel: true
                     },
                     legend: {
-                        show: true,
+                        show: false,
+                        type: 'scroll',
                         bottom: 10,
                         padding: 15,
                         itemGap: 25,
@@ -299,10 +310,14 @@
 
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push(series[i].name);
+                    legendData.push({name: series[i].name});
                 }
 
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
+
+                //Set default legend show to false
+                opt.legend.show = false;
+
                 opt.series = series;
                 return opt;
             }
@@ -338,10 +353,14 @@
 
                 for (var i = 0; i < series.length; i++) {
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
-                    legendData.push(series[i].name);
+                    legendData.push({name: series[i].name});
                 }
 
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
+
+                //Set default legend show to false
+                opt.legend.show = false;
+
                 opt.series = series;
                 return opt;
             }
@@ -364,7 +383,8 @@
                         orient: 'vertical',
                         right: "25%",
                         top: "25%",
-                        bottom: 'auto'
+                        bottom: 'auto',
+                        show: false
                     },
                     tooltip: {
                         trigger: 'item'
@@ -378,7 +398,7 @@
                 },
                 seriesOptions: {
                     type: 'pie',
-                    radius: ['45%', '70%'],
+                    radius: ['60%', '95%'],
                     center: ['50%', '50%'],
                     itemStyle: {
                         borderRadius: 0,
@@ -399,6 +419,7 @@
         computed: {
             mergedOptions: function() {
                 var opt = _merge({}, this.baseOptions, this.mixinOptions, this.option);
+
                 var series = opt.series || [];
 
                 var legendData = [];
@@ -406,17 +427,33 @@
                     series[i] = _merge({}, this.baseSeriesOptions, this.seriesOptions, series[i]);
                     var seriesData = series[i].data;
 
-                    if (!opt.legend.data) {
-                        /*
-                            Legend data in series comes from within series data names
-                        */
-                        for (var j = 0; j < seriesData.length; j++) {
-                            legendData.push(seriesData[j].name);
-                        }
+                    var dataSum = seriesData.reduce(function(acc, val) {
+                        acc += val.value;
+                        return acc;
+                    }, 0);
+
+                    seriesData.sort(function(a, b) {
+                        return b.value - a.value;
+                    });
+
+                    /*
+                        Legend data in series comes from within series data names
+                    */
+                    for (var j = 0; j < seriesData.length; j++) {
+                        legendData.push({
+                            name: seriesData[j].name,
+                            percentage: ((seriesData[j].value / dataSum) * 100).toFixed(1)
+                        });
                     }
                 }
 
-                opt.legend.data = !opt.legend.data ? legendData : opt.legend.data;
+                //Pie charts can only have secondary legend types
+                this.legend.type = "secondary";
+                this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
+
+                //Set default legend show to false
+                opt.legend.show = false;
+
                 opt.series = series;
                 return opt;
             }
@@ -615,29 +652,218 @@
                     </div>'
     });
 
-    var CustomLegend = countlyBaseComponent.extend({
-        template: '<div class="cly-vue-chart-legend">\
-                        <div class="cly-vue-chart-legend__first-row">\
-                            <div class="cly-vue-chart-legend__checkbox"></div>\
-                            <div class="cly-vue-chart-legend__title">Total sessions</div>\
-                            <cly-tooltip-icon class="cly-vue-chart-legend__tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
+    var SecondaryLegend = countlyBaseComponent.extend({
+        props: {
+            data: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            onClick: {
+                type: Function
+            }
+        },
+        template: '<div :class="[\'cly-vue-chart-legend__secondary\', \'cly-vue-chart-legend__secondary--text-center\']">\
+                        <div v-for="(item, index) in data"\
+                            :key="item.name" :data-series="item.name"\
+                            :class="[\'cly-vue-chart-legend__s-series\',\
+                                    {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
+                            @click="onClick(item, index)">\
+                            <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                            <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.name}}</div>\
+                            <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                         </div>\
-                        <div class="cly-vue-chart-legend__second-row">\
-                            <div class="cly-vue-chart-legend__number">123</div>\
-                            <div class="cly-vue-chart-legend__trend cly-vue-chart-legend--trend-up">\
-                                <i class="fas fa-arrow-circle-up"></i>\
-                                <i class="fas fa-arrow-circle-down"></i>\
-                                <span>4.5%</span>\
+                    </div>'
+    });
+
+    var PrimaryLegend = countlyBaseComponent.extend({
+        props: {
+            data: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            onClick: {
+                type: Function
+            }
+        },
+        template: '<div class="cly-vue-chart-legend__primary">\
+                        <div v-for="(item, index) in data"\
+                            :key="item.name"\
+                            :data-series="item.name"\
+                            :class="[\'cly-vue-chart-legend__p-series\',\
+                                    {\'cly-vue-chart-legend__p-series--deselected\': item.status === \'off\'}]"\
+                            @click="onClick(item, index)">\
+                            <div class="cly-vue-chart-legend__first-row">\
+                                <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div class="cly-vue-chart-legend__p-title">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__p-tooltip" v-if="item.tooltip">\
+                                    <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
+                                </div>\
+                            </div>\
+                            <div class="cly-vue-chart-legend__second-row">\
+                                <div class="cly-vue-chart-legend__p-number">{{item.value}}</div>\
+                                <div\
+                                    :class="[\'cly-vue-chart-legend__p-trend\', \
+                                            {\'cly-vue-chart-legend__p-trend--trend-up\': item.trend === \'up\'}, \
+                                            {\'cly-vue-chart-legend__p-trend--trend-down\': item.trend === \'down\'}]"\
+                                >\
+                                    <i class="fas fa-arrow-circle-up" v-if="item.trend === \'up\'"></i>\
+                                    <i class="fas fa-arrow-circle-down" v-if="item.trend === \'down\'"></i>\
+                                    <span v-if="item.percentage">{{item.percentage}}</span>\
+                                </div>\
                             </div>\
                         </div>\
+                    </div>'
+    });
+
+    /*
+        Custom legend class
+        Structure of the object in data array -
+        {
+            name: name of the series to which this legend maps (optional)
+            value: value of the series to display
+            trend: accepted values are "up" and "down"
+            percentage: percentage of the trend
+            tooltip: tooltip text
+        }
+    */
+    var CustomLegend = countlyBaseComponent.extend({
+        props: {
+            type: {
+                type: String,
+                default: "secondary"
+            },
+            chartOptions: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            echartRef: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            data: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            }
+        },
+        computed: {
+            seriesType: function() {
+                return this.chartOptions.series && this.chartOptions.series[0] && this.chartOptions.series[0].type;
+            },
+            legendData: function() {
+                var data = this.data;
+
+                var series = this.chartOptions.series || [];
+
+                if (this.seriesType === "pie") {
+                    series = series[0].data;
+                }
+
+                if (series.length !== data.length) {
+                    // eslint-disable-next-line no-console
+                    console.log("Series length and legend length should be same");
+                    return [];
+                }
+
+                var colors = this.chartOptions.color || [];
+                var colorIndex = 0;
+                for (var i = 0; i < series.length; i++) {
+                    var serie = series[i];
+
+                    if (serie.color) {
+                        data[i].color = serie.color;
+                    }
+                    else {
+                        data[i].color = colors[colorIndex];
+                        colorIndex++;
+                    }
+
+                    if (data[i].status === "off") {
+                        data[i].displayColor = "#a7aeb8";
+                    }
+                    else {
+                        data[i].displayColor = data[i].color;
+                    }
+                }
+
+                return data;
+            },
+            legendClasses: function() {
+                var classes = {
+                    'bu-is-flex': true,
+                    'bu-is-flex-direction-column': true,
+                    'bu-is-justify-content-center': true
+                };
+
+                classes["cly-vue-chart-legend__" + this.seriesType] = true;
+
+                return classes;
+            }
+        },
+        components: {
+            "secondary-legend": SecondaryLegend,
+            "primary-legend": PrimaryLegend
+        },
+        methods: {
+            onLegendClick: function(item, index) {
+                var offs = this.data.filter(function(d) {
+                    return d.status === "off";
+                });
+
+                if (item.status !== "off" && offs.length === (this.data.length - 1)) {
+                    //Always show in series and hence the legend
+                    return;
+                }
+
+                this.echartRef.dispatchAction({
+                    type: "legendToggleSelect",
+                    name: item.name
+                });
+
+                var obj = this.data[index];
+
+                //For the first time, item.status does not exist
+                //So we set it to off
+                //On subsequent click we toggle between on and off
+                if (obj.status === "off") {
+                    obj.status = "on";
+                }
+                else {
+                    obj.status = "off";
+                }
+
+                this.$set(this.data, index, obj);
+            }
+        },
+        template: '<div class="cly-vue-chart-legend" :class="legendClasses">\
+                        <template v-if="type === \'primary\'">\
+                            <primary-legend\
+                                :data="legendData"\
+                                :onClick="onLegendClick">\
+                            </primary-legend>\
+                        </template>\
+                        <template v-if="type === \'secondary\'">\
+                            <secondary-legend\
+                                :data="legendData"\
+                                :onClick="onLegendClick">\
+                            </secondary-legend>\
+                        </template>\
                     </div>'
     });
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right"],
-                showCustomLegend: false
+                forwardedSlots: ["chart-left", "chart-right"]
             };
         },
         mounted: function() {
@@ -668,7 +894,12 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        <custom-legend :echartRef="echartRef" v-if="showCustomLegend">\
+                        <custom-legend\
+                            :type="legend.type"\
+                            :echartRef="echartRef"\
+                            v-if="legend.show"\
+                            :chartOptions="chartOptions"\
+                            :data="legend.data">\
                         </custom-legend>\
                     </div>'
     }));
@@ -697,7 +928,8 @@
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
@@ -774,7 +1006,13 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
-                        {{bucket}}\
+                        <custom-legend\
+                            :type="legend.type"\
+                            :echartRef="echartRef"\
+                            v-if="legend.show"\
+                            :chartOptions="chartOptions"\
+                            :data="legend.data">\
+                        </custom-legend>\
                     </div>'
     }));
 
@@ -788,7 +1026,8 @@
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
@@ -811,6 +1050,13 @@
                                 :autoresize="autoresize">\
                             </echarts>\
                         </div>\
+                        <custom-legend\
+                            :type="legend.type"\
+                            :echartRef="echartRef"\
+                            v-if="legend.show"\
+                            :chartOptions="chartOptions"\
+                            :data="legend.data">\
+                        </custom-legend>\
                     </div>'
     }));
 
@@ -824,12 +1070,27 @@
             this.echartRef = this.$refs.echarts;
         },
         components: {
-            'chart-header': ChartHeader
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
         },
         computed: {
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 return opt;
+            },
+            chartClasses: function() {
+                var classes = {
+                    "bu-column": true
+                };
+
+                if (this.legend.show) {
+                    classes["bu-is-half"] = true;
+                }
+                else {
+                    classes["bu-is-full"] = true;
+                }
+
+                return classes;
             }
         },
         template: '<div class="cly-vue-chart">\
@@ -838,14 +1099,25 @@
                                 <slot :name="item" v-bind="slotScope"></slot>\
                             </template>\
                         </chart-header>\
-                        <div :style="{height: height + \'px\'}">\
-                            <echarts\
-                                ref="echarts"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                :option="chartOptions"\
-                                :autoresize="autoresize">\
-                            </echarts>\
+                        <div class="bu-columns bu-is-gapless"\
+                            :style="{height: height + \'px\'}">\
+                            <div :class="chartClasses">\
+                                <echarts\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
+                            <custom-legend\
+                                :type="legend.type"\
+                                :echartRef="echartRef"\
+                                v-if="legend.show"\
+                                :chartOptions="chartOptions"\
+                                :class="chartClasses"\
+                                :data="legend.data">\
+                            </custom-legend>\
                         </div>\
                     </div>'
     }));
@@ -901,6 +1173,380 @@
                             v-on="$listeners"\
                         />\
                     </div>'
+    }));
+
+    Vue.component("cly-worldmap", countlyVue.components.create({
+        components: {
+            'l-map': Vue2Leaflet.LMap,
+            'l-circle-marker': Vue2Leaflet.LCircleMarker,
+            'l-geo-json': Vue2Leaflet.LGeoJson,
+            'l-tile-layer': Vue2Leaflet.LTileLayer,
+            'l-control': Vue2Leaflet.LControl
+        },
+        props: {
+            showTile: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            countriesData: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
+            },
+            regionsData: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
+            },
+            citiesData: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
+            },
+            fillColor: {
+                type: String,
+                default: '#D6D6D6',
+                required: false
+            },
+            borderColor: {
+                type: String,
+                default: '#FFF',
+                required: false
+            },
+            maxMarkerRadius: {
+                type: Number,
+                default: 15,
+                required: false
+            },
+            minMarkerRadius: {
+                type: Number,
+                default: 4,
+                required: false
+            },
+            countriesTitle: {
+                type: String,
+                default: '',
+                required: false
+            },
+            regionsTitle: {
+                type: String,
+                default: '',
+                required: false
+            },
+            citiesTitle: {
+                type: String,
+                default: '',
+                required: false
+            }
+        },
+        created: function() {
+            var self = this;
+            this.loadGeojson().then(function(json) {
+                self.geojsonHome = json;
+                json.features.forEach(function(f) {
+                    self.boundingBoxes[f.properties.code] = f.bbox;
+                    self.countriesToLatLng[f.properties.code] = {
+                        lat: f.properties.lat,
+                        lon: f.properties.lon
+                    };
+                });
+                self.handleViewChange();
+            });
+        },
+        data: function() {
+            return {
+                loadingGeojson: false,
+                loadingCities: false,
+                enableTooltip: true,
+                maxBounds: null,
+                minZoom: 0,
+                geojsonHome: null,
+                geojsonDetail: null,
+                tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+                boundingBoxes: {},
+                country: null,
+                focusedRegion: null,
+                focusedCity: null,
+                detailMode: 'regions',
+                countriesToLatLng: {},
+                regionsToLatLng: {},
+                citiesToLatLng: {},
+                circleMarkerConfig: {
+                    pane: "markerPane",
+                    fillColor: "#017AFF",
+                    fillOpacity: 0.6,
+                    color: "transparent",
+                }
+            };
+        },
+        watch: {
+            country: function(newVal) {
+                this.$emit("countryChanged", newVal);
+            },
+            detailMode: function(newVal) {
+                this.$emit("detailModeChanged", newVal);
+                if (newVal === 'cities') {
+                    this.indexCities();
+                }
+            },
+            citiesData: function() {
+                if (this.detailMode === 'cities') {
+                    this.indexCities();
+                }
+            }
+        },
+        computed: {
+            loading: function() {
+                return this.loadingGeojson || this.loadingCities;
+            },
+            inDetail: function() {
+                return this.country !== null;
+            },
+            optionsHome: function() {
+                return {
+                    onEachFeature: this.onEachFeatureFunction
+                };
+            },
+            optionsDetail: function() {
+                return {
+                    onEachFeature: this.onEachFeatureFunctionDetail
+                };
+            },
+            styleFunction: function() {
+                var fillColor = this.fillColor,
+                    borderColor = this.borderColor;
+
+                return function() {
+                    return {
+                        weight: 1,
+                        color: borderColor,
+                        opacity: 1,
+                        fillColor: fillColor,
+                        fillOpacity: 1
+                    };
+                };
+            },
+            onEachFeatureFunction: function(/*params*/) {
+                var self = this;
+                return function(feature, layer) {
+                    layer.on('click', function() {
+                        self.goToCountry(feature.properties.code);
+                    });
+                };
+            },
+            onEachFeatureFunctionDetail: function() {
+                return function() {};
+            },
+            currentViewType: function() {
+                if (!this.inDetail) {
+                    return "main";
+                }
+                return this.detailMode;
+            },
+            locations: function() {
+                var self = this;
+                switch (this.currentViewType) {
+                case "main":
+                    var countryCodes = Object.keys(this.countriesData);
+
+                    return countryCodes.map(function(code) {
+                        return {
+                            label: countlyLocation.getCountryName(code),
+                            value: code,
+                            icon: countlyGlobal.cdn + "images/flags/" + code.toLowerCase() + ".png",
+                            custom: self.countriesData[self.country]
+                        };
+                    });
+
+                case "regions":
+                    var regionCodes = Object.keys(this.regionsData[this.country] || {});
+
+                    return regionCodes.map(function(code) {
+                        return {
+                            label: countlyLocation.getRegionName(code, self.country),
+                            value: code,
+                            custom: self.regionsData[self.country][code]
+                        };
+                    });
+
+                case "cities":
+                    var cityNames = Object.keys(this.citiesData[this.country] || {});
+
+                    return cityNames.map(function(name) {
+                        return {
+                            label: name,
+                            value: name,
+                            custom: self.citiesData[self.country][name]
+                        };
+                    });
+                }
+            },
+            activeMarkers: function() {
+                switch (this.currentViewType) {
+                case "main":
+                    return this.countriesData;
+                case "regions":
+                    return this.regionsData[this.country];
+                case "cities":
+                    return this.citiesData[this.country];
+                }
+            },
+            largestMarkerValue: function() {
+                if (!this.activeMarkers) {
+                    return 1;
+                }
+                var self = this;
+                return Object.keys(this.activeMarkers).reduce(function(acc, val) {
+                    return Math.max(acc, self.activeMarkers[val].value);
+                }, 0);
+            },
+            nameToLatLng: function() {
+                switch (this.currentViewType) {
+                case "main":
+                    return this.countriesToLatLng;
+                case "regions":
+                    return this.regionsToLatLng;
+                case "cities":
+                    return this.citiesToLatLng;
+                }
+            },
+            countryName: function() {
+                return countlyLocation.getCountryName(this.country);
+            },
+            countryValue: function() {
+                if (!this.countriesData[this.country]) {
+                    return "-";
+                }
+                return this.countriesData[this.country].value;
+            }
+        },
+        methods: {
+            indexCities: function() {
+                var self = this;
+                if (this.citiesData[this.country]) {
+                    self.loadCities(this.country, Object.keys(this.citiesData[this.country])).then(function(json) {
+                        self.citiesToLatLng = {};
+                        json.forEach(function(f) {
+                            self.citiesToLatLng[f.name] = {lat: f.loc.coordinates[1], lon: f.loc.coordinates[0]};
+                        });
+                    });
+                }
+                else {
+                    self.citiesToLatLng = {};
+                }
+            },
+            boxToLatLng2d: function(boundingBox) {
+                var x0 = boundingBox[0],
+                    y0 = boundingBox[1],
+                    x1 = boundingBox[2],
+                    y1 = boundingBox[3];
+
+                return [
+                    [y0, x0],
+                    [y1, x1]
+                ];
+            },
+            getMarkerRadius: function(value) {
+                if (this.minMarkerRadius >= this.maxMarkerRadius) {
+                    return this.minMarkerRadius;
+                }
+                return Math.max(this.minMarkerRadius, (value / this.largestMarkerValue) * this.maxMarkerRadius);
+            },
+            updateMaxBounds: function() {
+                var boundingBox = this.inDetail ? this.boundingBoxes[this.country] : this.geojsonHome.bbox;
+                if (boundingBox) {
+                    this.maxBounds = this.boxToLatLng2d(boundingBox);
+                    this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
+                }
+            },
+            loadGeojson: function(country) {
+                var self = this;
+                this.loadingGeojson = true;
+
+                var url = '/geodata/world.geojson';
+
+                if (country) {
+                    url = '/geodata/region/' + country + '.geojson';
+                }
+
+                return CV.$.ajax({
+                    type: "GET",
+                    url: url,
+                    dataType: "json",
+                }).then(function(json) {
+                    self.loadingGeojson = false;
+                    return json;
+                });
+            },
+            loadCities: function(country, cities) {
+                var self = this;
+                this.loadingCities = true;
+
+                var query = {"country": country};
+
+                if (cities) {
+                    query.name = {"$in": cities};
+                }
+
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "method": "geodata",
+                        "loadFor": "cities",
+                        "query": JSON.stringify(query),
+                        "preventRequestAbort": true
+                    },
+                    dataType: "json",
+                }).then(function(json) {
+                    self.loadingCities = false;
+                    return json;
+                });
+            },
+            goToMain: function() {
+                this.geojsonDetail = null;
+                this.country = null;
+                this.handleViewChange();
+            },
+            goToCountry: function(country) {
+                var self = this;
+
+                this.loadGeojson(country).then(function(json) {
+                    self.geojsonDetail = json;
+                    self.country = country;
+                    self.regionsToLatLng = {};
+                    json.features.forEach(function(f) {
+                        self.regionsToLatLng[f.properties.iso_3166_2] = {
+                            lat: f.properties.lat || 0,
+                            lon: f.properties.lon || 0
+                        };
+                    });
+                    self.handleViewChange();
+                });
+            },
+            focusToRegion: function() {
+
+            },
+            focusToCity: function() {
+
+            },
+            handleViewChange: function() {
+                this.updateMaxBounds();
+            },
+            unique: function(name) {
+                return name + "_" + moment.now();
+            }
+        },
+        template: CV.T('/javascripts/countly/vue/templates/worldmap.html')
     }));
 
 }(window.countlyVue = window.countlyVue || {}));

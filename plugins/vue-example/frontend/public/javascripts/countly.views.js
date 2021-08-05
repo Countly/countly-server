@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, CV */
+/*global app, countlyVue, countlyVueExample, countlyCommon, CV, moment */
 
 (function() {
     var TableView = countlyVue.views.create({
@@ -266,14 +266,13 @@
                                 { value: 310, name: "Email" },
                                 { value: 234, name: "Ad Networks" },
                                 { value: 135, name: "Video Ads" },
-                                { value: 1548, name: "Search Engines" }
+                                { value: 1548, name: "Search Engines is a long name" }
                             ],
                             label: {
                                 formatter: function() {
                                     return "New users \n 12k";
                                 }
                             },
-                            center: ["25%", "50%"] //Center should be passed as option
                         }
                     ]
                 },
@@ -301,8 +300,8 @@
                     series: [
                         {
                             name: 'Series A',
-                            color: "pink",
-                            data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]]
+                            data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]],
+                            color: 'pink'
                         },
                         {
                             name: 'Series B',
@@ -310,7 +309,8 @@
                         },
                         {
                             name: 'Series C',
-                            data: [[0, 150], [1, 232], [2, 201], [3, 154], [4, 190], [5, 330], [6, 410]]
+                            data: [[0, 150], [1, 232], [2, 201], [3, 154], [4, 190], [5, 330], [6, 410]],
+                            color: "black"
                         },
                         {
                             name: 'Series D',
@@ -319,6 +319,42 @@
                         {
                             name: 'Series E',
                             data: [[0, 820], [1, 932], [2, 901], [3, 934], [4, 1290], [5, 1330], [6, 1320]]
+                        }
+                    ]
+                },
+                lineLegend: {
+                    show: true,
+                    type: "primary",
+                    data: [
+                        {
+                            name: "Series A",
+                            value: "123",
+                            trend: "up",
+                            percentage: "3.4%",
+                            tooltip: "Total no of series A.",
+                        },
+                        {
+                            name: "Series B",
+                            value: "32,231",
+                        },
+                        {
+                            name: "Series C",
+                            value: "123",
+                            trend: "down",
+                            percentage: "3.4%",
+                            tooltip: "Total no of series C.",
+                        },
+                        {
+                            name: "Series D",
+                            value: "123",
+                            trend: "up",
+                            percentage: "3.4%",
+                        },
+                        {
+                            name: "Series E",
+                            value: "123",
+                            trend: "down",
+                            percentage: "3.4%",
                         }
                     ]
                 },
@@ -338,6 +374,30 @@
                         {
                             name: "Week old users",
                             data: [2, 90, 77, 50, 44, 110, 10],
+                        }
+                    ]
+                },
+                barLegend: {
+                    show: true,
+                    type: "primary",
+                    data: [
+                        {
+                            name: "Weekly users",
+                            value: "123",
+                            trend: "up",
+                            percentage: "3.4%",
+                            tooltip: "Total no of series A.",
+                        },
+                        {
+                            name: "Weekly new users",
+                            value: "32,231",
+                        },
+                        {
+                            name: "Week old users",
+                            value: "123",
+                            trend: "down",
+                            percentage: "3.4%",
+                            tooltip: "Total no of series C.",
                         }
                     ]
                 },
@@ -372,7 +432,40 @@
                     ['France', 600],
                     ['RU', 700]
                 ],
-                geoChartOptions: {}
+                geoChartOptions: {},
+                countriesData: {
+                    'TR': {
+                        'value': 250
+                    },
+                    'DE': {
+                        'value': 500
+                    },
+                    'US': {
+                        'value': 1000
+                    }
+                },
+                regionsData: {
+                    'TR': {
+                        'TR-34': {
+                            'value': 50
+                        }
+                    }
+                },
+                citiesData: {
+                    'US': {
+                        'Los Angeles': {
+                            'value': 30
+                        },
+                    },
+                    'TR': {
+                        'Istanbul': {
+                            'value': 100
+                        },
+                        'Ankara': {
+                            'value': 30
+                        }
+                    }
+                }
             };
         },
         computed: {
@@ -449,6 +542,10 @@
                 selectedMonthRange: '10months',
                 selectedDynamicRange: '10weeks',
                 selectedDynamicType: 'daterange',
+                selectedDate: moment.now(),
+                selectedDateWTime: moment.now(),
+                selectedMonth: moment().startOf("month").valueOf(),
+                selectedTime: new Date(2016, 9, 10, 18, 40),
             };
         }
     });
