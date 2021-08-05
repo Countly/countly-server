@@ -136,7 +136,7 @@
             },
             wrapperStyle: function() {
                 return {
-                    height: "100px"
+                    height: "300px"
                 };
             }
         }
@@ -160,7 +160,7 @@
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <div\
                                 tabindex="0"\
-                                class="cly-vue-listbox__item"\
+                                class="text-medium cly-vue-listbox__item"\
                                 :class="{\'selected\': value === option.value, \'hover\': hovered === option.value}"\
                                 :key="option.value"\
                                 @focus="handleItemHover(option)"\
@@ -292,7 +292,7 @@
                                     v-model="sortedOptions"\
                                     :options="{disabled: !sortable}">\
                                 <div\
-                                    class="cly-vue-listbox__item"\
+                                    class="text-medium cly-vue-listbox__item"\
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
