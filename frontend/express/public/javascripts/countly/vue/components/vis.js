@@ -812,7 +812,7 @@
                 return {
                     vuescroll: {},
                     scrollPanel: {
-                        initialScrollX: false,
+                        scrollingX: false
                     },
                     rail: {
                         gutterOfSide: "0px"
@@ -870,12 +870,10 @@
                         </template>\
                         <template v-if="type === \'secondary\'">\
                             <vue-scroll :ops="scrollOptions">\
-							<div style="padding:10px;">\
 							<secondary-legend\
                                 :data="legendData"\
                                 :onClick="onLegendClick">\
                             </secondary-legend>\
-							<div>\
 							</vue-scroll>\
                         </template>\
                     </div>'
