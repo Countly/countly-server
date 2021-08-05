@@ -11,10 +11,10 @@
         </template>
     </cly-header>
     <cly-main>
-    <cly-date-picker v-model="selectedDate" timestampFormat="ms" class="sources-tab__date-picker-container"></cly-date-picker>    
+    <cly-date-picker-g class="acquisition-sources-view__date-picker-container"></cly-date-picker-g>    
     <cly-section>
       <div class="bu-columns">
-        <div class="sources-tab__chart-section bu-column bu-is-half">
+        <div class="acquisition-sources-view__chart-section bu-column bu-is-half">
           <cly-chart-pie :option="pieSourcesTotalSessions" :showToggle="false"></cly-chart-pie>
         </div>
         <div class="bu-column bu-is-half">
@@ -29,7 +29,7 @@
         <template v-slot="scope">
           <el-table-column type="expand">
             <template slot-scope="rowScope">
-              <extend-table class="sources-tab__extend-table" v-if="sourcesDetailData[rowScope.row.sources]" :rows="sourcesDetailData[rowScope.row.sources]"></extend-table>
+              <extend-table class="acquisition-sources-view__extend-table" v-if="sourcesDetailData[rowScope.row.sources]" :rows="sourcesDetailData[rowScope.row.sources]"></extend-table>
             </template>
           </el-table-column>
           <el-table-column sortable="true" prop="sources" :label="i18n('sources.source')">

@@ -26,26 +26,6 @@
         components: {
             "extend-table": SourcesDetailTableContainer
         },
-        computed: {
-            selectedDate: {
-                get: function() {
-                    return "30days";
-                },
-                set: function(value) {
-                    var self = this;
-                    $.when(countlyCommon.setPeriod(value), countlySources.initialize())
-                        .then(function() {
-                            self.sourcesData = countlySources.getData();
-                            self.sourcesDetailDataMap();
-
-                            // calculate charts data for total session and new users charts
-                            var chartsData = self.chartsDataPrepare(self.sourcesData);
-                            self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
-                            self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
-                        });
-                }
-            }
-        },
         data: function() {
             return {
                 sourcesData: [],
@@ -144,15 +124,25 @@
                         data: newUsersSeriesData
                     }
                 };
+            },
+            refresh: function() {
+                var self = this;
+                $.when(countlySources.initialize())
+                    .then(function() {
+                        self.sourcesData = countlySources.getData();
+                        self.sourcesDetailDataMap();
+
+                        // calculate charts data for total session and new users charts
+                        var chartsData = self.chartsDataPrepare(self.sourcesData);
+                        self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
+                        self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
+                    });
             }
         },
         beforeCreate: function() {
             var self = this;
             $.when(countlySources.initialize())
                 .then(function() {
-                    // set default period
-                    countlyCommon.setPeriod("30days");
-
                     // get fetched sources datas
                     self.sourcesData = countlySources.getData();
                     self.sourcesDetailDataMap();
@@ -167,21 +157,6 @@
 
     var KeywordsTabContainer = countlyVue.views.create({
         template: CV.T("/sources/templates/keywords-tab.html"),
-        computed: {
-            searchTermsDate: {
-                get: function() {
-                    return "30days";
-                },
-                set: function(value) {
-                    var self = this;
-                    $.when(countlyCommon.setPeriod(value), countlySources.initializeKeywords())
-                        .then(function() {
-                            self.searchedTermsData = countlySources.getKeywords();
-                            self.searchTermsTop3 = self.getTop3(self.searchedTermsData);
-                        });
-                }
-            }
-        },
         data: function() {
             return {
                 searchedTermsData: [],
@@ -217,20 +192,25 @@
                     {percentage: Math.round((data[totalsArray[1][0]].t / sum) * 100), label: data[totalsArray[1][0]]._id, value: countlyCommon.getShortNumber(totalsArray[1][1] || 0)},
                     {percentage: Math.round((data[totalsArray[2][0]].t / sum) * 100), label: data[totalsArray[2][0]]._id, value: countlyCommon.getShortNumber(totalsArray[2][1] || 0)}
                 ];
+            },
+            refresh: function() {
+                var self = this;
+                $.when(countlySources.initializeKeywords())
+                    .then(function() {
+                        self.searchedTermsData = countlySources.getKeywords();
+                        self.searchTermsTop3 = self.getTop3(self.searchedTermsData);
+                    });
             }
         },
         beforeCreate: function() {
             var self = this;
             $.when(countlySources.initializeKeywords())
                 .then(function() {
-                    // set default period
-                    countlyCommon.setPeriod("30days");
-
                     // calculate top 3 search terms data
                     self.searchedTermsData = countlySources.getKeywords();
                     self.searchTermsTop3 = self.getTop3(self.searchedTermsData);
                 });
-        },
+        }
     });
 
     var SourcesContainer = countlyVue.views.create({
@@ -268,11 +248,9 @@
     app.SourcesView = SourcesView;
 
     if (countlyAuth.validateRead(FEATURE_NAME)) {
-
         app.route("/analytics/acquisition", 'acqusition', function() {
             this.renderWhenReady(app.SourcesView);
         });
-
         app.addSubMenu("analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 90});
     }
 })();
