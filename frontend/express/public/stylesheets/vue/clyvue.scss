@@ -3483,8 +3483,19 @@
         overflow: hidden;
     }
 
+    .el-checkbox__label {
+        line-height: 20px;
+        font-weight: normal;
+        color: #333c48;
+    }
+
+    .drag-handler {
+        visibility: hidden;
+    }
+
     &--has-default-skin {
         .cly-vue-listbox__item {
+            display: flex;
             padding: 6px 8px;
             height: 20px;
             cursor: pointer;
@@ -3492,6 +3503,9 @@
                 background-color: #F6F6F6;
                 color: #0166D6;
                 border-radius: 4px;
+                .drag-handler {
+                    visibility: visible;
+                }
             }
         }
     }

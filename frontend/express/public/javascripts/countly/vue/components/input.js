@@ -276,7 +276,7 @@
         template: '<div\
                     class="cly-vue-listbox"\
                     tabindex="0"\
-                    :class="{ \'is-focus\': focused, \'cly-vue-listbox--bordered\': bordered }"\
+                    :class="topClasses"\
                     @mouseenter="handleHover"\
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
