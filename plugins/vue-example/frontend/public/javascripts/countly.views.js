@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, CV */
+/*global app, countlyVue, countlyVueExample, countlyCommon, CV, moment */
 
 (function() {
     var TableView = countlyVue.views.create({
@@ -432,7 +432,40 @@
                     ['France', 600],
                     ['RU', 700]
                 ],
-                geoChartOptions: {}
+                geoChartOptions: {},
+                countriesData: {
+                    'TR': {
+                        'value': 250
+                    },
+                    'DE': {
+                        'value': 500
+                    },
+                    'US': {
+                        'value': 1000
+                    }
+                },
+                regionsData: {
+                    'TR': {
+                        'TR-34': {
+                            'value': 50
+                        }
+                    }
+                },
+                citiesData: {
+                    'US': {
+                        'Los Angeles': {
+                            'value': 30
+                        },
+                    },
+                    'TR': {
+                        'Istanbul': {
+                            'value': 100
+                        },
+                        'Ankara': {
+                            'value': 30
+                        }
+                    }
+                }
             };
         },
         computed: {
@@ -509,6 +542,10 @@
                 selectedMonthRange: '10months',
                 selectedDynamicRange: '10weeks',
                 selectedDynamicType: 'daterange',
+                selectedDate: moment.now(),
+                selectedDateWTime: moment.now(),
+                selectedMonth: moment().startOf("month").valueOf(),
+                selectedTime: new Date(2016, 9, 10, 18, 40),
             };
         }
     });

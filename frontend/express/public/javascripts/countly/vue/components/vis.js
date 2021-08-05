@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, VueECharts, _merge, CommonConstructor, countlyGlobal */
+/* global Vue, countlyCommon, countlyLocation, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
 
 (function(countlyVue) {
 
@@ -1173,6 +1173,380 @@
                             v-on="$listeners"\
                         />\
                     </div>'
+    }));
+
+    Vue.component("cly-worldmap", countlyVue.components.create({
+        components: {
+            'l-map': Vue2Leaflet.LMap,
+            'l-circle-marker': Vue2Leaflet.LCircleMarker,
+            'l-geo-json': Vue2Leaflet.LGeoJson,
+            'l-tile-layer': Vue2Leaflet.LTileLayer,
+            'l-control': Vue2Leaflet.LControl
+        },
+        props: {
+            showTile: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            countriesData: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
+            },
+            regionsData: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
+            },
+            citiesData: {
+                type: Object,
+                default: function() {
+                    return {};
+                },
+                required: false
+            },
+            fillColor: {
+                type: String,
+                default: '#D6D6D6',
+                required: false
+            },
+            borderColor: {
+                type: String,
+                default: '#FFF',
+                required: false
+            },
+            maxMarkerRadius: {
+                type: Number,
+                default: 15,
+                required: false
+            },
+            minMarkerRadius: {
+                type: Number,
+                default: 4,
+                required: false
+            },
+            countriesTitle: {
+                type: String,
+                default: '',
+                required: false
+            },
+            regionsTitle: {
+                type: String,
+                default: '',
+                required: false
+            },
+            citiesTitle: {
+                type: String,
+                default: '',
+                required: false
+            }
+        },
+        created: function() {
+            var self = this;
+            this.loadGeojson().then(function(json) {
+                self.geojsonHome = json;
+                json.features.forEach(function(f) {
+                    self.boundingBoxes[f.properties.code] = f.bbox;
+                    self.countriesToLatLng[f.properties.code] = {
+                        lat: f.properties.lat,
+                        lon: f.properties.lon
+                    };
+                });
+                self.handleViewChange();
+            });
+        },
+        data: function() {
+            return {
+                loadingGeojson: false,
+                loadingCities: false,
+                enableTooltip: true,
+                maxBounds: null,
+                minZoom: 0,
+                geojsonHome: null,
+                geojsonDetail: null,
+                tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+                boundingBoxes: {},
+                country: null,
+                focusedRegion: null,
+                focusedCity: null,
+                detailMode: 'regions',
+                countriesToLatLng: {},
+                regionsToLatLng: {},
+                citiesToLatLng: {},
+                circleMarkerConfig: {
+                    pane: "markerPane",
+                    fillColor: "#017AFF",
+                    fillOpacity: 0.6,
+                    color: "transparent",
+                }
+            };
+        },
+        watch: {
+            country: function(newVal) {
+                this.$emit("countryChanged", newVal);
+            },
+            detailMode: function(newVal) {
+                this.$emit("detailModeChanged", newVal);
+                if (newVal === 'cities') {
+                    this.indexCities();
+                }
+            },
+            citiesData: function() {
+                if (this.detailMode === 'cities') {
+                    this.indexCities();
+                }
+            }
+        },
+        computed: {
+            loading: function() {
+                return this.loadingGeojson || this.loadingCities;
+            },
+            inDetail: function() {
+                return this.country !== null;
+            },
+            optionsHome: function() {
+                return {
+                    onEachFeature: this.onEachFeatureFunction
+                };
+            },
+            optionsDetail: function() {
+                return {
+                    onEachFeature: this.onEachFeatureFunctionDetail
+                };
+            },
+            styleFunction: function() {
+                var fillColor = this.fillColor,
+                    borderColor = this.borderColor;
+
+                return function() {
+                    return {
+                        weight: 1,
+                        color: borderColor,
+                        opacity: 1,
+                        fillColor: fillColor,
+                        fillOpacity: 1
+                    };
+                };
+            },
+            onEachFeatureFunction: function(/*params*/) {
+                var self = this;
+                return function(feature, layer) {
+                    layer.on('click', function() {
+                        self.goToCountry(feature.properties.code);
+                    });
+                };
+            },
+            onEachFeatureFunctionDetail: function() {
+                return function() {};
+            },
+            currentViewType: function() {
+                if (!this.inDetail) {
+                    return "main";
+                }
+                return this.detailMode;
+            },
+            locations: function() {
+                var self = this;
+                switch (this.currentViewType) {
+                case "main":
+                    var countryCodes = Object.keys(this.countriesData);
+
+                    return countryCodes.map(function(code) {
+                        return {
+                            label: countlyLocation.getCountryName(code),
+                            value: code,
+                            icon: countlyGlobal.cdn + "images/flags/" + code.toLowerCase() + ".png",
+                            custom: self.countriesData[self.country]
+                        };
+                    });
+
+                case "regions":
+                    var regionCodes = Object.keys(this.regionsData[this.country] || {});
+
+                    return regionCodes.map(function(code) {
+                        return {
+                            label: countlyLocation.getRegionName(code, self.country),
+                            value: code,
+                            custom: self.regionsData[self.country][code]
+                        };
+                    });
+
+                case "cities":
+                    var cityNames = Object.keys(this.citiesData[this.country] || {});
+
+                    return cityNames.map(function(name) {
+                        return {
+                            label: name,
+                            value: name,
+                            custom: self.citiesData[self.country][name]
+                        };
+                    });
+                }
+            },
+            activeMarkers: function() {
+                switch (this.currentViewType) {
+                case "main":
+                    return this.countriesData;
+                case "regions":
+                    return this.regionsData[this.country];
+                case "cities":
+                    return this.citiesData[this.country];
+                }
+            },
+            largestMarkerValue: function() {
+                if (!this.activeMarkers) {
+                    return 1;
+                }
+                var self = this;
+                return Object.keys(this.activeMarkers).reduce(function(acc, val) {
+                    return Math.max(acc, self.activeMarkers[val].value);
+                }, 0);
+            },
+            nameToLatLng: function() {
+                switch (this.currentViewType) {
+                case "main":
+                    return this.countriesToLatLng;
+                case "regions":
+                    return this.regionsToLatLng;
+                case "cities":
+                    return this.citiesToLatLng;
+                }
+            },
+            countryName: function() {
+                return countlyLocation.getCountryName(this.country);
+            },
+            countryValue: function() {
+                if (!this.countriesData[this.country]) {
+                    return "-";
+                }
+                return this.countriesData[this.country].value;
+            }
+        },
+        methods: {
+            indexCities: function() {
+                var self = this;
+                if (this.citiesData[this.country]) {
+                    self.loadCities(this.country, Object.keys(this.citiesData[this.country])).then(function(json) {
+                        self.citiesToLatLng = {};
+                        json.forEach(function(f) {
+                            self.citiesToLatLng[f.name] = {lat: f.loc.coordinates[1], lon: f.loc.coordinates[0]};
+                        });
+                    });
+                }
+                else {
+                    self.citiesToLatLng = {};
+                }
+            },
+            boxToLatLng2d: function(boundingBox) {
+                var x0 = boundingBox[0],
+                    y0 = boundingBox[1],
+                    x1 = boundingBox[2],
+                    y1 = boundingBox[3];
+
+                return [
+                    [y0, x0],
+                    [y1, x1]
+                ];
+            },
+            getMarkerRadius: function(value) {
+                if (this.minMarkerRadius >= this.maxMarkerRadius) {
+                    return this.minMarkerRadius;
+                }
+                return Math.max(this.minMarkerRadius, (value / this.largestMarkerValue) * this.maxMarkerRadius);
+            },
+            updateMaxBounds: function() {
+                var boundingBox = this.inDetail ? this.boundingBoxes[this.country] : this.geojsonHome.bbox;
+                if (boundingBox) {
+                    this.maxBounds = this.boxToLatLng2d(boundingBox);
+                    this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
+                }
+            },
+            loadGeojson: function(country) {
+                var self = this;
+                this.loadingGeojson = true;
+
+                var url = '/geodata/world.geojson';
+
+                if (country) {
+                    url = '/geodata/region/' + country + '.geojson';
+                }
+
+                return CV.$.ajax({
+                    type: "GET",
+                    url: url,
+                    dataType: "json",
+                }).then(function(json) {
+                    self.loadingGeojson = false;
+                    return json;
+                });
+            },
+            loadCities: function(country, cities) {
+                var self = this;
+                this.loadingCities = true;
+
+                var query = {"country": country};
+
+                if (cities) {
+                    query.name = {"$in": cities};
+                }
+
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "method": "geodata",
+                        "loadFor": "cities",
+                        "query": JSON.stringify(query),
+                        "preventRequestAbort": true
+                    },
+                    dataType: "json",
+                }).then(function(json) {
+                    self.loadingCities = false;
+                    return json;
+                });
+            },
+            goToMain: function() {
+                this.geojsonDetail = null;
+                this.country = null;
+                this.handleViewChange();
+            },
+            goToCountry: function(country) {
+                var self = this;
+
+                this.loadGeojson(country).then(function(json) {
+                    self.geojsonDetail = json;
+                    self.country = country;
+                    self.regionsToLatLng = {};
+                    json.features.forEach(function(f) {
+                        self.regionsToLatLng[f.properties.iso_3166_2] = {
+                            lat: f.properties.lat || 0,
+                            lon: f.properties.lon || 0
+                        };
+                    });
+                    self.handleViewChange();
+                });
+            },
+            focusToRegion: function() {
+
+            },
+            focusToCity: function() {
+
+            },
+            handleViewChange: function() {
+                this.updateMaxBounds();
+            },
+            unique: function(name) {
+                return name + "_" + moment.now();
+            }
+        },
+        template: CV.T('/javascripts/countly/vue/templates/worldmap.html')
     }));
 
 }(window.countlyVue = window.countlyVue || {}));

@@ -496,12 +496,18 @@
             }
         }
 
-        &__input-wrapper {
+        &__input-wrapper,
+        &__time-picker-section {
             width: 308px;
             display: flex;
             margin: 0;
             padding: 16px;
         }
+
+        &__time-picker-section {
+            border-bottom: 1px solid #ECECEC;
+        }
+
         
         &__in-between-conj {
             padding: 11px 11px 0 11px;
@@ -1486,6 +1492,26 @@
                     padding: 8px 0;
                 }
             }
+        }
+    }
+
+    .cly-vue-worldmap {
+        .leaflet-container {
+            background: white;
+            outline: 0;
+        }
+        &__list {
+            border-right: 1px solid #ECECEC;
+        }
+        &__list-title {
+            border-bottom: 1px solid #ECECEC;
+        }
+        &__country-info {
+            border-bottom: 1px solid #ECECEC;
+        }
+        &__back-button {
+            cursor: pointer;
+            border-bottom: 1px solid #ECECEC;
         }
     }
 

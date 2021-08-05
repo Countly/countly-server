@@ -48,5 +48,21 @@
         <cly-section title="Geo chart">
             <cly-chart-geo :data="geoChartData" :options="geoChartOptions"></cly-chart-geo>
         </cly-section>
+        <cly-section title="Worldmap">
+            <cly-worldmap
+                countries-title="Sessions by Countries"
+                regions-title="Sessions by Regions"
+                cities-title="Sessions by Cities"
+                :countries-data="countriesData"
+                :regions-data="regionsData"
+                :cities-data="citiesData">
+                <template v-slot:regions-info>
+                    <span class="text-medium">Sessions</span>
+                </template>
+                <template v-slot:cities-info>
+                    <span class="text-medium">Sessions</span>
+                </template>
+            </cly-worldmap>
+        </cly-section>
     </cly-main>
 </div>
