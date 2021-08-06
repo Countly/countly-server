@@ -254,8 +254,11 @@
     }
 
     $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME)) {
+        if (countlyAuth.validateRead(FEATURE_NAME) && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
             app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 90});
+        }
+        else if (countlyAuth.validateRead(FEATURE_NAME) && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
+            app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 90});
         }
     });
 
