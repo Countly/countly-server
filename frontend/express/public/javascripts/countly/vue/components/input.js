@@ -168,7 +168,11 @@
                                 @keyup.enter="handleItemClick(option)"\
                                 @click.stop="handleItemClick(option)"\
                                 v-for="option in options">\
-                                <span>{{option.label}}</span>\
+                                <div>\
+                                    <slot name="option-prefix" v-bind="option"></slot>\
+                                    <span>{{option.label}}</span>\
+                                </div>\
+                                <slot name="option-suffix" v-bind="option"></slot>\
                             </div>\
                         </div>\
                     </vue-scroll>\

@@ -1381,7 +1381,7 @@
                             label: countlyLocation.getCountryName(code),
                             value: code,
                             icon: countlyGlobal.cdn + "images/flags/" + code.toLowerCase() + ".png",
-                            custom: self.countriesData[self.country]
+                            custom: self.countriesData[code] || {}
                         };
                     });
 

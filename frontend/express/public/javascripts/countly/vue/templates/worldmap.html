@@ -15,6 +15,12 @@
                     :options="locations"
                     :value="country"
                     @input="goToCountry($event)">
+                    <template v-slot:option-prefix="option">
+                        <img :src="option.icon"></img>
+                    </template>
+                    <template v-slot:option-suffix="option">
+                        <span class="bu-pr-2 text-medium">{{option.custom.value}}</span>
+                    </template>
                 </cly-listbox>
             </div>
             <div v-else>

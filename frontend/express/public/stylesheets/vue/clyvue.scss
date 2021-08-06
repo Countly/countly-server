@@ -3493,26 +3493,32 @@
         visibility: hidden;
     }
 
+    .cly-vue-listbox__item {
+        display: flex;
+        cursor: pointer;
+        align-items: center;
+        justify-content: space-between;
+        &:hover, &.selected{
+            background-color: #F6F6F6;
+            color: #0166D6;
+            .drag-handler {
+                visibility: visible;
+            }
+        }
+    }
+    
     &--has-default-skin {
         .cly-vue-listbox__item {
-            display: flex;
             padding: 6px 8px;
             height: 20px;
-            cursor: pointer;
-            &:hover, &.selected{
-                background-color: #F6F6F6;
-                color: #0166D6;
-                border-radius: 4px;
-                .drag-handler {
-                    visibility: visible;
-                }
-            }
+            border-radius: 4px;
         }
     }
     &--has-jumbo-skin {
         .cly-vue-listbox__item {
-            padding: 0 7px;
-            border-radius: 7px;
+            padding: 6px 8px;
+            height: 32px;
+            border-bottom: 1px solid #ECECEC;
         }
     }
 }
