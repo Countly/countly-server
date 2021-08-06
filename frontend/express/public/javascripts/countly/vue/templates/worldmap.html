@@ -10,6 +10,7 @@
                     <span class="bu-pl-2 text-uppercase text-small font-weight-bold">{{countriesTitle}}</span>
                 </div>
                 <cly-listbox
+                    skin="jumbo"
                     :bordered="false"
                     :options="locations"
                     :value="country"
@@ -45,6 +46,7 @@
 
             <div v-if="currentViewType === 'regions'">
                 <cly-listbox
+                    skin="jumbo"
                     :bordered="false"
                     :options="locations"
                     :value="focusedRegion"
@@ -53,6 +55,7 @@
             </div>
             <div v-else-if="currentViewType === 'cities'">
                 <cly-listbox
+                    skin="jumbo"
                     :bordered="false"
                     :options="locations"
                     :value="focusedCity"

@@ -442,6 +442,27 @@
                     },
                     'US': {
                         'value': 1000
+                    },
+                    'GB': {
+                        'value': 1000
+                    },
+                    'ES': {
+                        'value': 1000
+                    },
+                    'NL': {
+                        'value': 1000
+                    },
+                    'JP': {
+                        'value': 1000
+                    },
+                    'NZ': {
+                        'value': 1000
+                    },
+                    'IN': {
+                        'value': 1000
+                    },
+                    'IL': {
+                        'value': 1000
                     }
                 },
                 regionsData: {

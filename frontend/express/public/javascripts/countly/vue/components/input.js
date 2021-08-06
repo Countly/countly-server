@@ -74,7 +74,15 @@
     var AbstractListBox = countlyVue.components.BaseComponent.extend({
         props: {
             options: {type: Array},
-            bordered: {type: Boolean, default: true}
+            bordered: {type: Boolean, default: true},
+            skin: {
+                type: String,
+                default: "default",
+                required: false,
+                validator: function(val) {
+                    return val === "default" || val === "jumbo";
+                }
+            }
         },
         methods: {
             navigateOptions: function() {
@@ -100,8 +108,37 @@
         data: function() {
             return {
                 hovered: null,
-                focused: false
+                focused: false,
+                scrollCfg: {
+                    scrollPanel: {
+                        initialScrollX: false,
+                    },
+                    rail: {
+                        gutterOfSide: "0px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: false
+                    }
+                }
             };
+        },
+        computed: {
+            topClasses: function() {
+                var classes = {
+                    "is-focus": this.focused,
+                    "cly-vue-listbox--bordered": this.bordered
+                };
+                classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
+                return classes;
+            },
+            wrapperStyle: function() {
+                return {
+                    'max-height': "300px"
+                };
+            }
         }
     });
 
@@ -112,29 +149,29 @@
         template: '<div\
                     class="cly-vue-listbox"\
                     tabindex="0"\
-                    :class="{ \'is-focus\': focused, \'cly-vue-listbox--bordered\': bordered }"\
+                    :class="topClasses"\
                     @mouseenter="handleHover"\
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
                     @blur="handleBlur">\
-                    <el-scrollbar\
+                    <vue-scroll\
                         v-if="options.length > 0"\
-                        tag="ul"\
-                        wrap-class="el-select-dropdown__wrap"\
-                        view-class="el-select-dropdown__list">\
-                        <li\
-                            tabindex="0"\
-                            class="el-select-dropdown__item"\
-                            :class="{\'selected\': value === option.value, \'hover\': hovered === option.value}"\
-                            :key="option.value"\
-                            @focus="handleItemHover(option)"\
-                            @mouseenter="handleItemHover(option)"\
-                            @keyup.enter="handleItemClick(option)"\
-                            @click.stop="handleItemClick(option)"\
-                            v-for="option in options">\
-                            <span>{{option.label}}</span>\
-                        </li>\
-                    </el-scrollbar>\
+                        :ops="scrollCfg"\>\
+                        <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
+                            <div\
+                                tabindex="0"\
+                                class="text-medium cly-vue-listbox__item"\
+                                :class="{\'selected\': value === option.value, \'hover\': hovered === option.value}"\
+                                :key="option.value"\
+                                @focus="handleItemHover(option)"\
+                                @mouseenter="handleItemHover(option)"\
+                                @keyup.enter="handleItemClick(option)"\
+                                @click.stop="handleItemClick(option)"\
+                                v-for="option in options">\
+                                <span>{{option.label}}</span>\
+                            </div>\
+                        </div>\
+                    </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
                         No data\
                     </div>\
@@ -239,32 +276,32 @@
         template: '<div\
                     class="cly-vue-listbox"\
                     tabindex="0"\
-                    :class="{ \'is-focus\': focused, \'cly-vue-listbox--bordered\': bordered }"\
+                    :class="topClasses"\
                     @mouseenter="handleHover"\
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
                     @blur="handleBlur">\
-                    <el-scrollbar\
+                    <vue-scroll\
                         v-if="options.length > 0"\
-                        tag="ul"\
-                        wrap-class="el-select-dropdown__wrap"\
-                        view-class="el-select-dropdown__list">\
-                        <el-checkbox-group\
-                            v-model="innerValue">\
-                            <draggable \
-                                handle=".drag-handler"\
-                                v-model="sortedOptions"\
-                                :options="{disabled: !sortable}">\
-                            <li\
-                                class="el-select-dropdown__item"\
-                                :key="option.value"\
-                                v-for="option in sortedOptions">\
-                                <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
-                                <el-checkbox :label="option.value" :key="option.value">{{option.label}}</el-checkbox>\
-                            </li>\
-                            </draggable>\
-                        </el-checkbox-group>\
-                    </el-scrollbar>\
+                        :ops="scrollCfg"\>\
+                        <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
+                            <el-checkbox-group\
+                                v-model="innerValue">\
+                                <draggable \
+                                    handle=".drag-handler"\
+                                    v-model="sortedOptions"\
+                                    :options="{disabled: !sortable}">\
+                                <div\
+                                    class="text-medium cly-vue-listbox__item"\
+                                    :key="option.value"\
+                                    v-for="option in sortedOptions">\
+                                    <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
+                                    <el-checkbox :label="option.value" :key="option.value">{{option.label}}</el-checkbox>\
+                                </div>\
+                                </draggable>\
+                            </el-checkbox-group>\
+                        </div>\
+                    </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
                         No data\
                     </div>\
