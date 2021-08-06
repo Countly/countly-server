@@ -82,7 +82,9 @@
                 validator: function(val) {
                     return val === "default" || val === "jumbo";
                 }
-            }
+            },
+            disabled: {type: Boolean, default: false, required: false},
+            height: {type: [Number, String], default: 300, required: false},
         },
         methods: {
             navigateOptions: function() {
@@ -91,8 +93,10 @@
                 }
             },
             handleItemClick: function(option) {
-                this.$emit("input", option.value);
-                this.$emit("change", option.value);
+                if (!this.disabled) {
+                    this.$emit("input", option.value);
+                    this.$emit("change", option.value);
+                }
             },
             handleItemHover: function(option) {
                 this.hovered = option.value;
@@ -129,15 +133,19 @@
             topClasses: function() {
                 var classes = {
                     "is-focus": this.focused,
-                    "cly-vue-listbox--bordered": this.bordered
+                    "cly-vue-listbox--bordered": this.bordered,
+                    "cly-vue-listbox--disabled": this.disabled
                 };
                 classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
                 return classes;
             },
             wrapperStyle: function() {
-                return {
-                    'max-height': "300px"
-                };
+                if (this.height !== "auto") {
+                    return {
+                        'max-height': this.height + "px"
+                    };
+                }
+                return false;
             }
         }
     });
@@ -238,6 +246,9 @@
                     return this.value;
                 },
                 set: function(newVal) {
+                    if (this.disabled) {
+                        return;
+                    }
                     if (this.sortable && this.sortMap) {
                         var sortMap = this.sortMap,
                             wrapped = newVal.map(function(value, idx) {

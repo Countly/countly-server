@@ -11,9 +11,11 @@
                 </div>
                 <cly-listbox
                     skin="jumbo"
+                    height="auto"
                     :bordered="false"
                     :options="locations"
                     :value="country"
+                    :disabled="loading"
                     @input="goToCountry($event)">
                     <template v-slot:option-prefix="option">
                         <img :src="option.icon"></img>
@@ -53,6 +55,7 @@
             <div v-if="currentViewType === 'regions'">
                 <cly-listbox
                     skin="jumbo"
+                    height="auto"
                     :bordered="false"
                     :options="locations"
                     :value="focusedRegion"
@@ -62,6 +65,7 @@
             <div v-else-if="currentViewType === 'cities'">
                 <cly-listbox
                     skin="jumbo"
+                    height="auto"
                     :bordered="false"
                     :options="locations"
                     :value="focusedCity"

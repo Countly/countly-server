@@ -3498,15 +3498,31 @@
         cursor: pointer;
         align-items: center;
         justify-content: space-between;
-        &:hover, &.selected{
+        &.selected{
             background-color: #F6F6F6;
             color: #0166D6;
-            .drag-handler {
-                visibility: visible;
-            }
+        }
+    }
+
+    &--disabled {
+        .cly-vue-listbox__item {
+            background-color: #F6F6F6;
+            color: #A7AEB8;
         }
     }
     
+    &:not(.cly-vue-listbox--disabled) {
+        .cly-vue-listbox__item {
+            &:hover {
+                background-color: #F6F6F6;
+                color: #0166D6;
+                .drag-handler {
+                    visibility: visible;
+                }
+            }
+        }
+    }
+
     &--has-default-skin {
         .cly-vue-listbox__item {
             padding: 6px 8px;
