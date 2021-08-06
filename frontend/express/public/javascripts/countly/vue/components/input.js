@@ -71,7 +71,7 @@
 
     Vue.component("cly-dropzone", window.vue2Dropzone);
 
-    var AbstractListBox = countlyVue.components.BaseComponent.extend({
+    var AbstractListBox = countlyVue.views.BaseView.extend({
         props: {
             options: {type: Array},
             bordered: {type: Boolean, default: true},
@@ -180,6 +180,11 @@
             searchable: {type: Boolean, default: false, required: false}, //override the mixin
             value: { type: [String, Number] }
         },
+        computed: {
+            searchedOptions: function() {
+                return this.getMatching(this.options);
+            }
+        },
         template: '<div\
                     class="cly-vue-listbox"\
                     tabindex="0"\
@@ -188,18 +193,17 @@
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
                     @blur="handleBlur">\
-                    <div class="cly-vue-listbox__header bu-p-3">\
+                    <div class="cly-vue-listbox__header bu-p-3" v-if="searchable">\
                         <el-input\
                             :disabled="disabled"\
                             autocomplete="chrome-off"\
-                            v-if="searchable"\
                             v-model="searchQuery"\
                             :placeholder="searchPlaceholder">\
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>\
                         </el-input>\
                     </div>\
                     <vue-scroll\
-                        v-if="options.length > 0"\
+                        v-if="searchedOptions.length > 0"\
                         :ops="scrollCfg"\>\
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <div\
@@ -211,7 +215,7 @@
                                 @mouseenter="handleItemHover(option)"\
                                 @keyup.enter="handleItemClick(option)"\
                                 @click.stop="handleItemClick(option)"\
-                                v-for="option in getMatching(options)">\
+                                v-for="option in searchedOptions">\
                                 <div>\
                                     <slot name="option-prefix" v-bind="option"></slot>\
                                     <span>{{option.label}}</span>\
@@ -221,7 +225,7 @@
                         </div>\
                     </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
-                        No data\
+                        {{i18n(\'common.search.no-match-found\')}}\
                     </div>\
                 </div>'
     }));
@@ -354,7 +358,7 @@
                         </div>\
                     </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
-                        No data\
+                        {{i18n(\'common.search.no-match-found\')}}\
                     </div>\
                 </div>'
     }));

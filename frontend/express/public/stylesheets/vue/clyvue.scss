@@ -3476,7 +3476,11 @@
     }
 
     .cly-vue-listbox__no-data {
-        padding: 11px 7px 2px 7px;
+        padding: 6px 8px;
+        line-height: 20px;
+        font-weight: normal;
+        color: #333c48;
+        font-size: 14px;
     }
 
     .el-checkbox-group {
@@ -3627,10 +3631,6 @@
         }
         .cly-vue-listbox {
             padding: 8px;
-
-            &__no-data {
-                margin: 8px 7px 25px 0;
-            }
         }
     }
     &__title {
