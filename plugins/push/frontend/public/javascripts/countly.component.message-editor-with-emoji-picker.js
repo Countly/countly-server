@@ -53,15 +53,15 @@
                 };
             },
             addEmptyUserProperty: function(id, container) {
-                var value = "Select property|";
+                var previewValue = "Select property|";
                 var newElement = document.createElement("span");
                 newElement.setAttribute("id", "id-" + id);
                 newElement.setAttribute("contentEditable", false);
                 newElement.setAttribute("class", "cly-vue-push-notification-message-editor-with-emoji-picker__user-property");
                 newElement.setAttribute("data-user-property-label", "Select property");
-                newElement.setAttribute("data-user-property-value", value);
+                newElement.setAttribute("data-user-property-value", "");
                 newElement.setAttribute("data-user-property-fallback", "");
-                newElement.innerText = value;
+                newElement.innerText = previewValue;
                 newElement.onclick = this.getOnUserPropertyClickEventListener(id, container);
                 this.$refs.element.appendChild(newElement);
                 this.appendZeroWidthSpace();
@@ -70,6 +70,7 @@
             },
             removeUserProperty: function(id) {
                 this.$refs.element.querySelector("#id-" + id).remove();
+                this.$emit('change', this.$refs.element.innerHTML);
             },
             getHTMLContent: function() {
                 return this.$refs.element.innerHTML;

@@ -1,4 +1,4 @@
-/*global CV, countlyVue*/
+/*global CV, countlyVue, countlySegmentation*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.AddUserPropertyPopover = countlyVue.views.create({
         props: {
@@ -23,12 +23,6 @@
                 type: String,
                 required: true
             },
-            options: {
-                type: Array,
-                default: function() {
-                    return [{label: "Browser", value: "br"}, {label: "App version", value: "av"}];
-                }
-            },
             width: {
                 type: Number,
                 required: true,
@@ -44,6 +38,7 @@
         },
         data: function() {
             return {
+                userPropertiesOptions: []
             };
         },
         computed: {
@@ -57,8 +52,16 @@
             },
         },
         methods: {
+            findUserPropertyLabelByValue: function(value) {
+                for (var property in this.userPropertiesOptions) {
+                    if (this.userPropertiesOptions[property].value === value) {
+                        return this.userPropertiesOptions[property].label;
+                    }
+                }
+                return "";
+            },
             onSelect: function(value) {
-                this.$emit('select', this.id, this.container, value);
+                this.$emit('select', this.id, this.container, value, this.findUserPropertyLabelByValue(value));
             },
             onUppercase: function(value) {
                 this.$emit('check', this.id, this.container, value);
@@ -66,15 +69,30 @@
             onFallback: function(value) {
                 this.$emit('input', this.id, this.container, value);
             },
-            onRemove: function(id) {
-                this.$emit('remove', id, this.container);
+            onRemove: function() {
+                this.$emit('remove', this.id, this.container);
             },
             onClose: function() {
                 this.$emit('close');
             },
+            setUserPropertiesOptions: function(userPropertiesOptionsDto) {
+                this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
+                    if (userPropertyOptionDto.id) {
+                        allUserPropertyOptions.push({label: userPropertyOptionDto.name, value: userPropertyOptionDto.id});
+                    }
+                    return allUserPropertyOptions;
+                }, []);
+            },
+            fetchUserPropertiesOptions: function() {
+                var self = this;
+                countlySegmentation.initialize("").then(function() {
+                    self.setUserPropertiesOptions(countlySegmentation.getFilters());
+                });
+            }
         },
         mounted: function() {
             document.body.appendChild(this.$el);
+            this.fetchUserPropertiesOptions();
         },
         destroyed: function() {
             document.body.removeChild(this.$el);

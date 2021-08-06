@@ -90,6 +90,16 @@
     };
 
     countlyEventsOverview.service = {
+        fetchAllEvents: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    method: "get_events",
+                }
+            });
+        },
         fetchEvents: function() {
             return CV.$.ajax({
                 type: "GET",

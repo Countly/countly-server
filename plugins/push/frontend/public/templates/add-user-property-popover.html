@@ -5,13 +5,15 @@
             <div class="bu-column">
                 <div class="bu-level">
                     <cly-select-x
+                        class="cly-vue-push-notification-add-user-property-popover__select-value"
                         search-placeholder="Search in Properties"
+                        width="300"
                         placeholder="Select Property" 
                         :value="userProperty.value"
-                        mode="single-list"
                         @change="onSelect"
+                        mode="single-list"
                         :hide-all-options-tab="false"
-                        :options="options"
+                        :options="userPropertiesOptions"
                         :width="250"
                         style="width:100%;"
                         >

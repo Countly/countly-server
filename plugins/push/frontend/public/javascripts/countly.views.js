@@ -1,13 +1,6 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment, countlyEventsOverview*/
 (function() {
 
-    //TODO: move the nodelist foreach polyfill to the rest of polyfills
-    NodeList.prototype.forEach = function(callback, thisArg) {
-        thisArg = thisArg || window;
-        for (var i = 0; i < this.length; i++) {
-            callback.call(thisArg, this[i], i, this);
-        }
-    };
     var AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = [
         {label: CV.i18n("push-notification.status-scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
         {label: CV.i18n("push-notification.status-all"), value: countlyPushNotification.service.StatusEnum.ALL},
@@ -162,11 +155,9 @@
         data: function() {
             return {
                 loading: false,
-                cohortOptions: [{label: "Users who logged in", value: "123456"}, {label: "Users who performed", value: "4523444"}],
-                locationOptions: [{label: "Canada", value: "CA"}],
                 localizationOptions: [{label: "Default", value: "default"}, {label: "English", value: "en"}, {label: "German", value: "ge"}],
-                userPropertiesOptions: [{label: "App version", value: "appVersion"}],
-                eventOptions: [{label: "Users who performed log out", value: "123444df"}],
+                userPropertiesOptions: [],
+                eventOptions: [],
                 saveButtonLabel: "Submit",
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 TargetingEnum: TargetingEnum,
@@ -324,7 +315,18 @@
             },
             selectedMessageLocale: function() {
                 return this.pushNotificationUnderEdit.message[this.activeLocalization];
-            }
+            },
+            cohortOptions: function() {
+                return this.$store.state.countlyPushNotification.pushNotifications.cohorts.map(function(cohort) {
+                    return {label: cohort.name.replace(/&quot;/g, '\\"'), value: cohort._id};
+                });
+            },
+            locationOptions: function() {
+                return this.$store.state.countlyPushNotification.pushNotifications.locations.map(function(location) {
+                    return {label: location.title, value: location._id};
+                });
+            },
+
         },
         methods: {
             onSaveDraft: function() {},
@@ -449,7 +451,8 @@
                 this.userPropertiesIdCounter = this.userPropertiesIdCounter + 1;
                 this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], propertyIndex, {
                     id: propertyIndex,
-                    value: "Select property",
+                    value: "",
+                    label: "Select property|",
                     fallback: "",
                     isUppercase: false
                 });
@@ -458,19 +461,21 @@
                 this.addUserPropertyInHTML(propertyIndex, container);
             },
             onRemoveUserProperty: function(id, container) {
-                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id] = null;
-                this.removeUserPropertyInHTML();
+                this.closeAddUserPropertyPopover();
+                this.$delete(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], id);
+                this.removeUserPropertyInHTML(id, container);
             },
-            onSelectUserProperty: function(id, container, value) {
+            onSelectUserProperty: function(id, container, value, label) {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value = value;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].label = label;
                 var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback;
-                var previewValue = value + "|" + currentFallbackValue;
+                var previewValue = label + "|" + currentFallbackValue;
                 this.setUserPropertyInHTML(id, container, previewValue, value);
             },
             onInputFallbackUserProperty: function(id, container, fallback) {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback = fallback;
-                var currentValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value;
-                var previewValue = currentValue + "|" + fallback;
+                var currentLabel = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].label;
+                var previewValue = currentLabel + "|" + fallback;
                 this.setUserPropertyFallbackInHTML(id, container, previewValue, fallback);
             },
             onCheckUppercaseUserProperty: function(id, container, isUppercase) {
@@ -481,7 +486,28 @@
                 this.setSelectedUserPropertyContainer(container);
                 this.setAddUserPropertyPopoverPosition(position);
                 this.openAddUserPropertyPopover();
-            }
+            },
+            fetchAllEvents: function() {
+                var self = this;
+                countlyEventsOverview.service.fetchAllEvents()
+                    .then(function(events) {
+                        self.eventOptions = events.list.map(function(event) {
+                            return {label: event, value: event};
+                        });
+                    });
+            },
+            getUserProperties: function() {
+                return countlySegmentation.getFilters().map(function(userFilter) {
+                    return {label: userFilter.name, value: userFilter.id};
+                });
+            },
+            prepareMessage: function() {
+                //TODO-LA: use prepareMessage() meethod te get message localizations
+            },
+        },
+        mounted: function() {
+            this.fetchAllEvents();
+            this.getUserProperties();
         },
         components: {
             "message-setting-element": MessageSettingElement,

@@ -529,7 +529,7 @@
     $tooltip_color: #ececec;
 
     position: absolute;
-    z-index: 3005;
+    z-index: 2001;
     background-color: #{$tooltip_color};
     border-radius: 5px;
 
@@ -558,7 +558,6 @@
         z-index:1;
         top:-21px;
     }
-    
 }
 // Vue emoji-picker
 .cly-vue-push-notification-emoji-wrapper{
