@@ -3500,14 +3500,18 @@
         justify-content: space-between;
         &.selected{
             background-color: #F6F6F6;
-            color: #0166D6;
+            * {
+                color: #0166D6;
+            }
         }
     }
 
     &--disabled {
         .cly-vue-listbox__item {
             background-color: #F6F6F6;
-            color: #A7AEB8;
+            * {
+                color: #A7AEB8;
+            }
         }
     }
     
@@ -3515,9 +3519,11 @@
         .cly-vue-listbox__item {
             &:hover {
                 background-color: #F6F6F6;
-                color: #0166D6;
                 .drag-handler {
                     visibility: visible;
+                }
+                * {
+                    color: #0166D6;
                 }
             }
         }
