@@ -251,6 +251,12 @@
         app.route("/analytics/acquisition", 'acqusition', function() {
             this.renderWhenReady(app.SourcesView);
         });
-        app.addSubMenu("analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 90});
     }
+
+    $(document).ready(function() {
+        if (countlyAuth.validateRead(FEATURE_NAME)) {
+            app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 90});
+        }
+    });
+
 })();
