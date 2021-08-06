@@ -150,8 +150,34 @@
         }
     });
 
-    Vue.component("cly-listbox", AbstractListBox.extend({
+    var SearchableOptionsMixin = {
         props: {
+            searchable: {type: Boolean, default: true},
+            searchPlaceholder: {type: String, default: 'Search'}
+        },
+        data: function() {
+            return {
+                searchQuery: ''
+            };
+        },
+        methods: {
+            getMatching: function(options) {
+                if (!this.searchQuery || !this.searchable) {
+                    return options;
+                }
+                var self = this;
+                var query = self.searchQuery.toLowerCase();
+                return options.filter(function(option) {
+                    return option.label.toLowerCase().indexOf(query) > -1;
+                });
+            }
+        }
+    };
+
+    Vue.component("cly-listbox", AbstractListBox.extend({
+        mixins: [SearchableOptionsMixin],
+        props: {
+            searchable: {type: Boolean, default: false, required: false}, //override the mixin
             value: { type: [String, Number] }
         },
         template: '<div\
@@ -162,6 +188,16 @@
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
                     @blur="handleBlur">\
+                    <div class="cly-vue-listbox__header bu-p-3">\
+                        <el-input\
+                            :disabled="disabled"\
+                            autocomplete="chrome-off"\
+                            v-if="searchable"\
+                            v-model="searchQuery"\
+                            :placeholder="searchPlaceholder">\
+                            <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                        </el-input>\
+                    </div>\
                     <vue-scroll\
                         v-if="options.length > 0"\
                         :ops="scrollCfg"\>\
@@ -175,7 +211,7 @@
                                 @mouseenter="handleItemHover(option)"\
                                 @keyup.enter="handleItemClick(option)"\
                                 @click.stop="handleItemClick(option)"\
-                                v-for="option in options">\
+                                v-for="option in getMatching(options)">\
                                 <div>\
                                     <slot name="option-prefix" v-bind="option"></slot>\
                                     <span>{{option.label}}</span>\
@@ -440,30 +476,6 @@
         }
     };
 
-    var SearchableOptionsMixin = {
-        props: {
-            searchDisabled: {type: Boolean, default: false},
-            searchPlaceholder: {type: String, default: 'Search'}
-        },
-        data: function() {
-            return {
-                searchQuery: ''
-            };
-        },
-        methods: {
-            getMatching: function(options) {
-                if (!this.searchQuery || this.searchDisabled) {
-                    return options;
-                }
-                var self = this;
-                var query = self.searchQuery.toLowerCase();
-                return options.filter(function(option) {
-                    return option.label.toLowerCase().indexOf(query) > -1;
-                });
-            }
-        }
-    };
-
     Vue.component("cly-select-x", countlyVue.components.BaseComponent.extend({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin, _mixins.i18n],
         template: '<cly-dropdown\
@@ -497,8 +509,10 @@
                                     <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>\
                                 </div>\
                                 <el-input\
-                                    v-if="!searchDisabled"\
+                                    v-if="searchable"\
                                     ref="searchBox"\
+                                    autocomplete="chrome-off"\
+                                    :disabled="disabled"\
                                     v-model="searchQuery"\
                                     @keydown.native.esc.stop.prevent="doClose" \
                                     :placeholder="searchPlaceholder">\

@@ -3493,6 +3493,24 @@
         visibility: hidden;
     }
 
+    &__header {
+        margin: 0 0 1px 0;
+        z-index: 2000;
+        border-bottom: 1px solid #ECECEC;
+        position: relative;
+        &::after {
+            // shadow
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 12px;
+            background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
+            top: 57px;
+            left: 0;
+            opacity: 0.12;
+        }
+    }
+
     .cly-vue-listbox__item {
         display: flex;
         cursor: pointer;
