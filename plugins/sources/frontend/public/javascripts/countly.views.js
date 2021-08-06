@@ -1,249 +1,263 @@
-/*global 
-    CountlyHelpers,
-    countlyAuth,
-    countlyGlobal,
-    countlyView,
-    countlySources,
-    countlyCommon,
-    addDrill,
-    jQuery,
-    $,
-    app,
-    KeywordsView,
-    SourcesView
- */
-window.SourcesView = countlyView.extend({
-    beforeRender: function() {
-        this.dataMap = {};
-        return $.when(countlySources.initialize(true)).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        this.updateDataMap();
-        this.templateData = {
-            "page-title": jQuery.i18n.map["sources.title"],
-            "font-logo-class": "fa-crosshairs",
-            "graph-type-double-pie": true,
-            "pie-titles": {
-                "left": jQuery.i18n.map["common.total-sessions"],
-                "right": jQuery.i18n.map["common.new-users"]
-            },
-            "chart-helper": "sources.chart"
-        };
+/*global countlyAuth, app, CV, countlyVue, countlyCommon, countlySources, countlyGlobal, $ */
+(function() {
+    var FEATURE_NAME = "sources";
 
-        if (!isRefresh) {
-            var data = countlySources.getData();
-            $(this.el).html(this.template(this.templateData));
-            if (typeof addDrill !== "undefined") {
-                $(".widget-header .left .title").after(addDrill("up.src"));
+    var SourcesDetailTableContainer = countlyVue.views.create({
+        template: CV.T("/sources/templates/extend-table.html"),
+        props: {
+            rows: {
+                type: Object,
+                default: {}
             }
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": data.chartData,
-                "fnRowCallback": function(nRow, aData) {
-                    $(nRow).attr("id", aData.sources.replace(/\./g, '-').replace(/ /g, '_').replace(/[^\w]/g, ''));
+        },
+        computed: {
+            rowsComputed: function() {
+                var computedArray = [];
+                for (var el in this.rows) {
+                    computedArray.push(el);
+                }
+                return computedArray;
+            }
+        }
+    });
+
+    var SourcesTabContainer = countlyVue.views.create({
+        template: CV.T("/sources/templates/sources-tab.html"),
+        components: {
+            "extend-table": SourcesDetailTableContainer
+        },
+        data: function() {
+            return {
+                sourcesData: [],
+                pieSourcesNewUsers: {
+                    series: [
+                        {
+                            name: CV.i18n('common.table.new-users'),
+                            data: [],
+                            label: {
+                                formatter: function() {
+                                    return CV.i18n('common.table.new-users') + "\n";
+                                }
+                            },
+                        }
+                    ]
                 },
-                "aoColumns": [
-                    CountlyHelpers.expandRowIconColumn(),
-                    {
-                        "mData": "sources",
-                        sType: "string",
-                        "sTitle": jQuery.i18n.map["sources.source"],
-                        "mRender": function(sourceData) {
-                            return sourceData;
-                        },
-                        "sClass": "break source-40"
+                pieSourcesTotalSessions: {
+                    series: [
+                        {
+                            name: CV.i18n('common.table.total-sessions'),
+                            data: [],
+                            label: {
+                                formatter: function() {
+                                    return CV.i18n('common.table.total-sessions') + "\n";
+                                }
+                            },
+                        }
+                    ]
+                },
+                dataMap: {},
+                sourcesDetailData: {}
+            };
+        },
+        methods: {
+            sourcesDetailDataMap: function() {
+                var self = this;
+                var cleanData = countlySources.getData(true).chartData;
+                var source;
+                for (var i in cleanData) {
+                    source = countlySources.getSourceName(cleanData[i].sources);
+                    if (!self.dataMap[source]) {
+                        self.dataMap[source] = {};
+                    }
+                    self.dataMap[source][cleanData[i].sources] = cleanData[i];
+                }
+                this.sourcesDetailData = self.dataMap;
+            },
+            sourcesFnKey: function(row) {
+                return row.sources;
+            },
+            handleSourcesCommand: function(e) {
+                switch (e) {
+                case 'redirect-drill': {
+                    window.location.hash = "/drill/" + JSON.stringify({"event": "[CLY]_session", "dbFilter": {}, "byVal": "up.src"});
+                    break;
+                }
+                }
+            },
+            chartsDataPrepare: function(sourcesData) {
+                var self = this;
+
+                var totalSessionSeriesData = [{ name: CV.i18n('common.table.no-data'), value: 0 }];
+                var newUsersSeriesData = [{ name: CV.i18n('common.table.no-data'), value: 0 }];
+                var sumOfTotalSession = 0;
+                var sumOfNewUsers = 0;
+
+                if (typeof sourcesData.chartDPTotal !== "undefined" && typeof sourcesData.chartDPTotal.dp !== "undefined") {
+                    totalSessionSeriesData = [];
+                    for (var i = 0; i < sourcesData.chartDPTotal.dp.length; i++) {
+                        totalSessionSeriesData.push({value: sourcesData.chartDPTotal.dp[i].data[0][1], name: sourcesData.chartDPTotal.dp[i].label});
+                        sumOfTotalSession += sourcesData.chartDPTotal.dp[i].data[0][1];
+                    }
+                }
+
+                if (typeof sourcesData.chartDPNew !== "undefined" && typeof sourcesData.chartDPNew.dp !== "undefined") {
+                    newUsersSeriesData = [];
+                    for (var j = 0; j < sourcesData.chartDPNew.dp.length; j++) {
+                        newUsersSeriesData.push({value: sourcesData.chartDPNew.dp[j].data[0][1], name: sourcesData.chartDPNew.dp[j].label});
+                        sumOfNewUsers += sourcesData.chartDPNew.dp[j].data[0][1];
+                    }
+                }
+
+                // set charts center label
+                self.pieSourcesTotalSessions.series[0].label.formatter = function() {
+                    return CV.i18n('common.table.total-sessions') + "\n" + countlyCommon.getShortNumber(sumOfTotalSession || 0);
+                };
+                self.pieSourcesNewUsers.series[0].label.formatter = function() {
+                    return CV.i18n('common.table.new-users') + "\n " + countlyCommon.getShortNumber(sumOfNewUsers || 0);
+                };
+
+                return {
+                    t: {
+                        data: totalSessionSeriesData
                     },
+                    n: {
+                        data: newUsersSeriesData
+                    }
+                };
+            },
+            refresh: function() {
+                var self = this;
+                $.when(countlySources.initialize())
+                    .then(function() {
+                        self.sourcesData = countlySources.getData();
+                        self.sourcesDetailDataMap();
+
+                        // calculate charts data for total session and new users charts
+                        var chartsData = self.chartsDataPrepare(self.sourcesData);
+                        self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
+                        self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
+                    });
+            }
+        },
+        beforeCreate: function() {
+            var self = this;
+            $.when(countlySources.initialize())
+                .then(function() {
+                    // get fetched sources datas
+                    self.sourcesData = countlySources.getData();
+                    self.sourcesDetailDataMap();
+
+                    // calculate charts data for total session and new users charts
+                    var chartsData = self.chartsDataPrepare(self.sourcesData);
+                    self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
+                    self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
+                });
+        }
+    });
+
+    var KeywordsTabContainer = countlyVue.views.create({
+        template: CV.T("/sources/templates/keywords-tab.html"),
+        data: function() {
+            return {
+                searchedTermsData: [],
+                searchTermsTop3: [
+                    { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
+                    { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
+                    { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
+                ]
+            };
+        },
+        methods: {
+            getTop3: function(data) {
+                var totalsArray = [];
+                var sum = 0;
+                for (var i = 0; data.length > i; i++) {
+                    totalsArray.push([i, data[i].t]);
+                    sum += data[i].t;
+                }
+                totalsArray.sort(function(a, b) {
+                    return a[1] - b[1];
+                }).reverse();
+
+                if (totalsArray.length === 0) {
+                    return [
+                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
+                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
+                        { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
+                    ];
+                }
+
+                return [
+                    {percentage: Math.round((data[totalsArray[0][0]].t / sum) * 100), label: data[totalsArray[0][0]]._id, value: countlyCommon.getShortNumber(totalsArray[0][1] || 0)},
+                    {percentage: Math.round((data[totalsArray[1][0]].t / sum) * 100), label: data[totalsArray[1][0]]._id, value: countlyCommon.getShortNumber(totalsArray[1][1] || 0)},
+                    {percentage: Math.round((data[totalsArray[2][0]].t / sum) * 100), label: data[totalsArray[2][0]]._id, value: countlyCommon.getShortNumber(totalsArray[2][1] || 0)}
+                ];
+            },
+            refresh: function() {
+                var self = this;
+                $.when(countlySources.initializeKeywords())
+                    .then(function() {
+                        self.searchedTermsData = countlySources.getKeywords();
+                        self.searchTermsTop3 = self.getTop3(self.searchedTermsData);
+                    });
+            }
+        },
+        beforeCreate: function() {
+            var self = this;
+            $.when(countlySources.initializeKeywords())
+                .then(function() {
+                    // calculate top 3 search terms data
+                    self.searchedTermsData = countlySources.getKeywords();
+                    self.searchTermsTop3 = self.getTop3(self.searchedTermsData);
+                });
+        }
+    });
+
+    var SourcesContainer = countlyVue.views.create({
+        template: CV.T("/sources/templates/main.html"),
+        mixins: [],
+        data: function() {
+            return {
+                tab: (this.$route.params && this.$route.params.tab) || 'sources',
+                isWeb: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web",
+                appId: countlyCommon.ACTIVE_APP_ID,
+                tabs: [
                     {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-sessions"],
-                        "sClass": "source-20"
-                    },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-users"],
-                        "sClass": "source-20"
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.new-users"],
-                        "sClass": "source-20"
+                        title: CV.i18n('sources.title'),
+                        name: 'sources',
+                        component: SourcesTabContainer
                     }
                 ]
-            }));
-
-            this.dtable.stickyTableHeaders();
-            this.dtable.fnSort([ [2, 'desc'] ]);
-            this.dtable.addClass("source-table");
-            countlyCommon.drawGraph(data.chartDPTotal, "#dashboard-graph", "pie");
-            countlyCommon.drawGraph(data.chartDPNew, "#dashboard-graph2", "pie");
-
-            CountlyHelpers.expandRows(this.dtable, this.expandTable, this);
-
-            if (!countlyAuth.validateRead('drill')) {
-                $('#drill-down-for-view').hide();
+            };
+        },
+        created: function() {
+            if (this.isWeb) {
+                this.tabs.push({
+                    title: CV.i18n('keywords.title'),
+                    name: 'keywords',
+                    component: KeywordsTabContainer
+                });
             }
         }
-    },
-    refresh: function() {},
-    dateChanged: function() { //called when user changes the date selected
-        var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-            self.renderCommon(true);
+    });
 
-            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+    var SourcesView = new countlyVue.views.BackboneWrapper({
+        component: SourcesContainer
+    });
 
-            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
-
-            var data = countlySources.getData();
-
-            countlyCommon.drawGraph(data.chartDPTotal, "#dashboard-graph", "pie");
-            countlyCommon.drawGraph(data.chartDPNew, "#dashboard-graph2", "pie");
-            CountlyHelpers.refreshTable(self.dtable, data.chartData);
-            CountlyHelpers.reopenRows(self.dtable, self.expandTable, self);
-        });
-    },
-    expandTable: function(d, self) {
-        // `d` is the original data object for the row
-        var str = '';
-        if (d && d.sources && self.dataMap[d.sources]) {
-            str += '<div class="datatablesubrow">' +
-                '<table cellpadding="5" cellspacing="0" border="0" class="subtable">';
-            str += '<tr>';
-            str += '<th class="source-40">' + jQuery.i18n.map["sources.source"] + '</th>';
-            str += '<th class="source-20">' + jQuery.i18n.map["common.table.total-sessions"] + '</th>';
-            str += '<th class="source-20">' + jQuery.i18n.map["common.table.total-users"] + '</th>';
-            str += '<th class="source-20">' + jQuery.i18n.map["common.table.new-users"] + '</th>';
-            str += '</tr>';
-            for (var i in self.dataMap[d.sources]) {
-                str += '<tr>';
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile" || self.dataMap[d.sources][i].sources.indexOf("://") === -1) {
-                    str += '<td class="source-40">' + self.dataMap[d.sources][i].sources + '</td>';
-                }
-                else {
-                    str += '<td class="source-40"><a href="' + self.dataMap[d.sources][i].sources + '" target="_blank">' + self.dataMap[d.sources][i].sources + '</a></td>';
-                }
-                str += '<td class="source-20">' + self.dataMap[d.sources][i].t + '</td>';
-                str += '<td class="source-20">' + self.dataMap[d.sources][i].u + '</td>';
-                str += '<td class="source-20">' + self.dataMap[d.sources][i].n + '</td>';
-                str += '</tr>';
-            }
-            str += '</table>' +
-            '</div>';
-        }
-        return str;
-    },
-    updateDataMap: function() {
-        var cleanData = countlySources.getData(true).chartData;
-        var source;
-        for (var i in cleanData) {
-            source = countlySources.getSourceName(cleanData[i].sources);
-            if (!this.dataMap[source]) {
-                this.dataMap[source] = {};
-            }
-            this.dataMap[source][cleanData[i].sources] = cleanData[i];
-        }
-    }
-});
-
-window.KeywordsView = countlyView.extend({
-    beforeRender: function() {
-        return $.when(countlySources.initializeKeywords()).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        this.templateData = {
-            "page-title": jQuery.i18n.map["keywords.title"],
-            "font-logo-class": "fa-crosshairs"
-        };
-
-        if (!isRefresh) {
-            var data = countlySources.getKeywords();
-            $(this.el).html(this.template(this.templateData));
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": data,
-                "aoColumns": [
-                    { "mData": "_id", sType: "string", "sTitle": jQuery.i18n.map["keywords.title"], "sClass": "break source-40" },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-sessions"],
-                        "sClass": "source-20"
-                    },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-users"],
-                        "sClass": "source-20"
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.new-users"],
-                        "sClass": "source-20"
-                    }
-                ]
-            }));
-
-            this.dtable.stickyTableHeaders();
-            this.dtable.fnSort([ [1, 'desc'] ]);
-            $(".widget-content").hide();
-            $("#dataTableOne_wrapper").css({"margin-top": "-16px"});
-        }
-    },
-    refresh: function() {},
-    dateChanged: function() { //called when user changes the date selected
-        var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-            self.renderCommon(true);
-
-            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-
-            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
-
-            var data = countlySources.getKeywords();
-            CountlyHelpers.refreshTable(self.dtable, data);
+    if (countlyAuth.validateRead(FEATURE_NAME)) {
+        app.route("/analytics/acquisition", 'acqusition', function() {
+            this.renderWhenReady(SourcesView);
         });
     }
-});
 
-//register views
-app.sourcesView = new SourcesView();
-app.keywordsView = new KeywordsView();
+    $(document).ready(function() {
+        if (countlyAuth.validateRead(FEATURE_NAME) && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+            app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 90});
+        }
+        else if (countlyAuth.validateRead(FEATURE_NAME) && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
+            app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 90});
+        }
+    });
 
-app.route("/analytics/sources", 'sources', function() {
-    this.renderWhenReady(this.sourcesView);
-});
-
-app.route("/analytics/keywords", 'keywords', function() {
-    this.renderWhenReady(this.keywordsView);
-});
-
-$(document).ready(function() {
-    app.addSubMenu("analytics", {code: "analytics-sources", url: "#/analytics/sources", text: "sources.title", priority: 90});
-    app.addSubMenuForType("web", "analytics", {code: "analytics-keywords", url: "#/analytics/keywords", text: "keywords.title", priority: 95});
-});
+})();
