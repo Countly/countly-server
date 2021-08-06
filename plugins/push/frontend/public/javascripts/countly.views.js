@@ -326,7 +326,6 @@
                     return {label: location.title, value: location._id};
                 });
             },
-
         },
         methods: {
             onSaveDraft: function() {},
@@ -502,7 +501,7 @@
                 });
             },
             prepareMessage: function() {
-                //TODO-LA: use prepareMessage() meethod te get message localizations
+                //TODO-LA: get message localizations and prepare notification meta-data
             },
         },
         mounted: function() {
@@ -596,7 +595,7 @@
                 },
                 set: function(value) {
                     this.$store.dispatch("countlyPushNotification/onSetStatusFilter", value);
-                //TODO: filter table by status
+                //TODO-LA: filter table by status
                 // this.$store.dispatch("countlyPushNotification/fetchByType");
                 }
             },
@@ -642,17 +641,17 @@
                     this.$store.dispatch('countlyPushNotification/onDeletePushNotification', pushNotificationId);
                 }
             },
-            //TODO: use status action specifications when ready
+            //TODO-LA: use status action specifications when ready
             // eslint-disable-next-line no-unused-vars
             shouldShowDuplicateUserEvent: function(status) {
                 return true;
             },
-            //TODO: use status action specifications when ready
+            //TODO-LA: use status action specifications when ready
             // eslint-disable-next-line no-unused-vars
             shouldShowResendUserEvent: function(status) {
                 return true;
             },
-            //TODO: use status action specifications when ready
+            //TODO-LA: use status action specifications when ready
             // eslint-disable-next-line no-unused-vars
             shouldShowDeleteUserEvent: function(status) {
                 return true;
@@ -870,7 +869,7 @@
                 return countlyCommon.formatTimeAgoText(date).text;
             },
             findTargetedUsers: function() {
-                //TODO: find how to calculate the targeted users;
+                //TODO-LA: find how to calculate the targeted users;
                 return CountlyHelpers.formatPercentage(100);
             },
             findSentPushNotifications: function() {

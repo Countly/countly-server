@@ -21,6 +21,8 @@
         data: function() {
             return {
                 search: "",
+                defaultLabelValue: "Select property",
+                defaultLabelPreview: "Select property|"
             };
         },
         computed: {
@@ -53,15 +55,14 @@
                 };
             },
             addEmptyUserProperty: function(id, container) {
-                var previewValue = "Select property|";
                 var newElement = document.createElement("span");
                 newElement.setAttribute("id", "id-" + id);
                 newElement.setAttribute("contentEditable", false);
                 newElement.setAttribute("class", "cly-vue-push-notification-message-editor-with-emoji-picker__user-property");
-                newElement.setAttribute("data-user-property-label", "Select property");
+                newElement.setAttribute("data-user-property-label", this.defaultLabelValue);
                 newElement.setAttribute("data-user-property-value", "");
                 newElement.setAttribute("data-user-property-fallback", "");
-                newElement.innerText = previewValue;
+                newElement.innerText = this.defaultLabelPreview;
                 newElement.onclick = this.getOnUserPropertyClickEventListener(id, container);
                 this.$refs.element.appendChild(newElement);
                 this.appendZeroWidthSpace();
@@ -75,10 +76,19 @@
             getHTMLContent: function() {
                 return this.$refs.element.innerHTML;
             },
+            getLabelValueFromPreview: function(previewValue) {
+                var labelValue = previewValue.split("|")[0];
+                if (labelValue === this.defaultLabelValue) {
+                    labelValue = "";
+                }
+                return labelValue;
+            },
             setUserPropertyValue: function(id, previewValue, value) {
                 var element = this.$refs.element.querySelector("#id-" + id);
                 element.innerText = previewValue;
                 element.setAttribute("data-user-property-value", value);
+
+                element.setAttribute("data-user-property-label", this.getLabelValueFromPreview(previewValue));
                 this.$emit('change', this.$refs.element.innerHTML);
             },
             setUserPropertyFallbackValue: function(id, previewValue, fallback) {
@@ -118,7 +128,7 @@
             }
         },
         beforeDestroy: function() {
-            //TODO: remove all user properties elements' event listeners
+            //TODO-LA: remove all user properties elements' event listeners
         },
         components: {
             'emoji-picker': countlyPushNotificationComponent.EmojiPicker

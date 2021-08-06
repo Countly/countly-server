@@ -126,7 +126,7 @@
                         var withAttribues = htmlTitle.childNodes[index];
                         node.childNodes.forEach(function(childNode) {
                             if (childNode.nodeValue) {
-                                var selectedProperty = withAttribues.getAttribute('data-user-property-label').value;
+                                var selectedProperty = withAttribues.getAttributeNode('data-user-property-label').value;
                                 var fallbackValue = withAttribues.getAttributeNode('data-user-property-fallback').value;
                                 components.push({name: 'user-property-preview', value: {fallback: fallbackValue, userProperty: selectedProperty}});
                             }
