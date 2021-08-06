@@ -29,7 +29,7 @@
     "apidoc": "^0.28.1",
     "apidoc-template": "github:kanwarujjaval/dash-apidoc-template",
     "argon2": "0.28.2",
-    "async": "3.2.0",
+    "async": "3.2.1",
     "basic-auth": "2.0.1",
     "bluebird": "3.7.2",
     "body-parser": "1.19.0",
