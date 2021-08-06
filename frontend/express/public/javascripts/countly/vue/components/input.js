@@ -196,7 +196,7 @@
                     <div class="cly-vue-listbox__header bu-p-3" v-if="searchable">\
                         <el-input\
                             :disabled="disabled"\
-                            autocomplete="chrome-off"\
+                            autocomplete="off"\
                             v-model="searchQuery"\
                             :placeholder="searchPlaceholder">\
                             <i slot="prefix" class="el-input__icon el-icon-search"></i>\
@@ -515,7 +515,7 @@
                                 <el-input\
                                     v-if="searchable"\
                                     ref="searchBox"\
-                                    autocomplete="chrome-off"\
+                                    autocomplete="off"\
                                     :disabled="disabled"\
                                     v-model="searchQuery"\
                                     @keydown.native.esc.stop.prevent="doClose" \
