@@ -245,11 +245,9 @@
         component: SourcesContainer
     });
 
-    app.SourcesView = SourcesView;
-
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         app.route("/analytics/acquisition", 'acqusition', function() {
-            this.renderWhenReady(app.SourcesView);
+            this.renderWhenReady(SourcesView);
         });
     }
 
