@@ -89,7 +89,7 @@
                 </l-geo-json>
 
                 <l-control position="topLeft" pane="markerPane">
-                    <div class="cly-vue-worldmap__detail-switch bu-m-3" v-show="inDetail">
+                    <div class="cly-vue-worldmap__detail-switch bu-m-3" v-show="inDetail && showDetailModeSelect">
                         <el-radio-group v-model="detailMode" size="small">
                             <el-radio-button label="regions">Regions</el-radio-button>
                             <el-radio-button label="cities">Cities</el-radio-button>

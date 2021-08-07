@@ -66,7 +66,9 @@
         </cly-section>
         <cly-section title="Worldmap - Simple">
             <cly-worldmap
-                displayed-country="TR"
+                external-country="TR"
+                external-detail-mode="cities"
+                :show-detail-mode-select="false"
                 :show-navigation="false"
                 :countries-data="countriesData"
                 :regions-data="regionsData"

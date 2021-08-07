@@ -1208,7 +1208,17 @@
                 default: true,
                 required: false
             },
-            displayedCountry: {
+            showDetailModeSelect: {
+                type: Boolean,
+                default: true,
+                required: false
+            },
+            externalCountry: {
+                type: String,
+                default: null,
+                required: false
+            },
+            externalDetailMode: {
                 type: String,
                 default: null,
                 required: false
@@ -1331,7 +1341,7 @@
                     this.indexCities();
                 }
             },
-            displayedCountry: {
+            externalCountry: {
                 immediate: true,
                 handler: function(newVal) {
                     if (!newVal) {
@@ -1339,6 +1349,14 @@
                     }
                     else {
                         this.goToCountry(newVal);
+                    }
+                }
+            },
+            externalDetailMode: {
+                immediate: true,
+                handler: function(newVal) {
+                    if (newVal === "regions" || newVal === "cities") {
+                        this.detailMode = newVal;
                     }
                 }
             }
