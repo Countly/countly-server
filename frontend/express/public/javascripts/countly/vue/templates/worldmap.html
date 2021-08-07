@@ -1,6 +1,6 @@
 <div class="cly-vue-worldmap">
     <div class="bu-columns bu-is-gapless">
-        <div class="bu-column bu-is-3 cly-vue-worldmap__list">
+        <div v-if="showNavigation" class="bu-column bu-is-3 cly-vue-worldmap__list">
             <div class="cly-vue-worldmap__back-button bu-p-4" @click="goToMain" v-if="inDetail">
                 <span class="text-medium"><- Back to World Map</span>
             </div>
@@ -76,7 +76,7 @@
                 </cly-listbox>
             </div>
         </div>
-        <div class="bu-column bu-is-9">
+        <div class="bu-column" :class="{'bu-is-9': showNavigation}">
             <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :options="{zoomControl: false}" :max-bounds="maxBounds" style="height: 500px; width: 100%">
 
                 <l-tile-layer pane="tilePane" v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>

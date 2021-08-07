@@ -1203,6 +1203,16 @@
             'l-control': Vue2Leaflet.LControl
         },
         props: {
+            showNavigation: {
+                type: Boolean,
+                default: true,
+                required: false
+            },
+            displayedCountry: {
+                type: String,
+                default: null,
+                required: false
+            },
             showTile: {
                 type: Boolean,
                 default: false,
@@ -1319,6 +1329,17 @@
             citiesData: function() {
                 if (this.detailMode === 'cities') {
                     this.indexCities();
+                }
+            },
+            displayedCountry: {
+                immediate: true,
+                handler: function(newVal) {
+                    if (!newVal) {
+                        this.goToMain();
+                    }
+                    else {
+                        this.goToCountry(newVal);
+                    }
                 }
             }
         },
