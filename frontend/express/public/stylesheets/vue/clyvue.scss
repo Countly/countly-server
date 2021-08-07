@@ -1511,6 +1511,13 @@
             cursor: pointer;
             border-bottom: 1px solid #ECECEC;
         }
+        &__detail-switch {
+            position: absolute;
+            z-index: 1000;
+        }
+        &__map-container {
+            position: relative;
+        }
     }
 
     .cly-vue-draggable {
