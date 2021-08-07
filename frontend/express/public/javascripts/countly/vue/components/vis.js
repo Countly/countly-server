@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, countlyLocation, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
+/* global Promise, Vue, countlyCommon, countlyLocation, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
 
 (function(countlyVue) {
 
@@ -1332,9 +1332,6 @@
             },
             detailMode: function(newVal) {
                 this.$emit("detailModeChanged", newVal);
-                if (newVal === 'cities') {
-                    this.indexCities();
-                }
             },
             citiesData: function() {
                 if (this.detailMode === 'cities') {
@@ -1490,7 +1487,7 @@
             indexCities: function() {
                 var self = this;
                 if (this.citiesData[this.country]) {
-                    self.loadCities(this.country, Object.keys(this.citiesData[this.country])).then(function(json) {
+                    return self.loadCities(this.country, Object.keys(this.citiesData[this.country])).then(function(json) {
                         self.citiesToLatLng = {};
                         json.forEach(function(f) {
                             self.citiesToLatLng[f.name] = {lat: f.loc.coordinates[1], lon: f.loc.coordinates[0]};
@@ -1500,6 +1497,7 @@
                 else {
                     self.citiesToLatLng = {};
                 }
+                return Promise.resolve();
             },
             boxToLatLng2d: function(boundingBox) {
                 var x0 = boundingBox[0],
@@ -1588,7 +1586,9 @@
                             lon: f.properties.lon || 0
                         };
                     });
-                    self.handleViewChange();
+                    return self.indexCities().then(function() {
+                        self.handleViewChange();
+                    });
                 });
             },
             focusToRegion: function() {
