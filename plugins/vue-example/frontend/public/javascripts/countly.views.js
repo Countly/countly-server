@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, CV */
+/*global app, countlyVue, countlyVueExample, countlyCommon, CV, moment */
 
 (function() {
     var TableView = countlyVue.views.create({
@@ -442,6 +442,27 @@
                     },
                     'US': {
                         'value': 1000
+                    },
+                    'GB': {
+                        'value': 1000
+                    },
+                    'ES': {
+                        'value': 1000
+                    },
+                    'NL': {
+                        'value': 1000
+                    },
+                    'JP': {
+                        'value': 1000
+                    },
+                    'NZ': {
+                        'value': 1000
+                    },
+                    'IN': {
+                        'value': 1000
+                    },
+                    'IL': {
+                        'value': 1000
                     }
                 },
                 regionsData: {
@@ -542,6 +563,10 @@
                 selectedMonthRange: '10months',
                 selectedDynamicRange: '10weeks',
                 selectedDynamicType: 'daterange',
+                selectedDate: moment.now(),
+                selectedDateWTime: moment.now(),
+                selectedMonth: moment().startOf("month").valueOf(),
+                selectedTime: new Date(2016, 9, 10, 18, 40),
             };
         }
     });

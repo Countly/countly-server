@@ -71,10 +71,20 @@
 
     Vue.component("cly-dropzone", window.vue2Dropzone);
 
-    var AbstractListBox = countlyVue.components.BaseComponent.extend({
+    var AbstractListBox = countlyVue.views.BaseView.extend({
         props: {
             options: {type: Array},
-            bordered: {type: Boolean, default: true}
+            bordered: {type: Boolean, default: true},
+            skin: {
+                type: String,
+                default: "default",
+                required: false,
+                validator: function(val) {
+                    return val === "default" || val === "jumbo";
+                }
+            },
+            disabled: {type: Boolean, default: false, required: false},
+            height: {type: [Number, String], default: 300, required: false},
         },
         methods: {
             navigateOptions: function() {
@@ -83,8 +93,10 @@
                 }
             },
             handleItemClick: function(option) {
-                this.$emit("input", option.value);
-                this.$emit("change", option.value);
+                if (!this.disabled) {
+                    this.$emit("input", option.value);
+                    this.$emit("change", option.value);
+                }
             },
             handleItemHover: function(option) {
                 this.hovered = option.value;
@@ -100,43 +112,120 @@
         data: function() {
             return {
                 hovered: null,
-                focused: false
+                focused: false,
+                scrollCfg: {
+                    scrollPanel: {
+                        initialScrollX: false,
+                    },
+                    rail: {
+                        gutterOfSide: "0px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: false
+                    }
+                }
             };
+        },
+        computed: {
+            topClasses: function() {
+                var classes = {
+                    "is-focus": this.focused,
+                    "cly-vue-listbox--bordered": this.bordered,
+                    "cly-vue-listbox--disabled": this.disabled
+                };
+                classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
+                return classes;
+            },
+            wrapperStyle: function() {
+                if (this.height !== "auto") {
+                    return {
+                        'max-height': this.height + "px"
+                    };
+                }
+                return false;
+            }
         }
     });
 
-    Vue.component("cly-listbox", AbstractListBox.extend({
+    var SearchableOptionsMixin = {
         props: {
+            searchable: {type: Boolean, default: true},
+            searchPlaceholder: {type: String, default: 'Search'}
+        },
+        data: function() {
+            return {
+                searchQuery: ''
+            };
+        },
+        methods: {
+            getMatching: function(options) {
+                if (!this.searchQuery || !this.searchable) {
+                    return options;
+                }
+                var self = this;
+                var query = self.searchQuery.toLowerCase();
+                return options.filter(function(option) {
+                    return option.label.toLowerCase().indexOf(query) > -1;
+                });
+            }
+        }
+    };
+
+    Vue.component("cly-listbox", AbstractListBox.extend({
+        mixins: [SearchableOptionsMixin],
+        props: {
+            searchable: {type: Boolean, default: false, required: false}, //override the mixin
             value: { type: [String, Number] }
+        },
+        computed: {
+            searchedOptions: function() {
+                return this.getMatching(this.options);
+            }
         },
         template: '<div\
                     class="cly-vue-listbox"\
                     tabindex="0"\
-                    :class="{ \'is-focus\': focused, \'cly-vue-listbox--bordered\': bordered }"\
+                    :class="topClasses"\
                     @mouseenter="handleHover"\
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
                     @blur="handleBlur">\
-                    <el-scrollbar\
-                        v-if="options.length > 0"\
-                        tag="ul"\
-                        wrap-class="el-select-dropdown__wrap"\
-                        view-class="el-select-dropdown__list">\
-                        <li\
-                            tabindex="0"\
-                            class="el-select-dropdown__item"\
-                            :class="{\'selected\': value === option.value, \'hover\': hovered === option.value}"\
-                            :key="option.value"\
-                            @focus="handleItemHover(option)"\
-                            @mouseenter="handleItemHover(option)"\
-                            @keyup.enter="handleItemClick(option)"\
-                            @click.stop="handleItemClick(option)"\
-                            v-for="option in options">\
-                            <span>{{option.label}}</span>\
-                        </li>\
-                    </el-scrollbar>\
+                    <div class="cly-vue-listbox__header bu-p-3" v-if="searchable">\
+                        <el-input\
+                            :disabled="disabled"\
+                            autocomplete="off"\
+                            v-model="searchQuery"\
+                            :placeholder="searchPlaceholder">\
+                            <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                        </el-input>\
+                    </div>\
+                    <vue-scroll\
+                        v-if="searchedOptions.length > 0"\
+                        :ops="scrollCfg"\>\
+                        <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
+                            <div\
+                                tabindex="0"\
+                                class="text-medium cly-vue-listbox__item"\
+                                :class="{\'selected\': value === option.value, \'hover\': hovered === option.value}"\
+                                :key="option.value"\
+                                @focus="handleItemHover(option)"\
+                                @mouseenter="handleItemHover(option)"\
+                                @keyup.enter="handleItemClick(option)"\
+                                @click.stop="handleItemClick(option)"\
+                                v-for="option in searchedOptions">\
+                                <div>\
+                                    <slot name="option-prefix" v-bind="option"></slot>\
+                                    <span>{{option.label}}</span>\
+                                </div>\
+                                <slot name="option-suffix" v-bind="option"></slot>\
+                            </div>\
+                        </div>\
+                    </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
-                        No data\
+                        {{i18n(\'common.search.no-match-found\')}}\
                     </div>\
                 </div>'
     }));
@@ -197,6 +286,9 @@
                     return this.value;
                 },
                 set: function(newVal) {
+                    if (this.disabled) {
+                        return;
+                    }
                     if (this.sortable && this.sortMap) {
                         var sortMap = this.sortMap,
                             wrapped = newVal.map(function(value, idx) {
@@ -239,34 +331,34 @@
         template: '<div\
                     class="cly-vue-listbox"\
                     tabindex="0"\
-                    :class="{ \'is-focus\': focused, \'cly-vue-listbox--bordered\': bordered }"\
+                    :class="topClasses"\
                     @mouseenter="handleHover"\
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
                     @blur="handleBlur">\
-                    <el-scrollbar\
+                    <vue-scroll\
                         v-if="options.length > 0"\
-                        tag="ul"\
-                        wrap-class="el-select-dropdown__wrap"\
-                        view-class="el-select-dropdown__list">\
-                        <el-checkbox-group\
-                            v-model="innerValue">\
-                            <draggable \
-                                handle=".drag-handler"\
-                                v-model="sortedOptions"\
-                                :options="{disabled: !sortable}">\
-                            <li\
-                                class="el-select-dropdown__item"\
-                                :key="option.value"\
-                                v-for="option in sortedOptions">\
-                                <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
-                                <el-checkbox :label="option.value" :key="option.value">{{option.label}}</el-checkbox>\
-                            </li>\
-                            </draggable>\
-                        </el-checkbox-group>\
-                    </el-scrollbar>\
+                        :ops="scrollCfg"\>\
+                        <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
+                            <el-checkbox-group\
+                                v-model="innerValue">\
+                                <draggable \
+                                    handle=".drag-handler"\
+                                    v-model="sortedOptions"\
+                                    :options="{disabled: !sortable}">\
+                                <div\
+                                    class="text-medium cly-vue-listbox__item"\
+                                    :key="option.value"\
+                                    v-for="option in sortedOptions">\
+                                    <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
+                                    <el-checkbox :label="option.value" :key="option.value">{{option.label}}</el-checkbox>\
+                                </div>\
+                                </draggable>\
+                            </el-checkbox-group>\
+                        </div>\
+                    </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
-                        No data\
+                        {{i18n(\'common.search.no-match-found\')}}\
                     </div>\
                 </div>'
     }));
@@ -388,30 +480,6 @@
         }
     };
 
-    var SearchableOptionsMixin = {
-        props: {
-            searchDisabled: {type: Boolean, default: false},
-            searchPlaceholder: {type: String, default: 'Search'}
-        },
-        data: function() {
-            return {
-                searchQuery: ''
-            };
-        },
-        methods: {
-            getMatching: function(options) {
-                if (!this.searchQuery || this.searchDisabled) {
-                    return options;
-                }
-                var self = this;
-                var query = self.searchQuery.toLowerCase();
-                return options.filter(function(option) {
-                    return option.label.toLowerCase().indexOf(query) > -1;
-                });
-            }
-        }
-    };
-
     Vue.component("cly-select-x", countlyVue.components.BaseComponent.extend({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin, _mixins.i18n],
         template: '<cly-dropdown\
@@ -445,8 +513,10 @@
                                     <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>\
                                 </div>\
                                 <el-input\
-                                    v-if="!searchDisabled"\
+                                    v-if="searchable"\
                                     ref="searchBox"\
+                                    autocomplete="off"\
+                                    :disabled="disabled"\
                                     v-model="searchQuery"\
                                     @keydown.native.esc.stop.prevent="doClose" \
                                     :placeholder="searchPlaceholder">\
