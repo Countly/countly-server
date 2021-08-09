@@ -1363,6 +1363,7 @@ describe('Testing Crashes', function() {
         });
     });
 
+    /*
     describe('Check public crash', function() {
         it('should be found', function(done) {
             request
@@ -1455,6 +1456,7 @@ describe('Testing Crashes', function() {
                 .expect(404, done);
         });
     });
+    */
 
     describe('Add comment', function() {
         it('should success', function(done) {
