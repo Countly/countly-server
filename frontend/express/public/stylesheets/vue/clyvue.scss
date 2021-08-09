@@ -1498,6 +1498,23 @@
             background: white;
             outline: 0;
         }
+        .leaflet-tooltip {
+            background: #FFFFFF;
+            border: 1px solid #ECECEC;
+            box-sizing: border-box;
+            box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.08);
+            border-radius: 4px;
+            padding: 0;
+            font-family: 'Inter';
+        }
+        
+        .leaflet-tooltip-top:before, 
+        .leaflet-tooltip-bottom:before, 
+        .leaflet-tooltip-left:before, 
+        .leaflet-tooltip-right:before {
+            content: none;
+        }
+
         &__list {
             border-right: 1px solid #ECECEC;
         }

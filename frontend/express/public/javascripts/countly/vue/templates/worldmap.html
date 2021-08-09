@@ -108,6 +108,15 @@
                     :lat-lng="nameToLatLng[name]" 
                     :key="unique(name)"
                     v-for="(item, name) in activeMarkers">
+                    <l-tooltip :options="markerTooltipOptions">
+                        <div class="bu-p-3 bu-is-flex bu-is-flex-direction-column">
+                            <span class="text-medium">{{name}}</span>
+                            <h4>{{item.value}}</h4>
+                            <div class="bu-pt-1">
+                                <slot name="tooltip-suffix"></slot>
+                            </div>
+                        </div>
+                    </l-tooltip>
                 </l-circle-marker>
             </l-map>
         </div>

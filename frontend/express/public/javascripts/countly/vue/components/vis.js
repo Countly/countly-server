@@ -1142,41 +1142,6 @@
     }));
 
     Vue.component("cly-chart-geo", countlyBaseComponent.extend({
-        props: {
-            resizeDebounce: {
-                type: Number,
-                default: 500
-            },
-            options: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            }
-        },
-        data: function() {
-            return {
-                forwardedSlots: ["chart-left", "chart-right"],
-                settings: {
-                    packages: ['geochart'],
-                    mapsApiKey: countlyGlobal.config.google_maps_api_key
-                },
-                defaultOptions: {
-                    legend: "none",
-                    backgroundColor: "transparent",
-                    datalessRegionColor: "#FFF",
-                }
-            };
-        },
-        components: {
-            'chart-header': ChartHeader,
-        },
-        computed: {
-            chartOptions: function() {
-                var opt = _merge({}, this.defaultOptions, this.options);
-                return opt;
-            }
-        },
         template: '<div class="cly-vue-chart">\
                         Deprecated. Please use cly-worldmap.\
                     </div>'
@@ -1188,7 +1153,8 @@
             'l-circle-marker': Vue2Leaflet.LCircleMarker,
             'l-geo-json': Vue2Leaflet.LGeoJson,
             'l-tile-layer': Vue2Leaflet.LTileLayer,
-            'l-control': Vue2Leaflet.LControl
+            'l-control': Vue2Leaflet.LControl,
+            'l-tooltip': Vue2Leaflet.LTooltip
         },
         props: {
             showNavigation: {
@@ -1294,6 +1260,7 @@
         beforeDestroy: function() {
             this.geojsonHome = [];
             this.geojsonDetail = [];
+            // We don't need reactivity for these fields. So they are defined outside "data".
         },
         data: function() {
             return {
@@ -1302,8 +1269,6 @@
                 enableTooltip: true,
                 maxBounds: null,
                 minZoom: 0,
-                // geojsonHome: [],
-                // geojsonDetail: [],
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 boundingBoxes: {},
@@ -1314,6 +1279,12 @@
                 countriesToLatLng: {},
                 regionsToLatLng: {},
                 citiesToLatLng: {},
+                markerTooltipOptions: {
+                    sticky: true,
+                    direction: "right",
+                    //permanent: true,
+                    //offset: L.point(5, 5)
+                },
                 circleMarkerConfig: {
                     pane: "markerPane",
                     fillColor: "#017AFF",
