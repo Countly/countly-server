@@ -107,6 +107,7 @@
                     :radius="getMarkerRadius(item.value)"
                     :lat-lng="nameToLatLng[name]" 
                     :key="unique(name)"
+                    @click="onMarkerClick(name)"
                     v-for="(item, name) in activeMarkers">
                     <l-tooltip :options="markerTooltipOptions">
                         <div class="bu-p-3 bu-is-flex bu-is-flex-direction-column">

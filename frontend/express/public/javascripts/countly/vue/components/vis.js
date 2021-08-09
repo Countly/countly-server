@@ -1557,6 +1557,10 @@
             goToCountry: function(country) {
                 var self = this;
 
+                if (!Object.prototype.hasOwnProperty.call(this.countriesData, country)) {
+                    return;
+                }
+
                 this.loadGeojson(country).then(function(json) {
                     self.geojsonDetail = json;
                     self.country = country;
@@ -1571,6 +1575,11 @@
                         self.handleViewChange();
                     });
                 });
+            },
+            onMarkerClick: function(code) {
+                if (!this.inDetail) {
+                    this.goToCountry(code);
+                }
             },
             focusToRegion: function() {
 
