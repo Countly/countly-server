@@ -1,4 +1,4 @@
-/* globals app, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList */
+/* globals app, CountlyHelpers, countlyCrashSymbols, Promise, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList */
 
 (function() {
     var groupId, crashId;
@@ -32,17 +32,16 @@
         template: countlyVue.T("/crashes/templates/tab-label.html")
     });
 
-    // eslint-disable-next-line no-unused-vars
     var CrashBadgeView = countlyVue.views.create({
         props: {
-            data: {type: Object, required: true}
+            type: {type: String, default: "info"},
         },
-        template: '<span class="bu-tag"></span>'
+        template: '<span class="bu-tag text-uppercase crash-badge" :class="\'crash-badge--\' + $props.type"><slot></slot></span>'
     });
 
     var CrashOverviewView = countlyVue.views.create({
         template: "#crashes-overview",
-        components: {"crash-tab-label": CrashStatisticsTabLabelView},
+        components: {"crash-tab-label": CrashStatisticsTabLabelView, "crash-badge": CrashBadgeView},
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
@@ -55,6 +54,46 @@
             };
         },
         computed: {
+            activeFilter: {
+                set: function(newValue) {
+                    return this.$store.dispatch("countlyCrashes/overview/setActiveFilter", newValue);
+                },
+                get: function() {
+                    return this.$store.getters["countlyCrashes/overview/activeFilter"];
+                }
+            },
+            activeFilterFields: function() {
+                var platforms = [{value: "all", label: "All Platforms"}];
+                this.$store.getters["countlyCrashes/overview/platforms"].forEach(function(platform) {
+                    platforms.push({value: platform, label: platform});
+                });
+
+                var appVersions = [{value: "all", label: "All Versions"}];
+                this.$store.getters["countlyCrashes/overview/appVersions"].forEach(function(appVersion) {
+                    appVersions.push({value: appVersion, label: appVersion.replace(/:/g, ".")});
+                });
+
+                return [
+                    {
+                        label: "Fatality",
+                        key: "fatality",
+                        items: [{value: "both", label: "Both"}, {value: "fatal", label: "Fatal"}, {value: "nonfatal", label: "Nonfatal"}],
+                        default: "both"
+                    },
+                    {
+                        label: "Platforms",
+                        key: "platform",
+                        options: platforms,
+                        default: "all"
+                    },
+                    {
+                        label: "Versions",
+                        key: "version",
+                        items: appVersions,
+                        default: "all"
+                    },
+                ];
+            },
             dashboardData: function() {
                 return this.$store.getters["countlyCrashes/overview/dashboardData"];
             },
@@ -81,6 +120,9 @@
                 this.$data.selectedCrashgroups = selectedRows.map(function(row) {
                     return row._id;
                 });
+            },
+            badgesFor: function(crash) {
+                return countlyCrashes.generateBadges(crash);
             }
         },
         beforeCreate: function() {
@@ -128,7 +170,7 @@
 
     var CrashgroupView = countlyVue.views.create({
         template: "#crashes-crashgroup",
-        components: {"crash-stacktrace": CrashStacktraceView},
+        components: {"crash-stacktrace": CrashStacktraceView, "crash-badge": CrashBadgeView},
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
@@ -140,7 +182,12 @@
                 currentTab: "stacktrace",
                 commentInput: "",
                 commentBeingEdited: undefined,
-                commentStatus: undefined
+                commentStatus: undefined,
+                symbolicationEnabled: countlyGlobal.plugins.includes("crash_symbolication"),
+                crashesBeingSymbolicated: [],
+                beingMarked: false,
+                userProfilesEnabled: countlyGlobal.plugins.includes("users"),
+                jiraIntegrationEnabled: countlyGlobal.plugins.includes("crashes-jira")
             };
         },
         computed: {
@@ -149,6 +196,9 @@
             },
             crashgroupName: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/crashgroupName"];
+            },
+            comments: function() {
+                return ("comments" in this.crashgroup) ? this.crashgroup.comments : [];
             },
             commonMetrics: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/commonMetrics"];
@@ -167,6 +217,9 @@
             },
             crashes: function() {
                 return this.$store.getters["countlyCrashes/crashgroup/crashes"];
+            },
+            badges: function() {
+                return countlyCrashes.generateBadges(this.$store.getters["countlyCrashes/crashgroup/crashgroup"]);
             }
         },
         methods: {
@@ -212,16 +265,50 @@
                         this.$data.eventLogsBeingGenerated.push(cid);
                         this.$store.dispatch("countlyCrashes/crashgroup/generateEventLogs", [cid])
                             .then(function() {
+                                self.$forceUpdate();
+                            })
+                            .finally(function() {
                                 self.$data.eventLogsBeingGenerated = self.$data.eventLogsBeingGenerated.filter(function(ecid) {
                                     return cid !== ecid;
                                 });
-                                self.$forceUpdate();
                             });
                     }
                 }
             },
             isEventLogBeingGeneratedFor: function(cid) {
                 return this.$data.eventLogsBeingGenerated.includes(cid);
+            },
+            symbolicateCrash: function(crash) {
+                var self = this;
+
+                if (!this.symbolicationEnabled) {
+                    return;
+                }
+
+                if (crash === "group") {
+                    crash = {
+                        _id: this.crashgroup.lrid,
+                        os: this.crashgroup.os,
+                        native_cpp: this.crashgroup.native_cpp,
+                        app_version: this.crashgroup.latest_version
+                    };
+                }
+
+                if (this.crashesBeingSymbolicated.indexOf(crash._id) === -1) {
+                    this.crashesBeingSymbolicated.push(crash._id);
+                    this.$store.dispatch("countlyCrashes/crashgroup/symbolicate", crash)
+                        .then(function() {
+                            self.refresh();
+                        })
+                        .finally(function() {
+                            self.crashesBeingSymbolicated = self.crashesBeingSymbolicated.filter(function(cid) {
+                                return cid !== crash._id;
+                            });
+                        });
+                }
+            },
+            isCrashBeingSymbolicated: function(cid) {
+                return this.crashesBeingSymbolicated.indexOf(cid) !== -1;
             },
             crashMetric: function(crash, metric) {
                 var crashMetrics;
@@ -305,6 +392,73 @@
             },
             commentIsMine: function(comment) {
                 return comment.author_id === countlyGlobal.member._id || countlyGlobal.member.global_admin;
+            },
+            markAs: function(state) {
+                var ajaxPromise;
+
+                this.$refs.markDropdown.doClose();
+
+                if (state.beingMarked) {
+                    return;
+                }
+
+                if (state === "resolved") {
+                    state.beingMarked = true;
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/markResolved");
+                }
+                else if (state === "resolving") {
+                    state.beingMarked = true;
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/markResolving");
+                }
+                else if (state === "unresolved") {
+                    state.beingMarked = true;
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/markUnresolved");
+                }
+                else if (state === "hidden") {
+                    state.beingMarked = true;
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/hide");
+                }
+                else if (state === "shown") {
+                    state.beingMarked = true;
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/show");
+                }
+
+                if (typeof ajaxPromise !== "undefined") {
+                    ajaxPromise.finally(function() {
+                        state.beingMarked = false;
+                    });
+                }
+            },
+            handleCrashgroupCommand: function(command) {
+                var self = this;
+
+                if (command === "view-user-list") {
+                    var params = {
+                        api_key: countlyGlobal.member.api_key,
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        method: "crashes",
+                        group: this.crashgroup._id,
+                        userlist: true
+                    };
+
+                    window.location.hash = "/users/request/" + JSON.stringify(params);
+                }
+                else if (command === "delete") {
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-delete", 1), "red", function(result) {
+                        if (result) {
+                            self.$store.dispatch("countlyCrashes/crashgroup/delete")
+                                .then(function(data) {
+                                    if (!data) {
+                                        CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                                    }
+                                    else {
+                                        window.history.back();
+                                    }
+                                });
+                        }
+                    });
+                }
+
             }
         },
         beforeCreate: function() {
@@ -332,7 +486,9 @@
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
-                authToken: countlyGlobal.auth_token
+                authToken: countlyGlobal.auth_token,
+                symbolicationEnabled: countlyGlobal.plugins.includes("crash_symbolication"),
+                symbols: {}
             };
         },
         computed: {
@@ -369,12 +525,41 @@
         },
         methods: {
             refresh: function() {
-                return this.$store.dispatch("countlyCrashes/crash/refresh");
+                var promises = [];
+                var self = this;
+
+                promises.push(this.$store.dispatch("countlyCrashes/crash/refresh"));
+
+                if (this.symbolicationEnabled) {
+                    promises.push(new Promise(function(resolve, reject) {
+                        countlyCrashSymbols.fetchSymbols(true)
+                            .then(function(symbolIndexing) {
+                                self.symbols = {};
+
+                                var buildIdMaps = Object.values(symbolIndexing);
+                                buildIdMaps.forEach(function(buildIdMap) {
+                                    Object.keys(buildIdMap).forEach(function(buildId) {
+                                        self.symbols[buildId] = buildIdMap[buildId];
+                                    });
+                                });
+
+                                resolve(this.symbols);
+                            }).catch(function(err) {
+                                reject(err);
+                            });
+                    }));
+                }
+
+                return Promise.all(promises);
+            },
+            hasSymbol: function(uuid) {
+                return uuid in this.symbols;
             }
         },
         beforeCreate: function() {
             return this.$store.dispatch("countlyCrashes/crash/initialize", crashId);
-        }
+        },
+        mixins: [countlyVue.mixins.hasDrawers("crashSymbol")]
     });
 
     var getBinaryImagesView = function() {
