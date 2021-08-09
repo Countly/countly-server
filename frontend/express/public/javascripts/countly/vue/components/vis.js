@@ -1178,19 +1178,7 @@
             }
         },
         template: '<div class="cly-vue-chart">\
-                        <chart-header>\
-                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                <slot :name="item" v-bind="slotScope"></slot>\
-                            </template>\
-                        </chart-header>\
-                        <GChart\
-                            type="GeoChart"\
-                            :resizeDebounce="resizeDebounce"\
-                            :settings="settings"\
-                            :options="chartOptions"\
-                            v-bind="$attrs"\
-                            v-on="$listeners"\
-                        />\
+                        Deprecated. Please use cly-worldmap.\
                     </div>'
     }));
 
