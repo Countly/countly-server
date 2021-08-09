@@ -144,7 +144,7 @@
         props: {
             icon: {
                 type: String,
-                default: 'ion ion-ios-information-outline'
+                default: 'ion ion-help-circled'
             },
             tooltip: {
                 type: String,
