@@ -88,9 +88,17 @@
                 <l-tile-layer pane="tilePane" v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
                 
                 <l-geo-json
+                    v-if="!inDetail"
                     pane="tilePane"
-                    :geojson="inDetail ? geojsonDetail:geojsonHome"
-                    :options="inDetail ? optionsDetail:optionsHome"
+                    :geojson="geojsonHome"
+                    :options="optionsHome"
+                    :options-style="styleFunction">
+                </l-geo-json>
+                <l-geo-json
+                    v-else
+                    pane="tilePane"
+                    :geojson="geojsonDetail"
+                    :options="optionsDetail"
                     :options-style="styleFunction">
                 </l-geo-json>
 

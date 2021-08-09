@@ -1520,7 +1520,9 @@
                 var boundingBox = this.inDetail ? this.boundingBoxes[this.country] : this.geojsonHome.bbox;
                 if (boundingBox) {
                     this.maxBounds = this.boxToLatLng2d(boundingBox);
-                    this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
+                    if (this.$refs.lmap && this.$refs.lmap.mapObject) {
+                        this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
+                    }
                 }
             },
             loadGeojson: function(country) {
@@ -1539,7 +1541,7 @@
                     dataType: "json",
                 }).then(function(json) {
                     self.loadingGeojson = false;
-                    return json;
+                    return Object.freeze(json);
                 });
             },
             loadCities: function(country, cities) {
@@ -1565,11 +1567,11 @@
                     dataType: "json",
                 }).then(function(json) {
                     self.loadingCities = false;
-                    return json;
+                    return Object.freeze(json);
                 });
             },
             goToMain: function() {
-                this.geojsonDetail = null;
+                this.geojsonDetail = [];
                 this.country = null;
                 this.handleViewChange();
             },
