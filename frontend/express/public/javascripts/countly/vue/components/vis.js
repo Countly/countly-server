@@ -1374,12 +1374,14 @@
                 return this.detailMode;
             },
             locations: function() {
-                var self = this;
+                var self = this,
+                    arr = [];
+
                 switch (this.currentViewType) {
                 case "main":
                     var countryCodes = Object.keys(this.countriesData);
 
-                    return countryCodes.map(function(code) {
+                    arr = countryCodes.map(function(code) {
                         return {
                             label: countlyLocation.getCountryName(code),
                             value: code,
@@ -1387,29 +1389,36 @@
                             custom: self.countriesData[code] || {}
                         };
                     });
+                    break;
 
                 case "regions":
                     var regionCodes = Object.keys(this.regionsData[this.country] || {});
 
-                    return regionCodes.map(function(code) {
+                    arr = regionCodes.map(function(code) {
                         return {
                             label: countlyLocation.getRegionName(code, self.country),
                             value: code,
                             custom: self.regionsData[self.country][code]
                         };
                     });
+                    break;
 
                 case "cities":
                     var cityNames = Object.keys(this.citiesData[this.country] || {});
 
-                    return cityNames.map(function(name) {
+                    arr = cityNames.map(function(name) {
                         return {
                             label: name,
                             value: name,
                             custom: self.citiesData[self.country][name]
                         };
                     });
+                    break;
                 }
+                arr.sort(function(a, b) {
+                    return b.custom.value - a.custom.value;
+                });
+                return arr;
             },
             activeMarkers: function() {
                 switch (this.currentViewType) {

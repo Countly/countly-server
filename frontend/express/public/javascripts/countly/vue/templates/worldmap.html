@@ -62,6 +62,9 @@
                     :options="locations"
                     :value="focusedRegion"
                     @input="focusToRegion($event)">
+                    <template v-slot:option-suffix="option">
+                        <span class="bu-pr-2 text-medium">{{option.custom.value}}</span>
+                    </template>
                 </cly-listbox>
             </div>
             <div v-else-if="currentViewType === 'cities'">
@@ -73,6 +76,9 @@
                     :options="locations"
                     :value="focusedCity"
                     @input="focusToCity($event)">
+                    <template v-slot:option-suffix="option">
+                        <span class="bu-pr-2 text-medium">{{option.custom.value}}</span>
+                    </template>
                 </cly-listbox>
             </div>
         </div>
