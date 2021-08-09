@@ -1285,6 +1285,10 @@
                 required: false
             }
         },
+        beforeCreate: function() {
+            this.geojsonHome = [];
+            this.geojsonDetail = [];
+        },
         created: function() {
             var self = this;
             this.loadGeojson().then(function(json) {
@@ -1299,6 +1303,10 @@
                 self.handleViewChange();
             });
         },
+        beforeDestroy: function() {
+            this.geojsonHome = [];
+            this.geojsonDetail = [];
+        },
         data: function() {
             return {
                 loadingGeojson: false,
@@ -1306,8 +1314,8 @@
                 enableTooltip: true,
                 maxBounds: null,
                 minZoom: 0,
-                geojsonHome: [],
-                geojsonDetail: [],
+                // geojsonHome: [],
+                // geojsonDetail: [],
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 boundingBoxes: {},
@@ -1540,8 +1548,14 @@
                     url: url,
                     dataType: "json",
                 }).then(function(json) {
-                    self.loadingGeojson = false;
-                    return Object.freeze(json);
+                    var componentContext = self;
+                    if (!componentContext._isBeingDestroyed && !componentContext._isDestroyed) {
+                        self.loadingGeojson = false;
+                        return Object.freeze(json);
+                    }
+                    else {
+                        return [];
+                    }
                 });
             },
             loadCities: function(country, cities) {
@@ -1566,8 +1580,14 @@
                     },
                     dataType: "json",
                 }).then(function(json) {
-                    self.loadingCities = false;
-                    return Object.freeze(json);
+                    var componentContext = self;
+                    if (!componentContext._isBeingDestroyed && !componentContext._isDestroyed) {
+                        self.loadingCities = false;
+                        return Object.freeze(json);
+                    }
+                    else {
+                        return [];
+                    }
                 });
             },
             goToMain: function() {
