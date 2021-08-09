@@ -1177,6 +1177,11 @@
                 default: null,
                 required: false
             },
+            valueType: {
+                type: String,
+                default: "",
+                required: false
+            },
             showTile: {
                 type: Boolean,
                 default: false,
@@ -1491,6 +1496,16 @@
                     return this.minMarkerRadius;
                 }
                 return Math.max(this.minMarkerRadius, (value / this.largestMarkerValue) * this.maxMarkerRadius);
+            },
+            getMarkerTooltipTitle: function(code) {
+                switch (this.currentViewType) {
+                case "main":
+                    return countlyLocation.getCountryName(code);
+                case "regions":
+                    return countlyLocation.getRegionName(code, self.country);
+                case "cities":
+                    return code;
+                }
             },
             updateMaxBounds: function() {
                 var boundingBox = this.inDetail ? this.boundingBoxes[this.country] : this.geojsonHome.bbox;

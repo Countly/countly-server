@@ -42,8 +42,12 @@
                                 <h2 class="bu-pr-2">
                                     {{countryValue}}
                                 </h2>
-                                <slot v-if="currentViewType === 'regions'" name="regions-info"></slot>
-                                <slot v-else-if="currentViewType === 'cities'" name="cities-info"></slot>
+                                <slot v-if="currentViewType === 'regions'" name="regions-info">
+                                    <span class="text-medium">{{valueType}}</span>
+                                </slot>
+                                <slot v-else-if="currentViewType === 'cities'" name="cities-info">
+                                    <span class="text-medium">{{valueType}}</span>
+                                </slot>
                             </div>
                         </div>
                     </div>
@@ -117,10 +121,12 @@
                     v-for="(item, name) in activeMarkers">
                     <l-tooltip :options="markerTooltipOptions">
                         <div class="bu-p-3 bu-is-flex bu-is-flex-direction-column">
-                            <span class="text-medium">{{name}}</span>
+                            <span class="text-medium">{{getMarkerTooltipTitle(name)}}</span>
                             <h4>{{item.value}}</h4>
                             <div class="bu-pt-1">
-                                <slot name="tooltip-suffix"></slot>
+                                <slot name="tooltip-suffix">
+                                    <span class="text-medium">{{valueType}}</span>
+                                </slot>
                             </div>
                         </div>
                     </l-tooltip>
