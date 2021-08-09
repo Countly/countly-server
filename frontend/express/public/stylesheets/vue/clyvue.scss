@@ -3570,6 +3570,9 @@
             padding: 6px 8px;
             height: 32px;
             border-bottom: 1px solid #ECECEC;
+            &.selected{
+                border-left: 2px solid #0166D6;
+            }
         }
     }
 }

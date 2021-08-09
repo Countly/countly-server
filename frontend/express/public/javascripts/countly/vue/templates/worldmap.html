@@ -11,7 +11,7 @@
                 </div>
                 <cly-listbox
                     skin="jumbo"
-                    height="auto"
+                    :height="400"
                     :searchable="true"
                     :bordered="false"
                     :options="locations"
@@ -56,7 +56,7 @@
             <div v-if="currentViewType === 'regions'">
                 <cly-listbox
                     skin="jumbo"
-                    height="auto"
+                    :height="400"
                     :searchable="true"
                     :bordered="false"
                     :options="locations"
@@ -67,7 +67,7 @@
             <div v-else-if="currentViewType === 'cities'">
                 <cly-listbox
                     skin="jumbo"
-                    height="auto"
+                    :height="400"
                     :searchable="true"
                     :bordered="false"
                     :options="locations"

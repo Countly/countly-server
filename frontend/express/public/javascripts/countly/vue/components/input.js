@@ -194,13 +194,15 @@
                     @focus="handleHover"\
                     @blur="handleBlur">\
                     <div class="cly-vue-listbox__header bu-p-3" v-if="searchable">\
-                        <el-input\
-                            :disabled="disabled"\
-                            autocomplete="off"\
-                            v-model="searchQuery"\
-                            :placeholder="searchPlaceholder">\
-                            <i slot="prefix" class="el-input__icon el-icon-search"></i>\
-                        </el-input>\
+                        <form>\
+                            <el-input\
+                                :disabled="disabled"\
+                                autocomplete="off"\
+                                v-model="searchQuery"\
+                                :placeholder="searchPlaceholder">\
+                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                            </el-input>\
+                        </form>\
                     </div>\
                     <vue-scroll\
                         v-if="searchedOptions.length > 0"\
