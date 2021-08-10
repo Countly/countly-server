@@ -70,7 +70,8 @@
                     return {
                         show: true,
                         type: "secondary",
-                        data: []
+                        data: [],
+                        position: ""
                     };
                 }
             }
@@ -664,16 +665,46 @@
                 type: Function
             }
         },
+        computed: {
+            scrollOptions: function() {
+                var options = {
+                    vuescroll: {},
+                    scrollPanel: {},
+                    rail: {
+                        gutterOfSide: "0px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: true
+                    }
+                };
+
+                if (this.position === "bottom") {
+                    options.scrollPanel.scrollingX = true;
+                    options.scrollPanel.scrollingY = false;
+                }
+                else {
+                    options.scrollPanel.scrollingX = false;
+                    options.scrollPanel.scrollingY = true;
+                }
+
+                return options;
+            }
+        },
         template: '<div :class="[\'cly-vue-chart-legend__secondary\', \'cly-vue-chart-legend__secondary--text-center\']">\
-                        <div v-for="(item, index) in data"\
-                            :key="item.name" :data-series="item.name"\
-                            :class="[\'cly-vue-chart-legend__s-series\',\
-                                    {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
-                            @click="onClick(item, index)">\
-                            <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                            <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.name}}</div>\
-                            <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
-                        </div>\
+                        <vue-scroll :ops="scrollOptions">\
+                            <div v-for="(item, index) in data"\
+                                :key="item.name" :data-series="item.name"\
+                                :class="[\'cly-vue-chart-legend__s-series\',\
+                                        {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
+                                @click="onClick(item, index)">\
+                                <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
+                            </div>\
+                        </vue-scroll>\
                     </div>'
     });
 
@@ -753,6 +784,10 @@
                 default: function() {
                     return [];
                 }
+            },
+            position: {
+                type: String,
+                default: "bottom"
             }
         },
         computed: {
@@ -798,32 +833,10 @@
                 return data;
             },
             legendClasses: function() {
-                var classes = {
-                    'bu-is-flex': true,
-                    'bu-is-flex-direction-column': true,
-                    'bu-is-justify-content-center': true
-                };
-
-                classes["cly-vue-chart-legend__" + this.seriesType] = true;
-
+                var classes = {};
+                classes['cly-vue-chart-legend__' + this.position] = true;
+                classes['cly-vue-chart-legend__' + this.seriesType] = true;
                 return classes;
-            },
-            scrollOptions: function() {
-                return {
-                    vuescroll: {},
-                    scrollPanel: {
-                        scrollingX: false
-                    },
-                    rail: {
-                        gutterOfSide: "0px"
-                    },
-                    bar: {
-                        background: "#A7AEB8",
-                        size: "6px",
-                        specifyBorderRadius: "3px",
-                        keepShow: true
-                    }
-                };
             }
         },
         components: {
@@ -869,12 +882,11 @@
                             </primary-legend>\
                         </template>\
                         <template v-if="type === \'secondary\'">\
-                            <vue-scroll :ops="scrollOptions">\
-							<secondary-legend\
+                            <secondary-legend\
                                 :data="legendData"\
                                 :onClick="onLegendClick">\
+                                :position="position"\
                             </secondary-legend>\
-							</vue-scroll>\
                         </template>\
                     </div>'
     });
@@ -896,6 +908,9 @@
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 return opt;
+            },
+            legendPosition: function() {
+                return this.legend.position || "bottom";
             }
         },
         template: '<div class="cly-vue-chart">\
@@ -918,6 +933,7 @@
                             :echartRef="echartRef"\
                             v-if="legend.show"\
                             :chartOptions="chartOptions"\
+                            :position="legendPosition"\
                             :data="legend.data">\
                         </custom-legend>\
                     </div>'
@@ -1008,6 +1024,9 @@
                 }
 
                 return opt;
+            },
+            legendPosition: function() {
+                return this.legend.position || "bottom";
             }
         },
         template: '<div class="cly-vue-chart">\
@@ -1030,6 +1049,7 @@
                             :echartRef="echartRef"\
                             v-if="legend.show"\
                             :chartOptions="chartOptions"\
+                            :position="legendPosition"\
                             :data="legend.data">\
                         </custom-legend>\
                     </div>'
@@ -1052,6 +1072,9 @@
             chartOptions: function() {
                 var opt = _merge({}, this.mergedOptions);
                 return opt;
+            },
+            legendPosition: function() {
+                return this.legend.position || "bottom";
             }
         },
         template: '<div class="cly-vue-chart">\
@@ -1074,6 +1097,7 @@
                             :echartRef="echartRef"\
                             v-if="legend.show"\
                             :chartOptions="chartOptions"\
+                            :position="legendPosition"\
                             :data="legend.data">\
                         </custom-legend>\
                     </div>'
@@ -1110,6 +1134,9 @@
                 }
 
                 return classes;
+            },
+            legendPosition: function() {
+                return this.legend.position || "right";
             }
         },
         template: '<div class="cly-vue-chart">\
@@ -1135,6 +1162,7 @@
                                 v-if="legend.show"\
                                 :chartOptions="chartOptions"\
                                 :class="chartClasses"\
+                                :position="legendPosition"\
                                 :data="legend.data">\
                             </custom-legend>\
                         </div>\

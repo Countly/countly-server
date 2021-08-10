@@ -13,7 +13,9 @@
     &__secondary {
         white-space: nowrap;
         overflow: auto;
-        margin: 10px;
+        padding: 10px;
+        box-sizing: border-box;
+        height: 100%;
     }
 
     &__secondary--text-center {
@@ -126,10 +128,11 @@
         color: #333C48;
     }
 
-    &__pie {
+    &__right,
+    &__left {
         .cly-vue-chart-legend__secondary {
-            margin: 0px 10px;
-            padding: 30px 0;
+            padding-top: 30px;
+            padding-bottom: 30px;
 
             .cly-vue-chart-legend__s-series {
                 margin-left: 0px;
@@ -163,6 +166,12 @@
                     min-width: 50px;
                     text-align: right;
                 }
+            }
+
+            .__vuescroll .__view {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
             }
         }
     }
