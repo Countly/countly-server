@@ -394,38 +394,39 @@
                 return comment.author_id === countlyGlobal.member._id || countlyGlobal.member.global_admin;
             },
             markAs: function(state) {
+                var self = this;
                 var ajaxPromise;
 
                 this.$refs.markDropdown.doClose();
 
-                if (state.beingMarked) {
+                if (this.beingMarked) {
                     return;
                 }
 
                 if (state === "resolved") {
-                    state.beingMarked = true;
+                    this.beingMarked = true;
                     ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/markResolved");
                 }
                 else if (state === "resolving") {
-                    state.beingMarked = true;
+                    this.beingMarked = true;
                     ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/markResolving");
                 }
                 else if (state === "unresolved") {
-                    state.beingMarked = true;
+                    this.beingMarked = true;
                     ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/markUnresolved");
                 }
                 else if (state === "hidden") {
-                    state.beingMarked = true;
+                    this.beingMarked = true;
                     ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/hide");
                 }
                 else if (state === "shown") {
-                    state.beingMarked = true;
+                    this.beingMarked = true;
                     ajaxPromise = this.$store.dispatch("countlyCrashes/crashgroup/show");
                 }
 
                 if (typeof ajaxPromise !== "undefined") {
                     ajaxPromise.finally(function() {
-                        state.beingMarked = false;
+                        self.beingMarked = false;
                     });
                 }
             },

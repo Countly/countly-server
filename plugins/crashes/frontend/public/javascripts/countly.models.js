@@ -592,7 +592,7 @@
                                 }));
                             });
 
-                            if (typeof countlyCrashSymbols === "undefined") {
+                            if (typeof countlyCrashSymbols !== "undefined") {
                                 var crashes = [{
                                     _id: this.crashgroup.lrid,
                                     os: this.crashgroup.os,
@@ -600,7 +600,7 @@
                                     app_version: this.crashgroup.latest_version
                                 }];
 
-                                crashes.concat(crashgroupJson.data);
+                                crashes = crashes.concat(crashgroupJson.data);
 
                                 var ajaxPromise = countlyCrashSymbols.fetchSymbols(false);
                                 ajaxPromises.push(ajaxPromise);
@@ -671,21 +671,22 @@
         };
 
         _crashgroupSubmodule.actions.symbolicate = function(context, crash) {
-            if (typeof countlyCrashSymbols === "undefined") {
-                return;
-            }
-
             return new Promise(function(resolve, reject) {
-                countlyCrashSymbols.fetchSymbols(false).then(function(symbolIndexing) {
-                    var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
-                    countlyCrashSymbols.symbolicate(crash._id, symbol_id)
-                        .then(function(json) {
-                            resolve(json);
-                        })
-                        .catch(function(xhr) {
-                            reject(xhr);
-                        });
-                });
+                if (typeof countlyCrashSymbols === "undefined") {
+                    reject(null);
+                }
+                else {
+                    countlyCrashSymbols.fetchSymbols(false).then(function(symbolIndexing) {
+                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
+                        countlyCrashSymbols.symbolicate(crash._id, symbol_id)
+                            .then(function(json) {
+                                resolve(json);
+                            })
+                            .catch(function(xhr) {
+                                reject(xhr);
+                            });
+                    });
+                }
             });
         };
 
