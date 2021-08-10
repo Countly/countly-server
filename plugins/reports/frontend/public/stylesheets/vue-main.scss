@@ -1,0 +1,63 @@
+#reports-view {
+    .cly-vue-reports-table {
+        .is-last-col {
+            display: flex;
+            flex-direction: row;
+            .flex-grow {
+                flex-grow: 1;
+            }
+            .is-option-button {
+                visibility: hidden;
+                .el-select {
+                    -webkit-box-shadow: unset;
+                    box-shadow: unset;
+                    border-radius: unset;
+                }
+                
+            }
+        }
+        tr:hover .is-option-button {
+            visibility: visible;
+        }
+    }
+
+    .cly-vue-report-drawer {
+        &__help-text {
+           font-family: Inter;
+           font-style: normal;
+           font-weight: normal;
+           font-size: 12px;
+           line-height: 16px;
+           color: #81868D;
+        }
+         
+        &__is-hidden {
+           visibility: hidden;
+        }
+
+        &__is-full-line {
+           width: 100%;
+           display: flex;
+        }
+        &__report_description {
+            font-size: 12px;
+            line-height: 16px;
+            color: #81868D;
+        }
+        .cly-vue-drawer-step__section {
+            padding: 16px 0;
+        }
+        .el-radio.is-bordered+.el-radio.is-bordered {
+            margin-left: 0px !important;
+        }      
+        
+    }
+
+    .report-type-block {
+        label {
+            flex: 1;
+            padding: 16px 14px !important; 
+            width: 100%;
+        }
+    }
+}
