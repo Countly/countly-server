@@ -1027,8 +1027,334 @@ app.addReportsCallbacks("reports", {
     }
 });
 
+
+
+
+var TableView = countlyVue.views.BaseView.extend({
+    template: '#reports-table',
+    computed: {
+        tableRows: function () {
+            var rows = this.$store.getters["countlyReports/table/all"];
+            console.log(rows,"rows!!");
+            return rows;
+        },
+    },
+    data: function () {
+     
+        return {
+            localTableTrackedFields: ['enabled'],
+            isAdmin: countlyGlobal.member.global_admin,
+        };
+    },
+    methods: {
+        handleHookEditCommand: function(command, scope) {
+            switch (command) {
+                case "edit-comment":
+                    console.log(scope,"eeeeDit!");
+                    var data = {...scope.row};
+                    delete data.operation;
+                    delete data.triggerEffectColumn;
+                    delete data.nameDescColumn;
+                    this.$parent.$parent.openDrawer("home", data);
+                    break;
+                case "delete-comment":
+                    var hookID = scope.row._id;
+                    var name = scope.row.name;
+                    var self = this;
+                    return CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function (result) {
+                        if (result) {
+                            hooksPlugin.deleteHook(hookID, function () {
+                                self.$store.dispatch("countlyReports/table/fetchAll")
+                            });
+                        }
+                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-an-event"});
+                    break;
+                case "send-comment":
+                    var overlay = $("#overlay").clone();
+                    overlay.show();
+                    $.when(countlyReporting.send(scope.row._id)).always(function(data) {
+                        overlay.hide();
+                        if (data && data.result === "Success") {
+                            CountlyHelpers.alert(jQuery.i18n.map["reports.sent"], "green");
+                        }
+                        else {
+                            if (data && data.result) {
+                                CountlyHelpers.alert(data.result, "red");
+                            }
+                            else {
+                                CountlyHelpers.alert(jQuery.i18n.map["reports.too-long"], "red");
+                            }
+                        }
+                    });
+                    break;
+
+                case "preview-comment":
+                    var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id})
+                    window.open(url, "_blank");
+                    break;
+                default:
+                    return
+            }
+        },
+        updateStatus:  async function (scope) {
+            var diff = scope.diff;
+            var status = {}
+            diff.forEach(function (item) {
+                status[item.key] = item.newValue;
+            });
+            await this.$store.dispatch("countlyReports/table/updateStatus", status);
+            await this.$store.dispatch("countlyReports/table/fetchAll");
+            scope.unpatch();
+        },
+        refresh: function () {
+           // this.$store.dispatch("countlyReports/table/fetchAll");
+        },
+    }
+});
+
+
+
+var ReportsDrawer = countlyVue.views.BaseView.extend({
+    template: '#reports-drawer',
+    components: {
+    },
+    data: function () {
+        const appsSelectorOption = [];
+        for (let id in countlyGlobal.apps) {
+            appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
+        }
+
+        const reportTypeOptions = [
+            {label: jQuery.i18n.map["reports.core"], value: 'core'},
+        ];
+        if (countlyGlobal.plugins.indexOf("dashboards")  > -1) {
+            reportTypeOptions.push({label: jQuery.i18n.map["dashboards.report"], value: 'dashboards'});
+        }
+
+        const metricOptions = [
+            {label: jQuery.i18n.map["reports.analytics"], value: "analytics"},
+            {label: jQuery.i18n.map["reports.events"], value: "events"},
+            {label: jQuery.i18n.map["reports.revenue"], value: "revenue"},
+            {label: jQuery.i18n.map["reports.crash"], value: "crash"},
+        ];
+
+        if (countlyGlobal.plugins.indexOf("star-rating") > -1) {
+            metricOptions.push({label: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
+        }
+
+        if (countlyGlobal.plugins.indexOf("performance-monitoring") > -1) {
+            metricOptions.push({label: jQuery.i18n.map["sidebar.performance-monitoring"], value: "performance"});
+        }
+
+        const frequencyOptions = [
+            {label: jQuery.i18n.map["reports.daily"], value: "daily"},
+            {label: jQuery.i18n.map["reports.weekly"], value: "weekly"},
+            {label: jQuery.i18n.map["reports.monthly"], value: "monthly"},
+        ];
+        const dayOfWeekOptions = [
+            {label: jQuery.i18n.map["reports.monday"], value: 1},
+            {label: jQuery.i18n.map["reports.tuesday"], value: 2},
+            {label: jQuery.i18n.map["reports.wednesday"], value: 3},
+            {label: jQuery.i18n.map["reports.thursday"], value: 4},
+            {label: jQuery.i18n.map["reports.friday"], value: 5},
+            {label: jQuery.i18n.map["reports.saturday"], value: 6},
+            {label: jQuery.i18n.map["reports.sunday"], value: 7},
+
+        ];
+        var zones = [];
+        for (var country in countlyGlobal.timezones) {
+            countlyGlobal.timezones[country].z.forEach((item) => {
+                for (var zone in item) {
+                    zones.push({value: item[zone], label: countlyGlobal.timezones[country].n + ' ' + zone});
+                }
+            });
+        }
+        const timeListOptions = [];
+        for (var i = 0; i < 24; i++) {
+            var v = (i > 9 ? i : "0" + i) + ":00";
+            timeListOptions.push({ value: i, label: v});
+        }
+
+
+        var dashboardsList = countlyDashboards.getAllDashboards();
+        var dashboardsOptions = [];
+        for (var i = 0; i < dashboardsList.length; i++) {
+            dashboardsOptions.push({ value: dashboardsList[i].id, label: dashboardsList[i].name });
+        }
+        var reportDateRangesOptions = [];// countlyDashboards.getReportDateRanges(reportFrequency);
+
+        return {
+            title: "",
+            saveButtonLabel: "",
+            appsSelectorOption,
+            reportTypeOptions,
+            metricOptions,
+            eventOptions: [],
+            frequencyOptions,
+            dayOfWeekOptions,
+            timeListOptions,
+            timezoneOptions: zones,
+            emailOptions:[{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
+            showApps: true,
+            showMetrics: true,
+            showDashboards: false,
+            dashboardsOptions,
+            reportDateRangesOptions,
+        };
+    },
+    computed: {
+    },
+    watch: {
+        "apps": function () {
+            var self = this;
+            
+        }
+    },
+    props: {
+        controls: {
+            type: Object
+        }
+    },
+    methods: {
+        reportTypeChange: function(type) {
+            if (type === 'dashboards') {
+                this.$data.showApps = false;
+                this.$data.showMetrics = false;
+                this.$data.showDashboards = true; 
+                this.$children[0].$data.editedObject.metricsArray = [];
+            } else {
+                this.$data.showApps = true;
+                this.$data.showMetrics = true;
+                this.$data.showDashboards = false
+            }
+        },
+        reportFrequencyChange: function (reportFrequency) {
+            var reportDateRanges = countlyDashboards.getReportDateRanges(reportFrequency);
+            this.$data.reportDateRangesOptions = reportDateRanges.map(function(r) {
+                return {value: r.value, label: r.name} 
+            });
+            console.log(this.$data.reportDateRangesOptions,"???")
+        },
+        emailInputFilter: function (val) {
+            console.log(val,this.emailOptions);
+            var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+            regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
+            var match = val.match(regex);
+            console.log(match,"m");
+            if (match) {
+                this.emailOptions=[{value:val, label:val}]
+            } else {
+                this.emailOptions=[]
+            }
+        },
+        appsChange: function (apps, change) {
+            var self = this;
+            countlyEvent.getEventsForApps(apps, function(eventData) {
+                const eventOptions = eventData.map(function(e){
+                    return {value: e.value, label: e.name};
+                });
+                self.$data.eventOptions = eventOptions;
+            });
+            this.$children[0].$data.editedObject.selectedEvents = [];
+        },
+        onSubmit: async function (doc) {
+            doc.metrics = {};
+            doc.metricsArray.forEach(function (m){
+                doc.metrics[m] = true;
+            });
+            delete console.metricsArray;
+            await this.$store.dispatch("countlyReports/saveReport", doc);
+            await this.$store.dispatch("countlyReports/table/fetchAll");
+        },
+        onClose: function ($event) {
+            this.$emit("close", $event);
+        },
+        onCopy: function (newState) {
+            console.log(newState,"!!!")
+            var self = this;
+            if (newState._id !== null) {
+                this.reportTypeChange(newState.report_type);
+                this.reportFrequencyChange(newState.frequency);
+                
+                console.log(newState._id,"!!!2")
+                this.title = jQuery.i18n.map["reports.edit_report_title"];
+                this.saveButtonLabel = jQuery.i18n.map["reports.Save_Changes"];
+                newState.metricsArray =[];
+                for(var k in newState.metrics) {
+                    newState.metricsArray.push(k);
+                }
+                countlyEvent.getEventsForApps(newState.apps, function(eventData) {
+                    const eventOptions = eventData.map(function(e){
+                        return {value: e.value, label: e.name};
+                    });
+                    self.$data.eventOptions = eventOptions;
+                });
+                return;
+            }
+            this.title = jQuery.i18n.map["reports.create_new_report_title"];
+            this.saveButtonLabel = jQuery.i18n.map["reports.Create_New_Report"];
+        },
+        addEffect: function(){
+           this.$children[0].$data.editedObject.effects.push({type:null, configuration: null});
+        },
+
+        removeEffect: function (index) {
+            console.log("reeff", index);
+            this.$children[0].$data.editedObject.effects.splice(index,1);
+        },
+
+        updateHookConfigValue: function ({path, value}) {
+            var object = this.$children[0].$data.editedObject;
+            if(!path) {
+                return;
+            }
+            var stack = path.split('.');
+            while(stack.length>1){
+              object = object[stack.shift()];
+            }
+            object[stack.shift()] = value;
+        },
+    }
+});
+
+var ReportsHomeViewComponent = countlyVue.views.BaseView.extend({
+    template: "#reports-home",
+    mixins: [countlyVue.mixins.hasDrawers("home")],
+    components: {
+        "table-view": TableView,
+        "drawer": ReportsDrawer,
+    },
+    data: function () {
+       return {};
+    },
+    beforeCreate: function () {
+       this.$store.dispatch("countlyReports/initialize");
+    },
+    methods: {
+        createReport: function () {
+            this.openDrawer("home", countlyReporting.defaultDrawerConfigValue());
+        },
+    },
+});
+
+app.reportingView = new countlyVue.views.BackboneWrapper({
+
+    component: ReportsHomeViewComponent,
+    vuex: [{
+        clyModel: countlyReporting 
+    }],
+    templates: [
+        "/reports/templates/vue-main.html",
+    ]
+});
+app.reportingView.featureName = 'reports';
+
+
+
+
+
 //register views
-app.reportingView = new ReportingView();
+app.reportingView2 = new ReportingView();
 
 if (countlyAuth.validateRead(app.reportingView.featureName)) {
     app.route('/manage/reports', 'reports', function() {

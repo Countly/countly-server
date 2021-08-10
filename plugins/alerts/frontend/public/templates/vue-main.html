@@ -1,0 +1,244 @@
+<script type="text/x-template" id="alerts-home">
+    <div id="alerts-view" v-bind:class="[componentId]">
+        <cly-header>
+            <template v-slot:header-left>
+                <h2> {{i18n('alert.plugin-title')}}
+                </h2>
+                <span class="el-icon-question" style="margin-left:10px; color: #9ea4ae;" v-tooltip.top-center="i18n('alert.plugin-title')">
+                </span>
+            </template>
+            <template v-slot:header-right>
+                <div id="create-alert" class="cly-vue-button button-green-skin" v-on:click="createAlert()"><i class="el-icon-circle-plus"/> {{i18n('alert.Add_New_Alert')}}</div>
+        </template>
+        </cly-header>
+    
+        <cly-main>
+            <div class="is-big-numbers-container">
+                <div class="is-big-number-card" 
+                    v-for="(item, idx) in countData">
+                    <div class="is-title">{{i18n(item.label)}}</div>
+                    <div class="is-number">{{item.value || 0}}</div>
+                </div>
+            </div>
+            <table-view v-on:open-drawer="openDrawer"></table-view>
+        </cly-main>
+        <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
+    </div>
+    </script>
+    
+    
+<script  type="text/x-template" id="alerts-table">
+    <cly-section>
+        <cly-datatable-n
+            class="cly-vue-alerts-table"
+            :tracked-fields="localTableTrackedFields"
+            :rows="tableRows" :resizable="false" >
+            <template v-slot:header-left="scope">
+                <div>
+                    <cly-select-x
+                       :placeholder="i18n('hooks.all-applications')"
+                       mode="multi-check"
+                       v-model="filteredApps"
+                       :options="appsSelectorOption">
+                    </cly-select-x>
+                </div>
+            </template> 
+            <template v-slot="scope">
+                <el-table-column fixed="left" width="100" label="">
+                    <template v-slot="rowScope">
+                        <el-switch :value="rowScope.row.enabled"
+                            @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
+                        </el-switch>
+                    </template>
+                </el-table-column>
+               
+                <el-table-column fixed :label="i18n('alert.Alert_Name')" sortable="true">
+                    <template slot-scope="scope">
+                        <div v-html="scope.row.alertName"></div>
+                    </template>
+                </el-table-column> 
+    
+                <el-table-column sortable="true"  prop="appNameList" :label="i18n('alert.Application')">
+                </el-table-column>
+    
+                <el-table-column sortable="true"  :label="i18n('alert.Condition')">
+                    <template slot-scope="scope" sortable="true">
+                        <span>{{scope.row.condtionText}}</span>
+                    </template>
+                </el-table-column>
+    
+                <el-table-column sortable="true"  :label="i18n('alert.CreateBy')">
+                    <template slot-scope="scope">
+                        <div class="is-last-col">
+                            <div class="flex-grow">
+                                <div class="is-created-by-col">
+                                    {{scope.row.createdByUser}}
+                                 </div>
+    
+                            </div> 
+                          <div class="is-option-button">
+                             <cly-more-options size="small" @command="handleHookEditCommand($event, scope)">
+                                <el-dropdown-item  icon="el-icon-document-copy" command="edit-comment">
+                                    Edit
+                                </el-dropdown-item>
+                                <el-dropdown-item icon="el-icon-delete" command="delete-comment">
+                                    Delete
+                                </el-dropdown-item>
+                            </cly-more-options>
+                          </div>
+                        </div>
+                    </template>
+                </el-table-column>
+
+            </template>
+            <template v-slot:bottomline="scope">
+                <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateStatus(scope)">
+                </cly-diff-helper>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+    </script>
+    
+    
+    
+<script  type="text/x-template" id="alert-drawer">
+    <cly-drawer
+        @submit="onSubmit"
+        @close="onClose"
+        @copy="onCopy"
+        :title="title"
+        :saveButtonLabel="saveButtonLabel"
+        v-bind="$props.controls">
+        <template v-slot:default="drawerScope">
+            <cly-form-step id="alert-drawer-main">
+            <div class="cly-vue-drawer-step__section">
+                <div class="text-small text-heading">
+                    {{i18n('alert.Alert_Name')}}
+                </div>
+                <validation-provider name="alertName" rules="required" v-slot="v">
+                    <el-input
+                        v-model="drawerScope.editedObject.alertName"
+                        :class="{'is-error': v.errors.length > 0}"
+                        :placeholder="i18n('alert.Alert_Name')">
+                    </el-input>
+                </validation-provider>
+            </div>
+   
+            <div class="cly-vue-drawer-step__section">
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                    <div class="text-small text-heading">
+                        {{i18n('alert.Data_type')}}
+                    </div>
+                </div>
+                <div class="cly-vue-drawer-step__section cly-vue-drawer-step__line ">
+                    <el-radio-group v-on:change="dataTypeSelected" v-model="drawerScope.editedObject.alertDataType" class="cly-vue-alert-drawer__is-full-line alert-data-type-block">
+                        <el-radio-button v-for="(item, idx) in alertDataTypeOptions" :label="item.value" >{{item.label}}</el-radio-button>
+                    </el-radio-group>
+                </div>
+            </div>
+
+            <div class="cly-vue-drawer-step__section">
+                <div class="text-small text-heading">
+                    {{i18n('alert.For_Applications')}} 
+                </div>
+                <validation-provider name="name" rules="required" v-slot="v">
+                    <cly-select-x
+                       :placeholder="i18n('hooks.select-application')"
+                       mode="single-list"
+                       v-on:input="appSelected"
+                       v-model="drawerScope.editedObject.selectedApps[idx]"
+                       v-for="(app, idx) in drawerScope.editedObject.selectedApps"
+                       :key="idx"
+                       :class="{'is-error': v.errors.length > 0, 'cly-vue-alert-drawer__is-full-line':true}"
+                       :options="appsSelectorOption">
+                    </cly-select-x>
+                </validation-provider>
+            </div>
+
+            <div class="cly-vue-drawer-step__section cly-vue-alert-drawer__card">
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned cly-vue-alert-drawer__card-title">
+                    <div class="text-small text-heading">
+                        {{i18n('alert.Alert_definition')}}
+                    </div>
+                    <div class="cly-vue-alert-drawer__help-text">
+                        {{i18n('alert.compare-remind')}}
+                    </div>
+                </div>
+                <div class="cly-vue-alert-drawer__line">
+                </div>
+                <div class="cly-vue-alert-drawer-define-block" v-if="showSubType1">
+                    <div class="cly-vue-alert-drawer-define-block-item">
+                        <validation-provider name="alertDataSubType" rules="required" v-slot="v">
+                            <cly-select-x
+                               mode="single-list"
+                               v-on:input="alertDataSubTypeSelected"
+                               v-model="drawerScope.editedObject.alertDataSubType"
+                                :class="{'is-error': v.errors.length > 0, 'cly-vue-alert-drawer__is-full-line':true, }"
+                               :options="drawerScope.editedObject.alertDataType && alertDefine[drawerScope.editedObject.alertDataType].target || []">
+                            </cly-select-x>
+                        </validation-provider>
+                    </div>
+                    <div class="cly-vue-alert-drawer-define-block-item" v-if="showSubType2">
+                        <validation-provider name="alertDataSubType" rules="required" v-slot="v">
+                            <cly-select-x
+                               mode="single-list"
+                               v-model="drawerScope.editedObject.alertDataSubType2"
+                                :class="{'is-error': v.errors.length > 0, 'cly-vue-alert-drawer__is-full-line':true, }"
+                               :options="alertDataSubType2Options|| []">
+                            </cly-select-x>
+                        </validation-provider>
+                    </div>
+                    <div class="cly-vue-alert-drawer-define-block-item" v-if="showCondition">
+                        <validation-provider name="alertDataSubType" rules="required" v-slot="v">
+                            <cly-select-x
+                               mode="single-list"
+                               v-model="drawerScope.editedObject.compareType"
+                                :class="{'is-error': v.errors.length > 0, 'cly-vue-alert-drawer__is-full-line':true}"
+                               :options="drawerScope.editedObject.alertDataType && alertDefine[drawerScope.editedObject.alertDataType].condition || []">
+                            </cly-select-x>
+                        </validation-provider>
+                    </div>
+                    <div class="cly-vue-alert-drawer-define-block-item" v-if="showConditionValue">
+                        <validation-provider name="name" rules="required" v-slot="v">
+                            <el-input
+                                v-model="drawerScope.editedObject.compareValue"
+                                :class="{'is-error': v.errors.length > 0, 'cly-vue-alert-drawer__is-full-line': true}"
+                            >
+                            <i slot="suffix"> % </i>
+                            </el-input>
+                        </validation-provider>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cly-vue-drawer-step__section">
+                <div class="text-medium text-heading">
+                   {{i18n('alert.email-to-receive')}} 
+                </div>
+                    <validation-provider name="alertValues" rules="required" v-slot="v">
+                        <el-select
+                            :class="{'cly-vue-alert-drawer__is-full-line': true}"
+                            v-model="drawerScope.editedObject.alertValues"
+                            multiple
+                            filterable
+                            remote
+                            default-first-option
+                            :remote-method="emailInputFilter"
+                            placeholder="Input Email address">
+                            <el-option
+                                v-for="item in emailOptions"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </validation-provider>
+                </div>
+            </div> 
+            <pre v-if="0">
+                {{drawerScope.editedObject}}
+            </pre>
+        </cly-form-step>
+        </template>
+    </cly-drawer>
+</script>
