@@ -38,7 +38,9 @@
             options: {
                 type: Array,
                 required: true,
-                default: [],
+                default: function() {
+                    return [];
+                }
             }
         },
         data: function() {
