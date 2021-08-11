@@ -1715,8 +1715,11 @@ var pluginManager = function pluginManager() {
                 var cursor = this._aggregate(query, options);
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(cb) {
-                    return handlePromiseErrors(cursor._toArray(logForReads(callback || cb, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
+                    return handlePromiseErrors(cursor._toArray(logForReads(cb, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
                 };
+                if (typeof callback === "function") {
+                    return cursor.toArray(callback);
+                }
                 return cursor;
             };
 
