@@ -1577,12 +1577,12 @@ var pluginManager = function pluginManager() {
                             res.insertedIdsOrig = res.insertedIds;
                             res.insertedIds = arr;
                             res.insertedCount = res.insertedIds.length;
-                            res.ops = ops;
+                            res.ops = res.ops || ops;
                         }
                         else if (res.insertedId) {
                             res.insertedIds = [res.insertedId];
                             res.insertedCount = res.insertedIds.length;
-                            res.ops = [{_id: res.insertedId, ...data.args[0]}];
+                            res.ops = res.ops || [{_id: res.insertedId, ...data.args[0]}];
                         }
                     }
                     if (callback) {
