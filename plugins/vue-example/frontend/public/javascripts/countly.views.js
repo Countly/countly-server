@@ -323,7 +323,6 @@
                     ]
                 },
                 lineLegend: {
-                    show: true,
                     type: "primary",
                     data: [
                         {
@@ -378,7 +377,6 @@
                     ]
                 },
                 barLegend: {
-                    show: true,
                     type: "primary",
                     data: [
                         {
