@@ -1714,8 +1714,8 @@ var pluginManager = function pluginManager() {
                 logDbRead.d("From connection %j", countlyDb._cly_debug);
                 var cursor = this._aggregate(query, options);
                 cursor._toArray = cursor.toArray;
-                cursor.toArray = function(callback) {
-                    return handlePromiseErrors(cursor._toArray(logForReads(callback, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
+                cursor.toArray = function(cb) {
+                    return handlePromiseErrors(cursor._toArray(logForReads(callback || cb, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
                 };
                 return cursor;
             };
