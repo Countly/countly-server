@@ -1,31 +1,25 @@
-var async = require('async'),
-    crypto = require('crypto'),
-    plugins = require('../../plugins/pluginManager.js');
+/**
+ *  Setup TTL indexes to delete older data for one specific app. This script should be run periodically, to create TTL indexes on new collections too, like new events, etc for specific app
+ *  Server: countly
+ *  Path: countly dir
+ *  Command: node countly_multi_app_expireData.js
+ */
 
-var Promise = require("bluebird");
+var EXPIRE_AFTER = 60 * 60 * 24 * 365; //1 year in seconds
+var INDEX_NAME = "cd_1";
+
+var async = require('async'),
+    Promise = require("bluebird"),
+    plugins = require('../../../plugins/pluginManager.js');
+
+//var db = plugins.dbConnection("countly");
+//var db_drill = plugins.dbConnection("countly_drill");
 
 Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(db, db_drill) {
-
-    var APP_ID = "5d68e5012257c30a2f409e0e";
-    var EXPIRE_AFTER = 365 * 24 * 60 * 60; //1 year in seconds
-    var INDEX_NAME = "cd_1";
-
-    var collections = [];
-    collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_session" + APP_ID).digest('hex'));
-    collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + APP_ID).digest('hex'));
-    collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + APP_ID).digest('hex'));
-    collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + APP_ID).digest('hex'));
-    collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_push_action" + APP_ID).digest('hex'));
-    collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + APP_ID).digest('hex'));
-    collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_nps" + APP_ID).digest('hex'));
-    collections.push("drill_events" + crypto.createHash('sha1').update("[CLY]_survey" + APP_ID).digest('hex'));
-    db.collection("events").findOne({'_id': db.ObjectID(APP_ID)}, {list: 1}, function(err, eventData) {
-        if (eventData && eventData.list) {
-            for (var i = 0; i < eventData.list.length; i++) {
-                collections.push("drill_events" + crypto.createHash('sha1').update(eventData.list[i] + APP_ID).digest('hex'));
-            }
-        }
-        function eventIterator(collection, done) {
+    db.collections(function(err, collections) {
+        collections = collections || [];
+        function eventIterator(coll, done) {
+            var collection = coll.collectionName;
             console.log("processing", collection);
             db_drill.collection(collection).indexes(function(err, indexes) {
                 if (!err && indexes) {
