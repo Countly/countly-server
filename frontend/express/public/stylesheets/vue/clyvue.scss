@@ -3682,6 +3682,15 @@
         float: right;
         margin: 16px;
     }
+
+    &__pop--has-single-option {
+        .cly-vue-select-x__header-slot {
+            padding: 0;
+        }
+        .el-tabs__header::after {
+            content: none;
+        }
+    }
 }
 
 .is-scroll-shadow{

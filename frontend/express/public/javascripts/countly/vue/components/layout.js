@@ -122,6 +122,12 @@
                     </div>'
     }));
 
+    Vue.component("cly-sub-section", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-section__sub bu-px-4 bu-py-2">\
+                        <slot></slot>\
+                    </div>'
+    }));
+
     var _ModalManager = new Vue({
         el: "#vue-modal-manager",
         template: '<div><div :class="{\'is-active\': nClients>0}" id="vue-common-overlay"></div></div>',
