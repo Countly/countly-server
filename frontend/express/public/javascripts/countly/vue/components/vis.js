@@ -77,7 +77,7 @@
                     },
                     grid: {
                         top: 30,
-                        bottom: 35,
+                        bottom: 15,
                         left: 36,
                         right: 36,
                         containLabel: true
@@ -275,6 +275,38 @@
                 }
 
                 return options;
+            },
+            chartClasses: function() {
+                var classes = {};
+
+                if (this.legendOptions.position === "bottom") {
+                    classes['bu-is-flex'] = true;
+                    classes['bu-is-flex-direction-column'] = true;
+                }
+                else {
+                    classes['bu-is-flex'] = true;
+                    classes['bu-is-flex-direction-row'] = true;
+                }
+
+                return classes;
+            },
+            echartStyle: function() {
+                var styles = {};
+
+                if (this.legendOptions.position !== "bottom") {
+                    styles.width = 'calc(100% - 265px)';
+                }
+
+                return styles;
+            },
+            legendStyle: function() {
+                var styles = {};
+
+                if (this.legendOptions.position !== "bottom") {
+                    styles.width = 265 + 'px';
+                }
+
+                return styles;
             }
         }
     });
@@ -329,6 +361,11 @@
                 opt.legend.show = false;
 
                 opt.series = series;
+
+                if (this.legendOptions.position !== "bottom") {
+                    opt.grid.right = 0;
+                }
+
                 return opt;
             }
         }
@@ -372,6 +409,11 @@
                 opt.legend.show = false;
 
                 opt.series = series;
+
+                if (this.legendOptions.position !== "bottom") {
+                    opt.grid.right = 0;
+                }
+
                 return opt;
             }
         }
@@ -670,6 +712,9 @@
             },
             onClick: {
                 type: Function
+            },
+            position: {
+                type: String
             }
         },
         computed: {
@@ -698,9 +743,17 @@
                 }
 
                 return options;
+            },
+            classes: function() {
+                var classes = {
+                    'cly-vue-chart-legend__secondary': true,
+                    'cly-vue-chart-legend__secondary--text-center': this.position === "bottom"
+                };
+
+                return classes;
             }
         },
-        template: '<div :class="[\'cly-vue-chart-legend__secondary\', \'cly-vue-chart-legend__secondary--text-center\']">\
+        template: '<div :class="classes">\
                         <vue-scroll :ops="scrollOptions">\
                             <div v-for="(item, index) in data"\
                                 :key="item.name" :data-series="item.name"\
@@ -892,8 +945,8 @@
                         <template v-if="options.type === \'secondary\'">\
                             <secondary-legend\
                                 :data="legendData"\
-                                :onClick="onLegendClick">\
                                 :position="options.position"\
+                                :onClick="onLegendClick">\
                             </secondary-legend>\
                         </template>\
                     </div>'
@@ -918,14 +971,15 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart">\
-                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                <slot :name="item" v-bind="slotScope"></slot>\
-                            </template>\
-                        </chart-header>\
-                        <div :style="{height: height + \'px\'}">\
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div :style="echartStyle" class="cly-vue-chart__echart">\
+                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
                             <echarts\
+                                :style="{height: height + \'px\'}"\
                                 ref="echarts"\
                                 v-bind="$attrs"\
                                 v-on="$listeners"\
@@ -934,6 +988,7 @@
                             </echarts>\
                         </div>\
                         <custom-legend\
+                            :style="legendStyle"\
                             :options="legendOptions"\
                             :echartRef="echartRef"\
                             v-if="legendOptions.show"\
@@ -1029,14 +1084,15 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart">\
-                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                <slot :name="item" v-bind="slotScope"></slot>\
-                            </template>\
-                        </chart-header>\
-                        <div :style="{height: height + \'px\'}">\
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div :style="echartStyle" class="cly-vue-chart__echart">\
+                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
                             <echarts\
+                                :style="{height: height + \'px\'}"\
                                 ref="echarts"\
                                 v-bind="$attrs"\
                                 v-on="$listeners"\
@@ -1045,6 +1101,7 @@
                             </echarts>\
                         </div>\
                         <custom-legend\
+                            :style="legendStyle"\
                             :options="legendOptions"\
                             :echartRef="echartRef"\
                             v-if="legendOptions.show"\
@@ -1072,14 +1129,15 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart">\
-                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                <slot :name="item" v-bind="slotScope"></slot>\
-                            </template>\
-                        </chart-header>\
-                        <div :style="{height: height + \'px\'}">\
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div :style="echartStyle" class="cly-vue-chart__echart">\
+                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
                             <echarts\
+                                :style="{height: height + \'px\'}"\
                                 ref="echarts"\
                                 v-bind="$attrs"\
                                 v-on="$listeners"\
@@ -1088,6 +1146,7 @@
                             </echarts>\
                         </div>\
                         <custom-legend\
+                            :style="legendStyle"\
                             :options="legendOptions"\
                             :echartRef="echartRef"\
                             v-if="legendOptions.show"\
@@ -1114,7 +1173,7 @@
                 var opt = _merge({}, this.mergedOptions);
                 return opt;
             },
-            chartClasses: function() {
+            classes: function() {
                 var classes = {
                     "bu-column": true
                 };
@@ -1139,30 +1198,32 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart">\
-                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                <slot :name="item" v-bind="slotScope"></slot>\
-                            </template>\
-                        </chart-header>\
-                        <div class="bu-columns bu-is-gapless"\
-                            :style="{height: height + \'px\'}">\
-                            <div :class="chartClasses">\
-                                <echarts\
-                                    ref="echarts"\
-                                    v-bind="$attrs"\
-                                    v-on="$listeners"\
-                                    :option="chartOptions"\
-                                    :autoresize="autoresize">\
-                                </echarts>\
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div class="cly-vue-chart__echart">\
+                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
+                            <div class="bu-columns bu-is-gapless"\
+                                :style="{height: height + \'px\'}">\
+                                <div :class="classes">\
+                                    <echarts\
+                                        ref="echarts"\
+                                        v-bind="$attrs"\
+                                        v-on="$listeners"\
+                                        :option="chartOptions"\
+                                        :autoresize="autoresize">\
+                                    </echarts>\
+                                </div>\
+                                <custom-legend\
+                                    :options="pieLegendOptions"\
+                                    :echartRef="echartRef"\
+                                    v-if="pieLegendOptions.show"\
+                                    :chartOptions="chartOptions"\
+                                    :class="classes">\
+                                </custom-legend>\
                             </div>\
-                            <custom-legend\
-                                :options="pieLegendOptions"\
-                                :echartRef="echartRef"\
-                                v-if="pieLegendOptions.show"\
-                                :chartOptions="chartOptions"\
-                                :class="chartClasses">\
-                            </custom-legend>\
                         </div>\
                     </div>'
     }));
