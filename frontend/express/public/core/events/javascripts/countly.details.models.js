@@ -6,36 +6,29 @@
             var chartData = eventData.chartData;
             var graphData = [[], [], []];
             for (var i = 0; i < chartData.length; i++) {
-                graphData[0].push(chartData[i].c);
-                graphData[1].push(chartData[i].s);
-                graphData[2].push(chartData[i].dur);
+                graphData[0].push(chartData[i].c ? chartData[i].c : 0);
+                graphData[1].push(chartData[i].s ? chartData[i].s : 0);
+                graphData[2].push(chartData[i].dur ? chartData[i].dur : 0);
             }
             var series = [];
-            var itemsForLegend = eventData.tableColumns;
-            if (itemsForLegend.indexOf("Count") !== -1) {
-                var countObj = {
-                    name: eventData.chartDP[0].label,
-                    data: graphData[0],
-                    color: "#017AFF"
-                };
-                series.push(countObj);
-            }
-            if (itemsForLegend.indexOf("Sum") !== -1) {
-                var sumObj = {
-                    name: eventData.chartDP[1].label,
-                    data: graphData[1],
-                    color: "#F96300"
-                };
-                series.push(sumObj);
-            }
-            if (itemsForLegend.indexOf("Duration") !== -1) {
-                var durObj = {
-                    name: eventData.chartDP[2].label,
-                    data: graphData[2],
-                    color: "#FF9382"
-                };
-                series.push(durObj);
-            }
+            var countObj = {
+                name: eventData.chartDP[0].label,
+                data: graphData[0],
+                color: "#017AFF"
+            };
+            series.push(countObj);
+            var sumObj = {
+                name: eventData.chartDP[1].label,
+                data: graphData[1],
+                color: "#F96300"
+            };
+            series.push(sumObj);
+            var durObj = {
+                name: eventData.chartDP[2].label,
+                data: graphData[2],
+                color: "#FF9382"
+            };
+            series.push(durObj);
             var obj = {
                 series: series
             };
@@ -94,12 +87,9 @@
             var obDuration = {};
             for (var i = 0; i < eventData.chartData.length; i++) {
                 arrCount.push(eventData.chartData[i].c);
-                if (eventData.chartData[i].s) {
-                    arrSum.push(eventData.chartData[i].s);
-                }
-                if (eventData.chartData[i].dur) {
-                    arrDuration.push(eventData.chartData[i].dur);
-                }
+                arrSum.push(eventData.chartData[i].s);
+
+                arrDuration.push(eventData.chartData[i].dur);
                 xAxisData.push(eventData.chartData[i].curr_segment);
             }
             obCount.name = "Count";
@@ -107,18 +97,15 @@
             obCount.color = "#017AFF";
             xAxis.data = xAxisData;
             series.push(obCount);
-            if (arrSum.length > 0) {
-                obSum.name = "Sum";
-                obSum.data = arrSum;
-                obSum.color = "#F96300";
-                series.push(obSum);
-            }
-            if (arrDuration.length > 0) {
-                obDuration.name = "Duration";
-                obDuration.data = arrDuration;
-                obDuration.color = "#FF9382";
-                series.push(obDuration);
-            }
+            obSum.name = "Sum";
+            obSum.data = arrSum;
+            obSum.color = "#F96300";
+            series.push(obSum);
+            obDuration.name = "Duration";
+            obDuration.data = arrDuration;
+            obDuration.color = "#FF9382";
+            series.push(obDuration);
+
             legend.show = false;
             obj.legend = legend;
             obj.series = series;
@@ -268,7 +255,6 @@
                     }
                 }
                 else {
-                    eventData.chartDP[1] = false;
                     eventData.chartDP = _.compact(eventData.chartDP);
                     _.each(eventData.chartData, function(element, index, list) {
                         list[index] = _.pick(element, "date", "c");
@@ -327,40 +313,31 @@
             var lineLegend = {};
             var legendData = [];
             var eventsOverview = context.state.selectedEventsOverview;
-            var itemsForLegend = context.state.allEventsProcessed.tableColumns;
             var labels = context.state.allEventsProcessed.chartDP;
-            if (itemsForLegend.indexOf("Count") !== -1) {
-                var count = {};
-                count.name = labels[0].label;
-                count.value = eventsOverview.count.total;
-                count.trend = eventsOverview.count.trend === "u" ? "up" : "down";
-                count.percentage = eventsOverview.count.change;
-                count.tooltip = labels[0].label;
-                legendData.push(count);
-            }
-            if (itemsForLegend.indexOf("Sum") !== -1) {
-                var sum = {};
-                sum.name = labels[1].label;
-                sum.value = eventsOverview.sum.total;
-                sum.trend = eventsOverview.sum.trend === "u" ? "up" : "down";
-                sum.percentage = eventsOverview.sum.change;
-                sum.tooltip = labels[1].label;
-                legendData.push(sum);
-            }
-            if (itemsForLegend.indexOf("Duration") !== -1) {
-                var dur = {};
-                dur.name = labels[2].label;
-                dur.value = eventsOverview.dur.total;
-                dur.trend = eventsOverview.dur.trend === "u" ? "up" : "down";
-                dur.percentage = eventsOverview.dur.change;
-                dur.tooltip = labels[2].label;
-                legendData.push(dur);
-            }
-            if (legendData.length > 0) {
-                lineLegend.show = true;
-                lineLegend.type = "primary";
-                lineLegend.data = legendData;
-            }
+            var count = {};
+            count.name = labels[0] ? labels[0].label : CV.i18n("events.overview.count");
+            count.value = eventsOverview.count.total;
+            count.trend = eventsOverview.count.trend === "u" ? "up" : "down";
+            count.percentage = eventsOverview.count.change;
+            count.tooltip = labels[0] ? labels[0].label : CV.i18n("events.overview.count");
+            legendData.push(count);
+            var sum = {};
+            sum.name = labels[1] ? labels[1].label : CV.i18n("events.overview.sum");
+            sum.value = eventsOverview.sum.total;
+            sum.trend = eventsOverview.sum.trend === "u" ? "up" : "down";
+            sum.percentage = eventsOverview.sum.change;
+            sum.tooltip = labels[1] ? labels[1].label : CV.i18n("events.overview.sum");
+            legendData.push(sum);
+            var dur = {};
+            dur.name = labels[2] ? labels[2].label : CV.i18n("events.overview.duration");
+            dur.value = eventsOverview.dur.total;
+            dur.trend = eventsOverview.dur.trend === "u" ? "up" : "down";
+            dur.percentage = eventsOverview.dur.change;
+            dur.tooltip = labels[2] ? labels[2].label : CV.i18n("events.overview.duration");
+            legendData.push(dur);
+            lineLegend.show = true;
+            lineLegend.type = "primary";
+            lineLegend.data = legendData;
             return lineLegend;
         },
         getSelectedEventsOverview: function(context, res) {
