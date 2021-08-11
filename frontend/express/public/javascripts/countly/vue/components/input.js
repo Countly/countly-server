@@ -1,4 +1,4 @@
-/* global Vue */
+/* global Vue, CV */
 
 (function(countlyVue) {
 
@@ -482,92 +482,9 @@
         }
     };
 
-    Vue.component("cly-select-x", countlyVue.components.BaseComponent.extend({
+    Vue.component("cly-select-x", countlyVue.components.create({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin, _mixins.i18n],
-        template: '<cly-dropdown\
-                        class="cly-vue-select-x"\
-                        ref="dropdown"\
-                        :width="width"\
-                        :placeholder="placeholder"\
-                        :disabled="disabled"\
-                        v-bind="$attrs"\
-                        v-on="$listeners"\
-                        @show="handleDropdownShow"\
-                        @hide="focusOnTrigger">\
-                        <template v-slot:trigger="dropdown">\
-                            <slot name="trigger" v-bind:dropdown="dropdown">\
-                                <cly-input-dropdown-trigger\
-                                    ref="trigger"\
-                                    :size="size"\
-                                    :disabled="disabled"\
-                                    :adaptive-length="adaptiveLength"\
-                                    :focused="dropdown.focused"\
-                                    :opened="dropdown.visible"\
-                                    :placeholder="placeholder"\
-                                    :selected-options="selectedOptions">\
-                                </cly-input-dropdown-trigger>\
-                            </slot>\
-                        </template>\
-                        <div class="cly-vue-select-x__pop" :class="{\'cly-vue-select-x__pop--hidden-tabs\': hideDefaultTabs || !hasTabs }">\
-                            <div class="cly-vue-select-x__header">\
-                                <div class="cly-vue-select-x__title" v-if="title">{{title}}</div>\
-                                <div class="cly-vue-select-x__header-slot" v-if="!!$scopedSlots.header">\
-                                    <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>\
-                                </div>\
-                                <el-input\
-                                    v-show="showList"\
-                                    v-if="searchable"\
-                                    ref="searchBox"\
-                                    autocomplete="off"\
-                                    :disabled="disabled"\
-                                    v-model="searchQuery"\
-                                    @keydown.native.esc.stop.prevent="doClose" \
-                                    :placeholder="searchPlaceholder">\
-                                    <i slot="prefix" class="el-input__icon el-icon-search"></i>\
-                                </el-input>\
-                            </div>\
-                            <el-tabs\
-                                v-model="activeTabId"\
-                                @keydown.native.esc.stop.prevent="doClose">\
-                                <el-tab-pane :name="tab.name" :key="tab.name" v-for="tab in publicTabs">\
-                                    <span slot="label">\
-                                        {{tab.label}}\
-                                    </span>\
-                                    <cly-listbox\
-                                        v-show="showList"\
-                                        v-if="mode === \'single-list\'"\
-                                        :bordered="false"\
-                                        :options="getMatching(tab.options)"\
-                                        @change="handleValueChange"\
-                                        v-model="innerValue">\
-                                    </cly-listbox>\
-                                    <cly-checklistbox\
-                                        v-show="showList"\
-                                        v-else-if="mode === \'multi-check\'"\
-                                        :bordered="false"\
-                                        :options="getMatching(tab.options)"\
-                                        @change="handleValueChange"\
-                                        v-model="innerValue">\
-                                    </cly-checklistbox>\
-                                    <cly-checklistbox\
-                                        v-show="showList"\
-                                        v-else-if="mode === \'multi-check-sortable\'"\
-                                        :sortable="true"\
-                                        :bordered="false"\
-                                        :options="getMatching(tab.options)"\
-                                        @change="handleValueChange"\
-                                        v-model="innerValue">\
-                                    </cly-checklistbox>\
-                                </el-tab-pane>\
-                            </el-tabs>\
-                            <div class="cly-vue-select-x__footer" v-if="!autoCommit">\
-                                <div class="cly-vue-select-x__commit-section">\
-                                    <el-button @click="doDiscard" size="small">{{ i18n("common.cancel") }}</el-button>\
-                                    <el-button @click="doCommit" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>\
-                                </div>\
-                            </div>\
-                        </div>\
-                    </cly-dropdown>',
+        template: CV.T('/javascripts/countly/vue/templates/selectx.html'),
         props: {
             title: {type: String, default: ''},
             placeholder: {type: String, default: 'Select'},
@@ -605,14 +522,14 @@
                 }
                 return {};
             },
-            hasSingleItem: function() {
+            hasSingleOption: function() {
                 return (this.activeTabId !== '__root' &&
                         this.currentTab.options &&
                         this.currentTab.options.length === 1 &&
                         this.singleOptionSettings.hideList);
             },
             showList: function() {
-                return !this.hasSingleItem;
+                return !this.hasSingleOption;
             },
             innerValue: {
                 get: function() {
@@ -685,7 +602,7 @@
             },
             activeTabId: function() {
                 this.updateDropdown();
-                if (this.hasSingleItem && this.singleOptionSettings.autoPick) {
+                if (this.hasSingleOption && this.singleOptionSettings.autoPick) {
                     this.innerValue = this.currentTab.options[0].value;
                     this.doCommit();
                 }
