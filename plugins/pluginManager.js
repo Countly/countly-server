@@ -1326,7 +1326,7 @@ var pluginManager = function pluginManager() {
         if (!countlyDb.ObjectID) {
             countlyDb.ObjectID = function(id) {
                 try {
-                    return mongodb.ObjectID(id);
+                    return mongodb.ObjectId(id);
                 }
                 catch (ex) {
                     logDbRead.i("Incorrect Object ID %j", ex);
@@ -1569,16 +1569,20 @@ var pluginManager = function pluginManager() {
                     if (res) {
                         if (res.insertedIds) {
                             var arr = [];
+                            var ops = [];
                             for (let i in res.insertedIds) {
                                 arr.push(res.insertedIds[i]);
+                                ops.push({_id: res.insertedIds[i], ...data.args[0][i]});
                             }
                             res.insertedIdsOrig = res.insertedIds;
                             res.insertedIds = arr;
                             res.insertedCount = res.insertedIds.length;
+                            res.ops = ops;
                         }
                         else if (res.insertedId) {
                             res.insertedIds = [res.insertedId];
                             res.insertedCount = res.insertedIds.length;
+                            res.ops = [{_id: res.insertedId, ...data.args[0]}];
                         }
                     }
                     if (callback) {
