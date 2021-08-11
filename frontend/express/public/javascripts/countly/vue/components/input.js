@@ -512,6 +512,12 @@
             };
         },
         computed: {
+            popClasses: function() {
+                return {
+                    "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.hasTabs,
+                    "cly-vue-select-x__pop--has-single-option": this.hasSingleOption
+                };
+            },
             currentTab: function() {
                 var self = this;
                 var filtered = this.publicTabs.filter(function(tab) {

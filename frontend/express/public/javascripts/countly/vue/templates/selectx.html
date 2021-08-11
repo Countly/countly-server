@@ -1,5 +1,5 @@
 <cly-dropdown
-    class="cly-vue-select-x"
+    class="cly-vue-select-x""
     ref="dropdown"
     :width="width"
     :placeholder="placeholder"
@@ -22,7 +22,7 @@
             </cly-input-dropdown-trigger>
         </slot>
     </template>
-    <div class="cly-vue-select-x__pop" :class="{'cly-vue-select-x__pop--hidden-tabs': hideDefaultTabs || !hasTabs }">
+    <div class="cly-vue-select-x__pop" :class="popClasses">
         <div class="cly-vue-select-x__header">
             <div class="cly-vue-select-x__title" v-if="title">{{title}}</div>
             <div class="cly-vue-select-x__header-slot" v-if="!!$scopedSlots.header">

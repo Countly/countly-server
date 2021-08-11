@@ -299,6 +299,7 @@
                     :options="availableEvents"\
                     :hide-all-options-tab="true"\
                     :single-option-settings="singleOptionSettings"\
+                    :adaptive-length="true"\
                     v-bind="$attrs"\
                     v-on="$listeners">\
                     <template v-slot:header="selectScope">\
