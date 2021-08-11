@@ -84,71 +84,6 @@
         {label: "Silent message", value: MessageTypeEnum.SILENT}
     ];
 
-    var MessageSettingElement = countlyVue.views.create({
-        template: CV.T("/push/templates/message-setting-element.html"),
-        props: {
-            input: {
-                type: String,
-                default: "",
-                required: false
-            },
-            toggle: {
-                type: Boolean,
-                default: false,
-                required: true,
-            },
-            label: {
-                type: String,
-                default: "",
-                required: true
-            },
-            placeholder: {
-                type: String,
-                default: "",
-                required: false,
-            },
-            description: {
-                type: String,
-                default: "",
-                required: false,
-            },
-            rules: {
-                type: Array,
-                default: function() {
-                    return [];
-                },
-                required: false,
-            }
-        },
-        data: function() {
-            return {
-                innerInput: "",
-                innerToggle: false
-            };
-        },
-        computed: {
-            hasDefaultSlot: function() {
-                return Boolean(this.$slots.default);
-            }
-        },
-        watch: {
-            input: function(value) {
-                this.innerInput = value;
-            },
-            toggle: function(value) {
-                this.innerToggle = value;
-            }
-        },
-        methods: {
-            onToggle: function(value) {
-                this.$emit("onToggle", value);
-            },
-            onInput: function(value) {
-                this.$emit("onChange", value);
-            }
-        }
-    });
-
     var PushNotificationDrawer = countlyVue.views.create({
         template: CV.T("/push/templates/push-notification-drawer.html"),
         mixins: [countlyVue.mixins.i18n],
@@ -509,10 +444,13 @@
             this.getUserProperties();
         },
         components: {
-            "message-setting-element": MessageSettingElement,
+            "message-setting-element": countlyPushNotificationComponent.MessageSettingElement,
             "mobile-message-preview": countlyPushNotificationComponent.MobileMessagePreview,
             "message-editor-with-emoji-picker": countlyPushNotificationComponent.MessageEditorWithEmojiPicker,
-            "add-user-property-popover": countlyPushNotificationComponent.AddUserPropertyPopover
+            "add-user-property-popover": countlyPushNotificationComponent.AddUserPropertyPopover,
+            "large-radio-button-with-description": countlyPushNotificationComponent.LargeRadioButtonWithDescription,
+            "line-radio-button-with-description": countlyPushNotificationComponent.LineRadioButtonWithDescription,
+            "review-section-row": countlyPushNotificationComponent.ReviewSectionRow,
         },
     });
 
@@ -725,6 +663,7 @@
         component: PushNotificationView,
         vuex: pushNotificationVuex,
         templates: [
+            "/push/templates/common-components.html",
             "/push/templates/push-notification.html",
             "/push/templates/push-notification-tab.html"
         ]
@@ -1247,7 +1186,7 @@
     $(document).ready(function() {
         if (countlyAuth.validateRead('push')) {
             app.addMenuForType("mobile", "reach", {code: "push", url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
-            //TODO: when geolocations is finished, remove the submenu and instead keep the menu entry only
+            //TODO-LA: when geolocations is finished, remove the submenu and instead keep the menu entry only
             // app.addMenu("push", {code: "push", url: "#/messaging", text: "push-notification-title", priority: 20});
             app.addSubMenu("push", {code: "push", url: "#/messaging", text: "push-notification.title", priority: 20});
         }

@@ -338,6 +338,7 @@
         color: map.get(colors.$colors,"text-custom-1-active");
     }
 
+    //platform only
     &__checkbox-group-header {
         font-size: typography.$heading-5-size;
         font-weight: typography.$font-weight-primary;
@@ -370,80 +371,22 @@
         background:darkgrey;
     }
 
+    //diverge!
     &__radio-group-header {
         font-size: typography.$heading-4-size;
         line-height: typography.$heading-5-line-height;
         font-weight: typography.$font-weight-primary;
     }   
 
-    &__radio-group { 
-        width:100%;
-    }
-
-    &__radio-button-container {
-        flex-basis:0;
-    }
-
-    &__radio-button {
-        width:100%;
-        height:100px !important;
-    }
-
-    &__full-line-bordered-radio-button {
-        width: 100%;
-        height: 50px;
-        margin-left: 0px !important;
-        .el-radio__label {
-            font-size: typography.$text-button-size;
-            line-height: 16px;
-            width: 100%;
-        }
-    }
-
-    &__radio-button-title {
-        display: inline-block;
-        color: map.get(colors.$colors,"text-primary");
-    }
-
-    &__radio-button-content {
-        color: map.get(colors.$colors,"text-secondary");
-        font-size: typography.$text-small-size;
-        line-height: typography.$heading-4-line-height;
-
-    }
-
-    &__radio-button-content-header {
-        font-size: typography.$heading-3-size;
-        font-weight: typography.$font-weight-primary;
-        color: map.get(colors.$colors,"cool-gray-100");
-    }
-
-    &__full-line-radio-group-header {
+    &__line-radio-button-group-header {
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
     }
 
-    &__full-line-radio-button {
-        display: block;
-        .el-radio__label {
-            font-size: typography.$text-button-size;
-            line-height: 16px;
-        }
-    }
 
-    &__header-description {
-        color: map.get(colors.$colors,"text-secondary");
-    }
-
-    &__section {
-        border-radius: 6px;
-        border: 1px solid #E2E4E8;
-        background: #F8FAFD;
-    }
-
-    &__section-inline-left {
-        background: white; 
+    &__subsection-left {
+        background: #F8FAFD; 
         border-bottom-right-radius: 0px;
         border-top-right-radius: 0px;  
         border-bottom-left-radius: 6px;
@@ -451,13 +394,19 @@
         border: 1px solid #E2E4E8;
     }
 
-    &__section-inline-right {
+    &__subsection-right {
         background: #F8FAFD; 
+        border: 1px solid #E2E4E8;
         border-bottom-left-radius: 0px;
         border-top-left-radius: 0px;  
         border-bottom-right-radius: 6px;
         border-top-right-radius: 6px;
+    }
+
+    &__subsection-border {
         border: 1px solid #E2E4E8;
+        background: #F8FAFD;
+        border-radius: 6px; 
     }
 
     &__review-header {
@@ -467,14 +416,14 @@
         line-height: typography.$heading-3-line-height;
     }
 
-    &__review-section-header {
+    &__review-section-group-header {
         font-size: 16px;
         font-weight: typography.$font-weight-primary;
         color: map.get(colors.$colors,"black");
         line-height: 24px;
     }
     
-    &__review-section-sub-header {
+    &__review-section-group-subheader {
         font-size: typography.$text-small-size;
         line-height: 15px;
         letter-spacing: 0.5px;
@@ -482,24 +431,77 @@
         font-weight: typography.$font-weight-primary;    
     }
 
-    &__review-section-label {
-        flex-basis: 30%;
-        font-size: typography.$text-button-size;
-        line-height: 13px;
+    &__section-group {
+        border-radius: 6px;
+        border: 1px solid #E2E4E8;
+        background: #F8FAFD;
+    }
+}
+
+.cly-vue-push-notification-large-radio-button-with-description {
+    &__container {
+        flex-basis: 0;
+    }
+
+    &__button {
+        width:100%;
+        height:100px !important;
+    }
+
+    &__title {
+        display: inline-block;
+        color: map.get(colors.$colors,"text-primary");
+        white-space: pre-wrap;
+    }
+
+    &__content {
+        color: map.get(colors.$colors,"text-secondary");
+        font-size: typography.$text-small-size;
+        white-space: pre-line;
+        min-width: 200px;
+    }
+
+    &__content-header{
+        font-size: typography.$heading-3-size;
         font-weight: typography.$font-weight-primary;
         color: map.get(colors.$colors,"cool-gray-100");
     }
-
-    &__review-section-value {
-        font-size: typography.$text-button-size;
-        line-height: 16px;
-        color: map.get(colors.$colors,"cool-gray-100");
-        font-weight: normal;
-    }
-
 }
 
-.left-side-accordion-arrow {
+.cly-vue-push-notification-line-radio-button-with-description {
+    &__title {
+        display: inline-block;
+        color: map.get(colors.$colors,"text-primary");
+        white-space: pre-wrap;
+    }
+
+    &__content {
+        color: map.get(colors.$colors,"text-secondary");
+        font-size: typography.$text-small-size;
+        white-space: pre-line;
+        min-width: 200px;
+    }
+
+    &__border {
+        width: 100%;
+        margin-left: 0px !important;
+        .el-radio__label {
+            font-size: typography.$text-button-size;
+            line-height: 16px;
+            width: 100%;
+        }
+    }
+
+    &__no-border {
+        display: block;
+        .el-radio__label {
+            font-size: typography.$text-button-size;
+            line-height: 16px;
+        }
+    }
+}
+
+.cly-vue-push-notification-accordion-with-left-side-arrow {
     .collapse-title {
         flex: 1 0 90%;
         order: 1;
@@ -508,6 +510,24 @@
     .el-collapse-item__header {
         flex: 1 0 auto;
         order: -1;
+    }
+}
+
+.cly-vue-push-notification-review-section-row {
+    &__label {
+        flex-basis: 30%;
+        font-size: typography.$text-button-size;
+        line-height: 13px;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
+    }
+
+    &__value {
+        font-size: typography.$text-button-size;
+        line-height: 16px;
+        color: map.get(colors.$colors,"cool-gray-100");
+        font-weight: normal;
+        min-width: 200px;
     }
 }
 
