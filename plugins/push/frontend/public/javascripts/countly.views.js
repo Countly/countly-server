@@ -306,21 +306,12 @@
             setActiveLocalization: function(value) {
                 this.activeLocalization = value;
             },
-            removeLocalizationMessage: function(value) {
-                this.$delete(this.pushNotificationUnderEdit.message, value);
-                this.setActiveLocalization("default");
+            removeLocalization: function(value) {
+                this.pushNotificationUnderEdit.localizations = this.pushNotificationUnderEdit.localizations.filter(function(activeLocalization) {
+                    return value !== activeLocalization;
+                });
             },
-            onLocalizationChange: function(localization) {
-                if (this.isLocalizationSelected(localization.value)) {
-                    this.addEmptyLocalizationMessageIfNotFound(localization);
-                    this.setActiveLocalization(localization.value);
-                    this.resetMessageHTML();
-                }
-                else {
-                    this.removeLocalizationMessage(localization.value);
-                }
-            },
-            resetMessageHTML: function() {
+            resetMessageInHTMLToActiveLocalization: function() {
                 this.$refs.title.reset(
                     this.pushNotificationUnderEdit.message[this.activeLocalization].title,
                     Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.title),
@@ -332,10 +323,23 @@
                     'content'
                 );
             },
+            onLocalizationChange: function(localization) {
+                if (!this.isLocalizationSelected(localization.value)) {
+                    this.addEmptyLocalizationMessageIfNotFound(localization);
+                    this.addLocalizationIfNotSelected(localization.value);
+                    this.setActiveLocalization(localization.value);
+                    this.resetMessageInHTMLToActiveLocalization();
+                }
+                else {
+                    this.removeLocalization(localization.value);
+                    this.setActiveLocalization("default");
+                    this.resetMessageInHTMLToActiveLocalization();
+                }
+            },
             onLocalizationSelect: function(localization) {
                 this.addEmptyLocalizationMessageIfNotFound(localization);
                 this.setActiveLocalization(localization.value);
-                this.resetMessageHTML();
+                this.resetMessageInHTMLToActiveLocalization();
             },
             onSendToTestUsers: function() {},
             onSettingChange: function(platform, property, value) {

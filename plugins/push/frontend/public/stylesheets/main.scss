@@ -359,18 +359,6 @@
         font-weight: normal;
     }
 
-    &__checkbox-list-item {
-        padding: 5px;
-    }
-
-    &__checkbox-list-item-active {
-        background:#F6F6F6;
-    }
-
-    &__checkbox-list-item:hover {
-        background:darkgrey;
-    }
-
     //diverge!
     &__radio-group-header {
         font-size: typography.$heading-4-size;
@@ -384,7 +372,6 @@
         font-weight: typography.$font-weight-primary;
     }
 
-
     &__subsection-left {
         background: #F8FAFD; 
         border-bottom-right-radius: 0px;
@@ -392,6 +379,24 @@
         border-bottom-left-radius: 6px;
         border-top-left-radius: 6px;
         border: 1px solid #E2E4E8;
+        min-width: 200px;
+    }
+
+    &__subsection-left-row-active {
+        background:#e1e1e1;
+    }
+
+    &__subsection-left-row:hover {
+        background:darkgrey;
+    }
+
+    &__subsection-left-list-item {
+        list-style: none;
+        width: 100%;
+
+        &:hover {
+            cursor: pointer;
+        }    
     }
 
     &__subsection-right {

@@ -14,8 +14,7 @@
                 :platforms="pushNotificationUnderEdit.platforms" 
                 :media="pushNotificationUnderEdit.message.mediaUrl" 
                 :isHTML="true"
-                :buttons="pushNotificationUnderEdit.message[activeLocalization].buttons.map(function(item){return item.label})"
-            >
+                :buttons="pushNotificationUnderEdit.message[activeLocalization].buttons.map(function(item){return item.label})">
             </mobile-message-preview>
         </cly-content>
     </template>
@@ -60,8 +59,7 @@
                             <large-radio-button-with-description
                                 :label="TargetingEnum.ALL"  
                                 v-model="pushNotificationUnderEdit.targeting"
-                                title="All push-enabled users"
-                                >   
+                                title="All push-enabled users">   
                                 <div class="bu-is-flex bu-is-justify-content-flex-start bu-is-align-items-center">
                                     <span class="cly-vue-push-notification-large-radio-button-with-description__content-header">{{enabledUsers}}</span> 
                                     <span class="bu-ml-1">Push-enabled users</span>
@@ -72,8 +70,7 @@
                                 v-model="pushNotificationUnderEdit.targeting"
                                 title="Use segmentation"
                                 description="Some description for option goes here"
-                                :hasTopMargin="true"
-                            >                        
+                                :hasTopMargin="true">                        
                             </large-radio-button-with-description>
                         </div>
                     </div>
@@ -150,21 +147,21 @@
                                 v-model="pushNotificationUnderEdit.automatic.trigger"
                                 title="Cohort(s) Entry"
                                 description="Some description for option goes here"
-                                border >
+                                border>
                             </line-radio-button-with-description>
                             <line-radio-button-with-description 
                                 :label="TriggerEnum.COHORT_EXIT" 
                                 v-model="pushNotificationUnderEdit.automatic.trigger"
                                 title="Cohort(s) Exit"
                                 description="Some description for option goes here"
-                                border >
+                                border>
                             </line-radio-button-with-description>
                             <line-radio-button-with-description 
                                 :label="TriggerEnum.EVENT" 
                                 v-model="pushNotificationUnderEdit.automatic.trigger"
                                 title="Performed Event(s)"
                                 description="Some description for option goes here"
-                                border >
+                                border>
                             </line-radio-button-with-description>
                         </div>
                     </div>
@@ -298,20 +295,18 @@
                     </div>
                 </div>
                 <div v-if="type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL" class="cly-vue-drawer-step__section">
-                    <div class="bu-level">
-                        <div class="bu-level-left">
-                            <div class="bu-level-item">
-                                <el-switch v-model="isEndDateEnabled"></el-switch>
-                            </div>
-                            <div class="bu-level-item">
-                                <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
-                                    Set End Date
-                                    <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-                                </div>
+                    <div class="bu-is-flex bu-is-flex-direction-column">
+                        <div class="bu-is-flex bu-is-align-items-center">
+                            <el-switch v-model="isEndDateEnabled" class="bu-mr-1"></el-switch>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                                Set End Date
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             </div>
                         </div>
+                        <div style="width:200px">
+                            <cly-date-picker class="bu-ml-6" v-bind:disabled="!isEndDateEnabled" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms" width="200"></cly-date-picker>
+                        </div>
                     </div>
-                    <cly-date-picker class="bu-ml-6" v-bind:disabled="!isEndDateEnabled" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms"></cly-date-picker>
                 </div>
                 <template v-if="type === TypeEnum.ONE_TIME && pushNotificationUnderEdit.delivery.type === DeliveryEnum.LATER">
                     <div class="cly-vue-drawer-step__section">
@@ -456,18 +451,11 @@
             </cly-form-step>
             <cly-form-step id="step3" :name="i18n('push-notification.drawer-step-three')" class="bu-container">  
                 <div class="cly-vue-drawer-step__section">
-                    <div class="bu-level">
-                        <div class="bu-level-left">
-                            <div class="bu-py-1 bu-my-1 bu-level-item cly-vue-push-notification-drawer__checkbox-label">NOTIFICATION TYPE</div>
-                            <div class="bu-level-item">
-                                <el-select v-model="pushNotificationUnderEdit.message.type">
-                                    <el-option :key="item.value" :value="item.value" :label="item.label"
-                                        v-for="item in messageTypeFilterOptions"
-                                    >
-                                    </el-option>
-                                </el-select>
-                            </div>
-                        </div>
+                    <div class="bu-is-flex bu-is-align-items-center">
+                        <div class="bu-py-1 bu-my-1 bu-mr-1 cly-vue-push-notification-drawer__checkbox-label">NOTIFICATION TYPE</div>
+                        <el-select v-model="pushNotificationUnderEdit.message.type">
+                            <el-option v-for="item in messageTypeFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
+                        </el-select>
                     </div>
                 </div>
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__radio-group-header">
@@ -479,13 +467,21 @@
                         <div class="cly-vue-push-notification-drawer__checkbox-text">Allow to set different message content for different localizations</div>
                     </el-checkbox>
                 </div>
-                <div class="cly-vue-drawer-step__section bu-is-flex ">
-                    <div class="cly-vue-push-notification-drawer__subsection-left" v-if="pushNotificationUnderEdit.multipleLocalizations">
-                        <el-checkbox-group v-model="pushNotificationUnderEdit.localizations">   
-                            <li v-for="localization in localizationOptions" @click="onLocalizationSelect(localization)" v-bind:class="['cly-vue-push-notification-drawer__checkbox-list-item', 'bu-px-3', 'bu-py-3',activeLocalization === localization.value?'cly-vue-push-notification-drawer__checkbox-list-item-active':'']">
-                                <el-checkbox :label="localization.value" :key="localization.value" @change="onLocalizationChange(localization)">{{localization.label}}</el-checkbox>
+                <div class="cly-vue-drawer-step__section bu-is-flex">
+                    <div class="cly-vue-push-notification-drawer__subsection-left " v-if="pushNotificationUnderEdit.multipleLocalizations">
+                        <div v-for="localization in localizationOptions" v-bind:class="['bu-is-flex','bu-is-align-items-center','cly-vue-push-notification-drawer__subsection-left-row',activeLocalization === localization.value?'cly-vue-push-notification-drawer__subsection-left-row-active':null]">
+                            <el-checkbox 
+                                class="bu-ml-1"                        
+                                v-tooltip.top-left="localization.value === 'default'?'Default localization is required':null"
+                                :checked="isLocalizationSelected(localization.value)" 
+                                :disabled="localization.value === 'default'" 
+                                :key="localization.value" 
+                                @change="onLocalizationChange(localization)">
+                            </el-checkbox>
+                            <li  @click="onLocalizationSelect(localization)" class="cly-vue-push-notification-drawer__subsection-left-list-item bu-px-3 bu-py-3">
+                                {{localization.label}}
                             </li>
-                        </el-checkbox-group>
+                        </div>
                     </div>
                     <div v-bind:class="['bu-is-flex-grow-1','bu-p-1', pushNotificationUnderEdit.multipleLocalizations?'cly-vue-push-notification-drawer__subsection-right':'cly-vue-push-notification-drawer__subsection-border']">
                         <div class="cly-vue-drawer-step__section">
@@ -540,10 +536,7 @@
                             </div>
                         </div>
                         <div class="cly-vue-drawer-step__section">
-                            <el-button type="text"
-                                :disabled="isAddButtonDisabled"
-                                @click="addButton"
-                                >
+                            <el-button type="text" :disabled="isAddButtonDisabled" @click="addButton">
                                 {{addButtonLabel}}
                             </el-button>
                         </div>
@@ -633,13 +626,13 @@
                         <el-collapse-item  :name="PlatformEnum.ANDROID">
                             <span class="collapse-title" slot="title"> Android</span>
                             <message-setting-element 
-                            :input="pushNotificationUnderEdit.message.settings.android.subtitle"
-                            :toggle="settings.android.isSubtitleEnabled"
-                            @onChange="function(value){onSettingChange(PlatformEnum.ANDROID,'subtitle',value)}"
-                            @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isSubtitleEnabled',value)}"
-                            label="Subtitle"
-                            placeholder="Enter your subtitle"
-                            description="We can add some kind of description for platform settings.">
+                                :input="pushNotificationUnderEdit.message.settings.android.subtitle"
+                                :toggle="settings.android.isSubtitleEnabled"
+                                @onChange="function(value){onSettingChange(PlatformEnum.ANDROID,'subtitle',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isSubtitleEnabled',value)}"
+                                label="Subtitle"
+                                placeholder="Enter your subtitle"
+                                description="We can add some kind of description for platform settings.">
                             </message-setting-element>
                             <message-setting-element 
                                 :input="pushNotificationUnderEdit.message.settings.android.mediaUrl"
@@ -675,20 +668,19 @@
                                 description="We can add some kind of description for sending JSON data">
                                 <el-input v-model="pushNotificationUnderEdit.message.settings.android.json" type="textarea" @input="function(value){onSettingChange(PlatformEnum.ANDROID,'json',value)}" placeholder="Enter JSON data"></el-input>
                             </message-setting-element>
-
                             <message-setting-element 
-                            :toggle="settings.android.isUserDataEnabled"
-                            @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isUserDataEnabled',value)}"
-                            label="Send User Data"
-                            description="We can add some kind of description for sending user data">
-                                <el-select v-model="pushNotificationUnderEdit.message.settings.android.userData" multiple placeholder="Select user data">
-                                    <el-option
-                                    v-for="item in userPropertiesOptions"
-                                    :key="item.value"
-                                    :label="item.label"
-                                    :value="item.value">
-                                    </el-option>
-                                </el-select>
+                                :toggle="settings.android.isUserDataEnabled"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isUserDataEnabled',value)}"
+                                label="Send User Data"
+                                description="We can add some kind of description for sending user data">
+                                    <el-select v-model="pushNotificationUnderEdit.message.settings.android.userData" multiple placeholder="Select user data">
+                                        <el-option
+                                        v-for="item in userPropertiesOptions"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value">
+                                        </el-option>
+                                    </el-select>
                             </message-setting-element>
                         </el-collapse-item>
                     </el-collapse>
@@ -703,20 +695,16 @@
                     Message Content
                 </div>
                 <div class="cly-vue-drawer-step__section">
-                    <div class="bu-level">
-                        <div class="bu-level-left">
-                            <div class="bu-py-1 bu-my-1 bu-level-item cly-vue-push-notification-drawer__checkbox-label">                            
-                                {{i18n('push-notification-details.localization-filter-label')}}                            
-                            </div>
-                            <div class="bu-level-item">
-                                <el-select v-model="selectedLocalizationFilter">
-                                    <el-option :key="item.value" :value="item.value" :label="item.label"
-                                        v-for="item in selectedLocalizationFilterOptions"
-                                    >
-                                    </el-option>
-                                </el-select>
-                            </div>
+                    <div class="bu-is-flex bu-is-align-items-center">
+                        <div class="bu-py-1 bu-my-1 bu-mr-1 cly-vue-push-notification-drawer__checkbox-label">                                
+                            {{i18n('push-notification-details.localization-filter-label')}}                          
                         </div>
+                        <el-select v-model="selectedLocalizationFilter">
+                            <el-option :key="item.value" :value="item.value" :label="item.label"
+                                v-for="item in selectedLocalizationFilterOptions"
+                            >
+                            </el-option>
+                        </el-select>
                     </div>
                 </div>
                 <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
