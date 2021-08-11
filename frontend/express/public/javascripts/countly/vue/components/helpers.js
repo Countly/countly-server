@@ -298,13 +298,14 @@
                     :hide-default-tabs="true"\
                     :options="availableEvents"\
                     :hide-all-options-tab="true"\
+                    :single-option-settings="singleOptionSettings"\
                     v-bind="$attrs"\
                     v-on="$listeners">\
                     <template v-slot:header="selectScope">\
                         <el-radio-group\
                             :value="selectScope.activeTabId"\
                             @input="selectScope.updateTab"\
-                            size="medium">\
+                            size="small">\
                             <el-radio-button v-for="tab in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>\
                         </el-radio-group>\
                     </template>\
@@ -349,6 +350,10 @@
                 // }
             ];
             return {
+                singleOptionSettings: {
+                    autoPick: true,
+                    hideList: true
+                },
                 availableEvents: availableEvents
             };
         }

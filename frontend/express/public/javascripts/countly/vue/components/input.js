@@ -515,6 +515,7 @@
                                     <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>\
                                 </div>\
                                 <el-input\
+                                    v-show="showList"\
                                     v-if="searchable"\
                                     ref="searchBox"\
                                     autocomplete="off"\
@@ -533,6 +534,7 @@
                                         {{tab.label}}\
                                     </span>\
                                     <cly-listbox\
+                                        v-show="showList"\
                                         v-if="mode === \'single-list\'"\
                                         :bordered="false"\
                                         :options="getMatching(tab.options)"\
@@ -540,6 +542,7 @@
                                         v-model="innerValue">\
                                     </cly-listbox>\
                                     <cly-checklistbox\
+                                        v-show="showList"\
                                         v-else-if="mode === \'multi-check\'"\
                                         :bordered="false"\
                                         :options="getMatching(tab.options)"\
@@ -547,6 +550,7 @@
                                         v-model="innerValue">\
                                     </cly-checklistbox>\
                                     <cly-checklistbox\
+                                        v-show="showList"\
                                         v-else-if="mode === \'multi-check-sortable\'"\
                                         :sortable="true"\
                                         :bordered="false"\
@@ -573,7 +577,17 @@
             disabled: { type: Boolean, default: false},
             width: { type: [Number, Object], default: 400},
             size: {type: String, default: ''},
-            adaptiveLength: {type: Boolean, default: false}
+            adaptiveLength: {type: Boolean, default: false},
+            singleOptionSettings: {
+                type: Object,
+                default: function() {
+                    return {
+                        hideList: false,
+                        autoPick: false
+                    };
+                },
+                required: false
+            },
         },
         data: function() {
             return {
@@ -581,6 +595,25 @@
             };
         },
         computed: {
+            currentTab: function() {
+                var self = this;
+                var filtered = this.publicTabs.filter(function(tab) {
+                    return self.activeTabId === tab.name;
+                });
+                if (filtered.length > 0) {
+                    return filtered[0];
+                }
+                return {};
+            },
+            hasSingleItem: function() {
+                return (this.activeTabId !== '__root' &&
+                        this.currentTab.options &&
+                        this.currentTab.options.length === 1 &&
+                        this.singleOptionSettings.hideList);
+            },
+            showList: function() {
+                return !this.hasSingleItem;
+            },
             innerValue: {
                 get: function() {
                     if (this.uncommittedValue && this.uncommittedValue !== this.value) {
@@ -652,6 +685,10 @@
             },
             activeTabId: function() {
                 this.updateDropdown();
+                if (this.hasSingleItem && this.singleOptionSettings.autoPick) {
+                    this.innerValue = this.currentTab.options[0].value;
+                    this.doCommit();
+                }
             },
             value: function() {
                 this.uncommittedValue = null;
