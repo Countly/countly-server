@@ -83,7 +83,15 @@
             autoGap: {
                 type: Boolean,
                 default: false
-            }
+            },
+            skin: {
+                type: String,
+                default: "default",
+                required: false,
+                validator: function(val) {
+                    return val === "default" || val === "configurator";
+                }
+            },
         },
         computed: {
             levelClass: function() {
@@ -91,9 +99,14 @@
                     "bu-mb-4": this.$scopedSlots.header || this.$slots.header || (this.title && this.title.length),
                     "bu-level": true
                 };
-            }
+            },
+            topClasses: function() {
+                var classes = {};
+                classes["cly-vue-section--has-" + this.skin + "-skin"] = true;
+                return classes;
+            },
         },
-        template: '<div class="cly-vue-section">\
+        template: '<div class="cly-vue-section" :class="topClasses">\
                         <div :class="[levelClass]">\
                             <div class="bu-level-left">\
                                 <slot name="header">\

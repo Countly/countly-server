@@ -71,7 +71,7 @@
 
     Vue.component("cly-dropzone", window.vue2Dropzone);
 
-    var AbstractListBox = countlyVue.components.BaseComponent.extend({
+    var AbstractListBox = countlyVue.views.BaseView.extend({
         props: {
             options: {type: Array},
             bordered: {type: Boolean, default: true},
@@ -82,7 +82,9 @@
                 validator: function(val) {
                     return val === "default" || val === "jumbo";
                 }
-            }
+            },
+            disabled: {type: Boolean, default: false, required: false},
+            height: {type: [Number, String], default: 300, required: false},
         },
         methods: {
             navigateOptions: function() {
@@ -91,8 +93,10 @@
                 }
             },
             handleItemClick: function(option) {
-                this.$emit("input", option.value);
-                this.$emit("change", option.value);
+                if (!this.disabled) {
+                    this.$emit("input", option.value);
+                    this.$emit("change", option.value);
+                }
             },
             handleItemHover: function(option) {
                 this.hovered = option.value;
@@ -129,22 +133,57 @@
             topClasses: function() {
                 var classes = {
                     "is-focus": this.focused,
-                    "cly-vue-listbox--bordered": this.bordered
+                    "cly-vue-listbox--bordered": this.bordered,
+                    "cly-vue-listbox--disabled": this.disabled
                 };
                 classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
                 return classes;
             },
             wrapperStyle: function() {
-                return {
-                    'max-height': "300px"
-                };
+                if (this.height !== "auto") {
+                    return {
+                        'max-height': this.height + "px"
+                    };
+                }
+                return false;
             }
         }
     });
 
-    Vue.component("cly-listbox", AbstractListBox.extend({
+    var SearchableOptionsMixin = {
         props: {
+            searchable: {type: Boolean, default: true},
+            searchPlaceholder: {type: String, default: 'Search'}
+        },
+        data: function() {
+            return {
+                searchQuery: ''
+            };
+        },
+        methods: {
+            getMatching: function(options) {
+                if (!this.searchQuery || !this.searchable) {
+                    return options;
+                }
+                var self = this;
+                var query = self.searchQuery.toLowerCase();
+                return options.filter(function(option) {
+                    return option.label.toLowerCase().indexOf(query) > -1;
+                });
+            }
+        }
+    };
+
+    Vue.component("cly-listbox", AbstractListBox.extend({
+        mixins: [SearchableOptionsMixin],
+        props: {
+            searchable: {type: Boolean, default: false, required: false}, //override the mixin
             value: { type: [String, Number] }
+        },
+        computed: {
+            searchedOptions: function() {
+                return this.getMatching(this.options);
+            }
         },
         template: '<div\
                     class="cly-vue-listbox"\
@@ -154,8 +193,19 @@
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
                     @blur="handleBlur">\
+                    <div class="cly-vue-listbox__header bu-p-3" v-if="searchable">\
+                        <form>\
+                            <el-input\
+                                :disabled="disabled"\
+                                autocomplete="off"\
+                                v-model="searchQuery"\
+                                :placeholder="searchPlaceholder">\
+                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                            </el-input>\
+                        </form>\
+                    </div>\
                     <vue-scroll\
-                        v-if="options.length > 0"\
+                        v-if="searchedOptions.length > 0"\
                         :ops="scrollCfg"\>\
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <div\
@@ -167,13 +217,17 @@
                                 @mouseenter="handleItemHover(option)"\
                                 @keyup.enter="handleItemClick(option)"\
                                 @click.stop="handleItemClick(option)"\
-                                v-for="option in options">\
-                                <span>{{option.label}}</span>\
+                                v-for="option in searchedOptions">\
+                                <div>\
+                                    <slot name="option-prefix" v-bind="option"></slot>\
+                                    <span>{{option.label}}</span>\
+                                </div>\
+                                <slot name="option-suffix" v-bind="option"></slot>\
                             </div>\
                         </div>\
                     </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
-                        No data\
+                        {{i18n(\'common.search.no-match-found\')}}\
                     </div>\
                 </div>'
     }));
@@ -234,6 +288,9 @@
                     return this.value;
                 },
                 set: function(newVal) {
+                    if (this.disabled) {
+                        return;
+                    }
                     if (this.sortable && this.sortMap) {
                         var sortMap = this.sortMap,
                             wrapped = newVal.map(function(value, idx) {
@@ -303,7 +360,7 @@
                         </div>\
                     </vue-scroll>\
                     <div v-else class="cly-vue-listbox__no-data">\
-                        No data\
+                        {{i18n(\'common.search.no-match-found\')}}\
                     </div>\
                 </div>'
     }));
@@ -425,30 +482,6 @@
         }
     };
 
-    var SearchableOptionsMixin = {
-        props: {
-            searchDisabled: {type: Boolean, default: false},
-            searchPlaceholder: {type: String, default: 'Search'}
-        },
-        data: function() {
-            return {
-                searchQuery: ''
-            };
-        },
-        methods: {
-            getMatching: function(options) {
-                if (!this.searchQuery || this.searchDisabled) {
-                    return options;
-                }
-                var self = this;
-                var query = self.searchQuery.toLowerCase();
-                return options.filter(function(option) {
-                    return option.label.toLowerCase().indexOf(query) > -1;
-                });
-            }
-        }
-    };
-
     Vue.component("cly-select-x", countlyVue.components.BaseComponent.extend({
         mixins: [TabbedOptionsMixin, SearchableOptionsMixin, _mixins.i18n],
         template: '<cly-dropdown\
@@ -482,8 +515,10 @@
                                     <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>\
                                 </div>\
                                 <el-input\
-                                    v-if="!searchDisabled"\
+                                    v-if="searchable"\
                                     ref="searchBox"\
+                                    autocomplete="off"\
+                                    :disabled="disabled"\
                                     v-model="searchQuery"\
                                     @keydown.native.esc.stop.prevent="doClose" \
                                     :placeholder="searchPlaceholder">\

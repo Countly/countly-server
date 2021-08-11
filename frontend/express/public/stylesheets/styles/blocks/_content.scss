@@ -25,9 +25,27 @@
 }
 
 .cly-vue-section {
-	&__content {
-		border-top: v.$border-base;
-		border-bottom: v.$border-base;
+	&--has-configurator-skin {
+		.cly-vue-section__content {
+			background: #FFFFFF;
+			border: 1px solid #ECECEC;
+			box-sizing: border-box;
+			box-shadow: 0px 1px 0px #ECECEC;
+			border-radius: 4px;
+			> div {
+				border-top: none!important;
+				border-bottom: 1px solid #ECECEC;
+				align-items: center;
+				display: flex;
+			}
+		}
+	}
+
+	&--has-default-skin {
+		.cly-vue-section__content {
+			border-top: v.$border-base;
+			border-bottom: v.$border-base;
+		}
 	}
 
 	&:not(:last-child) {

@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, countlyLocation, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
+/* global Promise, Vue, countlyCommon, countlyLocation, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
 
 (function(countlyVue) {
 
@@ -1142,55 +1142,8 @@
     }));
 
     Vue.component("cly-chart-geo", countlyBaseComponent.extend({
-        props: {
-            resizeDebounce: {
-                type: Number,
-                default: 500
-            },
-            options: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
-            }
-        },
-        data: function() {
-            return {
-                forwardedSlots: ["chart-left", "chart-right"],
-                settings: {
-                    packages: ['geochart'],
-                    mapsApiKey: countlyGlobal.config.google_maps_api_key
-                },
-                defaultOptions: {
-                    legend: "none",
-                    backgroundColor: "transparent",
-                    datalessRegionColor: "#FFF",
-                }
-            };
-        },
-        components: {
-            'chart-header': ChartHeader,
-        },
-        computed: {
-            chartOptions: function() {
-                var opt = _merge({}, this.defaultOptions, this.options);
-                return opt;
-            }
-        },
         template: '<div class="cly-vue-chart">\
-                        <chart-header>\
-                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                <slot :name="item" v-bind="slotScope"></slot>\
-                            </template>\
-                        </chart-header>\
-                        <GChart\
-                            type="GeoChart"\
-                            :resizeDebounce="resizeDebounce"\
-                            :settings="settings"\
-                            :options="chartOptions"\
-                            v-bind="$attrs"\
-                            v-on="$listeners"\
-                        />\
+                        Deprecated. Please use cly-worldmap.\
                     </div>'
     }));
 
@@ -1200,9 +1153,35 @@
             'l-circle-marker': Vue2Leaflet.LCircleMarker,
             'l-geo-json': Vue2Leaflet.LGeoJson,
             'l-tile-layer': Vue2Leaflet.LTileLayer,
-            'l-control': Vue2Leaflet.LControl
+            'l-control': Vue2Leaflet.LControl,
+            'l-tooltip': Vue2Leaflet.LTooltip
         },
         props: {
+            showNavigation: {
+                type: Boolean,
+                default: true,
+                required: false
+            },
+            showDetailModeSelect: {
+                type: Boolean,
+                default: true,
+                required: false
+            },
+            externalCountry: {
+                type: String,
+                default: null,
+                required: false
+            },
+            externalDetailMode: {
+                type: String,
+                default: null,
+                required: false
+            },
+            valueType: {
+                type: String,
+                default: "",
+                required: false
+            },
             showTile: {
                 type: Boolean,
                 default: false,
@@ -1265,6 +1244,10 @@
                 required: false
             }
         },
+        beforeCreate: function() {
+            this.geojsonHome = [];
+            this.geojsonDetail = [];
+        },
         created: function() {
             var self = this;
             this.loadGeojson().then(function(json) {
@@ -1279,6 +1262,11 @@
                 self.handleViewChange();
             });
         },
+        beforeDestroy: function() {
+            this.geojsonHome = [];
+            this.geojsonDetail = [];
+            // We don't need reactivity for these fields. So they are defined outside "data".
+        },
         data: function() {
             return {
                 loadingGeojson: false,
@@ -1286,8 +1274,6 @@
                 enableTooltip: true,
                 maxBounds: null,
                 minZoom: 0,
-                geojsonHome: null,
-                geojsonDetail: null,
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 boundingBoxes: {},
@@ -1298,6 +1284,12 @@
                 countriesToLatLng: {},
                 regionsToLatLng: {},
                 citiesToLatLng: {},
+                markerTooltipOptions: {
+                    sticky: true,
+                    direction: "right",
+                    //permanent: true,
+                    //offset: L.point(5, 5)
+                },
                 circleMarkerConfig: {
                     pane: "markerPane",
                     fillColor: "#017AFF",
@@ -1312,13 +1304,29 @@
             },
             detailMode: function(newVal) {
                 this.$emit("detailModeChanged", newVal);
-                if (newVal === 'cities') {
-                    this.indexCities();
-                }
             },
             citiesData: function() {
                 if (this.detailMode === 'cities') {
                     this.indexCities();
+                }
+            },
+            externalCountry: {
+                immediate: true,
+                handler: function(newVal) {
+                    if (!newVal) {
+                        this.goToMain();
+                    }
+                    else {
+                        this.goToCountry(newVal);
+                    }
+                }
+            },
+            externalDetailMode: {
+                immediate: true,
+                handler: function(newVal) {
+                    if (newVal === "regions" || newVal === "cities") {
+                        this.detailMode = newVal;
+                    }
                 }
             }
         },
@@ -1371,42 +1379,51 @@
                 return this.detailMode;
             },
             locations: function() {
-                var self = this;
+                var self = this,
+                    arr = [];
+
                 switch (this.currentViewType) {
                 case "main":
                     var countryCodes = Object.keys(this.countriesData);
 
-                    return countryCodes.map(function(code) {
+                    arr = countryCodes.map(function(code) {
                         return {
                             label: countlyLocation.getCountryName(code),
                             value: code,
                             icon: countlyGlobal.cdn + "images/flags/" + code.toLowerCase() + ".png",
-                            custom: self.countriesData[self.country]
+                            custom: self.countriesData[code] || {}
                         };
                     });
+                    break;
 
                 case "regions":
                     var regionCodes = Object.keys(this.regionsData[this.country] || {});
 
-                    return regionCodes.map(function(code) {
+                    arr = regionCodes.map(function(code) {
                         return {
                             label: countlyLocation.getRegionName(code, self.country),
                             value: code,
                             custom: self.regionsData[self.country][code]
                         };
                     });
+                    break;
 
                 case "cities":
                     var cityNames = Object.keys(this.citiesData[this.country] || {});
 
-                    return cityNames.map(function(name) {
+                    arr = cityNames.map(function(name) {
                         return {
                             label: name,
                             value: name,
                             custom: self.citiesData[self.country][name]
                         };
                     });
+                    break;
                 }
+                arr.sort(function(a, b) {
+                    return b.custom.value - a.custom.value;
+                });
+                return arr;
             },
             activeMarkers: function() {
                 switch (this.currentViewType) {
@@ -1451,7 +1468,7 @@
             indexCities: function() {
                 var self = this;
                 if (this.citiesData[this.country]) {
-                    self.loadCities(this.country, Object.keys(this.citiesData[this.country])).then(function(json) {
+                    return self.loadCities(this.country, Object.keys(this.citiesData[this.country])).then(function(json) {
                         self.citiesToLatLng = {};
                         json.forEach(function(f) {
                             self.citiesToLatLng[f.name] = {lat: f.loc.coordinates[1], lon: f.loc.coordinates[0]};
@@ -1461,6 +1478,7 @@
                 else {
                     self.citiesToLatLng = {};
                 }
+                return Promise.resolve();
             },
             boxToLatLng2d: function(boundingBox) {
                 var x0 = boundingBox[0],
@@ -1479,11 +1497,23 @@
                 }
                 return Math.max(this.minMarkerRadius, (value / this.largestMarkerValue) * this.maxMarkerRadius);
             },
+            getMarkerTooltipTitle: function(code) {
+                switch (this.currentViewType) {
+                case "main":
+                    return countlyLocation.getCountryName(code);
+                case "regions":
+                    return countlyLocation.getRegionName(code, self.country);
+                case "cities":
+                    return code;
+                }
+            },
             updateMaxBounds: function() {
                 var boundingBox = this.inDetail ? this.boundingBoxes[this.country] : this.geojsonHome.bbox;
                 if (boundingBox) {
                     this.maxBounds = this.boxToLatLng2d(boundingBox);
-                    this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
+                    if (this.$refs.lmap && this.$refs.lmap.mapObject) {
+                        this.$refs.lmap.mapObject.fitBounds(this.maxBounds);
+                    }
                 }
             },
             loadGeojson: function(country) {
@@ -1501,8 +1531,14 @@
                     url: url,
                     dataType: "json",
                 }).then(function(json) {
-                    self.loadingGeojson = false;
-                    return json;
+                    var componentContext = self;
+                    if (!componentContext._isBeingDestroyed && !componentContext._isDestroyed) {
+                        self.loadingGeojson = false;
+                        return Object.freeze(json);
+                    }
+                    else {
+                        return [];
+                    }
                 });
             },
             loadCities: function(country, cities) {
@@ -1527,17 +1563,27 @@
                     },
                     dataType: "json",
                 }).then(function(json) {
-                    self.loadingCities = false;
-                    return json;
+                    var componentContext = self;
+                    if (!componentContext._isBeingDestroyed && !componentContext._isDestroyed) {
+                        self.loadingCities = false;
+                        return Object.freeze(json);
+                    }
+                    else {
+                        return [];
+                    }
                 });
             },
             goToMain: function() {
-                this.geojsonDetail = null;
+                this.geojsonDetail = [];
                 this.country = null;
                 this.handleViewChange();
             },
             goToCountry: function(country) {
                 var self = this;
+
+                if (!Object.prototype.hasOwnProperty.call(this.countriesData, country)) {
+                    return;
+                }
 
                 this.loadGeojson(country).then(function(json) {
                     self.geojsonDetail = json;
@@ -1549,8 +1595,15 @@
                             lon: f.properties.lon || 0
                         };
                     });
-                    self.handleViewChange();
+                    return self.indexCities().then(function() {
+                        self.handleViewChange();
+                    });
                 });
+            },
+            onMarkerClick: function(code) {
+                if (!this.inDetail) {
+                    this.goToCountry(code);
+                }
             },
             focusToRegion: function() {
 

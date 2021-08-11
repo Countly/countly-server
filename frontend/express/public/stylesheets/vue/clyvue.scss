@@ -1500,6 +1500,23 @@
             background: white;
             outline: 0;
         }
+        .leaflet-tooltip {
+            background: #FFFFFF;
+            border: 1px solid #ECECEC;
+            box-sizing: border-box;
+            box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.08);
+            border-radius: 4px;
+            padding: 0;
+            font-family: 'Inter';
+        }
+        
+        .leaflet-tooltip-top:before, 
+        .leaflet-tooltip-bottom:before, 
+        .leaflet-tooltip-left:before, 
+        .leaflet-tooltip-right:before {
+            content: none;
+        }
+
         &__list {
             border-right: 1px solid #ECECEC;
         }
@@ -1512,6 +1529,13 @@
         &__back-button {
             cursor: pointer;
             border-bottom: 1px solid #ECECEC;
+        }
+        &__detail-switch {
+            position: absolute;
+            z-index: 1000;
+        }
+        &__map-container {
+            position: relative;
         }
     }
 
@@ -3478,7 +3502,11 @@
     }
 
     .cly-vue-listbox__no-data {
-        padding: 11px 7px 2px 7px;
+        padding: 6px 8px;
+        line-height: 20px;
+        font-weight: normal;
+        color: #333c48;
+        font-size: 14px;
     }
 
     .el-checkbox-group {
@@ -3495,26 +3523,75 @@
         visibility: hidden;
     }
 
-    &--has-default-skin {
-        .cly-vue-listbox__item {
-            display: flex;
-            padding: 6px 8px;
-            height: 20px;
-            cursor: pointer;
-            &:hover, &.selected{
-                background-color: #F6F6F6;
+    &__header {
+        margin: 0 0 1px 0;
+        z-index: 2000;
+        border-bottom: 1px solid #ECECEC;
+        position: relative;
+        &::after {
+            // shadow
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 12px;
+            background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
+            top: 57px;
+            left: 0;
+            opacity: 0.12;
+        }
+    }
+
+    .cly-vue-listbox__item {
+        display: flex;
+        cursor: pointer;
+        align-items: center;
+        justify-content: space-between;
+        &.selected{
+            background-color: #F6F6F6;
+            * {
                 color: #0166D6;
-                border-radius: 4px;
+            }
+        }
+    }
+
+    &--disabled {
+        .cly-vue-listbox__item {
+            background-color: #F6F6F6;
+            * {
+                color: #A7AEB8;
+            }
+        }
+    }
+    
+    &:not(.cly-vue-listbox--disabled) {
+        .cly-vue-listbox__item {
+            &:hover {
+                background-color: #F6F6F6;
                 .drag-handler {
                     visibility: visible;
+                }
+                * {
+                    color: #0166D6;
                 }
             }
         }
     }
+
+    &--has-default-skin {
+        .cly-vue-listbox__item {
+            padding: 6px 8px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    }
     &--has-jumbo-skin {
         .cly-vue-listbox__item {
-            padding: 0 7px;
-            border-radius: 7px;
+            padding: 6px 8px;
+            height: 32px;
+            border-bottom: 1px solid #ECECEC;
+            &.selected{
+                border-left: 2px solid #0166D6;
+            }
         }
     }
 }
@@ -3583,10 +3660,6 @@
         }
         .cly-vue-listbox {
             padding: 8px;
-
-            &__no-data {
-                margin: 8px 7px 25px 0;
-            }
         }
     }
     &__title {
