@@ -141,6 +141,8 @@
     }
 
     &__right {
+        border-left: 1px solid #ECECEC;
+
         .cly-vue-chart-legend__secondary {
             .cly-vue-chart-legend__s-series {
                 margin-left: 0px;
@@ -167,7 +169,7 @@
                 }
 
                 .cly-vue-chart-legend__s-title {
-                    width: calc(100% - 26px);
+                    width: calc(100% - 30px);
                     text-align: left;
                 }
 
@@ -176,24 +178,12 @@
                     text-align: right;
                 }
             }
-
-            .__vuescroll .__view {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            }
         }
     }
 
-    &__right.cly-vue-chart-legend {
-        border-left: 1px solid #ECECEC;
-    }
-
-    &__pie.cly-vue-chart-legend {
+    &__right.cly-vue-chart-legend__pie {
         border-left:none;
-    }
 
-    &__pie {
         .cly-vue-chart-legend__secondary {
             padding-top: 30px;
             padding-bottom: 30px;
@@ -208,6 +198,12 @@
                 .cly-vue-chart-legend__s-title {
                     width: calc(100% - 86px);
                 }
+            }
+
+            .__vuescroll .__view {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
             }
         }
     }

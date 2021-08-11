@@ -5,7 +5,9 @@
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
-    var fontFamily = "Inter";
+    var FONT_FAMILY = "Inter";
+    var CHART_HEADER_HEIGHT = 32;
+
     /*
         Use xAxis.axisLabel.showMinLabel to change visibility of minimum label
         Use xAxis.axisLabel.showMaxLabel to change visibility of maximum label
@@ -40,7 +42,7 @@
         props: {
             height: {
                 type: Number,
-                default: 400
+                default: 472
             },
             autoresize: {
                 type: Boolean,
@@ -222,7 +224,7 @@
                     ],
                     color: countlyCommon.GRAPH_COLORS,
                     textStyle: {
-                        fontFamily: fontFamily
+                        fontFamily: FONT_FAMILY
                     }
                 },
                 baseSeriesOptions: {
@@ -290,8 +292,13 @@
 
                 return classes;
             },
+            echartHeight: function() {
+                return this.height - CHART_HEADER_HEIGHT - 40; //20px padding on top and bottom
+            },
             echartStyle: function() {
-                var styles = {};
+                var styles = {
+                    height: this.height + 'px'
+                };
 
                 if (this.legendOptions.position !== "bottom") {
                     styles.width = 'calc(100% - 265px)';
@@ -304,6 +311,7 @@
 
                 if (this.legendOptions.position !== "bottom") {
                     styles.width = 265 + 'px';
+                    styles.height = this.height + 'px';
                 }
 
                 return styles;
@@ -652,6 +660,11 @@
                 default: false
             }
         },
+        data: function() {
+            return {
+                height: CHART_HEADER_HEIGHT
+            };
+        },
         components: {
             "zoom-dropdown": ZoomDropdown,
             "chart-toggle": MagicSwitch
@@ -683,7 +696,7 @@
                 aTag.dispatchEvent(evt);
             }
         },
-        template: '<div class="bu-level">\
+        template: '<div class="bu-level" :style="{height: height + \'px\'}">\
                         <div class="bu-level-left">\
                             <slot name="chart-left" v-bind:echart="echartRef"></slot>\
                             <div class="bu-level-item" v-if="showZoom">\
@@ -978,14 +991,15 @@
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <echarts\
-                                :style="{height: height + \'px\'}"\
-                                ref="echarts"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                :option="chartOptions"\
-                                :autoresize="autoresize">\
-                            </echarts>\
+                            <div :style="{height: echartHeight + \'px\'}">\
+                                <echarts\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
                         </div>\
                         <custom-legend\
                             :style="legendStyle"\
@@ -1091,14 +1105,15 @@
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <echarts\
-                                :style="{height: height + \'px\'}"\
-                                ref="echarts"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                :option="chartOptions"\
-                                :autoresize="autoresize">\
-                            </echarts>\
+                            <div :style="{height: echartHeight + \'px\'}">\
+                                <echarts\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
                         </div>\
                         <custom-legend\
                             :style="legendStyle"\
@@ -1136,14 +1151,15 @@
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <echarts\
-                                :style="{height: height + \'px\'}"\
-                                ref="echarts"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                :option="chartOptions"\
-                                :autoresize="autoresize">\
-                            </echarts>\
+                            <div :style="{height: echartHeight + \'px\'}">\
+                                <echarts\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
                         </div>\
                         <custom-legend\
                             :style="legendStyle"\
@@ -1206,7 +1222,7 @@
                                 </template>\
                             </chart-header>\
                             <div class="bu-columns bu-is-gapless"\
-                                :style="{height: height + \'px\'}">\
+                                :style="{height: echartHeight + \'px\'}">\
                                 <div :class="classes">\
                                     <echarts\
                                         ref="echarts"\
