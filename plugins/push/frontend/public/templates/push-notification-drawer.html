@@ -2,6 +2,7 @@
     class="cly-vue-push-notification-drawer"
     @submit="onSubmit"
     @close="onClose"
+    @open="onOpen"
     :title="title"
     :saveButtonLabel="saveButtonLabel"
     v-bind="controls">
@@ -21,11 +22,12 @@
     <template v-slot:default="drawerScope">
         <add-user-property-popover 
             :isOpen="isAddUserPropertyPopoverOpen"
-            :width="350"
+            :width="325"
             ref="addUserPropertyPopover"
             :id="selectedUserPropertyId"
             :container="selectedUserPropertyContainer"
             :userProperty = "pushNotificationUnderEdit.message[activeLocalization].properties[selectedUserPropertyContainer][selectedUserPropertyId]"
+            :options = "userPropertiesOptions"
             :position="addUserPropertyPopoverPosition"
             @select="onSelectUserProperty"
             @input="onInputFallbackUserProperty"
@@ -609,13 +611,19 @@
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isUserDataEnabled',value)}"
                                 label="Send User Data"
                                 description="We can add some kind of description for sending user data">
-                                    <el-select v-model="pushNotificationUnderEdit.message.settings.ios.userData" multiple placeholder="Select user data">
-                                        <el-option
-                                        v-for="item in userPropertiesOptions"
-                                        :key="item.value"
-                                        :label="item.label"
-                                        :value="item.value">
-                                        </el-option>
+                                    <el-select 
+                                        v-model="pushNotificationUnderEdit.message.settings.ios.userData" 
+                                        multiple 
+                                        filterable
+                                        reserve-keyword
+                                        style="width:100%;"
+                                        placeholder="Select user data">
+                                            <el-option
+                                            v-for="item in userPropertiesOptions"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
+                                            </el-option>
                                     </el-select>
                             </message-setting-element>
                         </el-collapse-item>
@@ -673,12 +681,18 @@
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isUserDataEnabled',value)}"
                                 label="Send User Data"
                                 description="We can add some kind of description for sending user data">
-                                    <el-select v-model="pushNotificationUnderEdit.message.settings.android.userData" multiple placeholder="Select user data">
+                                    <el-select 
+                                        v-model="pushNotificationUnderEdit.message.settings.android.userData" 
+                                        multiple 
+                                        filterable
+                                        reserve-keyword
+                                        style="width:100%;"
+                                        placeholder="Select user data">
                                         <el-option
-                                        v-for="item in userPropertiesOptions"
-                                        :key="item.value"
-                                        :label="item.label"
-                                        :value="item.value">
+                                            v-for="item in userPropertiesOptions"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value">
                                         </el-option>
                                     </el-select>
                             </message-setting-element>

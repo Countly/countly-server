@@ -1,58 +1,39 @@
-<div ref="element">
+<div>
     <div v-if="isOpen" v-bind:style="getStyleObject" class="cly-vue-push-notification-add-user-property-popover">
         <div class="cly-vue-push-notification-add-user-property-popover__arrow"></div>
         <div class="cly-vue-push-notification-add-user-property-popover__inner">
-            <div class="bu-column">
-                <div class="bu-level">
-                    <cly-select-x
-                        class="cly-vue-push-notification-add-user-property-popover__select-value"
-                        search-placeholder="Search in Properties"
-                        width="300"
-                        placeholder="Select Property" 
-                        :value="userProperty.value"
-                        @change="onSelect"
-                        mode="single-list"
-                        :hide-all-options-tab="false"
-                        :options="userPropertiesOptions"
-                        :width="250"
-                        style="width:100%;"
-                        >
-                    </cly-select-x>
-                </div>
+            <div class="cly-vue-drawer-step__section">
+                <cly-select-x
+                    class="cly-vue-push-notification-add-user-property-popover__select-value"
+                    search-placeholder="Search in Properties"
+                    width="300"
+                    placeholder="Select Property" 
+                    :value="userProperty.value"
+                    @change="onSelect"
+                    mode="single-list"
+                    :hide-all-options-tab="false"
+                    :options="options"
+                    :width="250"
+                    style="width:100%;"
+                    >
+                </cly-select-x>
             </div>
-            
-            <div class="bu-column">
-                <div class="bu-level">
-                    <div class="bu-level-item">
-                        <el-checkbox :value="userProperty.isUppercase" @change="onUppercase">
-                            <div class="cly-vue-push-notification-drawer__review-section-value">
-                                Make property value start with capital letter
-                            </div>
-                        </el-checkbox> 
-                    </div>
-                </div>
+            <div class="cly-vue-drawer-step__section">
+                <el-checkbox :value="userProperty.isUppercase" @change="onUppercase">
+                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Make property value start with capital letter</div>
+                </el-checkbox> 
             </div>
-
-            <div class="bu-column">
+            <div class="cly-vue-drawer-step__section">
                 <div class="bu-level bu-is-flex-direction-column bu-is-align-items-flex-start">
-                    <div class="bu-level-item">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Fallback value</div>
-                    </div>
+                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Fallback value</div>
                     <validation-provider v-slot="v" style="width:100%">
                         <el-input :value="userProperty.fallback" @input="onFallback" placeholder="Enter fallback value"> </el-input>
                     </validation-provider>
                 </div>
             </div>
-
-            <div class="bu-column">
-                <div class="bu-level">
-                    <div class="bu-level-item">
-                        <el-button type="error" @click="onRemove">Remove</el-button>
-                    </div>
-                    <div class="bu-level-item">
-                        <el-button type="error" @click="onClose">Close</el-button>
-                    </div>
-                </div>
+            <div class="cly-vue-drawer-step__section cly-vue-drawer-step__line--aligned">
+                <el-button type="error" @click="onRemove">Remove</el-button>
+                <el-button type="error" @click="onClose">Close</el-button>
             </div>
         </div>
     </div>

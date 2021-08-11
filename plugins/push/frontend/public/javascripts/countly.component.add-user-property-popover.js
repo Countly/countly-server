@@ -1,4 +1,4 @@
-/*global CV, countlyVue, countlySegmentation*/
+/*global CV, countlyVue*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.AddUserPropertyPopover = countlyVue.views.create({
         props: {
@@ -34,12 +34,15 @@
                 default: function() {
                     return {top: 0, left: 0};
                 }
+            },
+            options: {
+                type: Array,
+                required: true,
+                default: [],
             }
         },
         data: function() {
-            return {
-                userPropertiesOptions: []
-            };
+            return {};
         },
         computed: {
             getStyleObject: function() {
@@ -52,16 +55,16 @@
             },
         },
         methods: {
-            findUserPropertyLabelByValue: function(value) {
-                for (var property in this.userPropertiesOptions) {
-                    if (this.userPropertiesOptions[property].value === value) {
-                        return this.userPropertiesOptions[property].label;
+            findOptionLabelByValue: function(value) {
+                for (var property in this.options) {
+                    if (this.options[property].value === value) {
+                        return this.options[property].label;
                     }
                 }
                 return "";
             },
             onSelect: function(value) {
-                this.$emit('select', this.id, this.container, value, this.findUserPropertyLabelByValue(value));
+                this.$emit('select', this.id, this.container, value, this.findOptionLabelByValue(value));
             },
             onUppercase: function(value) {
                 this.$emit('check', this.id, this.container, value);
@@ -75,24 +78,9 @@
             onClose: function() {
                 this.$emit('close');
             },
-            setUserPropertiesOptions: function(userPropertiesOptionsDto) {
-                this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
-                    if (userPropertyOptionDto.id) {
-                        allUserPropertyOptions.push({label: userPropertyOptionDto.name, value: userPropertyOptionDto.id});
-                    }
-                    return allUserPropertyOptions;
-                }, []);
-            },
-            fetchUserPropertiesOptions: function() {
-                var self = this;
-                countlySegmentation.initialize("").then(function() {
-                    self.setUserPropertiesOptions(countlySegmentation.getFilters());
-                });
-            }
         },
         mounted: function() {
             document.body.appendChild(this.$el);
-            this.fetchUserPropertiesOptions();
         },
         destroyed: function() {
             document.body.removeChild(this.$el);

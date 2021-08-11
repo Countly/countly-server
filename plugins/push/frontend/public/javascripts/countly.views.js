@@ -263,9 +263,28 @@
             },
         },
         methods: {
+            setUserPropertiesOptions: function(userPropertiesOptionsDto) {
+                this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
+                    if (userPropertyOptionDto.id) {
+                        allUserPropertyOptions.push({label: userPropertyOptionDto.name, value: userPropertyOptionDto.id});
+                    }
+                    return allUserPropertyOptions;
+                }, []);
+            },
+            fetchUserPropertiesOptionsIfEmpty: function() {
+                if (!this.userPropertiesOptions.length) {
+                    var self = this;
+                    countlySegmentation.initialize("").then(function() {
+                        self.setUserPropertiesOptions(countlySegmentation.getFilters());
+                    });
+                }
+            },
             onSaveDraft: function() {},
             onSubmit: function() {},
             onClose: function() {},
+            onOpen: function() {
+                this.fetchUserPropertiesOptionsIfEmpty();
+            },
             onInfoAndTargetFormSubmit: function() {},
             remoteMethod: function() {},
             addButton: function() {
