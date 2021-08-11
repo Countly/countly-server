@@ -293,7 +293,8 @@
                 return classes;
             },
             echartHeight: function() {
-                return this.height - CHART_HEADER_HEIGHT - 40; //20px padding on top and bottom
+                var headerHeight = this.isShowingHeader ? CHART_HEADER_HEIGHT : 0;
+                return this.height - headerHeight - 40; //20px padding on top and bottom
             },
             echartStyle: function() {
                 var styles = {
@@ -315,6 +316,9 @@
                 }
 
                 return styles;
+            },
+            isShowingHeader: function() {
+                return this.showZoom || this.showDownload || this.showToggle;
             }
         }
     });
@@ -986,7 +990,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1100,7 +1104,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1146,7 +1150,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1216,7 +1220,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div class="cly-vue-chart__echart">\
-                            <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
