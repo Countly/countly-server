@@ -1574,9 +1574,11 @@ var pluginManager = function pluginManager() {
                             }
                             res.insertedIdsOrig = res.insertedIds;
                             res.insertedIds = arr;
+                            res.insertedCount = res.insertedIds.length;
                         }
                         else if (res.insertedId) {
                             res.insertedIds = [res.insertedId];
+                            res.insertedCount = res.insertedIds.length;
                         }
                     }
                     if (callback) {
@@ -1636,20 +1638,7 @@ var pluginManager = function pluginManager() {
                         }
                     }
                     if (callback) {
-                        //aggregation to result conversion
-                        if (data.name === "aggregate" && !err && res && res.toArray) {
-                            if (data.args.length >= 2 && data.args[1].cursor) {
-                                callback(err, res);
-                            }
-                            else {
-                                res.toArray(function(err2, result) {
-                                    callback(err2, result);
-                                });
-                            }
-                        }
-                        else {
-                            callback(err, res);
-                        }
+                        callback(err, res);
                     }
                 };
             };
@@ -1697,7 +1686,39 @@ var pluginManager = function pluginManager() {
 
             overwriteDefaultRead(ob, "findOne");
             overwriteDefaultRead(ob, "findOneAndDelete");
-            overwriteDefaultRead(ob, "aggregate");
+
+            ob._aggregate = ob.aggregate;
+            ob.aggregate = function(query, options, callback) {
+                if (typeof options === "function") {
+                    callback = options;
+                    options = {};
+                }
+                else {
+                    options = options || {};
+                }
+                var e;
+                var args = arguments;
+                var at = "";
+                mngr.dispatch("/db/read", {
+                    db: dbName,
+                    operation: "aggregate",
+                    collection: collection,
+                    query: query,
+                    options: options
+                });
+                if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                    e = new Error();
+                    at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                }
+                logDbRead.d("aggregate " + collection + " %j %j" + at, query, options);
+                logDbRead.d("From connection %j", countlyDb._cly_debug);
+                var cursor = this._aggregate(query, options);
+                cursor._toArray = cursor.toArray;
+                cursor.toArray = function(callback) {
+                    return handlePromiseErrors(cursor._toArray(logForReads(callback, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
+                };
+                return cursor;
+            };
 
             ob._find = ob.find;
             ob.find = function(query, options) {
