@@ -1,4 +1,4 @@
-/* global Vue, app */
+/* global Vue, app, countlyEvent */
 
 (function(countlyVue) {
 
@@ -285,6 +285,73 @@
     Vue.component("cly-value", countlyBaseComponent.extend({
         template: '<span></span>',
         props: ['value']
+    }));
+
+
+
+    Vue.component("cly-event-select", countlyBaseComponent.extend({
+        mixins: [countlyVue.mixins.i18n],
+        template: '<cly-select-x\
+                    all-placeholder="All Events"\
+                    search-placeholder="Search in Events"\
+                    placeholder="Select Event"\
+                    :hide-default-tabs="true"\
+                    :options="availableEvents"\
+                    :hide-all-options-tab="true"\
+                    v-bind="$attrs"\
+                    v-on="$listeners">\
+                    <template v-slot:header="selectScope">\
+                        <el-radio-group\
+                            :value="selectScope.activeTabId"\
+                            @input="selectScope.updateTab"\
+                            size="medium">\
+                            <el-radio-button v-for="tab in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>\
+                        </el-radio-group>\
+                    </template>\
+                </cly-select-x>',
+        data: function() {
+            var availableEvents = [
+                {
+                    "label": this.i18n('sidebar.analytics.sessions'),
+                    "name": "[CLY]_session",
+                    "options": [ { label: this.i18n('sidebar.analytics.sessions'), value: '[CLY]_session' } ]
+                },
+                {
+                    "label": this.i18n('sidebar.events'),
+                    "name": "event",
+                    "options": countlyEvent.getEvents().map(function(event) {
+                        return {label: event.name, value: event.key};
+                    })
+                },
+                {
+                    "label": this.i18n('internal-events.[CLY]_view'),
+                    "name": "[CLY]_view",
+                    "options": [ { label: this.i18n('internal-events.[CLY]_view'), value: '[CLY]_view' } ]
+                },
+                {
+                    "label": this.i18n("sidebar.feedback"),
+                    "name": "feedback",
+                    "options": [
+                        { label: this.i18n('internal-events.[CLY]_star_rating'), value: '[CLY]_star_rating' },
+                        { label: this.i18n('internal-events.[CLY]_nps'), value: '[CLY]_nps' },
+                        { label: this.i18n('internal-events.[CLY]_survey'), value: '[CLY]_survey' }
+                    ]
+                },
+                {
+                    "label": this.i18n('internal-events.[CLY]_crash'),
+                    "name": "[CLY]_crash",
+                    "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
+                }
+                // {
+                //     "label": this.i18n('internal-events.[CLY]_push_action'),
+                //     "name": "[CLY]_push_action",
+                //     "noChild": true
+                // }
+            ];
+            return {
+                availableEvents: availableEvents
+            };
+        }
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
