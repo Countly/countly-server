@@ -28,13 +28,14 @@ manager.dbConnection().then((db) => {
                 var doc = {"full_name": myArgs[1], "username": myArgs[1], "password": sha512Hash(myArgs[2]), "email": myArgs[1], "global_admin": true};
                 crypto.randomBytes(48, function(errorBuff, buffer) {
                     doc.api_key = md5Hash(buffer.toString('hex') + Math.random());
-                    db.collection('members').insert(doc, {safe: true}, function(err, member) {
+                    db.collection('members').insert(doc, function(err, res) {
                         if (err) {
                             console.log(err);
                         }
                         else {
-                            member = member.ops;
-                            console.log(member[0]);
+                            db.collection('members').findOne({_id: res.insertedIds[0]}, function(err3, member) {
+                                console.log(member);
+                            });
                         }
                         db.close();
                     });

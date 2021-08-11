@@ -685,12 +685,21 @@ membersUtility.setup = function(req, callback) {
                 }
                 crypto.randomBytes(48, function(errorBuff, buffer) {
                     doc.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
-                    membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
-                        member = member.ops;
-                        setLoggedInVariables(req, member[0], membersUtility.db, function() {
-                            req.session.install = true;
-                            callback();
-                        });
+                    membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, res) {
+                        if (!err2 && res.insertedIds) {
+                            membersUtility.db.collection('members').findOne({_id: res.insertedIds[0]}, function(err3, member) {
+                                if (err3 || !member) {
+                                    return callback("Could not login user");
+                                }
+                                setLoggedInVariables(req, member, membersUtility.db, function() {
+                                    req.session.install = true;
+                                    callback();
+                                });
+                            });
+                        }
+                        else {
+                            callback("Could not create user");
+                        }
                     });
                 });
             }).catch(function() {

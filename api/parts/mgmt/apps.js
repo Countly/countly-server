@@ -247,30 +247,32 @@ appsApi.createApp = async function(params) {
     const appKey = common.sha1Hash(seed, true);
     newApp.key = appKey;
 
-    common.db.collection('apps').insert(newApp, function(err, app) {
-        if (!err && app && app.ops && app.ops[0] && app.ops[0]._id) {
-            newApp._id = app.ops[0]._id;
+    common.db.collection('apps').insert(newApp, function(err, res) {
+        if (!err && res && res.insertedIds) {
+            common.db.collection('apps').findOne({_id: res.insertedIds[0]}, function(err2, app) {
+                newApp._id = app._id;
 
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({ls: -1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"uid": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"sc": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"lac": -1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
-            common.db.collection('app_users' + app.ops[0]._id).ensureIndex({"did": 1}, { background: true }, function() {});
-            common.db.collection('app_user_merges' + app.ops[0]._id).ensureIndex({cd: 1}, {
-                expireAfterSeconds: 60 * 60 * 3,
-                background: true
-            }, function() {});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: -1}, { background: true }, function() {});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
-            common.db.collection('metric_changes' + app.ops[0]._id).ensureIndex({uid: 1}, { background: true }, function() {});
-            plugins.dispatch("/i/apps/create", {
-                params: params,
-                appId: app.ops[0]._id,
-                data: newApp
+                common.db.collection('app_users' + app._id).ensureIndex({ls: -1}, { background: true }, function() {});
+                common.db.collection('app_users' + app._id).ensureIndex({"uid": 1}, { background: true }, function() {});
+                common.db.collection('app_users' + app._id).ensureIndex({"sc": 1}, { background: true }, function() {});
+                common.db.collection('app_users' + app._id).ensureIndex({"lac": -1}, { background: true }, function() {});
+                common.db.collection('app_users' + app._id).ensureIndex({"tsd": 1}, { background: true }, function() {});
+                common.db.collection('app_users' + app._id).ensureIndex({"did": 1}, { background: true }, function() {});
+                common.db.collection('app_user_merges' + app._id).ensureIndex({cd: 1}, {
+                    expireAfterSeconds: 60 * 60 * 3,
+                    background: true
+                }, function() {});
+                common.db.collection('metric_changes' + app._id).ensureIndex({ts: -1}, { background: true }, function() {});
+                common.db.collection('metric_changes' + app._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
+                common.db.collection('metric_changes' + app._id).ensureIndex({uid: 1}, { background: true }, function() {});
+                plugins.dispatch("/i/apps/create", {
+                    params: params,
+                    appId: app._id,
+                    data: newApp
+                });
+                iconUpload(Object.assign({}, params, {app_id: app._id}));
+                common.returnOutput(params, newApp);
             });
-            iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}));
-            common.returnOutput(params, newApp);
         }
         else {
             common.returnMessage(params, 500, "Error creating App: " + err);

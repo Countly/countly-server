@@ -194,19 +194,20 @@ function migrageAppCredentials(db, app) {
 
         if (app.gcm && app.gcm.key) {
             console.log('Moving GCM credentials for ' + app._id + '...');
-            db.collection('credentials').insertOne({platform: 'a', type: app.gcm.key.length > 50 ? 'fcm' : 'gcm', key: app.gcm.key}, (err, cred) => {
+            db.collection('credentials').insertOne({platform: 'a', type: app.gcm.key.length > 50 ? 'fcm' : 'gcm', key: app.gcm.key}, (err, res) => {
                 if (err) {
                     console.log('ERROR while moving GCM cred for ' + app._id + '...', err);
                     process.exit(1);
                 }
-                cred = cred.ops[0];
-                db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.a': {_id: cred._id, type: cred.type, key: cred.key}}}, function(err, updated) {
-                    if (err || !updated || !updated.result || !updated.result.ok) {
-                        console.log('ERROR 2 while moving GCM cred for ' + app._id + '...', err);
-                        process.exit(1);
-                    }
-                    console.log('Moved GCM cred for ' + app._id + ' into ' + cred._id);
-                    done();
+                db.collection('credentials').findOne({_id: res.insertedIds[0]}, (err, cred) => {
+                    db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.a': {_id: cred._id, type: cred.type, key: cred.key}}}, function(err, updated) {
+                        if (err || !updated || !updated.result || !updated.result.ok) {
+                            console.log('ERROR 2 while moving GCM cred for ' + app._id + '...', err);
+                            process.exit(1);
+                        }
+                        console.log('Moved GCM cred for ' + app._id + ' into ' + cred._id);
+                        done();
+                    });
                 });
             });
         }
@@ -245,19 +246,20 @@ function migrageAppCredentials(db, app) {
                     db.collection('apps').updateOne({_id: app._id}, {$unset: {apn: 1}}, done);
                 }
                 else {
-                    db.collection('credentials').insertOne({platform: 'i', type: 'apn_universal', key: data.toString('base64'), secret: app.apn.universal.passphrase || ''}, function(err, credentials) {
+                    db.collection('credentials').insertOne({platform: 'i', type: 'apn_universal', key: data.toString('base64'), secret: app.apn.universal.passphrase || ''}, function(err, res) {
                         if (err) {
                             console.log('ERROR while moving APN credentials for ' + app._id + '...', err);
                             process.exit(1);
                         }
-                        credentials = credentials.ops[0];
-                        db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.i': {_id: credentials._id, type: credentials.type}}}, function(err, updated) {
-                            if (err || !updated || !updated.result || !updated.result.ok) {
-                                console.log('ERROR 2 while moving APN credentials for ' + app._id + '...', err);
-                                process.exit(1);
-                            }
-                            console.log('Moved APN credentials for ' + app._id + ' into ' + credentials._id);
-                            done();
+                        db.collection('credentials').findOne({_id: res.insertedIds[0]}, function(err2, credentials) {
+                            db.collection('apps').updateOne({_id: app._id}, {$set: {'plugins.push.i': {_id: credentials._id, type: credentials.type}}}, function(err, updated) {
+                                if (err || !updated || !updated.result || !updated.result.ok) {
+                                    console.log('ERROR 2 while moving APN credentials for ' + app._id + '...', err);
+                                    process.exit(1);
+                                }
+                                console.log('Moved APN credentials for ' + app._id + ' into ' + credentials._id);
+                                done();
+                            });
                         });
                     });
                 }

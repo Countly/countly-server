@@ -253,31 +253,30 @@ usersApi.createUser = function(params) {
         newMember.email = newMember.email.trim();
         crypto.randomBytes(48, function(errorBuff, buffer) {
             newMember.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
-            common.db.collection('members').insert(newMember, function(err, member) {
-                if (!err && member && member.ops) {
-                    member = member.ops;
-                }
-                else {
+            common.db.collection('members').insert(newMember, function(err, res) {
+                if (err || !res) {
                     console.log('Error creating user: ', err);
                 }
-                if (member && member.length && !err) {
-                    var timestamp = Math.round(new Date().getTime() / 1000),
-                        prid = sha512Hash(member[0].username + member[0].full_name, timestamp);
-                    common.db.collection('password_reset').insert({"prid": prid, "user_id": member[0]._id, "timestamp": timestamp, "newInvite": true}, {safe: true}, function() {
-                        mail.sendToNewMemberLink(member[0], prid);
-                    });
+                common.db.collection('members').findOne({_id: res.insertedIds[0]}, function(err2, member) {
+                    if (member && !err2) {
+                        var timestamp = Math.round(new Date().getTime() / 1000),
+                            prid = sha512Hash(member.username + member.full_name, timestamp);
+                        common.db.collection('password_reset').insert({"prid": prid, "user_id": member._id, "timestamp": timestamp, "newInvite": true}, {safe: true}, function() {
+                            mail.sendToNewMemberLink(member, prid);
+                        });
 
-                    plugins.dispatch("/i/users/create", {
-                        params: params,
-                        data: member[0]
-                    });
-                    delete member[0].password;
+                        plugins.dispatch("/i/users/create", {
+                            params: params,
+                            data: member
+                        });
+                        delete member.password;
 
-                    common.returnOutput(params, member[0]);
-                }
-                else {
-                    common.returnMessage(params, 500, 'Error creating user');
-                }
+                        common.returnOutput(params, member);
+                    }
+                    else {
+                        common.returnMessage(params, 500, 'Error creating user');
+                    }
+                });
             });
         });
     }

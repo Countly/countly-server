@@ -141,15 +141,16 @@ const FEATURE_NAME = 'reports';
                     return common.returnMessage(params, 401, 'User does not have right to access this information');
                 }
 
-                common.db.collection('reports').insert(props, function(err0, result) {
-                    result = result.ops;
+                common.db.collection('reports').insert(props, function(err0, res) {
                     if (err0) {
                         err0 = err0.err;
                         common.returnMessage(params, 200, err0);
                     }
                     else {
-                        plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result[0]});
-                        common.returnMessage(params, 200, "Success");
+                        common.db.collection('reports').findOne({_id: res.insertedIds[0]}, function(err1, result) {
+                            plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result});
+                            common.returnMessage(params, 200, "Success");
+                        });
                     }
                 });
             });
