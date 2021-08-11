@@ -1208,7 +1208,6 @@ var pluginManager = function pluginManager() {
 
         var dbName;
         var dbOptions = {
-            poolSize: maxPoolSize,
             maxPoolSize: maxPoolSize,
             noDelay: true,
             keepAlive: true,
@@ -1219,8 +1218,7 @@ var pluginManager = function pluginManager() {
             maxIdleTimeMS: 0,
             waitQueueTimeoutMS: 0,
             useNewUrlParser: true,
-            useUnifiedTopology: true,
-            auto_reconnect: true
+            useUnifiedTopology: true
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);
