@@ -5,7 +5,9 @@
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
 
-    var fontFamily = "Inter";
+    var FONT_FAMILY = "Inter";
+    var CHART_HEADER_HEIGHT = 32;
+
     /*
         Use xAxis.axisLabel.showMinLabel to change visibility of minimum label
         Use xAxis.axisLabel.showMaxLabel to change visibility of maximum label
@@ -40,7 +42,7 @@
         props: {
             height: {
                 type: Number,
-                default: 400
+                default: 472
             },
             autoresize: {
                 type: Boolean,
@@ -65,28 +67,19 @@
                 default: true
             },
             legend: {
-                type: Object,
-                default: function() {
-                    return {
-                        show: true,
-                        type: "secondary",
-                        data: []
-                    };
-                }
+                type: Object
             }
         },
         data: function() {
             return {
-                echartRef: {
-                    type: Object
-                },
+                echartRef: {},
                 baseOptions: {
                     title: {
                         show: false
                     },
                     grid: {
                         top: 30,
-                        bottom: 35,
+                        bottom: 15,
                         left: 36,
                         right: 36,
                         containLabel: true
@@ -231,7 +224,7 @@
                     ],
                     color: countlyCommon.GRAPH_COLORS,
                     textStyle: {
-                        fontFamily: fontFamily
+                        fontFamily: FONT_FAMILY
                     }
                 },
                 baseSeriesOptions: {
@@ -258,6 +251,12 @@
                     emphasis: {
                         focus: 'series'
                     }
+                },
+                internalLegend: {
+                    show: true,
+                    type: "secondary",
+                    data: [],
+                    position: "bottom"
                 }
             };
         },
@@ -265,6 +264,61 @@
             onSeriesChange: function(v) {
                 this.seriesOptions.type = v;
                 this.$emit("series-toggle", v);
+            }
+        },
+        computed: {
+            legendOptions: function() {
+                var options = _merge({}, this.internalLegend, this.legend || {});
+                if (this.legend && this.legend.data && this.legend.data.length) {
+                    options.data = JSON.parse(JSON.stringify(this.legend.data));
+                }
+                else {
+                    options.data = JSON.parse(JSON.stringify(this.internalLegend.data));
+                }
+
+                return options;
+            },
+            chartClasses: function() {
+                var classes = {};
+
+                if (this.legendOptions.position === "bottom") {
+                    classes['bu-is-flex'] = true;
+                    classes['bu-is-flex-direction-column'] = true;
+                }
+                else {
+                    classes['bu-is-flex'] = true;
+                    classes['bu-is-flex-direction-row'] = true;
+                }
+
+                return classes;
+            },
+            echartHeight: function() {
+                var headerHeight = this.isShowingHeader ? CHART_HEADER_HEIGHT : 0;
+                return this.height - headerHeight - 40; //20px padding on top and bottom
+            },
+            echartStyle: function() {
+                var styles = {
+                    height: this.height + 'px'
+                };
+
+                if (this.legendOptions.position !== "bottom") {
+                    styles.width = 'calc(100% - 265px)';
+                }
+
+                return styles;
+            },
+            legendStyle: function() {
+                var styles = {};
+
+                if (this.legendOptions.position !== "bottom") {
+                    styles.width = 265 + 'px';
+                    styles.height = this.height + 'px';
+                }
+
+                return styles;
+            },
+            isShowingHeader: function() {
+                return this.showZoom || this.showDownload || this.showToggle;
             }
         }
     });
@@ -313,12 +367,17 @@
                     legendData.push({name: series[i].name});
                 }
 
-                this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
+                this.internalLegend.data = legendData;
 
                 //Set default legend show to false
                 opt.legend.show = false;
 
                 opt.series = series;
+
+                if (this.legendOptions.position !== "bottom") {
+                    opt.grid.right = 0;
+                }
+
                 return opt;
             }
         }
@@ -356,12 +415,17 @@
                     legendData.push({name: series[i].name});
                 }
 
-                this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
+                this.internalLegend.data = legendData;
 
                 //Set default legend show to false
                 opt.legend.show = false;
 
                 opt.series = series;
+
+                if (this.legendOptions.position !== "bottom") {
+                    opt.grid.right = 0;
+                }
+
                 return opt;
             }
         }
@@ -447,9 +511,7 @@
                     }
                 }
 
-                //Pie charts can only have secondary legend types
-                this.legend.type = "secondary";
-                this.legend.data = (!this.legend.data || !this.legend.data.length) ? legendData : this.legend.data;
+                this.internalLegend.data = legendData;
 
                 //Set default legend show to false
                 opt.legend.show = false;
@@ -602,6 +664,11 @@
                 default: false
             }
         },
+        data: function() {
+            return {
+                height: CHART_HEADER_HEIGHT
+            };
+        },
         components: {
             "zoom-dropdown": ZoomDropdown,
             "chart-toggle": MagicSwitch
@@ -633,7 +700,7 @@
                 aTag.dispatchEvent(evt);
             }
         },
-        template: '<div class="bu-level">\
+        template: '<div class="bu-level" :style="{height: height + \'px\'}">\
                         <div class="bu-level-left">\
                             <slot name="chart-left" v-bind:echart="echartRef"></slot>\
                             <div class="bu-level-item" v-if="showZoom">\
@@ -662,18 +729,59 @@
             },
             onClick: {
                 type: Function
+            },
+            position: {
+                type: String
             }
         },
-        template: '<div :class="[\'cly-vue-chart-legend__secondary\', \'cly-vue-chart-legend__secondary--text-center\']">\
-                        <div v-for="(item, index) in data"\
-                            :key="item.name" :data-series="item.name"\
-                            :class="[\'cly-vue-chart-legend__s-series\',\
-                                    {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
-                            @click="onClick(item, index)">\
-                            <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                            <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.name}}</div>\
-                            <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
-                        </div>\
+        computed: {
+            scrollOptions: function() {
+                var options = {
+                    vuescroll: {},
+                    scrollPanel: {},
+                    rail: {
+                        gutterOfSide: "0px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: true
+                    }
+                };
+
+                if (this.position === "bottom") {
+                    options.scrollPanel.scrollingX = true;
+                    options.scrollPanel.scrollingY = false;
+                }
+                else {
+                    options.scrollPanel.scrollingX = false;
+                    options.scrollPanel.scrollingY = true;
+                }
+
+                return options;
+            },
+            classes: function() {
+                var classes = {
+                    'cly-vue-chart-legend__secondary': true,
+                    'cly-vue-chart-legend__secondary--text-center': this.position === "bottom"
+                };
+
+                return classes;
+            }
+        },
+        template: '<div :class="classes">\
+                        <vue-scroll :ops="scrollOptions">\
+                            <div v-for="(item, index) in data"\
+                                :key="item.name" :data-series="item.name"\
+                                :class="[\'cly-vue-chart-legend__s-series\',\
+                                        {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
+                                @click="onClick(item, index)">\
+                                <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
+                            </div>\
+                        </vue-scroll>\
                     </div>'
     });
 
@@ -732,10 +840,6 @@
     */
     var CustomLegend = countlyBaseComponent.extend({
         props: {
-            type: {
-                type: String,
-                default: "secondary"
-            },
             chartOptions: {
                 type: Object,
                 default: function() {
@@ -748,19 +852,28 @@
                     return {};
                 }
             },
-            data: {
-                type: Array,
+            options: {
+                type: Object,
                 default: function() {
-                    return [];
+                    return {};
                 }
             }
+        },
+        data: function() {
+            return {
+                internalData: []
+            };
         },
         computed: {
             seriesType: function() {
                 return this.chartOptions.series && this.chartOptions.series[0] && this.chartOptions.series[0].type;
             },
             legendData: function() {
-                var data = this.data;
+                if (!this.internalData.length) {
+                    this.internalData = JSON.parse(JSON.stringify(this.options.data));
+                }
+
+                var data = this.internalData;
 
                 var series = this.chartOptions.series || [];
 
@@ -798,32 +911,10 @@
                 return data;
             },
             legendClasses: function() {
-                var classes = {
-                    'bu-is-flex': true,
-                    'bu-is-flex-direction-column': true,
-                    'bu-is-justify-content-center': true
-                };
-
-                classes["cly-vue-chart-legend__" + this.seriesType] = true;
-
+                var classes = {};
+                classes['cly-vue-chart-legend__' + this.options.position] = true;
+                classes['cly-vue-chart-legend__' + this.seriesType] = true;
                 return classes;
-            },
-            scrollOptions: function() {
-                return {
-                    vuescroll: {},
-                    scrollPanel: {
-                        scrollingX: false
-                    },
-                    rail: {
-                        gutterOfSide: "0px"
-                    },
-                    bar: {
-                        background: "#A7AEB8",
-                        size: "6px",
-                        specifyBorderRadius: "3px",
-                        keepShow: true
-                    }
-                };
             }
         },
         components: {
@@ -832,11 +923,11 @@
         },
         methods: {
             onLegendClick: function(item, index) {
-                var offs = this.data.filter(function(d) {
+                var offs = this.internalData.filter(function(d) {
                     return d.status === "off";
                 });
 
-                if (item.status !== "off" && offs.length === (this.data.length - 1)) {
+                if (item.status !== "off" && offs.length === (this.internalData.length - 1)) {
                     //Always show in series and hence the legend
                     return;
                 }
@@ -846,7 +937,7 @@
                     name: item.name
                 });
 
-                var obj = this.data[index];
+                var obj = JSON.parse(JSON.stringify(this.internalData[index]));
 
                 //For the first time, item.status does not exist
                 //So we set it to off
@@ -858,23 +949,22 @@
                     obj.status = "off";
                 }
 
-                this.$set(this.data, index, obj);
+                this.$set(this.internalData, index, obj);
             }
         },
         template: '<div class="cly-vue-chart-legend" :class="legendClasses">\
-                        <template v-if="type === \'primary\'">\
+                        <template v-if="options.type === \'primary\'">\
                             <primary-legend\
                                 :data="legendData"\
                                 :onClick="onLegendClick">\
                             </primary-legend>\
                         </template>\
-                        <template v-if="type === \'secondary\'">\
-                            <vue-scroll :ops="scrollOptions">\
-							<secondary-legend\
+                        <template v-if="options.type === \'secondary\'">\
+                            <secondary-legend\
                                 :data="legendData"\
+                                :position="options.position"\
                                 :onClick="onLegendClick">\
                             </secondary-legend>\
-							</vue-scroll>\
                         </template>\
                     </div>'
     });
@@ -898,27 +988,29 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart">\
-                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                <slot :name="item" v-bind="slotScope"></slot>\
-                            </template>\
-                        </chart-header>\
-                        <div :style="{height: height + \'px\'}">\
-                            <echarts\
-                                ref="echarts"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                :option="chartOptions"\
-                                :autoresize="autoresize">\
-                            </echarts>\
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div :style="echartStyle" class="cly-vue-chart__echart">\
+                            <chart-header v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
+                            <div :style="{height: echartHeight + \'px\'}">\
+                                <echarts\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
                         </div>\
                         <custom-legend\
-                            :type="legend.type"\
+                            :style="legendStyle"\
+                            :options="legendOptions"\
                             :echartRef="echartRef"\
-                            v-if="legend.show"\
-                            :chartOptions="chartOptions"\
-                            :data="legend.data">\
+                            v-if="legendOptions.show"\
+                            :chartOptions="chartOptions">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1010,27 +1102,29 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart">\
-                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                <slot :name="item" v-bind="slotScope"></slot>\
-                            </template>\
-                        </chart-header>\
-                        <div :style="{height: height + \'px\'}">\
-                            <echarts\
-                                ref="echarts"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                :option="chartOptions"\
-                                :autoresize="autoresize">\
-                            </echarts>\
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div :style="echartStyle" class="cly-vue-chart__echart">\
+                            <chart-header v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
+                            <div :style="{height: echartHeight + \'px\'}">\
+                                <echarts\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
                         </div>\
                         <custom-legend\
-                            :type="legend.type"\
+                            :style="legendStyle"\
+                            :options="legendOptions"\
                             :echartRef="echartRef"\
-                            v-if="legend.show"\
-                            :chartOptions="chartOptions"\
-                            :data="legend.data">\
+                            v-if="legendOptions.show"\
+                            :chartOptions="chartOptions">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1054,27 +1148,29 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart">\
-                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                <slot :name="item" v-bind="slotScope"></slot>\
-                            </template>\
-                        </chart-header>\
-                        <div :style="{height: height + \'px\'}">\
-                            <echarts\
-                                ref="echarts"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                :option="chartOptions"\
-                                :autoresize="autoresize">\
-                            </echarts>\
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div :style="echartStyle" class="cly-vue-chart__echart">\
+                            <chart-header v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
+                            <div :style="{height: echartHeight + \'px\'}">\
+                                <echarts\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
                         </div>\
                         <custom-legend\
-                            :type="legend.type"\
+                            :style="legendStyle"\
+                            :options="legendOptions"\
                             :echartRef="echartRef"\
-                            v-if="legend.show"\
-                            :chartOptions="chartOptions"\
-                            :data="legend.data">\
+                            v-if="legendOptions.show"\
+                            :chartOptions="chartOptions">\
                         </custom-legend>\
                     </div>'
     }));
@@ -1097,12 +1193,12 @@
                 var opt = _merge({}, this.mergedOptions);
                 return opt;
             },
-            chartClasses: function() {
+            classes: function() {
                 var classes = {
                     "bu-column": true
                 };
 
-                if (this.legend.show) {
+                if (this.legendOptions.show) {
                     classes["bu-is-half"] = true;
                 }
                 else {
@@ -1110,33 +1206,44 @@
                 }
 
                 return classes;
+            },
+            pieLegendOptions: function() {
+                var opt = _merge({}, this.legendOptions);
+                opt.type = "secondary";
+
+                if (opt.position === "bottom") {
+                    opt.position = "right";
+                }
+
+                return opt;
             }
         },
-        template: '<div class="cly-vue-chart">\
-                        <chart-header :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
-                            <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
-                                <slot :name="item" v-bind="slotScope"></slot>\
-                            </template>\
-                        </chart-header>\
-                        <div class="bu-columns bu-is-gapless"\
-                            :style="{height: height + \'px\'}">\
-                            <div :class="chartClasses">\
-                                <echarts\
-                                    ref="echarts"\
-                                    v-bind="$attrs"\
-                                    v-on="$listeners"\
-                                    :option="chartOptions"\
-                                    :autoresize="autoresize">\
-                                </echarts>\
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div class="cly-vue-chart__echart">\
+                            <chart-header v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
+                            <div class="bu-columns bu-is-gapless"\
+                                :style="{height: echartHeight + \'px\'}">\
+                                <div :class="classes">\
+                                    <echarts\
+                                        ref="echarts"\
+                                        v-bind="$attrs"\
+                                        v-on="$listeners"\
+                                        :option="chartOptions"\
+                                        :autoresize="autoresize">\
+                                    </echarts>\
+                                </div>\
+                                <custom-legend\
+                                    :options="pieLegendOptions"\
+                                    :echartRef="echartRef"\
+                                    v-if="pieLegendOptions.show"\
+                                    :chartOptions="chartOptions"\
+                                    :class="classes">\
+                                </custom-legend>\
                             </div>\
-                            <custom-legend\
-                                :type="legend.type"\
-                                :echartRef="echartRef"\
-                                v-if="legend.show"\
-                                :chartOptions="chartOptions"\
-                                :class="chartClasses"\
-                                :data="legend.data">\
-                            </custom-legend>\
                         </div>\
                     </div>'
     }));

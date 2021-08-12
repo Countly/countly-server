@@ -1,8 +1,11 @@
 /*global countlyVue, Vue */
 
 (function() {
-    Vue.component("cly-crashes-dashboard-tile", countlyVue.views.BaseView.extend({
+    Vue.component("cly-crashes-dashboard-tile", countlyVue.views.create({
         props: {
+            showDonut: {type: Boolean, default: false},
+            donutPercentage: {type: Number, default: 50},
+            donutColor: {type: String, default: "#ff6120"},
             isVertical: {type: Boolean, default: false},
             columnWidth: {type: [Number, String], default: 4},
             tooltip: {type: String}
@@ -18,23 +21,6 @@
                 return !!this.$props.tooltip;
             }
         },
-        template: '<div class="bu-column bu-columns crashes-tile" :class="classes">\
-                           <slot>\
-                           <div class="crashes-tile__content">\
-                               <div class="text-medium color-cool-gray-100 bu-mb-1"><slot name="title"></slot> <cly-tooltip-icon v-if="hasTooltip" :tooltip="tooltip" icon="ion ion-help-circled"></cly-tooltip-icon></div>\
-                               <div class="bu-columns bu-is-gapless bu-is-mobile">\
-                                   <div class="crashes-tile__value-container bu-column bu-is-6">\
-                                       <h2 class="color-cool-gray-100"><slot name="value"></slot></h2>\
-                                   </div>\
-                                   <div class="crashes-tile__description-container bu-column bu-is-6" v-if="hasDescription">\
-                                       <div class="text-medium color-cool-gray-100">\
-                                           <slot name="description"></slot>\
-                                       </div>\
-                                   </div>\
-                               </div>\
-                           </div>\
-                           </slot>\
-                       </div>\
-                   </div>'
+        template: countlyVue.T("/crashes/templates/dashboard-tile.html")
     }));
 })();

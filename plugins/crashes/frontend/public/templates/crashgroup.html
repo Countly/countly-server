@@ -4,10 +4,42 @@
             <cly-back-link></cly-back-link>
         </template>
         <template v-slot:header-left>
-            <h2>
-                {{crashgroupName}}
-                <cly-tooltip-icon></cly-tooltip-icon>
-            </h2>
+            <div class="bu-is-flex bu-is-flex-direction-column">
+                <h2 class="crashes-crashgroup-header__name" v-html="crashgroupName"></h2>
+                <div class="bu-mt-4 bu-is-flex">
+                    <crash-badge :type="badge.type" v-html="badge.content" v-for="badge in badges"></crash-badge>
+                </div>
+            </div>
+        </template>
+        <template v-slot:header-right>
+            <div class="bu-is-flex bu-is-align-items-center">
+                <el-button class="crash-header-button text-button" size="small" v-if="jiraIntegrationEnabled">
+                    <i class="fab fa-jira bu-mr-1"></i>
+                    <span>Create JIRA Task</span>
+                </el-button>
+                <cly-dropdown class="bu-ml-2 crash-mark-as" ref="markDropdown">
+                    <template v-slot:trigger="dropdown">
+                        <cly-input-dropdown-trigger
+                            class="crash-mark-as__button text-button color-cool-gray-100"
+                            selected-options="Mark As"
+                            :focused="dropdown.focused"
+                            :opened="dropdown.visible"
+                            :disabled="beingMarked">
+                        </cly-input-dropdown-trigger>
+                    </template>
+                    <div class="crash-mark-as__dropdown">
+                        <li @click="markAs('resolved')" class="el-dropdown-menu__item" size="small" v-if="!crashgroup.is_resolved">{{i18n("crashes.resolved")}}</li>
+                        <li @click="markAs('resolving')" class="el-dropdown-menu__item" size="small" v-if="!crashgroup.is_resolving">{{i18n("crashes.resolving")}}</li>
+                        <li @click="markAs('unresolved')" class="el-dropdown-menu__item" size="small" v-if="crashgroup.is_resolved || crashgroup.is_resolving">{{i18n("crashes.unresolved")}}</li>
+                        <li @click="markAs('hidden')" class="el-dropdown-menu__item" size="small" v-if="!crashgroup.is_hidden">{{i18n("crashes.hidden")}}</li>
+                        <li @click="markAs('shown')" class="el-dropdown-menu__item" size="small" v-if="crashgroup.is_hidden">{{i18n("crashes.shown")}}</li>
+                    </div>
+                </cly-dropdown>
+                <cly-more-options @command="handleCrashgroupCommand($event)" class="bu-ml-2">
+                    <el-dropdown-item command="view-user-list" v-if="userProfilesEnabled">{{i18n("userdata.list")}}</el-dropdown-item>
+                    <el-dropdown-item command="delete">{{i18n("crashes.action-delete")}}</el-dropdown-item>
+                </cly-more-options>
+            </div>
         </template>
     </cly-header>
     <cly-main>
@@ -17,7 +49,7 @@
                     <template v-slot:title>Platform</template>
                     <template v-slot:value>{{commonMetrics.platform}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" tooltip="Hello">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-reports')">
                     <template v-slot:title>Occurances</template>
                     <template v-slot:value>{{commonMetrics.occurances}}</template>
                 </cly-crashes-dashboard-tile>
@@ -25,7 +57,7 @@
                     <template v-slot:title>Affected Users</template>
                     <template v-slot:value>{{commonMetrics.affectedUsers}}</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" tooltip="Hello">
+                <cly-crashes-dashboard-tile columnWidth="is-one-fifth" :tooltip="i18n('crashes.help-frequency-short')">
                     <template v-slot:title>Crash Frequency</template>
                     <template v-slot:value>{{commonMetrics.crashFrequency.toFixed(2)}}</template>
                 </cly-crashes-dashboard-tile>
@@ -37,23 +69,28 @@
         </cly-section>
         <cly-section id="crash-tabs" v-if="!!(crashgroup && crashgroup.error)">
             <el-tabs v-model="currentTab" type="card">
-                <el-tab-pane label="Stacktrace" name="stacktrace">
+                <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
                     <crash-stacktrace :code="crashgroup.error">
+                        <template v-slot:header-left v-if="symbolicationEnabled">
+                            <el-button class="crash-link text-medium" type="text" @click="symbolicateCrash('group')" :loading="isCrashBeingSymbolicated(crashgroup.lrid)" v-if="!!crashgroup._symbol_id">{{!crashgroup.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}</el-button>
+                            <a class="crash-link text-medium" href="#/crash/symbols/" v-else>{{i18n("crash_symbolication.should-upload")}}</a>
+                        </template>
                         <template v-slot:header-right>
-                            <a class="crash-link text-medium bu-mr-5" :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid" v-if="!!crashgroup.binary_images">Show Binary Images</a>
-                            <a class="crash-link text-medium" :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid" download>Download Stacktrace</a>
+                            <a class="crash-link text-medium bu-mr-5" :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid" v-if="!!crashgroup.binary_images">{{i18n("crashes.show-binary-images")}}</a>
+                            <a class="crash-link text-medium" :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid" download>{{i18n("crashes.download-stacktrace")}}</a>
                         </template>
                     </crash-stacktrace>
                 </el-tab-pane>
                 <el-tab-pane name="comments">
                     <span slot="label">
-                        Comments <span class="bu-tag" v-if="crashgroup && crashgroup.comments && (crashgroup.comments.length > 0)">{{crashgroup.comments.length}}</span>
+                        {{i18n("crashes.comments")}} <span class="bu-tag">{{comments.length}}</span>
                     </span>
-                    <div class="bu-mx-5 bu-mt-5 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="!crashgroup || crashgroup && crashgroup.comments.length === 0">
-                        <div><h4>No comments, yet...</h4></div>
-                        <div class="text-small color-cool-gray-50">No comments here right now. Add a comment to share your thoughts.</div>
+                    <div class="bu-mx-5 bu-mt-5 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="comments.length === 0">
+                        <img class="bu-mb-2" src="images/crashes/no-comments.svg"/>
+                        <div class="bu-mb-1"><h4>{{i18n("crashes.no-comments-yet")}}</h4></div>
+                        <div class="text-small color-cool-gray-50">{{i18n("crashes.no-comments-yet-long")}}</div>
                     </div>
-                    <el-card class="bu-mx-5 bu-mt-5 bu-p-4" shadow="never" :body-style="{padding: '0px'}" v-for="comment in crashgroup.comments">
+                    <el-card class="bu-mx-5 bu-mt-5 bu-p-4" shadow="never" :body-style="{padding: '0px'}" v-for="comment in comments">
                         <div class="bu-is-flex bu-is-flex-direction-column">
                             <div class="bu-is-flex bu-is-flex-direction-row bu-is-justify-content-space-between bu-mb-4">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
@@ -62,8 +99,8 @@
                                 </div>
                                 <div>
                                     <cly-more-options @command="handleCommentCommand($event, comment)" v-if="commentIsMine(comment)">
-                                        <el-dropdown-item command="edit-comment">Edit</el-dropdown-item>
-                                        <el-dropdown-item command="delete-comment">Delete</el-dropdown-item>
+                                        <el-dropdown-item command="edit-comment">{{i18n("crashes.edit")}}</el-dropdown-item>
+                                        <el-dropdown-item command="delete-comment">{{i18n("crashes.action-delete")}}</el-dropdown-item>
                                     </cly-more-options>
                                 </div>
                             </div>
@@ -81,11 +118,11 @@
                             </div>
                             <div class="bu-right">
                                 <div v-if="!!commentBeingEdited">
-                                    <el-button size="small" type="primary" @click="stopEditingComment">Cancel</el-button>
-                                    <el-button size="small" type="primary" @click="saveComment">Save</el-button>
+                                    <el-button size="small" type="primary" @click="stopEditingComment">{{i18n("crashes.cancel")}}</el-button>
+                                    <el-button size="small" type="primary" @click="saveComment">{{i18n("common.save")}}</el-button>
                                 </div>
                                 <div v-else-if="!!commentInput">
-                                    <el-button size="small" type="primary" @click="saveComment">Add Comment</el-button>
+                                    <el-button size="small" type="primary" @click="saveComment">{{i18n("crashes.add_comment")}}</el-button>
                                 </div>
                             </div>
                         </div>
@@ -93,23 +130,26 @@
                 </el-tab-pane>
             </el-tabs>
         </cly-section>
-        <cly-section class="crashgroup-mobile-diagnostics" title="Crash Metrics" v-if="!!mobileMetrics">
+        <cly-section class="crashgroup-mobile-diagnostics" :title="i18n('crashes.crash-metrics')" v-if="!!mobileMetrics">
             <div class="crashgroup-mobile-diagnostics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
                 <cly-crashes-dashboard-tile columnWidth="is-one-fifth" v-for="diagnosticKey in diagnosticsOrder">
-                    <div class="crashgroup-mobile-diagnostics__tile-content bu-column bu-columns bu-py-0 bu-m-0 bu-is-flex-direction-column bu-is-justify-content-space-between">
+                    <div class="crashgroup-mobile-diagnostics__tile-content bu-column bu-columns bu-py-0 bu-my-0 bu-mx-1 bu-is-flex-direction-column bu-is-justify-content-space-between">
                         <div class="text-medium text-uppercase">{{diagnosticKey}}</div>
                         <div>
-                            <h2>{{mobileDiagnostics[diagnosticKey].average.toFixed(2)}} %</h2>
-                            <div class="text-small color-cool-gray-50">Average</div>
+                            <div class="bu-is-flex bu-is-align-items-baseline">
+                                <h2>{{mobileDiagnostics[diagnosticKey].average.toFixed(2) + ("unit" in mobileDiagnostics[diagnosticKey] ? "" : " %")}}</h2>
+                                <h4 class="bu-ml-2" v-if="'unit' in mobileDiagnostics[diagnosticKey]">{{mobileDiagnostics[diagnosticKey].unit}}</h4>
+                            </div>
+                            <div class="text-small color-cool-gray-50">{{i18n('crashes.average')}}</div>
                         </div>
                         <div class="bu-columns bu-m-0 bu-is-justify-content-space-between">
                             <div>
                                 {{mobileDiagnostics[diagnosticKey].min.toFixed(2)}}
-                                <div class="text-small color-cool-gray-50">Average</div>
+                                <div class="text-small color-cool-gray-50">{{i18n('crashes.minimum')}}</div>
                             </div>
                             <div>
                                 {{mobileDiagnostics[diagnosticKey].max.toFixed(2)}}
-                                <div class="text-small color-cool-gray-50">Average</div>
+                                <div class="text-small color-cool-gray-50">{{i18n('crashes.maximum')}}</div>
                             </div>
                         </div>
                     </div>
@@ -118,34 +158,34 @@
         </cly-section>
         <cly-section class="crashgroup-mobile-metrics" v-if="!!mobileMetrics">
             <div class="crashgroup-mobile-metrics__tiles-container bu-columns bu-is-gapless bu-is-mobile">
-                <cly-crashes-dashboard-tile columnWidth="3">
-                    <template v-slot:title>Rooted / Jailbroken</template>
+                <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-root')" showDonut :donutPercentage="mobileMetrics.rootedPercent">
+                    <template v-slot:title>{{i18n('crashes.root')}}</template>
                     <template v-slot:value>{{mobileMetrics.rootedPercent.toFixed(2)}} %</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="3" tooltip="Hello">
-                    <template v-slot:title>Crashed when Online</template>
+                <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-online')" showDonut :donutPercentage="mobileMetrics.onlinePercent">
+                    <template v-slot:title>{{i18n('crashes.online')}}</template>
                     <template v-slot:value>{{mobileMetrics.onlinePercent.toFixed(2)}} %</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="3" tooltip="Hello">
-                    <template v-slot:title>Crashed when Muted</template>
+                <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-muted')" showDonut :donutPercentage="mobileMetrics.mutedPercent">
+                    <template v-slot:title>{{i18n('crashes.muted')}}</template>
                     <template v-slot:value>{{mobileMetrics.mutedPercent.toFixed(2)}} %</template>
                 </cly-crashes-dashboard-tile>
-                <cly-crashes-dashboard-tile columnWidth="3" tooltip="Hello">
-                    <template v-slot:title>Crashed in Background</template>
+                <cly-crashes-dashboard-tile columnWidth="3" :tooltip="i18n('crashes.help-background')" showDonut :donutPercentage="mobileMetrics.backgroundPercent">
+                    <template v-slot:title>{{i18n('crashes.background')}}</template>
                     <template v-slot:value>{{mobileMetrics.backgroundPercent.toFixed(2)}} %</template>
                 </cly-crashes-dashboard-tile>
             </div>
         </cly-section>
         <cly-section>
             <template v-slot:header>
-                <span class="bu-mr-2">Fatal Crash Occurances by</span>
+                <span class="bu-mr-2">{{i18n('crashes.crash-occurences-by', crashgroup.nonfatal ? i18n('crashes.nonfatal') : i18n('crashes.fatal'))}}</span>
                 <el-select v-model="chartBy">
                     <el-option v-for="item in chartByOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
                 </el-select>
             </template>
             <cly-chart-bar :option="chartData"></cly-chart-bar>
         </cly-section>
-        <cly-section title="Crash Occurances by Users?">
+        <cly-section :title="i18n('crashes.crash-occurences')">
             <cly-datatable-n :rows="crashes" ref="tableData" @row-click="handleRowClick">
                 <template v-slot="scope">
                     <el-table-column type="expand">
@@ -154,35 +194,45 @@
                                 <div class="bu-columns bu-is-gapless bu-is-mobile">
                                     <cly-crashes-dashboard-tile :columnWidth="props.row.custom ? 3 : 4">
                                         <div class="bu-p-5 bu-is-align-self-flex-start">
-                                            <div class="text-medium text-uppercase font-weight-bold">build info</div>
+                                            <div class="text-medium text-uppercase font-weight-bold">{{i18n('crashes.build_info')}}</div>
                                             <pre class="crash-pre">{{crashMetric(props.row, "build_info")}}</pre>
                                         </div>
                                     </cly-crashes-dashboard-tile>
                                     <cly-crashes-dashboard-tile :columnWidth="props.row.custom ? 3 : 4">
                                         <div class="bu-p-5 bu-is-align-self-flex-start">
-                                            <div class="text-medium text-uppercase font-weight-bold">device</div>
+                                            <div class="text-medium text-uppercase font-weight-bold">{{i18n('crashes.device')}}</div>
                                             <pre class="crash-pre">{{crashMetric(props.row, "device")}}</pre>
                                         </div>
                                     </cly-crashes-dashboard-tile>
                                     <cly-crashes-dashboard-tile :columnWidth="props.row.custom ? 3 : 4">
                                         <div class="bu-p-5 bu-is-align-self-flex-start">
-                                            <div class="text-medium text-uppercase font-weight-bold">device state</div>
+                                            <div class="text-medium text-uppercase font-weight-bold">{{i18n('crashes.state')}}</div>
                                             <pre class="crash-pre">{{crashMetric(props.row, "device_state")}}</pre>
                                         </div>
                                     </cly-crashes-dashboard-tile>
                                     <cly-crashes-dashboard-tile columnWidth="4" v-if="props.row.custom">
                                         <div class="bu-p-5 bu-is-align-self-flex-start">
-                                            <div class="text-medium text-uppercase font-weight-bold">custom</div>
+                                            <div class="text-medium text-uppercase font-weight-bold">{{i18n('crashes.custom')}}</div>
                                             <pre class="crash-pre">{{crashMetric(props.row, "custom")}}</pre>
                                         </div>
                                     </cly-crashes-dashboard-tile>
                                 </div>
                             </el-card>
                             <el-card class="bu-mb-5" shadow="never" :body-style="{padding: '0px'}">
-                                <crash-stacktrace :code="props.row.error">
+                                <crash-stacktrace :code="(props.row.showSymbolicated || !props.row.symbolicated) ? props.row.error : props.row.olderror">
+                                    <template v-slot:header-left>
+                                        <div v-if="!!props.row.symbolicated">
+                                            <el-switch v-model="props.row.showSymbolicated"></el-switch>
+                                            <span class="text-small bu-ml-3">{{props.row.showSymbolicated ? i18n('crash_symbolication.symbolicate') : i18n('crash_symbolication.symbolicated')}}</span>
+                                        </div>
+                                        <div v-else>
+                                            <el-button class="crash-link text-medium" type="text" @click="symbolicateCrash(props.row)" :loading="isCrashBeingSymbolicated(props.row._id)" v-if="!!crashgroup._symbol_id">{{i18n("crash_symbolication.symbolicate_error")}}</el-button>
+                                            <a class="crash-link text-medium" href="#/crash/symbols/" v-else>{{i18n("crash_symbolication.should-upload")}}</a>
+                                        </div>
+                                    </template>
                                     <template v-slot:header-right>
-                                        <a class="crash-link text-medium bu-mr-5" :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id" v-if="!!props.row.binary_images">Show Binary Images</a>
-                                        <a class="crash-link text-medium" :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + props.row._id" download>Download Stacktrace</a>
+                                        <a class="crash-link text-medium bu-mr-5" :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id" v-if="!!props.row.binary_images">{{i18n('crashes.show-binary-images')}}</a>
+                                        <a class="crash-link text-medium" :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + props.row._id" download>{{i18n('crashes.download-stacktrace')}}</a>
                                     </template>
                                 </crash-stacktrace>
                             </el-card>
@@ -190,11 +240,11 @@
                                 <div class="bu-p-5 bu-is-align-self-flex-start">
                                     <div class="bu-level bu-is-mobile">
                                         <div class="bu-level-left">
-                                            <div class="text-medium text-uppercase font-weight-bold">Event Logs</div>
+                                            <div class="text-medium text-uppercase font-weight-bold">{{i18n('crashes-event-logs.title')}}</div>
                                         </div>
                                         <div class="bu-level-right">
                                             <el-button type="primary" :loading="isEventLogBeingGeneratedFor(props.row._id)" @click="generateEventLogs(props.row._id)">
-                                                {{!props.row.eventlog ? "Generate" : "Regenerate"}}
+                                                {{!props.row.eventlog ? i18n('crashes-event-logs.generate') : i18n('crashes-event-logs.regenerate')}}
                                             </el-button>
                                         </div>
                                     </div>
@@ -203,25 +253,30 @@
                             </el-card>
                             <el-card class="bu-mb-5" shadow="never" :body-style="{padding: '0px'}" v-if="!!props.row.logs">
                                 <div class="bu-p-5 bu-is-align-self-flex-start">
-                                    <div class="text-medium text-uppercase font-weight-bold">SDK Logs</div>
+                                    <div class="text-medium text-uppercase font-weight-bold">{{i18n('crashes.sdk-logs')}}</div>
                                     <pre class="crash-pre">{{props.row.logs}}</pre>
                                 </div>
                             </el-card>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="ts" label="Crashed" width="210" sortable>
+                    <el-table-column prop="ts" :label="i18n('crashes.crashed')" width="210" sortable>
                         <template slot-scope="col">
                             <span v-html="formatTimeAgo(col.row.ts)"></span>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="os" label="Os Version" width="250">
+                    <el-table-column prop="os" :label="i18n('crashes.os_version')" width="250">
                         <template slot-scope="col">
                             {{col.row.os}} {{col.row.os_version}}
                         </template>
                     </el-table-column>
-                    <el-table-column prop="device" label="Device" width="199px" sortable></el-table-column>
-                    <el-table-column prop="app_version" label="App Version" width="161" sortable></el-table-column>
-                    <el-table-column prop="uid" label="User ID" sortable></el-table-column>
+                    <el-table-column prop="device" :label="i18n('crashes.device')" width="199px" sortable></el-table-column>
+                    <el-table-column prop="app_version" :label="i18n('crashes.app_version')" width="161" sortable></el-table-column>
+                    <el-table-column :label="i18n('crashes.user')">
+                        <template slot-scope="col">
+                            {{col.row.user && col.row.user.name || col.row.uid}}
+                            <a class="crash-user-profile-link" :href="'/#/users/' + col.row.uid"><i class="fas fa-arrow-circle-right"></i></a>
+                        </template>
+                    </el-table-column>
                 </template>
             </cly-datatable-n>
         </cly-section>

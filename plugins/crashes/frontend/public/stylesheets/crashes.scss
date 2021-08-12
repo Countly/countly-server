@@ -1,4 +1,5 @@
 @use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
+@use "../../../../../frontend/express/public/stylesheets/styles/states/_state";
 @use "sass:map";
 
 .cly-vue-theme-clydef {
@@ -55,8 +56,14 @@
 		flex-grow: 1;
 		align-items: center;
 
+		&__donut{
+			margin-left: 1rem;
+		}
+
 		&__content {
 			margin-left: 1rem;
+			margin-right: 1rem;
+			flex-grow: 1;
 		}
 
 		&__content--fill {
@@ -65,8 +72,7 @@
 		}
 
 		&__value-container {
-			flex: 0 0 6em;
-			margin: auto 1rem auto 0;
+			flex: 0 0 auto;
 		}
 
 		&__description-container {
@@ -143,10 +149,14 @@
 
 
 	.crash-stacktrace {
+		&__header {
+			margin-bottom: 24px;
+		}
+
 		&__line-numbers {
 			font-family: "Roboto Mono", monospace;
 			font-size: 12px;
-			line-height: 16px;
+			line-height: 17px; // idk why this needs +1px of code line height lol
 			color: map.get(c.$colors, "cool-gray-40");
 			float: left;
 			padding-right: 0.5em;
@@ -176,6 +186,10 @@
 		cursor: pointer;
 	}
 
+	.crash-link:hover {
+		color: initial;
+	}
+
 	.crashgroup-common-metrics {
 		&__tiles-container {
  			height: 104px;
@@ -192,4 +206,61 @@
 			border-right: 1px solid #ececec;
 		}
 	}
+
+	.crash-user-profile-link {
+		font-size: 16px;
+		color: map.get(c.$colors, "cool-gray-40");
+	}
+
+	.crash-badge {
+		@extend .text-smaller;
+
+		padding: 0 4px;
+		letter-spacing: 0.5px;
+
+		&:not(:first-of-type) {
+			margin-left: 4px;
+		}
+
+		&--info {
+			background-color: map.get(c.$colors, "cool-gray-40");
+			color: white;
+		}
+
+		&--negative {
+			background-color: map.get(c.$colors, "red-10");
+			color: map.get(c.$colors, "red-100");
+		}
+
+		&--neutral {
+			background-color: map.get(c.$colors, "yellow-10");
+			color: map.get(c.$colors, "yellow-100");
+		}
+
+		&--positive {
+			background-color: map.get(c.$colors, "green-10");
+			color: map.get(c.$colors, "green-100");
+		}
+	}
+
+	.crash-header-button {
+		padding: 7px 9px;
+	}
+
+	.crash-mark-as {
+		&__button input {
+			width: 100px;
+			padding: 15px 9px;
+		}
+	}
+
+	.crashes-crashgroup-header {
+		&__name {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 80%;
+		}
+	}
+
 }
