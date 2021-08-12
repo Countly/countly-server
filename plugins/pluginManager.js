@@ -1292,6 +1292,9 @@ var pluginManager = function pluginManager() {
             return;
         }
 
+        client.on('commandFailed', (event) => logDbRead.e("commandFailed %j", event));
+        client.on('serverHeartbeatFailed', (event) => logDbRead.e("serverHeartbeatFailed %j", event));
+
         client._db = client.db;
 
         client.db = function(database, options) {
