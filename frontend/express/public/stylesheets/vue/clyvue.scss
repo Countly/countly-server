@@ -1435,6 +1435,8 @@
         border-radius: 2px;
         box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
         box-sizing: border-box;
+        top: 100px;
+        left: calc(50% - 260px);
 
         &__header {
             border-bottom: 1px solid #CFD6E4;

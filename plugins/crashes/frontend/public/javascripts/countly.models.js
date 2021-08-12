@@ -1,4 +1,4 @@
-/* globals app, jQuery, countlyCommon, countlyGlobal, countlyVue, countlyCrashesEventLogs, Promise */
+/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyGlobal, countlyVue, countlyCrashesEventLogs, Promise */
 
 (function(countlyCrashes) {
     countlyCrashes.getVuexModule = function() {
@@ -6,9 +6,9 @@
             state: function() {
                 return {
                     activeFilter: {
-                        os: null,
-                        app_version: null,
-                        fatality: "fatal"
+                        platform: "all",
+                        version: "all",
+                        fatality: "both"
                     },
                     rawData: {},
                     rawCrashgroups: []
@@ -28,7 +28,7 @@
             var dashboard = {};
 
             if ("data" in state.rawData) {
-                dashboard = countlyCommon.getDashboardData(state.rawData.data, ["cr", "crnf", "crf", "cru", "cruf", "crunf", "crru", "crau", "crauf", "craunf", "crses", "crfses", "crnfses", "cr_s", "cr_u"], ["cru", "crau", "cruf", "crunf", "crauf", "craunf", "cr_u"], null, countlyCrashes.clearObject);
+                dashboard = countlyCommon.getDashboardData(state.filteredData.data, ["cr", "crnf", "crf", "cru", "cruf", "crunf", "crru", "crau", "crauf", "craunf", "crses", "crfses", "crnfses", "cr_s", "cr_u"], ["cru", "crau", "cruf", "crunf", "crauf", "craunf", "cr_u"], null, countlyCrashes.clearObject);
             }
             else {
                 return dashboard;
@@ -77,9 +77,7 @@
 
             var derivations = {
                 "cr": ["crf", "crnf"],
-                "cru": ["cruf", "crunf"],
-                "crau": ["crauf", "craunf"],
-                "crses": ["crfses", "crnfses"]
+                "cru": ["cruf", "crunf"]
             };
 
             Object.keys(derivations).forEach(function(name) {
@@ -92,13 +90,22 @@
                 });
             });
 
-            dashboard["cr-session"] = {};
+            ["cr-session", "crtf", "crtnf", "crau", "crses"].forEach(function(metric) {
+                dashboard[metric] = {};
+            });
+
             ["total", "prev-total"].forEach(function(prop) {
                 dashboard["cr-session"][prop] = (dashboard.cr_s[prop] === 0) ? 0 : (Math.round(Math.min(dashboard.cr[prop] / dashboard.cr_s[prop], 1) * 100) / 100);
-                dashboard.crau[prop] = Math.max(0, dashboard.crau[prop] - dashboard.cr_u[prop]);
-                dashboard.crses[prop] = Math.max(0, dashboard.crses[prop] - dashboard.cr_s[prop]);
+                dashboard.crau[prop] = Math.max(0, dashboard.crauf[prop] + dashboard.craunf[prop] - dashboard.cr_u[prop]);
+                dashboard.crses[prop] = Math.max(0, dashboard.crfses[prop] + dashboard.crnfses[prop] - dashboard.cr_s[prop]);
+                dashboard.crtf[prop] = Math.round(Math.min(dashboard.crf[prop] / dashboard.cr_s[prop], 1) * 100) / 100;
+                dashboard.crtnf[prop] = Math.round(Math.min(dashboard.crnf[prop] / dashboard.cr_s[prop], 1) * 100) / 100;
+
             });
-            populateMetric("cr-session");
+
+            ["cr-session", "crtf", "crtnf"].forEach(function(metric) {
+                populateMetric(metric);
+            });
 
             ["crau", "craunf", "crauf"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
@@ -161,16 +168,31 @@
                     "cru": {"fatal": "cruf", "nonfatal": "crunf"}
                 };
 
-                name = name || ((metric in metricNames) ? metricNames[metric][state.activeFilter.fatality] : metric);
+                name = name || ((metric in metricNames && state.activeFilter.fatality !== "both") ? metricNames[metric][state.activeFilter.fatality] : metric);
 
                 var metricDataProcessors = {
-                    "crtn?f": function(obj) {
+                    "^cr-session$": function(obj) {
+                        return (obj.cr_s === 0) ? 0 : Math.round(Math.min((obj.crf + obj.crnf) / obj.cr_s, 1) * 100) / 100;
+                    },
+                    "^crses$": function(obj) {
+                        return (obj.cr_s === 0) ? 100 : Math.round(Math.min(Math.max((obj.crfses + obj.crnfses - obj.cr_s) / obj.cr_s, 0), 1) * 10000) / 100;
+                    },
+                    "^crau$": function(obj) {
+                        return (obj.cr_u === 0) ? 100 : Math.round(Math.min(Math.max((obj.crauf + obj.craunf - obj.cr_u) / obj.cr_u, 0), 1) * 10000) / 100;
+                    },
+                    "^cr$": function(obj) {
+                        return obj.crf + obj.crnf;
+                    },
+                    "^cru$": function(obj) {
+                        return obj.cruf + obj.crunf;
+                    },
+                    "^crtn?f$": function(obj) {
                         return (obj.cr_s === 0) ? 0 : Math.round(Math.min(obj[state.activeFilter.fatality === "fatal" ? "crf" : "crnf"] / obj.cr_s, 1) * 100) / 100;
                     },
-                    "crn?fses": function(obj) {
+                    "^crn?fses$": function(obj) {
                         return (obj.cr_s === 0) ? 100 : Math.round(Math.min(obj[name] / obj.cr_s, 1) * 10000) / 100;
                     },
-                    "craun?f": function(obj) {
+                    "^craun?f$": function(obj) {
                         return (obj.cr_s === 0) ? 100 : Math.round(Math.min(obj[name] / obj.cr_u, 1) * 10000) / 100;
                     }
                 };
@@ -194,7 +216,7 @@
                     };
                 }
 
-                var results = countlyCommon.extractChartData(state.rawData.data, countlyCrashes.clearObject, chartData, dataProps);
+                var results = countlyCommon.extractChartData(state.filteredData.data, countlyCrashes.clearObject, chartData, dataProps);
 
                 var chartOptions = {
                     xAxis: {
@@ -205,9 +227,9 @@
                     series: []
                 };
 
-                [0, 1].forEach(function(index) {
+                dataProps.forEach(function(dp, index) {
                     var seriesData = {lineStyle: {}};
-                    seriesData.name = results.chartDP[index].label + " " + index;
+                    seriesData.name = (dp.period === "previous") ? ("previous " + results.chartDP[index].label) : results.chartDP[index].label;
                     seriesData.data = results.chartDP[index].data;
                     seriesData.lineStyle.color = results.chartDP[index].color;
                     chartOptions.series.push(seriesData);
@@ -284,29 +306,61 @@
             return state.rawCrashgroups.aaData;
         };
 
+        _overviewSubmodule.getters.appVersions = function(state) {
+            return Object.keys(state.rawData.crashes.app_version);
+        };
+
+        _overviewSubmodule.getters.platforms = function(state) {
+            return Object.keys(state.rawData.crashes.os);
+        };
+
+        _overviewSubmodule.actions.setActiveFilter = function(context, value) {
+            context.state.activeFilter = value;
+            context.dispatch("refresh");
+        };
+
         _overviewSubmodule.actions.refresh = function(context) {
-            var statisticsRequestParams = {
+            var ajaxPromises = [];
+
+            var requestParams = {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "period": countlyCommon.getPeriodForAjax(),
                 "method": "crashes",
                 "graph": 1,
-                "display_loader": false
+                "display_loader": false,
             };
 
-            Object.keys(context.state.activeFilter).forEach(function(filterKey) {
-                var filterValue = context.state.activeFilter[filterKey];
-
-                if (filterValue !== null) {
-                    statisticsRequestParams[filterKey] = filterValue;
+            var filterMapping = {"platform": "os", "version": "app_version"};
+            var filterParams = {};
+            Object.keys(filterMapping).forEach(function(filterKey) {
+                if (context.state.activeFilter[filterKey] !== "all") {
+                    filterParams[filterMapping[filterKey]] = context.state.activeFilter[filterKey];
                 }
             });
+            var isFiltered = Object.keys(filterParams).length > 0;
 
-            var ajaxPromises = [];
+            if (isFiltered) {
+                ajaxPromises.push(countlyVue.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: Object.assign({}, requestParams, filterParams),
+                    dataType: "json",
+                    success: function(json) {
+                        ["latest_version", "error", "os", "highest_app"].forEach(function(crashKey) {
+                            if (json.crashes[crashKey] === "") {
+                                json.crashes[crashKey] = "None";
+                            }
+                        });
+
+                        context.state.filteredData = json;
+                    }
+                }));
+            }
 
             ajaxPromises.push(countlyVue.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: statisticsRequestParams,
+                data: Object.assign({}, requestParams),
                 dataType: "json",
                 success: function(json) {
                     ["latest_version", "error", "os", "highest_app"].forEach(function(crashKey) {
@@ -316,20 +370,22 @@
                     });
 
                     context.state.rawData = json;
+                    if (!isFiltered) {
+                        context.state.filteredData = json;
+                    }
                 }
             }));
 
-            var crashgroupsRequestParams = {
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "period": countlyCommon.getPeriodForAjax(),
-                "method": "crashes",
-                "display_loader": false
-            };
 
             ajaxPromises.push(countlyVue.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: crashgroupsRequestParams,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "period": countlyCommon.getPeriodForAjax(),
+                    "method": "crashes",
+                    "display_loader": false
+                },
                 dataType: "json",
                 success: function(json) {
                     context.state.rawCrashgroups = json;
@@ -337,18 +393,6 @@
             }));
 
             return Promise.all(ajaxPromises);
-        };
-
-        _overviewSubmodule.mutations.setActiveFilter = function(state, value) {
-            state.activeFilter = value;
-        };
-
-        _overviewSubmodule.mutations.resetActiveFilter = function(state) {
-            state.activeFilter = {
-                platform: null,
-                version: null,
-                fatality: "fatal"
-            };
         };
 
         var _crashgroupSubmodule = {
@@ -390,37 +434,43 @@
         };
 
         _crashgroupSubmodule.getters.commonMetrics = function(state) {
-            if ("os" in state.crashgroup) {
+            if (typeof state.crashgroup._id !== "undefined") {
                 return {
                     platform: state.crashgroup.os,
                     occurances: state.crashgroup.total,
                     affectedUsers: state.crashgroup.users,
-                    crashFrequency: state.crashgroup.session.total / state.crashgroup.session.count,
+                    crashFrequency: ("session" in state.crashgroup) ? state.crashgroup.session.total / state.crashgroup.session.count : 0,
                     latestAppVersion: state.crashgroup.latest_version
                 };
             }
         };
 
         _crashgroupSubmodule.getters.mobileDiagnostics = function(state) {
-            if ("ram" in state.crashgroup) {
+            if (typeof state.crashgroup._id !== "undefined") {
                 var diagnostics = {
                     ram: state.crashgroup.ram,
                     disk: state.crashgroup.disk,
                     battery: state.crashgroup.bat,
                     running: state.crashgroup.run,
-                    sessions: state.crashgroup.session,
+                    sessions: ("session" in state.crashgroup) ? state.crashgroup.session : {average: 0, max: 0, min: 0},
                 };
 
                 Object.keys(diagnostics).forEach(function(diagnosticKey) {
                     diagnostics[diagnosticKey].average = diagnostics[diagnosticKey].total / diagnostics[diagnosticKey].count;
                 });
 
+                ["average", "max", "min"].forEach(function(key) {
+                    diagnostics.running[key] = diagnostics.running[key] / 60;
+                });
+                diagnostics.running.unit = jQuery.i18n.prop("crashes.minutes-short");
+                diagnostics.sessions.unit = "";
+
                 return diagnostics;
             }
         };
 
         _crashgroupSubmodule.getters.mobileMetrics = function(state) {
-            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type !== "web" && "root" in state.crashgroup) {
+            if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type !== "web" && typeof state.crashgroup._id !== "undefined" && "root" in state.crashgroup) {
                 return {
                     rootedPercent: state.crashgroup.root.yes / state.crashgroup.reports * 100,
                     onlinePercent: state.crashgroup.online.yes / state.crashgroup.reports * 100,
@@ -456,9 +506,17 @@
         _crashgroupSubmodule.getters.chartData = function(state) {
             return function(chartBy) {
                 var mapObj = countlyCommon.dot(state.crashgroup, chartBy) || {};
+                var mapKeys = Object.keys(mapObj);
+
+                if (chartBy === "app_version" || chartBy === "os_version" || chartBy.startsWith("custom.")) {
+                    mapKeys = mapKeys.map(function(key) {
+                        return key.replace(/:/g, ".");
+                    });
+                }
+
                 var chartOptions = {
                     xAxis: {
-                        data: Object.keys(mapObj)
+                        data: mapKeys
                     },
                     series: [
                         {data: Object.values(mapObj)}
@@ -488,21 +546,97 @@
                 return;
             }
 
-            return countlyVue.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "period": countlyCommon.getPeriodForAjax(),
-                    "method": "crashes",
-                    "group": context.state.crashgroup._id,
-                    "display_loader": false
-                },
-                dataType: "json",
-                success: function(json) {
-                    context.state.crashgroup = json;
-                }
+
+            return new Promise(function(resolve, reject) {
+                countlyVue.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "period": countlyCommon.getPeriodForAjax(),
+                        "method": "crashes",
+                        "group": context.state.crashgroup._id,
+                        "display_loader": false
+                    },
+                    dataType: "json",
+                    success: function(crashgroupJson) {
+                        if (crashgroupJson.data && crashgroupJson.data.length > 0) {
+                            var userIds = {};
+                            var ajaxPromises = [];
+
+                            crashgroupJson.data.forEach(function(crash, crashIndex) {
+                                if (crash.uid in userIds) {
+                                    userIds[crash.uid].push(crashIndex);
+                                }
+                                else {
+                                    userIds[crash.uid] = [crashIndex];
+                                }
+                            });
+
+                            Object.keys(userIds).forEach(function(uid) { //
+                                ajaxPromises.push(countlyVue.$.ajax({
+                                    type: "GET",
+                                    url: countlyCommon.API_PARTS.data.r,
+                                    data: {
+                                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                                        "method": "user_details",
+                                        "uid": uid,
+                                        "period": countlyCommon.getPeriodForAjax(),
+                                        "return_groups": "basic",
+                                    },
+                                    success: function(userJson) {
+                                        userIds[uid].forEach(function(crashIndex) {
+                                            crashgroupJson.data[crashIndex].user = userJson;
+                                        });
+                                    }
+                                }));
+                            });
+
+                            if (typeof countlyCrashSymbols !== "undefined") {
+                                var crashes = [{
+                                    _id: this.crashgroup.lrid,
+                                    os: this.crashgroup.os,
+                                    native_cpp: this.crashgroup.native_cpp,
+                                    app_version: this.crashgroup.latest_version
+                                }];
+
+                                crashes = crashes.concat(crashgroupJson.data);
+
+                                var ajaxPromise = countlyCrashSymbols.fetchSymbols(false);
+                                ajaxPromises.push(ajaxPromise);
+                                ajaxPromise.then(function(symbolIndexing) {
+                                    crashes.forEach(function(crash, crashIndex) {
+                                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
+                                        if (typeof symbol_id !== "undefined") {
+                                            if (crashIndex === 0) {
+                                                crashgroupJson._symbol_id = symbol_id;
+                                            }
+                                            else {
+                                                crashgroupJson.data[crashIndex - 1]._symbol_id = symbol_id;
+                                            }
+                                        }
+                                    });
+                                });
+                            }
+
+                            Promise.all(ajaxPromises)
+                                .then(function() {
+                                    context.state.crashgroup = crashgroupJson;
+                                    resolve(context.state.crashgroup);
+                                })
+                                .catch(function(err) {
+                                    reject(err);
+                                });
+                        }
+                        else {
+                            context.state.crashgroup = crashgroupJson;
+                            resolve(context.state.crashgroup);
+                        }
+                    },
+                    error: reject
+                });
             });
+
         };
 
         _crashgroupSubmodule.actions.generateEventLogs = function(context, crashIds) {
@@ -536,26 +670,48 @@
             });
         };
 
+        _crashgroupSubmodule.actions.symbolicate = function(context, crash) {
+            return new Promise(function(resolve, reject) {
+                if (typeof countlyCrashSymbols === "undefined") {
+                    reject(null);
+                }
+                else {
+                    countlyCrashSymbols.fetchSymbols(false).then(function(symbolIndexing) {
+                        var symbol_id = countlyCrashSymbols.canSymbolicate(crash, symbolIndexing);
+                        countlyCrashSymbols.symbolicate(crash._id, symbol_id)
+                            .then(function(json) {
+                                resolve(json);
+                            })
+                            .catch(function(xhr) {
+                                reject(xhr);
+                            });
+                    });
+                }
+            });
+        };
+
         _crashgroupSubmodule.actions.markResolved = function(context) {
-            countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "resolve").then(function() {
+            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "resolve").then(function() {
                 context.state.crashgroup.is_resolved = true;
+                context.state.crashgroup.resolved_version = context.state.crashgroup.latest_version;
             });
         };
 
         _crashgroupSubmodule.actions.markResolving = function(context) {
-            countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "resolving").then(function() {
-                context.state.crashgroup.is_resolved = true;
+            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "resolving").then(function() {
+                context.state.crashgroup.is_resolved = false;
+                context.state.crashgroup.is_resolving = true;
             });
         };
 
         _crashgroupSubmodule.actions.markUnresolved = function(context) {
-            countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "unresolve").then(function() {
+            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "unresolve").then(function() {
                 context.state.crashgroup.is_resolved = false;
             });
         };
 
         _crashgroupSubmodule.actions.markSeen = function(context) {
-            countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "view").then(function() {
+            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "view").then(function() {
                 context.state.crashgroup.is_new = false;
             });
         };
@@ -569,11 +725,15 @@
         };
 
         _crashgroupSubmodule.actions.show = function(context) {
-            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "show");
+            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "show").then(function() {
+                context.state.crashgroup.is_hidden = false;
+            });
         };
 
         _crashgroupSubmodule.actions.hide = function(context) {
-            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "hide");
+            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "hide").then(function() {
+                context.state.crashgroup.is_hidden = true;
+            });
         };
 
         _crashgroupSubmodule.actions.delete = function(context) {
@@ -677,6 +837,7 @@
             type: "GET",
             url: countlyCommon.API_PARTS.data.w + "/crashes/" + path,
             data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
                 args: JSON.stringify(args)
             },
             dataType: "json"
@@ -703,22 +864,37 @@
     countlyCrashes.generateBadges = function(crash) {
         var badges = [];
 
-        if (crash.is_new) {
-            badges.push({type: "new"});
+        if (crash.nonfatal) {
+            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.nonfatal")});
+        }
+        else {
+            badges.push({type: "negative", content: jQuery.i18n.prop("crashes.fatal")});
         }
 
         if (crash.is_resolved) {
-            badges.push({type: "resolved", version: crash.resolved_version});
+            badges.push({type: "positive", content: jQuery.i18n.prop("crashes.resolved") + " (" + crash.resolved_version + ")"});
         }
         else if (crash.is_resolving) {
-            badges.push({type: "resolving"});
+            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.resolving")});
         }
         else {
-            badges.push({type: "unresolved"});
+            badges.push({type: "negative", content: jQuery.i18n.prop("crashes.unresolved")});
         }
 
-        if (crash.is_hidden) {
-            badges.push({type: "hidden"});
+        if (crash.is_renewed) {
+            badges.push({type: "neutral", content: jQuery.i18n.prop("crashes.reoccuring")});
+        }
+
+
+        if ("session" in crash) {
+            var frequency = Math.round(crash.session.total / crash.session.count);
+            if (frequency > 0) {
+                badges.push({type: "info", content: jQuery.i18n.prop("crashes.every-n-session", frequency)});
+            }
+        }
+
+        if (crash.is_new) {
+            badges.push({type: "info", content: jQuery.i18n.prop("crashes.new")});
         }
 
         return badges;
