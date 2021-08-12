@@ -114,16 +114,18 @@
                     ios: {
                         isSubtitleEnabled: false,
                         isMediaUrlEnabled: false,
-                        isSoundFileEnabled: false,
+                        isSoundFileNameEnabled: false,
                         isBadgeEnabled: false,
+                        isOnClickURLEnabled: false,
                         isJsonEnabled: false,
                         isUserDataEnabled: false,
                     },
                     android: {
-                        isSubtitleEnabled: false,
                         isMediaUrlEnabled: false,
-                        isSoundFileEnabled: false,
+                        isSoundFileNameEnabled: false,
                         isBadgeEnabled: false,
+                        isIconEnabled: false,
+                        isOnClickURLEnabled: false,
                         isJsonEnabled: false,
                         isUserDataEnabled: false,
                     }
@@ -158,16 +160,18 @@
                             ios: {
                                 subtitle: "",
                                 mediaURL: "",
-                                soundFile: "",
+                                soundFileName: "",
                                 badge: "",
+                                onClickURL: "",
                                 json: null,
                                 userData: []
                             },
                             android: {
-                                subtitle: "",
                                 mediaURL: "",
-                                soundFile: "",
+                                soundFileName: "",
                                 badge: "",
+                                icon: "",
+                                onClickURL: "",
                                 json: null,
                                 userData: []
                             }
@@ -180,8 +184,8 @@
                     locations: [],
                     delivery: {
                         type: DeliveryEnum.NOW,
-                        startDate: moment().valueOf().toString(),
-                        endDate: moment().valueOf().toString(),
+                        startDate: moment().valueOf(),
+                        endDate: moment().valueOf(),
                         method: DeliveryEnum.NOW
                     },
                     timeZone: TimeZoneEnum.SAME,

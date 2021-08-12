@@ -3,11 +3,11 @@
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
         props: {
             value: {
-                type: String,
+                type: [String, Boolean],
                 required: true
             },
             label: {
-                type: String,
+                type: [String, Boolean],
                 required: true,
             },
             title: {
