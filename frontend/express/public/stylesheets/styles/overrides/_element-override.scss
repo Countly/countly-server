@@ -115,6 +115,10 @@
     }
 }
 
+.el-select .el-input.is-adaptive .el-input__inner {
+    padding-right: 30px;
+}
+
 .el-button {
     &.is-wireframe {
         background: transparent;
