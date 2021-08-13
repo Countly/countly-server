@@ -1349,7 +1349,12 @@
                 type: String,
                 default: '',
                 required: false
-            }
+            },
+            preventGoingToCountry: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
         },
         beforeCreate: function() {
             this.geojsonHome = [];
@@ -1686,6 +1691,11 @@
                 this.handleViewChange();
             },
             goToCountry: function(country) {
+                this.$emit("country-click", country);
+                if (this.preventGoingToCountry) {
+                    return;
+                }
+
                 var self = this;
 
                 if (!Object.prototype.hasOwnProperty.call(this.countriesData, country)) {
