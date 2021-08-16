@@ -371,7 +371,6 @@ if (countlyAuth.validateRead(app.alertsView.featureName)) {
         this.renderWhenReady(this.alertsView);
     });
 }
-
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.alertsView.featureName)) {
         app.addMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
