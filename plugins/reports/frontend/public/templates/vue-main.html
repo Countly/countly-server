@@ -3,7 +3,7 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('reports.title')}}
-            </h2>
+            </h2><span class="ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('reports.tips')">
         </template>
         <template v-slot:header-right>
             <div id="create-report" class="cly-vue-button button-green-skin" v-on:click="createReport()"><i class="el-icon-circle-plus"/> {{i18n('reports.create')}}</div>
@@ -34,24 +34,24 @@
                 </template>
             </el-table-column>
            
-            <el-table-column fixed :label="i18n('report.report-title')" sortable="true">
+            <el-table-column fixed :label="i18n('report.report-title')"  min-width="200" sortable="true">
                 <template slot-scope="scope">
                     <div v-html="scope.row.title"></div>
                 </template>
             </el-table-column> 
 
-            <el-table-column  :label="(i18n('reports.emails'))" sortable="true">
+            <el-table-column min-width="230" :label="(i18n('reports.emails'))" sortable="true">
             <template slot-scope="scope" sortable="true">
                 <div v-html="scope.row.emails.join(' ')"></div>
             </template>
                 
             </el-table-column>
 
-            <el-table-column sortable="true"  prop="dataColumn" :label="i18n('reports.metrics')">
+            <el-table-column  min-width="230" sortable="true"  prop="dataColumn" :label="i18n('reports.metrics')">
                 
             </el-table-column>
 
-            <el-table-column sortable="true" :label="i18n('reports.frequency')">
+            <el-table-column  min-width="140" sortable="true" :label="i18n('reports.frequency')">
                 <template slot-scope="scope" sortable="true">
                     <span>{{i18n("reports." + scope.row.frequency)}}</span>
                 </template>
@@ -61,7 +61,7 @@
     
             </el-table-column> -->
 
-            <el-table-column :label="i18n('reports.time')" sortable="true">
+            <el-table-column  min-width="250" :label="i18n('reports.time')" sortable="true">
                 <template slot-scope="scope">
                     <div class="is-last-col">
                         <div class="flex-grow">
@@ -125,7 +125,7 @@
         </div>
         <div class="cly-vue-drawer-step__section">
             <div class="text-small text-heading">
-               {{i18n('alert.email-to-receive')}} 
+               {{i18n('reports.email-to-receive')}} 
             </div>
                 <validation-provider name="emails" rules="required" v-slot="v">
                     <el-select
@@ -136,7 +136,7 @@
                         remote
                         default-first-option
                         :remote-method="emailInputFilter"
-                        placeholder="Input Email address">
+                        :placeholder="i18n('reports.email-placeholder')">
                         <el-option
                             v-for="item in emailOptions"
                             :key="item.value"
@@ -151,7 +151,7 @@
         <div class="cly-vue-drawer-step__section report-type-block">
             <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
                 <div class="text-big text-heading">
-                    {{i18n('reports.report-type')}} <span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                    {{i18n('reports.report-type')}} <span class="ion-help-circled color-cool-gray-50" v-tooltip.top-center="i18n('reports.type-tips')">
                 </div>
             </div>
             <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
@@ -174,10 +174,11 @@
 
         <div class="cly-vue-drawer-step__section" v-if="showApps">
             <div class="text-small text-heading">
-                {{i18n('reports.Select_apps')}} 
+                {{i18n('reports.select-apps')}} 
             </div>
             <validation-provider name="apps" rules="required" v-slot="v">
                 <cly-select-x
+                   :placeholder="i18n('reports.Select_apps')"
                    mode="multi-check"
                    v-on:change="appsChange"
                    v-model="drawerScope.editedObject.apps"
@@ -234,12 +235,12 @@
         </div>
 
 
-        <div class="cly-vue-drawer-step__section">
-            <div class="text-small text-heading cly-vue-report-drawer__no-margin">
-                {{i18n('reports.frequency')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+        <div class="cly-vue-drawer-step__section frequency-block">
+            <div class="text-big text-heading cly-vue-report-drawer__no-margin">
+                {{i18n('reports.frequency')}}
             </div>
             <div class="cly-vue-report-drawer__report_description">
-                Some frequency related description can be placed here
+                {{i18n('reports.frequency-desc')}}
             </div>
             <el-radio
                 v-on:change="reportFrequencyChange" 
@@ -273,11 +274,11 @@
 
         <div class="cly-vue-drawer-step__section" v-if="drawerScope.editedObject.frequency === 'weekly'">
             <div class="text-medium text-heading cly-vue-report-drawer__no-margin">
-                {{i18n('reports.dow')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                {{i18n('reports.dow')}}
             </div>
-            <div class="cly-vue-report-drawer__report_description">
+            <!-- <div class="cly-vue-report-drawer__report_description">
                 Some frequency related description can be placed here
-            </div>
+            </div> -->
             <validation-provider name="metrics" rules="required" v-slot="v">
                 <cly-select-x
                    mode="single-list"
@@ -291,10 +292,10 @@
 
         <div class="cly-vue-drawer-step__section">
             <div class="text-medium text-heading cly-vue-report-drawer__no-margin">
-                {{i18n('reports.time_desc')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                {{i18n('reports.select-time')}}
             </div>
             <div class="cly-vue-report-drawer__report_description">
-                Some frequency related description can be placed here
+                {{i18n('reports.time-desc')}}
             </div>
             <validation-provider name="metrics" rules="required" v-slot="v">
                 <cly-select-x
@@ -309,10 +310,10 @@
 
         <div class="cly-vue-drawer-step__section">
             <div class="text-medium text-heading cly-vue-report-drawer__no-margin">
-                {{i18n('reports.timezone')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                {{i18n('reports.timezone')}}
             </div>
             <div class="cly-vue-report-drawer__report_description">
-                Some frequency related description can be placed here
+                {{i18n('reports.timezone-desc')}}
             </div>
             <validation-provider name="metrics" rules="required" v-slot="v">
                 <cly-select-x

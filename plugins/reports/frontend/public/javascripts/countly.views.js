@@ -13,6 +13,7 @@
     _,
     T
  */
+ var FEATURE_NAME = "reports";
 
 window.ReportingView = countlyView.extend({
     featureName: 'reports',
@@ -1116,6 +1117,11 @@ var TableView = countlyVue.views.BaseView.extend({
 
 var ReportsDrawer = countlyVue.views.BaseView.extend({
     template: '#reports-drawer',
+    mixins: [
+        countlyVue.container.dataMixin({
+            "externalDataTypeOptions": "/reports/data-type",
+        })
+    ],
     components: {
     },
     data: function () {
@@ -1124,12 +1130,12 @@ var ReportsDrawer = countlyVue.views.BaseView.extend({
             appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
         }
 
-        const reportTypeOptions = [
-            {label: jQuery.i18n.map["reports.core"], value: 'core'},
-        ];
-        if (countlyGlobal.plugins.indexOf("dashboards")  > -1) {
-            reportTypeOptions.push({label: jQuery.i18n.map["dashboards.report"], value: 'dashboards'});
-        }
+        // const reportTypeOptions = [
+        //     {label: jQuery.i18n.map["reports.core"], value: 'core'},
+        // ];
+        // if (countlyGlobal.plugins.indexOf("dashboards")  > -1) {
+        //     reportTypeOptions.push({label: jQuery.i18n.map["dashboards.report"], value: 'dashboards'});
+        // }
 
         const metricOptions = [
             {label: jQuery.i18n.map["reports.analytics"], value: "analytics"},
@@ -1147,9 +1153,9 @@ var ReportsDrawer = countlyVue.views.BaseView.extend({
         }
 
         const frequencyOptions = [
-            {label: jQuery.i18n.map["reports.daily"], value: "daily"},
-            {label: jQuery.i18n.map["reports.weekly"], value: "weekly"},
-            {label: jQuery.i18n.map["reports.monthly"], value: "monthly"},
+            {label: jQuery.i18n.map["reports.daily"], value: "daily", description: jQuery.i18n.map["reports.daily-desc"]},
+            {label: jQuery.i18n.map["reports.weekly"], value: "weekly", description: jQuery.i18n.map["reports.weekly-desc"]},
+            {label: jQuery.i18n.map["reports.monthly"], value: "monthly", description: jQuery.i18n.map["reports.monthly-desc"]},
         ];
         const dayOfWeekOptions = [
             {label: jQuery.i18n.map["reports.monday"], value: 1},
@@ -1175,19 +1181,10 @@ var ReportsDrawer = countlyVue.views.BaseView.extend({
             timeListOptions.push({ value: i, label: v});
         }
 
-
-        var dashboardsList = countlyDashboards.getAllDashboards();
-        var dashboardsOptions = [];
-        for (var i = 0; i < dashboardsList.length; i++) {
-            dashboardsOptions.push({ value: dashboardsList[i].id, label: dashboardsList[i].name });
-        }
-        var reportDateRangesOptions = [];// countlyDashboards.getReportDateRanges(reportFrequency);
-
         return {
             title: "",
             saveButtonLabel: "",
             appsSelectorOption,
-            reportTypeOptions,
             metricOptions,
             eventOptions: [],
             frequencyOptions,
@@ -1198,11 +1195,28 @@ var ReportsDrawer = countlyVue.views.BaseView.extend({
             showApps: true,
             showMetrics: true,
             showDashboards: false,
-            dashboardsOptions,
-            reportDateRangesOptions,
+            reportDateRangesOptions: [],
         };
     },
     computed: {
+        reportTypeOptions: function() {
+            var options = [
+                {label: jQuery.i18n.map["reports.core"], value: 'core'},
+            ];
+            if (this.externalDataTypeOptions) {
+                options = options.concat(this.externalDataTypeOptions);
+            }
+            return options;
+        },
+        dashboardsOptions: function() {
+            var dashboardsList = countlyDashboards.getAllDashboards();
+            var dashboardsOptions = [];
+            for (var i = 0; i < dashboardsList.length; i++) {
+                dashboardsOptions.push({ value: dashboardsList[i].id, label: dashboardsList[i].name });
+            };
+            countlyVue.container.registerData("/reports/dashboards-option", dashboardsOptions);
+            return dashboardsOptions;
+        },
     },
     watch: {
         "apps": function () {
@@ -1270,13 +1284,12 @@ var ReportsDrawer = countlyVue.views.BaseView.extend({
             this.$emit("close", $event);
         },
         onCopy: function (newState) {
-            console.log(newState,"!!!")
+            console.log(newState,"!!!");
             var self = this;
             if (newState._id !== null) {
                 this.reportTypeChange(newState.report_type);
                 this.reportFrequencyChange(newState.frequency);
-                
-                console.log(newState._id,"!!!2")
+
                 this.title = jQuery.i18n.map["reports.edit_report_title"];
                 this.saveButtonLabel = jQuery.i18n.map["reports.Save_Changes"];
                 newState.metricsArray =[];
