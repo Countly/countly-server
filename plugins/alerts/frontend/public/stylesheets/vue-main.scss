@@ -1,36 +1,6 @@
 #alerts-view {
-    .is-big-numbers-container {
-        margin: 32px 24px;
-        display: flex;
-        background: #FFFFFF;
-        box-shadow: 0px 2px 0px #EAECEF;
-        .is-big-number-card {
-            flex-grow: 1;
-            padding: 24px;
-            .is-title {
-                font-family: Inter;
-                font-style: normal;
-                font-weight: normal;
-                font-size: 14px;
-                line-height: 20px;
-                color: #333C48;
-            }
-            .is-number {
-                margin-top: 4px;
-                font-family: Inter;
-                font-style: normal;
-                font-weight: 500;
-                font-size: 24px;
-                line-height: 32px; 
-                letter-spacing: 0.003em; 
-                color: #333C48;
-            }
-        }
-        
-
-        .is-big-number-card:not(:first-child) {
-            border-left: 2px solid #ECECEC;
-        }
+    .metricCardsWrapper {
+        margin-bottom: 32px;
     }
 
     .cly-vue-alerts-table {
@@ -56,6 +26,12 @@
     }
 
     .cly-vue-alert-drawer {
+        &__section {
+            padding: 16px 0px;
+        }
+        &__title{
+            padding-bottom: 4px;
+        }
         &__help-text {
            font-family: Inter;
            font-style: normal;
@@ -79,7 +55,7 @@
         }
 
         &__card {
-            margin-top: 32px;
+            margin: 16px 0px;
             background: #F8FAFD;
             border-radius: 4px;
         }
@@ -104,7 +80,7 @@
     }
     .cly-vue-alert-drawer-define-block {
         display: flex;
-        margin: 16px;
+        margin: 16px 12px;
     }
     .cly-vue-alert-drawer-define-block-item {
         flex-grow: 1;
