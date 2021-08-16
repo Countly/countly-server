@@ -4,110 +4,7 @@
 */
 
 (function(countlyAlerts, $) {
-    var _alertsList = {};
-    var eventMaps = {};
-    var _count = {};
-    var countlyCommon = window.countlyCommon;
-    var _ = window._;
-    /**
-	* Save alert settings
-    * @param {object} alertConfig - alertConfig record
-    * @param {function} callback - callback function
-	*/
-    countlyAlerts.saveAlert = function saveAlert(alertConfig, callback) {
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/alert/save",
-            data: {
-                "alert_config": JSON.stringify(alertConfig),
-                "app_id": alertConfig.selectedApps[0]
-            },
-            dataType: "json",
-            success: function(res) {
-                if (callback) {
-                    callback(res);
-                }
-            }
-        });
-    };
-
-    /**
-	* request alert list
-    * @param {function} callback - callback function
-    * @returns {function} promise
-	*/
-    countlyAlerts.requestAlertsList = function requestAlertsList(callback) {
-        var dfd = jQuery.Deferred();
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r + '/alert/list',
-            data: {
-                app_id: store.get('countly_active_app')
-            },
-            dataType: "json",
-            success: function(data) {
-                _alertsList = data.alertsList;
-                _count = data.count;
-                if (callback) {
-                    callback();
-                }
-                dfd.resolve();
-            }
-        });
-
-        return dfd.promise();
-    };
-
-    countlyAlerts.getAlertsList = function getAlertsList() {
-        return _alertsList;
-    };
-    countlyAlerts.getCount = function getCount() {
-        return _count;
-    };
-
-    countlyAlerts.getAlert = function getAlert(alertID) {
-        for (var i = 0; i < _alertsList.length; i++) {
-            if (_alertsList[i]._id === alertID) {
-                return _alertsList[i];
-            }
-        }
-    };
-
-    countlyAlerts.deleteAlert = function deleteAlert(alertID, appId, callback) {
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/alert/delete",
-            data: {
-                "alertID": alertID,
-                "app_id": appId
-            },
-            dataType: "json",
-            success: function(res) {
-                if (callback) {
-                    callback(res);
-                }
-            }
-        });
-
-    };
-
-    countlyAlerts.updateAlertStatus = function deleteAlert(status, appId, callback) {
-        $.ajax({
-            type: "post",
-            url: countlyCommon.API_PARTS.data.w + "/alert/status",
-            data: {
-                "status": JSON.stringify(status),
-                "app_id": appId
-            },
-            dataType: "json",
-            success: function(res) {
-                if (callback) {
-                    callback(res);
-                }
-            }
-        });
-    };
-
+    
 
     /**
 	* extract event name & value
@@ -237,7 +134,7 @@
         };
 
         var getters = {
-            tableData(state) {
+            tableData: function (state) {
                 return state.tableData;
             }
         };
@@ -328,7 +225,7 @@
                             preventGlobalAbort: true,
                             "app_id": countlyCommon.ACTIVE_APP_ID
                         },
-                    },).then(function(data) {
+                    }).then(function(data) {
                         var alertsList = data.alertsList;
                         var count = data.count;
 
