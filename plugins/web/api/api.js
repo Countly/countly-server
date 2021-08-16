@@ -5,7 +5,7 @@ var pluginOb = {},
 
 (function() {
     plugins.appTypes.push("web");
-    plugins.register("/sdk", function(ob) {
+    plugins.register("/sdk/pre", function(ob) {
         var params = ob.params;
 
         var agent = parser((params.qstring.metrics && params.qstring.metrics._ua) ? params.qstring.metrics._ua : params.req.headers['user-agent']);
