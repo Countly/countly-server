@@ -3,7 +3,7 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('reports.title')}}
-            </h2><span class="ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('reports.tips')">
+            </h2><span class="ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('reports.tips')"/>
         </template>
         <template v-slot:header-right>
             <div id="create-report" class="cly-vue-button button-green-skin" v-on:click="createReport()"><i class="el-icon-circle-plus"/> {{i18n('reports.create')}}</div>
@@ -151,7 +151,7 @@
         <div class="cly-vue-drawer-step__section report-type-block">
             <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
                 <div class="text-big text-heading">
-                    {{i18n('reports.report-type')}} <span class="ion-help-circled color-cool-gray-50" v-tooltip.top-center="i18n('reports.type-tips')">
+                    {{i18n('reports.report-type')}} <span class="ion-help-circled color-cool-gray-50" v-tooltip.top-center="i18n('reports.type-tips')"/>
                 </div>
             </div>
             <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">

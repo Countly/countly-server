@@ -46,7 +46,6 @@
             url: countlyCommon.API_PARTS.data.w + "/reports/create",
             data: {
                 args: JSON.stringify(args),
-                app_id: args.apps[0]
             }
         });
     };
@@ -57,7 +56,6 @@
             url: countlyCommon.API_PARTS.data.w + "/reports/update",
             data: {
                 args: JSON.stringify(args),
-                app_id: args.apps[0]
             }
         });
     };
@@ -70,7 +68,6 @@
                 args: JSON.stringify({
                     "_id": id
                 }),
-                "app_id": countlyCommon.ACTIVE_APP_ID
             }
         });
     };
@@ -83,7 +80,6 @@
                 args: JSON.stringify({
                     "_id": id
                 }),
-                "app_id": countlyCommon.ACTIVE_APP_ID
             }
         });
     };
@@ -94,7 +90,6 @@
             url: countlyCommon.API_PARTS.data.w + "/reports/status",
             data: {
                 args: JSON.stringify(args),
-                app_id: countlyCommon.ACTIVE_APP_ID
             }
         });
     };

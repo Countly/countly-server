@@ -1307,26 +1307,6 @@ var ReportsDrawer = countlyVue.views.BaseView.extend({
             this.title = jQuery.i18n.map["reports.create_new_report_title"];
             this.saveButtonLabel = jQuery.i18n.map["reports.Create_New_Report"];
         },
-        addEffect: function(){
-           this.$children[0].$data.editedObject.effects.push({type:null, configuration: null});
-        },
-
-        removeEffect: function (index) {
-            console.log("reeff", index);
-            this.$children[0].$data.editedObject.effects.splice(index,1);
-        },
-
-        updateHookConfigValue: function ({path, value}) {
-            var object = this.$children[0].$data.editedObject;
-            if(!path) {
-                return;
-            }
-            var stack = path.split('.');
-            while(stack.length>1){
-              object = object[stack.shift()];
-            }
-            object[stack.shift()] = value;
-        },
     }
 });
 
