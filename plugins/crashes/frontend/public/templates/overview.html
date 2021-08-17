@@ -11,10 +11,11 @@
                 </template>
             </cly-header>
             <cly-main>
+                <cly-qb-bar class="bu-mb-5" v-model="crashgroupsFilter" :drill="false" queryStore="crashgroups" :additionalProperties="crashgroupsFilterProperties" :additionalRules="crashgroupsFilterRules" format="crashgroups"></cly-qb-bar>
                 <cly-datatable-n :rows="crashgroupRows" @selection-change="handleSelectionChange" @row-click="handleRowClick">
                     <template v-slot="scope">
                         <el-table-column type="selection" reserve-selection width="65" fixed="left"></el-table-column>
-                        <el-table-column :label="i18n('crashes.error')" min-width="415">
+                        <el-table-column :label="i18n('crashes.error')" min-width="415" fixed="left">
                             <template slot-scope="col">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
                                     <div v-html="col.row.name"></div>
@@ -53,7 +54,7 @@
             <cly-main>
                 <cly-section class="crashes-statistics-dashboard">
                     <div class="crashes-statistics-dashboard__tiles-container bu-columns bu-is-gapless bu-is-mobile">
-                        <cly-crashes-dashboard-tile>
+                        <cly-crashes-dashboard-tile v-if="Object.keys(statistics).length > 0">
                             <div class="crashes-tile__content--fill bu-columns bu-is-gapless bu-is-mobile bu-is-flex-direction-column">
                                 <cly-crashes-dashboard-tile isVertical showDonut :donutPercentage="statistics.users.affected.totalPercent">
                                     <template v-slot:title>{{i18n("crashes.affected-users")}}</template>
