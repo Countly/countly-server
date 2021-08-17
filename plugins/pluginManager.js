@@ -1208,7 +1208,6 @@ var pluginManager = function pluginManager() {
 
         var dbName;
         var dbOptions = {
-            poolSize: maxPoolSize,
             maxPoolSize: maxPoolSize,
             noDelay: true,
             keepAlive: true,
@@ -1219,8 +1218,7 @@ var pluginManager = function pluginManager() {
             maxIdleTimeMS: 0,
             waitQueueTimeoutMS: 0,
             useNewUrlParser: true,
-            useUnifiedTopology: true,
-            auto_reconnect: true
+            useUnifiedTopology: true
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);
@@ -1294,6 +1292,9 @@ var pluginManager = function pluginManager() {
             return;
         }
 
+        client.on('commandFailed', (event) => logDbRead.e("commandFailed %j", event));
+        client.on('serverHeartbeatFailed', (event) => logDbRead.e("serverHeartbeatFailed %j", event));
+
         client._db = client.db;
 
         client.db = function(database, options) {
@@ -1328,7 +1329,7 @@ var pluginManager = function pluginManager() {
         if (!countlyDb.ObjectID) {
             countlyDb.ObjectID = function(id) {
                 try {
-                    return mongodb.ObjectID(id);
+                    return mongodb.ObjectId(id);
                 }
                 catch (ex) {
                     logDbRead.i("Incorrect Object ID %j", ex);
@@ -1571,14 +1572,20 @@ var pluginManager = function pluginManager() {
                     if (res) {
                         if (res.insertedIds) {
                             var arr = [];
+                            var ops = [];
                             for (let i in res.insertedIds) {
                                 arr.push(res.insertedIds[i]);
+                                ops.push({_id: res.insertedIds[i], ...data.args[0][i]});
                             }
                             res.insertedIdsOrig = res.insertedIds;
                             res.insertedIds = arr;
+                            res.insertedCount = res.insertedIds.length;
+                            res.ops = res.ops || ops;
                         }
                         else if (res.insertedId) {
                             res.insertedIds = [res.insertedId];
+                            res.insertedCount = res.insertedIds.length;
+                            res.ops = res.ops || [{_id: res.insertedId, ...data.args[0]}];
                         }
                     }
                     if (callback) {
@@ -1638,20 +1645,7 @@ var pluginManager = function pluginManager() {
                         }
                     }
                     if (callback) {
-                        //aggregation to result conversion
-                        if (data.name === "aggregate" && !err && res && res.toArray) {
-                            if (data.args.length >= 2 && data.args[1].cursor) {
-                                callback(err, res);
-                            }
-                            else {
-                                res.toArray(function(err2, result) {
-                                    callback(err2, result);
-                                });
-                            }
-                        }
-                        else {
-                            callback(err, res);
-                        }
+                        callback(err, res);
                     }
                 };
             };
@@ -1699,7 +1693,42 @@ var pluginManager = function pluginManager() {
 
             overwriteDefaultRead(ob, "findOne");
             overwriteDefaultRead(ob, "findOneAndDelete");
-            overwriteDefaultRead(ob, "aggregate");
+
+            ob._aggregate = ob.aggregate;
+            ob.aggregate = function(query, options, callback) {
+                if (typeof options === "function") {
+                    callback = options;
+                    options = {};
+                }
+                else {
+                    options = options || {};
+                }
+                var e;
+                var args = arguments;
+                var at = "";
+                mngr.dispatch("/db/read", {
+                    db: dbName,
+                    operation: "aggregate",
+                    collection: collection,
+                    query: query,
+                    options: options
+                });
+                if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                    e = new Error();
+                    at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                }
+                logDbRead.d("aggregate " + collection + " %j %j" + at, query, options);
+                logDbRead.d("From connection %j", countlyDb._cly_debug);
+                var cursor = this._aggregate(query, options);
+                cursor._toArray = cursor.toArray;
+                cursor.toArray = function(cb) {
+                    return handlePromiseErrors(cursor._toArray(logForReads(cb, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
+                };
+                if (typeof callback === "function") {
+                    return cursor.toArray(callback);
+                }
+                return cursor;
+            };
 
             ob._find = ob.find;
             ob.find = function(query, options) {

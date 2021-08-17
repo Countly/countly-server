@@ -112,7 +112,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
             ob.data = ["sources", "sources", "sources"];
         }
     });
-    plugins.register("/sdk", function(ob) {
+    plugins.register("/sdk/pre", function(ob) {
         var params = ob.params;
 
         if (params.qstring.metrics) {

@@ -1739,7 +1739,7 @@ $(document).ready(function() {
         var isCurrentHostnameIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(window.location.hostname);
         var isGlobalDomainHasValue = countlyGlobal.domain === "" || typeof countlyGlobal.domain === "undefined" ? false : true;
         if (!isCurrentHostnameIP && !isGlobalDomainHasValue) {
-            countlyPlugins.updateConfigs({"api": {"domain": window.location.hostname}}, function(err) {
+            countlyPlugins.updateConfigs({"api": {"domain": window.location.protocol + "//" + window.location.hostname}}, function(err) {
                 if (err) {
                     // throw err
                 }
