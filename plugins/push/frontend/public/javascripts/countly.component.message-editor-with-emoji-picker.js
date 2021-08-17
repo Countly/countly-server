@@ -147,20 +147,14 @@
                 return Boolean(value.trim());
             },
             validate: function(value) {
+                var self = this;
                 if (!value) {
                     value = this.$refs.element.innerHTML;
                 }
                 if (this.isDefaultLocalizationActive) {
-                    if (!this.isRequiredValid(value)) {
-                        this.addDefaultLocalizationValidationErrorMessageIfNotFound("Field is required");
-                    }
-                    else {
-                        this.defaultLocalizationValidationErrors = [];
-                    }
-                    this.$refs.defaultLocalizationValidationProvider.setErrors(this.defaultLocalizationValidationErrors);
-                }
-                if (this.hasDefaultLocalizationValidationErrors) {
-                    this.$refs.defaultLocalizationValidationProvider.setErrors(this.defaultLocalizationValidationErrors);
+                    this.$refs.defaultLocalizationValidationProvider.validate(value).then(function(result) {
+                        self.defaultLocalizationValidationErrors = result.errors;
+                    });
                 }
             },
             onInput: function(newValue) {
@@ -179,7 +173,7 @@
                 });
             }
             //TODO-LA: trigger validation when user tries to go to next step instead of when component is mounted
-            this.validate(this.$refs.element.innerHTML);
+            this.validate();
         },
         beforeDestroy: function() {
             //TODO-LA: remove all user properties elements' event listeners
