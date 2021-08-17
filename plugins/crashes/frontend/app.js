@@ -46,11 +46,11 @@ var trace = require('../api/parts/stacktrace.js');
                                             data.forEach(trace.postprocessCrash);
                                         }
                                         result.data = data;
-                                        res.render('../../../plugins/crashes/frontend/public/templates/crash', {path: countlyConfig.path || "", cdn: countlyConfig.cdn || "../../", countly: req.countly, data: result});
+                                        res.render('../../../plugins/crashes/frontend/public/templates/crash-legacy', {path: countlyConfig.path || "", cdn: countlyConfig.cdn || "../../", countly: req.countly, data: result});
                                     });
                                 }
                                 else {
-                                    res.render('../../../plugins/crashes/frontend/public/templates/crash', {path: countlyConfig.path || "", cdn: countlyConfig.cdn || "../../", countly: req.countly, data: result});
+                                    res.render('../../../plugins/crashes/frontend/public/templates/crash-legacy', {path: countlyConfig.path || "", cdn: countlyConfig.cdn || "../../", countly: req.countly, data: result});
                                 }
                             }
                             else {

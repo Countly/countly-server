@@ -147,6 +147,11 @@
 		}
 	}
 
+	.crashgroup-detail-tabs {
+		.el-tabs__nav {
+			border-top: 0;
+		}
+	}
 
 	.crash-stacktrace {
 		&__header {
@@ -259,7 +264,7 @@
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
-			max-width: 80%;
+			max-width: 50vw;
 		}
 	}
 
