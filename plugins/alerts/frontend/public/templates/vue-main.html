@@ -8,12 +8,12 @@
                 </span>
             </template>
             <template v-slot:header-right>
-                <div id="create-alert" class="cly-vue-button button-green-skin" v-on:click="createAlert()"><i class="el-icon-circle-plus"/> {{i18n('alert.Add_New_Alert')}}</div>
+                <div id="create-alert" v-if="canCreate" class="cly-vue-button button-green-skin" v-on:click="createAlert()"><i class="el-icon-circle-plus"/> {{i18n('alert.Add_New_Alert')}}</div>
         </template>
         </cly-header>
     
         <cly-main>
-            <div class="metricCardsWrapper white-bg">
+            <div class="metricCardsWrapper cly-vue-section__content white-bg">
                 <cly-metric-cards>
                     <cly-metric-card  :columnWidth=4 :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in countData">
                             {{i18n(item.label)}}
@@ -80,10 +80,10 @@
                             </div> 
                           <div class="is-option-button">
                              <cly-more-options size="small" @command="handleHookEditCommand($event, scope)">
-                                <el-dropdown-item  icon="el-icon-document-copy" command="edit-comment">
+                                <el-dropdown-item v-if="canUpdate" icon="el-icon-document-copy" command="edit-comment">
                                     {{i18n('alert.Edit')}}
                                 </el-dropdown-item>
-                                <el-dropdown-item icon="el-icon-delete" command="delete-comment">
+                                <el-dropdown-item v-if="canDelete" icon="el-icon-delete" command="delete-comment">
                                     {{i18n('alert.Delete')}}
                                 </el-dropdown-item>
                             </cly-more-options>

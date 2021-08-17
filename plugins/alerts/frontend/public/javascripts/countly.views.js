@@ -18,11 +18,11 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
     },
     data: function () {
         var appsSelectorOption = [];
-        for (let appId in countlyGlobal.apps) {
+        for (var appId in countlyGlobal.apps) {
             appsSelectorOption.push({label: countlyGlobal.apps[appId].name, value: appId});
         }
         
-        const alertDataTypeOptions = [
+        var alertDataTypeOptions = [
             {label: jQuery.i18n.map["alert.Metric"], value: 'metric'},
             {label: jQuery.i18n.map["alert.Event"], value: 'event'},
             {label: jQuery.i18n.map["alert.Crash"], value: 'crash'},
@@ -30,7 +30,7 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
             {label: jQuery.i18n.map["alert.data-point"], value: 'dataPoint'},
         ];
 
-        const alertDefine = {
+        var alertDefine = {
             metric: {
                 target: [
                     { value: 'Total users', label: 'Total users' },
@@ -86,13 +86,13 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
                 ]
             },
         };    
-
+        var defaultAppsSelectorOption = Object.assign([], appsSelectorOption);
         return {
             title: "",
             saveButtonLabel: "",
-            apps: [null],
+            apps: [""],
             alertDataTypeOptions,
-            defaultAppsSelectorOption: Object.assign([], appsSelectorOption),
+            defaultAppsSelectorOption,
             appsSelectorOption,
             alertDefine,
             emailOptions:[{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
@@ -164,18 +164,11 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
                     this.$data.showConditionValue = false;
                     break;
                 case 'Number of ratings':
-                    var ratings = [
-                        {value: 1, label: jQuery.i18n.map["star.one-star"]},
-                        {value: 2, label: jQuery.i18n.map["star.two-star"]},
-                        {value: 3, label: jQuery.i18n.map["star.three-star"]},
-                        {value: 4, label: jQuery.i18n.map["star.four-star"]},
-                        {value: 5, label: jQuery.i18n.map["star.five-star"]},
-                    ];
                     if (!notReset) {
                      this.resetAlertConditionShow();
                     }
                     this.$data.showSubType2 = true;
-                    this.$data.alertDataSubType2Options = ratings;
+                    this.$data.alertDataSubType2Options = countlyAlerts.RatingOptions;
                     break;
                 case 'Number of page views':
                 case 'Bounce rate':
@@ -189,7 +182,6 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
                         });
                     });
                     break;
-                    
                 default: 
                     if (!notReset) {
                      this.resetAlertConditionShow();
@@ -202,29 +194,44 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
             var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
             regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
             var match = val.match(regex);
-            console.log(match,"m")
             if (match) {
                 this.emailOptions=[{value:val, label:val}]
             } else {
                 this.emailOptions=[]
             }
-       
         },
         onSubmit: async function (settings) {
             let target = settings.alertDataSubType;
-            if (settings.alertDataType === 'event') {
-                target = target.split("***")[1]
+            let subTarget = settings.alertDataSubType2;
+            switch(settings.alertDataType) {
+                case "event":
+                    target = target.split("***")[1];
+                    break;
+                case "rating":
+                    subTarget = countlyAlerts.RatingOptions[subTarget].label;
+                case 'metric':
+                    if (target === 'Bounce rate' || target === 'Number of page views') {
+                        this.$data.alertDataSubType2Options.forEach(function(item){
+                            if (item.value === settings.alertDataSubType2) {
+                               subTarget = item.label; 
+                            }
+                        })
+                    }
+                    break;
             }
-            let target2 = settings.alertDataSubType2 ? ' (' + settings.alertDataSubType2 + ')' : '';
-
-
+            
+            let target2 = settings.alertDataSubType2 ? ' (' + subTarget + ')' : '';
             settings.compareDescribe = target + target2 ;
-            settings.compareDescribe += ' ' + settings.compareType +
-                ' ' + settings.compareValue + "%";
 
-            if (settings.alertDataType === 'dataPoint' && (settings.alertDataSubType === 'Monthly data points' || settings.alertDataSubType === 'Hourly data points')) {
-                settings.compareDescribe = settings.compareDescribe.substring(0, settings.compareDescribe.length - 1);
+            switch(settings.alertDataSubType) {
+                case 'New crash occurence':
+                    break;
+                default:
+                    settings.compareDescribe += ' ' + settings.compareType +
+                    ' ' + settings.compareValue + "%";
+                    break;
             }
+
             delete settings.createdBy;
 
             await this.$store.dispatch("countlyAlerts/saveAlert", settings);
@@ -281,6 +288,8 @@ var TableView = countlyVue.views.BaseView.extend({
             filteredApps: [],
             localTableTrackedFields: ['enabled'],
             isAdmin: countlyGlobal.member.global_admin,
+            canUpdate: countlyAuth.validateUpdate(app.alertsView.featureName),
+            canDelete: countlyAuth.validateDelete(app.alertsView.featureName),
         };
     },
     methods: {
@@ -334,7 +343,9 @@ var AlertsHomeViewComponent = countlyVue.views.BaseView.extend({
         } 
     },
     data: function () {
-        return {}
+        return {
+            canCreate: countlyAuth.validateCreate(app.alertsView.featureName)
+        }
     },
     beforeCreate: function () {
        this.$store.dispatch("countlyAlerts/initialize");
@@ -355,8 +366,7 @@ app.alertsView = new countlyVue.views.BackboneWrapper({
     ]
 });
 
-
-
+app.alertsView.featureName = "alerts";
 
 if (countlyAuth.validateRead(app.alertsView.featureName)) {
     app.route('/manage/alerts', 'alerts', function() {
