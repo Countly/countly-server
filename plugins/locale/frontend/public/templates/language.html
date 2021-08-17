@@ -1,0 +1,69 @@
+
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('languages.title')}} 
+            </h2>
+            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description">
+            </span>
+        </template>
+		<template v-slot:header-right>
+          <cly-more-options v-if="topDropdown" size="small">
+            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+              <span :class="item.icon"></span>
+              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+            </el-dropdown-item>
+          </cly-more-options>
+        </template>
+    </cly-header>
+    <cly-main>
+		<cly-date-picker-g class="languages-date-picker-container"></cly-date-picker-g>
+		<cly-section>
+			<div class="bu-columns bu-is-gapless">
+				<div class="bu-column bu-is-6">
+					<cly-chart-pie :option="pieOptionsNew" :showToggle="false"></cly-chart-pie>
+				</div>
+				<div class="bu-column bu-is-6">
+					<cly-chart-pie :option="pieOptionsTotal" :showToggle="false"></cly-chart-pie>
+				</div>
+			</div>
+		</cly-section>
+		<cly-section>
+			<cly-datatable-n  :rows="appRows" :resizable="true" v-loading="isLoading">
+				<template v-slot="scope">
+					<el-table-column sortable="custom" prop="langs" :label="i18n('languages.table.language')"></el-table-column>
+					<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')">
+						<template slot-scope="scope">
+                            <div class="bu-level-left">
+                                <div class="bu-level-item slipping-away-users-table-data-item">
+                                    <span>{{scope.row.t}} | {{scope.row.tPerc}} %</span>
+                                </div>
+                                <cly-progress-bar  :percentage="parseInt(scope.row.tPerc)" :height=8 > </cly-progress-bar>
+                            </div>
+                        </template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')">
+						<template slot-scope="scope">
+                            <div class="bu-level-left">
+                                <div class="bu-level-item slipping-away-users-table-data-item">
+                                    <span>{{scope.row.u}} | {{scope.row.uPerc}} %</span>
+                                </div>
+                                <cly-progress-bar  :percentage="parseInt(scope.row.uPerc)" :height=8 > </cly-progress-bar>
+                            </div>
+                        </template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="n" :label="i18n('common.table.new-users')">
+						<template slot-scope="scope">
+                            <div class="bu-level-left">
+                                <div class="bu-level-item slipping-away-users-table-data-item">
+                                    <span>{{scope.row.n}} | {{scope.row.nPerc}} %</span>
+                                </div>
+                                <cly-progress-bar  :percentage="parseInt(scope.row.nPerc)" :height=8 > </cly-progress-bar>
+                            </div>
+                        </template>
+					</el-table-column>
+				</template>
+			</cly-datatable-n>
+		</cly-section>
+    </cly-main>
+</div>
