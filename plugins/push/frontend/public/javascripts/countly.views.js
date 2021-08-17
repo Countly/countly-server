@@ -84,6 +84,80 @@
         {label: "Silent message", value: MessageTypeEnum.SILENT}
     ];
 
+    var InitialPushNotification = {
+        activePlatformSettings: [],
+        multipleLocalizations: false,
+        name: "",
+        platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
+        targeting: TargetingEnum.ALL,
+        whenToDetermine: WhenToDetermineEnum.BEFORE,
+        message: {
+            default: {
+                title: "",
+                content: "",
+                localizationLabel: "Default",
+                buttons: [],
+                properties: {
+                    title: {},
+                    content: {}
+                }
+            },
+            settings: {
+                ios: {
+                    subtitle: "",
+                    mediaURL: "",
+                    soundFileName: "",
+                    badgeNumber: "",
+                    onClickURL: "",
+                    json: null,
+                    userData: []
+                },
+                android: {
+                    mediaURL: "",
+                    soundFileName: "",
+                    badgeNumber: "",
+                    icon: "",
+                    onClickURL: "",
+                    json: null,
+                    userData: []
+                }
+            },
+            mediaUrl: "",
+            type: MessageTypeEnum.CONTENT
+        },
+        localizations: ["default"],
+        cohorts: [],
+        locations: [],
+        delivery: {
+            type: DeliveryEnum.NOW,
+            startDate: moment().valueOf(),
+            endDate: moment().valueOf(),
+            method: DeliveryEnum.NOW
+        },
+        timeZone: TimeZoneEnum.SAME,
+        pastSchedule: PastScheduleEnum.SKIP,
+        expiration: {
+            days: 7,
+            hours: 0
+        },
+        automatic: {
+            trigger: TriggerEnum.COHORT_ENTRY,
+            deliveryDate: AutomaticDeliveryDateEnum.EVENT_SERVER_DATE,
+            whenNotMet: AutomaticWhenConditionNotMetEnum.SEND_ANYWAY,
+            events: [],
+            capping: false,
+            maximumMessagesPerUser: 1,
+            minimumTimeBetweenMessages: {
+                days: 0,
+                hours: 0
+            },
+            delayed: {
+                days: 0,
+                hours: 0
+            }
+        },
+    };
+
     var PushNotificationDrawer = countlyVue.views.create({
         template: CV.T("/push/templates/push-notification-drawer.html"),
         mixins: [countlyVue.mixins.i18n],
@@ -139,80 +213,7 @@
                     top: 0,
                     left: 0
                 },
-                pushNotificationUnderEdit: {
-                    activePlatformSettings: [],
-                    multipleLocalizations: false,
-                    name: "",
-                    platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
-                    targeting: TargetingEnum.ALL,
-                    whenToDetermine: WhenToDetermineEnum.BEFORE,
-                    message: {
-                        default: {
-                            title: "",
-                            content: "",
-                            localizationLabel: "Default",
-                            buttons: [],
-                            properties: {
-                                title: {},
-                                content: {}
-                            }
-                        },
-                        settings: {
-                            ios: {
-                                subtitle: "",
-                                mediaURL: "",
-                                soundFileName: "",
-                                badgeNumber: "",
-                                onClickURL: "",
-                                json: null,
-                                userData: []
-                            },
-                            android: {
-                                mediaURL: "",
-                                soundFileName: "",
-                                badgeNumber: "",
-                                icon: "",
-                                onClickURL: "",
-                                json: null,
-                                userData: []
-                            }
-                        },
-                        mediaUrl: "",
-                        type: MessageTypeEnum.CONTENT
-                    },
-                    localizations: ["default"],
-                    cohorts: [],
-                    locations: [],
-                    delivery: {
-                        type: DeliveryEnum.NOW,
-                        startDate: moment().valueOf(),
-                        endDate: moment().valueOf(),
-                        method: DeliveryEnum.NOW
-                    },
-                    timeZone: TimeZoneEnum.SAME,
-                    pastSchedule: PastScheduleEnum.SKIP,
-                    expiration: {
-                        days: 7,
-                        hours: 0
-                    },
-                    automatic: {
-                        trigger: TriggerEnum.COHORT_ENTRY,
-                        deliveryDate: AutomaticDeliveryDateEnum.EVENT_SERVER_DATE,
-                        whenNotMet: AutomaticWhenConditionNotMetEnum.SEND_ANYWAY,
-                        events: [],
-                        capping: false,
-                        maximumMessagesPerUser: 1,
-                        minimumTimeBetweenMessages: {
-                            days: 0,
-                            hours: 0
-                        },
-                        delayed: {
-                            days: 0,
-                            hours: 0
-                        }
-                    },
-
-                }
+                pushNotificationUnderEdit: Object.assign({}, InitialPushNotification)
             };
         },
         props: {
@@ -307,7 +308,9 @@
             },
             onSaveDraft: function() {},
             onSubmit: function() {},
-            onClose: function() {},
+            onClose: function() {
+                this.pushNotificationUnderEdit = Object.assign({}, InitialPushNotification);
+            },
             onOpen: function() {
                 this.fetchUserPropertiesOptionsIfEmpty();
             },
