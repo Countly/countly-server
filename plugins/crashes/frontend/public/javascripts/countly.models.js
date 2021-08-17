@@ -5,19 +5,25 @@
         var _overviewSubmodule = {
             state: function() {
                 return {
+                    crashgroupsFilter: {},
                     activeFilter: {
                         platform: "all",
                         version: "all",
                         fatality: "both"
                     },
                     rawData: {},
-                    rawCrashgroups: []
+                    filteredData: {},
+                    rawCrashgroups: {}
                 };
             },
             getters: {},
             actions: {},
             mutations: {},
             submodules: []
+        };
+
+        _overviewSubmodule.getters.crashgroupsFilter = function(state) {
+            return state.crashgroupsFilter;
         };
 
         _overviewSubmodule.getters.activeFilter = function(state) {
@@ -137,6 +143,10 @@
             *  @returns {object} Rto user in graph
             */
             return function(metric, name) {
+                if (!("data" in state.filteredData)) {
+                    return {};
+                }
+
                 var chartData, dataProps;
 
                 var metricChartConfig = {
@@ -307,11 +317,16 @@
         };
 
         _overviewSubmodule.getters.appVersions = function(state) {
-            return Object.keys(state.rawData.crashes.app_version);
+            return "crashes" in state.rawData ? Object.keys(state.rawData.crashes.app_version) : [];
         };
 
         _overviewSubmodule.getters.platforms = function(state) {
-            return Object.keys(state.rawData.crashes.os);
+            return "crashes" in state.rawData ? Object.keys(state.rawData.crashes.os) : [];
+        };
+
+        _overviewSubmodule.actions.setCrashgroupsFilter = function(context, value) {
+            context.state.crashgroupsFilter = value;
+            context.dispatch("refresh");
         };
 
         _overviewSubmodule.actions.setActiveFilter = function(context, value) {
@@ -376,16 +391,21 @@
                 }
             }));
 
+            var crashgroupsParams = {
+                "app_id": countlyCommon.ACTIVE_APP_ID,
+                "period": countlyCommon.getPeriodForAjax(),
+                "method": "crashes",
+                "display_loader": false
+            };
+
+            if ("query" in context.state.crashgroupsFilter) {
+                crashgroupsParams.query = JSON.stringify(context.state.crashgroupsFilter.query);
+            }
 
             ajaxPromises.push(countlyVue.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
-                    "period": countlyCommon.getPeriodForAjax(),
-                    "method": "crashes",
-                    "display_loader": false
-                },
+                data: crashgroupsParams,
                 dataType: "json",
                 success: function(json) {
                     context.state.rawCrashgroups = json;
@@ -546,7 +566,6 @@
                 return;
             }
 
-
             return new Promise(function(resolve, reject) {
                 countlyVue.$.ajax({
                     type: "GET",
@@ -594,10 +613,10 @@
 
                             if (typeof countlyCrashSymbols !== "undefined") {
                                 var crashes = [{
-                                    _id: this.crashgroup.lrid,
-                                    os: this.crashgroup.os,
-                                    native_cpp: this.crashgroup.native_cpp,
-                                    app_version: this.crashgroup.latest_version
+                                    _id: crashgroupJson.lrid,
+                                    os: crashgroupJson.os,
+                                    native_cpp: crashgroupJson.native_cpp,
+                                    app_version: crashgroupJson.latest_version
                                 }];
 
                                 crashes = crashes.concat(crashgroupJson.data);
@@ -620,7 +639,7 @@
                             }
 
                             Promise.all(ajaxPromises)
-                                .then(function() {
+                                .finally(function() {
                                     context.state.crashgroup = crashgroupJson;
                                     resolve(context.state.crashgroup);
                                 })
@@ -888,8 +907,11 @@
 
         if ("session" in crash) {
             var frequency = Math.round(crash.session.total / crash.session.count);
-            if (frequency > 0) {
-                badges.push({type: "info", content: jQuery.i18n.prop("crashes.every-n-session", frequency)});
+            if (frequency === 1) {
+                badges.push({type: "info", content: jQuery.i18n.prop("crashes.every-session")});
+            }
+            else if (frequency > 1) {
+                badges.push({type: "info", content: jQuery.i18n.prop("crashes.every-n-sessions", frequency)});
             }
         }
 
