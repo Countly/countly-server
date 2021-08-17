@@ -70,7 +70,7 @@
     }
 
     &.text-small {
-        line-height: t.$heading-6-line-height;     
+        line-height: t.$heading-6-line-height;
         font-weight: t.$font-weight-primary !important;
         margin-bottom: 4px;
     }
@@ -91,6 +91,16 @@
     font-size: 10px;
     font-weight: 700;
     line-height: t.$text-smaller-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
+.text-button {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: t.$text-button-size;
+    font-weight: t.$font-weight-text;
+    line-height: t.$text-button-line-height;
     &.font-weight-bold {
         font-weight: t.$font-weight-primary !important;
     }
