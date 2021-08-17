@@ -119,13 +119,28 @@
 
     var globalDaysRange = [],
         globalMonthsRange = [],
+        globalFutureDaysRange = [],
+        globalFutureMonthsRange = [],
         globalMin = moment([2010, 0, 1]),
         globalMax = moment(),
+        globalFutureMax = moment().add(10, "y"),
         daysCursor = moment(globalMin.toDate()),
         monthsCursor = moment(globalMin.toDate());
 
     while (daysCursor < globalMax) {
         globalDaysRange.push({
+            date: daysCursor.toDate(),
+            title: daysCursor.format("MMMM YYYY"),
+            key: daysCursor.unix(),
+            anchorClass: "anchor-" + daysCursor.unix(),
+        });
+        daysCursor = daysCursor.add(1, "M");
+    }
+
+    globalFutureDaysRange.push(globalDaysRange[globalDaysRange.length - 1]);
+
+    while (daysCursor < globalFutureMax) {
+        globalFutureDaysRange.push({
             date: daysCursor.toDate(),
             title: daysCursor.format("MMMM YYYY"),
             key: daysCursor.unix(),
@@ -144,8 +159,22 @@
         monthsCursor = monthsCursor.add(1, "Y");
     }
 
+    globalFutureMonthsRange.push(globalMonthsRange[globalMonthsRange.length - 1]);
+
+    while (monthsCursor < globalFutureMax) {
+        globalFutureMonthsRange.push({
+            date: monthsCursor.toDate(),
+            title: monthsCursor.format("YYYY"),
+            key: monthsCursor.unix(),
+            anchorClass: "anchor-" + monthsCursor.unix(),
+        });
+        monthsCursor = monthsCursor.add(1, "Y");
+    }
+
     Object.freeze(globalDaysRange);
     Object.freeze(globalMonthsRange);
+    Object.freeze(globalFutureDaysRange);
+    Object.freeze(globalFutureMonthsRange);
 
     /**
      * Creates an initial state object 
@@ -160,12 +189,12 @@
         if (instance.type.includes("month")) {
             formatter = "YYYY-MM";
             tableType = "month";
-            globalRange = globalMonthsRange;
+            globalRange = instance.isFuture ? globalFutureMonthsRange : globalMonthsRange;
         }
         else {
             formatter = "YYYY-MM-DD";
             tableType = "date";
-            globalRange = globalDaysRange;
+            globalRange = instance.isFuture ? globalFutureDaysRange : globalDaysRange;
         }
 
         var state = {
@@ -192,8 +221,8 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
-            globalMin: globalMin,
-            globalMax: globalMax
+            globalMin: instance.isFuture ? globalMax : globalMin,
+            globalMax: instance.isFuture ? globalFutureMax : globalMax
         };
 
         return _.extend(state, getDefaultInputState(formatter));
@@ -606,6 +635,11 @@
         },
         props: {
             value: [Object, String, Array, Number],
+            isFuture: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
             type: {
                 type: String,
                 default: "daterange",
@@ -668,6 +702,10 @@
                     Type change causes almost everything to change.
                     So we simply reinitialize the component.
                 */
+                Object.assign(this.$data, getInitialState(this));
+                this.loadValue(this.value);
+            },
+            'isFuture': function() {
                 Object.assign(this.$data, getInitialState(this));
                 this.loadValue(this.value);
             }

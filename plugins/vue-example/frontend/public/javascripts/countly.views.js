@@ -563,6 +563,7 @@
                 selectedDynamicType: 'daterange',
                 selectedDate: moment.now(),
                 selectedDateWTime: moment.now(),
+                selectedDateWTimeFuture: moment.now(),
                 selectedMonth: moment().startOf("month").valueOf(),
                 selectedTime: new Date(2016, 9, 10, 18, 40),
             };
