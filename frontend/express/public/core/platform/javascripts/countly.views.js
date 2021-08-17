@@ -175,6 +175,16 @@ var AppPlatformView = countlyVue.views.create({
 
             return display;
         },
+        topDropdown: function() {
+
+            if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                return this.externalLinks;
+            }
+            else {
+                return null;
+            }
+
+        },
         platformVersions: function() {
             var property = this.$store.state.countlyDevicesAndTypes.selectedProperty;
             var returnData = [];
@@ -209,7 +219,12 @@ var AppPlatformView = countlyVue.views.create({
         tabs: function() {
             return this.platformTabs;
         }
-    }
+    },
+    mixins: [
+        countlyVue.container.dataMixin({
+            'externalLinks': '/analytics/platforms/links'
+        })
+    ]
 });
 
 

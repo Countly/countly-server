@@ -2,7 +2,15 @@
 	 <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('devices.devices-and-types.title')}} </h2>
-            <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description"></span>
+            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description"></span>
+        </template>
+		<template v-slot:header-right>
+          <cly-more-options v-if="topDropdown" size="small">
+            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+              <span :class="item.icon"></span>
+              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+            </el-dropdown-item>
+          </cly-more-options>
         </template>
 		 <template v-slot:header-tabs>
             <cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs">

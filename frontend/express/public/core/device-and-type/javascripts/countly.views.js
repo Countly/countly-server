@@ -78,7 +78,6 @@ var DevicesTabView = countlyVue.views.create({
 
 var AllTabs = countlyVue.views.create({
     template: CV.T('/core/device-and-type/templates/devices-and-types.html'),
-    mixins: [countlyVue.mixins.hasDrawers("main")],
     data: function() {
         return {
             appId: countlyCommon.ACTIVE_APP_ID,
@@ -157,11 +156,24 @@ var AllTabs = countlyVue.views.create({
     computed: {
         tabs: function() {
             return this.localTabs;
+        },
+        topDropdown: function() {
+            if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                return this.externalLinks;
+            }
+            else {
+                return null;
+            }
         }
     },
     methods: {
 
-    }
+    },
+    mixins: [
+        countlyVue.container.dataMixin({
+            'externalLinks': '/analytics/devices/links'
+        })
+    ]
 });
 
 var TehnologyAnalyticsView = countlyVue.views.create({
