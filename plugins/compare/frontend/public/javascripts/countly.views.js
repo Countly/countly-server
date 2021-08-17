@@ -320,10 +320,10 @@ var compareEventsViewHelper = {
 };
 
 if (countlyAuth.validateRead(app.compareView.featureName)) {
-    app.route("/analytics/events/compare", 'views', function() {
-        this.compareView.setHelper(compareEventsViewHelper);
-        this.renderWhenReady(this.compareView);
-    });
+    // app.route("/analytics/events/compare", 'views', function() {
+    //     this.compareView.setHelper(compareEventsViewHelper);
+    //     this.renderWhenReady(this.compareView);
+    // });
 }
 /* End of compare for the events view */
 

@@ -404,7 +404,6 @@
     };
 
     countlyAllEvents.getVuexModule = function() {
-
         var getInitialState = function() {
             return {
                 allEventsData: {},
@@ -465,6 +464,7 @@
                         if (res) {
                             context.commit("setSelectedEventsData", res);
                             context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, res) || []);
+                            context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
                         }
                     });
             },
