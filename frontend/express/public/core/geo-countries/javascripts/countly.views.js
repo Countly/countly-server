@@ -32,23 +32,23 @@ var CityView = countlyVue.views.create({
             var totals = this.countryTotals;
 
             return [
-                {"value": "t", "label": CV.i18n('common.table.total-sessions'), "trend": totals["t"]["trend"], "number": countlyCommon.getShortNumber(totals["t"]["total"] || 0), "trendValue": totals["t"]["change"]},
-                {"value": "u", "label": CV.i18n('common.table.total-users'), "trend": totals["u"]["trend"], "number": countlyCommon.getShortNumber(totals["u"]["total"] || 0), "trendValue": totals["u"]["change"]},
-                {"value": "n", "label": CV.i18n('common.table.new-users'), "trend": totals["n"]["trend"], "number": countlyCommon.getShortNumber(totals["n"]["total"] || 0), "trendValue": totals["n"]["change"]}
+                {"value": "t", "label": CV.i18n('common.table.total-sessions'), "trend": totals.t.trend, "number": countlyCommon.getShortNumber(totals.t.total || 0), "trendValue": totals.t.change},
+                {"value": "u", "label": CV.i18n('common.table.total-users'), "trend": totals.u.trend, "number": countlyCommon.getShortNumber(totals.u.total || 0), "trendValue": totals.u.change},
+                {"value": "n", "label": CV.i18n('common.table.new-users'), "trend": totals.n.trend, "number": countlyCommon.getShortNumber(totals.n.total || 0), "trendValue": totals.n.change}
             ];
         },
         countryTotals: function() {
             var totals = this.data.totals;
             totals = totals || {"u": {}, "t": {}, "n": {}};
-            totals["t"] = totals["t"] || {};
-            totals["u"] = totals["u"] || {};
-            totals["n"] = totals["n"] || {};
+            totals.t = totals.t || {};
+            totals.u = totals.u || {};
+            totals.n = totals.n || {};
             return totals;
         },
         countriesData: function() {
             var data = {};
             var totals = this.countryTotals;
-            var value = totals["t"]["total"] || 1;
+            var value = totals.t.total || 1;
             data[this.$route.params.region] = {"value": value};
             return data;
         },
@@ -140,13 +140,13 @@ var CountryView = countlyVue.views.create({
         },
         chooseProperties: function() {
             var totals = this.data.totals || {};
-            totals["t"] = totals["t"] || {};
-            totals["u"] = totals["u"] || {};
-            totals["n"] = totals["n"] || {};
+            totals.t = totals.t || {};
+            totals.u = totals.u || {};
+            totals.n = totals.n || {};
             return [
-                {"value": "t", "label": CV.i18n('common.table.total-sessions'), "trend": totals["t"]["trend"], "number": countlyCommon.getShortNumber(totals["t"]["total"] || 0), "trendValue": totals["t"]["change"]},
-                {"value": "u", "label": CV.i18n('common.table.total-users'), "trend": totals["u"]["trend"], "number": countlyCommon.getShortNumber(totals["u"]["total"] || 0), "trendValue": totals["u"]["change"]},
-                {"value": "n", "label": CV.i18n('common.table.new-users'), "trend": totals["n"]["trend"], "number": countlyCommon.getShortNumber(totals["n"]["total"] || 0), "trendValue": totals["n"]["change"]}
+                {"value": "t", "label": CV.i18n('common.table.total-sessions'), "trend": totals.t.trend, "number": countlyCommon.getShortNumber(totals.t.total || 0), "trendValue": totals.t.change},
+                {"value": "u", "label": CV.i18n('common.table.total-users'), "trend": totals.u.trend, "number": countlyCommon.getShortNumber(totals.u.total || 0), "trendValue": totals.u.change},
+                {"value": "n", "label": CV.i18n('common.table.new-users'), "trend": totals.n.trend, "number": countlyCommon.getShortNumber(totals.n.total || 0), "trendValue": totals.n.change}
             ];
         },
         geoChartData: function() {
@@ -169,7 +169,7 @@ var CountryView = countlyVue.views.create({
             }
             for (var k = 0; k < table.length; k++) {
                 var cc = "<img src='" + countlyGlobal.path + "/images/flags/" + table[k].code + ".png'/><p class='number'>" + table[k][selectedProperty] + "</p><p>" + title + "</p>";
-                geoChart.push([{"v": table[k]["country"], "f": table[k]["countryTranslated"]}, table[k][selectedProperty], cc]);
+                geoChart.push([{"v": table[k].country, "f": table[k].countryTranslated}, table[k][selectedProperty], cc]);
             }
             return geoChart;
         },
@@ -178,16 +178,18 @@ var CountryView = countlyVue.views.create({
             var table = this.data.table || [];
             var selectedProperty = this.$store.state.countlyCountry.selectedProperty || "t";
             for (var k = 0; k < table.length; k++) {
-                geoChart[table[k]["country"]] = {"value": table[k][selectedProperty]};
+                geoChart[table[k].country] = {"value": table[k][selectedProperty]};
             }
             return geoChart;
         },
         countryTable: function() {
+            this.data = this.data || {};
+            this.data.table = this.data.table || [];
             for (var z = 0; z < this.data.table.length; z++) {
                 this.data.table[z].flag = "flag " + this.data.table[z].code;
                 this.data.table[z].styling = "margin-top:2px; background-image:url(" + countlyGlobal.path + "/images/flags/" + this.data.table[z].code + ".png);";
             }
-            return this.data.table || [];
+            return this.data.table;
         },
         selectedProperty: {
             set: function(value) {

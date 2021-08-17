@@ -1,4 +1,4 @@
-/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,window, countlySession*/
+/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue, countlySession*/
 (function(countlyCities) {
 
     CountlyHelpers.createMetricModel(window.countlyCities, {name: "cities", estOverrideMetric: "cities"}, jQuery, function(rangeArr) {
