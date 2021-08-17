@@ -325,6 +325,7 @@
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
     }
 
     &__input-description {
@@ -565,35 +566,27 @@
     background-color: white;
     border: 1px solid lightgrey;
 
-    &:after {
-        box-shadow: -4px -4px 4px -1px rgb(0 0 0 / 3%);
-        position: absolute;
-        display: block;
-        content: "";
-        border: 1px solid lightgrey;
-        border-width: 1px 0 0 1px;
-        top: -9px;
-        left: calc(50% - 7px);
-        bottom: auto;
-        height: 14px;
-        width: 14px;
-        transform: rotate(45deg);
-        -webkit-transform: rotate(45deg); /* Safari &amp; Chrome */
-        -moz-transform: rotate(45deg); /* Firefox */
-        -ms-transform: rotate(45deg); /* Internet Explorer */
-        -o-transform: rotate(45deg); /* Opera */
-        background: white;
-    }
-
     &__inner {
         border: none;
         border-radius: 4px;
-        padding: 10px;
+        margin: 16px;
         line-height: 18px;
     }
 
     &__select-value {
-        width:300px;
+        width:320px;
+    }
+
+    &__title {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
+        margin-bottom:24px;
+        color: #333C48;
+    }
+    &__confirm {
+        background: #12AF51;
+        color:white;
     }
 }
 

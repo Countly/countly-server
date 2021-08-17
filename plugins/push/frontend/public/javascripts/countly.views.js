@@ -310,6 +310,7 @@
             onSubmit: function() {},
             onClose: function() {
                 this.pushNotificationUnderEdit = Object.assign({}, InitialPushNotification);
+                this.closeAddUserPropertyPopover();
             },
             onOpen: function() {
                 this.fetchUserPropertiesOptionsIfEmpty();
