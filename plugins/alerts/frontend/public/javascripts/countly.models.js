@@ -5,7 +5,13 @@
 
 (function(countlyAlerts, $) {
     
-
+    countlyAlerts.RatingOptions = [
+        {value: 1, label: jQuery.i18n.map["star.one-star"]},
+        {value: 2, label: jQuery.i18n.map["star.two-star"]},
+        {value: 3, label: jQuery.i18n.map["star.three-star"]},
+        {value: 4, label: jQuery.i18n.map["star.four-star"]},
+        {value: 5, label: jQuery.i18n.map["star.five-star"]},
+    ];
     /**
 	* extract event name & value
     * @param {array} data - original event list
@@ -73,16 +79,6 @@
 
         return dfd.promise();
     }
-
-    countlyAlerts.getEventName = function(eventId, callback) {
-        var eventKey = eventId.split("***")[1],
-            appId = eventId.split("***")[0],
-            results = [];
-
-        $.when(getEventsDfd(appId, results)).then(function() {
-            callback(getEventLongName(eventKey, (results[0].map) ? results[0].map : null));
-        });
-    };
 
     countlyAlerts.getEventsForApps = function(appId, callback) {
         if (!appId) {
@@ -158,11 +154,9 @@
                     url: countlyCommon.API_PARTS.data.w + "/alert/save",
                     data: {
                         "alert_config": JSON.stringify(alertConfig),
-                        "app_id": alertConfig.selectedApps[0]
                     },
                     dataType: "json",
                 }).then(function(data) {
-                    console.log(data,"!!!");
                 });
             },
             deleteAlert: function(context, alertID) {
@@ -223,7 +217,6 @@
                         dataType: "json",
                         data: {
                             preventGlobalAbort: true,
-                            "app_id": countlyCommon.ACTIVE_APP_ID
                         },
                     }).then(function(data) {
                         var alertsList = data.alertsList;
@@ -240,8 +233,9 @@
                                     return countlyGlobal.apps[appID] && countlyGlobal.apps[appID].name;
                                 });
                             }
+                            /*eslint-disable */
                             tableData.push({
-                                ...alertsList[i],
+                                ...alertsList[i],   
                                 _id: alertsList[i]._id,
                                 app_id: alertsList[i].selectedApps[0],
                                 appNameList: appNameList.join(', '),
@@ -251,6 +245,7 @@
                                 enabled: alertsList[i].enabled || false,
                                 createdByUser: alertsList[i].createdByUser || ''
                             });
+                            /*eslint-enable */
                         }
                         context.commit("setAll", tableData);
                         context.commit("setCount", count);
