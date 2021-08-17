@@ -48,8 +48,8 @@
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__checkbox-group-header">Platforms</div>
                     <validation-provider v-slot="validation" rules="required" name="platforms">
                         <el-checkbox-group v-model="pushNotificationUnderEdit.platforms">
-                            <el-checkbox type="checkbox" :label="PlatformEnum.ANDROID" :class="{'cly-vue-push-notification-checkbox-is-error':validation.errors.length > 0}">Android</el-checkbox>
-                            <el-checkbox type="checkbox" :label="PlatformEnum.IOS" :class="{'cly-vue-push-notification-checkbox-is-error':validation.errors.length > 0}">IOS</el-checkbox>
+                            <el-checkbox type="checkbox" :label="PlatformEnum.ANDROID" :class="{'cly-vue-push-notification-drawer__checkbox-is-error':validation.errors.length > 0}">Android</el-checkbox>
+                            <el-checkbox type="checkbox" :label="PlatformEnum.IOS" :class="{'cly-vue-push-notification-drawer__checkbox-is-error':validation.errors.length > 0}">IOS</el-checkbox>
                         </el-checkbox-group>
                     </validation-provider>
                 </div>

@@ -359,6 +359,13 @@
         font-weight: normal;
     }
 
+    &__checkbox-is-error {
+        .el-checkbox__inner {
+            border-color: #F56C6C;
+            background-color: #FBECE5;
+        }
+    }
+
     //diverge!
     &__radio-group-header {
         font-size: typography.$heading-4-size;
@@ -443,12 +450,7 @@
     }
 }
 
-.cly-vue-push-notification-checkbox-is-error {
-    .el-checkbox__inner {
-        border-color: #F56C6C;
-        background-color: #FBECE5;
-    }
-}
+
 
 .cly-vue-push-notification-large-radio-button-with-description {
     &__container {
