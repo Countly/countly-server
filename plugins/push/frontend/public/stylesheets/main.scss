@@ -443,6 +443,13 @@
     }
 }
 
+.cly-vue-push-notification-checkbox-is-error {
+    .el-checkbox__inner {
+        border-color: #F56C6C;
+        background-color: #FBECE5;
+    }
+}
+
 .cly-vue-push-notification-large-radio-button-with-description {
     &__container {
         flex-basis: 0;
@@ -551,39 +558,43 @@
 }
 
 .cly-vue-push-notification-add-user-property-popover {
-    $tooltip_color: #ececec;
-
     position: absolute;
     z-index: 2001;
-    background-color: #{$tooltip_color};
-    border-radius: 5px;
+    background-color: white;
+    border: 1px solid lightgrey;
+
+    &:after {
+        box-shadow: -4px -4px 4px -1px rgb(0 0 0 / 3%);
+        position: absolute;
+        display: block;
+        content: "";
+        border: 1px solid lightgrey;
+        border-width: 1px 0 0 1px;
+        top: -9px;
+        left: calc(50% - 7px);
+        bottom: auto;
+        height: 14px;
+        width: 14px;
+        transform: rotate(45deg);
+        -webkit-transform: rotate(45deg); /* Safari &amp; Chrome */
+        -moz-transform: rotate(45deg); /* Firefox */
+        -ms-transform: rotate(45deg); /* Internet Explorer */
+        -o-transform: rotate(45deg); /* Opera */
+        background: white;
+    }
 
     &__inner {
         border: none;
-        background: #{$tooltip_color};
         border-radius: 4px;
-        padding: 6px 14px;
+        padding: 10px;
         line-height: 18px;
     }
 
-    &__arrow {
-        border-width: 8px 8px 8px 8px;
-        border-top-color: transparent !important;
-        border-right-color: transparent !important;
-        border-left-color: transparent !important;
-        left: calc(50% - 8px);
-        margin-top: 0;
-        margin-bottom: 0;
-        width: 0;
-        height: 0;
-        border-style: solid;
-        position: absolute;
-        margin: 5px;
-        border-color: #{$tooltip_color};
-        z-index:1;
-        top:-21px;
+    &__select-value {
+        width:300px;
     }
 }
+
 // Vue emoji-picker
 .cly-vue-push-notification-emoji-wrapper{
     position: relative;

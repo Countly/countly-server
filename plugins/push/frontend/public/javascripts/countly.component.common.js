@@ -114,10 +114,8 @@
                 required: false,
             },
             rules: {
-                type: Array,
-                default: function() {
-                    return [];
-                },
+                type: [String, Object],
+                default: null,
                 required: false,
             }
         },

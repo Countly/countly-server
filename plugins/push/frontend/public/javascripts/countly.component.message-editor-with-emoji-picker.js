@@ -1,34 +1,52 @@
 /*global CV,countlyVue*/
 (function(countlyPushNotificationComponent) {
+
     countlyPushNotificationComponent.MessageEditorWithEmojiPicker = countlyVue.views.create({
         template: CV.T("/push/templates/message-editor-with-emoji-picker.html"),
         props: {
-            placeholder: {
+            id: {
                 type: String,
-                required: false,
-                default: ""
+                required: true
             },
             type: {
                 type: String,
                 required: false,
                 default: "text"
             },
-            id: {
+            isDefaultLocalizationActive: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
+            placeholder: {
                 type: String,
-                required: true
+                required: false,
+                default: ""
             }
         },
         data: function() {
             return {
                 search: "",
                 defaultLabelValue: "Select property",
-                defaultLabelPreview: "Select property|"
+                defaultLabelPreview: "Select property|",
+                defaultLocalizationValidationErrors: [],
             };
         },
         computed: {
             hasDefaultSlot: function() {
                 return Boolean(this.$slots.default);
             },
+            hasValidationErrors: function() {
+                return this.isDefaultLocalizationActive && this.hasDefaultLocalizationValidationErrors;
+            },
+            hasDefaultLocalizationValidationErrors: function() {
+                return Boolean(this.defaultLocalizationValidationErrors.length);
+            },
+        },
+        watch: {
+            isDefaultLocalizationActive: function() {
+                this.validate();
+            }
         },
         methods: {
             appendZeroWidthSpace: function() {
@@ -72,6 +90,7 @@
             removeUserProperty: function(id) {
                 this.$refs.element.querySelector("#id-" + id).remove();
                 this.$emit('change', this.$refs.element.innerHTML);
+                this.validate();
             },
             getHTMLContent: function() {
                 return this.$refs.element.innerHTML;
@@ -90,6 +109,7 @@
 
                 element.setAttribute("data-user-property-label", this.getLabelValueFromPreview(previewValue));
                 this.$emit('change', this.$refs.element.innerHTML);
+                this.validate();
             },
             setUserPropertyFallbackValue: function(id, previewValue, fallback) {
                 var element = this.$refs.element.querySelector("#id-" + id);
@@ -111,9 +131,41 @@
                 this.$refs.element.appendChild(document.createTextNode(emoji));
                 this.setCursorAtEnd();
                 this.$emit('change', this.$refs.element.innerHTML);
+                this.validate();
+            },
+            isDefaultLocalizationValidationErrorMessageFound: function(value) {
+                return Boolean(this.defaultLocalizationValidationErrors.filter(function(errorMessage) {
+                    errorMessage === value;
+                }).length);
+            },
+            addDefaultLocalizationValidationErrorMessageIfNotFound: function(message) {
+                if (!this.isDefaultLocalizationValidationErrorMessageFound(message)) {
+                    this.defaultLocalizationValidationErrors.push(message);
+                }
+            },
+            isRequiredValid: function(value) {
+                return Boolean(value.trim());
+            },
+            validate: function(value) {
+                if (!value) {
+                    value = this.$refs.element.innerHTML;
+                }
+                if (this.isDefaultLocalizationActive) {
+                    if (!this.isRequiredValid(value)) {
+                        this.addDefaultLocalizationValidationErrorMessageIfNotFound("Field is required");
+                    }
+                    else {
+                        this.defaultLocalizationValidationErrors = [];
+                    }
+                    this.$refs.defaultLocalizationValidationProvider.setErrors(this.defaultLocalizationValidationErrors);
+                }
+                if (this.hasDefaultLocalizationValidationErrors) {
+                    this.$refs.defaultLocalizationValidationProvider.setErrors(this.defaultLocalizationValidationErrors);
+                }
             },
             onInput: function(newValue) {
                 this.$emit('change', newValue);
+                this.validate(newValue);
             },
         },
         mounted: function() {
@@ -126,6 +178,8 @@
                     element.dispatchEvent(event);
                 });
             }
+            //TODO-LA: trigger validation when user tries to go to next step instead of when component is mounted
+            this.validate(this.$refs.element.innerHTML);
         },
         beforeDestroy: function() {
             //TODO-LA: remove all user properties elements' event listeners

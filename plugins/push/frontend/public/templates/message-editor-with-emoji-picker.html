@@ -1,7 +1,7 @@
 <div class="cly-vue-push-notification-emoji-wrapper">
-    <div class="el-input">
-        <component is="div" class="el-input__inner" v-bind:id="id" contenteditable="true" ref="element" @input="onInput($event.target.innerHTML)">
-        </component>
+    <validation-provider ref="defaultLocalizationValidationProvider" v-slot="validation" rules="required"> </validation-provider>
+    <div :class="['el-input',hasValidationErrors?'is-error':null]">
+        <component is="div" class="el-input__inner" v-bind:id="id" contenteditable="true" ref="element" @input="onInput($event.target.innerHTML)"></component>
     </div>
     <emoji-picker @emoji="appendEmoji" :search="search">
         <div

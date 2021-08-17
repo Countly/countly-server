@@ -30,9 +30,9 @@
                 <el-switch v-model="innerToggle" @change="onToggle"></el-switch>
             </div>
         </div>
-        <validation-provider v-slot="v" v-if="toggle">
-            <slot v-if="hasDefaultSlot"></slot>
-            <el-input v-else v-model="innerInput" @input="onInput" :placeholder="placeholder"></el-input>
+        <slot v-if="hasDefaultSlot && toggle"></slot>
+        <validation-provider v-slot="validation" v-else-if="toggle" :rules="rules">
+            <el-input v-model="innerInput" @input="onInput" :placeholder="placeholder" :class="{'is-error': validation.errors.length > 0}" ></el-input>
         </validation-provider>
     </div>
 </script>

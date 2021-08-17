@@ -78,7 +78,12 @@
                 this.$emit('remove', this.id, this.container);
             },
             onClose: function() {
-                this.$emit('close');
+                var self = this;
+                this.$refs.validationObserver.validate().then(function(isValidated) {
+                    if (isValidated) {
+                        self.$emit('close');
+                    }
+                });
             },
         },
         mounted: function() {

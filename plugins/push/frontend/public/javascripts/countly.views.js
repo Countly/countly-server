@@ -115,7 +115,7 @@
                         isSubtitleEnabled: false,
                         isMediaUrlEnabled: false,
                         isSoundFileNameEnabled: false,
-                        isBadgeEnabled: false,
+                        isBadgeNumberEnabled: false,
                         isOnClickURLEnabled: false,
                         isJsonEnabled: false,
                         isUserDataEnabled: false,
@@ -123,7 +123,7 @@
                     android: {
                         isMediaUrlEnabled: false,
                         isSoundFileNameEnabled: false,
-                        isBadgeEnabled: false,
+                        isBadgeNumberEnabled: false,
                         isIconEnabled: false,
                         isOnClickURLEnabled: false,
                         isJsonEnabled: false,
@@ -134,6 +134,7 @@
                 selectedUserPropertyId: null,
                 selectedUserPropertyContainer: "title",
                 isAddUserPropertyPopoverOpen: false,
+                urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
                 addUserPropertyPopoverPosition: {
                     top: 0,
                     left: 0
@@ -142,7 +143,7 @@
                     activePlatformSettings: [],
                     multipleLocalizations: false,
                     name: "",
-                    platforms: [],
+                    platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
                     targeting: TargetingEnum.ALL,
                     whenToDetermine: WhenToDetermineEnum.BEFORE,
                     message: {
@@ -150,7 +151,7 @@
                             title: "",
                             content: "",
                             localizationLabel: "Default",
-                            buttons: [{label: "", value: ""}],
+                            buttons: [],
                             properties: {
                                 title: {},
                                 content: {}
@@ -161,7 +162,7 @@
                                 subtitle: "",
                                 mediaURL: "",
                                 soundFileName: "",
-                                badge: "",
+                                badgeNumber: "",
                                 onClickURL: "",
                                 json: null,
                                 userData: []
@@ -169,7 +170,7 @@
                             android: {
                                 mediaURL: "",
                                 soundFileName: "",
-                                badge: "",
+                                badgeNumber: "",
                                 icon: "",
                                 onClickURL: "",
                                 json: null,
@@ -202,6 +203,10 @@
                         capping: false,
                         maximumMessagesPerUser: 1,
                         minimumTimeBetweenMessages: {
+                            days: 0,
+                            hours: 0
+                        },
+                        delayed: {
                             days: 0,
                             hours: 0
                         }
@@ -237,6 +242,9 @@
                 }
                 return "+Add Second button";
             },
+            isDefaultLocalizationActive: function() {
+                return this.activeLocalization === 'default';
+            },
             isAddButtonDisabled: function() {
                 return this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.length === 2;
             },
@@ -265,6 +273,20 @@
                     return {label: location.title, value: location._id};
                 });
             },
+            areCohortsAndLocationsRequired: function() {
+                return !this.pushNotificationUnderEdit.cohorts.length && !this.pushNotificationUnderEdit.locations.length;
+            },
+            areEventsAndLocationsRequired: function() {
+                return !this.pushNotificationUnderEdit.automatic.events.length && !this.pushNotificationUnderEdit.locations.length;
+            },
+            areLocationsRequired: function() {
+                if (this.pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT) {
+                    return this.areEventsAndLocationsRequired;
+                }
+                else {
+                    return this.areCohortsAndLocationsRequired;
+                }
+            }
         },
         methods: {
             setUserPropertiesOptions: function(userPropertiesOptionsDto) {
@@ -313,7 +335,7 @@
                         title: "",
                         content: "",
                         localizationLabel: label,
-                        buttons: [{label: "", value: ""}],
+                        buttons: [],
                         properties: {
                             title: {},
                             content: {}
@@ -408,18 +430,20 @@
                 this.addUserPropertyPopoverPosition = position;
             },
             onAddUserProperty: function(container) {
-                var propertyIndex = this.userPropertiesIdCounter;
-                this.userPropertiesIdCounter = this.userPropertiesIdCounter + 1;
-                this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], propertyIndex, {
-                    id: propertyIndex,
-                    value: "",
-                    label: "Select property|",
-                    fallback: "",
-                    isUppercase: false
-                });
-                this.setSelectedUserPropertyId(propertyIndex);
-                this.setSelectedUserPropertyContainer(container);
-                this.addUserPropertyInHTML(propertyIndex, container);
+                if (!this.isAddUserPropertyPopoverOpen) {
+                    var propertyIndex = this.userPropertiesIdCounter;
+                    this.userPropertiesIdCounter = this.userPropertiesIdCounter + 1;
+                    this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], propertyIndex, {
+                        id: propertyIndex,
+                        value: "",
+                        label: "Select property|",
+                        fallback: "",
+                        isUppercase: false
+                    });
+                    this.setSelectedUserPropertyId(propertyIndex);
+                    this.setSelectedUserPropertyContainer(container);
+                    this.addUserPropertyInHTML(propertyIndex, container);
+                }
             },
             onRemoveUserProperty: function(id, container) {
                 this.closeAddUserPropertyPopover();
@@ -443,10 +467,12 @@
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].isUppercase = isUppercase;
             },
             onUserPropertyClick: function(id, container, position) {
-                this.setSelectedUserPropertyId(id);
-                this.setSelectedUserPropertyContainer(container);
-                this.setAddUserPropertyPopoverPosition(position);
-                this.openAddUserPropertyPopover();
+                if (!this.isAddUserPropertyPopoverOpen) {
+                    this.setSelectedUserPropertyId(id);
+                    this.setSelectedUserPropertyContainer(container);
+                    this.setAddUserPropertyPopoverPosition(position);
+                    this.openAddUserPropertyPopover();
+                }
             },
             fetchAllEvents: function() {
                 var self = this;
