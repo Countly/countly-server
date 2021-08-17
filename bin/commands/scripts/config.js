@@ -49,7 +49,7 @@ manager.dbConnection().then((db) => {
                 }
                 db.close();
             }
-            else if (myArgs[0] && typeof configs[myArgs[0]] != "undefined") {
+            else if (myArgs[0] && (typeof configs[myArgs[0]] != "undefined" || myArgs[2] === "--force")) {
                 if (typeof myArgs[1] == "undefined") {
                     console.log(myArgs[0], "=", configs[myArgs[0]]);
                     db.close();
