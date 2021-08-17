@@ -84,7 +84,7 @@
         {label: "Silent message", value: MessageTypeEnum.SILENT}
     ];
 
-    var InitialPushNotification = {
+    var InitialEditedPushNotification = {
         activePlatformSettings: [],
         multipleLocalizations: false,
         name: "",
@@ -213,7 +213,7 @@
                     top: 0,
                     left: 0
                 },
-                pushNotificationUnderEdit: Object.assign({}, InitialPushNotification)
+                pushNotificationUnderEdit: JSON.parse(JSON.stringify(InitialEditedPushNotification))
             };
         },
         props: {
@@ -309,7 +309,7 @@
             onSaveDraft: function() {},
             onSubmit: function() {},
             onClose: function() {
-                this.pushNotificationUnderEdit = Object.assign({}, InitialPushNotification);
+                this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(InitialEditedPushNotification));
                 this.closeAddUserPropertyPopover();
             },
             onOpen: function() {
