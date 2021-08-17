@@ -517,11 +517,20 @@
 }
 
 .cly-vue-push-notification-accordion-with-left-side-arrow {
+    border: 1px solid #ECECEC;
     .collapse-title {
         flex: 1 0 90%;
         order: 1;
     }
         
+    .el-collapse-item {
+        .el-collapse-item__header {
+            padding-left: 24px;
+        }
+        &__wrap {
+            padding:24px;
+        }
+    }
     .el-collapse-item__header {
         flex: 1 0 auto;
         order: -1;
