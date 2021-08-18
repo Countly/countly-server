@@ -106,7 +106,6 @@
                 var element = this.$refs.element.querySelector("#id-" + id);
                 element.innerText = previewValue;
                 element.setAttribute("data-user-property-value", value);
-
                 element.setAttribute("data-user-property-label", this.getLabelValueFromPreview(previewValue));
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.validate();
@@ -132,19 +131,6 @@
                 this.setCursorAtEnd();
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.validate();
-            },
-            isDefaultLocalizationValidationErrorMessageFound: function(value) {
-                return Boolean(this.defaultLocalizationValidationErrors.filter(function(errorMessage) {
-                    errorMessage === value;
-                }).length);
-            },
-            addDefaultLocalizationValidationErrorMessageIfNotFound: function(message) {
-                if (!this.isDefaultLocalizationValidationErrorMessageFound(message)) {
-                    this.defaultLocalizationValidationErrors.push(message);
-                }
-            },
-            isRequiredValid: function(value) {
-                return Boolean(value.trim());
             },
             validate: function(value) {
                 var self = this;
