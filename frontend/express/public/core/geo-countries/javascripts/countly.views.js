@@ -86,9 +86,6 @@ var CityView = countlyVue.views.create({
             },
             get: function() {
                 return this.$store.state.countlyCities.selectedProperty;
-            },
-            dropdownsDisabled: function() {
-                return "";
             }
         },
         isLoading: function() {
@@ -136,7 +133,7 @@ var CountryView = countlyVue.views.create({
     },
     computed: {
         data: function() {
-            return this.$store.state.countlyCountry.data;
+            return this.$store.state.countlyCountry.data || {};
         },
         chooseProperties: function() {
             var totals = this.data.totals || {};
@@ -183,7 +180,7 @@ var CountryView = countlyVue.views.create({
             return geoChart;
         },
         countryTable: function() {
-            this.data = this.data || {};
+
             this.data.table = this.data.table || [];
             for (var z = 0; z < this.data.table.length; z++) {
                 this.data.table[z].flag = "flag " + this.data.table[z].code;
@@ -197,9 +194,6 @@ var CountryView = countlyVue.views.create({
             },
             get: function() {
                 return this.$store.state.countlyCountry.selectedProperty;
-            },
-            dropdownsDisabled: function() {
-                return "";
             }
         },
         isLoading: function() {
@@ -226,8 +220,9 @@ var GeoAnalyticsView = countlyVue.views.create({
     mixins: [
         countlyVue.container.tabsMixin({
             "geoAnalyticsTabs": "/analytics/geo"
-        })
-    ].concat(countlyVue.container.mixins(["/analytics/geo"])),
+        }),
+        countlyVue.container.mixins(["/analytics/geo"])
+    ],
     data: function() {
         return {
             selectedTab: (this.$route.params && this.$route.params.tab) || "countries"
