@@ -88,7 +88,7 @@ var EventsPages = countlyVue.views.BaseView.extend({
                     title: "Event Stats",
                     name: "allEvents",
                     component: AllEventsView,
-                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/key/" + this.$store.getters["countlyAllEvents/selectedEventName"]
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/key/" + localStorage.getItem("eventKey")
                 },
                 {
                     title: "Compare Events",
@@ -297,7 +297,15 @@ var CompareEventsViewWrapper = new countlyVue.views.BackboneWrapper({
 
 app.route("/analytics/events/key/:eventKey", "all-events", function(eventKey) {
     var params = {
-        eventKey: eventKey ? eventKey : ""
+        eventKey: eventKey && eventKey !== "undefined" ? eventKey : undefined
+    };
+    AllEventsViewWrapper.params = params;
+    this.renderWhenReady(AllEventsViewWrapper);
+});
+
+app.route("/analytics/events", "all-events", function() {
+    var params = {
+        eventKey: undefined
     };
     AllEventsViewWrapper.params = params;
     this.renderWhenReady(AllEventsViewWrapper);

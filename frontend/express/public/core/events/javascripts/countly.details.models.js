@@ -410,7 +410,7 @@
                 allEventsGroupsData: [],
                 selectedEventsData: {},
                 selectedDatePeriod: "30days",
-                selectedEventName: "",
+                selectedEventName: undefined,
                 isGroup: false,
                 description: "",
                 currentActiveSegmentation: "segment",
@@ -431,6 +431,10 @@
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsData", res);
+                            if (!context.state.selectedEventName) {
+                                localStorage.setItem("eventKey", res.list[0]);
+                                context.commit('setSelectedEventName', res.list[0]);
+                            }
                             countlyAllEvents.service.fetchSelectedEventsData(context)
                                 .then(function(response) {
                                     if (response) {
@@ -472,6 +476,7 @@
                 context.commit('setSelectedDatePeriod', period);
             },
             fetchSelectedEventName: function(context, name) {
+                localStorage.setItem("eventKey", name);
                 context.commit('setSelectedEventName', name);
             },
             fetchCurrentActiveSegmentation: function(context, name) {
