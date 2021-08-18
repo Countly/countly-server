@@ -3,7 +3,7 @@ const common = require('../../../api/utils/common.js');
 const { processRequest } = require('../../../api/utils/requestProcessor');
 
 //write api call
-plugins.register("/sdk", function(ob) {
+plugins.register("/sdk/pre", function(ob) {
     if (ob.params.qstring && ob.params.qstring.events) {
         ob.params.preservedEvents = JSON.stringify(ob.params.qstring.events);
     }

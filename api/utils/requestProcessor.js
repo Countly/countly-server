@@ -2570,31 +2570,36 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 }
             }
 
-            plugins.dispatch("/sdk", {
+            plugins.dispatch("/sdk/pre", {
                 params: params,
                 app: app
             }, () => {
-                plugins.dispatch("/sdk/log", {params: params});
-                if (!params.cancelRequest) {
-                    processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
-                        if (userErr) {
-                            if (!params.res.finished) {
-                                common.returnMessage(params, 400, userErr);
+                plugins.dispatch("/sdk", {
+                    params: params,
+                    app: app
+                }, () => {
+                    plugins.dispatch("/sdk/log", {params: params});
+                    if (!params.cancelRequest) {
+                        processUser(params, validateAppForWriteAPI, done, try_times).then((userErr) => {
+                            if (userErr) {
+                                if (!params.res.finished) {
+                                    common.returnMessage(params, 400, userErr);
+                                }
                             }
-                        }
-                        else {
-                            processRequestData(params, app, done);
-                        }
-                    });
-                }
-                else {
-                    if (!params.res.finished && !params.waitForResponse) {
-                        common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
-                        //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                            else {
+                                processRequestData(params, app, done);
+                            }
+                        });
                     }
-                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
-                    return done ? done() : false;
-                }
+                    else {
+                        if (!params.res.finished && !params.waitForResponse) {
+                            common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
+                            //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                        }
+                        common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
+                        return done ? done() : false;
+                    }
+                });
             });
         });
     });

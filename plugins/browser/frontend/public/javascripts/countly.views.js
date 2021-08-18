@@ -1,179 +1,244 @@
-/*global countlyView, countlyAuth, $, countlyBrowser, countlyTotalUsers, countlyCommon, jQuery, CountlyHelpers, BrowserView, app, addDrill*/
-window.BrowserView = countlyView.extend({
-    featureName: 'browser',
-    activeSegment: {},
-    beforeRender: function() {
-        return $.when(countlyBrowser.initialize(), countlyTotalUsers.initialize("browser")).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        var self = this;
-        var data = countlyBrowser.getBrowserData();
-
-        var chartHTML = "";
-        var versionData = {};
-        if (data && data.chartDP && data.chartDP.dp && data.chartDP.dp.length) {
-            chartHTML += '<div class="hsb-container top"><div class="label">Browsers</div><div class="chart"><svg id="hsb-platforms"></svg></div></div>';
-
-            for (var i = 0; i < data.chartDP.dp.length; i++) {
-                var tmpVersion = countlyBrowser.getSegmentedData(data.chartDP.dp[i].label);
-                if (tmpVersion.chartData.length) {
-                    versionData[data.chartDP.dp[i].label] = tmpVersion;
-                    chartHTML += '<div class="hsb-container"><div class="label">' + data.chartDP.dp[i].label + '</div><div class="chart"><svg id="hsb-platform' + i + '"></svg></div></div>';
+/* global countlyVue,CV,countlyCommon,countlyGlobal*/
+var AppBrowserView = countlyVue.views.create({
+    template: CV.T("/browser/templates/browser.html"),
+    data: function() {
+        return {
+            scrollOptions: {
+                vuescroll: {},
+                scrollPanel: {
+                    initialScrollX: false,
+                },
+                rail: {
+                    gutterOfSide: "0px"
+                },
+                bar: {
+                    background: "#A7AEB8",
+                    size: "6px",
+                    specifyBorderRadius: "3px",
+                    keepShow: true
                 }
-            }
-        }
+            },
+            scrollCards: {
+                vuescroll: {},
+                scrollPanel: {
+                    initialScrollX: false,
+                },
+                rail: {
+                    gutterOfSide: "0px"
+                },
+                bar: {
+                    background: "#A7AEB8",
+                    size: "6px",
+                    specifyBorderRadius: "3px",
+                    keepShow: false
+                }
+            },
+            description: CV.i18n('browser.description'),
+            dynamicTab: "browser-table",
+            browserTabs: [
+                {
+                    title: CV.i18n('browser.title'),
+                    name: "browser-table",
+                    component: countlyVue.views.create({
+                        template: CV.T("/browser/templates/browser_table.html"),
+                        computed: {
+                            appBrowser: function() {
+                                return this.$store.state.countlyDevicesAndTypes.appBrowser;
+                            },
+                            appBrowserRows: function() {
+                                return this.appBrowser.chartData;
+                            },
+                            isLoading: function() {
+                                return this.$store.state.countlyDevicesAndTypes.isLoading;
+                            }
+                        }
+                    })
+                },
+                {
+                    title: CV.i18n('browser.versions'),
+                    name: "version-table",
+                    component: countlyVue.views.create({
+                        template: CV.T("/browser/templates/version_table.html"),
+                        data: function() {
+                            return {
+                                versions: [],
+                                versionDetail: []
+                            };
+                        },
+                        computed: {
+                            isLoading: function() {
+                                return this.$store.state.countlyDevicesAndTypes.isLoading;
+                            },
+                            appBrowser: function() {
+                                return this.$store.state.countlyDevicesAndTypes.appBrowser;
+                            },
+                            selectedBrowser: {
+                                set: function(value) {
+                                    this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedBrowser', value);
+                                },
+                                get: function() {
+                                    return this.$store.state.countlyDevicesAndTypes.selectedBrowser;
+                                }
+                            }
+                        },
+                        watch: {
+                            selectedBrowser: function(newValue) {
+                                this.calculateVersions(newValue);
+                            },
+                            versions: function() {
+                                this.calculateVersionsDetail();
+                            }
+                        },
+                        methods: {
+                            calculateVersions: function(newValue) {
+                                if (newValue) {
+                                    this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedBrowser', newValue);
+                                }
+                                else {
+                                    this.selectedBrowser = this.appBrowser.versions[0].label;
+                                    this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedBrowser', this.selectedBrowser);
+                                }
 
-        if (!this.activeSegment[countlyCommon.ACTIVE_APP_ID]) {
-            this.activeSegment[countlyCommon.ACTIVE_APP_ID] = (data.chartData[0]) ? data.chartData[0].browser : "";
-        }
+                                var tempVersions = [];
+                                for (var k = 0; k < this.appBrowser.versions.length; k++) {
+                                    tempVersions.push({"value": this.appBrowser.versions[k].label, "name": this.appBrowser.versions[k].label});
+                                }
 
-        var segments = [];
-        for (var chartDataIndex = 0; chartDataIndex < data.chartData.length; chartDataIndex++) {
-            segments.push({name: data.chartData[chartDataIndex].browser, value: data.chartData[chartDataIndex].browser.toLowerCase()});
-        }
+                                this.versions = tempVersions;
+                            },
+                            calculateVersionsDetail: function() {
+                                var versionDetail = [];
 
-        this.templateData = {
-            "page-title": jQuery.i18n.map["browser.title"],
-            "segment-title": jQuery.i18n.map["browser.table.browser-version"],
-            "font-logo-class": "fa-globe",
-            "chartHTML": chartHTML,
-            "isChartEmpty": (chartHTML) ? false : true,
-            "chart-helper": "browser.chart",
-            "table-helper": "",
-            "two-tables": true,
-            "active-segment": this.activeSegment[countlyCommon.ACTIVE_APP_ID],
-            "segmentation": segments
+                                for (var k = 0; k < this.appBrowser.versions.length; k++) {
+                                    if (this.appBrowser.versions[k].label === this.selectedBrowser) {
+                                        versionDetail = this.appBrowser.versions[k].data || [];
+                                    }
+                                }
+                                this.versionDetail = versionDetail;
+                            }
+                        },
+                        mounted: function() {
+                            this.calculateVersions();
+                            this.calculateVersionsDetail();
+                        }
+                    })
+                }
+            ]
         };
-
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-            if (typeof addDrill !== "undefined") {
-                $("#content .widget:first .widget-header .left .title").after(addDrill("up.brw"));
-            }
-
-            this.dtable = $('#dataTableOne').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": data.chartData,
-                "aoColumns": [
-                    { "mData": "browser", sType: "session-duration", "sTitle": jQuery.i18n.map["browser.table.browser"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
-                    },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-users"]
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.new-users"]
-                    }
-                ]
-            }));
-            this.dtable.fnSort([ [1, 'desc'] ]);
-            $("#dataTableOne").stickyTableHeaders();
-
-            $(".segmentation-widget .segmentation-option").on("click", function() {
-                self.activeSegment[countlyCommon.ACTIVE_APP_ID] = $(this).data("value");
-                self.refresh();
-            });
-
-            countlyCommon.drawHorizontalStackedBars(data.chartDP.dp, "#hsb-platforms");
-
-            if (data && data.chartDP) {
-                for (var chartDPIndex = 0; chartDPIndex < data.chartDP.dp.length; chartDPIndex++) {
-                    if (versionData[data.chartDP.dp[chartDPIndex].label]) {
-                        countlyCommon.drawHorizontalStackedBars(versionData[data.chartDP.dp[chartDPIndex].label].chartDP.dp, "#hsb-platform" + chartDPIndex, chartDPIndex);
-                    }
-                }
-            }
-
-            this.dtableTwo = $('#dataTableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": countlyBrowser.getBrowserVersionData(self.activeSegment[countlyCommon.ACTIVE_APP_ID]),
-                "aoColumns": [
-                    { "mData": "browser_version", "sTitle": jQuery.i18n.map["platforms.table.platform-version"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
-                    },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-users"]
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.new-users"]
-                    }
-                ]
-            }));
-            this.dtableTwo.fnSort([ [1, 'desc'] ]);
-            $("#dataTableTwo").stickyTableHeaders();
-        }
     },
-    refresh: function() {
-        var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
-                return false;
+    mounted: function() {
+        this.$store.dispatch('countlyDevicesAndTypes/fetchBrowser');
+    },
+    methods: {
+        refresh: function() {
+            this.$store.dispatch('countlyDevicesAndTypes/fetchBrowser');
+        },
+        handleCardsScroll: function() {
+            if (this.$refs && this.$refs.bottomSlider) {
+                var pos1 = this.$refs.topSlider.getPosition();
+                pos1 = pos1.scrollLeft;
+                this.$refs.bottomSlider.scrollTo({x: pos1}, 0);
             }
-            self.renderCommon(true);
-            var data = countlyBrowser.getBrowserData();
+        },
+        handleBottomScroll: function() {
+            if (this.$refs && this.$refs.topSlider) {
+                var pos1 = this.$refs.bottomSlider.getPosition();
+                pos1 = pos1.scrollLeft;
+                this.$refs.topSlider.scrollTo({x: pos1}, 0);
+            }
+        },
+        handleBrowserCommand: function(e) {
+            switch (e) {
+            case 'redirect-drill': {
+                window.location.hash = "/drill/" + JSON.stringify({"event": "[CLY]_session", "dbFilter": {}, "byVal": "up.brw"});
+                break;
+            }
+            }
+        },
+    },
+    computed: {
+        selectedProperty: {
+            set: function(value) {
+                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedProperty', value);
+            },
+            get: function() {
+                return this.$store.state.countlyDevicesAndTypes.selectedProperty;
+            }
+        },
+        graphColors: function() {
+            return ["#017AFF", "#39C0C8", "#F5C900", "#6C47FF", "#017AFF"];
+        },
+        appBrowser: function() {
+            return this.$store.state.countlyDevicesAndTypes.appBrowser;
+        },
+        appResolution: function() {
+            return this.$store.state.countlyDevicesAndTypes.appResolution;
+        },
+        chooseProperties: function() {
+            return [{"value": "t", "name": CV.i18n('common.table.total-sessions')}, {"value": "u", "name": CV.i18n('common.table.total-users')}, {"value": "n", "name": CV.i18n('common.table.new-users')}];
+        },
+        browserItems: function() {
+            var display = [];
+            var property = this.$store.state.countlyDevicesAndTypes.selectedProperty;
+            var data = this.appBrowser.chartData || [];
 
-            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-
-            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
-
-            countlyCommon.drawHorizontalStackedBars(data.chartDP.dp, "#hsb-platforms");
-
-            if (data && data.chartDP) {
-                for (var i = 0; i < data.chartDP.dp.length; i++) {
-                    var tmpVersion = countlyBrowser.getSegmentedData(data.chartDP.dp[i].label);
-                    if (tmpVersion.chartData.length) {
-                        countlyCommon.drawHorizontalStackedBars(tmpVersion.chartDP.dp, "#hsb-platform" + i, i);
-                    }
+            for (var k = 0; k < data.length; k++) {
+                var percent = Math.round((data[k][property] || 0) * 1000 / (this.appBrowser.totals[property] || 1)) / 10;
+                display.push({
+                    "name": data[k].browser,
+                    "value": countlyCommon.getShortNumber(data[k][property] || 0),
+                    "percent": percent,
+                    "percentText": percent + " % " + CV.i18n('common.of-total'),
+                    "info": CV.i18n('common.info'),
+                    "color": this.graphColors[k]
+                });
+            }
+            return display;
+        },
+        browserVersions: function() {
+            var property = this.$store.state.countlyDevicesAndTypes.selectedProperty;
+            var returnData = [];
+            var browsers = this.appBrowser.versions || [];
+            for (var z = 0; z < browsers.length; z++) {
+                var display = [];
+                var data = browsers[z].data;
+                for (var k = 0; k < data.length; k++) {
+                    var percent = Math.round((data[k][property] || 0) * 1000 / (browsers[z][property] || 1)) / 10;
+                    display.push({
+                        "name": data[k].browser_version,
+                        "value": countlyCommon.getShortNumber(data[k][property] || 0),
+                        "percent": percent,
+                        "bar": [{
+                            percentage: percent,
+                            color: this.graphColors[z]
+                        }
+                        ]
+                    });
                 }
+                returnData.push({"data": display, "label": browsers[z].label, itemCn: display.length});
             }
-
-            CountlyHelpers.refreshTable(self.dtable, data.chartData);
-            CountlyHelpers.refreshTable(self.dtableTwo, countlyBrowser.getBrowserVersionData(self.activeSegment[countlyCommon.ACTIVE_APP_ID]));
-        });
+            return returnData;
+        },
+        appBrowserRows: function() {
+            return this.appBrowser.chartData;
+        },
+        isLoading: function() {
+            return this.$store.state.countlyDevicesAndTypes.isLoading;
+        },
+        tabs: function() {
+            return this.browserTabs;
+        }
     }
+
 });
 
-//register views
-app.browserView = new BrowserView();
-
-if (countlyAuth.validateRead(app.browserView.featureName)) {
-    app.route("/analytics/browser", 'browser', function() {
-        this.renderWhenReady(this.browserView);
+if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+    countlyVue.container.registerTab("/analytics/technology", {
+        priority: 6,
+        name: "browsers",
+        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/browsers",
+        title: CV.i18n('browser.title'),
+        component: AppBrowserView
     });
 }
 
-$(document).ready(function() {
-    if (countlyAuth.validateRead(app.browserView.featureName)) {
-        app.addSubMenuForType("web", "analytics", {code: "analytics-browser", url: "#/analytics/browser", text: "browser.title", priority: 90});
-    }
-});

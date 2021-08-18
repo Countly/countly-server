@@ -163,6 +163,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/app-version/javascripts/countly.views.js',
                     'frontend/express/public/core/app-resolution/javascripts/countly.views.js',
                     'frontend/express/public/core/platform/javascripts/countly.views.js',
+                    'frontend/express/public/core/browser/javascripts/countly.views.js',
                     'frontend/express/public/core/devices-and-types/javascripts/countly.views.js',
                     'frontend/express/public/core/devices-and-types/javascripts/countly.models.js',
                     'frontend/express/public/core/carrier/javascripts/countly.views.js',
