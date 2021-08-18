@@ -1036,7 +1036,6 @@ var TableView = countlyVue.views.BaseView.extend({
     computed: {
         tableRows: function () {
             var rows = this.$store.getters["countlyReports/table/all"];
-            console.log(rows,"rows!!");
             return rows;
         },
     },
@@ -1051,7 +1050,6 @@ var TableView = countlyVue.views.BaseView.extend({
         handleHookEditCommand: function(command, scope) {
             switch (command) {
                 case "edit-comment":
-                    console.log(scope,"eeeeDit!");
                     var data = {...scope.row};
                     delete data.operation;
                     delete data.triggerEffectColumn;
@@ -1247,14 +1245,11 @@ var ReportsDrawer = countlyVue.views.BaseView.extend({
             this.$data.reportDateRangesOptions = reportDateRanges.map(function(r) {
                 return {value: r.value, label: r.name} 
             });
-            console.log(this.$data.reportDateRangesOptions,"???")
         },
         emailInputFilter: function (val) {
-            console.log(val,this.emailOptions);
             var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
             regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
             var match = val.match(regex);
-            console.log(match,"m");
             if (match) {
                 this.emailOptions=[{value:val, label:val}]
             } else {
@@ -1276,7 +1271,7 @@ var ReportsDrawer = countlyVue.views.BaseView.extend({
             doc.metricsArray.forEach(function (m){
                 doc.metrics[m] = true;
             });
-            delete console.metricsArray;
+            delete doc.metricsArray;
             await this.$store.dispatch("countlyReports/saveReport", doc);
             await this.$store.dispatch("countlyReports/table/fetchAll");
         },
@@ -1284,7 +1279,6 @@ var ReportsDrawer = countlyVue.views.BaseView.extend({
             this.$emit("close", $event);
         },
         onCopy: function (newState) {
-            console.log(newState,"!!!");
             var self = this;
             if (newState._id !== null) {
                 this.reportTypeChange(newState.report_type);
