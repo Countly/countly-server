@@ -80,7 +80,7 @@
 
             return countlyCommon.extractChartData(context.state.allEventsCompareData[forEvent], countlyCompareEvents.helpers.clearObject, chartData, dataProps);
         },
-        getLineChartData(context, selectedEvents) {
+        getLineChartData: function(context, selectedEvents) {
             var series = [];
             if (selectedEvents.length === 1) {
                 var dataObj = countlyCompareEvents.helpers.getChartData(context, selectedEvents[0], context.state.selectedGraphMetric);
@@ -116,7 +116,7 @@
             }
             return {series: series};
         },
-        getLegendData(selectedEvents) {
+        getLegendData: function(selectedEvents) {
             var lineLegend = {};
             var legendData = [];
             if (selectedEvents.length === 1) {
