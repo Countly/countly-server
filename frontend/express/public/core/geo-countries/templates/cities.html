@@ -1,0 +1,44 @@
+<div v-bind:class="[componentId]" >
+    <cly-header :isHeaderTop=true>
+		<template v-slot:header-top>
+			<a class="back back-link" href="#/analytics/geo/countries">Back to Countries</a>
+		</template>
+        <template v-slot:header-left>
+            <h2> {{title}} 
+            </h2>
+            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description">
+            </span>
+        </template>
+    </cly-header>
+    <cly-main >
+		<cly-date-picker-g class="geo-date-picker-container"></cly-date-picker-g>
+		<cly-section class="geo-analytics-data">
+			<div class="bu-columns bu-is-gapless">
+				<div class="radio-column">
+					<cly-radio-block v-bind:items="chooseProperties" v-model="selectedProperty"></cly-radio-block>
+				</div>
+				<div class="bu-column" style="position:relative">
+					<cly-worldmap
+						:external-country="region"
+						external-detail-mode="cities"
+						:value-type="selectedPropertyTitle"
+						:show-detail-mode-select="false"
+						:show-navigation="false"
+						:countries-data="countriesData"
+						:cities-data="citiesData">
+					</cly-worldmap>
+				</div>
+			</div>
+		</cly-section>
+		<cly-section>
+			<cly-datatable-n  :rows="cityTable" :resizable="true" v-loading="isLoading">
+				<template v-slot="scope">
+					<el-table-column sortable="custom" prop="city" :label="i18n('countries.table.city')"></el-table-column>
+					<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')"></el-table-column>
+					<el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')"></el-table-column>
+					<el-table-column sortable="custom" prop="n" :label="i18n('common.table.new-users')"></el-table-column>
+				</template>
+			</cly-datatable-n>
+		</cly-section>
+	</cly-main>
+</div>
