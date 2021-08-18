@@ -158,6 +158,27 @@
         },
     };
 
+    var InitialPushNotificationDrawerSettingsState = {
+        ios: {
+            isSubtitleEnabled: false,
+            isMediaUrlEnabled: false,
+            isSoundFileNameEnabled: false,
+            isBadgeNumberEnabled: false,
+            isOnClickURLEnabled: false,
+            isJsonEnabled: false,
+            isUserDataEnabled: false,
+        },
+        android: {
+            isMediaUrlEnabled: false,
+            isSoundFileNameEnabled: false,
+            isBadgeNumberEnabled: false,
+            isIconEnabled: false,
+            isOnClickURLEnabled: false,
+            isJsonEnabled: false,
+            isUserDataEnabled: false,
+        }
+    };
+
     var PushNotificationDrawer = countlyVue.views.create({
         template: CV.T("/push/templates/push-notification-drawer.html"),
         mixins: [countlyVue.mixins.i18n],
@@ -184,26 +205,7 @@
                 isConfirmed: false,
                 expandedPlatformSettings: [],
                 isEndDateEnabled: false,
-                settings: {
-                    ios: {
-                        isSubtitleEnabled: false,
-                        isMediaUrlEnabled: false,
-                        isSoundFileNameEnabled: false,
-                        isBadgeNumberEnabled: false,
-                        isOnClickURLEnabled: false,
-                        isJsonEnabled: false,
-                        isUserDataEnabled: false,
-                    },
-                    android: {
-                        isMediaUrlEnabled: false,
-                        isSoundFileNameEnabled: false,
-                        isBadgeNumberEnabled: false,
-                        isIconEnabled: false,
-                        isOnClickURLEnabled: false,
-                        isJsonEnabled: false,
-                        isUserDataEnabled: false,
-                    }
-                },
+                settings: JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState)),
                 userPropertiesIdCounter: 0,
                 selectedUserPropertyId: null,
                 selectedUserPropertyContainer: "title",
@@ -308,8 +310,18 @@
             },
             onSaveDraft: function() {},
             onSubmit: function() {},
-            onClose: function() {
+            resetState: function() {
+                this.activeLocalization = "default",
+                this.selectedLocalizationFilter = "default",
+                this.isConfirmed = false,
+                this.expandedPlatformSettings = [],
+                this.isEndDateEnabled = false;
+                this.selectedUserPropertyContainer = "title";
+                this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
                 this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(InitialEditedPushNotification));
+            },
+            onClose: function() {
+                this.resetState();
                 this.closeAddUserPropertyPopover();
             },
             onOpen: function() {
