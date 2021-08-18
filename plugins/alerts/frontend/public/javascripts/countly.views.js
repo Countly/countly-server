@@ -176,7 +176,6 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
                     this.$data.showSubType2 = true;
                     var self = this;
                     countlyAlerts.getViewForApp(this.$data.apps[0], function(viewList) {
-                        console.log(viewList,"??")
                         self.$data.alertDataSubType2Options= viewList.map(function (v) {
                             return {value: v.value, label:v.name}
                         });
@@ -190,7 +189,6 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
             }
         },
         emailInputFilter: function (val) {
-            console.log(val,this.emailOptions);
             var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
             regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
             var match = val.match(regex);

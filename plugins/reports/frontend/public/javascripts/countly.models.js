@@ -149,14 +149,12 @@
         var getters = {
             tableData(state) {
                 return state.tableData;
-                //return [{"_id":"123", "name":"3213"}];
             }
         };
 
         var mutations = {
             setTableData: function (state, list) {
                 state.tableData = list;
-                console.log(state,"???");
             }
         };
 
@@ -169,44 +167,6 @@
             },
           
             saveReport: function (context, args) {
-                /*
-                countlyReporting.del = function(id) {
-                    return $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_PARTS.data.w + "/reports/delete",
-                        data: {
-                            args: JSON.stringify({
-                                "_id": id
-                            }),
-                            "app_id": countlyCommon.ACTIVE_APP_ID
-                        }
-                    });
-                };
-            
-                countlyReporting.send = function(id) {
-                    return $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_PARTS.data.w + "/reports/send",
-                        data: {
-                            args: JSON.stringify({
-                                "_id": id
-                            }),
-                            "app_id": countlyCommon.ACTIVE_APP_ID
-                        }
-                    });
-                };
-            
-                countlyReporting.updateStatus = function(args) {
-                    return $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_PARTS.data.w + "/reports/" + (args._id ? "update" : "create"),
-                        data: {
-                            args: JSON.stringify(args),
-                            app_id: countlyCommon.ACTIVE_APP_ID
-                        }
-                    });
-                };*/
-                console.log("@@@@")
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/reports/" + (args._id ? "update" : "create"),
@@ -247,7 +207,6 @@
                     })
                 },
                 fetchAll: function(context) {
-                    console.log("fetch!!!")
                     return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r + "/reports/all",
