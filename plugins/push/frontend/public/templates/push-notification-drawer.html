@@ -308,7 +308,7 @@
                             v-model="pushNotificationUnderEdit.delivery.type"
                             title="Schedule for later"
                             :hasTopMargin="true">    
-                            <cly-date-picker v-bind:disabled="pushNotificationUnderEdit.delivery.type === DeliveryEnum.NOW" v-model="pushNotificationUnderEdit.delivery.startDate" timestampFormat="ms" type="date" :select-time="true"></cly-date-picker>
+                            <cly-date-picker v-bind:disabled="pushNotificationUnderEdit.delivery.type === DeliveryEnum.NOW" v-model="pushNotificationUnderEdit.delivery.startDate" timestampFormat="ms" type="date" :select-time="true" :is-future="true"></cly-date-picker>
                         </large-radio-button-with-description>
                     </div>
                 </div>
@@ -322,7 +322,7 @@
                             </div>
                         </div>
                         <div style="width:200px">
-                            <cly-date-picker class="bu-ml-6" v-bind:disabled="!isEndDateEnabled" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms" type="date" width="200" :select-time="true"></cly-date-picker>
+                            <cly-date-picker class="bu-ml-6" v-bind:disabled="!isEndDateEnabled" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms" type="date" width="200" :select-time="true" :is-future="true"></cly-date-picker>
                         </div>
                     </div>
                 </div>
