@@ -94,7 +94,7 @@ const widgetPropertyPreprocessors = {
         }
         catch (jsonParseError) {
             if ((targeting !== null) && (typeof targeting === "object")) {
-                return targetDevices;
+                return targeting;
             }
             else {
                 return {
@@ -309,7 +309,7 @@ const widgetPropertyPreprocessors = {
             }
         });
         return true;
-    }
+    };
     var nonChecksumHandler = function(ob) {
         try {
             var events = JSON.parse(ob.params.qstring.events);
@@ -390,7 +390,7 @@ const widgetPropertyPreprocessors = {
                     common.db.collection('feedback_widgets').update({
                         _id: common.db.ObjectID(currEvent.segmentation.widget_id)
                     }, {
-                        $inc: { ratingsSum: currEvent.segmentation.rating, ratingsCount: 1 } 
+                        $inc: { ratingsSum: currEvent.segmentation.rating, ratingsCount: 1 }
                     }, function(err) {
                         if (err) {
                             return false;
