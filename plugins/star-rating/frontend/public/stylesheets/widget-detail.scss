@@ -1,12 +1,17 @@
-.widget-detail-view {
+.ratings-widget-detail-view {
   &__widget-informations {
     flex-direction: row;
     display: flex;
   }
 
-  &__widget-status {
+  &__widget-status-active {
     background-color: #EBFAEE !important;
     color: #12AF51 !important;
+  }
+
+  &__widget-status-disabled {
+    background-color: #d9d9d9 !important;
+    color: #81868D !important;
   }
 
   &__created-at, &__widget-id {

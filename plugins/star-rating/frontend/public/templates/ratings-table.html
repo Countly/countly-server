@@ -1,28 +1,26 @@
-<div class="ratings-table">
-  <cly-datatable-n
-    :rows="rows">
-      <template v-slot="scope">
-          <el-table-column sortable="true" prop="rating" :label="'Rating'">
-              <template v-slot="rowScope">
-                  <span class="text-medium">
-                    {{rowScope.row.rating}}
-                  </span>
-              </template>
-          </el-table-column>
-          <el-table-column sortable="true" prop="numberOfRatings" :label="'Number of Ratings'">
+<cly-datatable-n
+  :rows="ratings">
+    <template v-slot="scope">
+        <el-table-column sortable="true" prop="rating" :label="'Rating'">
             <template v-slot="rowScope">
                 <span class="text-medium">
-                  {{rowScope.row.numberOfRatings}}
+                  {{ ratings.indexOf(rowScope.row) + 1 }}
                 </span>
             </template>
-          </el-table-column>
-          <el-table-column sortable="true" prop="percentage" :label="'Percentage'">
-            <template v-slot="rowScope">
-                <span class="text-medium">
-                  {{ rowScope.row.percentage }}
-                </span>
-            </template>
-          </el-table-column>
-      </template>
-  </cly-datatable-n>
-</div>
+        </el-table-column>
+        <el-table-column sortable="true" prop="numberOfRatings" :label="'Number of Ratings'">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                {{ rowScope.row.count }}
+              </span>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="true" prop="percentage" :label="'Percentage'">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                % {{ rowScope.row.percent }}
+              </span>
+          </template>
+        </el-table-column>
+    </template>
+</cly-datatable-n>

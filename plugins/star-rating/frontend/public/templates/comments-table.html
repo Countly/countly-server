@@ -1,35 +1,33 @@
-<div class="comments-table">
-  <cly-datatable-n
-    :rows="rows">
-      <template v-slot="scope">
-          <el-table-column sortable="true" prop="rating" :label="'Rating'">
-              <template v-slot="rowScope">
-                  <span class="text-medium">
-                    {{rowScope.row.rating}}
-                  </span>
-              </template>
-          </el-table-column>
-          <el-table-column sortable="true" prop="time" :label="'Time'">
+<cly-datatable-n
+  :rows="comments">
+    <template v-slot="scope">
+        <el-table-column sortable="true" prop="rating" :label="'Rating'">
             <template v-slot="rowScope">
                 <span class="text-medium">
-                  {{rowScope.row.time}}
+                  {{rowScope.row.rating}}
                 </span>
             </template>
-          </el-table-column>
-          <el-table-column sortable="true" prop="comment" :label="'Comment'">
-            <template v-slot="rowScope">
-                <span class="text-medium">
-                  {{ rowScope.row.comment }}
-                </span>
-            </template>
-          </el-table-column>
-          <el-table-column sortable="true" prop="email" :label="'E-mail'">
-            <template v-slot="rowScope">
-                <span class="text-medium">
-                  {{ rowScope.row.email }}
-                </span>
-            </template>
-          </el-table-column>
-      </template>
-  </cly-datatable-n>
-</div>
+        </el-table-column>
+        <el-table-column sortable="true" prop="cd" :label="'Time'">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                {{rowScope.row.cd}}
+              </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="comment" :label="'Comment'">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                {{ rowScope.row.comment }}
+              </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="email" :label="'E-mail'">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                {{ rowScope.row.email }}
+              </span>
+          </template>
+        </el-table-column>
+    </template>
+</cly-datatable-n>
