@@ -51,14 +51,14 @@
 		  <template v-slot:header-left="selectScope">
 		  </template>
 		  <template v-slot="scope">
-			<el-table-column v-if="isColumnAllowed('Segmentation')" sortable="true" prop="segment" :label="i18n('events.table.segmentation')">
+			<el-table-column v-if="selectedSegment !== 'segment'" sortable="true" prop="segment" :label="i18n('events.table.segmentation')">
 			  <template v-slot="rowScope">
 				<div>
 				  {{rowScope.row.curr_segment}}
 				</div>
 			  </template>
 			</el-table-column>
-			<el-table-column v-if="isColumnAllowed('Date')" sortable="true" prop="event" :label="i18n('common.date')">
+			<el-table-column v-else sortable="true" prop="date" :label="i18n('common.date')">
 			  <template v-slot="rowScope">
 				<div>
 				  {{rowScope.row.date}}

@@ -13,6 +13,9 @@ var EventsTable = countlyVue.views.BaseView.extend({
         eventsTableRows: function() {
             return this.$store.getters["countlyAllEvents/tableRows"];
         },
+        selectedSegment: function() {
+            return this.$store.getters["countlyAllEvents/currentActiveSegmentation"];
+        }
     },
     methods: {
         isColumnAllowed: function(column) {
