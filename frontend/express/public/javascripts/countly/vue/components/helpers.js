@@ -287,11 +287,10 @@
         props: ['value']
     }));
 
-
-
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         template: '<cly-select-x\
+                    :additional-pop-classes="[\'cly-event-select\']"\
                     all-placeholder="All Events"\
                     search-placeholder="Search in Events"\
                     placeholder="Select Event"\
@@ -299,7 +298,8 @@
                     :options="availableEvents"\
                     :hide-all-options-tab="true"\
                     :single-option-settings="singleOptionSettings"\
-                    :adaptive-length="true"\
+                    :adaptive-length="adaptiveLength"\
+                    :width="width"\
                     v-bind="$attrs"\
                     v-on="$listeners">\
                     <template v-slot:header="selectScope">\
@@ -311,7 +311,17 @@
                         </el-radio-group>\
                     </template>\
                 </cly-select-x>',
+        props: {
+            blacklistedEvents: {
+                type: Array,
+                default: []
+            },
+            width: { type: [Number, Object], default: 400},
+            adaptiveLength: {type: Boolean, default: true},
+        },
         data: function() {
+            var self = this;
+
             var availableEvents = [
                 {
                     "label": this.i18n('sidebar.analytics.sessions'),
@@ -350,6 +360,11 @@
                 //     "noChild": true
                 // }
             ];
+
+            availableEvents = availableEvents.filter(function(evt) {
+                return !(self.blacklistedEvents.includes(evt.name));
+            });
+
             return {
                 singleOptionSettings: {
                     autoPick: true,
