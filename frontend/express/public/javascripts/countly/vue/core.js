@@ -6,8 +6,19 @@
     var autoRefreshMixin = {
         mounted: function() {
             var self = this;
-            this.$root.$on("cly-refresh", function() {
-                self.refresh();
+            this.$root.$on("cly-refresh", function(payload) {
+                if (payload && payload.reason === "dateChange") {
+                    if (this.dateChange) {
+                        // branch to dateChange implementation if any
+                        self.dateChange();
+                    }
+                    else {
+                        self.refresh(true);
+                    }
+                }
+                else {
+                    self.refresh(false);
+                }
             });
         },
         methods: {
@@ -288,7 +299,7 @@
         refresh: function() {
             var self = this;
             if (self.vm) {
-                self.vm.$emit("cly-refresh");
+                self.vm.$emit("cly-refresh", {reason: "periodical"}); // for 10 sec interval
             }
         },
         afterRender: function() {
@@ -312,6 +323,14 @@
                     DummyCompAPI: DummyCompAPI,
                     MainView: self.component
                 },
+                methods: {
+                    handleError: function(message) {
+                        this.$notify.error({
+                            title: 'Error',
+                            message: message
+                        });
+                    }
+                },
                 template: '<div>\
                                 <MainView></MainView>\
                                 <DummyCompAPI></DummyCompAPI>\
@@ -322,7 +341,7 @@
             });
 
             self.vm.$on("cly-date-change", function() {
-                self.vm.$emit("cly-refresh");
+                self.vm.$emit("cly-refresh", {reason: "dateChange"});
             });
         },
         destroy: function() {
