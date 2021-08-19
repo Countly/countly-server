@@ -252,34 +252,34 @@ usersApi.createUser = function(params) {
         newMember.locked = false;
         newMember.username = newMember.username.trim();
         newMember.email = newMember.email.trim();
+        crypto.randomBytes(48, function(errorBuff, buffer) {
+            newMember.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
+            common.db.collection('members').insert(newMember, function(err, member) {
+                if (!err && member && member.ops) {
+                    member = member.ops;
+                }
+                else {
+                    console.log('Error creating user: ', err);
+                }
+                if (member && member.length && !err) {
+                    var timestamp = Math.round(new Date().getTime() / 1000),
+                        prid = sha512Hash(member[0].username + member[0].full_name, timestamp);
+                    common.db.collection('password_reset').insert({"prid": prid, "user_id": member[0]._id, "timestamp": timestamp, "newInvite": true}, {safe: true}, function() {
+                        mail.sendToNewMemberLink(member[0], prid);
+                    });
 
-        common.db.collection('members').insert(newMember, { safe: true }, function(err, member) {
-            if (!err && member && member.ops) {
-                member = member.ops;
-            }
-            if (member && member.length && !err) {
+                    plugins.dispatch("/i/users/create", {
+                        params: params,
+                        data: member[0]
+                    });
+                    delete member[0].password;
 
-                member[0].api_key = common.md5Hash(member[0]._id + (new Date().getTime()));
-                common.db.collection('members').update({ '_id': member[0]._id }, { $set: { api_key: member[0].api_key } }, function() { });
-
-
-                var timestamp = Math.round(new Date().getTime() / 1000),
-                    prid = sha512Hash(member[0].username + member[0].full_name, timestamp);
-                common.db.collection('password_reset').insert({"prid": prid, "user_id": member[0]._id, "timestamp": timestamp, "newInvite": true}, {safe: true}, function() {
-                    mail.sendToNewMemberLink(member[0], prid);
-                });
-
-                plugins.dispatch("/i/users/create", {
-                    params: params,
-                    data: member[0]
-                });
-                delete member[0].password;
-
-                common.returnOutput(params, member[0]);
-            }
-            else {
-                common.returnMessage(params, 500, 'Error creating user');
-            }
+                    common.returnOutput(params, member[0]);
+                }
+                else {
+                    common.returnMessage(params, 500, 'Error creating user');
+                }
+            });
         });
     }
 

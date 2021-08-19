@@ -7,10 +7,147 @@ const common = require('../../utils/common.js');
 var EventEmitter = require('events');
 
 /**
+ *  Class for batching database insert operations
+ *  @example
+ *  let batcher = new InsertBatcher(common.db);
+ *  batcher.insert("drill_eventsa8bb6a86cc8026768c0fbb8ed5689b386909ee5c", document);
+ */
+class InsertBatcher {
+    /**
+     *  Create batcher instance
+     *  @param {Db} db - database object
+     */
+    constructor(db) {
+        this.dbs = {countly: db};
+        this.data = {countly: {}};
+        plugins.loadConfigs(db, () => {
+            this.loadConfig();
+            this.schedule();
+        });
+    }
+
+    /**
+     *  Add another database to batch
+     *  @param {string} name - name of the database
+     *  @param {Db} connection - MongoDB connection to that database
+     */
+    addDb(name, connection) {
+        this.dbs[name] = connection;
+        this.data[name] = {};
+    }
+
+    /**
+     *  Reloads server configs
+     */
+    loadConfig() {
+        let config = plugins.getConfig("api");
+        this.period = config.batch_period * 1000;
+        this.process = config.batch_processing;
+        this.shared = config.batch_on_master;
+    }
+
+    /**
+     *  Writes data to database for specific collection
+     *  @param {string} db - name of the database for which to write data
+     *  @param {string} collection - name of the collection for which to write data
+     */
+    async flush(db, collection) {
+        var no_fallback_errors = [10334, 17419];
+        if (this.data[db][collection].length) {
+            var docs = this.data[db][collection];
+            this.data[db][collection] = [];
+            try {
+                await new Promise((resolve, reject) => {
+                    this.dbs[db].collection(collection).insertMany(docs, {ordered: false, ignore_errors: [11000]}, function(err, res) {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        resolve(res);
+                    });
+                });
+            }
+            catch (ex) {
+                if (ex.code !== 11000) {
+                    log.e("Error updating documents", ex);
+                }
+
+                //trying to rollback operations to try again on next iteration
+                if (ex.writeErrors && ex.writeErrors.length) {
+                    for (let i = 0; i < ex.writeErrors.length; i++) {
+                        if (no_fallback_errors.indexOf(ex.writeErrors[i].code) !== -1) {
+                            continue;
+                        }
+                        let index = ex.writeErrors[i].index;
+                        if (docs[index]) {
+                            this.data[db][collection].push(docs[index]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     *  Run all pending database queries
+     *  @returns {Promise} promise
+     */
+    flushAll() {
+        let promises = [];
+        for (let db in this.data) {
+            for (let collection in this.data[db]) {
+                promises.push(this.flush(db, collection));
+            }
+        }
+        return Promise.all(promises).finally(() => {
+            this.schedule();
+        });
+    }
+
+    /**
+     *  Schedule next flush
+     */
+    schedule() {
+        setTimeout(() => {
+            this.loadConfig();
+            this.flushAll();
+        }, this.period);
+    }
+
+    /**
+     *  Provide provide a document to insert into collection
+     *  @param {string} collection - name of the collection where to update data
+     *  @param {Object|Array} doc - one document or array of documents to insert
+     *  @param {string} db - name of the database for which to write data
+     */
+    insert(collection, doc, db = "countly") {
+        if (!this.shared || cluster.isMaster) {
+            if (!this.data[db][collection]) {
+                this.data[db][collection] = [];
+            }
+            if (Array.isArray(doc)) {
+                for (let i = 0; i < doc.length; i++) {
+                    this.data[db][collection].push(doc[i]);
+                }
+            }
+            else {
+                this.data[db][collection].push(doc);
+            }
+            if (!this.process) {
+                this.flush(db, collection);
+            }
+        }
+        else {
+            process.send({ cmd: "batch_insert", data: {collection, doc, db} });
+        }
+    }
+}
+
+/**
  *  Class for batching database operations for aggregated data 
  *  @example
  *  let batcher = new WriteBatcher(common.db);
- *  batcher.set("eventsa8bb6a86cc8026768c0fbb8ed5689b386909ee5c", "no-segment_2020:0_2", {"$set":{"segments.name":true, "name.Runner":true}});
+ *  batcher.add("eventsa8bb6a86cc8026768c0fbb8ed5689b386909ee5c", "no-segment_2020:0_2", {"$set":{"segments.name":true, "name.Runner":true}});
  */
 class WriteBatcher extends EventEmitter {
     /**
@@ -502,4 +639,4 @@ function getId() {
     return crypto.randomBytes(16).toString("hex");
 }
 
-module.exports = {WriteBatcher, ReadBatcher};
+module.exports = {WriteBatcher, ReadBatcher, InsertBatcher};

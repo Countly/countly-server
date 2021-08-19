@@ -744,7 +744,7 @@ describe('Testing event settings', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 2000 * testUtils.testScalingFactor);
                 });
         });
         it('check if data reseted', function(done) {
