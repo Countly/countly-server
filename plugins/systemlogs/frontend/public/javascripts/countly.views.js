@@ -119,6 +119,9 @@
                     this.tableStore.dispatch("fetchSystemLogsTable");
                 }
             },
+            dateChange: function() {
+                this.refresh(true);
+            },
             goBack: function() {
                 app.back();
             },
