@@ -195,9 +195,12 @@
     margin-left:10px
 } 
 .cly-vue-events-header {
-    padding-right: 9.5px;
+    padding: 8px 24px 24px 24px;
     letter-spacing: .003em;
     font-family: t.$font-family;
+    line-height: t.$heading-2-line-height;
+    border-bottom: 1px solid #ececec;
+    background-color: #fff;
     &__subheading {
         &--widget {
             padding-right: 5.33px;
@@ -209,6 +212,9 @@
             font-size: 14px;
             color: #81868d;
         }
+    }
+    &--tooltip{
+        padding-left: 9.5px;
     }
 }
 .cly-vue-events-overview-subheadings {

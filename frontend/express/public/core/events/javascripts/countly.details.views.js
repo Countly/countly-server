@@ -206,6 +206,16 @@ var AllEventsView = countlyVue.views.BaseView.extend({
                 this.$store.dispatch('countlyAllEvents/fetchAllEventsGroupData');
             }
         },
+        selectedEventFromSearchBar: {
+            get: function() {
+                return this.$store.getters["countlyAllEvents/selectedEventName"];
+            },
+            set: function(value) {
+                this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', value);
+                this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", "segment");
+                this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+            }
+        },
         selectedSegment: {
             get: function() {
                 return this.$store.getters["countlyAllEvents/currentActiveSegmentation"];
@@ -251,8 +261,25 @@ var AllEventsView = countlyVue.views.BaseView.extend({
             return this.$store.getters["countlyAllEvents/legendData"];
         },
         allEvents: function() {
-            return this.$store.getters["countlyAllEvents/allEvents"].list;
+            var list = this.$store.getters["countlyAllEvents/allEvents"].list;
+            if (list) {
+                return list.map(function(item) {
+                    return {
+                        "label": item,
+                        "value": item
+                    };
+                });
+            }
+            return list;
         },
+        searchPlaceholder: function() {
+            var list = this.$store.getters["countlyAllEvents/allEvents"].list;
+            if (list) {
+                return this.i18n("events.all.search.placeholder", list.length);
+            }
+            return this.i18n("events.all.search.placeholder");
+        }
+
     },
     data: function() {
         return {
