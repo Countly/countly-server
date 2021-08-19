@@ -303,6 +303,7 @@
                     v-bind="$attrs"\
                     v-on="$listeners">\
                     <template v-slot:header="selectScope">\
+                        <h4 class="color-cool-gray-100 bu-mb-2" v-if="hasTitle">{{title}}</h4>\
                         <el-radio-group\
                             :value="selectScope.activeTabId"\
                             @input="selectScope.updateTab"\
@@ -318,6 +319,7 @@
             },
             width: { type: [Number, Object], default: 400},
             adaptiveLength: {type: Boolean, default: true},
+            title: { type: String, require: false}
         },
         data: function() {
             var self = this;
@@ -372,6 +374,11 @@
                 },
                 availableEvents: availableEvents
             };
+        },
+        computed: {
+            hasTitle: function() {
+                return !!this.title;
+            }
         }
     }));
 
