@@ -5,27 +5,30 @@
     // @vue/component
     var autoRefreshMixin = {
         mounted: function() {
-            var self = this;
-            this.$root.$on("cly-refresh", function(payload) {
+            if (this.refresh) {
+                this.$root.$on("cly-refresh", this.refreshHandler);
+            }
+        },
+        methods: {
+            refreshHandler: function(payload) {
                 if (payload && payload.reason === "dateChange") {
                     if (this.dateChange) {
                         // branch to dateChange implementation if any
-                        self.dateChange();
+                        this.dateChange();
                     }
                     else {
-                        self.refresh(true);
+                        this.refresh(true);
                     }
                 }
                 else {
-                    self.refresh(false);
+                    this.refresh(false);
                 }
-            });
-        },
-        methods: {
-            refresh: function() {}
+            }
         },
         beforeDestroy: function() {
-            this.$root.$off();
+            if (this.refresh) {
+                this.$root.$off("cly-refresh", this.refreshHandler);
+            }
         }
     };
 
@@ -41,8 +44,7 @@
             });
             if (!options.disableAutoCatch) {
                 return ajaxP.catch(function(err) {
-                    // eslint-disable-next-line no-console
-                    console.log("AJAX Promise error:", err);
+                    app.activeView.onError(err);
                 });
             }
             return ajaxP;
@@ -299,7 +301,12 @@
         refresh: function() {
             var self = this;
             if (self.vm) {
-                self.vm.$emit("cly-refresh", {reason: "periodical"}); // for 10 sec interval
+                self.vm.$root.$emit("cly-refresh", {reason: "periodical"}); // for 10 sec interval
+            }
+        },
+        onError: function(message) {
+            if (this.vm) {
+                this.vm.$root.$emit("cly-error", {message: message});
             }
         },
         afterRender: function() {
@@ -323,25 +330,28 @@
                     DummyCompAPI: DummyCompAPI,
                     MainView: self.component
                 },
-                methods: {
-                    handleError: function(message) {
-                        this.$notify.error({
-                            title: 'Error',
-                            message: message
-                        });
-                    }
-                },
                 template: '<div>\
                                 <MainView></MainView>\
                                 <DummyCompAPI></DummyCompAPI>\
                             </div>',
                 beforeCreate: function() {
                     this.$route.params = self.params;
+                },
+                methods: {
+                    handleClyError: function(payload) {
+                        this.$notify.error({
+                            title: _i18n("common.error"),
+                            message: payload.message
+                        });
+                    },
+                    handleClyRefresh: function() {
+                        this.$emit("cly-refresh", {reason: "dateChange"});
+                    }
+                },
+                created: function() {
+                    this.$on("cly-date-change", this.handleClyRefresh);
+                    this.$on("cly-error", this.handleClyError);
                 }
-            });
-
-            self.vm.$on("cly-date-change", function() {
-                self.vm.$emit("cly-refresh", {reason: "dateChange"});
             });
         },
         destroy: function() {
