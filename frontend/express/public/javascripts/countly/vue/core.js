@@ -12,9 +12,9 @@
         methods: {
             refreshHandler: function(payload) {
                 if (payload && payload.reason === "dateChange") {
-                    if (this.dateChange) {
+                    if (this.dateChanged) {
                         // branch to dateChange implementation if any
-                        this.dateChange();
+                        this.dateChanged();
                     }
                     else {
                         this.refresh(true);
