@@ -60,10 +60,10 @@
         },
         methods: {
             confirmClicked: function() {
-                this.$emit("confirmed");
+                this.$emit("confirm");
             },
             cancelClicked: function() {
-                this.$emit("canceled");
+                this.$emit("cancel");
             },
 
         },
