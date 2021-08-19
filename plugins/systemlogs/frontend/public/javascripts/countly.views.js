@@ -1,4 +1,4 @@
-/*global countlyAuth, countlySystemLogs, countlyAttribution, pathsToSectionNames, countlyCrashes, moment, countlyCommon, countlyGlobal, app, $, jQuery, countlyVue, CV */
+/*global countlyAuth, countlySystemLogs, countlyAttribution, countlyCrashes, moment, countlyCommon, countlyGlobal, app, $, jQuery, countlyVue, CV */
 
 (function() {
     var FEATURE_NAME = "systemlogs";
@@ -16,59 +16,7 @@
                     return true;
                 }
                 return false;
-            },
-            renderField: function(key, field, sub) {
-                var ret = "";
-                if (field && field.constructor === Array) {
-                    if (sub) {
-                        ret += field.join(", ");
-                    }
-                    else {
-                        ret += "<ul>";
-                        if (key === "restrict" && typeof pathsToSectionNames !== "undefined") {
-                            field = pathsToSectionNames(field).split(", ");
-                        }
-                        for (var i = 0; i < field.length; i++) {
-                            if (field[i] !== "") {
-                                if (key === "user_of" || key === "admin_of") {
-                                    if (countlyGlobal.apps[field[i]]) {
-                                        ret += "<li>" + countlyGlobal.apps[field[i]].name + "</li>";
-                                    }
-                                    else {
-                                        ret += "<li>" + field[i] + "</li>";
-                                    }
-                                }
-                                else {
-                                    ret += "<li>" + this.renderField(i, field[i]) + "</li>";
-                                }
-                            }
-                        }
-                        ret += "</ul>";
-                    }
-                }
-                else if (field && typeof field === "object") {
-                    if (!jQuery.isEmptyObject(field)) {
-                        ret += "<ul>";
-                        for (i in field) {
-                            ret += "<li>" + i + " = " + this.renderField(i, field[i], true) + "</li>";
-                        }
-                        ret += "</ul>";
-                    }
-                }
-                else if (!isNaN(field) && (Math.round(parseFloat(field, 10)) + "").length === 10) {
-                    ret += moment(parseFloat(field, 10) * 1000).format("ddd, D MMM YYYY HH:mm:ss");
-                }
-                else if (!isNaN(field) && (Math.round(parseFloat(field, 10)) + "").length === 13) {
-                    ret += moment(parseFloat(field, 10)).format("ddd, D MMM YYYY HH:mm:ss");
-                }
-                else if (key === "map") {
-                    ret += field.replace(/\n/g, '<br />');
-                }
-                else if (field !== null && field !== undefined) {
-                    ret += field;
-                }
-                return ret;
-            },
+            }
         }
     });
     var SystemLogsView = countlyVue.views.create({
@@ -143,9 +91,7 @@
                 tableStore: tableStore,
                 allActions: {"all": jQuery.i18n.map["systemlogs.all-actions"]},
                 allUsers: {"all": jQuery.i18n.map["systemlogs.all-users"]},
-                remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "systemLogsTable"),
-                tablePersistKey: "systemLogsTable_localTable_" + countlyCommon.ACTIVE_APP_ID,
-                remoteTablePersistKey: "systemLogsTable_remoteTable_" + countlyCommon.ACTIVE_APP_ID,
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "systemLogsTable")
             };
         },
         beforeCreate: function() {
