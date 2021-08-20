@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment, countlyTaskManager */
 
 (function(countlyVue, $) {
 
@@ -534,12 +534,12 @@
                     url = null;
 
                 if (this.exportApi) {
-                    url = countlyCommon.API_URL + "/o/export/request";
                     formData = this.exportApi();
+                    url = countlyCommon.API_URL + (formData.url || "/o/export/request");
                 }
                 else if (this.exportQuery) {
-                    url = countlyCommon.API_URL + "/o/export/db";
                     formData = this.exportQuery();
+                    url = countlyCommon.API_URL + (formData.url || "/o/export/db");
                 }
                 else if (this.dataSource) { // default export logic for server tables
                     url = countlyCommon.API_URL + "/o/export/request";
@@ -577,18 +577,52 @@
                     };
                 }
 
-                var form = $('<form method="POST" action="' + url + '">');
+                if (formData.url === "/o/export/requestQuery") {
+                    if (Array.isArray(formData.prop)) {
+                        formData.prop = formData.prop.join(",");
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: formData,
+                        success: function(result) {
+                            var task_id = null;
+                            var fileid = null;
+                            if (result && result.result && result.result.task_id) {
+                                task_id = result.result.task_id;
+                                countlyTaskManager.monitor(task_id);
+                                CountlyHelpers.displayExportStatus(null, fileid, task_id);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            var filename = null;
+                            if (xhr && xhr.responseText && xhr.responseText !== "") {
+                                var ob = JSON.parse(xhr.responseText);
+                                if (ob.result && ob.result.message) {
+                                    error = ob.result.message;
+                                }
+                                if (ob.result && ob.result.filename) {
+                                    filename = ob.result.filename;
+                                }
+                            }
+                            CountlyHelpers.displayExportStatus(error, filename, null);
+                        }
+                    });
+                }
+                else {
+                    var form = $('<form method="POST" action="' + url + '">');
 
-                $.each(formData, function(k, v) {
-                    if (CountlyHelpers.isJSON(v)) {
-                        form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
-                    }
-                    else {
-                        form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
-                    }
-                });
-                $('body').append(form);
-                form.submit();
+                    $.each(formData, function(k, v) {
+                        if (CountlyHelpers.isJSON(v)) {
+                            form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
+                        }
+                        else {
+                            form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+                        }
+                    });
+                    $('body').append(form);
+                    form.submit();
+                }
             }
         }
     };
