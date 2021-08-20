@@ -1,106 +1,56 @@
 #alerts-view {
-    .metricCardsWrapper {
-        margin-bottom: 32px;
+    .text-heading.title {
+        font-size: 13px;
     }
 
     .cly-vue-alerts-table {
-        .is-last-col {
-            display: flex;
-            flex-direction: row;
-            .flex-grow {
-                flex-grow: 1;
+        .is-option-button {
+            visibility: hidden;
+            .el-select {
+                -webkit-box-shadow: unset;
+                box-shadow: unset;
+                border-radius: unset;
             }
-            .is-option-button {
-                visibility: hidden;
-                .el-select {
-                    -webkit-box-shadow: unset;
-                    box-shadow: unset;
-                    border-radius: unset;
-                }
-                
-            }
+            
         }
         tr:hover .is-option-button {
             visibility: visible;
         }
     }
 
+    .compare-value-block {
+        .el-input__suffix {
+            line-height: 32px;
+        }
+    }
+
     .cly-vue-alert-drawer {
-        &__section {
-            padding: 16px 0px;
-        }
-        &__title{
-            padding-bottom: 4px;
-        }
-        &__help-text {
-           font-family: Inter;
-           font-style: normal;
-           font-weight: normal;
-           font-size: 12px;
-           line-height: 16px;
-           color: #81868D;
-        }
-         
+   
         &__is-hidden {
            visibility: hidden;
         }
 
-        &__is-full-line {
-           width: 100%;
-           display: flex;
-        }
-   
-        &__no-margin {
-           margin-bottom: 0px !important;
-        }
 
         &__card {
-            margin: 16px 0px;
             background: #F8FAFD;
             border-radius: 4px;
         }
 
-        &__card-title {
-            padding: 4px 16px;
-        }
-
+    
         &__line {
             margin-top: 13px;
             border-top: 2px solid  #ECECEC;
         }
-
-        &__inline {
-            padding:16px 16px 24px 16px;
-            display: flex;
-        }
-
-        &__define-inline {
-           margin: 4px; 
-        }
-    }
-    .cly-vue-alert-drawer-define-block {
-        display: flex;
-        margin: 16px 12px;
-    }
-    .cly-vue-alert-drawer-define-block-item {
-        flex-grow: 1;
-        text-align: center;
-        margin: 4px;
     }
     .alert-data-type-block {
         label {
             flex: 1;
         }
         .el-radio-button__inner {
-            // padding: 16px 60px !important; 
             height:48px !important;
             line-height: 24px;
             width: 100%;
         }
     }
-    .cly-vue-alert-drawer-define-block-item {
-        .el-input__suffix {
-            line-height: 32px;
-        }
-    }
+    
 }
