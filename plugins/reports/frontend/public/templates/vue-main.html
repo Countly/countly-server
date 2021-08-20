@@ -63,8 +63,8 @@
 
             <el-table-column  min-width="250" :label="i18n('reports.time')" sortable="true">
                 <template slot-scope="scope">
-                    <div class="is-last-col">
-                        <div class="flex-grow">
+                    <div class="bu-is-flex">
+                        <div class="bu-is-flex-grow-1">
                             <div class="is-created-by-col">
                                 {{scope.row.timeColumn}}
                              </div>
@@ -111,8 +111,8 @@
     v-bind="$props.controls">
     <template v-slot:default="drawerScope">
         <cly-form-step id="reports-drawer-main">
-        <div class="cly-vue-drawer-step__section">
-            <div class="text-small text-heading">
+        <div class="bu-py-4">
+            <div class="text-small bu-pb-1 title text-heading">
                 {{i18n('reports.report_name')}}
             </div>
             <validation-provider name="title" rules="required" v-slot="v">
@@ -123,13 +123,13 @@
                 </el-input>
             </validation-provider>
         </div>
-        <div class="cly-vue-drawer-step__section">
-            <div class="text-small text-heading">
+        <div class="bu-py-4">
+            <div class="text-small bu-pb-1 title text-heading">
                {{i18n('reports.email-to-receive')}} 
             </div>
                 <validation-provider name="emails" rules="required" v-slot="v">
                     <el-select
-                        :class="{'cly-vue-report-drawer__is-full-line': true}"
+                        :class="{'bu-is-flex': true}"
                         v-model="drawerScope.editedObject.emails"
                         multiple
                         filterable
@@ -148,9 +148,9 @@
             </div>
         </div> 
 
-        <div class="cly-vue-drawer-step__section report-type-block">
+        <div class="bu-py-4 report-type-block">
             <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
-                <div class="text-big text-heading">
+                <div class="text-big text-heading bu-mb-3">
                     {{i18n('reports.report-type')}} <span class="ion-help-circled color-cool-gray-50" v-tooltip.top-center="i18n('reports.type-tips')"/>
                 </div>
             </div>
@@ -172,8 +172,8 @@
             </div>
         </div>
 
-        <div class="cly-vue-drawer-step__section" v-if="showApps">
-            <div class="text-small text-heading">
+        <div class="bu-py-4" v-if="showApps">
+            <div class="text-small bu-pb-1 title text-heading">
                 {{i18n('reports.select-apps')}} 
             </div>
             <validation-provider name="apps" rules="required" v-slot="v">
@@ -182,15 +182,15 @@
                    mode="multi-check"
                    v-on:change="appsChange"
                    v-model="drawerScope.editedObject.apps"
-                   :class="{'is-error': v.errors.length > 0, 'cly-vue-report-drawer__is-full-line':true}"
+                   :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="appsSelectorOption">
                 </cly-select-x>
             </validation-provider>
         </div>
 
 
-        <div class="cly-vue-drawer-step__section"  v-if="showMetrics">
-            <div class="text-small text-heading">
+        <div class="bu-py-4"  v-if="showMetrics">
+            <div class="text-small bu-pb-1 title text-heading">
                 {{i18n('reports.include-metrics')}} 
             </div>
             <validation-provider name="metrics" rules="required" v-slot="v">
@@ -198,14 +198,14 @@
                    :placeholder="i18n('reports.Select_metrics')"
                    mode="multi-check"
                    v-model="drawerScope.editedObject.metricsArray"
-                   :class="{'is-error': v.errors.length > 0, 'cly-vue-report-drawer__is-full-line':true}"
+                   :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="metricOptions">
                 </cly-select-x>
             </validation-provider>
         </div>
 
-        <div class="cly-vue-drawer-step__section"  v-if="showDashboards">
-            <div class="text-small text-heading">
+        <div class="bu-py-4"  v-if="showDashboards">
+            <div class="text-small bu-pb-2 title text-heading">
                 {{i18n('dashboards.select_dashboards')}} 
             </div>
             <validation-provider name="select_dashboards" rules="required" v-slot="v">
@@ -213,33 +213,33 @@
                    :placeholder="i18n('dashboards.select')"
                    mode="single-list"
                    v-model="drawerScope.editedObject.dashboards"
-                   :class="{'is-error': v.errors.length > 0, 'cly-vue-report-drawer__is-full-line':true}"
+                   :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="dashboardsOptions">
                 </cly-select-x>
             </validation-provider>
         </div>
 
 
-        <div class="cly-vue-drawer-step__section" v-if="drawerScope.editedObject.metricsArray && drawerScope.editedObject.metricsArray.indexOf('events') > -1">
-            <div class="text-small text-heading">
+        <div class="bu-py-4" v-if="drawerScope.editedObject.metricsArray && drawerScope.editedObject.metricsArray.indexOf('events') > -1">
+            <div class="text-small bu-pb-1 title text-heading">
                 {{i18n('reports.select-events')}} 
             </div>
             <validation-provider name="events" rules="required" v-slot="v">
                 <cly-select-x
                    mode="multi-check"
                    v-model="drawerScope.editedObject.selectedEvents"
-                   :class="{'is-error': v.errors.length > 0, 'cly-vue-report-drawer__is-full-line':true}"
+                   :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="eventOptions">
                 </cly-select-x>
             </validation-provider>
         </div>
 
 
-        <div class="cly-vue-drawer-step__section frequency-block">
-            <div class="text-big text-heading cly-vue-report-drawer__no-margin">
+        <div class="bu-py-4 frequency-block">
+            <div class="text-big bu-pb-1 title bu-has-text-weight-medium ">
                 {{i18n('reports.frequency')}}
             </div>
-            <div class="cly-vue-report-drawer__report_description">
+            <div class="cly-vue-report-drawer__report_description bu-mb-4 text-small  colors-cool-gray-50">
                 {{i18n('reports.frequency-desc')}}
             </div>
             <el-radio
@@ -257,8 +257,8 @@
             </el-radio>
         </div>
 
-        <div class="cly-vue-drawer-step__section"  v-if="showDashboards">
-            <div class="text-small text-heading">
+        <div class="bu-py-4"  v-if="showDashboards">
+            <div class="text-medium bu-pb-1 bu-has-text-weight-medium">
                 {{i18n('dashboards.select-report-date-range')}} 
             </div>
             <validation-provider name="select-date-range" rules="required" v-slot="v">
@@ -266,60 +266,60 @@
                    :placeholder="i18n('dashboards.select-date-range')"
                    mode="single-list"
                    v-model="drawerScope.editedObject.date_range"
-                   :class="{'is-error': v.errors.length > 0, 'cly-vue-report-drawer__is-full-line':true}"
+                   :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="reportDateRangesOptions">
                 </cly-select-x>
             </validation-provider>
         </div>
 
-        <div class="cly-vue-drawer-step__section" v-if="drawerScope.editedObject.frequency === 'weekly'">
-            <div class="text-medium text-heading cly-vue-report-drawer__no-margin">
+        <div class="bu-py-4" v-if="drawerScope.editedObject.frequency === 'weekly'">
+            <div class="text-medium bu-pb-1 bu-has-text-weight-medium">
                 {{i18n('reports.dow')}}
             </div>
-            <!-- <div class="cly-vue-report-drawer__report_description">
+            <!-- <div class="cly-vue-report-drawer__report_description bu-mb-2 text-small  colors-cool-gray-50">
                 Some frequency related description can be placed here
             </div> -->
             <validation-provider name="metrics" rules="required" v-slot="v">
                 <cly-select-x
                    mode="single-list"
                    v-model="drawerScope.editedObject.day"
-                   :class="{'is-error': v.errors.length > 0, 'cly-vue-report-drawer__is-full-line':true}"
+                   :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="dayOfWeekOptions">
                 </cly-select-x>
             </validation-provider>
         </div>
 
 
-        <div class="cly-vue-drawer-step__section">
-            <div class="text-medium text-heading cly-vue-report-drawer__no-margin">
+        <div class="bu-py-4">
+            <div class="text-medium bu-pb-1 bu-has-text-weight-medium">
                 {{i18n('reports.select-time')}}
             </div>
-            <div class="cly-vue-report-drawer__report_description">
+            <div class="cly-vue-report-drawer__report_description bu-mb-2 text-small  color-cool-gray-50">
                 {{i18n('reports.time-desc')}}
             </div>
             <validation-provider name="metrics" rules="required" v-slot="v">
                 <cly-select-x
                    mode="single-list"
                    v-model="drawerScope.editedObject.hour"
-                   :class="{'is-error': v.errors.length > 0, 'cly-vue-report-drawer__is-full-line':true}"
+                   :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="timeListOptions">
                 </cly-select-x>
             </validation-provider>
         </div>
 
 
-        <div class="cly-vue-drawer-step__section">
-            <div class="text-medium text-heading cly-vue-report-drawer__no-margin">
+        <div class="bu-py-4">
+            <div class="text-medium bu-pb-1  bu-has-text-weight-medium">
                 {{i18n('reports.timezone')}}
             </div>
-            <div class="cly-vue-report-drawer__report_description">
+            <div class="cly-vue-report-drawer__report_description bu-mb-2 text-small  colors-cool-gray-50">
                 {{i18n('reports.timezone-desc')}}
             </div>
             <validation-provider name="metrics" rules="required" v-slot="v">
                 <cly-select-x
                    mode="single-list"
                    v-model="drawerScope.editedObject.timezone"
-                   :class="{'is-error': v.errors.length > 0, 'cly-vue-report-drawer__is-full-line':true}"
+                   :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="timezoneOptions">
                 </cly-select-x>
             </validation-provider>
