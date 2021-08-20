@@ -1,6 +1,6 @@
-/* global jQuery, Vue, _, CV */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment */
 
-(function(countlyVue) {
+(function(countlyVue, $) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
@@ -472,12 +472,119 @@
         }
     };
 
+    var ExportHandlerMixin = {
+        props: {
+            exportQuery: {
+                type: Function,
+                default: null,
+                required: false
+            },
+            exportApi: {
+                type: Function,
+                default: null,
+                required: false
+            },
+            exportFormat: {
+                type: Function,
+                default: null,
+                required: false
+            }
+        },
+        data: function() {
+            return {
+                hasExport: true,
+                selectedExportType: 'csv',
+                availableExportTypes: [
+                    {'name': '.CSV', value: 'csv'},
+                    {'name': '.JSON', value: 'json'},
+                    {'name': '.XLSX', value: 'xlsx'}
+                ]
+            };
+        },
+        methods: {
+            onExportClick: function() {
+                this.initiateExport({
+                    type: this.selectedExportType
+                });
+            },
+            getDefaultFileName: function(params) {
+                var name = "countly";
+                if (params.title) {
+                    name = params.title.replace(/[\r\n]+/g, "");
+                }
+                if (params.timeDependent) {
+                    //include export range
+                    name += "_for_" + countlyCommon.getDateRange();
+                }
+                else {
+                    //include export date
+                    name += "_on_" + moment().format("DD-MMM-YYYY");
+                }
+                return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+            },
+            getLocalExportContent: function() {
+                if (this.exportFormat) {
+                    return this.exportFormat(this.rows);
+                }
+                return this.rows;
+            },
+            initiateExport: function(params) {
+
+                var formData = null,
+                    url = null;
+
+                if (this.exportApi) {
+                    url = countlyCommon.API_URL + "/o/export/request";
+                    formData = this.exportApi();
+                }
+                else if (this.exportQuery) {
+                    url = countlyCommon.API_URL + "/o/export/db";
+                    formData = this.exportQuery();
+                }
+                else if (this.dataSource) { // default export logic for server tables
+                    url = countlyCommon.API_URL + "/o/export/request";
+                    formData = {
+                        type: params.type,
+                        // TODO: Get default path and props
+                        path: params.settings.resourcePath,
+                        prop: params.settings.resourceProp,
+                        filename: this.getDefaultFileName(params),
+                        api_key: countlyGlobal.member.api_key
+                    };
+                }
+                else {
+                    url = countlyCommon.API_URL + "/o/export/data";
+                    formData = {
+                        type: params.type,
+                        data: JSON.stringify(this.getLocalExportContent()),
+                        filename: this.getDefaultFileName(params),
+                        api_key: countlyGlobal.member.api_key
+                    };
+                }
+
+                var form = $('<form method="POST" action="' + url + '">');
+
+                $.each(formData, function(k, v) {
+                    if (CountlyHelpers.isJSON(v)) {
+                        form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
+                    }
+                    else {
+                        form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+                    }
+                });
+                $('body').append(form);
+                form.submit();
+            }
+        }
+    };
+
     Vue.component("cly-datatable-n", countlyVue.components.create({
         mixins: [
             _mixins.i18n,
             TableExtensionsMixin,
             MutationTrackerMixin,
-            OverlayRowMixin
+            OverlayRowMixin,
+            ExportHandlerMixin
         ],
         props: {
             keyFn: {

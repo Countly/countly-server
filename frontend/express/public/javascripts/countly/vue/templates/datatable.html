@@ -26,6 +26,24 @@
                         </template>
                     </cly-select-x>
                 </div>
+                <div class="bu-level-item" v-if="hasExport">
+                    <cly-dropdown :width="230" placement="bottom-end" ref="exportDropdown">
+                        <template v-slot:trigger="dropdown">
+                            <el-button size="small" icon="el-icon-download"></el-button>
+                        </template>
+                        <template>
+                            <div class="bu-m-4">
+                                <el-radio-group
+                                    class="bu-mb-2"
+                                    v-model="selectedExportType"
+                                    size="small">
+                                    <el-radio-button v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value">{{exportType.name}}</el-radio-button>
+                                </el-radio-group>
+                                <el-button size="small" @click="onExportClick">Download</el-button>
+                            </div>
+                        </template>
+                    </cly-dropdown>
+                </div>
                 <div class="bu-level-item" v-if="displaySearch">
                     <el-input size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>
                 </div>
