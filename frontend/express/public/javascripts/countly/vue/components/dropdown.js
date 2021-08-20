@@ -407,6 +407,7 @@
                 this.$refs.dropdown.handleClose();
             },
             save: function() {
+                this.$emit("change", this.unsavedValue);
                 this.$emit("input", this.unsavedValue);
                 this.close();
             },
