@@ -144,20 +144,39 @@
                 }
                 app.navigate("#/manage/systemlogs/query/" + JSON.stringify(this.$route.params.query));
                 this.refresh(true);
+            },
+            getExportAPI: function() {
+                var query, requestPath, apiQueryData;
+                query = this.$route.params.query;
+                requestPath = '/o?api_key=' + countlyGlobal.member.api_key +
+                "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&method=systemlogs&iDisplayStart=0&export=true" +
+                "&query=" + encodeURIComponent(JSON.stringify(query)) +
+                "&period=" + countlyCommon.getPeriodForAjax();
+                apiQueryData = {
+                    api_key: countlyGlobal.member.api_key,
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    path: requestPath,
+                    method: "GET",
+                    filename: "Auditlogs_on_" + moment().format("DD-MMM-YYYY"),
+                    prop: ['aaData']
+                };
+                return apiQueryData;
             }
         }
     });
 
-    //register views
-    app.systemLogsView = new countlyVue.views.BackboneWrapper({
-        component: SystemLogsView,
-        vuex: [] //empty array if none
-    });
+    var getMainView = function() {
+        return new countlyVue.views.BackboneWrapper({
+            component: SystemLogsView,
+            vuex: [] //empty array if none
+        });
+    };
 
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         app.route('/manage/systemlogs', 'systemlogs', function() {
-            this.systemLogsView.params = {query: {}};
-            this.renderWhenReady(this.systemLogsView);
+            var view = getMainView();
+            view.params = {query: {}};
+            this.renderWhenReady(view);
         });
 
         app.route('/manage/systemlogs/query/*query', 'systemlogs_query', function(query) {
@@ -167,8 +186,9 @@
             catch (ex) {
                 query = {};
             }
-            this.systemLogsView.params = {query: query};
-            this.renderWhenReady(this.systemLogsView);
+            var view = getMainView();
+            view.params = {query: query};
+            this.renderWhenReady(view);
         });
 
         app.route('/manage/systemlogs/filter/*query', 'systemlogs_query', function(query) {
@@ -178,8 +198,9 @@
             catch (ex) {
                 query = {};
             }
-            this.systemLogsView.params = {query: query, back: true};
-            this.renderWhenReady(this.systemLogsView);
+            var view = getMainView();
+            view.params = {query: query, back: true};
+            this.renderWhenReady(view);
         });
 
         app.addPageScript("/manage/compliance#", function() {

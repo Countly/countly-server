@@ -8,9 +8,9 @@
         </template>
     </cly-header>
     <cly-main>
-		<cly-date-picker-g></cly-date-picker-g>
-		<cly-section>
-			<cly-datatable-n :data-source="remoteTableDataSource">
+		<cly-date-picker-g class="bu-mb-4"></cly-date-picker-g>
+		<cly-section class="bu-mt-4">
+			<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI">
                 <template v-slot="scope">
                     <el-table-column type="expand">
                         <template slot-scope="rowScope">
@@ -44,7 +44,7 @@
                     <el-select v-model="selectAction" v-on:change="changeAction">
                         <el-option :key="index" :value="index" :label="item" v-for="(item, index) in allActions"></el-option>
                     </el-select>
-                    <el-select v-model="selectUser" v-on:change="changeUser">
+                    <el-select v-model="selectUser" v-on:change="changeUser" class="bu-ml-4">
                         <el-option :key="index" :value="index" :label="item" v-for="(item, index) in allUsers"></el-option>
                     </el-select>
                 </template>
