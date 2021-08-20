@@ -10,15 +10,21 @@
     <cly-main>
         <cly-datatable-n :rows="binaryImages" ref="tableData">
             <template v-slot:header-left>
-                <div class="text-medium">
+                <div class="text-big font-weight-bold">
                     {{crash.name}}
                 </div>
             </template>
             <template v-slot:header-right>
-                <div class="text-medium">
-                    App Build Number: {{crash.app_build}}
-                    App Version: {{crash.app_version}}
-                    Platform Version: {{crash.os_version}}
+                <div class="bu-flex bu-flex-direction-column bu-mr-3">
+                    <div class="text-small" v-if="'app_build' in crash">
+                        App Build Number: {{crash.app_build}}
+                    </div>
+                    <div class="text-small" v-if="'app_version' in crash">
+                        App Version: {{crash.app_version}}
+                    </div>
+                    <div class="text-small" v-if="'os_version' in crash">
+                        Platform Version: {{crash.os_version}}
+                    </div>
                 </div>
             </template>
         </template>
@@ -26,7 +32,13 @@
             <el-table-column prop="name" width="210" sortable></el-table-column>
             <el-table-column prop="uuid" label="Build UUID" width="400"></el-table-column>
             <el-table-column prop="loadAddress" label="Load Address"></el-table-column>
+            <el-table-column width="120" fixed="right" v-if="symbolicationEnabled">
+                <template slot-scope="col">
+                    <el-button type="text" @click="openDrawer('crashSymbol', {})" v-if="!hasSymbol(col.row.uuid)">Add Symbol</el-button>
+                </template>
+            </el-table-column>
         </template>
     </cly-datatable-n>
 </cly-main>
+<cly-crash-symbol-drawer @symbols-changed="refresh" ref="crashSymbolDrawer" :controls="drawers.crashSymbol" v-if="symbolicationEnabled"></cly-crash-symbol-drawer>
 </div>

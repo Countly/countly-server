@@ -1,4 +1,4 @@
-/* global countlyVue, countlyEventsOverview,CV,app*/
+/* global countlyVue, countlyCommon, countlyEventsOverview,CV,app*/
 var EventsTable = countlyVue.views.BaseView.extend({
     mixins: [countlyVue.mixins.i18n],
     data: function() {
@@ -112,6 +112,10 @@ var EventsOverviewView = countlyVue.views.BaseView.extend({
                 this.$store.dispatch('countlyEventsOverview/fetchSelectedDatePeriod', value);
                 this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
             }
+        },
+        updatedAt: function() {
+            var deatilEvents = this.$store.getters["countlyEventsOverview/detailEvents"];
+            return CV.i18n('events.overview.updated') + " " + countlyCommon.formatTimeAgoText(deatilEvents.ts).text;
         }
     },
     data: function() {

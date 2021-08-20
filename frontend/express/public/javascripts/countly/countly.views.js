@@ -1,4 +1,4 @@
-/* global countlyView, Dropzone, groupsModel, countlySession, tippy, countlyAuth, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, UserView, CountriesView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $,JobsView, JobDetailView*/
+/* global countlyView, Dropzone, groupsModel, countlySession, tippy, countlyAuth, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, store, Handlebars, countlyCity, countlyLocation, countlyDevice, countlyDeviceDetails, countlyAppVersion, countlyCarrier, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, UserView, ManageAppsView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, sdks, jstz, getUrls, T, jQuery, $,JobsView, JobDetailView*/
 
 
 window.GraphNotesView = countlyView.extend({
@@ -549,227 +549,6 @@ window.UserView = countlyView.extend({
         });
     }
 });
-
-window.CountriesView = countlyView.extend({
-    cityView: (store.get("countly_location_city")) ? store.get("countly_active_app") : false,
-    initialize: function() {
-        this.curMap = "map-list-sessions";
-        this.template = Handlebars.compile($("#template-analytics-countries").html());
-    },
-    beforeRender: function() {
-        this.maps = {
-            "map-list-sessions": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.sessions"], type: 'number', metric: "t"},
-            "map-list-users": {id: 'total', label: jQuery.i18n.map["sidebar.analytics.users"], type: 'number', metric: "u"},
-            "map-list-new": {id: 'total', label: jQuery.i18n.map["common.table.new-users"], type: 'number', metric: "n"}
-        };
-        return $.when(countlySession.initialize(), countlyCity.initialize(), countlyTotalUsers.initialize("countries"), countlyTotalUsers.initialize("cities"), countlyTotalUsers.initialize("users")).then(function() {});
-    },
-    drawTable: function() {
-        var tableFirstColTitle = (this.cityView) ? jQuery.i18n.map["countries.table.city"] : jQuery.i18n.map["countries.table.country"],
-            locationData,
-            firstCollData = "country_flag";
-
-        if (this.cityView) {
-            locationData = countlyCity.getLocationData();
-            firstCollData = "cities";
-        }
-        else {
-            locationData = countlyLocation.getLocationData();
-        }
-
-        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-            "aaData": locationData,
-            "aoColumns": [
-                { "mData": firstCollData, "sTitle": tableFirstColTitle },
-                {
-                    "mData": "t",
-                    sType: "formatted-num",
-                    "mRender": function(d) {
-                        return countlyCommon.formatNumber(d);
-                    },
-                    "sTitle": jQuery.i18n.map["common.table.total-sessions"]
-                },
-                {
-                    "mData": "u",
-                    sType: "formatted-num",
-                    "mRender": function(d) {
-                        return countlyCommon.formatNumber(d);
-                    },
-                    "sTitle": jQuery.i18n.map["common.table.total-users"]
-                },
-                {
-                    "mData": "n",
-                    sType: "formatted-num",
-                    "mRender": function(d) {
-                        return countlyCommon.formatNumber(d);
-                    },
-                    "sTitle": jQuery.i18n.map["common.table.new-users"]
-                }
-            ]
-        }));
-
-        $(".d-table").stickyTableHeaders();
-    },
-    renderCommon: function(isRefresh) {
-        var sessionData = countlySession.getSessionData();
-
-        this.templateData = {
-            "page-title": jQuery.i18n.map["countries.title"],
-            "logo-class": "countries",
-            "big-numbers": {
-                "count": 3,
-                "items": [
-                    {
-                        "title": jQuery.i18n.map["common.total-sessions"],
-                        "total": sessionData.usage["total-sessions"].total,
-                        "trend": sessionData.usage["total-sessions"].trend,
-                        "help": "countries.total-sessions",
-                        "radio-button-id": "map-list-sessions",
-                        "radio-button-class": (this.curMap === "map-list-sessions") ? "selected" : ""
-                    },
-                    {
-                        "title": jQuery.i18n.map["common.total-users"],
-                        "total": sessionData.usage["total-users"].total,
-                        "trend": sessionData.usage["total-users"].trend,
-                        "help": "countries.total-users",
-                        "radio-button-id": "map-list-users",
-                        "radio-button-class": (this.curMap === "map-list-users") ? "selected" : ""
-                    },
-                    {
-                        "title": jQuery.i18n.map["common.new-users"],
-                        "total": sessionData.usage["new-users"].total,
-                        "trend": sessionData.usage["new-users"].trend,
-                        "help": "countries.new-users",
-                        "radio-button-id": "map-list-new",
-                        "radio-button-class": (this.curMap === "map-list-new") ? "selected" : ""
-                    }
-                ]
-            },
-            "chart-helper": "countries.chart",
-            "table-helper": "countries.table"
-        };
-
-        var self = this;
-        $(document).unbind('selectMapCountry').bind('selectMapCountry', function() {
-            $("#country-toggle").trigger("click");
-        });
-
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-
-            if (countlyGlobal.config.use_google) {
-                if (this.cityView) {
-                    countlyCity.drawGeoChart({height: 450, metric: self.maps[self.curMap]});
-                }
-                else {
-                    countlyLocation.drawGeoChart({height: 450, metric: self.maps[self.curMap]});
-                }
-
-                $(".widget").removeClass("google-disabled");
-            }
-            else {
-                $(".widget").addClass("google-disabled");
-            }
-
-            this.drawTable();
-
-            if (countlyCommon.CITY_DATA === false) {
-                store.set("countly_location_city", false);
-            }
-
-            $("#country-toggle").on('click', function() {
-                if ($(this).hasClass("country_selected")) {
-                    self.cityView = false;
-                    if (countlyGlobal.config.use_google) {
-                        countlyLocation.drawGeoChart({height: 450, metric: self.maps[self.curMap]});
-                    }
-                    $(this).removeClass("country_selected");
-                    self.refresh(true);
-                    store.set("countly_location_city", false);
-                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country) {
-                        $(this).text(jQuery.i18n.map["common.show"] + " " + countlyLocation.getCountryName(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country));
-                    }
-                    else {
-                        $(this).text(jQuery.i18n.map["common.show"] + " " + jQuery.i18n.map["countries.table.country"]);
-                    }
-                }
-                else {
-                    self.cityView = true;
-                    if (countlyGlobal.config.use_google) {
-                        countlyCity.drawGeoChart({height: 450, metric: self.maps[self.curMap]});
-                    }
-                    $(this).addClass("country_selected");
-                    self.refresh(true);
-                    store.set("countly_location_city", true);
-                    $(this).html('<i class="fa fa-chevron-left" aria-hidden="true"></i>' + jQuery.i18n.map["countries.back-to-list"]);
-                }
-            });
-
-            if (self.cityView) {
-                $("#country-toggle").html('<i class="fa fa-chevron-left" aria-hidden="true"></i>' + jQuery.i18n.map["countries.back-to-list"]).addClass("country_selected");
-            }
-            else {
-                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country) {
-                    $("#country-toggle").text(jQuery.i18n.map["common.show"] + " " + countlyLocation.getCountryName(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country));
-                }
-                else {
-                    $("#country-toggle").text(jQuery.i18n.map["common.show"] + " " + jQuery.i18n.map["countries.table.country"]);
-                }
-            }
-
-            $(".geo-switch").on("click", ".radio", function() {
-                $(".geo-switch").find(".radio").removeClass("selected");
-                $(this).addClass("selected");
-                self.curMap = $(this).data("id");
-
-                if (self.cityView) {
-                    countlyCity.refreshGeoChart(self.maps[self.curMap]);
-                }
-                else {
-                    countlyLocation.refreshGeoChart(self.maps[self.curMap]);
-                }
-            });
-        }
-
-        CountlyHelpers.applyColors();
-    },
-    refresh: function(isToggle) {
-        var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-            self.renderCommon(true);
-            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-
-            $(self.el).find("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
-
-            if (isToggle) {
-                self.drawTable();
-            }
-            else {
-                var locationData;
-                if (self.cityView) {
-                    locationData = countlyCity.getLocationData();
-                    if (countlyGlobal.config.use_google) {
-                        countlyCity.refreshGeoChart(self.maps[self.curMap]);
-                    }
-                }
-                else {
-                    locationData = countlyLocation.getLocationData();
-                    if (countlyGlobal.config.use_google) {
-                        countlyLocation.refreshGeoChart(self.maps[self.curMap]);
-                    }
-                }
-
-                CountlyHelpers.refreshTable(self.dtable, locationData);
-            }
-
-            app.localize();
-        });
-    }
-});
-
 
 window.ManageAppsView = countlyView.extend({
     featureName: 'global_applications',
@@ -7529,7 +7308,6 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 //register views
 app.graphNotesView = new GraphNotesView();
 app.userView = new UserView();
-app.countriesView = new CountriesView();
 app.manageAppsView = new ManageAppsView();
 app.manageUsersView = new ManageUsersView();
 app.eventsView = new EventsView();
@@ -7548,10 +7326,6 @@ app.route("/analytics/graph-notes", "graphNotes", function() {
 });
 app.route("/analytics/users", "users", function() {
     this.renderWhenReady(this.userView);
-});
-
-app.route("/analytics/countries", "countries", function() {
-    this.renderWhenReady(this.countriesView);
 });
 
 if (countlyAuth.validateRead('global_applications')) {

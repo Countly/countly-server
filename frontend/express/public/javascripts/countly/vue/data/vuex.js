@@ -258,7 +258,10 @@
                         context.commit(_capitalized("set", resourceName), convertedResponse);
                     }
                 })
-                .catch(function() {
+                .catch(function(err) {
+                    if (typeof options.onError === 'function') {
+                        options.onError(context, err);
+                    }
                     return context.commit(_capitalized("set", resourceName), _dataTableAdapters.toStandardResponse());
                 });
         };

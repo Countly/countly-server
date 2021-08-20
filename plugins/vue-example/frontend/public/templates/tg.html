@@ -31,6 +31,9 @@
         <cly-section title="Stacked Bar Chart">
             <cly-chart-bar :option="stackedBarOptions" :showToggle="false"></cly-chart-bar>
         </cly-section>
+        <cly-section title="Bar charts right legend">
+            <cly-chart-bar :option="barOptions" :showDownload="false" :showZoom="false" :showToggle="false" :legend="{position: 'right'}"></cly-chart-bar>
+        </cly-section>
         <cly-section title="Pie Chart">
             <div class="bu-columns bu-is-gapless">
                 <div class="bu-column bu-is-half">
@@ -44,24 +47,36 @@
             <br />
             <cly-chart-pie :option="newPieOptions" :showToggle="false"></cly-chart-pie>
         </cly-section>
-
-        <cly-section title="Geo chart">
-            <cly-chart-geo :data="geoChartData" :options="geoChartOptions"></cly-chart-geo>
-        </cly-section>
         <cly-section title="Worldmap">
             <cly-worldmap
                 countries-title="Sessions by Countries"
                 regions-title="Sessions by Regions"
                 cities-title="Sessions by Cities"
+                value-type="Sessions"
                 :countries-data="countriesData"
                 :regions-data="regionsData"
                 :cities-data="citiesData">
-                <template v-slot:regions-info>
+                <!-- <template v-slot:regions-info>
                     <span class="text-medium">Sessions</span>
                 </template>
                 <template v-slot:cities-info>
                     <span class="text-medium">Sessions</span>
                 </template>
+                <template v-slot:tooltip-suffix>
+                    <span class="text-medium">Sessions</span>
+                </template> -->
+            </cly-worldmap>
+        </cly-section>
+        <cly-section title="Worldmap - Simple">
+            <cly-worldmap
+                external-country="TR"
+                external-detail-mode="cities"
+                value-type="Sessions"
+                :show-detail-mode-select="false"
+                :show-navigation="false"
+                :countries-data="countriesData"
+                :regions-data="regionsData"
+                :cities-data="citiesData">
             </cly-worldmap>
         </cly-section>
     </cly-main>

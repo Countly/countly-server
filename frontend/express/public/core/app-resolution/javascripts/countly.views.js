@@ -29,7 +29,8 @@ var AppResolutionView = countlyVue.views.create({
                             formatter: function() {
                                 return CV.i18n('common.table.new-users') + " " + countlyCommon.getShortNumber(self.appResolution.totals.newUsers || 0);
                             }
-                        },
+                        }
+
                     }
                 ]
             };
@@ -45,7 +46,7 @@ var AppResolutionView = countlyVue.views.create({
                             formatter: function() {
                                 return CV.i18n('common.table.total-sessions') + " " + countlyCommon.getShortNumber(self.appResolution.totals.totalSessions);
                             }
-                        },
+                        }
                     }
                 ]
             };
@@ -55,8 +56,22 @@ var AppResolutionView = countlyVue.views.create({
         },
         isLoading: function() {
             return this.$store.state.countlyDevicesAndTypes.isLoading;
+        },
+        topDropdown: function() {
+            if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                return this.externalLinks;
+            }
+            else {
+                return null;
+            }
+
         }
-    }
+    },
+    mixins: [
+        countlyVue.container.dataMixin({
+            'externalLinks': '/analytics/resolutions/links'
+        })
+    ]
 });
 
 

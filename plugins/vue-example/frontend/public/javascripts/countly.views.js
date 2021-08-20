@@ -323,7 +323,6 @@
                     ]
                 },
                 lineLegend: {
-                    show: true,
                     type: "primary",
                     data: [
                         {
@@ -378,7 +377,6 @@
                     ]
                 },
                 barLegend: {
-                    show: true,
                     type: "primary",
                     data: [
                         {
@@ -441,6 +439,27 @@
                         'value': 500
                     },
                     'US': {
+                        'value': 1000
+                    },
+                    'GB': {
+                        'value': 1000
+                    },
+                    'ES': {
+                        'value': 1000
+                    },
+                    'NL': {
+                        'value': 1000
+                    },
+                    'JP': {
+                        'value': 1000
+                    },
+                    'NZ': {
+                        'value': 1000
+                    },
+                    'IN': {
+                        'value': 1000
+                    },
+                    'IL': {
                         'value': 1000
                     }
                 },
@@ -544,6 +563,7 @@
                 selectedDynamicType: 'daterange',
                 selectedDate: moment.now(),
                 selectedDateWTime: moment.now(),
+                selectedDateWTimeFuture: moment.now(),
                 selectedMonth: moment().startOf("month").valueOf(),
                 selectedTime: new Date(2016, 9, 10, 18, 40),
             };

@@ -1,4 +1,4 @@
-/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails*/
+/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser*/
 (function(countlyDevicesAndTypes) {
 
     CountlyHelpers.createMetricModel(window.countlyDevicesAndTypes, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
@@ -119,6 +119,9 @@
         fetchPlatform: function() {
             return $.when(countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platform"));
         },
+        fetchBrowser: function() {
+            return $.when(countlyBrowser.initialize(), countlyTotalUsers.initialize("browser"));
+        },
         fetchDevices: function() {
             return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("devices"),
                 countlyTotalUsers.initialize("platforms"),
@@ -175,6 +178,39 @@
             chartData.totals = totals;
             return chartData;
 
+        },
+        calculateBrowser: function() {
+            var chartData = countlyCommon.extractTwoLevelData(countlyBrowser.getDb(), countlyBrowser.getMeta("browser"), countlyBrowser.clearObject, [
+                {
+                    name: "browser",
+                    func: function(rangeArr) {
+                        return rangeArr;
+                    }
+                },
+                { "name": "t" },
+                { "name": "u" },
+                { "name": "n" }
+            ], "browser");
+
+
+            var totals = {"u": 0, "t": 0, "n": 0};
+            chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, "browser");
+
+            for (var k = 0; k < chartData.chartData.length; k++) {
+                totals.u += chartData.chartData[k].u || 0;
+                totals.t += chartData.chartData[k].t || 0;
+                totals.n += chartData.chartData[k].n || 0;
+            }
+            chartData.totals = totals;
+
+            var stacked_version = [];
+            for (var i = 0; i < chartData.chartData.length; i++) {
+                var tmpBrowserVersion = countlyBrowser.getBrowserVersionData(chartData.chartData[i].browser);
+                stacked_version.push({"label": chartData.chartData[i].browser, "u": chartData.chartData[i].u, "t": chartData.chartData[i].t, "n": chartData.chartData[i].n, "data": tmpBrowserVersion});
+            }
+            chartData.versions = stacked_version;
+
+            return chartData;
         },
         calculateDevices: function() {
             var metric = "devices";
@@ -257,6 +293,7 @@
                 appResolution: {"pie": {"newUsers": [], "totalSessions": []}, "chart": {}, "table": []},
                 appVersion: {"chart": {}, "table": []},
                 appPlatform: {"chart": {}, "table": []},
+                appBrowser: {"chart": {}, "table": []},
                 deviceTypes: {"pie": {"newUsers": [], "totalSessions": []}, "chart": {}, "totals": {}, "table": []},
                 appDevices: {"pie": {"newUsers": [], "totalSessions": []}, "totals": {}, "table": []},
                 minNonEmptyBucketsLength: 0,
@@ -266,7 +303,8 @@
                 error: null,
                 selectedDatePeriod: "day",
                 selectedProperty: "t",
-                selectedPlatform: ""
+                selectedPlatform: "",
+                selectedBrowser: ""
             };
         };
 
@@ -301,6 +339,16 @@
                 countlyDevicesAndTypes.service.fetchPlatform().then(function() {
                     var platforms = countlyDevicesAndTypes.service.calculatePlatform();
                     context.commit('setAppPlatform', platforms);
+                    context.dispatch('onFetchSuccess');
+                }).catch(function(error) {
+                    context.dispatch('onFetchError', error);
+                });
+            },
+            fetchBrowser: function(context) {
+                context.dispatch('onFetchInit');
+                countlyDevicesAndTypes.service.fetchBrowser().then(function() {
+                    var browsers = countlyDevicesAndTypes.service.calculateBrowser();
+                    context.commit('setAppBrowser', browsers);
                     context.dispatch('onFetchSuccess');
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
@@ -343,6 +391,9 @@
             },
             onSetSelectedPlatform: function(context, value) {
                 context.commit('setSelectedPlatform', value);
+            },
+            onSetSelectedBrowser: function(context, value) {
+                context.commit('setSelectedBrowser', value);
             }
         };
 
@@ -363,6 +414,10 @@
                 state.appPlatform = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appPlatform);
             },
+            setAppBrowser: function(state, value) {
+                state.appBrowser = value;
+                countlyDevicesAndTypes.helpers.setEmptyDefault(state.appBrowser);
+            },
             setAppDevices: function(state, value) {
                 state.appDevices = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appDevices);
@@ -372,6 +427,9 @@
             },
             setSelectedPlatform: function(state, value) {
                 state.selectedPlatform = value;
+            },
+            setSelectedBrowser: function(state, value) {
+                state.selectedBrowser = value;
             },
             setSelectedDatePeriod: function(state, value) {
                 state.selectedDatePeriod = value;
