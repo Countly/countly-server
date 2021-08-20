@@ -11,7 +11,7 @@
                 </div>
                 <cly-listbox
                     skin="jumbo"
-                    :height="400"
+                    height="auto"
                     :searchable="true"
                     :bordered="false"
                     :options="locations"
@@ -60,7 +60,7 @@
             <div v-if="currentViewType === 'regions'">
                 <cly-listbox
                     skin="jumbo"
-                    :height="400"
+                    height="auto"
                     :searchable="true"
                     :bordered="false"
                     :options="locations"
@@ -74,7 +74,7 @@
             <div v-else-if="currentViewType === 'cities'">
                 <cly-listbox
                     skin="jumbo"
-                    :height="400"
+                    height="auto"
                     :searchable="true"
                     :bordered="false"
                     :options="locations"
@@ -93,10 +93,9 @@
                     <el-radio-button label="cities">Cities</el-radio-button>
                 </el-radio-group>
             </div>
-            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :options="{zoomControl: false}" :max-bounds="maxBounds" style="height: 500px; width: 100%">
-
+            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :options="{attributionControl:false, zoomControl: false}" :max-bounds="maxBounds" style="height: 70vh; width: 100%">
                 <l-tile-layer pane="tilePane" v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
-                
+
                 <l-geo-json
                     v-if="!inDetail"
                     pane="tilePane"
@@ -115,7 +114,7 @@
                 <l-circle-marker
                     v-bind="circleMarkerConfig"
                     :radius="getMarkerRadius(item.value)"
-                    :lat-lng="nameToLatLng[name]" 
+                    :lat-lng="nameToLatLng[name]"
                     :key="unique(name)"
                     @click="onMarkerClick(name)"
                     v-for="(item, name) in activeMarkers">

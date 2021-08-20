@@ -62,8 +62,8 @@ const mockCollection = [...Array(100)].map((elem, idx) => {
                         return a[field] < b[field] ? -dir : dir;
                     });
                 }
-                let startIndex = parseInt(tableParams.iDisplayStart, 10),
-                    length = parseInt(tableParams.iDisplayLength, 10);
+                let startIndex = parseInt(tableParams.iDisplayStart || 0, 10),
+                    length = parseInt(tableParams.iDisplayLength || currentArray.length, 10);
 
                 let currentPage = currentArray.slice(startIndex, startIndex + length);
 

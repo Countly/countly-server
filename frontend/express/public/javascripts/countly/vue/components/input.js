@@ -505,6 +505,10 @@
                 },
                 required: false
             },
+            additionalPopClasses: {
+                type: Array,
+                required: false
+            }
         },
         data: function() {
             return {
@@ -513,10 +517,16 @@
         },
         computed: {
             popClasses: function() {
-                return {
+                var classes = {
                     "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.hasTabs,
                     "cly-vue-select-x__pop--has-single-option": this.hasSingleOption
                 };
+
+                (this.additionalPopClasses || []).forEach(function(c) {
+                    classes[c] = true;
+                });
+
+                return classes;
             },
             currentTab: function() {
                 var self = this;

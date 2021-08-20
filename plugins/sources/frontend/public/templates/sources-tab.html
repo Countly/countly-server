@@ -6,7 +6,14 @@
         </template>
         <template v-slot:header-right>
           <cly-more-options @command="handleSourcesCommand($event)" size="small">
-            <el-dropdown-item command="redirect-drill">{{i18n('sources.drill_data')}}</el-dropdown-item>
+            <el-dropdown-item command="redirect-drill">
+              <span class="ion-person"></span>
+              <span class="bu-ml-1">{{ i18n('common.action-drill-data') }}</span>
+            </el-dropdown-item>
+            <el-dropdown-item command="redirect-drill">
+              <span class="ion-settings"></span>
+              <a href="#/manage/configurations/sources" class="bu-ml-1">{{ i18n('common.action.plugin-settings') }}</a>
+            </el-dropdown-item>
           </cly-more-options>
         </template>
     </cly-header>

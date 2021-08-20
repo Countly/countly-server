@@ -1,6 +1,6 @@
-/* global jQuery, Vue, _, CV */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment, countlyTaskManager */
 
-(function(countlyVue) {
+(function(countlyVue, $) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
@@ -36,6 +36,11 @@
             displaySearch: {
                 type: Boolean,
                 default: true
+            },
+            defaultSort: {
+                type: Object,
+                default: null,
+                required: false
             }
         },
         computed: {
@@ -277,6 +282,14 @@
                     sort: [],
                     selectedDynamicCols: false
                 };
+
+                if (this.defaultSort) {
+                    defaultState.sort = [{
+                        field: this.defaultSort.prop,
+                        type: this.defaultSort.order === "ascending" ? "asc" : "desc"
+                    }];
+                }
+
                 if (!this.persistKey) {
                     return defaultState;
                 }
@@ -472,12 +485,168 @@
         }
     };
 
+    var ExportHandlerMixin = {
+        props: {
+            exportQuery: {
+                type: Function,
+                default: null,
+                required: false
+            },
+            exportApi: {
+                type: Function,
+                default: null,
+                required: false
+            },
+            exportFormat: {
+                type: Function,
+                default: null,
+                required: false
+            }
+        },
+        data: function() {
+            return {
+                hasExport: true,
+                selectedExportType: 'csv',
+                availableExportTypes: [
+                    {'name': '.CSV', value: 'csv'},
+                    {'name': '.JSON', value: 'json'},
+                    {'name': '.XLSX', value: 'xlsx'}
+                ]
+            };
+        },
+        methods: {
+            onExportClick: function() {
+                this.initiateExport({
+                    type: this.selectedExportType
+                });
+            },
+            getDefaultFileName: function(params) {
+                var name = "countly";
+                if (params.title) {
+                    name = params.title.replace(/[\r\n]+/g, "");
+                }
+                if (params.timeDependent) {
+                    //include export range
+                    name += "_for_" + countlyCommon.getDateRange();
+                }
+                else {
+                    //include export date
+                    name += "_on_" + moment().format("DD-MMM-YYYY");
+                }
+                return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+            },
+            getLocalExportContent: function() {
+                if (this.exportFormat) {
+                    return this.exportFormat(this.rows);
+                }
+                return this.rows;
+            },
+            initiateExport: function(params) {
+
+                var formData = null,
+                    url = null;
+
+                if (this.exportApi) {
+                    formData = this.exportApi();
+                    url = countlyCommon.API_URL + (formData.url || "/o/export/request");
+                }
+                else if (this.exportQuery) {
+                    formData = this.exportQuery();
+                    url = countlyCommon.API_URL + (formData.url || "/o/export/db");
+                }
+                else if (this.dataSource) { // default export logic for server tables
+                    url = countlyCommon.API_URL + "/o/export/request";
+
+                    var addr = this.dataSource.requestAddress;
+                    var lastRequest = addr.store.getters[addr.path];
+
+                    var path = lastRequest.url + "?" + (Object.keys(lastRequest.data).reduce(function(acc, key) {
+                        if (key !== "iDisplayLength" && key !== "iDisplayStart" && key !== "sEcho") {
+                            if (typeof lastRequest.data[key] === 'string') {
+                                acc.push(key + "=" + encodeURIComponent(lastRequest.data[key]));
+                            }
+                            else {
+                                acc.push(key + "=" + encodeURIComponent(JSON.stringify(lastRequest.data[key])));
+                            }
+                        }
+                        return acc;
+                    }, ["api_key=" + countlyGlobal.member.api_key]).join("&"));
+
+                    formData = {
+                        type: params.type,
+                        path: path,
+                        prop: "aaData",
+                        filename: this.getDefaultFileName(params),
+                        api_key: countlyGlobal.member.api_key
+                    };
+                }
+                else {
+                    url = countlyCommon.API_URL + "/o/export/data";
+                    formData = {
+                        type: params.type,
+                        data: JSON.stringify(this.getLocalExportContent()),
+                        filename: this.getDefaultFileName(params),
+                        api_key: countlyGlobal.member.api_key
+                    };
+                }
+
+                if (formData.url === "/o/export/requestQuery") {
+                    if (Array.isArray(formData.prop)) {
+                        formData.prop = formData.prop.join(",");
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: formData,
+                        success: function(result) {
+                            var task_id = null;
+                            var fileid = null;
+                            if (result && result.result && result.result.task_id) {
+                                task_id = result.result.task_id;
+                                countlyTaskManager.monitor(task_id);
+                                CountlyHelpers.displayExportStatus(null, fileid, task_id);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            var filename = null;
+                            if (xhr && xhr.responseText && xhr.responseText !== "") {
+                                var ob = JSON.parse(xhr.responseText);
+                                if (ob.result && ob.result.message) {
+                                    error = ob.result.message;
+                                }
+                                if (ob.result && ob.result.filename) {
+                                    filename = ob.result.filename;
+                                }
+                            }
+                            CountlyHelpers.displayExportStatus(error, filename, null);
+                        }
+                    });
+                }
+                else {
+                    var form = $('<form method="POST" action="' + url + '">');
+
+                    $.each(formData, function(k, v) {
+                        if (CountlyHelpers.isJSON(v)) {
+                            form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
+                        }
+                        else {
+                            form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+                        }
+                    });
+                    $('body').append(form);
+                    form.submit();
+                }
+            }
+        }
+    };
+
     Vue.component("cly-datatable-n", countlyVue.components.create({
         mixins: [
             _mixins.i18n,
             TableExtensionsMixin,
             MutationTrackerMixin,
-            OverlayRowMixin
+            OverlayRowMixin,
+            ExportHandlerMixin
         ],
         props: {
             keyFn: {
