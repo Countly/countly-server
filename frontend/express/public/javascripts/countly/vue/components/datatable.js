@@ -36,6 +36,11 @@
             displaySearch: {
                 type: Boolean,
                 default: true
+            },
+            defaultSort: {
+                type: Object,
+                default: null,
+                required: false
             }
         },
         computed: {
@@ -277,6 +282,14 @@
                     sort: [],
                     selectedDynamicCols: false
                 };
+
+                if (this.defaultSort) {
+                    defaultState.sort = [{
+                        field: this.defaultSort.prop,
+                        type: this.defaultSort.order === "ascending" ? "asc" : "desc"
+                    }];
+                }
+
                 if (!this.persistKey) {
                     return defaultState;
                 }
