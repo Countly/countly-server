@@ -1,20 +1,16 @@
 #reports-view {
+    .text-heading.title {
+        font-size: 13px;
+    }
     .cly-vue-reports-table {
-        .is-last-col {
-            display: flex;
-            flex-direction: row;
-            .flex-grow {
-                flex-grow: 1;
+        .is-option-button {
+            visibility: hidden;
+            .el-select {
+                -webkit-box-shadow: unset;
+                box-shadow: unset;
+                border-radius: unset;
             }
-            .is-option-button {
-                visibility: hidden;
-                .el-select {
-                    -webkit-box-shadow: unset;
-                    box-shadow: unset;
-                    border-radius: unset;
-                }
-                
-            }
+            
         }
         tr:hover .is-option-button {
             visibility: visible;
@@ -22,47 +18,26 @@
     }
 
     .cly-vue-report-drawer {
-        .text-heading {
-            padding-bottom: 4px;
-        }
-        &__help-text {
-           font-family: Inter;
-           font-style: normal;
-           font-weight: normal;
-           font-size: 12px;
-           line-height: 16px;
-           color: #81868D;
-        }
         &__is-hidden {
            visibility: hidden;
         }
 
-        &__is-full-line {
-           width: 100%;
-           display: flex;
-        }
         &__report_description {
-            margin-top: -8px;
-            margin-bottom: 8px;
-            font-size: 12px;
-            line-height: 16px;
-            color: #81868D;
+            margin-top: 2px;
         }
-        .cly-vue-drawer-step__section {
-            padding: 16px 0;
-        }
+  
         .el-radio.is-bordered+.el-radio.is-bordered {
             margin-left: 0px !important;
         }      
         .report-type-block {
-            .el-radio {
-                margin: 0px 4px;
+            .el-radio:first-child {
+                margin: 0px 8px 0px 0px;
             }
         }
         .frequency-block {
             .el-radio {
                 padding: 17px 13px;
-                margin: 4px 0px;
+                margin: 8px 0px;
                 .el-radio__label {
                     width: 100%;
                     .text-small {
@@ -71,11 +46,8 @@
                     }
                 }
             }
-            
         }
-        
     }
-
     .report-type-block {
         label {
             flex: 1;
