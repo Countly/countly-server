@@ -93,7 +93,7 @@
                     <el-radio-button label="cities">Cities</el-radio-button>
                 </el-radio-group>
             </div>
-            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :options="{zoomControl: false}" :max-bounds="maxBounds" style="height: 500px; width: 100%">
+            <l-map ref="lmap" v-loading="loading" :min-zoom="minZoom" :options="{attributionControl:false, zoomControl: false}" :max-bounds="maxBounds" style="height: 500px; width: 100%">
 
                 <l-tile-layer pane="tilePane" v-if="showTile" :url="tileFeed" :no-wrap="true" :attribution="tileAttribution"></l-tile-layer>
                 
