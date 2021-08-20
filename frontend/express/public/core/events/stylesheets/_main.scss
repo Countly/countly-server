@@ -229,17 +229,17 @@
     }
 }
 
-.el-select__tags{
-    .el-tag--info{
-    background-color: #81868D;
-    border-color: #e9e9eb;
-    color: #FFFFFF;
-    .el-tag__close{
-        color: #F6F6F6;
-    }
-    }
-}
 .cly-vue-compare-events {
+    .el-select__tags{
+        .el-tag--info{
+        background-color: #81868D;
+        border-color: #e9e9eb;
+        color: #FFFFFF;
+        .el-tag__close{
+            color: #F6F6F6;
+        }
+        }
+    }
     &__header {
         padding: 8px 24px 24px 24px;
         letter-spacing: .003em;

@@ -95,7 +95,7 @@
                     {
                         title: "Compare Events",
                         name: "compareEvents",
-                        component: compareEvents,
+                        component: CompareEvents,
                         route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/compare"
                     }
                 ],
@@ -103,7 +103,7 @@
         }
     });
 
-    var compareEvents = countlyVue.views.BaseView.extend({
+    var CompareEvents = countlyVue.views.BaseView.extend({
         template: "#compare-events",
         components: {
             "detail-tables": CompareEventsTable,
@@ -184,7 +184,7 @@
 
     });
 
-    var eventsWrapper = countlyVue.views.BaseView.extend({
+    var EventsWrapper = countlyVue.views.BaseView.extend({
         template: "#events-wrapper",
         components: {
             "events-pages": EventsPages,
@@ -304,7 +304,7 @@
         }];
 
         return new countlyVue.views.BackboneWrapper({
-            component: eventsWrapper,
+            component: EventsWrapper,
             vuex: compareEventsVuex,
             templates: [
                 "/core/events/templates/allEvents.html",
@@ -319,7 +319,7 @@
         }];
 
         return new countlyVue.views.BackboneWrapper({
-            component: eventsWrapper,
+            component: EventsWrapper,
             vuex: allEventsVuex,
             templates: [
                 "/core/events/templates/allEvents.html",
