@@ -57,21 +57,24 @@
         }
     });
 
-    //register views
-    app.errorLogsView = new countlyVue.views.BackboneWrapper({
-        component: ErrorLogsView,
-        vuex: [] //empty array if none
-    });
+    var getMainView = function() {
+        return new countlyVue.views.BackboneWrapper({
+            component: ErrorLogsView,
+            vuex: [] //empty array if none
+        });
+    };
 
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         app.route('/manage/errorlogs', 'errorlogs', function() {
-            this.errorLogsView.params = {log: "api"};
-            this.renderWhenReady(this.errorLogsView);
+            var view = getMainView();
+            view.params = {log: "api"};
+            this.renderWhenReady(view);
         });
 
         app.route('/manage/errorlogs/*log', 'errorlogs', function(log) {
-            this.errorLogsView.params = {log: log};
-            this.renderWhenReady(this.errorLogsView);
+            var view = getMainView();
+            view.params = {log: log};
+            this.renderWhenReady(view);
         });
 
 
