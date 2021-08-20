@@ -543,11 +543,26 @@
                 }
                 else if (this.dataSource) { // default export logic for server tables
                     url = countlyCommon.API_URL + "/o/export/request";
+
+                    var addr = this.dataSource.requestAddress;
+                    var lastRequest = addr.store.getters[addr.path];
+
+                    var path = lastRequest.url + "?" + (Object.keys(lastRequest.data).reduce(function(acc, key) {
+                        if (key !== "iDisplayLength" && key !== "iDisplayStart" && key !== "sEcho") {
+                            if (typeof lastRequest.data[key] === 'string') {
+                                acc.push(key + "=" + encodeURIComponent(lastRequest.data[key]));
+                            }
+                            else {
+                                acc.push(key + "=" + encodeURIComponent(JSON.stringify(lastRequest.data[key])));
+                            }
+                        }
+                        return acc;
+                    }, ["api_key=" + countlyGlobal.member.api_key]).join("&"));
+
                     formData = {
                         type: params.type,
-                        // TODO: Get default path and props
-                        path: params.settings.resourcePath,
-                        prop: params.settings.resourceProp,
+                        path: path,
+                        prop: "aaData",
                         filename: this.getDefaultFileName(params),
                         api_key: countlyGlobal.member.api_key
                     };
