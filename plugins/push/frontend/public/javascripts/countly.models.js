@@ -1,8 +1,10 @@
-/*global countlyVue, CV, countlyCommon, Promise, moment*/
+/*global countlyVue, CV, countlyCommon, Promise, moment,_*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.messages-sent-serie-name');
     var actionsPerformedLabel = CV.i18n('push-notification.actions-performed-serie-name');
+    var DEBOUNCE_TIME_IN_MS = 250;
+
 
     var StatusFinderHelper = {
         STATUS_SHIFT_OPERATOR_ENUM: {
@@ -347,6 +349,23 @@
                 dataType: "json"
             });
         },
+        fetchMediaMetadata: function(url) {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    method: 'GET',
+                    url: window.countlyCommon.API_URL + '/i/pushes/mime?url=' + url,
+                    success: function(data) {
+                        resolve(data.headers);
+                    },
+                    error: function(error) {
+                        reject(error);
+                    }
+                });
+            });
+        },
+        fetchMediaMetadataWithDebounce: _.debounce(function(url, resolveCallback, rejectCallback) {
+            this.fetchMediaMetadata(url).then(resolveCallback).catch(rejectCallback);
+        }, DEBOUNCE_TIME_IN_MS),
     };
 
     var getDetailsInitialState = function() {

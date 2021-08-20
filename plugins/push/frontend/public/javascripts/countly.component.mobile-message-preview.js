@@ -61,7 +61,7 @@
                 default: []
             },
             media: {
-                type: String,
+                type: [String, Object],
                 default: null
             },
             isHTML: {
@@ -82,6 +82,15 @@
             },
             contentPreviewComponentsList: function() {
                 return this.getPreviewComponentsList(this.content);
+            },
+            mediaPreview: function() {
+                if (typeof this.media === 'string') {
+                    var result = {};
+                    result[this.PlatformEnum.IOS] = this.media;
+                    result[this.PlatformEnum.ANDROID] = this.media;
+                    return result;
+                }
+                return this.media;
             }
         },
         watch: {

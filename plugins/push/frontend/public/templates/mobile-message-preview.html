@@ -14,7 +14,7 @@
                 X
             </span>
         </div>
-        <img v-if="media" class="cly-vue-push-notification-mobile-preview__ios-media" v-bind:src="media" /> 
+        <img v-if="mediaPreview[PlatformEnum.IOS]||mediaPreview[PlatformEnum.ALL]" class="cly-vue-push-notification-mobile-preview__ios-media" v-bind:src="mediaPreview[PlatformEnum.IOS]||mediaPreview[PlatformEnum.ALL]" /> 
         <div class="cly-vue-push-notification-mobile-preview__ios-title">
             <template v-if="isHTML">
                 <template v-for="(component) in titlePreviewComponentsList">
@@ -80,7 +80,7 @@
         <div class="cly-vue-push-notification-mobile-preview__android-buttons-list">
             <div v-for="button in buttons" class="cly-vue-push-notification-mobile-preview__android-button">{{button}}</div>
         </div>
-        <img v-if="media" v-bind:src="media" class="cly-vue-push-notification-mobile-preview__android-media" /> 
+        <img v-if="mediaPreview[PlatformEnum.ANDROID] || mediaPreview[PlatformEnum.ALL]" v-bind:src="mediaPreview[PlatformEnum.ANDROID]||mediaPreview[PlatformEnum.ALL]" class="cly-vue-push-notification-mobile-preview__android-media" /> 
     </div>
 
     <div class="cly-vue-push-notification-mobile-preview__platforms">
