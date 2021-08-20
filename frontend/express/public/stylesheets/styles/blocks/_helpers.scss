@@ -40,3 +40,16 @@
         border-top-style: dotted;
     }
 }
+
+.cly-event-select {
+    .el-radio-group {
+        display: flex;
+    }
+
+    .el-radio-button {
+        flex-grow: 1;
+    }
+    .el-radio-button__inner {
+        width: 100%;
+    }
+}
