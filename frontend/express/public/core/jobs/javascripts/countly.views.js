@@ -99,26 +99,29 @@
         }
     });
 
-    //register views
-    app.jobsView = new countlyVue.views.BackboneWrapper({
-        component: JobsView,
-        vuex: [] //empty array if none
-    });
+    var getMainView = function() {
+        return new countlyVue.views.BackboneWrapper({
+            component: JobsView,
+            vuex: [] //empty array if none
+        });
+    };
 
-    //register views
-    app.jobDetailView = new countlyVue.views.BackboneWrapper({
-        component: JobDetailView,
-        vuex: [] //empty array if none
-    });
+    var getDetailedView = function() {
+        return new countlyVue.views.BackboneWrapper({
+            component: JobDetailView,
+            vuex: [] //empty array if none
+        });
+    };
 
     if (countlyAuth.validateRead('global_jobs')) {
         app.route("/manage/jobs", "manageJobs", function() {
-            this.renderWhenReady(this.jobsView);
+            this.renderWhenReady(getMainView());
         });
 
         app.route("/manage/jobs/:name", "manageJobName", function(name) {
-            this.jobDetailView.params = {job_name: name};
-            this.renderWhenReady(this.jobDetailView);
+            var view = getDetailedView();
+            view.params = {job_name: name};
+            this.renderWhenReady(view);
         });
     }
 })();
