@@ -198,8 +198,8 @@
 
   &__tp-icon {
     span {
-      font-size: 36px;
-      color: #12AF51;  
+      font-size: 40px;
+      color: #12AF51;
     }
   }
 
@@ -225,5 +225,11 @@
     display: flex;
     flex-direction: column;
     text-align: center;
+  }
+}
+
+.ratings-tab-view {
+  &__filter-selector {
+    width: 270px;
   }
 }

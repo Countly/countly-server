@@ -28,22 +28,17 @@
     </template>
   </cly-header>
   <cly-main>
-    <div class="bu-level bu-has-background-white">
-      <div class="bu-level-item ratings-widget-detail-view__targeting bu-p-3 bu-is-size-7">
-        <div class="el-icon-caret-right"></div> &nbsp; TARGETING
-      </div>
-    </div>
+    <el-collapse class="is-bordered-box bu-mb-5">
+      <el-collapse-item name="1">
+          <template v-slot:title><div class="text-medium text-uppercase">{{i18n('cohorts.targeting')}}</div></template>
+          <cly-cohort-targeting :targeting="widget.targeting"></cly-cohort-targeting>
+      </el-collapse-item>
+    </el-collapse>
     <div class="bu-level bu-my-5">
       <div class="bu-level-left">
         <div class="bu-level-item">
           Results for
-          <!-- <el-select class="bu-ml-3" placement="bottom-start" :placeholder="'All Ratings, Versions and Widgets'">
-            <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
-            <el-option key="1" :label="i18n('management-users.global-admin')" value="global_admin"></el-option>
-            <el-option key="2" :label="i18n('management-users.admin')" value="admin"></el-option>
-            <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
-          </el-select>
-        -->
+          <cly-multi-select class="bu-ml-3 ratings-tab-view__filter-selector" @change="refresh" @updated="prepareVersions" v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
         </div>
       </div>
       <div class="bu-level-right">
