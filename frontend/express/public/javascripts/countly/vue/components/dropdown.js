@@ -398,6 +398,12 @@
                     this.unsavedValue = Object.assign({}, newValue);
                 }
             },
+            unsavedValue: {
+                deep: true,
+                handler: function(unsavedValue) {
+                    this.$emit('updated', unsavedValue);
+                }
+            }
         },
         methods: {
             close: function(dontSync) {
