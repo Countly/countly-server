@@ -120,7 +120,9 @@ var EventsOverviewView = countlyVue.views.BaseView.extend({
     },
     data: function() {
         return {
-            description: CV.i18n('events.overview.title.new')
+            description: CV.i18n('events.overview.title.new'),
+            disabledDatePicker: '30days',
+            monitorEventsLegend: {"show": false}
         };
     },
     beforeCreate: function() {

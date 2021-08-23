@@ -1,4 +1,4 @@
-/* global countlyVue, countlyAllEvents, countlyCompareEvents, countlyCommon, countlyAuth, CV,app*/
+/* global countlyVue, countlyAllEvents, countlyCompareEvents, countlyCommon, countlyAuth CV,app*/
 (function() {
     var FEATURE_NAME = "compare";
     var EventsTable = countlyVue.views.BaseView.extend({
@@ -17,11 +17,32 @@
             },
             selectedSegment: function() {
                 return this.$store.getters["countlyAllEvents/currentActiveSegmentation"];
+            },
+            labels: function() {
+                return this.$store.getters["countlyAllEvents/labels"];
             }
         },
         methods: {
             isColumnAllowed: function(column) {
                 var events = this.$store.getters["countlyAllEvents/allEventsProcessed"];
+                if (column === "Count") {
+                    if (events && events.tableColumns && events.tableColumns.indexOf(this.labels.count) !== -1) {
+                        return true;
+                    }
+                    return false;
+                }
+                else if (column === "Sum") {
+                    if (events && events.tableColumns && events.tableColumns.indexOf(this.labels.sum) !== -1) {
+                        return true;
+                    }
+                    return false;
+                }
+                else if (column === "Duration") {
+                    if (events && events.tableColumns && events.tableColumns.indexOf(this.labels.dur) !== -1) {
+                        return true;
+                    }
+                    return false;
+                }
                 if (events && events.tableColumns && events.tableColumns.indexOf(column) !== -1) {
                     return true;
                 }
@@ -58,12 +79,20 @@
             eventsTableRows: function() {
                 return this.$store.getters["countlyCompareEvents/tableRows"];
             },
+            groupData: function() {
+                return this.$store.getters["countlyCompareEvents/groupData"];
+            }
         },
         methods: {
             handleCurrentChange: function(selection) {
                 var selectedEvents = [];
                 selection.forEach(function(item) {
-                    selectedEvents.push(item.name);
+                    if (item.id.startsWith("[CLY]_group")) {
+                        selectedEvents.push(item.id);
+                    }
+                    else {
+                        selectedEvents.push(item.name);
+                    }
                 });
                 this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                 this.$store.dispatch('countlyCompareEvents/fetchLegendData', selectedEvents);
@@ -71,7 +100,12 @@
             handleAllChange: function(selection) {
                 var selectedEvents = [];
                 selection.forEach(function(item) {
-                    selectedEvents.push(item.name);
+                    if (item.id.startsWith("[CLY]_group")) {
+                        selectedEvents.push(item.id);
+                    }
+                    else {
+                        selectedEvents.push(item.name);
+                    }
                 });
                 this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                 this.$store.dispatch('countlyCompareEvents/fetchLegendData', selectedEvents);
@@ -115,8 +149,8 @@
             }
         },
         computed: {
-            allEvents: function() {
-                return this.$store.getters["countlyCompareEvents/allEvents"].list;
+            allEventsList: function() {
+                return this.$store.getters["countlyCompareEvents/allEventsList"];
             },
             lineChartData: function() {
                 return this.$store.getters["countlyCompareEvents/lineChartData"];
@@ -147,20 +181,21 @@
                 },
                 set: function(selectedItem) {
                     var self = this;
+                    var selectedEvents = this.$store.getters["countlyCompareEvents/selectedEvents"];
                     if (selectedItem === this.i18n("events.compare.results.by.sum")) {
                         self.selectedMetric = "Sum";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "s");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData');
+                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                     }
                     else if (selectedItem === this.i18n("events.compare.results.by.duration")) {
                         self.selectedMetric = "Duration";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "dur");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData');
+                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                     }
                     else {
                         self.selectedMetric = "Count";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "c");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData');
+                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                     }
                 }
             },
@@ -205,7 +240,6 @@
                     this.$store.dispatch('countlyAllEvents/fetchSelectedDatePeriod', value);
                     countlyCommon.setPeriod(value);
                     this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
-                    this.$store.dispatch('countlyAllEvents/fetchAllEventsGroupData');
                 }
             },
             selectedEventFromSearchBar: {
@@ -239,10 +273,10 @@
                 return this.$store.getters["countlyAllEvents/availableSegments"];
             },
             selectedEventName: function() {
-                return this.$store.getters["countlyAllEvents/selectedEventName"];
+                return this.$store.getters["countlyAllEvents/allEventsProcessed"].eventName;
             },
-            isGroup: function() {
-                return this.$store.getters["countlyAllEvents/isGroup"];
+            groupData: function() {
+                return this.$store.getters["countlyAllEvents/groupData"];
             },
             selectedEventDescription: function() {
                 return this.$store.getters["countlyAllEvents/description"];
@@ -262,31 +296,26 @@
             lineLegend: function() {
                 return this.$store.getters["countlyAllEvents/legendData"];
             },
-            allEvents: function() {
-                var list = this.$store.getters["countlyAllEvents/allEvents"].list;
-                if (list) {
-                    return list.map(function(item) {
-                        return {
-                            "label": item,
-                            "value": item
-                        };
-                    });
-                }
-                return list;
-            },
             searchPlaceholder: function() {
-                var list = this.$store.getters["countlyAllEvents/allEvents"].list;
+                var list = this.$store.getters["countlyAllEvents/allEventsList"];
                 if (list) {
                     return this.i18n("events.all.search.placeholder", list.length);
                 }
                 return this.i18n("events.all.search.placeholder");
+            },
+            allEvents: function() {
+                return this.$store.getters["countlyAllEvents/allEventsList"];
+            },
+            eventDescription: function() {
+                return this.$store.getters["countlyAllEvents/allEventsProcessed"].eventDescription;
+            },
+            labels: function() {
+                return this.$store.getters["countlyAllEvents/allEventsProcessed"].chartDP;
             }
 
         },
         data: function() {
-            return {
-                description: CV.i18n('events.all.title.new')
-            };
+            return {description: CV.i18n('events.all.title.new') };
         },
         beforeCreate: function() {
             countlyCommon.setPeriod("30days");
@@ -294,9 +323,9 @@
                 this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', this.$route.params.eventKey);
             }
             this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
-            this.$store.dispatch('countlyAllEvents/fetchAllEventsGroupData');
         }
     });
+
 
     var getCompareEventsView = function() {
         var compareEventsVuex = [{

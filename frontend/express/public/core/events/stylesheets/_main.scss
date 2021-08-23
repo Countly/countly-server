@@ -1,4 +1,6 @@
 @use "../../../stylesheets/styles/base/_typography-variables.scss" as t;
+@use "../../../stylesheets/styles/base/colors" as c;
+@use "sass:map";
 
 .cly-vue-events-overview-date-picker {
     margin:7px 24px 16px 24px;
@@ -71,9 +73,30 @@
 .cly-vue-events-overview-top-events {
     padding-left: 24px;
     padding-bottom: 16.5px;
+    &--tooltip {
+        margin-left: 5.5px;
+    }
+    &--green {
+        color: #12AF51;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 14px;
+    }
+    &--red {
+        color: red;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 14px;
+    }
 }
 .cly-vue-events-overview-monitor-events {
+    &__charts{
+    .cly-vue-chart__echart{
+        padding: 0px;
+    }
+    }
     border: 1px solid #ECECEC;
+    border-radius: 4px;
     &--grey {
       color: #A7AEB8 
     }
@@ -155,38 +178,46 @@
     }
 }
 
-.cly-vue-events-all-name {
+.cly-vue-events-all {
     font-size: 24px;
     line-height: 32px;
     font-weight: 500;
-    padding-bottom: 12px;
+    padding-top: 6px;
     letter-spacing: .003em;
     font-family: t.$font-family;
     color: #333c48;
+
+    &__subheading {
+        font-size: 14px;
+        line-height: 20px;
+        color: map.get(c.$colors, "cool-gray-100");
+    }
+    &--padding {
+        padding-top:32px;
+    }
+    &--margin {
+        margin-right:32px;
+    }
 } 
 
 .cly-vue-events-group {
     color: #FFFFFF;
-    background-color: #A7AEB8;
+    background-color: map.get(c.$colors, "cool-gray-40");
     font-size: 10px;
     line-height: 10px;
     font-weight: 500;
-    margin-left: 19.5px;
-    vertical-align: middle
+    letter-spacing: 0.0042em;
+    vertical-align: middle;
+    padding: 3px 4px;
+    border-radius: 4px;
 } 
 
-.cly-vue-events-all-period {
-    color: #A7AEB8;
+.cly-vue-events-all-placeholder-text {
+    color: map.get(c.$colors, "text-placeholder");
     font-size: 12px;
     line-height: 14.52px;
     font-weight: 500;
-    padding-left: 32px;
-} 
-.cly-vue-events-all-segmentation {
-    color: #A7AEB8;
-    font-size: 12px;
-    line-height: 14.52px;
-    font-weight: 500;
+    letter-spacing: 0.005em;
 } 
 .cly-vue-events-all-date-picker {
     margin-right:26px
@@ -194,6 +225,10 @@
 .cly-vue-events-all-tooltip {
     margin-left:10px
 } 
+.cly-vue-overview-events-header {
+    padding-right: 9.5px;
+    letter-spacing: .003em;
+}
 .cly-vue-events-header {
     padding: 8px 24px 24px 24px;
     letter-spacing: .003em;

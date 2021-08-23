@@ -5,15 +5,22 @@
         getEventOverview: function(ob) {
             var eventsOverview = [];
             var totalEvents = {};
-            totalEvents.name = "Total Events";
+            totalEvents.name = CV.i18n("events.overview.total.events.count");
             totalEvents.value = ob.totalCount;
             var res = countlyCommon.getPercentChange(ob.prevTotalCount, ob.totalCount);
             totalEvents.change = res.percent;
             totalEvents.trend = res.trend;
             eventsOverview.push(totalEvents);
+            var epu = {};
+            epu.name = CV.i18n("events.overview.events.per.user");
+            epu.value = Number((ob.totalCount / ob.totalUsersCount).toFixed(1));
+            res = countlyCommon.getPercentChange(countlyCommon.getShortNumber((ob.prevTotalCount / ob.prevUsersCount).toFixed(1)), countlyCommon.getShortNumber((ob.totalCount / ob.totalUsersCount).toFixed(1)));
+            epu.change = res.percent;
+            epu.trend = res.trend;
+            eventsOverview.push(epu);
             var epr = {};
-            epr.name = "Events Per Session";
-            epr.value = countlyCommon.getShortNumber((ob.totalCount / ob.totalSessionCount).toFixed(1));
+            epr.name = CV.i18n("events.overview.events.per.session");
+            epr.value = Number((ob.totalCount / ob.totalSessionCount).toFixed(1));
             res = countlyCommon.getPercentChange(countlyCommon.getShortNumber((ob.prevTotalCount / ob.prevSessionCount).toFixed(1)), countlyCommon.getShortNumber((ob.totalCount / ob.totalSessionCount).toFixed(1)));
             epr.change = res.percent;
             epr.trend = res.trend;

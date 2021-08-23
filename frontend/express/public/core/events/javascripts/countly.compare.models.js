@@ -8,7 +8,7 @@
                 var props = countlyCompareEvents.helpers.getProperties(),
                     tableRow = {
                         "id": context.state.selectedEvents[i],
-                        "name": countlyCompareEvents.helpers.getEventLongName(context.state.selectedEvents[i]),
+                        "name": context.state.selectedEvents[i].startsWith("[CLY]_group") ? context.state.groupData[context.state.selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(context.state.selectedEvents[i]),
                         "checked": true
                     };
 
@@ -91,7 +91,7 @@
                     prevData.push(dataObj.chartData[j]["p" + context.state.selectedGraphMetric]);
                 }
                 var obj = {
-                    name: selectedEvents[0],
+                    name: selectedEvents[0].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[0]] : selectedEvents[0],
                     data: data,
                 };
                 var prevObj = {
@@ -108,7 +108,7 @@
                         seriesData.push(dataOb.chartData[k][context.state.selectedGraphMetric]);
                     }
                     var ob = {
-                        name: selectedEvents[i],
+                        name: selectedEvents[i].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[i]] : selectedEvents[i],
                         data: seriesData,
                     };
                     series.push(ob);
@@ -116,20 +116,20 @@
             }
             return {series: series};
         },
-        getLegendData: function(selectedEvents) {
+        getLegendData: function(selectedEvents, groupData) {
             var lineLegend = {};
             var legendData = [];
             if (selectedEvents.length === 1) {
                 var obj = {};
                 var prevObj = {};
-                obj.name = selectedEvents[0];
+                obj.name = selectedEvents[0].startsWith('[CLY]_group') ? groupData[selectedEvents[0]] : selectedEvents[0];
                 prevObj.name = CV.i18n("events.compare.previous.period");
                 legendData.push(obj, prevObj);
             }
             else {
                 for (var i = 0;i < selectedEvents.length; i++) {
                     var ob = {};
-                    ob.name = selectedEvents[i];
+                    ob.name = selectedEvents[i].startsWith('[CLY]_group') ? groupData[selectedEvents[i]] : selectedEvents[i];
                     legendData.push(ob);
                 }
             }
@@ -137,7 +137,41 @@
             lineLegend.show = true;
             lineLegend.type = "secondary";
             return lineLegend;
-        }
+        },
+        getAllEventsList: function(eventsList, groupList) {
+            var map = eventsList.map || {};
+            var allEvents = [];
+            if (eventsList) {
+                eventsList.list.forEach(function(item) {
+                    if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
+                        var obj = {
+                            "label": map[item] && map[item].name ? map[item].name : item,
+                            "value": item,
+                        };
+                        allEvents.push(obj);
+                    }
+                });
+            }
+            if (groupList) {
+                groupList.forEach(function(item) {
+                    if (item.status) {
+                        var obj = {
+                            "label": item.name + "(" + CV.i18n("events.all.group") + ")",
+                            "value": item._id,
+                        };
+                        allEvents.push(obj);
+                    }
+                });
+            }
+            return allEvents;
+        },
+        getGroupData: function(groupData) {
+            var obj = {};
+            groupData.forEach(function(item) {
+                obj[item._id] = item.name;
+            });
+            return obj;
+        },
     };
 
     countlyCompareEvents.service = {
@@ -165,21 +199,35 @@
                 },
                 dataType: "json",
             });
+        },
+        fetchAllEventsGroupData: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "get_event_groups",
+                    "preventRequestAbort": true
+                },
+                dataType: "json",
+            });
         }
     };
-
     countlyCompareEvents.getVuexModule = function() {
 
         var getCompareInitialState = function() {
             return {
                 allEventsData: {},
+                allEventsGroupData: {},
+                allEventsList: [],
                 allEventsCompareData: {},
                 selectedDatePeriod: "30days",
                 selectedEvents: [],
                 tableRows: [],
                 lineChartData: {},
                 selectedGraphMetric: "c",
-                lineLegend: {}
+                lineLegend: {},
+                groupData: {},
             };
         };
 
@@ -189,6 +237,14 @@
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsData", res);
+                            countlyCompareEvents.service.fetchAllEventsGroupData(context)
+                                .then(function(result) {
+                                    if (result) {
+                                        context.commit("setAllEventsGroupData", result);
+                                        context.commit("setGroupData", countlyCompareEvents.helpers.getGroupData(result));
+                                        context.commit("setAllEventsList", countlyCompareEvents.helpers.getAllEventsList(res, result));
+                                    }
+                                });
                         }
                     });
             },
@@ -199,7 +255,7 @@
                             context.commit("setAllEventsCompareData", res);
                             context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
                             context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, context.state.selectedEvents));
-                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents));
+                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents, context.state.groupData));
                         }
                     });
             },
@@ -216,13 +272,22 @@
                 context.commit("setSelectedGraphMetric", metric);
             },
             fetchLegendData: function(context, selectedEvents) {
-                context.commit('setLineLegend', countlyCompareEvents.helpers.getLegendData(selectedEvents));
+                context.commit('setLineLegend', countlyCompareEvents.helpers.getLegendData(selectedEvents, context.state.groupData));
             }
         };
 
         var compareEventsMutations = {
             setAllEventsData: function(state, value) {
                 state.allEventsData = value;
+            },
+            setAllEventsGroupData: function(state, value) {
+                state.allEventsGroupData = value;
+            },
+            setAllEventsList: function(state, value) {
+                state.allEventsList = value;
+            },
+            setGroupData: function(state, value) {
+                state.groupData = value;
             },
             setAllEventsCompareData: function(state, value) {
                 state.allEventsCompareData = value;
@@ -250,6 +315,12 @@
             allEvents: function(_state) {
                 return _state.allEventsData;
             },
+            allEventsGroupData: function(_state) {
+                return _state.allEventsGroupData;
+            },
+            allEventsList: function(_state) {
+                return _state.allEventsList;
+            },
             allEventsCompareData: function(_state) {
                 return _state.allEventsCompareData;
             },
@@ -270,6 +341,9 @@
             },
             selectedGraphMetric: function(_state) {
                 return _state.selectedGraphMetric;
+            },
+            groupData: function(_state) {
+                return _state.groupData;
             }
         };
         return countlyVue.vuex.Module("countlyCompareEvents", {

@@ -2068,7 +2068,7 @@ const processRequest = (params) => {
                     }
                     else {
                         if (params.qstring.event && params.qstring.event.startsWith('[CLY]_group_')) {
-                            validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventGroups, params.qstring.method);
+                            validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventGroups);
                         }
                         else {
                             params.truncateEventValuesList = true;
