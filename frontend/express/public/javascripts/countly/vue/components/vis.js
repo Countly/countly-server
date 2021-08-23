@@ -902,6 +902,7 @@
                         for (var k = 0; k < data.length; k++) {
                             if (data[k]._id === key) {
                                 data.splice(k, 1);
+                                k = k - 1;
                             }
                         }
                     }
