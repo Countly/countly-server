@@ -435,45 +435,6 @@
         ]
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        countlyVue.container.registerTab("/analytics/sessions", {
-            priority: 4,
-            name: "views-per-session",
-            title: "Views per Session",
-            component: ViewsPerSessionView,
-            vuex: [{
-                clyModel: countlyViewsPerSession
-            }]
-        });
-
-        var viewsHomeView = new countlyVue.views.BackboneWrapper({
-            component: ViewsView,
-            vuex: [{clyModel: countlyViews}]
-        });
-
-        var viewsEditView = new countlyVue.views.BackboneWrapper({
-            component: EditViewsView,
-            vuex: [{clyModel: countlyViews}]
-        });
-
-        app.viewsHomeView = viewsHomeView;
-        app.viewsEditView = viewsEditView;
-
-
-        app.route("/analytics/views", "views-home", function() {
-            var params = {};
-            this.viewsHomeView.params = params;
-            this.renderWhenReady(this.viewsHomeView);
-        });
-
-        app.route("/analytics/views/manage", "views", function() {
-            var params = {};
-            this.viewsEditView.params = params;
-            this.renderWhenReady(this.viewsEditView);
-        });
-    }
-
-
     var ViewsPerSessionView = countlyVue.views.create({
         template: CV.T("/views/templates/views-per-session.html"),
         data: function() {
@@ -532,7 +493,43 @@
         },
     });
 
+    if (countlyAuth.validateRead(FEATURE_NAME)) {
+        countlyVue.container.registerTab("/analytics/sessions", {
+            priority: 4,
+            name: "views-per-session",
+            title: "Views per Session",
+            component: ViewsPerSessionView,
+            vuex: [{
+                clyModel: countlyViewsPerSession
+            }]
+        });
 
+        var viewsHomeView = new countlyVue.views.BackboneWrapper({
+            component: ViewsView,
+            vuex: [{clyModel: countlyViews}]
+        });
+
+        var viewsEditView = new countlyVue.views.BackboneWrapper({
+            component: EditViewsView,
+            vuex: [{clyModel: countlyViews}]
+        });
+
+        app.viewsHomeView = viewsHomeView;
+        app.viewsEditView = viewsEditView;
+
+
+        app.route("/analytics/views", "views-home", function() {
+            var params = {};
+            this.viewsHomeView.params = params;
+            this.renderWhenReady(this.viewsHomeView);
+        });
+
+        app.route("/analytics/views/manage", "views", function() {
+            var params = {};
+            this.viewsEditView.params = params;
+            this.renderWhenReady(this.viewsEditView);
+        });
+    }
 
     window.ActionMapView = countlyView.extend({
         actionType: "",
