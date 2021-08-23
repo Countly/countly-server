@@ -46,6 +46,16 @@
     }
 }
 
+.text-short {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: t.$text-smd-size;
+    font-weight: t.$font-weight-text;
+    line-height: t.$text-button-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
 .text-small {
     color: map.get(c.$colors, "cool-gray-100");
     font-size: t.$text-small-size;
@@ -104,6 +114,10 @@
     &.font-weight-bold {
         font-weight: t.$font-weight-primary !important;
     }
+}
+
+.cursor-pointer {
+    cursor: pointer
 }
 
 

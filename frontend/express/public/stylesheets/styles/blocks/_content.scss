@@ -5,6 +5,11 @@
 */
 
 @use "../base/variables" as v;
+@use "../base/colors" as c;
+
+.cly-vue-theme-clydef {
+    background-color: c.$interface-color;
+}
 
 #analytics-main-view {
 	//There is a rule corresponding to the following rule in the main.css file - #content-container
