@@ -290,7 +290,7 @@
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         template: '<cly-select-x\
-                    :additional-pop-classes="[\'cly-event-select\']"\
+                    pop-class="cly-event-select"\
                     all-placeholder="All Events"\
                     search-placeholder="Search in Events"\
                     placeholder="Select Event"\
