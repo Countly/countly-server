@@ -7129,9 +7129,9 @@ app.route("/manage/tasks", "longTasks", function() {
     this.renderWhenReady(this.longTaskView);
 });
 
-app.route("/analytics/events", "events", function() {
-    this.renderWhenReady(this.eventsView);
-});
+// app.route("/analytics/events", "events", function() {
+//     this.renderWhenReady(this.eventsView);
+// });
 
 app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function(task_id) {
     this.DownloadView.task_id = task_id;
