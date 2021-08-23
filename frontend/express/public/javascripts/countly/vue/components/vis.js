@@ -884,7 +884,27 @@
                 if (series.length !== data.length) {
                     // eslint-disable-next-line no-console
                     console.log("Series length and legend length should be same");
-                    return [];
+
+                    var dataMap = {};
+                    for (var kz = 0; kz < data.length; kz++) {
+                        dataMap[data[kz]._id] = true;
+                    }
+                    for (var ii = 0; ii < series.length; ii++) {
+                        if (!dataMap[series[ii]._id]) {
+                            data.push({"name": series[ii].name, "_id": series[ii]._id});
+                        }
+                        else {
+                            delete dataMap[series[ii]._id];
+                        }
+                    }
+
+                    for (var key in dataMap) {
+                        for (var k = 0; k < data.length; k++) {
+                            if (data[k]._id === key) {
+                                data.splice(k, 1);
+                            }
+                        }
+                    }
                 }
 
                 var colors = this.chartOptions.color || [];
@@ -892,6 +912,10 @@
                 for (var i = 0; i < series.length; i++) {
                     var serie = series[i];
 
+                    if (serie._id) {
+                        data[i]._id = serie._id;
+                        data[i].name = serie.name;
+                    }
                     if (serie.color) {
                         data[i].color = serie.color;
                     }
