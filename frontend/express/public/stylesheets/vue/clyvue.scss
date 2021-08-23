@@ -3571,6 +3571,10 @@
         }
     }
 
+    .cly-vue-listbox__item-content {
+        width: 100%;
+    }
+
     &--disabled {
         .cly-vue-listbox__item {
             background-color: #F6F6F6;
