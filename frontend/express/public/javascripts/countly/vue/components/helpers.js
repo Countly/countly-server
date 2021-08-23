@@ -315,7 +315,9 @@
         props: {
             blacklistedEvents: {
                 type: Array,
-                default: []
+                default: function() {
+                    return [];
+                }
             },
             width: { type: [Number, Object], default: 400},
             adaptiveLength: {type: Boolean, default: true},
