@@ -7129,9 +7129,9 @@ app.route("/manage/tasks", "longTasks", function() {
     this.renderWhenReady(this.longTaskView);
 });
 
-app.route("/analytics/events", "events", function() {
-    this.renderWhenReady(this.eventsView);
-});
+// app.route("/analytics/events", "events", function() {
+//     this.renderWhenReady(this.eventsView);
+// });
 
 app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function(task_id) {
     this.DownloadView.task_id = task_id;
@@ -7150,9 +7150,9 @@ app.route('/manage/token_manager', 'token_manager', function() {
 app.route('/versions', 'version_history', function() {
     this.renderWhenReady(this.VersionHistoryView);
 });
-app.route("/analytics/events/key/:event", "events", function() {
-    this.renderWhenReady(this.eventsView);
-});
+// app.route("/analytics/events/key/:event", "events", function() {
+//     this.renderWhenReady(this.eventsView);
+// });
 app.route("/analytics/events/:subpageid", "events", function(subpageid) {
     this.eventsView.subpageid = subpageid;
     if (subpageid === 'overview') {
