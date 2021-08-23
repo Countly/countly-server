@@ -312,6 +312,12 @@
                     result[this.PlatformEnum.ALL] = this.pushNotificationUnderEdit.message.settings.all.mediaURL;
                 }
                 return result;
+            },
+            previewMessageTitle: function() {
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter].title);
+            },
+            previewMessageContent: function() {
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter].content);
             }
         },
         methods: {
@@ -590,6 +596,8 @@
             "large-radio-button-with-description": countlyPushNotificationComponent.LargeRadioButtonWithDescription,
             "line-radio-button-with-description": countlyPushNotificationComponent.LineRadioButtonWithDescription,
             "review-section-row": countlyPushNotificationComponent.ReviewSectionRow,
+            'user-property-preview': countlyPushNotificationComponent.UserPropertyPreview,
+            'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview
         },
     });
 

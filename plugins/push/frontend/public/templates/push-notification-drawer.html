@@ -792,8 +792,24 @@
                     </div>
                 </div>
                 <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
-                    <review-section-row label="Title" :value="pushNotificationUnderEdit.message[selectedLocalizationFilter].title"></review-section-row>
-                    <review-section-row label="Content" :value="pushNotificationUnderEdit.message[selectedLocalizationFilter].content"></review-section-row>
+                    <review-section-row label="Title">
+                        <div>
+                            <template v-for="(component) in previewMessageTitle">
+                                <keep-alive>
+                                    <component v-bind:is="component.name" :value="component.value"></component>
+                                </keep-alive>
+                            </template>
+                        </div>
+                    </review-section-row>
+                    <review-section-row label="Content">
+                        <div>
+                            <template v-for="(component) in previewMessageContent">
+                                <keep-alive>
+                                    <component v-bind:is="component.name" :value="component.value"></component>
+                                </keep-alive>
+                            </template>
+                        </div>
+                    </review-section-row>
                     <template v-for="(button,index) in pushNotificationUnderEdit.message[selectedLocalizationFilter].buttons">
                         <review-section-row label="Button Text" :value="button.label"></review-section-row>
                         <review-section-row label="Button URL" :value="button.url"></review-section-row>

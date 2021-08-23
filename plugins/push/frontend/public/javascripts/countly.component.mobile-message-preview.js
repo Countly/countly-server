@@ -2,7 +2,7 @@
 /*global CV, countlyVue, countlyPushNotification,countlyGlobal,countlyCommon,moment*/
 (function(countlyPushNotificationComponent) {
 
-    var UserPropertyTextPreview = countlyVue.views.create({
+    countlyPushNotificationComponent.UserPropertyTextPreview = countlyVue.views.create({
         template: '<span>{{value}}</span>',
         props: {
             value: {
@@ -12,7 +12,7 @@
         }
     });
 
-    var UserPropertyPreview = countlyVue.views.create({
+    countlyPushNotificationComponent.UserPropertyPreview = countlyVue.views.create({
         template: '<span v-tooltip.bottom.center="description" class="cly-vue-push-notification-mobile-preview__user-property">{{fallback}}</span>',
         props: {
             value: {
@@ -151,8 +151,8 @@
             }
         },
         components: {
-            'user-property-preview': UserPropertyPreview,
-            'user-property-text-preview': UserPropertyTextPreview
+            'user-property-preview': countlyPushNotificationComponent.UserPropertyPreview,
+            'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview
         }
     });
 

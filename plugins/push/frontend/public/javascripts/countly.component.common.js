@@ -153,13 +153,17 @@
         props: {
             value: {
                 type: String,
-                required: true,
                 default: ""
             },
             label: {
                 type: String,
-                required: true,
+                default: ""
             },
+        },
+        computed: {
+            hasDefaultSlot: function() {
+                return Boolean(this.$slots.default);
+            }
         },
         template: "#review-section-row",
     });

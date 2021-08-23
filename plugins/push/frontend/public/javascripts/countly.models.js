@@ -59,7 +59,38 @@
             return {
                 periods: {daily: []},
             };
-        }
+        },
+        replaceTagElements: function(htmlString) {
+            if (htmlString) {
+                return htmlString.replace(/(<([^>]+)>)/gi, "");
+            }
+            return htmlString;
+        },
+        getPreviewMessageComponentsList: function(content) {
+            var self = this;
+            var htmlTitle = document.createElement("div");
+            htmlTitle.innerHTML = content;
+            var components = [];
+            htmlTitle.childNodes.forEach(function(node, index) {
+                if (node.hasChildNodes()) {
+                    var withAttribues = htmlTitle.childNodes[index];
+                    node.childNodes.forEach(function(childNode) {
+                        if (childNode.nodeValue) {
+                            var selectedProperty = withAttribues.getAttributeNode('data-user-property-label').value;
+                            var fallbackValue = self.replaceTagElements(withAttribues.getAttributeNode('data-user-property-fallback').value);
+                            components.push({name: 'user-property-preview', value: {fallback: fallbackValue, userProperty: selectedProperty}});
+                        }
+                    });
+                }
+                else {
+                    if (node.nodeValue) {
+                        node.nodeValue = self.replaceTagElements(node.nodeValue);
+                        components.push({name: 'user-property-text-preview', value: node.nodeValue});
+                    }
+                }
+            });
+            return components;
+        },
     };
 
     countlyPushNotification.service = {
