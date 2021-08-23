@@ -300,7 +300,6 @@
                     context.dispatch('onFetchInit');
                     countlyViews.service.fetchData(context)
                         .then(function() {
-                            _graphDataObj.ts = Date.now();
                             context.commit('setData', _graphDataObj || {});
                             context.commit('setSegments', _segments);
                             context.commit('setDomains', _domains);

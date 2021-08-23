@@ -382,19 +382,6 @@
                 return links;
 
             },
-            lineLegend: function() {
-                var data = [];
-                this.$store.state.countlyViews.selected = this.$store.state.countlyViews.selected || [];
-                for (var k = 0; k < this.$store.state.countlyViews.selected; k++) {
-                    data.push({"name": this.$store.state.countlyViews.selected[k]});
-                }
-                return {
-                    show: true,
-                    type: "secondary",
-                    position: "right",
-                    data: (this.$store.getters["countlyViews/graphLabels"] || [])
-                };
-            },
             chooseSegment: function() {
                 var segments = this.$store.state.countlyViews.segments || {};
                 var listed = [{"value": "all", "label": jQuery.i18n.map["common.all"]}];
