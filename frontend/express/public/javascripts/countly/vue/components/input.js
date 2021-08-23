@@ -505,6 +505,10 @@
                 },
                 required: false
             },
+            popClass: {
+                type: String,
+                required: false
+            }
         },
         data: function() {
             return {
