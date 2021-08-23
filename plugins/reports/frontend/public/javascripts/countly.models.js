@@ -198,10 +198,11 @@
             actions: {
                 updateStatus: function(context, status) {
                     return CV.$.ajax({
-                        type: "post",
-                        url: countlyCommon.API_PARTS.data.w + "/hook/status",
+                        type: "get",
+                        url: countlyCommon.API_PARTS.data.w + "/reports/status",
                         data: {
-                            "status": JSON.stringify(status)
+                            preventGlobalAbort: true,
+                            args: JSON.stringify(status),
                         },
                         dataType: "json",
                     })
