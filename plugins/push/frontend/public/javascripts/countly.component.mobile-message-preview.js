@@ -82,7 +82,13 @@
             },
             contentPreviewComponentsList: function() {
                 return this.getPreviewComponentsList(this.content);
-            }
+            },
+            hasAndroidPlatform: function() {
+                return this.isPlatformFound(countlyPushNotification.service.PlatformEnum.ANDROID);
+            },
+            hasIOSPlatform: function() {
+                return this.isPlatformFound(countlyPushNotification.service.PlatformEnum.IOS);
+            },
         },
         watch: {
             platforms: function() {
@@ -95,21 +101,16 @@
             timeNow: function() {
                 return moment().format("H:mm");
             },
-            hasAndroidPlatform: function() {
-                return this.platforms.filter(function(platform) {
-                    return platform === countlyPushNotification.service.PlatformEnum.ANDROID;
-                }).length > 0;
-            },
-            hasIOSPlatform: function() {
-                return this.platforms.filter(function(platform) {
-                    return platform === countlyPushNotification.service.PlatformEnum.IOS;
+            isPlatformFound: function(platformName) {
+                return this.platforms.filter(function(propPlatformItem) {
+                    return propPlatformItem === platformName;
                 }).length > 0;
             },
             findInitialSelectedPlatform: function() {
-                if (this.hasIOSPlatform()) {
+                if (this.isPlatformFound(countlyPushNotification.service.PlatformEnum.IOS)) {
                     return countlyPushNotification.service.PlatformEnum.IOS;
                 }
-                if (this.hasAndroidPlatform()) {
+                if (this.isPlatformFound(countlyPushNotification.service.PlatformEnum.ANDROID)) {
                     return countlyPushNotification.service.PlatformEnum.ANDROID;
                 }
                 return null;
