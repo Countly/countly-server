@@ -204,6 +204,7 @@
                 TriggerEnum: TriggerEnum,
                 AutomaticDeliveryDateEnum: AutomaticDeliveryDateEnum,
                 AutomaticWhenConditionNotMetEnum: AutomaticWhenConditionNotMetEnum,
+                MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
                 messageTypeFilterOptions: messageTypeFilterOptions,
                 activeLocalization: "default",
                 selectedLocalizationFilter: "default",
@@ -303,13 +304,13 @@
             previewMessageMedia: function() {
                 var result = {};
                 if (this.mediaMetadata[this.PlatformEnum.ANDROID]) {
-                    result[this.PlatformEnum.ANDROID] = this.pushNotificationUnderEdit.message.settings.android.mediaURL;
+                    result[this.PlatformEnum.ANDROID] = {url: this.pushNotificationUnderEdit.message.settings.android.mediaURL, type: this.MediaTypeEnum.IMAGE};
                 }
                 if (this.mediaMetadata[this.PlatformEnum.IOS]) {
-                    result[this.PlatformEnum.IOS] = this.pushNotificationUnderEdit.message.settings.ios.mediaURL;
+                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.message.settings.ios.mediaURL, type: this.mediaMetadata.ios.type };
                 }
                 if (this.mediaMetadata[this.PlatformEnum.ALL]) {
-                    result[this.PlatformEnum.ALL] = this.pushNotificationUnderEdit.message.settings.all.mediaURL;
+                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.message.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE };
                 }
                 return result;
             },

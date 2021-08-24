@@ -40,6 +40,7 @@
             return {
                 selectedPlatform: this.findInitialSelectedPlatform(),
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
                 appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name')
             };
         },
@@ -61,8 +62,8 @@
                 default: []
             },
             media: {
-                type: [String, Object],
-                default: null
+                type: Object,
+                required: true,
             },
             isHTML: {
                 type: Boolean,
@@ -72,10 +73,10 @@
         },
         computed: {
             isAndroidPlatformSelected: function() {
-                return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.ANDROID;
+                return this.selectedPlatform === this.PlatformEnum.ANDROID;
             },
             isIOSPlatformSelected: function() {
-                return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.IOS;
+                return this.selectedPlatform === this.PlatformEnum.IOS;
             },
             titlePreviewComponentsList: function() {
                 return this.getPreviewComponentsList(this.title);
@@ -84,13 +85,11 @@
                 return this.getPreviewComponentsList(this.content);
             },
             mediaPreview: function() {
-                if (typeof this.media === 'string') {
-                    var result = {};
-                    result[this.PlatformEnum.IOS] = this.media;
-                    result[this.PlatformEnum.ANDROID] = this.media;
-                    return result;
-                }
-                return this.media;
+                var result = {};
+                result[this.PlatformEnum.ANDROID] = this.media[this.PlatformEnum.ANDROID] || {};
+                result[this.PlatformEnum.IOS] = this.media[this.PlatformEnum.IOS] || {};
+                result[this.PlatformEnum.ALL] = this.media[this.PlatformEnum.ALL] || {};
+                return result;
             }
         },
         watch: {
@@ -105,13 +104,14 @@
                 return moment().format("H:mm");
             },
             hasAndroidPlatform: function() {
-                return this.platforms.filter(function(platform) {
-                    return platform === countlyPushNotification.service.PlatformEnum.ANDROID;
-                }).length > 0;
+                return this.hasPlatform(countlyPushNotification.service.PlatformEnum.ANDROID);
             },
             hasIOSPlatform: function() {
-                return this.platforms.filter(function(platform) {
-                    return platform === countlyPushNotification.service.PlatformEnum.IOS;
+                return this.hasPlatform(countlyPushNotification.service.PlatformEnum.IOS);
+            },
+            hasPlatform: function(platform) {
+                return this.platforms.filter(function(messagePlatform) {
+                    return messagePlatform === platform;
                 }).length > 0;
             },
             findInitialSelectedPlatform: function() {

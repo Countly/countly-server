@@ -14,7 +14,12 @@
                 X
             </span>
         </div>
-        <img v-if="mediaPreview[PlatformEnum.IOS]||mediaPreview[PlatformEnum.ALL]" class="cly-vue-push-notification-mobile-preview__ios-media" v-bind:src="mediaPreview[PlatformEnum.IOS]||mediaPreview[PlatformEnum.ALL]" /> 
+        <template v-if="mediaPreview[PlatformEnum.IOS].type === MediaTypeEnum.VIDEO">
+            <video v-bind:src="mediaPreview[PlatformEnum.IOS].url" class="cly-vue-push-notification-mobile-preview__ios-media" controls> </video>
+        </template>
+        <template v-else>
+            <img v-if="mediaPreview[PlatformEnum.IOS].url || mediaPreview[PlatformEnum.ALL].url" class="cly-vue-push-notification-mobile-preview__ios-media" v-bind:src="mediaPreview[PlatformEnum.IOS].url || mediaPreview[PlatformEnum.ALL].url" /> 
+        </template>
         <div class="cly-vue-push-notification-mobile-preview__ios-title">
             <template v-if="isHTML">
                 <template v-for="(component) in titlePreviewComponentsList">
@@ -80,7 +85,7 @@
         <div class="cly-vue-push-notification-mobile-preview__android-buttons-list">
             <div v-for="button in buttons" class="cly-vue-push-notification-mobile-preview__android-button">{{button}}</div>
         </div>
-        <img v-if="mediaPreview[PlatformEnum.ANDROID] || mediaPreview[PlatformEnum.ALL]" v-bind:src="mediaPreview[PlatformEnum.ANDROID]||mediaPreview[PlatformEnum.ALL]" class="cly-vue-push-notification-mobile-preview__android-media" /> 
+        <img v-if="mediaPreview[PlatformEnum.ANDROID].url || mediaPreview[PlatformEnum.ALL].url" v-bind:src="mediaPreview[PlatformEnum.ANDROID].url||mediaPreview[PlatformEnum.ALL].url" class="cly-vue-push-notification-mobile-preview__android-media" /> 
     </div>
 
     <div class="cly-vue-push-notification-mobile-preview__platforms">

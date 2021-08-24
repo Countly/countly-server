@@ -4,6 +4,7 @@
     var messagesSentLabel = CV.i18n('push-notification.messages-sent-serie-name');
     var actionsPerformedLabel = CV.i18n('push-notification.actions-performed-serie-name');
     var DEBOUNCE_TIME_IN_MS = 250;
+    var MB_TO_BYTES_RATIO = 1000000;
 
 
     var StatusFinderHelper = {
@@ -39,6 +40,13 @@
     };
 
     countlyPushNotification.helper = {
+        getMessageMediaInitialState: function() {
+            var result = {};
+            result[countlyPushNotification.service.PlatformEnum.ALL] = {};
+            result[countlyPushNotification.service.PlatformEnum.IOS] = {};
+            result[countlyPushNotification.service.PlatformEnum.ANDROID] = {};
+            return result;
+        },
         getInitialSeriesStateByType: function(type) {
             if (type === countlyPushNotification.service.TypeEnum.ONE_TIME) {
                 return {
@@ -127,6 +135,10 @@
             RESEND: 'resend',
             DUPLICATE: 'duplicate',
             DELETE: 'delete'
+        },
+        MediaTypeEnum: {
+            IMAGE: 'image',
+            VIDEO: 'video'
         },
         getTypeUrlParameter: function(type) {
             if (type === this.TypeEnum.AUTOMATIC) {
@@ -274,6 +286,14 @@
             //TODO: map push notification message errors;
             return {codes: dto.result.errorCodes, messages: dto.result.error};
         },
+        mapMedia: function(dto) {
+            var result = {};
+            if (dto.media) {
+                result[this.PlatformEnum.ALL] = {url: dto.media, type: this.MediaTypeEnum.IMAGE};
+            }
+            //TODO-LA:map media for specific platforms
+            return result;
+        },
         mapPushNotificationDtoToModel: function(dto) {
             var self = this;
             var pushNotificationType = this.mapType(dto);
@@ -295,7 +315,7 @@
                 message: {
                     name: dto.messagePerLocale["default|t"] || "-",
                     content: dto.messagePerLocale.default,
-                    media: dto.media,
+                    media: self.mapMedia(dto),
                     mediaMime: dto.mediaMime,
                     onClickUrl: dto.url,
                     numberOfButtons: dto.buttons,
@@ -310,6 +330,14 @@
                 endDate: self.mapEndDate(pushNotificationType, dto),
                 deliveryType: self.mapDeliveryType(pushNotificationType, dto),
                 audienceSelectionType: self.mapAudienceSelectionType(pushNotificationType, dto),
+            };
+        },
+        mapMediaMetadata: function(metadataDto) {
+            var typeAndFileExtension = metadataDto['content-type'].split('/');
+            return {
+                type: typeAndFileExtension[0],
+                extension: typeAndFileExtension[1],
+                size: metadataDto['content-length'] / MB_TO_BYTES_RATIO,
             };
         },
         fetchAll: function(type) {
@@ -381,12 +409,13 @@
             });
         },
         fetchMediaMetadata: function(url) {
+            var self = this;
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     method: 'GET',
                     url: window.countlyCommon.API_URL + '/i/pushes/mime?url=' + url,
                     success: function(data) {
-                        resolve(data.headers);
+                        resolve(self.mapMediaMetadata(data.headers));
                     },
                     error: function(error) {
                         reject(error);
@@ -403,7 +432,8 @@
         return {
             pushNotification: {
                 message: {
-                    buttons: []
+                    buttons: [],
+                    media: countlyPushNotification.helper.getMessageMediaInitialState()
                 },
                 platforms: [],
                 processed: 0,
