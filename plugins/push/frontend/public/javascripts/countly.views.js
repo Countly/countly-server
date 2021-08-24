@@ -36,11 +36,6 @@
     var automaticPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
     var transactionalPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
 
-
-    var localizationFilterOptions = [
-        {label: CV.i18n("push-notification-details.localization-filter-all"), value: countlyPushNotification.service.LocalizationEnum.ALL}
-    ];
-
     var TargetingEnum = {
         ALL: 'all',
         SEGMENTED: "segmented"
@@ -821,53 +816,6 @@
         this.renderWhenReady(pushNotificationViewWrapper);
     });
 
-    var PushNotificationDetailsMessageContentTab = countlyVue.views.create({
-        template: CV.T('/push/templates/push-notification-details-message-content-tab.html'),
-        data: function() {
-            return {
-                selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
-                localizationFilters: localizationFilterOptions
-            };
-        },
-        computed: {
-            message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message;
-            }
-        }
-    });
-
-    var PushNotificationDetailsTargetingTab = countlyVue.views.create({
-        template: CV.T('/push/templates/push-notification-details-targeting-tab.html'),
-        data: function() {
-            return {
-                DAY_TO_MS_RATIO: 86400 * 1000
-            };
-        },
-        computed: {
-            pushNotification: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification;
-            }
-        },
-        methods: {
-            convertDaysInMsToDays: function(daysInMs) {
-                return daysInMs / this.DAY_TO_MS_RATIO;
-            }
-        }
-    });
-
-    var PushNotificationDetailsErrorsTab = countlyVue.views.create({
-        template: CV.T('/push/templates/push-notification-details-errors-tab.html'),
-        computed: {
-            errors: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.errors;
-            },
-        },
-        methods: {
-            hasErrors: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.failed > 0;
-            }
-        }
-    });
 
     var PushNotificationDetailsView = countlyVue.views.BaseView.extend({
         template: "#push-notification-details",
@@ -876,25 +824,25 @@
                 selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
                 platformFilters: platformFilterOptions,
                 selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
-                localizationFilters: localizationFilterOptions,
+                localizationFilters: countlyPushNotification.service.getLocalizationFilterOptions(),
                 DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
-                currentSummaryTab: "content",
+                currentSummaryTab: "message",
                 UserEventEnum: countlyPushNotification.service.UserEventEnum,
                 summaryTabs: [
                     {
-                        title: CV.i18n('push-notification-details.message-content-tab'),
-                        name: "content",
-                        component: PushNotificationDetailsMessageContentTab
+                        title: CV.i18n('push-notification-details.message-tab'),
+                        name: "message",
+                        component: countlyPushNotificationComponent.DetailsMessageTab
                     },
                     {
                         title: CV.i18n('push-notification-details.targeting-tab'),
                         name: "targeting",
-                        component: PushNotificationDetailsTargetingTab
+                        component: countlyPushNotificationComponent.DetailsTargetingTab
                     },
                     {
                         title: CV.i18n('push-notification-details.errors-tab'),
                         name: "errors",
-                        component: PushNotificationDetailsErrorsTab
+                        component: countlyPushNotificationComponent.DetailsErrorsTab
                     }
                 ]
             };
@@ -983,6 +931,7 @@
         component: PushNotificationDetailsView,
         vuex: pushNotificationVuex,
         templates: [
+            "/push/templates/common-components.html",
             "/push/templates/push-notification-details.html"
         ],
     });

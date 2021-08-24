@@ -140,6 +140,12 @@
             IMAGE: 'image',
             VIDEO: 'video'
         },
+        getLocalizationFilterOptions: function() {
+            var self = this;
+            return [
+                {label: CV.i18n("push-notification-details.localization-filter-all"), value: self.LocalizationEnum.ALL}
+            ];
+        },
         getTypeUrlParameter: function(type) {
             if (type === this.TypeEnum.AUTOMATIC) {
                 return {auto: true, tx: false};

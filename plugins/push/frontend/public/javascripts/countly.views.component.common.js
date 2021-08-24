@@ -636,4 +636,52 @@
         },
     });
 
+    countlyPushNotificationComponent.DetailsMessageTab = countlyVue.views.create({
+        template: '#details-message-tab',
+        data: function() {
+            return {
+                selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
+                localizationFilters: countlyPushNotification.service.getLocalizationFilterOptions()
+            };
+        },
+        computed: {
+            message: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.message;
+            }
+        }
+    });
+
+    countlyPushNotificationComponent.DetailsTargetingTab = countlyVue.views.create({
+        template: '#details-targeting-tab',
+        data: function() {
+            return {
+                DAY_TO_MS_RATIO: 86400 * 1000
+            };
+        },
+        computed: {
+            pushNotification: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification;
+            }
+        },
+        methods: {
+            convertDaysInMsToDays: function(daysInMs) {
+                return daysInMs / this.DAY_TO_MS_RATIO;
+            }
+        }
+    });
+
+    countlyPushNotificationComponent.DetailsErrorsTab = countlyVue.views.create({
+        template: '#details-errors-tab',
+        computed: {
+            errors: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.errors;
+            },
+        },
+        methods: {
+            hasErrors: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.failed > 0;
+            }
+        }
+    });
+
 })(window.countlyPushNotificationComponent = window.countlyPushNotificationComponent || {});
