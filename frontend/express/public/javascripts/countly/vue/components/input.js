@@ -582,7 +582,9 @@
             focusOnSearch: function() {
                 var self = this;
                 this.$nextTick(function() {
-                    self.$refs.searchBox.focus();
+                    if (self.$refs.searchBox) {
+                        self.$refs.searchBox.focus();
+                    }
                 });
             },
             focusOnTrigger: function() {
