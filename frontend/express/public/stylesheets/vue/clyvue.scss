@@ -1135,6 +1135,8 @@
 
     .cly-vue-popover{
         cursor: pointer;
+        z-index: 2000;
+        
         .trigger {
             display: block!important;
         }

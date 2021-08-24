@@ -1,0 +1,17 @@
+<div>
+    <slot
+      name="emoji-invoker"
+      :events="{ click: function(e){toggle(e)} }"
+    ></slot>
+    <div
+      v-if="display.visible"
+      v-click-outside="hide"
+    >
+      <slot
+        name="emoji-picker"
+        :emojis="emojis"
+        :insert="insert"
+        :display="display"
+      ></slot>
+    </div>
+</div>

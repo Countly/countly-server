@@ -1,0 +1,41 @@
+<div>
+    <div v-if="isOpen" v-bind:style="getStyleObject" class="cly-vue-push-notification-add-user-property-popover">
+        <div class="cly-vue-push-notification-add-user-property-popover__inner">
+            <validation-observer ref="validationObserver">
+                <div class="cly-vue-push-notification-add-user-property-popover__title">Add User Property</div>
+                <div>
+                    <validation-provider vid="userPropertyValidator" v-slot="validation" rules="required">
+                        <cly-select-x
+                            search-placeholder="Search in Properties"
+                            placeholder="Select Property" 
+                            :value="userProperty.value"
+                            :width="320"
+                            @change="onSelect"
+                            mode="single-list"
+                            :hide-all-options-tab="false"
+                            :options="options"
+                            :class="[validation.errors.length > 0 ? 'is-error': null,'cly-vue-push-notification-add-user-property-popover__select-value']">
+                        </cly-select-x>
+                    </validation-provider>
+                </div>
+                <div>
+                    <el-checkbox :value="userProperty.isUppercase" @change="onUppercase">
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Make user property start with capital letter</div>
+                    </el-checkbox> 
+                </div>
+                <div>
+                    <div class="bu-level bu-is-flex-direction-column bu-is-align-items-flex-start">
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Fallback value</div>
+                        <validation-provider vid="fallbackValueValidator" v-slot="validation" rules="required" style="width:100%">
+                            <el-input :value="userProperty.fallback" @input="onFallback" placeholder="Enter fallback value" :class="{'is-error': validation.errors.length > 0}"> </el-input>
+                        </validation-provider>
+                    </div>
+                </div>
+            </validation-observer>
+            <div class="cly-vue-drawer-step__section cly-vue-drawer-step__line--aligned bu-is-justify-content-flex-end">
+                <cly-button skin="light" label="Remove" @click="onRemove">Remove</cly-button>
+                <cly-button skin="green" label="Confirm" @click="onClose">Confirm</cly-button>
+            </div>
+        </div>
+    </div>
+</div>

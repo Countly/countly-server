@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment, countlyEventsOverview*/
 (function() {
 
     var AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = [
@@ -40,6 +40,489 @@
     var localizationFilterOptions = [
         {label: CV.i18n("push-notification-details.localization-filter-all"), value: countlyPushNotification.service.LocalizationEnum.ALL}
     ];
+
+    var TargetingEnum = {
+        ALL: 'all',
+        SEGMENTED: "segmented"
+    };
+    var WhenToDetermineEnum = {
+        NOW: 'now',
+        BEFORE: "before"
+    };
+    var DeliveryEnum = {
+        NOW: 'now',
+        LATER: 'later',
+        DELAYED: 'delayed',
+    };
+    var TimeZoneEnum = {
+        SAME: 'same',
+        DEVICE: 'device'
+    };
+    var PastScheduleEnum = {
+        SKIP: 'skip',
+        NEXT_DAY: 'nextDay'
+    };
+    var MessageTypeEnum = {
+        SILENT: 'silent',
+        CONTENT: 'content'
+    };
+    var TriggerEnum = {
+        COHORT_ENTRY: 'cohortEntry',
+        COHORT_EXIT: 'cohortExit',
+        EVENT: 'event'
+    };
+    var AutomaticDeliveryDateEnum = {
+        EVENT_SERVER_DATE: 'eventServerDate',
+        EVENT_DEVICE_DATE: 'eventDeviceDate'
+    };
+    var AutomaticWhenConditionNotMetEnum = {
+        SEND_ANYWAY: 'sendAnyway',
+        CANCEL_ON_EXIT: 'cancelOnExit'
+    };
+    var messageTypeFilterOptions = [
+        {label: "Content message", value: MessageTypeEnum.CONTENT},
+        {label: "Silent message", value: MessageTypeEnum.SILENT}
+    ];
+
+    var InitialEditedPushNotification = {
+        activePlatformSettings: [],
+        multipleLocalizations: false,
+        name: "",
+        platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
+        targeting: TargetingEnum.ALL,
+        whenToDetermine: WhenToDetermineEnum.BEFORE,
+        message: {
+            default: {
+                title: "",
+                content: "",
+                localizationLabel: "Default",
+                buttons: [],
+                properties: {
+                    title: {},
+                    content: {}
+                }
+            },
+            settings: {
+                ios: {
+                    subtitle: "",
+                    mediaURL: "",
+                    soundFileName: "",
+                    badgeNumber: "",
+                    onClickURL: "",
+                    json: null,
+                    userData: []
+                },
+                android: {
+                    mediaURL: "",
+                    soundFileName: "",
+                    badgeNumber: "",
+                    icon: "",
+                    onClickURL: "",
+                    json: null,
+                    userData: []
+                }
+            },
+            mediaUrl: "",
+            type: MessageTypeEnum.CONTENT
+        },
+        localizations: ["default"],
+        cohorts: [],
+        locations: [],
+        delivery: {
+            type: DeliveryEnum.NOW,
+            startDate: moment().valueOf(),
+            endDate: moment().valueOf(),
+            method: DeliveryEnum.NOW
+        },
+        timeZone: TimeZoneEnum.SAME,
+        pastSchedule: PastScheduleEnum.SKIP,
+        expiration: {
+            days: 7,
+            hours: 0
+        },
+        automatic: {
+            trigger: TriggerEnum.COHORT_ENTRY,
+            deliveryDate: AutomaticDeliveryDateEnum.EVENT_SERVER_DATE,
+            whenNotMet: AutomaticWhenConditionNotMetEnum.SEND_ANYWAY,
+            events: [],
+            capping: false,
+            maximumMessagesPerUser: 1,
+            minimumTimeBetweenMessages: {
+                days: 0,
+                hours: 0
+            },
+            delayed: {
+                days: 0,
+                hours: 0
+            }
+        },
+    };
+
+    var InitialPushNotificationDrawerSettingsState = {
+        ios: {
+            isSubtitleEnabled: false,
+            isMediaUrlEnabled: false,
+            isSoundFileNameEnabled: false,
+            isBadgeNumberEnabled: false,
+            isOnClickURLEnabled: false,
+            isJsonEnabled: false,
+            isUserDataEnabled: false,
+        },
+        android: {
+            isMediaUrlEnabled: false,
+            isSoundFileNameEnabled: false,
+            isBadgeNumberEnabled: false,
+            isIconEnabled: false,
+            isOnClickURLEnabled: false,
+            isJsonEnabled: false,
+            isUserDataEnabled: false,
+        }
+    };
+
+    var PushNotificationDrawer = countlyVue.views.create({
+        template: CV.T("/push/templates/push-notification-drawer.html"),
+        mixins: [countlyVue.mixins.i18n],
+        data: function() {
+            return {
+                loading: false,
+                localizationOptions: [{label: "Default", value: "default"}, {label: "English", value: "en"}, {label: "German", value: "ge"}],
+                userPropertiesOptions: [],
+                eventOptions: [],
+                saveButtonLabel: "Submit",
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                TargetingEnum: TargetingEnum,
+                TypeEnum: countlyPushNotification.service.TypeEnum,
+                WhenToDetermineEnum: WhenToDetermineEnum,
+                DeliveryEnum: DeliveryEnum,
+                TimeZoneEnum: TimeZoneEnum,
+                PastScheduleEnum: PastScheduleEnum,
+                TriggerEnum: TriggerEnum,
+                AutomaticDeliveryDateEnum: AutomaticDeliveryDateEnum,
+                AutomaticWhenConditionNotMetEnum: AutomaticWhenConditionNotMetEnum,
+                messageTypeFilterOptions: messageTypeFilterOptions,
+                activeLocalization: "default",
+                selectedLocalizationFilter: "default",
+                isConfirmed: false,
+                expandedPlatformSettings: [],
+                isEndDateEnabled: false,
+                settings: JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState)),
+                userPropertiesIdCounter: 0,
+                selectedUserPropertyId: null,
+                selectedUserPropertyContainer: "title",
+                isAddUserPropertyPopoverOpen: false,
+                urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
+                addUserPropertyPopoverPosition: {
+                    top: 0,
+                    left: 0
+                },
+                pushNotificationUnderEdit: JSON.parse(JSON.stringify(InitialEditedPushNotification))
+            };
+        },
+        props: {
+            type: {
+                type: String,
+                default: countlyPushNotification.service.TypeEnum.ONE_TIME
+            },
+            controls: {
+                type: Object
+            }
+        },
+        computed: {
+            title: function() {
+                if (this.type === countlyPushNotification.service.TypeEnum.ONE_TIME) {
+                    return "Create One-Time Push Notification";
+                }
+                if (this.type === countlyPushNotification.service.TypeEnum.AUTOMATIC) {
+                    return "Create Automated Push Notification";
+                }
+                if (this.type === countlyPushNotification.service.TypeEnum.TRANSACTIONAL) {
+                    return "Create Transactional Push Notification";
+                }
+            },
+            addButtonLabel: function() {
+                if (this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.length === 0) {
+                    return "+Add First button";
+                }
+                return "+Add Second button";
+            },
+            isDefaultLocalizationActive: function() {
+                return this.activeLocalization === 'default';
+            },
+            isAddButtonDisabled: function() {
+                return this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.length === 2;
+            },
+            selectedLocalizationFilterOptions: function() {
+                var self = this;
+                return this.pushNotificationUnderEdit.localizations.map(function(selectedLocalization) {
+                    return {label: self.pushNotificationUnderEdit.message[selectedLocalization].localizationLabel, value: selectedLocalization};
+                });
+            },
+            selectedLocalizationMessage: function() {
+                return this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter];
+            },
+            enabledUsers: function() {
+                return this.$store.state.countlyPushNotification.pushNotifications.enabledUsers;
+            },
+            selectedMessageLocale: function() {
+                return this.pushNotificationUnderEdit.message[this.activeLocalization];
+            },
+            cohortOptions: function() {
+                return this.$store.state.countlyPushNotification.pushNotifications.cohorts.map(function(cohort) {
+                    return {label: cohort.name.replace(/&quot;/g, '\\"'), value: cohort._id};
+                });
+            },
+            locationOptions: function() {
+                return this.$store.state.countlyPushNotification.pushNotifications.locations.map(function(location) {
+                    return {label: location.title, value: location._id};
+                });
+            },
+            areCohortsAndLocationsRequired: function() {
+                return !this.pushNotificationUnderEdit.cohorts.length && !this.pushNotificationUnderEdit.locations.length;
+            },
+            areEventsAndLocationsRequired: function() {
+                return !this.pushNotificationUnderEdit.automatic.events.length && !this.pushNotificationUnderEdit.locations.length;
+            },
+            areLocationsRequired: function() {
+                if (this.pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT) {
+                    return this.areEventsAndLocationsRequired;
+                }
+                else {
+                    return this.areCohortsAndLocationsRequired;
+                }
+            }
+        },
+        methods: {
+            setUserPropertiesOptions: function(userPropertiesOptionsDto) {
+                this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
+                    if (userPropertyOptionDto.id) {
+                        allUserPropertyOptions.push({label: userPropertyOptionDto.name, value: userPropertyOptionDto.id});
+                    }
+                    return allUserPropertyOptions;
+                }, []);
+            },
+            fetchUserPropertiesOptionsIfEmpty: function() {
+                if (!this.userPropertiesOptions.length) {
+                    var self = this;
+                    countlySegmentation.initialize("").then(function() {
+                        self.setUserPropertiesOptions(countlySegmentation.getFilters());
+                    });
+                }
+            },
+            onSaveDraft: function() {},
+            onSubmit: function() {},
+            resetState: function() {
+                this.activeLocalization = "default",
+                this.selectedLocalizationFilter = "default",
+                this.isConfirmed = false,
+                this.expandedPlatformSettings = [],
+                this.isEndDateEnabled = false;
+                this.selectedUserPropertyContainer = "title";
+                this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
+                this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(InitialEditedPushNotification));
+            },
+            onClose: function() {
+                this.resetState();
+                this.closeAddUserPropertyPopover();
+            },
+            onOpen: function() {
+                this.fetchUserPropertiesOptionsIfEmpty();
+            },
+            onInfoAndTargetFormSubmit: function() {},
+            remoteMethod: function() {},
+            addButton: function() {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.push({label: "", url: ""});
+            },
+            removeButton: function(index) {
+                var filteredButtons = this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.filter(function(buttonItem, buttonIndex) {
+                    return buttonIndex !== index;
+                });
+                this.pushNotificationUnderEdit.message[this.activeLocalization].buttons = filteredButtons;
+            },
+            isLocalizationSelected: function(value) {
+                return this.pushNotificationUnderEdit.localizations.filter(function(activeLocalization) {
+                    return value === activeLocalization;
+                }).length > 0;
+            },
+            addEmptyLocalizationMessageIfNotFound: function(localization) {
+                var value = localization.value;
+                var label = localization.label;
+                if (!this.pushNotificationUnderEdit.message[value]) {
+                    this.$set(this.pushNotificationUnderEdit.message, value, {
+                        title: "",
+                        content: "",
+                        localizationLabel: label,
+                        buttons: [],
+                        properties: {
+                            title: {},
+                            content: {}
+                        }
+                    });
+                }
+            },
+            addLocalizationIfNotSelected: function(value) {
+                if (!this.isLocalizationSelected(value)) {
+                    this.pushNotificationUnderEdit.localizations.push(value);
+                }
+            },
+            setActiveLocalization: function(value) {
+                this.activeLocalization = value;
+            },
+            removeLocalization: function(value) {
+                this.pushNotificationUnderEdit.localizations = this.pushNotificationUnderEdit.localizations.filter(function(activeLocalization) {
+                    return value !== activeLocalization;
+                });
+            },
+            resetMessageInHTMLToActiveLocalization: function() {
+                this.$refs.title.reset(
+                    this.pushNotificationUnderEdit.message[this.activeLocalization].title,
+                    Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.title),
+                    'title'
+                );
+                this.$refs.content.reset(
+                    this.pushNotificationUnderEdit.message[this.activeLocalization].content,
+                    Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.content),
+                    'content'
+                );
+            },
+            onLocalizationChange: function(localization) {
+                if (!this.isLocalizationSelected(localization.value)) {
+                    this.addEmptyLocalizationMessageIfNotFound(localization);
+                    this.addLocalizationIfNotSelected(localization.value);
+                    this.setActiveLocalization(localization.value);
+                    this.resetMessageInHTMLToActiveLocalization();
+                }
+                else {
+                    this.removeLocalization(localization.value);
+                    this.setActiveLocalization("default");
+                    this.resetMessageInHTMLToActiveLocalization();
+                }
+            },
+            onLocalizationSelect: function(localization) {
+                this.addEmptyLocalizationMessageIfNotFound(localization);
+                this.setActiveLocalization(localization.value);
+                this.resetMessageInHTMLToActiveLocalization();
+            },
+            onSendToTestUsers: function() {},
+            onSettingChange: function(platform, property, value) {
+                this.pushNotificationUnderEdit.message.settings[platform][property] = value;
+            },
+            onSettingToggle: function(platform, property, value) {
+                this.settings[platform][property] = value;
+                if (!value) {
+                    this.pushNotificationUnderEdit.message.settings[platform][property] = "";
+                }
+            },
+            onTitleChange: function(value) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].title = value;
+            },
+            onContentChange: function(value) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].content = value;
+            },
+            setSelectedUserPropertyId: function(id) {
+                this.selectedUserPropertyId = id;
+            },
+            setSelectedUserPropertyContainer: function(container) {
+                this.selectedUserPropertyContainer = container;
+            },
+            openAddUserPropertyPopover: function() {
+                this.isAddUserPropertyPopoverOpen = true;
+            },
+            closeAddUserPropertyPopover: function() {
+                this.isAddUserPropertyPopoverOpen = false;
+            },
+            addUserPropertyInHTML: function(id, container) {
+                this.$refs[container].addEmptyUserProperty(id, container);
+            },
+            removeUserPropertyInHTML: function(id, container) {
+                this.$refs[container].removeUserProperty(id);
+            },
+            setUserPropertyInHTML: function(id, container, previewValue, value) {
+                this.$refs[container].setUserPropertyValue(id, previewValue, value);
+            },
+            setUserPropertyFallbackInHTML: function(id, container, previewValue, fallback) {
+                this.$refs[container].setUserPropertyFallbackValue(id, previewValue, fallback);
+            },
+            setAddUserPropertyPopoverPosition: function(position) {
+                this.addUserPropertyPopoverPosition = position;
+            },
+            onAddUserProperty: function(container) {
+                if (!this.isAddUserPropertyPopoverOpen) {
+                    var propertyIndex = this.userPropertiesIdCounter;
+                    this.userPropertiesIdCounter = this.userPropertiesIdCounter + 1;
+                    this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], propertyIndex, {
+                        id: propertyIndex,
+                        value: "",
+                        label: "Select property|",
+                        fallback: "",
+                        isUppercase: false
+                    });
+                    this.setSelectedUserPropertyId(propertyIndex);
+                    this.setSelectedUserPropertyContainer(container);
+                    this.addUserPropertyInHTML(propertyIndex, container);
+                }
+            },
+            onRemoveUserProperty: function(id, container) {
+                this.closeAddUserPropertyPopover();
+                this.$delete(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], id);
+                this.removeUserPropertyInHTML(id, container);
+            },
+            onSelectUserProperty: function(id, container, value, label) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value = value;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].label = label;
+                var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback;
+                var previewValue = label + "|" + currentFallbackValue;
+                this.setUserPropertyInHTML(id, container, previewValue, value);
+            },
+            onInputFallbackUserProperty: function(id, container, fallback) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback = fallback;
+                var currentLabel = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].label;
+                var previewValue = currentLabel + "|" + fallback;
+                this.setUserPropertyFallbackInHTML(id, container, previewValue, fallback);
+            },
+            onCheckUppercaseUserProperty: function(id, container, isUppercase) {
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].isUppercase = isUppercase;
+            },
+            onUserPropertyClick: function(id, container, position) {
+                if (!this.isAddUserPropertyPopoverOpen) {
+                    this.setSelectedUserPropertyId(id);
+                    this.setSelectedUserPropertyContainer(container);
+                    this.setAddUserPropertyPopoverPosition(position);
+                    this.openAddUserPropertyPopover();
+                }
+            },
+            fetchAllEvents: function() {
+                var self = this;
+                countlyEventsOverview.service.fetchAllEvents()
+                    .then(function(events) {
+                        self.eventOptions = events.list.map(function(event) {
+                            return {label: event, value: event};
+                        });
+                    });
+            },
+            getUserProperties: function() {
+                return countlySegmentation.getFilters().map(function(userFilter) {
+                    return {label: userFilter.name, value: userFilter.id};
+                });
+            },
+            prepareMessage: function() {
+                //TODO-LA: get message localizations and prepare notification meta-data
+            },
+        },
+        mounted: function() {
+            this.fetchAllEvents();
+            this.getUserProperties();
+        },
+        components: {
+            "message-setting-element": countlyPushNotificationComponent.MessageSettingElement,
+            "mobile-message-preview": countlyPushNotificationComponent.MobileMessagePreview,
+            "message-editor-with-emoji-picker": countlyPushNotificationComponent.MessageEditorWithEmojiPicker,
+            "add-user-property-popover": countlyPushNotificationComponent.AddUserPropertyPopover,
+            "large-radio-button-with-description": countlyPushNotificationComponent.LargeRadioButtonWithDescription,
+            "line-radio-button-with-description": countlyPushNotificationComponent.LineRadioButtonWithDescription,
+            "review-section-row": countlyPushNotificationComponent.ReviewSectionRow,
+        },
+    });
+
     var PushNotificationTabView = countlyVue.views.BaseView.extend({
         template: "#push-notification-tab",
         data: function() {
@@ -119,7 +602,7 @@
                 },
                 set: function(value) {
                     this.$store.dispatch("countlyPushNotification/onSetStatusFilter", value);
-                //TODO: filter table by status
+                //TODO-LA: filter table by status
                 // this.$store.dispatch("countlyPushNotification/fetchByType");
                 }
             },
@@ -165,17 +648,17 @@
                     this.$store.dispatch('countlyPushNotification/onDeletePushNotification', pushNotificationId);
                 }
             },
-            //TODO: use status action specifications when ready
+            //TODO-LA: use status action specifications when ready
             // eslint-disable-next-line no-unused-vars
             shouldShowDuplicateUserEvent: function(status) {
                 return true;
             },
-            //TODO: use status action specifications when ready
+            //TODO-LA: use status action specifications when ready
             // eslint-disable-next-line no-unused-vars
             shouldShowResendUserEvent: function(status) {
                 return true;
             },
-            //TODO: use status action specifications when ready
+            //TODO-LA: use status action specifications when ready
             // eslint-disable-next-line no-unused-vars
             shouldShowDeleteUserEvent: function(status) {
                 return true;
@@ -210,6 +693,7 @@
 
     var PushNotificationView = countlyVue.views.BaseView.extend({
         template: "#push-notification",
+        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer")],
         data: function() {
             return {
                 pushNotificationTabs: [
@@ -231,7 +715,12 @@
             }
         },
         methods: {
-            onCreatePushNotification: function() {},
+            onCreatePushNotification: function() {
+                this.openDrawer("pushNotificationDrawer");
+            },
+        },
+        components: {
+            "push-notification-drawer": PushNotificationDrawer
         }
     });
 
@@ -243,6 +732,7 @@
         component: PushNotificationView,
         vuex: pushNotificationVuex,
         templates: [
+            "/push/templates/common-components.html",
             "/push/templates/push-notification.html",
             "/push/templates/push-notification-tab.html"
         ]
@@ -298,73 +788,6 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification.failed > 0;
             }
         }
-    });
-
-    var MobileMessagePreview = countlyVue.views.create({
-        template: CV.T("/push/templates/mobile-message-preview.html"),
-        data: function() {
-            return {
-                selectedPlatform: this.getDefaultSelectedPlatform,
-                PlatformEnum: countlyPushNotification.service.PlatformEnum,
-                appName: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name || CV.i18n('push-notification.mobile-preview-default-app-name')
-            };
-        },
-        props: {
-            platforms: {
-                type: Array,
-                default: []
-            },
-            title: {
-                type: String,
-                default: CV.i18n('push-notification.mobile-preview-default-title')
-            },
-            content: {
-                type: String,
-                default: CV.i18n('push-notification.mobile-preview-default-content'),
-            },
-            buttons: {
-                type: Array,
-                default: []
-            },
-            media: {
-                type: String,
-                default: null
-            }
-        },
-        computed: {
-            hasAndroidPlatform: function() {
-                return this.platforms.filter(function(platform) {
-                    return platform.value === countlyPushNotification.service.PlatformEnum.ANDROID;
-                }).length > 0;
-            },
-            hasIOSPlatform: function() {
-                return this.platforms.filter(function(platform) {
-                    return platform.value === countlyPushNotification.service.PlatformEnum.IOS;
-                }).length > 0;
-            },
-            isAndroidPlatformSelected: function() {
-                return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.ANDROID;
-            },
-            isIOSPlatformSelected: function() {
-                return this.selectedPlatform === countlyPushNotification.service.PlatformEnum.IOS;
-            },
-            getDefaultSelectedPlatform: function() {
-                return this.hasIOSPlatform ? countlyPushNotification.service.PlatformEnum.IOS : countlyPushNotification.service.PlatformEnum.ANDROID;
-            },
-        },
-        watch: {
-            platforms: function() {
-                this.selectedPlatform = this.getDefaultSelectedPlatform;
-            }
-        },
-        methods: {
-            timeNow: function() {
-                return moment().format("H:mm");
-            },
-            setSelectedPlatform: function(value) {
-                this.selectedPlatform = value;
-            }
-        },
     });
 
     var PushNotificationDetailsView = countlyVue.views.BaseView.extend({
@@ -454,7 +877,7 @@
                 return countlyCommon.formatTimeAgoText(date).text;
             },
             findTargetedUsers: function() {
-                //TODO: find how to calculate the targeted users;
+                //TODO-LA: find how to calculate the targeted users;
                 return CountlyHelpers.formatPercentage(100);
             },
             findSentPushNotifications: function() {
@@ -468,7 +891,7 @@
             }
         },
         components: {
-            "mobile-message-preview": MobileMessagePreview
+            "mobile-message-preview": countlyPushNotificationComponent.MobileMessagePreview
         },
         mounted: function() {
             if (this.$route.params.id) {
@@ -832,6 +1255,9 @@
     $(document).ready(function() {
         if (countlyAuth.validateRead('push')) {
             app.addMenuForType("mobile", "reach", {code: "push", url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
+            //TODO-LA: when geolocations is finished, remove the submenu and instead keep the menu entry only
+            // app.addMenu("push", {code: "push", url: "#/messaging", text: "push-notification-title", priority: 20});
+            app.addSubMenu("push", {code: "push", url: "#/messaging", text: "push-notification.title", priority: 20});
         }
 
 
