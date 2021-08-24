@@ -339,10 +339,10 @@
                 return this.selectedPlatform === this.PlatformEnum.IOS;
             },
             titlePreviewComponentsList: function() {
-                return this.getPreviewComponentsList(this.title);
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.title);
             },
             contentPreviewComponentsList: function() {
-                return this.getPreviewComponentsList(this.content);
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.content);
             },
             mediaPreview: function() {
                 var result = {};
@@ -385,29 +385,6 @@
             },
             setSelectedPlatform: function(value) {
                 this.selectedPlatform = value;
-            },
-            getPreviewComponentsList: function(content) {
-                var htmlTitle = document.createElement("div");
-                htmlTitle.innerHTML = content;
-                var components = [];
-                htmlTitle.childNodes.forEach(function(node, index) {
-                    if (node.hasChildNodes()) {
-                        var withAttribues = htmlTitle.childNodes[index];
-                        node.childNodes.forEach(function(childNode) {
-                            if (childNode.nodeValue) {
-                                var selectedProperty = withAttribues.getAttributeNode('data-user-property-label').value;
-                                var fallbackValue = withAttribues.getAttributeNode('data-user-property-fallback').value;
-                                components.push({name: 'user-property-preview', value: {fallback: fallbackValue, userProperty: selectedProperty}});
-                            }
-                        });
-                    }
-                    else {
-                        if (node.nodeValue) {
-                            components.push({name: 'user-property-text-preview', value: node.nodeValue});
-                        }
-                    }
-                });
-                return components;
             }
         },
         components: {
