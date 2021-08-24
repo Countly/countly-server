@@ -287,6 +287,19 @@
         props: ['value']
     }));
 
+    Vue.component("cly-blank", countlyBaseComponent.extend({
+        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center">\
+                        <h3 class="color-cool-gray-50">{{text}}</h3>\
+                    </div>',
+        props: {
+            text: {
+                type: String,
+                default: '',
+                required: false
+            }
+        }
+    }));
+
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         template: '<cly-select-x\

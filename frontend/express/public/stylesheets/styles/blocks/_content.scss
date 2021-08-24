@@ -53,6 +53,10 @@
 		}
 	}
 
+	.cly-vue-section__content-config {
+		border-bottom: 1px solid #ececec;
+	}
+
 	&:not(:last-child) {
 		margin-bottom: 32px;
 	}
