@@ -1,4 +1,4 @@
-/*global countlyAuth, _,$,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,countlyVue,CV */
+/*global countlyAuth, _,$,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,countlyVue,CV,Vue */
 
 (function() {
     var FEATURE_PLUGIN_NAME = "global_plugins";
@@ -451,7 +451,267 @@
         }
     });
 
+    Vue.component("cly-account-field", countlyVue.components.BaseComponent.extend({
+        props: {
+            label: String
+        },
+        template: '<div class="cly-vue-form-field cly-vue-form-step__section bu-columns bu-is-vcentered bu-px-1 bu-mx-1">\
+                        <div class="bu-column bu-is-4 bu-p-0">\
+                            <p class="bu-has-text-weight-medium">{{label}} <span v-if="$attrs.rules && $attrs.rules.indexOf(\'required\') !== -1">*</span></p>\
+                        </div>\
+                        <div class="bu-column bu-is-8 bu-has-text-left bu-p-0">\
+                            <validation-provider v-if="$attrs.rules" :name="label" v-bind="$attrs" v-on="$listeners" v-slot="validation">\
+                                <div class="cly-vue-form-field__inner el-form-item el-form-item__content" :class="{\'is-error\': validation.errors.length > 0}">\
+                                    <slot v-bind="validation"/>\
+                                    <div v-if="validation.errors.length" class="el-form-item__error">{{validation.errors[0]}}</div>\
+                                </div>\
+                            </validation-provider>\
+                            <div v-else class="cly-vue-form-field__inner el-form-item el-form-item__content">\
+                                <slot/>\
+                            </div>\
+                        </div>\
+                  </div>'
+    }));
 
+    var AccountView = countlyVue.views.create({
+        template: CV.T('/plugins/templates/account-settings.html'),
+        data: function() {
+            return {
+                uploadData: {
+                    _csrf: countlyGlobal.csrf_token,
+                    member_image_id: countlyGlobal.member._id
+                },
+                changes: {},
+                deleteAccount: {
+                    showDialog: false,
+                    title: CV.i18n("configs.delete-account"),
+                    saveButtonLabel: CV.i18n("configs.delete-my-account"),
+                    cancelButtonLabel: CV.i18n("configs.cancel"),
+                    password: ""
+                },
+                changePassword: {
+                    showDialog: false,
+                    title: CV.i18n("configs.change-password"),
+                    saveButtonLabel: CV.i18n("configs.change-password"),
+                    cancelButtonLabel: CV.i18n("configs.cancel"),
+                    password: "",
+                    newPassword: "",
+                    confirmPassword: ""
+                },
+                formId: "account-settings-form",
+                userData: countlyGlobal.member,
+                avatar: this.setDefaultAvatar(countlyGlobal.member.member_image),
+                initials: this.updateInitials(countlyGlobal.member.full_name),
+                userConfigs: {}
+            };
+        },
+        beforeCreate: function() {
+            var self = this;
+            return $.when(countlyPlugins.initializeUserConfigs())
+                .then(function() {
+                    try {
+                        self.userConfigs = JSON.parse(JSON.stringify(countlyPlugins.getUserConfigsData()));
+                    }
+                    catch (ex) {
+                        self.userConfigs = {};
+                    }
+                });
+        },
+        methods: {
+            refresh: function() {
+
+            },
+            passwordDialog: function() {
+                var old_pwd = this.changePassword.password;
+                var new_pwd = this.changePassword.newPassword;
+                var re_new_pwd = this.changePassword.confirmPassword;
+
+                if (old_pwd.length > 0 && new_pwd.length > 0 && re_new_pwd.length > 0) {
+                    var data = {
+                        _csrf: countlyGlobal.csrf_token,
+                        username: countlyGlobal.member.username,
+                        full_name: countlyGlobal.member.full_name,
+                        api_key: countlyGlobal.member.api_key,
+                        old_pwd: old_pwd,
+                        new_pwd: new_pwd,
+                        re_new_pwd: re_new_pwd
+                    };
+                    this.saveSettings(data);
+                }
+                else {
+                    CountlyHelpers.notify({
+                        title: jQuery.i18n.map["configs.not-saved"],
+                        message: jQuery.i18n.map["configs.fill-required-fields"],
+                        type: "error"
+                    });
+                }
+            },
+            submitDeleteDialog: function() {
+                var pv = this.deleteAccount.password.trim();
+                if (pv === "") {
+                    var msg1 = {title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings.password-mandatory"], clearAll: true, type: "error"};
+                    CountlyHelpers.notify(msg1);
+                }
+                else {
+                    countlyPlugins.deleteAccount({password: pv}, function(err, msg) {
+                        if (msg === true || msg === 'true') {
+                            window.location = "/login"; //deleted. go to login
+                        }
+                        else if (msg === 'password not valid' || msg === 'password mandatory' || msg === 'global admin limit') {
+                            CountlyHelpers.notify({title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["user-settings." + msg], sticky: true, clearAll: true, type: "error"});
+                        }
+                        else if (err === true) {
+                            var msg2 = {title: jQuery.i18n.map["common.error"], message: msg, sticky: true, clearAll: true, type: "error"};
+                            CountlyHelpers.notify(msg2);
+                        }
+                    });
+                }
+            },
+            save: function(doc) {
+                var data = {
+                    _csrf: countlyGlobal.csrf_token,
+                    username: doc.username,
+                    full_name: doc.full_name,
+                    api_key: doc.api_key
+                };
+                this.saveSettings(data);
+            },
+            saveSettings: function(doc) {
+                var self = this;
+                $.ajax({
+                    type: "POST",
+                    url: countlyGlobal.path + "/user/settings",
+                    data: doc,
+                    success: function(result) {
+                        if (result === "username-exists") {
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.not-saved"],
+                                message: jQuery.i18n.map["management-users.username.exists"],
+                                type: "error"
+                            });
+                            return true;
+                        }
+                        else if (!result) {
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.not-saved"],
+                                message: jQuery.i18n.map["user-settings.alert"],
+                                type: "error"
+                            });
+                            return true;
+                        }
+                        else {
+                            if (!isNaN(parseInt(result))) {
+                                countlyGlobal.member.password_changed = parseInt(result);
+                            }
+                            else if (typeof result === "string") {
+                                CountlyHelpers.notify({
+                                    title: jQuery.i18n.map["configs.not-saved"],
+                                    message: jQuery.i18n.map[result],
+                                    type: "error"
+                                });
+                                return true;
+                            }
+
+                            countlyGlobal.member.full_name = doc.full_name;
+                            countlyGlobal.member.username = doc.username;
+                            countlyGlobal.member.api_key = doc.api_key;
+                        }
+                        if (Object.keys(self.changes).length) {
+                            countlyPlugins.updateUserConfigs(self.changes, function(err) {
+                                if (err) {
+                                    CountlyHelpers.notify({
+                                        title: jQuery.i18n.map["configs.not-saved"],
+                                        message: jQuery.i18n.map["configs.not-changed"],
+                                        type: "error"
+                                    });
+                                }
+                                else {
+                                    location.hash = "#/manage/user-settings/success";
+                                    window.location.reload(true);
+                                }
+                            });
+                        }
+                        else {
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.changed"],
+                                message: jQuery.i18n.map["configs.saved"]
+                            });
+                        }
+                    },
+                    error: function() {
+                        CountlyHelpers.notify({
+                            title: jQuery.i18n.map["configs.not-saved"],
+                            message: jQuery.i18n.map["configs.not-changed"],
+                            type: "error"
+                        });
+                    }
+                });
+            },
+            handleAvatarSuccess: function(url) {
+                countlyGlobal.member.member_image = url;
+                this.avatar = this.setDefaultAvatar(countlyGlobal.member.member_image);
+                this.updateGlobalObject();
+            },
+            nameChanged: function(val) {
+                this.initials = this.updateInitials(val);
+                this.updateGlobalObject();
+            },
+            updateInitials: function(full_name) {
+                var name = (full_name || "").trim().split(" ");
+                if (name.length === 1) {
+                    return name[0][0] || "";
+                }
+                return (name[0][0] || "") + (name[name.length - 1][0] || "");
+            },
+            updateGlobalObject: function() {
+                var userImage = {};
+                var member = countlyGlobal.member;
+                if (member.member_image) {
+                    userImage.url = member.member_image;
+                    userImage.found = true;
+                }
+                else {
+                    var defaultAvatarSelector = (member.created_at || Date.now()) % 16 * 60;
+                    userImage.found = false;
+                    userImage.url = "images/avatar-sprite.png";
+                    userImage.position = defaultAvatarSelector;
+                    userImage.initials = this.initials;
+                }
+
+                member.image = userImage;
+            },
+            deleteAvatar: function() {
+                var self = this;
+                $.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_URL + "/user/settings",
+                    data: {
+                        username: countlyGlobal.member.username,
+                        api_key: countlyGlobal.member.api_key,
+                        member_image: "delete",
+                        _csrf: countlyGlobal.csrf_token
+                    },
+                    success: function() {
+                        countlyGlobal.member.member_image = "";
+                        self.avatar = self.setDefaultAvatar(countlyGlobal.member.member_image);
+                        self.updateGlobalObject();
+                    },
+                    error: function() {
+                        CountlyHelpers.notify({ type: "error", message: jQuery.i18n.map['configs.delete_avatar_failed']});
+                    }
+                });
+            },
+            setDefaultAvatar: function(image) {
+                if (image) {
+                    return {'background-image': 'url("' + image + '?' + Date.now() + '")', "background-repeat": "no-repeat", "background-size": "auto 100px"};
+                }
+                else {
+                    var defaultAvatarSelector = countlyGlobal.member.created_at % 16 * 100;
+                    return {'background-image': 'url("images/avatar-sprite.png")', 'background-position': defaultAvatarSelector + 'px', 'background-size': 'auto 100px'};
+                }
+            }
+        }
+    });
     var getPluginView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: PluginsView,
@@ -462,6 +722,13 @@
     var getConfigView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: ConfigurationsView,
+            vuex: [] //empty array if none
+        });
+    };
+
+    var getAccountView = function() {
+        return new countlyVue.views.BackboneWrapper({
+            component: AccountView,
             vuex: [] //empty array if none
         });
     };
@@ -496,7 +763,11 @@
         input: "el-select",
         attrs: {},
         list: [
-            {value: 'debug', label: 'debug'}, {value: 'info', label: 'info'}, {value: 'warn', label: 'warn'}, {value: 'error', label: 'error'}]
+            {value: 'debug', label: CV.i18n("configs.logs.debug")},
+            {value: 'info', label: CV.i18n("configs.logs.info")},
+            {value: 'warn', label: CV.i18n("configs.logs.warn")},
+            {value: 'error', label: CV.i18n("configs.logs.error")}
+        ]
     });
 
     app.configurationsView.registerInput("security.dashboard_additional_headers", {input: "el-input", attrs: {type: "textarea", rows: 5}});
@@ -534,7 +805,7 @@
                     CountlyHelpers.notify({ type: "ok", message: jQuery.i18n.map['configs.help.api-send_test_email_delivered']});
 
                 },
-                fail: function() {
+                error: function() {
                     self.attrs.disabled = false;
                     CountlyHelpers.notify({ type: "error", message: jQuery.i18n.map['configs.help.api-send_test_email_failed']});
                 }
@@ -548,6 +819,14 @@
             {label: "configs.api.batch", list: ["batch_processing", "batch_period", "batch_on_master"]},
             {label: "configs.api.cache", list: ["batch_read_processing", "batch_read_period", "batch_read_ttl", "batch_read_on_master"]},
             {label: "configs.api.limits", list: ["event_limit", "event_segmentation_limit", "event_segmentation_value_limit", "metric_limit", "session_duration_limit"]},
+        ]
+    });
+
+    app.configurationsView.registerStructure("logs", {
+        description: "",
+        groups: [
+            {label: "configs.logs.modules", list: ["debug", "warn", "info", "error"]},
+            {label: "configs.logs.default-level", list: ["default"]}
         ]
     });
 
@@ -665,35 +944,11 @@
                 this.renderWhenReady(view);
             }
         });
-
-        app.route('/manage/user-settings', 'user-settings', function() {
-            this.configurationsView.namespace = null;
-            this.configurationsView.reset = false;
-            this.configurationsView.userConfig = true;
-            this.configurationsView.success = false;
-            this.renderWhenReady(this.configurationsView);
-        });
-
-        app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function(namespace) {
-            if (namespace === "reset") {
-                this.configurationsView.reset = true;
-                this.configurationsView.success = false;
-                this.configurationsView.namespace = null;
-            }
-            else if (namespace === "success") {
-                this.configurationsView.reset = false;
-                this.configurationsView.success = true;
-                this.configurationsView.namespace = null;
-            }
-            else {
-                this.configurationsView.reset = false;
-                this.configurationsView.success = false;
-                this.configurationsView.namespace = namespace;
-            }
-            this.configurationsView.userConfig = true;
-            this.renderWhenReady(this.configurationsView);
-        });
     }
+
+    app.route('/manage/user-settings', 'account-settings', function() {
+        this.renderWhenReady(getAccountView());
+    });
 
     $(document).ready(function() {
         if (countlyGlobal.member && countlyGlobal.member.global_admin || countlyAuth.validateRead(FEATURE_PLUGIN_NAME)) {

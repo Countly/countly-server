@@ -1361,6 +1361,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.post(countlyConfig.path + '/apps/icon', function(req, res, next) {
+        if (!req.session.uid) {
+            res.end();
+            return false;
+        }
+
         if (!req.files.app_image || !req.body.app_image_id) {
             res.end();
             return true;
@@ -1402,6 +1407,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             return true;
         }
 
+        if (!req.session.uid || req.session.uid !== req.body.member_image_id) {
+            res.end();
+            return false;
+        }
+
         req.body.member_image_id = common.sanitizeFilename(req.body.member_image_id);
 
         var tmp_path = req.files.member_image.path,
@@ -1422,7 +1432,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
                     countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
                         fs.unlink(tmp_path, function() {});
-                        res.send(countlyConfig.path + "/memberimages/" + req.body.member_image_id + ".png");
+                        countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.session.uid + "")}, {'$set': {'member_image': countlyConfig.path + "/memberimages/" + req.body.member_image_id + ".png"}}, function() {
+                            res.send(countlyConfig.path + "/memberimages/" + req.body.member_image_id + ".png");
+                        });
                     });
                 }); // save
             });
@@ -1438,6 +1450,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             return false;
         }
         membersUtility.settings(req, function(result, message) {
+            if (result && req.body.member_image === "delete") {
+                var target_path = __dirname + '/public/memberimages/' + req.session.uid + ".png";
+                countlyFs.deleteFile("memberimages", target_path, {id: req.session.uid + ".png"}, function() { });
+            }
             if (message) {
                 res.send(message);
             }

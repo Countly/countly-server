@@ -41,7 +41,9 @@
                     <div class="bu-level-item">
                         <div class="cly-vue-sidebar__user-api">
                             <p class="has-ellipsis">{{i18nM('sidebar.api_key')}}</p>
-                            <p class="has-ellipsis">{{item.member.api_key}}</p>
+                            <p id="user_api_key_item">
+                                <input :value="item.member.api_key" readonly type="text" onclick="select()"/>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -56,7 +58,7 @@
                     </div>
                     <div class="bu-level-item">
                         <a href="#/manage/user-settings">
-                            <div>{{i18nM('plugins.user-configs')}}</div>
+                            <div>{{i18nM('plugins.user-account')}}</div>
                         </a>
                     </div>
                 </div>

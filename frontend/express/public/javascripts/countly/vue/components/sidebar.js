@@ -382,7 +382,7 @@
                     //So that updates are reactive
 
                     var userImage = {};
-                    var member = JSON.parse(JSON.stringify(countlyGlobal.member));
+                    var member = countlyGlobal.member;
                     if (member.member_image) {
                         userImage.url = member.member_image;
                         userImage.found = true;
