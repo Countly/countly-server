@@ -309,10 +309,15 @@
                                 otherStructure.push(subkey);
                             }
                             else {
+                                var found = false;
                                 for (var i = 0; i < self.predefinedStructure[key].groups.length; i++) {
-                                    if (self.predefinedStructure[key].groups[i].list.indexOf(subkey) === -1) {
-                                        otherStructure.push(subkey);
+                                    if (self.predefinedStructure[key].groups[i].list.indexOf(subkey) !== -1) {
+                                        found = true;
+                                        break;
                                     }
+                                }
+                                if (!found) {
+                                    otherStructure.push(subkey);
                                 }
                             }
                         }
@@ -537,7 +542,14 @@
         }
     });
 
-    app.configurationsView.registerStructure("api", {description: "test", groups: [{label: "Batch", list: ["batch_period", "batch_processing", "batch_on_master"]}]});
+    app.configurationsView.registerStructure("api", {
+        description: "configs.api.description",
+        groups: [
+            {label: "configs.api.batch", list: ["batch_processing", "batch_period", "batch_on_master"]},
+            {label: "configs.api.cache", list: ["batch_read_processing", "batch_read_period", "batch_read_ttl", "batch_read_on_master"]},
+            {label: "configs.api.limits", list: ["event_limit", "event_segmentation_limit", "event_segmentation_value_limit", "metric_limit", "session_duration_limit"]},
+        ]
+    });
 
     var showInAppManagment = {"api": {"safe": true, "send_test_email": true, "session_duration_limit": true, "city_data": true, "event_limit": true, "event_segmentation_limit": true, "event_segmentation_value_limit": true, "metric_limit": true, "session_cooldown": true, "total_users": true, "prevent_duplicate_requests": true, "metric_changes": true, "data_retention_period": true}};
 
