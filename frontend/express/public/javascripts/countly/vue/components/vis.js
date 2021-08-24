@@ -1,4 +1,6 @@
-/* global Promise, Vue, countlyCommon, countlyLocation, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
+/* global Promise, Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
+
+// _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
 
 (function(countlyVue) {
 
@@ -34,11 +36,6 @@
     */
 
     var BaseChart = _mixins.BaseContent.extend({
-        provide: function() {
-            var obj = {};
-            obj[VueECharts.THEME_KEY] = "white";
-            return obj;
-        },
         props: {
             height: {
                 type: Number,
@@ -67,6 +64,9 @@
                 default: true
             },
             legend: {
+                type: Object
+            },
+            updateOptions: {
                 type: Object
             }
         },
@@ -257,6 +257,9 @@
                     type: "secondary",
                     data: [],
                     position: "bottom"
+                },
+                internalUpdateOptions: {
+                    notMerge: true
                 }
             };
         },
@@ -319,6 +322,9 @@
             },
             isShowingHeader: function() {
                 return this.showZoom || this.showDownload || this.showToggle;
+            },
+            echartUpdateOptions: function() {
+                return _merge({}, this.internalUpdateOptions, this.updateOptions || {});
             }
         }
     });
@@ -997,6 +1003,7 @@
                             </chart-header>\
                             <div :style="{height: echartHeight + \'px\'}">\
                                 <echarts\
+                                    :updateOptions="echartUpdateOptions"\
                                     ref="echarts"\
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
@@ -1111,6 +1118,7 @@
                             </chart-header>\
                             <div :style="{height: echartHeight + \'px\'}">\
                                 <echarts\
+                                    :updateOptions="echartUpdateOptions"\
                                     ref="echarts"\
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
@@ -1157,6 +1165,7 @@
                             </chart-header>\
                             <div :style="{height: echartHeight + \'px\'}">\
                                 <echarts\
+                                    :updateOptions="echartUpdateOptions"\
                                     ref="echarts"\
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
@@ -1229,6 +1238,7 @@
                                 :style="{height: echartHeight + \'px\'}">\
                                 <div :class="classes">\
                                     <echarts\
+                                        :updateOptions="echartUpdateOptions"\
                                         ref="echarts"\
                                         v-bind="$attrs"\
                                         v-on="$listeners"\
