@@ -314,6 +314,12 @@
             },
             previewMessageContent: function() {
                 return countlyPushNotification.helper.getPreviewMessageComponentsList(this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter].content);
+            },
+            shouldDisplayIOSSettings: function() {
+                return this.shouldDisplayPlatformSettings(this.PlatformEnum.IOS);
+            },
+            shouldDisplayAndroidSettings: function() {
+                return this.shouldDisplayPlatformSettings(this.PlatformEnum.ANDROID);
             }
         },
         methods: {
@@ -575,6 +581,11 @@
                 return countlySegmentation.getFilters().map(function(userFilter) {
                     return {label: userFilter.name, value: userFilter.id};
                 });
+            },
+            shouldDisplayPlatformSettings: function(platform) {
+                return this.pushNotificationUnderEdit.platforms.filter(function(selectedPlatform) {
+                    return selectedPlatform === platform;
+                }).length > 0;
             },
             prepareMessage: function() {
                 //TODO-LA: get message localizations and prepare notification meta-data
