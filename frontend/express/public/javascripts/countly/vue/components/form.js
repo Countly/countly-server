@@ -138,10 +138,10 @@
             this.isMounted = true;
         },
         methods: {
-            setStep: function(newIndex, originator) {
+            setStep: function(newIndex, originator, internalValidationFailed) {
                 var self = this;
                 var defaultAction = function() {
-                    if (newIndex >= 0 && newIndex < self.stepContents.length) {
+                    if (!internalValidationFailed && newIndex >= 0 && newIndex < self.stepContents.length) {
                         self.currentStepIndex = newIndex;
                     }
                 };
@@ -156,18 +156,14 @@
             },
             setStepSafe: function(newIndex, originator) {
                 this.beforeLeavingStep();
-                if (newIndex <= this.lastValidIndex) {
-                    this.setStep(newIndex, originator);
-                }
+                this.setStep(newIndex, originator, newIndex > this.lastValidIndex);
             },
             prevStep: function() {
                 this.setStep(this.currentStepIndex - 1, 'prev');
             },
             nextStep: function() {
                 this.beforeLeavingStep();
-                if (this.isCurrentStepValid) {
-                    this.setStep(this.currentStepIndex + 1, 'next');
-                }
+                this.setStep(this.currentStepIndex + 1, 'next', !this.isCurrentStepValid);
             },
             reset: function() {
                 this.callValidators("reset");
