@@ -718,27 +718,6 @@
                     }
                 },
             },
-            directives: {
-                'click-outside': {
-                    bind: function(el, binding) {
-                        if (typeof binding.value !== 'function') {
-                            return;
-                        }
-                        var bubble = binding.modifiers.bubble;
-                        var handler = function(e) {
-                            if (bubble || (!el.contains(e.target) && el !== e.target)) {
-                                binding.value(e);
-                            }
-                        };
-                        el.__vueClickOutside__ = handler;
-                        document.addEventListener('click', handler);
-                    },
-                    unbind: function(el) {
-                        document.removeEventListener('click', el.__vueClickOutside__);
-                        el.__vueClickOutside__ = null;
-                    },
-                },
-            },
             mounted: function() {
                 document.addEventListener('keyup', this.escape);
             },
