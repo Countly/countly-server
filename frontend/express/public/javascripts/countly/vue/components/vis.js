@@ -975,6 +975,52 @@
                     </div>'
     });
 
+    Vue.component("cly-chart-generic", BaseChart.extend({
+        data: function() {
+            return {
+                forwardedSlots: ["chart-left", "chart-right"]
+            };
+        },
+        mounted: function() {
+            this.echartRef = this.$refs.echarts;
+        },
+        components: {
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
+        },
+        computed: {
+            chartOptions: function() {
+                return _merge({}, this.baseOptions, this.option);
+            }
+        },
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div :style="echartStyle" class="cly-vue-chart__echart">\
+                            <chart-header v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
+                            <div :style="{height: echartHeight + \'px\'}">\
+                                <echarts\
+                                    :updateOptions="echartUpdateOptions"\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
+                        </div>\
+                        <custom-legend\
+                            :style="legendStyle"\
+                            :options="legendOptions"\
+                            :echartRef="echartRef"\
+                            v-if="legendOptions.show"\
+                            :chartOptions="chartOptions">\
+                        </custom-legend>\
+                    </div>'
+    }));
+
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
             return {
