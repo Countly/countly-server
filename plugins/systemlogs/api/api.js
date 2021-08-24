@@ -36,7 +36,7 @@ plugins.setConfigs("systemlogs", {
                     console.log("Incorrect regex: " + params.qstring.sSearch);
                 }
                 if (reg) {
-                    query.i = {"$regex": reg};
+                    query.a = {"$regex": reg};
                 }
                 //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
             }
@@ -45,7 +45,7 @@ plugins.setConfigs("systemlogs", {
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
             validateRead(params, FEATURE_NAME, function(paramsNew) {
-                var columns = [null, "ts", "u", "a", "ip", "i"];
+                var columns = [null, "ts", "u", "ip", "a", "i"];
                 common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
                     total--;
                     var cursor = common.db.collection('systemlogs').find(query);

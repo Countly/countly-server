@@ -1,0 +1,33 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('sidebar.management.jobs')}} </h2>
+        </template>
+    </cly-header>
+    <cly-main>
+		<cly-section>
+			<cly-datatable-n :data-source="remoteTableDataSource" v-on:row-click="goTo" :isClickable="true">
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" prop="name" :label="i18n('jobs.job-name')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="schedule" :label="i18n('jobs.job-schedule')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="next" :label="i18n('jobs.job-next-run')">
+                        <template slot-scope="scope">
+                            <p>{{scope.row.nextRun}}</p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="finished" :label="i18n('jobs.job-last-run')">
+                        <template slot-scope="scope">
+                            <p v-html="scope.row.lastRun"></p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="status" :label="i18n('jobs.job-status')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="total" :label="i18n('jobs.job-total-scheduled')">
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+		</cly-section>
+    </cly-main>
+</div>

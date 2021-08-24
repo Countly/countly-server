@@ -1,4 +1,6 @@
-/* global Promise, Vue, countlyCommon, countlyLocation, VueECharts, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
+/* global Promise, Vue, countlyCommon, countlyLocation, _merge, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment */
+
+// _merge is Lodash merge - /frontend/express/public/javascripts/utils/lodash.merge.js
 
 (function(countlyVue) {
 
@@ -34,11 +36,6 @@
     */
 
     var BaseChart = _mixins.BaseContent.extend({
-        provide: function() {
-            var obj = {};
-            obj[VueECharts.THEME_KEY] = "white";
-            return obj;
-        },
         props: {
             height: {
                 type: Number,
@@ -67,6 +64,9 @@
                 default: true
             },
             legend: {
+                type: Object
+            },
+            updateOptions: {
                 type: Object
             }
         },
@@ -257,6 +257,9 @@
                     type: "secondary",
                     data: [],
                     position: "bottom"
+                },
+                internalUpdateOptions: {
+                    notMerge: true
                 }
             };
         },
@@ -319,6 +322,9 @@
             },
             isShowingHeader: function() {
                 return this.showZoom || this.showDownload || this.showToggle;
+            },
+            echartUpdateOptions: function() {
+                return _merge({}, this.internalUpdateOptions, this.updateOptions || {});
             }
         }
     });
@@ -861,54 +867,12 @@
         },
         data: function() {
             return {
-                internalData: []
+                legendData: []
             };
         },
         computed: {
             seriesType: function() {
                 return this.chartOptions.series && this.chartOptions.series[0] && this.chartOptions.series[0].type;
-            },
-            legendData: function() {
-                if (!this.internalData.length) {
-                    this.internalData = JSON.parse(JSON.stringify(this.options.data));
-                }
-
-                var data = this.internalData;
-
-                var series = this.chartOptions.series || [];
-
-                if (this.seriesType === "pie") {
-                    series = series[0].data;
-                }
-
-                if (series.length !== data.length) {
-                    // eslint-disable-next-line no-console
-                    console.log("Series length and legend length should be same");
-                    return [];
-                }
-
-                var colors = this.chartOptions.color || [];
-                var colorIndex = 0;
-                for (var i = 0; i < series.length; i++) {
-                    var serie = series[i];
-
-                    if (serie.color) {
-                        data[i].color = serie.color;
-                    }
-                    else {
-                        data[i].color = colors[colorIndex];
-                        colorIndex++;
-                    }
-
-                    if (data[i].status === "off") {
-                        data[i].displayColor = "#a7aeb8";
-                    }
-                    else {
-                        data[i].displayColor = data[i].color;
-                    }
-                }
-
-                return data;
             },
             legendClasses: function() {
                 var classes = {};
@@ -923,12 +887,12 @@
         },
         methods: {
             onLegendClick: function(item, index) {
-                var offs = this.internalData.filter(function(d) {
+                var offs = this.legendData.filter(function(d) {
                     return d.status === "off";
                 });
 
-                if (item.status !== "off" && offs.length === (this.internalData.length - 1)) {
-                    //Always show in series and hence the legend
+                if (item.status !== "off" && offs.length === (this.legendData.length - 1)) {
+                    //Always show one series and hence the legend
                     return;
                 }
 
@@ -937,19 +901,61 @@
                     name: item.name
                 });
 
-                var obj = JSON.parse(JSON.stringify(this.internalData[index]));
+                var obj = JSON.parse(JSON.stringify(this.legendData[index]));
 
                 //For the first time, item.status does not exist
                 //So we set it to off
                 //On subsequent click we toggle between on and off
+
                 if (obj.status === "off") {
                     obj.status = "on";
+                    obj.displayColor = obj.color;
                 }
                 else {
                     obj.status = "off";
+                    obj.displayColor = "#a7aeb8";
                 }
 
-                this.$set(this.internalData, index, obj);
+                this.$set(this.legendData, index, obj);
+            }
+        },
+        watch: {
+            'options': {
+                deep: true,
+                immediate: true,
+                handler: function() {
+                    var data = JSON.parse(JSON.stringify(this.options.data || []));
+
+                    var series = this.chartOptions.series || [];
+
+                    if (this.seriesType === "pie") {
+                        series = series[0].data;
+                    }
+
+                    if (series.length !== data.length) {
+                        // eslint-disable-next-line no-console
+                        console.log("Series length and legend length should be same");
+                        return [];
+                    }
+
+                    var colors = this.chartOptions.color || [];
+                    var colorIndex = 0;
+                    for (var k = 0; k < series.length; k++) {
+                        var serie = series[k];
+
+                        if (serie.color) {
+                            data[k].color = serie.color;
+                        }
+                        else {
+                            data[k].color = colors[colorIndex];
+                            colorIndex++;
+                        }
+
+                        data[k].displayColor = data[k].color;
+                    }
+
+                    this.legendData = data;
+                }
             }
         },
         template: '<div class="cly-vue-chart-legend" :class="legendClasses">\
@@ -968,6 +974,52 @@
                         </template>\
                     </div>'
     });
+
+    Vue.component("cly-chart-generic", BaseChart.extend({
+        data: function() {
+            return {
+                forwardedSlots: ["chart-left", "chart-right"]
+            };
+        },
+        mounted: function() {
+            this.echartRef = this.$refs.echarts;
+        },
+        components: {
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
+        },
+        computed: {
+            chartOptions: function() {
+                return _merge({}, this.baseOptions, this.option);
+            }
+        },
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div :style="echartStyle" class="cly-vue-chart__echart">\
+                            <chart-header v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
+                            <div :style="{height: echartHeight + \'px\'}">\
+                                <echarts\
+                                    :updateOptions="echartUpdateOptions"\
+                                    ref="echarts"\
+                                    v-bind="$attrs"\
+                                    v-on="$listeners"\
+                                    :option="chartOptions"\
+                                    :autoresize="autoresize">\
+                                </echarts>\
+                            </div>\
+                        </div>\
+                        <custom-legend\
+                            :style="legendStyle"\
+                            :options="legendOptions"\
+                            :echartRef="echartRef"\
+                            v-if="legendOptions.show"\
+                            :chartOptions="chartOptions">\
+                        </custom-legend>\
+                    </div>'
+    }));
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
@@ -997,6 +1049,7 @@
                             </chart-header>\
                             <div :style="{height: echartHeight + \'px\'}">\
                                 <echarts\
+                                    :updateOptions="echartUpdateOptions"\
                                     ref="echarts"\
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
@@ -1111,6 +1164,7 @@
                             </chart-header>\
                             <div :style="{height: echartHeight + \'px\'}">\
                                 <echarts\
+                                    :updateOptions="echartUpdateOptions"\
                                     ref="echarts"\
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
@@ -1157,6 +1211,7 @@
                             </chart-header>\
                             <div :style="{height: echartHeight + \'px\'}">\
                                 <echarts\
+                                    :updateOptions="echartUpdateOptions"\
                                     ref="echarts"\
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
@@ -1229,6 +1284,7 @@
                                 :style="{height: echartHeight + \'px\'}">\
                                 <div :class="classes">\
                                     <echarts\
+                                        :updateOptions="echartUpdateOptions"\
                                         ref="echarts"\
                                         v-bind="$attrs"\
                                         v-on="$listeners"\
@@ -1349,7 +1405,12 @@
                 type: String,
                 default: '',
                 required: false
-            }
+            },
+            preventGoingToCountry: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
         },
         beforeCreate: function() {
             this.geojsonHome = [];
@@ -1686,6 +1747,11 @@
                 this.handleViewChange();
             },
             goToCountry: function(country) {
+                this.$emit("country-click", country);
+                if (this.preventGoingToCountry) {
+                    return;
+                }
+
                 var self = this;
 
                 if (!Object.prototype.hasOwnProperty.call(this.countriesData, country)) {

@@ -244,19 +244,23 @@
         }
     });
 
+    var TIMESERIESOPTIONS = {
+        series: [
+            {
+                name: 'Day 1',
+            },
+            {
+                name: "Day 2",
+            }
+        ]
+    };
+
     var TimeGraphView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/tg.html'),
         data: function() {
             return {
                 selBucket: "daily",
-                largeScaleOptions: {
-                    series: [
-                        {
-                            name: 'Random',
-                            data: []
-                        }
-                    ]
-                },
+                largeScaleOptions: TIMESERIESOPTIONS,
                 pieOptions: {
                     series: [
                         {
@@ -502,6 +506,18 @@
             this.$store.dispatch("countlyVueExample/fetchGraphPoints");
         },
         methods: {
+            onTimeSeriesButtonClick: function() {
+                var opt = JSON.parse(JSON.stringify(TIMESERIESOPTIONS));
+                var seriesLength = this.largeScaleOptions.series.length;
+
+                if (seriesLength === opt.series.length) {
+                    opt.series.splice(1);
+                    this.largeScaleOptions = opt;
+                }
+                else {
+                    this.largeScaleOptions = opt;
+                }
+            },
             refresh: function() {
                 this.$store.dispatch("countlyVueExample/fetchGraphPoints");
             }
@@ -563,6 +579,7 @@
                 selectedDynamicType: 'daterange',
                 selectedDate: moment.now(),
                 selectedDateWTime: moment.now(),
+                selectedDateWTimeFuture: moment.now(),
                 selectedMonth: moment().startOf("month").valueOf(),
                 selectedTime: new Date(2016, 9, 10, 18, 40),
             };

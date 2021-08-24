@@ -1,34 +1,23 @@
-<div class="widget">
-    <div class="widget-header">
-        <div class="left">
-            <div class="title">{{page-title}}</div>
-        </div>
-    </div>
-    <div class="error-log-selector-block">
-        <div class="section">
-            <div id="error-logger-selector" class="cly-select" style="width:300px; float: left;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text"></div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width:300px;">
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('errorlogs.title')}} </h2>
+        </template>
+    </cly-header>
+    <cly-main>
+        <el-select v-model="selectLog" v-on:change="changeLog" class="bu-mb-4">
+            <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in logList"></el-option>
+        </el-select>
+        <el-button v-on:click="clear" type="danger" class="bu-is-pulled-right bu-ml-4">{{i18n('errorlogs.clear')}}</el-button>
+        <a :href="downloadLink" target="_blank">
+            <el-button class="bu-is-pulled-right bu-ml-4">{{i18n('errorlogs.download')}}</el-button>
+        </a>
+		<cly-section class="bu-mt-4">
+            <div class="errorlogs">
+                <div class="pre-block">
+                    <pre>{{cachedLog.data}}</pre>
                 </div>
             </div>
-        </div>
-        <div class="section right">
-            <a class="icon-button red btn-header btn-clear-log" data-id="{{logName}}" data-localize="errorlogs.clear"></a>
-            <a href="{{download}}{{logName}}" target="_blank" class="icon-button light btn-header" data-localize="errorlogs.download"></a>
-        </div>
-    </div>
-
-
-    <div class="errorlogs">
-        <div class="pre-block">
-            <pre>
-                {{logData}}
-            </pre>
-        </div>
-    </div>
+		</cly-section>
+    </cly-main>
 </div>

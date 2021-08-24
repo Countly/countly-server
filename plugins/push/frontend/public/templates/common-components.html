@@ -1,0 +1,50 @@
+<script type="text/x-template" id="large-radio-button-with-description">
+    <div v-bind:class="['bu-level-item','cly-vue-push-notification-large-radio-button-with-description__container','bu-pr-1', hasTopMargin?'bu-mt-1':null]">
+        <el-radio :label="label"  border class="cly-vue-push-notification-large-radio-button-with-description__button" v-model="innerValue"> 
+            <div class="cly-vue-push-notification-large-radio-button-with-description__title">{{title}}</div>
+            <div class="cly-vue-push-notification-large-radio-button-with-description__content bu-level bu-ml-5 bu-mt-3"> 
+                <slot v-if="hasDefaultSlot"></slot>      
+                <template v-if="description">{{description}}</template>               
+            </div>
+        </el-radio>
+    </div>
+</script>
+
+<script type="text/x-template" id="line-radio-button-with-description">
+    <el-radio :label="label"  :border="border" v-bind:class="['bu-py-1','bu-my-1','bu-is-flex','bu-is-align-items-center', border?'cly-vue-push-notification-line-radio-button-with-description__border':'cly-vue-push-notification-line-radio-button-with-description__no-border']" v-model="innerValue">
+        <div class="bu-is-flex bu-is-justify-content-space-between">
+            <div class="cly-vue-push-notification-line-radio-button-with-description__title">{{title}}</div>
+            <div v-if="description" class="cly-vue-push-notification-line-radio-button-with-description__content"> {{description}}</div> 
+        </div>
+    </el-radio>
+</script>
+
+<script type="text/x-template" id="message-setting-element">
+    <div class="cly-vue-drawer-step__section">
+        <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">
+                {{label}}
+                <div class="cly-vue-push-notification-drawer__input-description">{{description}}</div>
+            </div>
+            <div>
+                <el-switch v-model="innerToggle" @change="onToggle"></el-switch>
+            </div>
+        </div>
+        <slot v-if="hasDefaultSlot && toggle"></slot>
+        <validation-provider v-slot="validation" v-else-if="toggle" :rules="rules">
+            <el-input v-model="innerInput" @input="onInput" :placeholder="placeholder" :class="{'is-error': validation.errors.length > 0}" ></el-input>
+        </validation-provider>
+    </div>
+</script>
+
+<script type="text/x-template" id="review-section-row">
+    <div class="bu-level bu-ml-2 bu-my-2 bu-is-justify-content-flex-start">
+        <div class="bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-review-section-row__label">
+            {{label}}
+        </div>
+        <div class="bu-is-justify-content-flex-start cly-vue-push-notification-review-section-row__value">
+            {{value}}
+        </div>
+    </div>
+</script>
+

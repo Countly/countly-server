@@ -1,0 +1,42 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-top>
+            <cly-back-link href="#/manage/jobs" :title="i18n('plugins.back')"></cly-back-link>
+        </template>
+        <template v-slot:header-left>
+            <h2> {{job_name}} </h2>
+        </template>
+    </cly-header>
+    <cly-main>
+		<cly-section>
+			<cly-datatable-n :data-source="remoteTableDataSource">
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" prop="schedule" :label="i18n('jobs.job-schedule')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="next" :label="i18n('jobs.job-next-run')">
+                        <template slot-scope="scope">
+                            <p>{{scope.row.nextRun}}</p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="finished" :label="i18n('jobs.job-last-run')">
+                        <template slot-scope="scope">
+                            <p v-html="scope.row.lastRun"></p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="status" :label="i18n('jobs.job-status')">
+                    </el-table-column>
+                    <el-table-column prop="dataAsString" :label="i18n('jobs.job-data')">
+                        <template slot-scope="scope">
+                            <pre>{{scope.row.dataAsString}}</pre>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="duration" :label="i18n('jobs.run-duration')">
+                        <template slot-scope="scope">
+                            <p v-html="scope.row.durationInSeconds"></p>
+                        </template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+		</cly-section>
+    </cly-main>
+</div>

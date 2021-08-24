@@ -13,10 +13,12 @@
         </template>
         <template v-slot:header-right>
             <div class="bu-is-flex bu-is-align-items-center">
+                <!--
                 <el-button class="crash-header-button text-button" size="small" v-if="jiraIntegrationEnabled">
                     <i class="fab fa-jira bu-mr-1"></i>
                     <span>Create JIRA Task</span>
                 </el-button>
+                -->
                 <cly-dropdown class="bu-ml-2 crash-mark-as" ref="markDropdown">
                     <template v-slot:trigger="dropdown">
                         <cly-input-dropdown-trigger
@@ -68,7 +70,7 @@
             </div>
         </cly-section>
         <cly-section id="crash-tabs" v-if="!!(crashgroup && crashgroup.error)">
-            <el-tabs v-model="currentTab" type="card">
+            <el-tabs class="crashgroup-detail-tabs" v-model="currentTab" type="card">
                 <el-tab-pane :label="i18n('crashes.stacktrace')" name="stacktrace">
                     <crash-stacktrace :code="crashgroup.error">
                         <template v-slot:header-left v-if="symbolicationEnabled">
@@ -183,7 +185,7 @@
                     <el-option v-for="item in chartByOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
                 </el-select>
             </template>
-            <cly-chart-bar :option="chartData"></cly-chart-bar>
+            <cly-chart-bar :option="chartData" :legend="{show: false}"></cly-chart-bar>
         </cly-section>
         <cly-section :title="i18n('crashes.crash-occurences')">
             <cly-datatable-n :rows="crashes" ref="tableData" @row-click="handleRowClick">

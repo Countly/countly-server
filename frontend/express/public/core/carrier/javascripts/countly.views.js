@@ -53,10 +53,24 @@ var AppCarrierView = countlyVue.views.create({
         appCarrierRows: function() {
             return this.appCarrier.table || [];
         },
+        topDropdown: function() {
+            if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                return this.externalLinks;
+            }
+            else {
+                return null;
+            }
+
+        },
         isLoading: function() {
             return this.$store.state.countlyAppCarrier.isLoading;
         }
-    }
+    },
+    mixins: [
+        countlyVue.container.dataMixin({
+            'externalLinks': '/analytics/carriers/links'
+        })
+    ]
 });
 
 

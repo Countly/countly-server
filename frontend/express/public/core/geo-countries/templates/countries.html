@@ -1,0 +1,63 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('countries.title')}} 
+            </h2>
+            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description">
+            </span>
+        </template>
+		<template v-slot:header-right>
+          <cly-more-options v-if="topDropdown" size="small">
+            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+              <span :class="item.icon"></span>
+              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+            </el-dropdown-item>
+          </cly-more-options>
+        </template>
+    </cly-header>
+    <cly-main >
+		<cly-date-picker-g class="geo-date-picker-container" ref="datePicker"></cly-date-picker-g>
+		<cly-section class="geo-analytics-data">
+			<div class="bu-columns bu-is-gapless">
+				<div style="width:256px;">
+					<cly-radio-block v-bind:items="chooseProperties" v-model="selectedProperty"></cly-radio-block>
+				</div>
+				<div class="bu-column" style="position:relative">
+					<cly-worldmap
+						external-country=""
+						external-detail-mode="world"
+						value-type="Sessions"
+						:show-detail-mode-select="false"
+						:show-navigation="false"
+						:prevent-going-to-country="true"
+						:countries-data="countriesData"
+						@country-click="regionClick"
+						>
+					</cly-worldmap>
+					<div style="position: absolute; top: 20px; left:20px;">
+						<a  ref="toCityViewLink" class="cly-vue-button button-light-skin ToLink" :href="buttonLink">{{buttonText}}</a>
+					</div>
+				</div>
+			</div>
+		</cly-section>
+		<cly-section>
+			<cly-datatable-n  :rows="countryTable" :resizable="true" v-loading="isLoading">
+				<template v-slot="scope">
+					<el-table-column sortable="custom" prop="countryTranslated" :label="i18n('countries.table.country')">
+						<template slot-scope="scope">
+								<div class="bu-level-left">
+									<div class="bu-level-item slipping-away-users-table-data-item">
+										<div :class='scope.row.flag' :style='scope.row.styling'></div>
+										<span>{{scope.row.countryTranslated}}</span>
+									</div>
+								</div>
+							</template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')"></el-table-column>
+					<el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')"></el-table-column>
+					<el-table-column sortable="custom" prop="n" :label="i18n('common.table.new-users')"></el-table-column>
+				</template>
+			</cly-datatable-n>
+		</cly-section>
+	</cly-main>
+</div>

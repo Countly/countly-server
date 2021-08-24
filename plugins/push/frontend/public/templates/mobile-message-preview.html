@@ -16,10 +16,28 @@
         </div>
         <img v-if="media" class="cly-vue-push-notification-mobile-preview__ios-media" v-bind:src="media" /> 
         <div class="cly-vue-push-notification-mobile-preview__ios-title">
-            {{title}}
+            <template v-if="isHTML">
+                <template v-for="(component) in titlePreviewComponentsList">
+                    <keep-alive>
+                        <component v-bind:is="component.name" :value="component.value"></component>
+                    </keep-alive>
+                </template>
+            </template>
+            <template v-else>
+                {{title}}
+            </template>
         </div>
         <div class="cly-vue-push-notification-mobile-preview__ios-content">
-            {{content}}
+            <template v-if="isHTML">
+                <template v-for="(component) in contentPreviewComponentsList">
+                    <keep-alive>
+                        <component v-bind:is="component.name" :value="component.value"></component>
+                    </keep-alive>
+                </template>
+            </template>
+            <template v-else>
+                {{content}}
+            </template>
         </div>
         <div class="cly-vue-push-notification-mobile-preview__ios-buttons-list">
             <div v-for="button in buttons" class="cly-vue-push-notification-mobile-preview__ios-button">{{button}}</div>
@@ -36,10 +54,28 @@
             </span>
         </div>
         <div class="cly-vue-push-notification-mobile-preview__android-title">
-            {{title}}
+            <template v-if="isHTML">
+                <template v-for="(component) in titlePreviewComponentsList">
+                    <keep-alive>
+                        <component v-bind:is="component.name" :value="component.value"></component>
+                    </keep-alive>
+                </template>
+            </template>
+            <template v-else>
+                {{title}}
+            </template>
         </div>
         <div class="cly-vue-push-notification-mobile-preview__android-content">
-            {{content}}
+            <template v-if="isHTML">
+                <template v-for="(component) in contentPreviewComponentsList">
+                    <keep-alive>
+                        <component v-bind:is="component.name" :value="component.value"></component>
+                    </keep-alive>
+                </template>
+            </template>
+            <template v-else>
+                {{content}}
+            </template>
         </div>
         <div class="cly-vue-push-notification-mobile-preview__android-buttons-list">
             <div v-for="button in buttons" class="cly-vue-push-notification-mobile-preview__android-button">{{button}}</div>

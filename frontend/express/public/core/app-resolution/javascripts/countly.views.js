@@ -56,8 +56,22 @@ var AppResolutionView = countlyVue.views.create({
         },
         isLoading: function() {
             return this.$store.state.countlyDevicesAndTypes.isLoading;
+        },
+        topDropdown: function() {
+            if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                return this.externalLinks;
+            }
+            else {
+                return null;
+            }
+
         }
-    }
+    },
+    mixins: [
+        countlyVue.container.dataMixin({
+            'externalLinks': '/analytics/resolutions/links'
+        })
+    ]
 });
 
 

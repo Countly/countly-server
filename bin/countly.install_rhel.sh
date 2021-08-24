@@ -161,7 +161,7 @@ if ping -c 1 google.com >> /dev/null 2>&1; then
     countly plugin disable EChartMap
 else
     echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
-    countly config "frontend.use_google" false
+    countly config "frontend.use_google" false --force
     countly plugin enable EChartMap
 fi
 

@@ -292,7 +292,9 @@
                             series: seriesModel,
                             periods: periods,
                             totalAppUsers: responses[1].users,
-                            enabledUsers: responses[1].enabled
+                            enabledUsers: responses[1].enabled,
+                            locations: responses[1].geos || [],
+                            cohorts: responses[1].cohorts || []
                         };
                         resolve(pushNotificationModel);
                     }).catch(function(error) {
@@ -344,7 +346,7 @@
                 data: data,
                 dataType: "json"
             });
-        }
+        },
     };
 
     var getDetailsInitialState = function() {
@@ -359,6 +361,8 @@
                 total: 0,
                 errors: {},
                 actioned: {},
+                cohorts: [],
+                locations: []
             },
             hasError: false,
             error: null,

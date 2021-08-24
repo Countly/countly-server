@@ -34,7 +34,7 @@
                             <div class="bu-column bu-is-12 bu-is-flex bu-is-align-items-center bu-is-justify-content-left">
                                 <div class="cly-vue-drawer__steps-header">
                                     <template v-for="(currentContent, i) in stepContents">
-                                        <div :key="'label_' + i" @click="setStepSafe(i)" class="cly-vue-drawer__step-label" :class="{'is-locked': i > lastValidIndex, 'is-active': i === currentStepIndex,  'is-passed': i < currentStepIndex}">
+                                        <div :key="'label_' + i" @click="setStepSafe(i, 'header-click')" class="cly-vue-drawer__step-label" :class="{'is-locked': i > lastValidIndex, 'is-active': i === currentStepIndex,  'is-passed': i < currentStepIndex}">
                                             <div>
                                                 <div class="cly-vue-drawer__step-sign">
                                                     <span class="index text-small" :class="{'color-white': i === currentStepIndex}">{{i + 1}}</span>

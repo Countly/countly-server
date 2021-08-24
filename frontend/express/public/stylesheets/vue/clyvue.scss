@@ -1135,6 +1135,8 @@
 
     .cly-vue-popover{
         cursor: pointer;
+        z-index: 2000;
+        
         .trigger {
             display: block!important;
         }
@@ -1493,6 +1495,27 @@
                 }
             }
         }
+    }
+	
+	//confirm dialog
+	.cly-confirm-dialog {
+		.el-dialog {
+			width: 400px;
+			&__header {
+				padding: 24px 24px 12px 24px;
+			}
+			&__body {
+				padding: 12px 24px 12px 24px;
+				word-break:normal;
+			}
+			&__footer {
+				padding: 12px 24px 24px 24px;
+			}
+		}
+	}
+
+    .cly-vue-blank {
+        height:400px;
     }
 
     .cly-vue-worldmap {
