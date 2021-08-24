@@ -72,9 +72,6 @@ var AppPlatformView = countlyVue.views.create({
                                 },
                                 get: function() {
                                     return this.$store.state.countlyDevicesAndTypes.selectedPlatform;
-                                },
-                                dropdownsDisabled: function() {
-                                    return "";
                                 }
                             },
                             appPlatformVersionRows: function() {

@@ -89,10 +89,10 @@
     </div>
 
     <div class="cly-vue-push-notification-mobile-preview__platforms">
-        <div v-if="hasIOSPlatform()" @click="setSelectedPlatform(PlatformEnum.IOS)" v-bind:class="['cly-vue-push-notification-mobile-preview__icon-container',isIOSPlatformSelected?'cly-vue-push-notification-mobile-preview__active-icon':'']">
+        <div v-if="hasIOSPlatform" @click="setSelectedPlatform(PlatformEnum.IOS)" v-bind:class="['cly-vue-push-notification-mobile-preview__icon-container',isIOSPlatformSelected?'cly-vue-push-notification-mobile-preview__active-icon':'']">
             <span class="ion-social-apple"></span>
         </div>
-        <div v-if="hasAndroidPlatform()" @click="setSelectedPlatform(PlatformEnum.ANDROID)" v-bind:class="['cly-vue-push-notification-mobile-preview__icon-container',isAndroidPlatformSelected?'cly-vue-push-notification-mobile-preview__active-icon':'']">
+        <div v-if="hasAndroidPlatform" @click="setSelectedPlatform(PlatformEnum.ANDROID)" v-bind:class="['cly-vue-push-notification-mobile-preview__icon-container',isAndroidPlatformSelected?'cly-vue-push-notification-mobile-preview__active-icon':'']">
             <span class="ion-social-android"></span>
         </div>
     </div>

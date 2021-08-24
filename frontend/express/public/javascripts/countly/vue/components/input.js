@@ -505,6 +505,10 @@
                 },
                 required: false
             },
+            popClass: {
+                type: String,
+                required: false
+            }
         },
         data: function() {
             return {
@@ -578,7 +582,9 @@
             focusOnSearch: function() {
                 var self = this;
                 this.$nextTick(function() {
-                    self.$refs.searchBox.focus();
+                    if (self.$refs.searchBox) {
+                        self.$refs.searchBox.focus();
+                    }
                 });
             },
             focusOnTrigger: function() {

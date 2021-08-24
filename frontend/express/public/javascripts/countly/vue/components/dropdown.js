@@ -408,6 +408,7 @@
             },
             save: function() {
                 this.$emit("input", this.unsavedValue);
+                this.$emit("change", this.unsavedValue);
                 this.close();
             },
             reset: function() {

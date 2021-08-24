@@ -170,6 +170,7 @@
         var getters = {},
             mutations = {},
             actions = {},
+            lastSuccessfulRequestField = "lastSuccessfulRequest",
             lastResponseField = "lastResponse",
             counterField = "requestCounter",
             echoField = "requestLastEcho",
@@ -178,11 +179,13 @@
             resourceName = name,
             statusKey = _capitalized(name, statusField),
             counterKey = _capitalized(name, counterField),
-            paramsKey = _capitalized(name, paramsField);
+            paramsKey = _capitalized(name, paramsField),
+            lastSuccessfulRequestKey = _capitalized(name, lastSuccessfulRequestField);
 
         var state = function() {
             var stateObj = {};
             stateObj[lastResponseField] = _dataTableAdapters.toStandardResponse();
+            stateObj[lastSuccessfulRequestField] = null;
             stateObj[counterField] = 0;
             stateObj[statusField] = "ready";
             stateObj[echoField] = 0;
@@ -202,6 +205,9 @@
         getters[paramsKey] = function(_state) {
             return _state[paramsField];
         };
+        getters[lastSuccessfulRequestKey] = function(_state) {
+            return _state[lastSuccessfulRequestField];
+        };
 
         //
         mutations[_capitalized("set", resourceName)] = function(_state, newValue) {
@@ -220,6 +226,10 @@
 
         mutations[_capitalized("set", statusKey)] = function(_state, newValue) {
             _state[statusField] = newValue;
+        };
+
+        mutations[_capitalized("set", lastSuccessfulRequestKey)] = function(_state, newValue) {
+            _state[lastSuccessfulRequestField] = newValue;
         };
 
         //
@@ -256,9 +266,13 @@
                             convertedResponse.rows = options.onReady(context, convertedResponse.rows);
                         }
                         context.commit(_capitalized("set", resourceName), convertedResponse);
+                        context.commit(_capitalized("set", lastSuccessfulRequestKey), requestOptions);
                     }
                 })
-                .catch(function() {
+                .catch(function(err) {
+                    if (typeof options.onError === 'function') {
+                        options.onError(context, err);
+                    }
                     return context.commit(_capitalized("set", resourceName), _dataTableAdapters.toStandardResponse());
                 });
         };
@@ -390,14 +404,16 @@
             paramsPath = null,
             pasteAndFetchPath = null,
             updateParamsPath = null,
-            resourcePath = null;
+            resourcePath = null,
+            requestPath = null;
 
         if (arguments.length === 3 && path) {
             statusPath = path + "/" + _capitalized(resourceName, 'status');
             paramsPath = path + "/" + _capitalized(resourceName, 'params');
             pasteAndFetchPath = path + "/" + _capitalized("pasteAndFetch", resourceName);
             updateParamsPath = path + "/" + _capitalized("updateParams", resourceName);
-            resourcePath = path + "/" + resourceName;
+            resourcePath = path + "/" + resourceName,
+            requestPath = path + "/" + _capitalized(resourceName, 'lastSuccessfulRequest');
         }
         else {
             resourceName = path;
@@ -406,6 +422,7 @@
             pasteAndFetchPath = _capitalized("pasteAndFetch", resourceName);
             updateParamsPath = _capitalized("updateParams", resourceName);
             resourcePath = resourceName;
+            requestPath = _capitalized(resourceName, 'lastSuccessfulRequest');
         }
 
         return {
@@ -429,6 +446,11 @@
                 type: 'vuex-getter',
                 store: storeInstance,
                 path: resourcePath
+            },
+            requestAddress: {
+                type: 'vuex-getter',
+                store: storeInstance,
+                path: requestPath
             }
         };
     };

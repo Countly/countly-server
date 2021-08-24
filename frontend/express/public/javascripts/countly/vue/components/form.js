@@ -13,8 +13,7 @@
                     return {};
                 }
             },
-            beforeCopyFn: {type: Function},
-            requiresAsyncSubmit: {type: Boolean, default: false}
+            beforeCopyFn: {type: Function}
         },
         data: function() {
             return {
@@ -43,6 +42,10 @@
 
     var MultiStepFormMixin = {
         mixins: [BufferedObjectMixin],
+        props: {
+            requiresAsyncSubmit: {type: Boolean, default: false, required: false},
+            setStepCallbackFn: {type: Function, default: null, required: false}
+        },
         data: function() {
             return {
                 currentStepIndex: 0,
@@ -135,29 +138,36 @@
             this.isMounted = true;
         },
         methods: {
-            setStep: function(newIndex) {
-                if (newIndex >= 0 && newIndex < this.stepContents.length) {
-                    this.currentStepIndex = newIndex;
+            setStep: function(newIndex, originator, internalValidationFailed) {
+                var self = this;
+                var defaultAction = function() {
+                    if (!internalValidationFailed && newIndex >= 0 && newIndex < self.stepContents.length) {
+                        self.currentStepIndex = newIndex;
+                    }
+                };
+                if (this.setStepCallbackFn) {
+                    if (this.setStepCallbackFn(newIndex, self.currentStepIndex, originator)) {
+                        defaultAction();
+                    }
+                }
+                else {
+                    defaultAction();
                 }
             },
-            setStepSafe: function(newIndex) {
+            setStepSafe: function(newIndex, originator) {
                 this.beforeLeavingStep();
-                if (newIndex <= this.lastValidIndex) {
-                    this.setStep(newIndex);
-                }
+                this.setStep(newIndex, originator, newIndex > this.lastValidIndex);
             },
             prevStep: function() {
-                this.setStep(this.currentStepIndex - 1);
+                this.setStep(this.currentStepIndex - 1, 'prev');
             },
             nextStep: function() {
                 this.beforeLeavingStep();
-                if (this.isCurrentStepValid) {
-                    this.setStep(this.currentStepIndex + 1);
-                }
+                this.setStep(this.currentStepIndex + 1, 'next', !this.isCurrentStepValid);
             },
             reset: function() {
                 this.callValidators("reset");
-                this.setStep(0);
+                this.setStep(0, 'reset');
             },
             submit: function(force) {
                 this.beforeLeavingStep();

@@ -90,7 +90,13 @@
                 result[this.PlatformEnum.IOS] = this.media[this.PlatformEnum.IOS] || {};
                 result[this.PlatformEnum.ALL] = this.media[this.PlatformEnum.ALL] || {};
                 return result;
-            }
+            },
+            hasAndroidPlatform: function() {
+                return this.isPlatformFound(countlyPushNotification.service.PlatformEnum.ANDROID);
+            },
+            hasIOSPlatform: function() {
+                return this.isPlatformFound(countlyPushNotification.service.PlatformEnum.IOS);
+            },
         },
         watch: {
             platforms: function() {
@@ -103,22 +109,16 @@
             timeNow: function() {
                 return moment().format("H:mm");
             },
-            hasAndroidPlatform: function() {
-                return this.hasPlatform(countlyPushNotification.service.PlatformEnum.ANDROID);
-            },
-            hasIOSPlatform: function() {
-                return this.hasPlatform(countlyPushNotification.service.PlatformEnum.IOS);
-            },
-            hasPlatform: function(platform) {
-                return this.platforms.filter(function(messagePlatform) {
-                    return messagePlatform === platform;
+            isPlatformFound: function(platformName) {
+                return this.platforms.filter(function(propPlatformItem) {
+                    return propPlatformItem === platformName;
                 }).length > 0;
             },
             findInitialSelectedPlatform: function() {
-                if (this.hasIOSPlatform()) {
+                if (this.isPlatformFound(countlyPushNotification.service.PlatformEnum.IOS)) {
                     return countlyPushNotification.service.PlatformEnum.IOS;
                 }
-                if (this.hasAndroidPlatform()) {
+                if (this.isPlatformFound(countlyPushNotification.service.PlatformEnum.ANDROID)) {
                     return countlyPushNotification.service.PlatformEnum.ANDROID;
                 }
                 return null;
