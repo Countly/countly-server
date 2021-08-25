@@ -4,10 +4,10 @@
             <h2> {{i18n('plugins.user-account')}} </h2>
         </template>
     </cly-header>
-    <cly-main class="bu-pt-4">
+    <cly-main>
         <div class="bu-columns bu-is-gapless">
             <div class="bu-column bu-is-12">
-                <h3 class="bu-my-4"> {{i18n('plugins.user-configs')}} &nbsp;</h3>
+                <h3 class="bu-mb-4"> {{i18n('plugins.user-configs')}} &nbsp;</h3>
                 <cly-section>
                     <div class="bu-columns bu-m-0">
                         <div class="bu-column bu-is-8 bu-mr-4">
@@ -27,6 +27,56 @@
                                         </cly-account-field>
                                         <cly-account-field :label="i18n('management-users.password')">
                                             <el-button @click="changePassword.showDialog = true">{{i18n('user-settings.change-password')}}</el-button>
+                                        </cly-account-field>
+                                        <cly-account-field :key="key" :label="getLabelName(key)" v-for="(conf, key) in userConfigs.frontend">
+                                            <div 
+                                                v-if="getInputType(key) === 'function'" 
+                                                v-html="predefinedInputs[selectedConfig + '.' + key](conf)">
+                                            </div>
+                                            <el-input
+                                                v-else-if="getInputType(key) === 'el-input'" 
+                                                @input="onChange(key, $event)"
+                                                :value="conf"
+                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs"
+                                                >
+                                            </el-input>
+                                            <el-select 
+                                                v-else-if="getInputType(key) === 'el-select'" 
+                                                :value="conf"
+                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
+                                                <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in predefinedInputs[selectedConfig + '.' + key].list"></el-option>
+                                            </el-select>
+                                            <el-slider 
+                                                v-else-if="getInputType(key) === 'el-slider'" 
+                                                @change="onChange(key, $event)"
+                                                :value="conf"
+                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
+                                            </el-slider>
+                                            <el-button
+                                                v-else-if="getInputType(key) === 'el-button'" 
+                                                @click="predefinedInputs[selectedConfig + '.' + key].click()"
+                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
+                                                {{predefinedInputs[selectedConfig + '.' + key].label}}
+                                            </el-button>
+                                            <el-switch 
+                                                v-else-if="getInputType(key) === 'el-switch'"
+                                                @change="onChange(key, $event)"
+                                                :value="conf"
+                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
+                                            </el-switch>
+                                            <el-input-number 
+                                                v-else-if="getInputType(key) === 'el-input-number'" 
+                                                @change="onChange(key, $event)"
+                                                :max='2147483647' 
+                                                :min='0' 
+                                                :value="conf"
+                                                v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
+                                            </el-input-number>
+                                            <el-input 
+                                                v-else
+                                                @input="onChange(key, $event)"
+                                                :value="conf">
+                                            </el-input>
                                         </cly-account-field>
                                     </cly-form-step>
                                     <div class="bu-has-text-right">
@@ -49,7 +99,7 @@
                                     <el-button size="small" type="text" class="bu-p-0">{{i18n('user-settings.upload')}}</el-button>
                                 </el-upload>
                                 <p class="bu-has-text-weight-medium">{{i18n('user-settings.profile-picture')}}</p>
-                                 <p class="bu-has-text-centered">&nbsp;<el-button 
+                                <p class="bu-has-text-centered">&nbsp;<el-button 
                                     size="small" 
                                     type="text" 
                                     @click="deleteAvatar"
@@ -60,6 +110,7 @@
                                         <span v-if="!userData.member_image" class="has-ellipsis">{{initials}}</span>
                                     </div>
                                 </div>
+                                <p>&nbsp;</p>
                                 <p class="account-upload-instructions">{{i18n('management-applications.icon-error')}}</p>
                             </div>
                         </div>
@@ -94,19 +145,37 @@
             </template>
         </cly-confirm-dialog>
         <cly-confirm-dialog @cancel="changePassword.showDialog = false" @confirm="passwordDialog" :visible.sync="changePassword.showDialog" :saveButtonLabel="changePassword.saveButtonLabel" :cancelButtonLabel="changePassword.cancelButtonLabel" :title="changePassword.title" >
-            <template slot-scope="scope">
-                <p>{{i18n('configs.password-specification-1')}}</p>
-                <p>{{i18n('configs.password-specification-2')}}</p>  
+            <template slot-scope="scope">  
                 <div>
-                    <cly-account-field rules="required" :label="i18n('configs.current-password')">
+                    <cly-form-field rules="required" :label="i18n('configs.current-password')">
                         <el-input type="password" :placeholder="i18n('configs.current-password')" v-model="changePassword.password"></el-input>
-                    </cly-account-field>
-                    <cly-account-field rules="required" :label="i18n('configs.new-password')">
+                    </cly-form-field>
+                    <cly-form-field rules="required" :label="i18n('configs.new-password')" class="bu-pb-0">
                         <el-input type="password" :placeholder="i18n('configs.new-password')" v-model="changePassword.newPassword"></el-input>
-                    </cly-account-field>
-                    <cly-account-field rules="required" :label="i18n('configs.confirmation')">
+                    </cly-form-field>
+                    <cly-form-field rules="required" :label="i18n('configs.confirmation')">
                         <el-input type="password" :placeholder="i18n('configs.confirmation')" v-model="changePassword.confirmPassword"></el-input>
-                    </cly-account-field>
+                    </cly-form-field>
+                </div>
+                <div class="account-settings-hint" >
+                    <i v-if="changePassword.newPassword.length < security.password_min" class="far fa-circle"></i> 
+                    <i v-else class="far fa-check-circle"></i> 
+                    &nbsp;{{i18n('management-users.password.length', security.password_min)}}
+                </div>
+                <div class="account-settings-hint" v-if="security.password_char">
+                    <i v-if="!/[A-Z]/.test(changePassword.newPassword)" class="far fa-circle"></i> 
+                    <i v-else class="far fa-check-circle"></i> 
+                    &nbsp;{{i18n('management-users.password.has-char')}}
+                </div>
+                <div class="account-settings-hint" v-if="security.password_number">
+                    <i v-if="!/\d/.test(changePassword.newPassword)" class="far fa-circle"></i> 
+                    <i v-else class="far fa-check-circle"></i> 
+                    &nbsp;{{i18n('management-users.password.has-number')}}
+                </div>
+                <div class="account-settings-hint" v-if="security.password_symbol">
+                    <i v-if="!/[^A-Za-z\d]/.test(changePassword.newPassword)" class="far fa-circle"></i> 
+                    <i v-else class="far fa-check-circle"></i> 
+                    &nbsp;{{i18n('management-users.password.has-special')}}
                 </div>
             </template>
         </cly-confirm-dialog>

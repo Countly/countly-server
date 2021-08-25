@@ -228,6 +228,15 @@
                     catch (ex) {
                         this.configsData = {};
                     }
+
+                    if (this.configsData.frontend && this.configsData.frontend._user) {
+                        this.configsData.frontend.__user = [];
+                        for (var userProp in this.configsData.frontend._user) {
+                            if (this.configsData.frontend._user[userProp]) {
+                                this.configsData.frontend.__user.push(userProp);
+                            }
+                        }
+                    }
                     app.navigate("#/manage/configurations/" + value);
                 }
             },
@@ -267,6 +276,19 @@
                     catch (ex) {
                         self.configsData = {};
                     }
+
+                    if (self.configsData.frontend && self.configsData.frontend._user && !self.predefinedInputs["frontend.__user"]) {
+                        var list = [];
+                        self.configsData.frontend.__user = [];
+                        for (var userProp in self.configsData.frontend._user) {
+                            list.push({value: userProp, label: self.getLabelName(userProp, "frontend")});
+                            if (self.configsData.frontend._user[userProp]) {
+                                self.configsData.frontend.__user.push(userProp);
+                            }
+                        }
+                        app.configurationsView.registerInput("frontend.__user", {input: "el-select", attrs: {multiple: true}, list: list});
+                    }
+
                     self.configsList.push({
                         "label": self.getLabel("core"),
                         "group": true,
@@ -351,7 +373,16 @@
                 }
 
                 this.configsData[this.selectedConfig][key] = value;
-                if (configsData[this.selectedConfig][key] !== value) {
+
+                if (Array.isArray(value) && Array.isArray(configsData[this.selectedConfig][key])) {
+                    value.sort();
+                    configsData[this.selectedConfig][key].sort();
+
+                    if (JSON.stringify(value) !== JSON.stringify(configsData[this.selectedConfig][key])) {
+                        this.diff.push(key);
+                    }
+                }
+                else if (configsData[this.selectedConfig][key] !== value) {
                     this.diff.push(key);
                 }
             },
@@ -376,37 +407,45 @@
                 }
                 return id;
             },
-            getLabelName: function(id) {
-                var ns = this.selectedConfig;
+            getLabelName: function(id, ns) {
+                ns = ns || this.selectedConfig;
                 if (ns !== "frontend" && ns !== "api" && ns !== "apps" && ns !== "logs" && ns !== "security" && countlyGlobal.plugins.indexOf(ns) === -1) {
                     return null;
                 }
 
-                if (typeof this.predefinedLabels[this.selectedConfig + "." + id] !== "undefined") {
-                    return jQuery.i18n.map[this.predefinedLabels[this.selectedConfig + "." + id]];
+                if (id === "__user") {
+                    return jQuery.i18n.map["configs.user-level-configuration"];
                 }
-                else if (jQuery.i18n.map["configs." + this.selectedConfig + "." + id]) {
-                    return jQuery.i18n.map["configs." + this.selectedConfig + "." + id];
+
+                if (typeof this.predefinedLabels[ns + "." + id] !== "undefined") {
+                    return jQuery.i18n.map[this.predefinedLabels[ns + "." + id]];
                 }
-                else if (jQuery.i18n.map["configs." + (this.selectedConfig + "." + id).replace(".", "-")]) {
-                    return jQuery.i18n.map["configs." + (this.selectedConfig + "." + id).replace(".", "-")];
+                else if (jQuery.i18n.map["configs." + ns + "." + id]) {
+                    return jQuery.i18n.map["configs." + ns + "." + id];
                 }
-                else if (jQuery.i18n.map[this.selectedConfig + "." + id]) {
-                    return jQuery.i18n.map[this.selectedConfig + "." + id];
+                else if (jQuery.i18n.map["configs." + (ns + "." + id).replace(".", "-")]) {
+                    return jQuery.i18n.map["configs." + (ns + "." + id).replace(".", "-")];
                 }
-                else if (jQuery.i18n.map[(this.selectedConfig + "." + id).replace(".", "-")]) {
-                    return jQuery.i18n.map[(this.selectedConfig + "." + id).replace(".", "-")];
+                else if (jQuery.i18n.map[ns + "." + id]) {
+                    return jQuery.i18n.map[ns + "." + id];
+                }
+                else if (jQuery.i18n.map[(ns + "." + id).replace(".", "-")]) {
+                    return jQuery.i18n.map[(ns + "." + id).replace(".", "-")];
                 }
                 else {
                     return id;
                 }
             },
-            getHelperLabel: function(id) {
-                if (jQuery.i18n.map["configs.help." + this.selectedConfig + "." + id]) {
-                    return jQuery.i18n.map["configs.help." + this.selectedConfig + "." + id];
+            getHelperLabel: function(id, ns) {
+                ns = ns || this.selectedConfig;
+                if (id === "__user") {
+                    return jQuery.i18n.map["configs.help.user-level-configuration"];
                 }
-                else if (jQuery.i18n.map["configs.help." + (this.selectedConfig + "." + id).replace(".", "-")]) {
-                    return jQuery.i18n.map["configs.help." + (this.selectedConfig + "." + id).replace(".", "-")];
+                else if (jQuery.i18n.map["configs.help." + ns + "." + id]) {
+                    return jQuery.i18n.map["configs.help." + ns + "." + id];
+                }
+                else if (jQuery.i18n.map["configs.help." + (ns + "." + id).replace(".", "-")]) {
+                    return jQuery.i18n.map["configs.help." + (ns + "." + id).replace(".", "-")];
                 }
             },
             getInputType: function(id) {
@@ -418,6 +457,22 @@
                     return input.input;
                 }
             },
+            checkIfOverwritten: function(id) {
+                var configsData = countlyPlugins.getConfigsData();
+                var plugs = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].plugins;
+                //check if value can be overwritten on user level
+                if (configsData[this.selectedConfig]._user && configsData[this.selectedConfig]._user[id]) {
+                    //check if value is overwritten on user level
+                    var sets = countlyGlobal.member.settings;
+                    if (sets && sets[this.selectedConfig] && typeof sets[this.selectedConfig][id] !== "undefined") {
+                        return {label: jQuery.i18n.map["configs.overwritten.user"], href: "#/account-settings"};
+                    }
+                }
+                //check if config overwritten on app level
+                else if (plugs && plugs[this.selectedConfig] && typeof plugs[this.selectedConfig][id] !== "undefined") {
+                    return {label: jQuery.i18n.map["configs.overwritten.app"], href: "#/manage/apps"};
+                }
+            },
             unpatch: function() {
                 try {
                     this.configsData = JSON.parse(JSON.stringify(countlyPlugins.getConfigsData()));
@@ -426,12 +481,35 @@
                     this.configsData = {};
                 }
                 this.diff = [];
+                if (this.configsData.frontend && this.configsData.frontend._user) {
+                    this.configsData.frontend.__user = [];
+                    for (var userProp in this.configsData.frontend._user) {
+                        if (this.configsData.frontend._user[userProp]) {
+                            this.configsData.frontend.__user.push(userProp);
+                        }
+                    }
+                }
             },
             save: function() {
                 var changes = {};
                 changes[this.selectedConfig] = {};
                 for (var i = 0; i < this.diff.length; i++) {
-                    changes[this.selectedConfig][this.diff[i]] = this.configsData[this.selectedConfig][this.diff[i]];
+                    if (this.diff[i] === "__user") {
+                        if (!changes[this.selectedConfig]._user) {
+                            changes[this.selectedConfig]._user = {};
+                        }
+                        for (var userProp in this.configsData[this.selectedConfig]._user) {
+                            if (this.configsData[this.selectedConfig][this.diff[i]].indexOf(userProp) === -1) {
+                                changes[this.selectedConfig]._user[userProp] = false;
+                            }
+                            else {
+                                changes[this.selectedConfig]._user[userProp] = true;
+                            }
+                        }
+                    }
+                    else {
+                        changes[this.selectedConfig][this.diff[i]] = this.configsData[this.selectedConfig][this.diff[i]];
+                    }
                 }
                 var self = this;
                 countlyPlugins.updateConfigs(changes, function(err) {
@@ -500,9 +578,13 @@
                 },
                 formId: "account-settings-form",
                 userData: countlyGlobal.member,
+                userConfigs: {},
                 avatar: this.setDefaultAvatar(countlyGlobal.member.member_image),
                 initials: this.updateInitials(countlyGlobal.member.full_name),
-                userConfigs: {}
+                predefinedLabels: app.configurationsView.predefinedLabels,
+                predefinedInputs: app.configurationsView.predefinedInputs,
+                selectedConfig: "frontend",
+                security: countlyGlobal.security
             };
         },
         beforeCreate: function() {
@@ -515,11 +597,58 @@
                     catch (ex) {
                         self.userConfigs = {};
                     }
+                    if (!self.userConfigs.frontend) {
+                        self.userConfigs.frontend = {};
+                    }
+                    for (var subkey in self.userConfigs[self.selectedConfig]) {
+                        if (!self.predefinedInputs[self.selectedConfig + "." + subkey]) {
+                            var type = typeof self.userConfigs[self.selectedConfig][subkey];
+                            if (type === "string") {
+                                app.configurationsView.registerInput(self.selectedConfig + "." + subkey, {input: "el-input", attrs: {}});
+                            }
+                            else if (type === "number") {
+                                app.configurationsView.registerInput(self.selectedConfig + "." + subkey, {input: "el-input-number", attrs: {}});
+                            }
+                            else if (type === "boolean") {
+                                app.configurationsView.registerInput(self.selectedConfig + "." + subkey, {input: "el-switch", attrs: {}});
+                            }
+                        }
+                    }
                 });
         },
         methods: {
             refresh: function() {
 
+            },
+            onChange: function(key, value) {
+                if (!this.changes[this.selectedConfig]) {
+                    this.changes[this.selectedConfig] = {};
+                }
+
+                this.changes[this.selectedConfig][key] = value;
+
+                var configsData = countlyPlugins.getUserConfigsData();
+
+                if (!this.changes[this.selectedConfig]) {
+                    this.changes[this.selectedConfig] = {};
+                }
+
+                //delete value from diff if it already exists
+                delete this.changes[this.selectedConfig][key];
+
+                this.userConfigs[this.selectedConfig][key] = value;
+
+                if (Array.isArray(value) && Array.isArray(configsData[this.selectedConfig][key])) {
+                    value.sort();
+                    configsData[this.selectedConfig][key].sort();
+                    if (JSON.stringify(value) !== JSON.stringify(configsData[this.selectedConfig][key])) {
+                        this.changes[this.selectedConfig][key] = value;
+                    }
+
+                }
+                else if (configsData[this.selectedConfig][key] !== value) {
+                    this.changes[this.selectedConfig][key] = value;
+                }
             },
             passwordDialog: function() {
                 var old_pwd = this.changePassword.password;
@@ -565,6 +694,36 @@
                             CountlyHelpers.notify(msg2);
                         }
                     });
+                }
+            },
+            getLabelName: function(id) {
+
+                if (typeof this.predefinedLabels[this.selectedConfig + "." + id] !== "undefined") {
+                    return jQuery.i18n.map[this.predefinedLabels[this.selectedConfig + "." + id]];
+                }
+                else if (jQuery.i18n.map["configs." + this.selectedConfig + "." + id]) {
+                    return jQuery.i18n.map["configs." + this.selectedConfig + "." + id];
+                }
+                else if (jQuery.i18n.map["configs." + (this.selectedConfig + "." + id).replace(".", "-")]) {
+                    return jQuery.i18n.map["configs." + (this.selectedConfig + "." + id).replace(".", "-")];
+                }
+                else if (jQuery.i18n.map[this.selectedConfig + "." + id]) {
+                    return jQuery.i18n.map[this.selectedConfig + "." + id];
+                }
+                else if (jQuery.i18n.map[(this.selectedConfig + "." + id).replace(".", "-")]) {
+                    return jQuery.i18n.map[(this.selectedConfig + "." + id).replace(".", "-")];
+                }
+                else {
+                    return id;
+                }
+            },
+            getInputType: function(id) {
+                var input = this.predefinedInputs[this.selectedConfig + "." + id];
+                if (typeof input === "function") {
+                    return "function";
+                }
+                if (input && input.input) {
+                    return input.input;
                 }
             },
             save: function(doc) {
@@ -626,7 +785,6 @@
                                     });
                                 }
                                 else {
-                                    location.hash = "#/manage/user-settings/success";
                                     window.location.reload(true);
                                 }
                             });
@@ -712,6 +870,7 @@
             }
         }
     });
+
     var getPluginView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: PluginsView,
@@ -946,7 +1105,7 @@
         });
     }
 
-    app.route('/manage/user-settings', 'account-settings', function() {
+    app.route('/account-settings', 'account-settings', function() {
         this.renderWhenReady(getAccountView());
     });
 

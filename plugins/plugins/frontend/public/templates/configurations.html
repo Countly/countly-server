@@ -33,6 +33,9 @@
                                 <div class="bu-column bu-is-7">
                                     <p class="bu-has-text-weight-medium">{{getLabelName(key)}}</p>
                                     <p v-html="getHelperLabel(key)"></p>
+                                    <div v-if="checkIfOverwritten(key)" class="config-section-overwritten">
+                                        <a :href="checkIfOverwritten(key).href" target="_blank">{{checkIfOverwritten(key).label}}</a>
+                                    </div>
                                 </div>
                                 <div class="bu-column bu-is-1"></div>
                                 <div class="bu-column bu-is-3 bu-has-text-left">
