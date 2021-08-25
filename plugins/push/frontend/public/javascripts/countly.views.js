@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment, countlyEventsOverview*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment,countlyEventsOverview*/
 (function() {
 
     var AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = [
@@ -35,11 +35,6 @@
     ];
     var automaticPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
     var transactionalPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
-
-
-    var localizationFilterOptions = [
-        {label: CV.i18n("push-notification-details.localization-filter-all"), value: countlyPushNotification.service.LocalizationEnum.ALL}
-    ];
 
     var TargetingEnum = {
         ALL: 'all',
@@ -120,9 +115,11 @@
                     onClickURL: "",
                     json: null,
                     userData: []
+                },
+                all: {
+                    mediaURL: ""
                 }
             },
-            mediaUrl: "",
             type: MessageTypeEnum.CONTENT
         },
         localizations: ["default"],
@@ -161,7 +158,7 @@
     var InitialPushNotificationDrawerSettingsState = {
         ios: {
             isSubtitleEnabled: false,
-            isMediaUrlEnabled: false,
+            isMediaURLEnabled: false,
             isSoundFileNameEnabled: false,
             isBadgeNumberEnabled: false,
             isOnClickURLEnabled: false,
@@ -169,13 +166,16 @@
             isUserDataEnabled: false,
         },
         android: {
-            isMediaUrlEnabled: false,
+            isMediaURLEnabled: false,
             isSoundFileNameEnabled: false,
             isBadgeNumberEnabled: false,
             isIconEnabled: false,
             isOnClickURLEnabled: false,
             isJsonEnabled: false,
             isUserDataEnabled: false,
+        },
+        all: {
+            isMediaURLEnabled: false,
         }
     };
 
@@ -199,6 +199,7 @@
                 TriggerEnum: TriggerEnum,
                 AutomaticDeliveryDateEnum: AutomaticDeliveryDateEnum,
                 AutomaticWhenConditionNotMetEnum: AutomaticWhenConditionNotMetEnum,
+                MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
                 messageTypeFilterOptions: messageTypeFilterOptions,
                 activeLocalization: "default",
                 selectedLocalizationFilter: "default",
@@ -214,6 +215,11 @@
                 addUserPropertyPopoverPosition: {
                     top: 0,
                     left: 0
+                },
+                mediaMetadata: {
+                    all: null,
+                    ios: null,
+                    android: null
                 },
                 pushNotificationUnderEdit: JSON.parse(JSON.stringify(InitialEditedPushNotification))
             };
@@ -289,6 +295,31 @@
                 else {
                     return this.areCohortsAndLocationsRequired;
                 }
+            },
+            previewMessageMedia: function() {
+                var result = {};
+                if (this.mediaMetadata[this.PlatformEnum.ANDROID]) {
+                    result[this.PlatformEnum.ANDROID] = {url: this.pushNotificationUnderEdit.message.settings.android.mediaURL, type: this.MediaTypeEnum.IMAGE};
+                }
+                if (this.mediaMetadata[this.PlatformEnum.IOS]) {
+                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.message.settings.ios.mediaURL, type: this.mediaMetadata.ios.type };
+                }
+                if (this.mediaMetadata[this.PlatformEnum.ALL]) {
+                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.message.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE };
+                }
+                return result;
+            },
+            previewMessageTitle: function() {
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter].title);
+            },
+            previewMessageContent: function() {
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter].content);
+            },
+            shouldDisplayIOSSettings: function() {
+                return this.shouldDisplayPlatformSettings(this.PlatformEnum.IOS);
+            },
+            shouldDisplayAndroidSettings: function() {
+                return this.shouldDisplayPlatformSettings(this.PlatformEnum.ANDROID);
             }
         },
         methods: {
@@ -490,6 +521,53 @@
                     this.openAddUserPropertyPopover();
                 }
             },
+            resetAllMediaURLIfNecessary: function() {
+                if (this.pushNotificationUnderEdit.message.settings.android.mediaURL && this.pushNotificationUnderEdit.message.settings.ios.mediaURL) {
+                    this.pushNotificationUnderEdit.message.settings.all.mediaURL = "";
+                }
+            },
+            onAllMediaURLInput: function(value) {
+                var self = this;
+                this.pushNotificationUnderEdit.message.settings.all.mediaURL = value;
+                this.$refs.allMediaURLValidationProvider.validate(value).then(function(result) {
+                    self.afterMediaURLValidate(self.PlatformEnum.ALL, result.valid);
+                });
+            },
+            onAndroidMediaURLInput: function(value) {
+                var self = this;
+                this.pushNotificationUnderEdit.message.settings.android.mediaURL = value;
+                this.$refs.androidMediaURLValidationProvider.validate(value).then(function(result) {
+                    self.afterMediaURLValidate(self.PlatformEnum.ANDROID, result.valid);
+                });
+                this.resetAllMediaURLIfNecessary();
+            },
+            onIOSMediaURLInput: function(value) {
+                var self = this;
+                this.pushNotificationUnderEdit.message.settings.ios.mediaURL = value;
+                this.$refs.iosMediaURLValidationProvider.validate(value).then(function(result) {
+                    self.afterMediaURLValidate(self.PlatformEnum.IOS, result.valid);
+                });
+                this.resetAllMediaURLIfNecessary();
+            },
+            afterMediaURLValidate: function(platform, isValid) {
+                if (isValid) {
+                    this.fetchMediaMetadata(platform, this.pushNotificationUnderEdit.message.settings[platform].mediaURL);
+                }
+                else {
+                    this.mediaMetadata[platform] = null;
+                }
+            },
+            setMediaMetadata: function(platform, metadata) {
+                this.mediaMetadata[platform] = metadata;
+            },
+            fetchMediaMetadata: function(platform, url) {
+                var self = this;
+                countlyPushNotification.service.fetchMediaMetadata(url).then(function(mediaMetadata) {
+                    self.setMediaMetadata(platform, mediaMetadata);
+                }).catch(function() {
+                    self.setMediaMetadata(platform, {});
+                });
+            },
             fetchAllEvents: function() {
                 var self = this;
                 countlyEventsOverview.service.fetchAllEvents()
@@ -503,6 +581,11 @@
                 return countlySegmentation.getFilters().map(function(userFilter) {
                     return {label: userFilter.name, value: userFilter.id};
                 });
+            },
+            shouldDisplayPlatformSettings: function(platform) {
+                return this.pushNotificationUnderEdit.platforms.filter(function(selectedPlatform) {
+                    return selectedPlatform === platform;
+                }).length > 0;
             },
             prepareMessage: function() {
                 //TODO-LA: get message localizations and prepare notification meta-data
@@ -520,6 +603,8 @@
             "large-radio-button-with-description": countlyPushNotificationComponent.LargeRadioButtonWithDescription,
             "line-radio-button-with-description": countlyPushNotificationComponent.LineRadioButtonWithDescription,
             "review-section-row": countlyPushNotificationComponent.ReviewSectionRow,
+            'user-property-preview': countlyPushNotificationComponent.UserPropertyPreview,
+            'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview
         },
     });
 
@@ -742,53 +827,6 @@
         this.renderWhenReady(pushNotificationViewWrapper);
     });
 
-    var PushNotificationDetailsMessageContentTab = countlyVue.views.create({
-        template: CV.T('/push/templates/push-notification-details-message-content-tab.html'),
-        data: function() {
-            return {
-                selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
-                localizationFilters: localizationFilterOptions
-            };
-        },
-        computed: {
-            message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message;
-            }
-        }
-    });
-
-    var PushNotificationDetailsTargetingTab = countlyVue.views.create({
-        template: CV.T('/push/templates/push-notification-details-targeting-tab.html'),
-        data: function() {
-            return {
-                DAY_TO_MS_RATIO: 86400 * 1000
-            };
-        },
-        computed: {
-            pushNotification: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification;
-            }
-        },
-        methods: {
-            convertDaysInMsToDays: function(daysInMs) {
-                return daysInMs / this.DAY_TO_MS_RATIO;
-            }
-        }
-    });
-
-    var PushNotificationDetailsErrorsTab = countlyVue.views.create({
-        template: CV.T('/push/templates/push-notification-details-errors-tab.html'),
-        computed: {
-            errors: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.errors;
-            },
-        },
-        methods: {
-            hasErrors: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.failed > 0;
-            }
-        }
-    });
 
     var PushNotificationDetailsView = countlyVue.views.BaseView.extend({
         template: "#push-notification-details",
@@ -797,25 +835,25 @@
                 selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
                 platformFilters: platformFilterOptions,
                 selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
-                localizationFilters: localizationFilterOptions,
+                localizationFilters: countlyPushNotification.service.getLocalizationFilterOptions(),
                 DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
-                currentSummaryTab: "content",
+                currentSummaryTab: "message",
                 UserEventEnum: countlyPushNotification.service.UserEventEnum,
                 summaryTabs: [
                     {
-                        title: CV.i18n('push-notification-details.message-content-tab'),
-                        name: "content",
-                        component: PushNotificationDetailsMessageContentTab
+                        title: CV.i18n('push-notification-details.message-tab'),
+                        name: "message",
+                        component: countlyPushNotificationComponent.DetailsMessageTab
                     },
                     {
                         title: CV.i18n('push-notification-details.targeting-tab'),
                         name: "targeting",
-                        component: PushNotificationDetailsTargetingTab
+                        component: countlyPushNotificationComponent.DetailsTargetingTab
                     },
                     {
                         title: CV.i18n('push-notification-details.errors-tab'),
                         name: "errors",
-                        component: PushNotificationDetailsErrorsTab
+                        component: countlyPushNotificationComponent.DetailsErrorsTab
                     }
                 ]
             };
@@ -904,6 +942,7 @@
         component: PushNotificationDetailsView,
         vuex: pushNotificationVuex,
         templates: [
+            "/push/templates/common-components.html",
             "/push/templates/push-notification-details.html"
         ],
     });

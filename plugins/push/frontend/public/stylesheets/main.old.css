@@ -1275,7 +1275,7 @@ table.d-table .x-aborted > .ion-information-circled { color: #D53F43; font-size:
 
 /* ---------------------------------- EmojiPicker ---------------------------------------------- */
 
-#emoji-picker {
+/* #emoji-picker {
   position: absolute;
   display: block;
   border-radius: 5px;
@@ -1290,9 +1290,9 @@ table.d-table .x-aborted > .ion-information-circled { color: #D53F43; font-size:
 #emoji-picker:after {
   position: absolute;
   display: block;
-  content: ""; }
+  content: ""; } */
 
-#emoji-picker.TooltipLeft:after {
+/* #emoji-picker.TooltipLeft:after {
   left: -7px;
   right: auto;
   height: 14px;
@@ -1377,7 +1377,7 @@ table.d-table .x-aborted > .ion-information-circled { color: #D53F43; font-size:
 
 #emoji-picker.TooltipRight.TooltipBelow.autoplace:after {
   right: 30px;
-  left: auto; }
+  left: auto; } 
 
 .emoji-section {
   position: relative;
@@ -1475,19 +1475,15 @@ table.d-table .x-aborted > .ion-information-circled { color: #D53F43; font-size:
   margin-top: 1px; }
 
 .search-emojis::-webkit-input-placeholder {
-  /* Chrome/Opera/Safari */
   color: #555459; }
 
 .search-emojis::-moz-placeholder {
-  /* Firefox 19+ */
   color: #555459; }
 
 .search-emojis:-ms-input-placeholder {
-  /* IE 10+ */
   color: #555459; }
 
 .search-emojis:-moz-placeholder {
-  /* Firefox 18- */
   color: #555459; }
 
 .emoji-title-overlay {
@@ -1653,7 +1649,7 @@ span.emoji-inner {
 #emoji-large-preview span.emoji-outer.emoji-sizer {
   width: 40px;
   height: 40px; }
-
+*/
 .icon-tooltip {
   position: absolute;
   display: block;

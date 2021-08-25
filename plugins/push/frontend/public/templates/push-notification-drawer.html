@@ -13,7 +13,7 @@
                 :title="pushNotificationUnderEdit.message[activeLocalization].title" 
                 :content="pushNotificationUnderEdit.message[activeLocalization].content" 
                 :platforms="pushNotificationUnderEdit.platforms" 
-                :media="pushNotificationUnderEdit.message.mediaUrl" 
+                :media="previewMessageMedia" 
                 :isHTML="true"
                 :buttons="pushNotificationUnderEdit.message[activeLocalization].buttons.map(function(item){return item.label})">
             </mobile-message-preview>
@@ -590,8 +590,8 @@
                         Media URL
                         <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-media-url-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for message name</div>
-                        <validation-provider v-slot="validation">
-                            <el-input v-model="pushNotificationUnderEdit.message.mediaUrl" placeholder="Enter Image URL" :class="{'is-error': validation.errors.length > 0}"></el-input>
+                        <validation-provider v-slot="validation" ref="allMediaURLValidationProvider" :rules="{push_notification_message_media_url:PlatformEnum.ALL}" mode="passive">
+                            <el-input :value="pushNotificationUnderEdit.message.settings.all.mediaURL" @input="onAllMediaURLInput" placeholder="Enter Media URL" :class="{'is-error':validation.errors.length > 0}"></el-input>
                         </validation-provider>
                     </div>
                 </div>
@@ -601,7 +601,7 @@
                     <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for platform settings.</div>
                 </div>
                 <div class="cly-vue-drawer-step__section">
-                    <el-collapse v-model="pushNotificationUnderEdit.expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow ">
+                    <el-collapse v-if="shouldDisplayIOSSettings" v-model="pushNotificationUnderEdit.expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow ">
                         <el-collapse-item  name="PlatformEnum.IOS">
                             <span class="collapse-title" slot="title"> IOS</span>
                             <message-setting-element 
@@ -615,14 +615,14 @@
                                 description="We can add some kind of description for platform settings.">
                             </message-setting-element>
                             <message-setting-element 
-                                :input="pushNotificationUnderEdit.message.settings.ios.mediaUrl"
-                                :toggle="settings.ios.isMediaUrlEnabled"
-                                rules="required"
-                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'mediaUrl',value)}"
-                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isMediaUrlEnabled',value)}"
+                                :toggle="settings.ios.isMediaURLEnabled"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isMediaURLEnabled',value)}"
                                 label="Media URL"
                                 placeholder="Enter media URL"
                                 description="We can add some kind of description for platform settings.">
+                                <validation-provider v-slot="validation" ref="iosMediaURLValidationProvider" :rules="{required:true,push_notification_message_media_url:PlatformEnum.IOS}" mode="passive">
+                                    <el-input :value="pushNotificationUnderEdit.message.settings.ios.mediaURL" @input="onIOSMediaURLInput" placeholder="Enter Media URL" :class="{'is-error':validation.errors.length > 0}"></el-input>
+                                </validation-provider>
                             </message-setting-element>
                             <message-setting-element 
                                 :input="pushNotificationUnderEdit.message.settings.ios.soundFileName"
@@ -656,7 +656,6 @@
                             </message-setting-element>
                             <message-setting-element 
                                 :toggle="settings.ios.isJsonEnabled"
-                                rules="required"
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isJsonEnabled',value)}"
                                 label="Send JSON"
                                 description="We can add some kind of description for sending JSON data">
@@ -665,7 +664,6 @@
                             <message-setting-element 
                                 :toggle="settings.ios.isUserDataEnabled"
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isUserDataEnabled',value)}"
-                                rules="required"
                                 label="Send User Data"
                                 description="We can add some kind of description for sending user data">
                                     <el-select 
@@ -687,18 +685,18 @@
                     </el-collapse>
                 </div>
                 <div class="cly-vue-drawer-step__section">
-                    <el-collapse v-model="pushNotificationUnderEdit.expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow ">
+                    <el-collapse v-if="shouldDisplayAndroidSettings" v-model="pushNotificationUnderEdit.expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow ">
                         <el-collapse-item  :name="PlatformEnum.ANDROID">
                             <span class="collapse-title" slot="title"> Android</span>
                             <message-setting-element 
-                                :input="pushNotificationUnderEdit.message.settings.android.mediaUrl"
-                                :toggle="settings.android.isMediaUrlEnabled"
-                                rules="required"
-                                @onChange="function(value){onSettingChange(PlatformEnum.ANDROID,'mediaUrl',value)}"
-                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isMediaUrlEnabled',value)}"
+                                :toggle="settings.android.isMediaURLEnabled"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isMediaURLEnabled',value)}"
                                 label="Media URL"
                                 placeholder="Enter media URL"
                                 description="We can add some kind of description for platform settings.">
+                                <validation-provider v-slot="validation" ref="androidMediaURLValidationProvider" :rules="{required:true,push_notification_message_media_url:PlatformEnum.ANDROID}" mode="passive">
+                                    <el-input :value="pushNotificationUnderEdit.message.settings.android.mediaURL" @input="onAndroidMediaURLInput" placeholder="Enter Media URL" :class="{'is-error':validation.errors.length > 0}"></el-input>
+                                </validation-provider>
                             </message-setting-element>
                             <message-setting-element 
                                 :input="pushNotificationUnderEdit.message.settings.android.soundFileName"
@@ -794,13 +792,29 @@
                     </div>
                 </div>
                 <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
-                    <review-section-row label="Title" :value="pushNotificationUnderEdit.message[selectedLocalizationFilter].title"></review-section-row>
-                    <review-section-row label="Content" :value="pushNotificationUnderEdit.message[selectedLocalizationFilter].content"></review-section-row>
+                    <review-section-row label="Title">
+                        <div>
+                            <template v-for="(component) in previewMessageTitle">
+                                <keep-alive>
+                                    <component v-bind:is="component.name" :value="component.value"></component>
+                                </keep-alive>
+                            </template>
+                        </div>
+                    </review-section-row>
+                    <review-section-row label="Content">
+                        <div>
+                            <template v-for="(component) in previewMessageContent">
+                                <keep-alive>
+                                    <component v-bind:is="component.name" :value="component.value"></component>
+                                </keep-alive>
+                            </template>
+                        </div>
+                    </review-section-row>
                     <template v-for="(button,index) in pushNotificationUnderEdit.message[selectedLocalizationFilter].buttons">
                         <review-section-row label="Button Text" :value="button.label"></review-section-row>
                         <review-section-row label="Button URL" :value="button.url"></review-section-row>
                     </template>
-                    <review-section-row label="Media URL" :value="pushNotificationUnderEdit.message.mediaUrl"></review-section-row>
+                    <review-section-row label="Media URL" :value="pushNotificationUnderEdit.message.settings.all.mediaURL"></review-section-row>
                 </div>
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
                     Targeting

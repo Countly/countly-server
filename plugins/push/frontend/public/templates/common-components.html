@@ -43,8 +43,360 @@
             {{label}}
         </div>
         <div class="bu-is-justify-content-flex-start cly-vue-push-notification-review-section-row__value">
-            {{value}}
+            <template v-if="value">{{value}}</template>
+            <slot v-if="hasDefaultSlot"></slot>      
         </div>
     </div>
+</script>
+
+<script type="text/x-template" id="add-user-property-popover">
+    <div>
+        <div v-if="isOpen" v-bind:style="getStyleObject" class="cly-vue-push-notification-add-user-property-popover">
+            <div class="cly-vue-push-notification-add-user-property-popover__inner">
+                <validation-observer ref="validationObserver">
+                    <div class="cly-vue-push-notification-add-user-property-popover__title">Add User Property</div>
+                    <div>
+                        <validation-provider vid="userPropertyValidator" v-slot="validation" rules="required">
+                            <cly-select-x
+                                search-placeholder="Search in Properties"
+                                placeholder="Select Property" 
+                                :value="userProperty.value"
+                                :width="320"
+                                @change="onSelect"
+                                mode="single-list"
+                                :hide-all-options-tab="false"
+                                :options="options"
+                                :class="[validation.errors.length > 0 ? 'is-error': null,'cly-vue-push-notification-add-user-property-popover__select-value']">
+                            </cly-select-x>
+                        </validation-provider>
+                    </div>
+                    <div>
+                        <el-checkbox :value="userProperty.isUppercase" @change="onUppercase">
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Make user property start with capital letter</div>
+                        </el-checkbox> 
+                    </div>
+                    <div>
+                        <div class="bu-level bu-is-flex-direction-column bu-is-align-items-flex-start">
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Fallback value</div>
+                            <validation-provider vid="fallbackValueValidator" v-slot="validation" rules="required" style="width:100%">
+                                <el-input :value="userProperty.fallback" @input="onFallback" placeholder="Enter fallback value" :class="{'is-error': validation.errors.length > 0}"> </el-input>
+                            </validation-provider>
+                        </div>
+                    </div>
+                </validation-observer>
+                <div class="cly-vue-drawer-step__section cly-vue-drawer-step__line--aligned bu-is-justify-content-flex-end">
+                    <cly-button skin="light" label="Remove" @click="onRemove">Remove</cly-button>
+                    <cly-button skin="green" label="Confirm" @click="onClose">Confirm</cly-button>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="mobile-message-preview">
+    <div class="cly-vue-push-notification-mobile-preview">
+        <div class="cly-vue-push-notification-mobile-preview__images">
+            <img v-if="isIOSPlatformSelected" src="/images/push/preview.i.png" />
+            <img v-else-if="isAndroidPlatformSelected" src="/images/push/preview.a.png" />
+        </div>
+    
+        <div v-if="isIOSPlatformSelected" class="cly-vue-push-notification-mobile-preview__ios-message">
+            <div class="cly-vue-push-notification-mobile-preview__ios-header">
+                <img class="cly-vue-push-notification-mobile-preview__ios-header-image" src="/appimages/5ea4bd674bb4a33298a81727.png" />
+                <span class="cly-vue-push-notification-mobile-preview__ios-header-app-name">
+                    {{appName}}
+                </span>
+                <span class="cly-vue-push-notification-mobile-preview__ios-header-close-button">
+                    X
+                </span>
+            </div>
+            <template v-if="mediaPreview[PlatformEnum.IOS].type === MediaTypeEnum.VIDEO">
+                <video v-bind:src="mediaPreview[PlatformEnum.IOS].url" class="cly-vue-push-notification-mobile-preview__ios-media" controls> </video>
+            </template>
+            <template v-else>
+                <img v-if="mediaPreview[PlatformEnum.IOS].url || mediaPreview[PlatformEnum.ALL].url" class="cly-vue-push-notification-mobile-preview__ios-media" v-bind:src="mediaPreview[PlatformEnum.IOS].url || mediaPreview[PlatformEnum.ALL].url" /> 
+            </template>
+            <div class="cly-vue-push-notification-mobile-preview__ios-title">
+                <template v-if="isHTML">
+                    <template v-for="(component) in titlePreviewComponentsList">
+                        <keep-alive>
+                            <component v-bind:is="component.name" :value="component.value"></component>
+                        </keep-alive>
+                    </template>
+                </template>
+                <template v-else>
+                    {{title}}
+                </template>
+            </div>
+            <div class="cly-vue-push-notification-mobile-preview__ios-content">
+                <template v-if="isHTML">
+                    <template v-for="(component) in contentPreviewComponentsList">
+                        <keep-alive>
+                            <component v-bind:is="component.name" :value="component.value"></component>
+                        </keep-alive>
+                    </template>
+                </template>
+                <template v-else>
+                    {{content}}
+                </template>
+            </div>
+            <div class="cly-vue-push-notification-mobile-preview__ios-buttons-list">
+                <div v-for="button in buttons" class="cly-vue-push-notification-mobile-preview__ios-button">{{button}}</div>
+            </div>
+        </div>
+        <div v-else-if="isAndroidPlatformSelected" class="cly-vue-push-notification-mobile-preview__android-message">
+            <div class="cly-vue-push-notification-mobile-preview__android-header">
+                <img class="cly-vue-push-notification-mobile-preview__android-header-image" src="/appimages/5ea4bd674bb4a33298a81727.png" />
+                <span class="cly-vue-push-notification-mobile-preview__android-header-app-name">
+                    {{appName}}
+                </span>
+                <span class="cly-vue-push-notification-mobile-preview__android-header-time">
+                    {{timeNow()}}
+                </span>
+            </div>
+            <div class="cly-vue-push-notification-mobile-preview__android-title">
+                <template v-if="isHTML">
+                    <template v-for="(component) in titlePreviewComponentsList">
+                        <keep-alive>
+                            <component v-bind:is="component.name" :value="component.value"></component>
+                        </keep-alive>
+                    </template>
+                </template>
+                <template v-else>
+                    {{title}}
+                </template>
+            </div>
+            <div class="cly-vue-push-notification-mobile-preview__android-content">
+                <template v-if="isHTML">
+                    <template v-for="(component) in contentPreviewComponentsList">
+                        <keep-alive>
+                            <component v-bind:is="component.name" :value="component.value"></component>
+                        </keep-alive>
+                    </template>
+                </template>
+                <template v-else>
+                    {{content}}
+                </template>
+            </div>
+            <div class="cly-vue-push-notification-mobile-preview__android-buttons-list">
+                <div v-for="button in buttons" class="cly-vue-push-notification-mobile-preview__android-button">{{button}}</div>
+            </div>
+            <img v-if="mediaPreview[PlatformEnum.ANDROID].url || mediaPreview[PlatformEnum.ALL].url" v-bind:src="mediaPreview[PlatformEnum.ANDROID].url||mediaPreview[PlatformEnum.ALL].url" class="cly-vue-push-notification-mobile-preview__android-media" /> 
+        </div>
+    
+        <div class="cly-vue-push-notification-mobile-preview__platforms">
+            <div v-if="hasIOSPlatform" @click="setSelectedPlatform(PlatformEnum.IOS)" v-bind:class="['cly-vue-push-notification-mobile-preview__icon-container',isIOSPlatformSelected?'cly-vue-push-notification-mobile-preview__active-icon':'']">
+                <span class="ion-social-apple"></span>
+            </div>
+            <div v-if="hasAndroidPlatform" @click="setSelectedPlatform(PlatformEnum.ANDROID)" v-bind:class="['cly-vue-push-notification-mobile-preview__icon-container',isAndroidPlatformSelected?'cly-vue-push-notification-mobile-preview__active-icon':'']">
+                <span class="ion-social-android"></span>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="emoji-picker">
+    <div>
+        <slot name="emoji-invoker" :events="{ click: function(e){toggle(e)} }"></slot>
+        <div v-if="display.visible" v-click-outside="hide">
+            <slot name="emoji-picker" :emojis="emojis" :insert="insert" :display="display"></slot>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="message-editor-with-emoji-picker">
+    <div class="cly-vue-push-notification-emoji-wrapper">
+        <validation-provider ref="defaultLocalizationValidationProvider" v-slot="validation" rules="required"> </validation-provider>
+        <div :class="['el-input',hasValidationErrors?'is-error':null]">
+            <component is="div" class="el-input__inner" v-bind:id="id" contenteditable="true" ref="element" @input="onInput($event.target.innerHTML)"></component>
+        </div>
+        <emoji-picker @emoji="appendEmoji" :search="search">
+            <template  v-slot:emoji-invoker ="{ events: { click: clickEvent } }">   
+                <div class="emoji-invoker" @click.stop="clickEvent">
+                    <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                    </svg>
+                </div>
+            </template>
+            <template v-slot:emoji-picker="{ emojis, insert, display }">
+                <div class="emoji-picker">
+                    <div class="emoji-picker__search">
+                        <input type="text" v-model="search">
+                    </div>
+                    <div>
+                        <div v-for="(emojiGroup, category) in emojis" :key="category">
+                            <h5>{{ category }}</h5>
+                            <div class="emojis">
+                                <span
+                                    v-for="(emoji, emojiName) in emojiGroup"
+                                    :key="emojiName"
+                                    @click="insert(emoji)"
+                                    :title="emojiName"
+                                >{{ emoji }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </emoji-picker>
+    </div>
+</script>
+
+<script type="text/x-template" id="details-message-tab">
+    <el-card class="box-card cly-vue-push-notification-details-summary-card">
+        <div slot="header" class="clearfix">
+            <span>{{i18n('push-notification-details.localization-filter-label')}}</span>
+            <el-select v-model="selectedLocalizationFilter">
+                <el-option :key="item.value" :value="item.value" :label="item.label"
+                    v-for="item in localizationFilters"
+                >
+                </el-option>
+            </el-select>
+        </div>
+        <div>
+            <div class="bu-columns">
+                <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                    {{i18n('push-notification-details.message-title')}}
+                </div>
+                <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                    {{message.name}}
+                </div>
+            </div>
+            <div class="bu-columns">
+                <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                    {{i18n('push-notification-details.message-content')}}
+                </div>
+                <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                    {{message.content}}
+                </div>
+            </div>
+            <template v-if="message.numberOfButtons>0">
+                <template v-for="(button,index) in message.buttons">
+                    <div class="bu-columns">
+                        <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                            {{index === 0?i18n('push-notification-details.message-first-button-label'):i18n('push-notification-details.message-second-button-label')}}
+                        </div>
+                        <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                            {{button.label}}
+                        </div>
+                    </div>
+                    <div class="bu-columns">
+                        <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                            {{index === 0?i18n('push-notification-details.message-first-button-url'):i18n('push-notification-details.message-second-button-url')}}
+                        </div>
+                        <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                            {{button.url}}
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <div class="bu-columns">
+                <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                    {{i18n('push-notification-details.message-media-url')}}
+                </div>
+                <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                    {{message.media}}
+                </div>
+            </div>
+        </div>
+    </el-card>
+</script>
+
+<script type="text/x-template" id="details-targeting-tab">
+    <el-card class="box-card cly-vue-push-notification-details-summary-card">
+        <div>
+            <div class="cly-vue-push-notification-details-summary-header">
+                {{i18n('push-notification-details.targeting-sub-header')}}
+            </div>
+            <div class="cly-vue-push-notification-details-summary-section">
+                <div class="bu-columns">
+                    <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                        {{i18n('push-notification-details.targeted-users')}}
+                    </div>
+                    <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                        {{pushNotification.cohortIds && pushNotification.cohortIds.toString()}}
+                    </div>
+                </div>
+                <div class="bu-columns">
+                    <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                        {{i18n('push-notification-details.geolocation')}}
+                    </div>
+                    <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                        {{pushNotification.geoIds && pushNotification.geoIds.toString()}}
+                    </div>
+                </div>
+                <div class="bu-columns">
+                    <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                        {{i18n('push-notification-details.when-to-determine')}}
+                    </div>
+                    <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                        {{pushNotification.audienceSelectionType}}
+                    </div>
+                </div>
+            </div>
+            <div class="cly-vue-push-notification-details-summary-header">
+                {{i18n('push-notification-details.delivery-sub-header')}}
+            </div>
+            <div class="cly-vue-push-notification-details-summary-section">
+                <div class="bu-columns">
+                    <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                        {{i18n('push-notification-details.delivery-type')}}
+                    </div>
+                    <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                        {{pushNotification.deliveryType}}
+                    </div>
+                </div>
+                <div class="bu-columns">
+                    <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                        {{i18n('push-notification-details.scheduled-for')}}
+                    </div>
+                    <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                        {{pushNotification.startDate}}
+                    </div>
+                </div>
+                <div class="bu-columns">
+                    <div class="bu-column bu-is-2 cly-vue-push-notification-details-summary-text">
+                        {{i18n('push-notification-details.expiration-time')}}
+                    </div>
+                    <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
+                        {{i18n('push-notification-details.message-expires-after', convertDaysInMsToDays(pushNotification.expirationDaysInMs))}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </el-card>
+</script>
+
+<script type="text/x-template" id="details-errors-tab">
+    <el-card class="box-card cly-vue-push-notification-details-summary-card">
+        <div v-if="hasErrors()">
+            <el-table
+                :data="errors"
+                border
+                style="width: 100%">
+                    <el-table-column
+                        prop="name"
+                        label="Name"
+                        width="180">
+                    </el-table-column>
+                    <el-table-column
+                        prop="code"
+                        label="Code"
+                        width="180">
+                    </el-table-column>
+                    <el-table-column
+                        prop="description"
+                        label="Description">
+                    </el-table-column>
+            </el-table>
+        </div>
+        <div v-else class="bu-container">
+            <span class="cly-vue-push-notification-details-no-errors-text">
+                {{i18n('push-notification-details.no-errors-found')}}
+            </span>
+        </div>
+    </el-card>
 </script>
 
