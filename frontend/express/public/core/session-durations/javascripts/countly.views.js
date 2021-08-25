@@ -13,15 +13,6 @@ var SessionDurationsView = countlyVue.views.create({
         isLoading: function() {
             return this.$store.state.countlySessionDurations.isLoading;
         },
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlySessionDurations.selectedDatePeriod;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlySessionDurations/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlySessionDurations/fetchAll');
-            }
-        },
         sessionDurationsRows: function() {
             return this.$store.state.countlySessionDurations.sessionDurations.rows;
         },
@@ -49,11 +40,11 @@ var SessionDurationsView = countlyVue.views.create({
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch('countlySessionDurations/fetchAll');
+            this.$store.dispatch('countlySessionDurations/fetchAll', false);
         }
     },
     mounted: function() {
-        this.$store.dispatch('countlySessionDurations/fetchAll');
+        this.$store.dispatch('countlySessionDurations/fetchAll', true);
     },
 });
 
