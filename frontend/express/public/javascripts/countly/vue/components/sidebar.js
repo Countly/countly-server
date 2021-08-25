@@ -229,7 +229,7 @@
                 }
             },
             mounted: function() {
-                this.checkcurrentAnalyticsTab();  
+                this.checkcurrentAnalyticsTab();
             }
         });
 
@@ -297,7 +297,6 @@
             },
             mounted: function() {
                 this.checkcurrentManagementTab();
-                
             }
         });
 
