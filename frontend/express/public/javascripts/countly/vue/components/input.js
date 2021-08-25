@@ -218,11 +218,19 @@
                                 @keyup.enter="handleItemClick(option)"\
                                 @click.stop="handleItemClick(option)"\
                                 v-for="option in searchedOptions">\
-                                <div>\
-                                    <slot name="option-prefix" v-bind="option"></slot>\
-                                    <span>{{option.label}}</span>\
+                                <div class="cly-vue-listbox__item-content">\
+                                    <div class="bu-level">\
+                                        <div class="bu-level-left">\
+                                            <div class="cly-vue-listbox__item-prefix">\
+                                                <slot name="option-prefix" v-bind="option"></slot>\
+                                            </div>\
+                                            <div class="cly-vue-listbox__item-label bu-ml-2">{{option.label}}</div>\
+                                        </div>\
+                                        <div class="bu-level-right">\
+                                            <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
+                                        </div>\
+                                    </div>\
                                 </div>\
-                                <slot name="option-suffix" v-bind="option"></slot>\
                             </div>\
                         </div>\
                     </vue-scroll>\
