@@ -163,47 +163,31 @@
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
                 },
-                checkcurrentAnalyticsTab() {
-                var currLink = Backbone.history.fragment;
+                checkcurrentAnalyticsTab: function () {
+                    var currLink = Backbone.history.fragment;
 
-                if (/^\/custom/.test(currLink) === true) {
-                    return;
-                }
+                    if (/^\/custom/.test(currLink) === true) {
+                        return;
+                    }
 
-                var menus = this.categorizedMenus;
-                let fragmentedLink = currLink;
-                if (fragmentedLink.split("/").length > 2) {
-                    currLink = "";
-                    for (let i = 1; i < fragmentedLink.split("/").length; i++) {
-                        if (isNaN(Number(fragmentedLink.split("/")[i]))) {
-                            currLink = currLink + "/"+ fragmentedLink.split("/")[i];
+                    var menus = this.categorizedMenus;
+                    var fragmentedLink = currLink;
+                    if (fragmentedLink.split("/").length > 2) {
+                        currLink = "";
+                        for (var i = 1; i < fragmentedLink.split("/").length; i++) {
+                            if (isNaN(Number(fragmentedLink.split("/")[i]))) {
+                                currLink = currLink + "/" + fragmentedLink.split("/")[i];
+                            }
                         }
                     }
-                }
-                var submenus = this.categorizedSubmenus;
-                var foundMenu = false;
-                var currMenu = {};
-                var menu;
+                    var submenus = this.categorizedSubmenus;
+                    var foundMenu = false;
+                    var currMenu = {};
+                    var menu;
 
-                for (var k in menus) {
-                    for (var i = 0; i < menus[k].length; i++) {
-                        menu = menus[k][i];
-                        if (menu.url === "#" + currLink) {
-                            foundMenu = true;
-                            currMenu = menu;
-                            break;
-                        }
-                    }
-
-                    if (foundMenu) {
-                        break;
-                    }
-                }
-
-                if (!foundMenu) {
-                    for (var l in submenus) {
-                        for (var j = 0; j < submenus[l].length; j++) {
-                            menu = submenus[l][j];
+                    for (var k in menus) {
+                        for (var i = 0; i < menus[k].length; i++) {
+                            menu = menus[k][i];
                             if (menu.url === "#" + currLink) {
                                 foundMenu = true;
                                 currMenu = menu;
@@ -215,16 +199,32 @@
                             break;
                         }
                     }
-                }
-                
 
-                if (foundMenu) {
-                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: currMenu});
-                }
-                else {
-                    // eslint-disable-next-line no-console
-                    console.log("Analytics menu not found. ", currLink, menus, submenus);
-                }
+                    if (!foundMenu) {
+                        for (var l in submenus) {
+                            for (var j = 0; j < submenus[l].length; j++) {
+                                menu = submenus[l][j];
+                                if (menu.url === "#" + currLink) {
+                                    foundMenu = true;
+                                    currMenu = menu;
+                                    break;
+                                }
+                            }
+
+                            if (foundMenu) {
+                                break;
+                            }
+                        }
+                    }
+
+
+                    if (foundMenu) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
+                    }
+                    else {
+                        // eslint-disable-next-line no-console
+                        console.log("Analytics menu not found. ", currLink, menus, submenus);
+                    }
 
                 }
             },
@@ -265,34 +265,34 @@
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
                 },
-                checkcurrentManagementTab: function() {
-                var currLink = Backbone.history.fragment;
+                checkcurrentManagementTab: function () {
+                    var currLink = Backbone.history.fragment;
 
-                if (/^\/custom/.test(currLink) === true) {
-                    return;
-                }
-                let fragmentedLink = currLink;
-                if (fragmentedLink.split("/").length > 2) {
-                    currLink = "";
-                    for (let i = 1; i < fragmentedLink.split("/").length; i++) {
-                        if (isNaN(Number(fragmentedLink.split("/")[i]))) {
-                            currLink = currLink + "/"+ fragmentedLink.split("/")[i];
+                    if (/^\/custom/.test(currLink) === true) {
+                        return;
+                    }
+                    var fragmentedLink = currLink;
+                    if (fragmentedLink.split("/").length > 2) {
+                        currLink = "";
+                        for (var i = 1; i < fragmentedLink.split("/").length; i++) {
+                            if (isNaN(Number(fragmentedLink.split("/")[i]))) {
+                                currLink = currLink + "/" + fragmentedLink.split("/")[i];
+                            }
                         }
                     }
-                }
 
-                var menu = this.menu;
-                var currMenu = menu.filter(function(m) {
-                    return m.url === "#" + currLink;
-                });
+                    var menu = this.menu;
+                    var currMenu = menu.filter(function (m) {
+                        return m.url === "#" + currLink;
+                    });
 
-                if (currMenu.length) {
-                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: currMenu[0]});
-                }
-                else {
-                    // eslint-disable-next-line no-console
-                    console.log("Management menu not found. ", currLink, menu);
-                }
+                    if (currMenu.length) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu[0] });
+                    }
+                    else {
+                        // eslint-disable-next-line no-console
+                        console.log("Management menu not found. ", currLink, menu);
+                    }
 
                 }
             },
