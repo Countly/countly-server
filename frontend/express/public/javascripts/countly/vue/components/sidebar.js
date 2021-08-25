@@ -172,8 +172,13 @@
 
                 var menus = this.categorizedMenus;
                 let fragmentedLink = currLink;
-                if(fragmentedLink.split("/").length > 2) {
-                    currLink = "/" + currLink.split("/")[1]
+                if (fragmentedLink.split("/").length > 2) {
+                    currLink = "";
+                    for (let i = 1; i < fragmentedLink.split("/").length; i++) {
+                        if (isNaN(Number(fragmentedLink.split("/")[i]))) {
+                            currLink = currLink + "/"+ fragmentedLink.split("/")[i];
+                        }
+                    }
                 }
                 var submenus = this.categorizedSubmenus;
                 var foundMenu = false;
@@ -268,7 +273,12 @@
                 }
                 let fragmentedLink = currLink;
                 if (fragmentedLink.split("/").length > 2) {
-                    currLink = "/" + currLink.split("/")[1]
+                    currLink = "";
+                    for (let i = 1; i < fragmentedLink.split("/").length; i++) {
+                        if (isNaN(Number(fragmentedLink.split("/")[i]))) {
+                            currLink = currLink + "/"+ fragmentedLink.split("/")[i];
+                        }
+                    }
                 }
 
                 var menu = this.menu;
