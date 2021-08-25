@@ -1502,7 +1502,7 @@
                         return {
                             label: countlyLocation.getCountryName(code),
                             value: code,
-                            icon: countlyGlobal.cdn + "images/new-flags/" + code.toLowerCase() + ".svg",
+                            icon: countlyGlobal.cdn + "images/flags/" + code.toLowerCase() + ".svg",
                             custom: self.countriesData[code] || {}
                         };
                     });
@@ -1735,7 +1735,7 @@
                 return name + "_" + moment.now();
             },
             countryIcon: function(code) {
-                return countlyGlobal.cdn + "images/new-flags/" + code.toLowerCase() + ".svg";
+                return countlyGlobal.cdn + "images/flags/" + code.toLowerCase() + ".svg";
             }
         },
         template: CV.T('/javascripts/countly/vue/templates/worldmap.html')
