@@ -27,14 +27,13 @@
             return rows;
         },
 
-        mapSessionOverviewDtoToModel: function() {
-            var sessionDP = countlySession.getSessionDP();
+        mapSessionOverviewDtoToModel: function(dto) {
             var sessionOverviewModel = {
                 series: [],
                 rows: []
             };
-            sessionOverviewModel.series = this.mapSessionOverviewSeries(sessionDP);
-            sessionOverviewModel.rows = this.mapSessionOverviewRows(sessionDP);
+            sessionOverviewModel.series = this.mapSessionOverviewSeries(dto);
+            sessionOverviewModel.rows = this.mapSessionOverviewRows(dto);
             return sessionOverviewModel;
         },
 
@@ -42,8 +41,9 @@
             var self = this;
             return new Promise(function(resolve, reject) {
                 Promise.all([countlySession.initialize(), countlyTotalUsers.initialize("users")])
-                    .then(function(response) {
-                        resolve(self.mapSessionOverviewDtoToModel(self.mapSessionOverviewDtoToModel(response)));
+                    .then(function() {
+                        var sessionDP = countlySession.getSessionDP();
+                        resolve(self.mapSessionOverviewDtoToModel(sessionDP));
                     }).catch(function(error) {
                         reject(error);
                     });
