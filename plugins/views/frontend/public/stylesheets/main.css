@@ -1,8 +1,8 @@
-.go-to-actions-link {
+.routename-views-home .go-to-actions-link {
   text-decoration: underline;
   cursor: pointer;
 }
 
-.views-date-picker-container {
+.routename-views-home .views-date-picker-container {
   margin-bottom: 32px;
 }

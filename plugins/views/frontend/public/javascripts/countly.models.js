@@ -2,6 +2,23 @@
 
 (function(countlyViews) {
 
+    //Private Properties
+    var _actionData = {},
+        _activeAppKey = 0,
+        _initialized = false,
+        _segment = "",
+        _segmentVal = "",
+        _segments = [],
+        _domains = [],
+        _name = "views",
+        _period = null,
+        _tableData = [],
+        _selectedViews = [],
+        _graphDataObj = {},
+        _viewsCount = 0,
+        _viewsNames = {};
+
+
     CountlyHelpers.createMetricModel(countlyViews, {name: "views"}, jQuery);
 
     countlyViews.service = {
@@ -18,18 +35,13 @@
                 "action": "getTotals"
             };
 
-            return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.data.r,
-                    data: data,
-                    dataType: "json",
-                }, {disableAutoCatch: true}).then(function(response) {
-                    resolve(response);
-                }).catch(function(error) {
-                    reject(error);
-                });
-            });
+
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: data,
+                dataType: "json",
+            }, {"disableAutoCatch": true});
 
         },
         fetchTotalViewsCount: function() {
@@ -40,22 +52,13 @@
             };
 
 
-            return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.data.r,
-                    data: data,
-                    dataType: "json",
-                }, {disableAutoCatch: true}).then(function(response) {
-                    var value = 0;
-                    if (response.result) {
-                        value = response.result;
-                    }
-                    resolve(value);
-                }).catch(function(error) {
-                    reject(error);
-                });
-            });
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: data,
+                dataType: "json",
+            }, {"disableAutoCatch": true});
+
 
         },
         updateViews: function(statusObj) {
@@ -313,7 +316,11 @@
             fetchTotalViewsCount: function(context) {
                 return countlyViews.service.fetchTotalViewsCount()
                     .then(function(response) {
-                        context.commit('setTotalViewCount', response || {});
+                        var value = 0;
+                        if (response.result) {
+                            value = response.result;
+                        }
+                        context.commit('setTotalViewCount', value);
                     }).catch(function(error) {
                         context.dispatch('onFetchError', error);
                     });
@@ -417,21 +424,6 @@
     };
 
 
-    //Private Properties
-    var _actionData = {},
-        _activeAppKey = 0,
-        _initialized = false,
-        _segment = "",
-        _segmentVal = "",
-        _segments = [],
-        _domains = [],
-        _name = "views",
-        _period = null,
-        _tableData = [],
-        _selectedViews = [],
-        _graphDataObj = {},
-        _viewsCount = 0,
-        _viewsNames = {};
 
     //graphData['appID'][]
     //Public Methods
@@ -571,8 +563,12 @@
 
     //currently this function is used from other parts in countly. Keeo wrapper.
     countlyViews.loadViewCount = function() {
-        return countlyViews.service.fetchTotalViewsCount().then(function(value) {
-            _viewsCount = value;
+        return countlyViews.service.fetchTotalViewsCount().then(function(response) {
+            if (response.result) {
+                _viewsCount = response.result;
+            }
+        }).catch(function() {
+
         });
 
     };

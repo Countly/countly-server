@@ -54,7 +54,8 @@
                             names.push(this.selectedViews[k].display);
                         }
                         this.deleteDialogTitle = CV.i18n('views.delete-many-confirm-title');
-                        this.deleteDialogText = CV.i18n('views.delete-confirm-many').replace("{0}", names.join(", "));
+
+                        this.deleteDialogText = CV.i18n('views.delete-confirm-many', names.join(", "));
                         this.deleteDialogConfirmText = CV.i18n('views.yes-delete-many-view');
                     }
                     this.showDeleteDialog = true;
