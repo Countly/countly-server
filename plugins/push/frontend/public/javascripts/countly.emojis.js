@@ -1,10 +1,6 @@
-/*global CV, countlyVue*/
-(function(countlyPushNotificationComponent) {
-    var escapeRegExp = function(s) {
-        return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    };
 
-    var emojis = {
+(function(countlyPushNotification) {
+    countlyPushNotification.emojis = {
         'Frequently used': {
             'thumbs_up': '👍',
             '-1': '👎',
@@ -653,78 +649,4 @@
             'small_blue_diamond': '🔹',
         }
     };
-
-    countlyPushNotificationComponent.EmojiPicker = countlyVue.views.create(
-        {
-            props: {
-                search: {
-                    type: String,
-                    required: false,
-                    default: '',
-                },
-                emojiTable: {
-                    type: Object,
-                    required: false,
-                    default: function() {
-                        return emojis;
-                    },
-                },
-            },
-            data: function() {
-                return {
-                    display: {
-                        x: 0,
-                        y: 0,
-                        visible: false,
-                    },
-                };
-            },
-            computed: {
-                emojis: function() {
-                    if (this.search) {
-                        var obj = {};
-                        for (var category in this.emojiTable) {
-                            obj[category] = {};
-                            for (var emoji in this.emojiTable[category]) {
-                                if (new RegExp(".*" + escapeRegExp(this.search) + ".*").test(emoji)) {
-                                    obj[category][emoji] = this.emojiTable[category][emoji];
-                                }
-                            }
-                            if (Object.keys(obj[category]).length === 0) {
-                                delete obj[category];
-                            }
-                        }
-                        return obj;
-                    }
-                    return this.emojiTable;
-                },
-            },
-            methods: {
-                insert: function(emoji) {
-                    this.$emit('emoji', emoji);
-                    this.hide();
-                },
-                toggle: function(e) {
-                    this.display.visible = !this.display.visible;
-                    this.display.x = e.clientX;
-                    this.display.y = e.clientY;
-                },
-                hide: function() {
-                    this.display.visible = false;
-                },
-                escape: function(e) {
-                    if (this.display.visible === true && e.keyCode === 27) {
-                        this.display.visible = false;
-                    }
-                },
-            },
-            mounted: function() {
-                document.addEventListener('keyup', this.escape);
-            },
-            destroyed: function() {
-                document.removeEventListener('keyup', this.escape);
-            },
-            template: CV.T("/push/templates/emoji-picker.html")
-        });
-
-})(window.countlyPushNotificationComponent = window.countlyPushNotificationComponent || {});
+})(window.countlyPushNotification = window.countlyPushNotification || {});
