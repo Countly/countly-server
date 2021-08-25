@@ -163,7 +163,7 @@
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
                 },
-                checkcurrentAnalyticsTab: function () {
+                checkcurrentAnalyticsTab: function() {
                     var currLink = Backbone.history.fragment;
 
                     if (/^\/custom/.test(currLink) === true) {
@@ -174,9 +174,9 @@
                     var fragmentedLink = currLink;
                     if (fragmentedLink.split("/").length > 2) {
                         currLink = "";
-                        for (var i = 1; i < fragmentedLink.split("/").length; i++) {
-                            if (isNaN(Number(fragmentedLink.split("/")[i]))) {
-                                currLink = currLink + "/" + fragmentedLink.split("/")[i];
+                        for (var iterator = 1; iterator < fragmentedLink.split("/").length; iterator++) {
+                            if (isNaN(Number(fragmentedLink.split("/")[iterator]))) {
+                                currLink = currLink + "/" + fragmentedLink.split("/")[iterator];
                             }
                         }
                     }
@@ -229,8 +229,7 @@
                 }
             },
             mounted: function() {
-                this.checkcurrentAnalyticsTab()
-                
+                this.checkcurrentAnalyticsTab();  
             }
         });
 
@@ -265,7 +264,7 @@
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
                 },
-                checkcurrentManagementTab: function () {
+                checkcurrentManagementTab: function() {
                     var currLink = Backbone.history.fragment;
 
                     if (/^\/custom/.test(currLink) === true) {
@@ -274,15 +273,15 @@
                     var fragmentedLink = currLink;
                     if (fragmentedLink.split("/").length > 2) {
                         currLink = "";
-                        for (var i = 1; i < fragmentedLink.split("/").length; i++) {
-                            if (isNaN(Number(fragmentedLink.split("/")[i]))) {
-                                currLink = currLink + "/" + fragmentedLink.split("/")[i];
+                        for (var iterator = 1; iterator < fragmentedLink.split("/").length; iterator++) {
+                            if (isNaN(Number(fragmentedLink.split("/")[iterator]))) {
+                                currLink = currLink + "/" + fragmentedLink.split("/")[iterator];
                             }
                         }
                     }
 
                     var menu = this.menu;
-                    var currMenu = menu.filter(function (m) {
+                    var currMenu = menu.filter(function(m) {
                         return m.url === "#" + currLink;
                     });
 
