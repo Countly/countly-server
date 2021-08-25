@@ -348,9 +348,6 @@
                                                 <template v-slot:trigger="triggerScope" v-if="field.trigger">\
                                                     <slot name="trigger" v-bind="triggerScope"></slot>\
                                                 </template>\
-                                                <template v-slot:label v-if="field.label">\
-                                                    <slot name="label"></slot>\
-                                                </template>\
                                                 <template v-slot:action v-if="field.action">\
                                                     <slot name="action"></slot>\
                                                 </template>\
