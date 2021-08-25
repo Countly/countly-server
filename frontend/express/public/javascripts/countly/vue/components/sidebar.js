@@ -162,9 +162,8 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
-                }
-            },
-            mounted: function() {
+                },
+                checkcurrentAnalyticsTab() {
                 var currLink = Backbone.history.fragment;
 
                 if (/^\/custom/.test(currLink) === true) {
@@ -172,6 +171,10 @@
                 }
 
                 var menus = this.categorizedMenus;
+                let fragmentedLink = currLink;
+                if(fragmentedLink.split("/").length > 2) {
+                    currLink = "/" + currLink.split("/")[1]
+                }
                 var submenus = this.categorizedSubmenus;
                 var foundMenu = false;
                 var currMenu = {};
@@ -208,6 +211,7 @@
                         }
                     }
                 }
+                
 
                 if (foundMenu) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: currMenu});
@@ -216,6 +220,12 @@
                     // eslint-disable-next-line no-console
                     console.log("Analytics menu not found. ", currLink, menus, submenus);
                 }
+
+                }
+            },
+            mounted: function() {
+                this.checkcurrentAnalyticsTab()
+                
             }
         });
 
@@ -249,13 +259,16 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
-                }
-            },
-            mounted: function() {
+                },
+                checkcurrentManagementTab: function() {
                 var currLink = Backbone.history.fragment;
 
                 if (/^\/custom/.test(currLink) === true) {
                     return;
+                }
+                let fragmentedLink = currLink;
+                if (fragmentedLink.split("/").length > 2) {
+                    currLink = "/" + currLink.split("/")[1]
                 }
 
                 var menu = this.menu;
@@ -270,6 +283,12 @@
                     // eslint-disable-next-line no-console
                     console.log("Management menu not found. ", currLink, menu);
                 }
+
+                }
+            },
+            mounted: function() {
+                this.checkcurrentManagementTab();
+                
             }
         });
 
