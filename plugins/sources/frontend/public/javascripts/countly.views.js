@@ -56,7 +56,9 @@
                     ]
                 },
                 dataMap: {},
-                sourcesDetailData: {}
+                sourcesDetailData: {},
+                hasDrill: false
+                
             };
         },
         methods: {
@@ -151,6 +153,10 @@
                     var chartsData = self.chartsDataPrepare(self.sourcesData);
                     self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
                     self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
+
+                    if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("drill") > -1) {
+                        self.hasDrill = true;
+                    }
                 });
         }
     });
