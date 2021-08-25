@@ -8,7 +8,7 @@
         </template>
     </cly-header>
     <cly-main>
-        <cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms" class="session-overview-date-picker-container"></cly-date-picker>
+        <cly-date-picker-g class="session-overview-date-picker-container"></cly-date-picker-g>
         <cly-section>
             <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading"></cly-chart-line>
         </cly-section>

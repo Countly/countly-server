@@ -11,15 +11,6 @@ var SessionOverviewView = countlyVue.views.create({
         isLoading: function() {
             return this.$store.state.countlySessionOverview.isLoading;
         },
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlySessionOverview.selectedDatePeriod;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlySessionOverview/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlySessionOverview/fetchAll');
-            }
-        },
         sessionOverviewRows: function() {
             return this.$store.state.countlySessionOverview.sessionOverview.rows;
         },
@@ -47,11 +38,11 @@ var SessionOverviewView = countlyVue.views.create({
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch('countlySessionOverview/fetchAll');
+            this.$store.dispatch('countlySessionOverview/fetchAll', false);
         }
     },
     mounted: function() {
-        this.$store.dispatch('countlySessionOverview/fetchAll');
+        this.$store.dispatch('countlySessionOverview/fetchAll', true);
     },
 });
 

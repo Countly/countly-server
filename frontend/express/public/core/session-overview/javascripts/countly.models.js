@@ -1,48 +1,52 @@
-/*global countlyVue, CV, countlyCommon, countlySession, CountlyHelpers, Promise*/
+/*global countlyVue,countlySession,countlyTotalUsers,Promise*/
 (function(countlySessionOverview) {
 
     countlySessionOverview.service = {
 
-        mapSessionOverviewDtoToModel: function(dto, period) {
-            countlySession.setDb(dto);
-            countlyCommon.setPeriod(period);
-            var sessionData = countlySession.getSessionDP();
-            var sessionOverviewModel = {
-                series: [],
-                rows: []
-            };
-            sessionOverviewModel.series = sessionData.chartDP;
-            sessionData.chartData.forEach(function(chartDataItem, index) {
-                sessionOverviewModel.rows[index] = {
+        mapSessionOverviewSeries: function(dto) {
+            return Object.keys(dto.chartDP).map(function(key) {
+                return {
+                    data: dto.chartDP[key].data.reduce(function(totalData, dataItems) {
+                        totalData.push(dataItems[1]);
+                        return totalData;
+                    }, []),
+                    label: dto.chartDP[key].label
+                };
+            });
+        },
+        mapSessionOverviewRows: function(dto) {
+            var rows = [];
+            dto.chartData.map(function(chartDataItem, index) {
+                rows[index] = {
                     date: chartDataItem.date,
                     totalSessions: chartDataItem.t,
                     newSessions: chartDataItem.n,
                     uniqueSessions: chartDataItem.u
                 };
             });
+            return rows;
+        },
+
+        mapSessionOverviewDtoToModel: function() {
+            var sessionDP = countlySession.getSessionDP();
+            var sessionOverviewModel = {
+                series: [],
+                rows: []
+            };
+            sessionOverviewModel.series = this.mapSessionOverviewSeries(sessionDP);
+            sessionOverviewModel.rows = this.mapSessionOverviewRows(sessionDP);
             return sessionOverviewModel;
         },
 
-        fetchSessionOverview: function(period) {
+        fetchSessionOverview: function() {
             var self = this;
-            var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                method: 'users',
-            };
-            if (period) {
-                data.period = CountlyHelpers.getPeriodUrlQueryParameter(period);
-            }
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.data.r,
-                    data: data,
-                    dataType: "json",
-                }).then(function(response) {
-                    resolve(self.mapSessionOverviewDtoToModel(response, period));
-                }).catch(function(error) {
-                    reject(error);
-                });
+                Promise.all([countlySession.initialize(), countlyTotalUsers.initialize("users")])
+                    .then(function(response) {
+                        resolve(self.mapSessionOverviewDtoToModel(self.mapSessionOverviewDtoToModel(response)));
+                    }).catch(function(error) {
+                        reject(error);
+                    });
             });
         }
     };
@@ -55,7 +59,6 @@
                     rows: [],
                     series: []
                 },
-                selectedDatePeriod: "day",
                 isLoading: false,
                 hasError: false,
                 error: null
@@ -63,18 +66,21 @@
         };
 
         var sessionOverviewActions = {
-            fetchAll: function(context) {
-                context.dispatch('onFetchInit');
+            fetchAll: function(context, useLoader) {
+                if (useLoader) {
+                    context.dispatch('onFetchInit');
+                }
                 countlySessionOverview.service.fetchSessionOverview(context.state.selectedDatePeriod)
                     .then(function(response) {
                         context.commit('setSessionOverview', response);
-                        context.dispatch('onFetchSuccess');
+                        if (useLoader) {
+                            context.dispatch('onFetchSuccess');
+                        }
                     }).catch(function(error) {
-                        context.dispatch('onFetchError', error);
+                        if (useLoader) {
+                            context.dispatch('onFetchError', error);
+                        }
                     });
-            },
-            onSetSelectedDatePeriod: function(context, period) {
-                context.commit('setSelectedDatePeriod', period);
             },
             onFetchInit: function(context) {
                 context.commit('setFetchInit');
@@ -90,9 +96,6 @@
         var sessionOverviewMutations = {
             setSessionOverview: function(state, value) {
                 state.sessionOverview = value;
-            },
-            setSelectedDatePeriod: function(state, value) {
-                state.selectedDatePeriod = value;
             },
             setFetchInit: function(state) {
                 state.isLoading = true;
@@ -110,7 +113,6 @@
                 state.error = null;
             }
         };
-
         return countlyVue.vuex.Module("countlySessionOverview", {
             state: getInitialState,
             actions: sessionOverviewActions,
