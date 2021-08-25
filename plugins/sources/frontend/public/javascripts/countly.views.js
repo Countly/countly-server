@@ -58,7 +58,6 @@
                 dataMap: {},
                 sourcesDetailData: {},
                 hasDrill: false
-                
             };
         },
         methods: {
