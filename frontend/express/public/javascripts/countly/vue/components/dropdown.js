@@ -342,6 +342,15 @@
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
                                             <cly-select-x v-bind="field" class="cly-multi-select__field-dropdown" :width="320" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                                <template v-slot:header="headerScope" v-if="field.header">\
+                                                    <slot name="header" v-bind="headerScope"></slot>\
+                                                </template>\
+                                                <template v-slot:trigger="triggerScope" v-if="field.trigger">\
+                                                    <slot name="trigger" v-bind="triggerScope"></slot>\
+                                                </template>\
+                                                <template v-slot:action v-if="field.action">\
+                                                    <slot name="action"></slot>\
+                                                </template>\
                                             </cly-select-x>\
                                         </tr>\
                                     </table>\

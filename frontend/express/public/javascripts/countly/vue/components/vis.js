@@ -446,6 +446,12 @@
         series-pie. radius - Useful for setting width of the pie chart
     */
     var BasePieChart = BaseChart.extend({
+        props: {
+            showZoom: {
+                type: Boolean,
+                default: false
+            }
+        },
         data: function() {
             return {
                 mixinOptions: {
