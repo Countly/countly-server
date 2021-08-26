@@ -115,7 +115,7 @@
                                 show: false
                             },
                             dataZoom: {
-                                show: false
+                                show: true
                             },
                             magicType: {
                                 show: false,
@@ -123,7 +123,8 @@
                             }
                         },
                         right: 15,
-                        top: 5
+                        top: 5,
+                        itemSize: 0
                     },
                     tooltip: {
                         show: true,
@@ -628,6 +629,54 @@
                     </div>"
     });
 
+    var ZoomInteractive = countlyBaseComponent.extend({
+        props: {
+            echartRef: {
+                type: Object
+            }
+        },
+        data: function() {
+            return {
+                zoomStatus: false
+            };
+        },
+        methods: {
+            enableZoom: function() {
+                var zoomStatus;
+
+                if (this.zoomStatus) {
+                    zoomStatus = false;
+                }
+                else {
+                    zoomStatus = true;
+                }
+
+                this.echartRef.dispatchAction({
+                    type: "takeGlobalCursor",
+                    key: 'dataZoomSelect',
+                    dataZoomSelectActive: zoomStatus
+                });
+
+                this.zoomStatus = zoomStatus;
+            },
+            resetZoom: function() {
+                this.echartRef.dispatchAction({
+                    type: "restore",
+                });
+
+                this.zoomStatus = false;
+            }
+        },
+        template: '<div>\
+                        <el-button @click="enableZoom" size="small"\
+                            icon="ion-plus-round">\
+                        </el-button>\
+                        <el-button @click="resetZoom" size="small"\
+                            icon="ion-close-round">\
+                        </el-button>\
+                    </div>'
+    });
+
     var MagicSwitch = countlyBaseComponent.extend({
         props: {
             echartRef: {
@@ -683,6 +732,7 @@
         },
         components: {
             "zoom-dropdown": ZoomDropdown,
+            "zoom-interactive": ZoomInteractive,
             "chart-toggle": MagicSwitch
         },
         methods: {
@@ -721,6 +771,7 @@
                         </div>\
                         <div class="bu-level-right">\
                             <slot name="chart-right" v-bind:echart="echartRef"></slot>\
+                            <zoom-interactive v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
                             <div class="bu-level-item" v-if="showDownload">\
                                 <el-button @click="downloadImage" size="small" icon="el-icon-download"></el-button>\
                             </div>\
