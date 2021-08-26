@@ -60,16 +60,19 @@
                     value: dto.usage['total-sessions'].total,
                     percentage: this.mapChangeDto(dto.usage['total-sessions'].change),
                     trend: this.mapTrendDto(dto.usage['total-sessions'].trend),
+                    tooltip: CV.i18n("common.total-sessions-description")
                 },
                 {
                     name: CV.i18n("common.new-sessions"),
                     value: dto.usage['new-users'].total,
                     percentage: this.mapChangeDto(dto.usage['new-users'].change),
                     trend: this.mapTrendDto(dto.usage['new-users'].trend),
+                    tooltip: CV.i18n("common.new-sessions-description")
                 },
                 {
                     name: CV.i18n("common.unique-sessions"),
                     value: dto.usage['unique-sessions'].total,
+                    tooltip: CV.i18n("common.unique-sessions-description")
                 }
             ];
         },

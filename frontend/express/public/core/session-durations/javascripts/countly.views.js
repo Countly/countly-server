@@ -54,7 +54,7 @@ var SessionDurationsView = countlyVue.views.create({
 countlyVue.container.registerTab("/analytics/sessions", {
     priority: 2,
     name: "durations",
-    title: "Session Durations",
+    title: CV.i18n('session-durations.title'),
     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/durations",
     component: SessionDurationsView,
     vuex: [{

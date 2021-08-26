@@ -104,7 +104,7 @@ app.route("/analytics/sessions/*tab", "sessions-tab", function(tab) {
 countlyVue.container.registerTab("/analytics/sessions", {
     priority: 1,
     name: "overview",
-    title: "Session Overview",
+    title: CV.i18n('session-overview.title'),
     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/overview",
     component: SessionOverviewView,
     vuex: [{
