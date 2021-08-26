@@ -163,28 +163,12 @@
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
                 },
-                checkcurrentAnalyticsTab: function() {
-                    var currLink = Backbone.history.fragment;
-
-                    if (/^\/custom/.test(currLink) === true) {
-                        return;
-                    }
-
+                checkcurrentAnalyticsTab: function(currLink) {
                     var menus = this.categorizedMenus;
-                    var fragmentedLink = currLink;
-                    if (fragmentedLink.split("/").length > 2) {
-                        currLink = "";
-                        for (var iterator = 1; iterator < fragmentedLink.split("/").length; iterator++) {
-                            if (isNaN(Number(fragmentedLink.split("/")[iterator]))) {
-                                currLink = currLink + "/" + fragmentedLink.split("/")[iterator];
-                            }
-                        }
-                    }
                     var submenus = this.categorizedSubmenus;
                     var foundMenu = false;
                     var currMenu = {};
                     var menu;
-
                     for (var k in menus) {
                         for (var i = 0; i < menus[k].length; i++) {
                             menu = menus[k][i];
@@ -225,11 +209,25 @@
                         // eslint-disable-next-line no-console
                         console.log("Analytics menu not found. ", currLink, menus, submenus);
                     }
+                    return foundMenu;
 
                 }
             },
             mounted: function() {
-                this.checkcurrentAnalyticsTab();
+                var currLink = Backbone.history.fragment;
+                if (/^\/custom/.test(currLink) === true) {
+                    return;
+                }
+                var fragmentedLink = currLink;
+                currLink = "";
+                for (var iterator = 1; iterator < fragmentedLink.split("/").length; iterator++) {
+                    currLink = currLink + "/" + fragmentedLink.split("/")[iterator];
+                    if (this.checkcurrentAnalyticsTab(currLink)) {
+                        break;
+
+                    }
+
+                }
             }
         });
 
@@ -264,22 +262,7 @@
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
                 },
-                checkcurrentManagementTab: function() {
-                    var currLink = Backbone.history.fragment;
-
-                    if (/^\/custom/.test(currLink) === true) {
-                        return;
-                    }
-                    var fragmentedLink = currLink;
-                    if (fragmentedLink.split("/").length > 2) {
-                        currLink = "";
-                        for (var iterator = 1; iterator < fragmentedLink.split("/").length; iterator++) {
-                            if (isNaN(Number(fragmentedLink.split("/")[iterator]))) {
-                                currLink = currLink + "/" + fragmentedLink.split("/")[iterator];
-                            }
-                        }
-                    }
-
+                checkcurrentManagementTab: function(currLink) {
                     var menu = this.menu;
                     var currMenu = menu.filter(function(m) {
                         return m.url === "#" + currLink;
@@ -296,7 +279,20 @@
                 }
             },
             mounted: function() {
-                this.checkcurrentManagementTab();
+                var currLink = Backbone.history.fragment;
+                if (/^\/custom/.test(currLink) === true) {
+                    return;
+                }
+                var fragmentedLink = currLink;
+                currLink = ""
+                for (var iterator = 1; iterator < fragmentedLink.split("/").length; iterator++) {
+                        currLink = currLink + "/" + fragmentedLink.split("/")[iterator];
+                        if(this.checkcurrentManagementTab(currLink)) {
+                            break;
+
+                        }
+                    
+                }
             }
         });
 
