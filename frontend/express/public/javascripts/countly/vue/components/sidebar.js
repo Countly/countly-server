@@ -163,25 +163,28 @@
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
                 },
-                checkcurrentAnalyticsTab: function(currLink) {
+                checkCurrentAnalyticsTab: function(currLink) {
                     var fragmentedLink = currLink;
                     var menus = this.categorizedMenus;
                     var submenus = this.categorizedSubmenus;
                     var foundMenu = false;
                     var currMenu = {};
+                    var part1 = "";
+                    var part2 = "";
                     var menu;
                     for (var k in menus) {
                         for (var i = 0; i < menus[k].length; i++) {
                             menu = menus[k][i];
                             if (fragmentedLink.split("/").length > 2) {
-                                var part1 = "/" + fragmentedLink.split("/")[1];
-                                var part2 = part1 + "/" + fragmentedLink.split("/")[2];
+                                part1 = "/" + fragmentedLink.split("/")[1];
+                                part2 = part1 + "/" + fragmentedLink.split("/")[2];
                                 if (menu.url === "#" + part1 || menu.url === "#" + part2) {
                                     foundMenu = true;
                                     currMenu = menu;
                                     break;
                                 }
-                            } else {
+                            }
+                            else {
                                 if (menu.url === "#" + currLink) {
                                     foundMenu = true;
                                     currMenu = menu;
@@ -200,14 +203,15 @@
                             for (var j = 0; j < submenus[l].length; j++) {
                                 menu = submenus[l][j];
                                 if (fragmentedLink.split("/").length > 2) {
-                                    var part1 = "/" + fragmentedLink.split("/")[1];
-                                    var part2 = part1 + "/" + fragmentedLink.split("/")[2];
+                                    part1 = "/" + fragmentedLink.split("/")[1];
+                                    part2 = part1 + "/" + fragmentedLink.split("/")[2];
                                     if (menu.url === "#" + part1 || menu.url === "#" + part2) {
                                         foundMenu = true;
                                         currMenu = menu;
                                         break;
                                     }
-                                } else {
+                                }
+                                else {
                                     if (menu.url === "#" + currLink) {
                                         foundMenu = true;
                                         currMenu = menu;
@@ -230,7 +234,6 @@
                         // eslint-disable-next-line no-console
                         console.log("Analytics menu not found. ", currLink, menus, submenus);
                     }
-                    return foundMenu;
 
                 }
             },
@@ -239,7 +242,7 @@
                 if (/^\/custom/.test(currLink) === true) {
                     return;
                 }
-                this.checkcurrentAnalyticsTab(currLink);
+                this.checkCurrentAnalyticsTab(currLink);
             }
         });
 
@@ -274,20 +277,20 @@
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
                 },
-                checkcurrentManagementTab: function(currLink) {
+                checkCurrentManagementTab: function(currLink) {
                     var menu = this.menu;
                     var fragmentedLink = currLink;
                     if (fragmentedLink.split("/").length > 2) {
                         var part1 = "/" + fragmentedLink.split("/")[1];
                         var part2 = part1 + "/" + fragmentedLink.split("/")[2];
-                        var currMenu = menu.filter(function (m) {
+                        var currMenu = menu.filter(function(m) {
                             return (m.url === "#" + part1 || m.url === "#" + part2);
                         });
-                    } else {
-                        var currMenu = menu.filter(function (m) {
+                    }
+                    else {
+                        currMenu = menu.filter(function(m) {
                             return m.url === currLink;
                         });
-
                     }
 
                     if (currMenu.length) {
@@ -305,7 +308,7 @@
                 if (/^\/custom/.test(currLink) === true) {
                     return;
                 }
-                this.checkcurrentManagementTab(currLink);
+                this.checkCurrentManagementTab(currLink);
             }
         });
 
