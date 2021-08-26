@@ -1,4 +1,4 @@
-/*global countlyAuth, _,$,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,countlyVue,CV,Vue */
+/*global countlyAuth, _,$,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,countlyVue,CV */
 
 (function() {
     var FEATURE_PLUGIN_NAME = "global_plugins";
@@ -42,9 +42,6 @@
                 row.deps = Object.keys(row.dependents).map(function(item) {
                     return countlyPlugins.getTitle(item);
                 }).join(", ");
-            },
-            refresh: function() {
-
             },
             updateStatus: function(scope) {
                 this.scope = scope;
@@ -357,9 +354,6 @@
                 });
         },
         methods: {
-            refresh: function() {
-
-            },
             goBack: function() {
                 app.back();
             },
@@ -529,28 +523,6 @@
         }
     });
 
-    Vue.component("cly-account-field", countlyVue.components.BaseComponent.extend({
-        props: {
-            label: String
-        },
-        template: '<div class="cly-vue-form-field cly-vue-form-step__section bu-columns bu-is-vcentered bu-px-1 bu-mx-1">\
-                        <div class="bu-column bu-is-4 bu-p-0">\
-                            <p class="bu-has-text-weight-medium">{{label}} <span v-if="$attrs.rules && $attrs.rules.indexOf(\'required\') !== -1">*</span></p>\
-                        </div>\
-                        <div class="bu-column bu-is-8 bu-has-text-left bu-p-0">\
-                            <validation-provider v-if="$attrs.rules" :name="label" v-bind="$attrs" v-on="$listeners" v-slot="validation">\
-                                <div class="cly-vue-form-field__inner el-form-item el-form-item__content" :class="{\'is-error\': validation.errors.length > 0}">\
-                                    <slot v-bind="validation"/>\
-                                    <div v-if="validation.errors.length" class="el-form-item__error">{{validation.errors[0]}}</div>\
-                                </div>\
-                            </validation-provider>\
-                            <div v-else class="cly-vue-form-field__inner el-form-item el-form-item__content">\
-                                <slot/>\
-                            </div>\
-                        </div>\
-                  </div>'
-    }));
-
     var AccountView = countlyVue.views.create({
         template: CV.T('/plugins/templates/account-settings.html'),
         data: function() {
@@ -617,9 +589,6 @@
                 });
         },
         methods: {
-            refresh: function() {
-
-            },
             onChange: function(key, value) {
                 if (!this.changes[this.selectedConfig]) {
                     this.changes[this.selectedConfig] = {};

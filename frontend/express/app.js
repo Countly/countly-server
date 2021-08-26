@@ -1391,7 +1391,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
                     countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
                         fs.unlink(tmp_path, function() {});
-                        res.send(countlyConfig.path + "/appimages/" + req.body.app_image_id + ".png");
+                        res.send("appimages/" + req.body.app_image_id + ".png");
                     });
                 }); // save
             });
@@ -1432,8 +1432,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
                     countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
                         fs.unlink(tmp_path, function() {});
-                        countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.session.uid + "")}, {'$set': {'member_image': countlyConfig.path + "/memberimages/" + req.body.member_image_id + ".png"}}, function() {
-                            res.send(countlyConfig.path + "/memberimages/" + req.body.member_image_id + ".png");
+                        countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.session.uid + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
+                            res.send("memberimages/" + req.body.member_image_id + ".png");
                         });
                     });
                 }); // save

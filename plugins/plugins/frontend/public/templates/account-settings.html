@@ -16,19 +16,19 @@
                                 @submit="save">
                                 <template v-slot="formScope">
                                     <cly-form-step :id="formId">
-                                        <cly-account-field rules="required" :label="i18n('user-settings.username')" prop="username">
+                                        <cly-inline-form-field rules="required" :label="i18n('user-settings.username')" prop="username">
                                             <el-input :placeholder="i18n('user-settings.username')" v-model="formScope.editedObject.username"></el-input>
-                                        </cly-account-field>
-                                        <cly-account-field rules="required" :label="i18n('management-users.full-name')" prop="full_name">
+                                        </cly-inline-form-field>
+                                        <cly-inline-form-field rules="required" :label="i18n('management-users.full-name')" prop="full_name">
                                             <el-input :placeholder="i18n('management-users.full-name')" v-model="formScope.editedObject.full_name" @input="nameChanged"></el-input>
-                                        </cly-account-field>
-                                        <cly-account-field rules="required" :label="i18n('user-settings.api-key')" prop="api_key">
+                                        </cly-inline-form-field>
+                                        <cly-inline-form-field rules="required" :label="i18n('user-settings.api-key')" prop="api_key">
                                             <el-input :placeholder="i18n('user-settings.api-key')" v-model="formScope.editedObject.api_key"></el-input>
-                                        </cly-account-field>
-                                        <cly-account-field :label="i18n('management-users.password')">
+                                        </cly-inline-form-field>
+                                        <cly-inline-form-field :label="i18n('management-users.password')">
                                             <el-button @click="changePassword.showDialog = true">{{i18n('user-settings.change-password')}}</el-button>
-                                        </cly-account-field>
-                                        <cly-account-field :key="key" :label="getLabelName(key)" v-for="(conf, key) in userConfigs.frontend">
+                                        </cly-inline-form-field>
+                                        <cly-inline-form-field :key="key" :label="getLabelName(key)" v-for="(conf, key) in userConfigs.frontend">
                                             <div 
                                                 v-if="getInputType(key) === 'function'" 
                                                 v-html="predefinedInputs[selectedConfig + '.' + key](conf)">
@@ -77,10 +77,10 @@
                                                 @input="onChange(key, $event)"
                                                 :value="conf">
                                             </el-input>
-                                        </cly-account-field>
+                                        </cly-inline-form-field>
                                     </cly-form-step>
                                     <div class="bu-has-text-right">
-                                        <el-button :disabled="!formScope.isSubmissionAllowed" @click="formScope.submit()" type="primary">Apply</el-button>
+                                        <el-button :disabled="!formScope.isSubmissionAllowed" @click="formScope.submit()" type="primary">{{i18n('common.apply')}}</el-button>
                                     </div>
                                 </template>
                             </cly-form>
@@ -88,7 +88,7 @@
                         <div class="bu-column bu-is-3 bu-ml-4 bu-px-4 bu-py-0 account-settings-avatar-box">
                             <div class="bu-is-vcentered bu-px-3 bu-ml-4">
                                 <el-upload 
-                                    action="/member/icon" 
+                                    action="member/icon" 
                                     :on-success="handleAvatarSuccess"
                                     :data="uploadData"
                                     :show-file-list="true"
@@ -139,9 +139,9 @@
                     <li>{{i18n('configs.will-permanently-delete')}}</li>
                 </ul>
                 <span>{{i18n('configs.confirm-for-delete')}}</span>
-                <cly-account-field rules="required" :label="i18n('management-users.password')">
+                <cly-inline-form-field rules="required" :label="i18n('management-users.password')">
                     <el-input type="password" :placeholder="i18n('management-users.password')" v-model="deleteAccount.password"></el-input>
-                </cly-account-field>
+                </cly-inline-form-field>
             </template>
         </cly-confirm-dialog>
         <cly-confirm-dialog @cancel="changePassword.showDialog = false" @confirm="passwordDialog" :visible.sync="changePassword.showDialog" :saveButtonLabel="changePassword.saveButtonLabel" :cancelButtonLabel="changePassword.cancelButtonLabel" :title="changePassword.title" >

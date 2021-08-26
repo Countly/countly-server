@@ -45,6 +45,9 @@
                 var apps = _.sortBy(countlyGlobal.apps, function(app) {
                     return (app.name + "").toLowerCase();
                 });
+                if (countlyGlobal.member.appSortList) {
+                    apps = this.sortBy(apps, countlyGlobal.member.appSortList);
+                }
 
                 apps = apps.map(function(a) {
                     a.label = a.name;
@@ -162,7 +165,37 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
-                }
+                },
+                sortBy: function(arrayToSort, sortList) {
+                    if (!sortList.length) {
+                        return arrayToSort;
+                    }
+
+                    var tmpArr = [],
+                        retArr = [];
+
+                    var i;
+                    for (i = 0; i < arrayToSort.length; i++) {
+                        var objId = arrayToSort[i]._id + "";
+                        if (sortList.indexOf(objId) !== -1) {
+                            tmpArr[sortList.indexOf(objId)] = arrayToSort[i];
+                        }
+                    }
+
+                    for (i = 0; i < tmpArr.length; i++) {
+                        if (tmpArr[i]) {
+                            retArr[retArr.length] = tmpArr[i];
+                        }
+                    }
+
+                    for (i = 0; i < arrayToSort.length; i++) {
+                        if (retArr.indexOf(arrayToSort[i]) === -1) {
+                            retArr[retArr.length] = arrayToSort[i];
+                        }
+                    }
+
+                    return retArr;
+                },
             },
             mounted: function() {
                 var currLink = Backbone.history.fragment;
