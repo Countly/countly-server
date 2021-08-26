@@ -55,19 +55,12 @@
         font-family: t.$font-family;
         color: #333c48;
     }
-    &--green {
-        color: #12AF51;
-        padding-left: 8px;
-        font-size: 14px;
+    &__trend {
         font-weight: 500;
         line-height: 14px;
     }
-    &--red {
-        padding-left: 8px;
-        color: red;
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 14px;
+    &__arrow {
+        padding-right: 3px;
     }
 }
 .cly-vue-events-overview-top-events {
@@ -76,17 +69,12 @@
     &--tooltip {
         margin-left: 5.5px;
     }
-    &--green {
-        color: #12AF51;
-        font-size: 14px;
+    &__description {
         font-weight: 500;
         line-height: 14px;
     }
-    &--red {
-        color: red;
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 14px;
+    &__trend {
+        padding-right: 3px;
     }
 }
 .cly-vue-events-overview-monitor-events {
@@ -106,6 +94,33 @@
     &__datepicker-section {
         padding-left:24px
     }
+    &__configure {
+        &--position {
+            float:right;
+            margin-left: auto;
+        }
+    }
+}
+
+.cly-events-overview-drawer {
+&__subheading {
+    font-size: t.$heading-4-size;
+    line-height: t.$heading-4-line-height;
+    font-weight: t.$heading-4-weight;
+    font-family: t.$font-family;
+}
+&--dragicon {
+    margin-right:18px;
+}
+&__event-records {
+    border-radius: 6px;
+    width: 100%;
+    padding: 14px 16px;
+    background-color: map.get(c.$colors, "cool-gray-10");
+}
+&__basis {
+    flex-basis: 0;
+}
 }
 
 .cly-monitor-events-breakdown-horizontal-tile {
@@ -162,19 +177,12 @@
         font-weight: 300;
         line-height: 20px;
     }
-    &--green {
-        color: #12AF51;
-        padding-left: 8px;
-        font-size: 14px;
+    &__trend {
         font-weight: 500;
         line-height: 14px;
     }
-    &--red {
-        padding-left: 8px;
-        color: red;
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 14px;
+    &__arrow {
+        padding-right: 3px;
     }
 }
 

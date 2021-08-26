@@ -394,8 +394,8 @@
             if (groupData.isGroup) {
                 return {
                     count: groupData.displayMap.c ? groupData.displayMap.c : CV.i18n("events.overview.count"),
-                    sum: groupData.displayMap.c ? groupData.displayMap.s : CV.i18n("events.overview.sum"),
-                    dur: groupData.displayMap.c ? groupData.displayMap.d : CV.i18n("events.overview.duration")
+                    sum: groupData.displayMap.s ? groupData.displayMap.s : CV.i18n("events.overview.sum"),
+                    dur: groupData.displayMap.d ? groupData.displayMap.d : CV.i18n("events.overview.duration")
                 };
             }
             return {

@@ -20,19 +20,19 @@
 			  <cly-metric-card :number=eventsOverview[0].value color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 				{{eventsOverview[0].name}}
 				<cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
-				<span v-if="eventsOverview[0].trend='d'" slot="description" class="cly-vue-events-overview-top-events--red"><i class="fas fa-arrow-down"></i>{{eventsOverview[0].change}}</span>
-				<span v-else slot="description" class="cly-vue-events-overview-top-events--green"><i class="fas fa-arrow-up"></i>{{eventsOverview[0].change}}</span>
+				<span v-if="eventsOverview[0].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-down"></i>{{eventsOverview[0].change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-up"></i>{{eventsOverview[0].change}}</span>
 			  </cly-metric-card>
 			  <cly-metric-card :is-percentage="true" :number=eventsOverview[1].value color="#097EFF" :label=eventsOverview[1].name numberClasses="bu-is-flex bu-is-align-items-center">
 				<div slot="number">{{eventsOverview[1].value}}</div>
-				<span v-if="eventsOverview[1].trend='d'" slot="description" class="cly-vue-events-overview-top-events--red"><i class="fas fa-arrow-down"></i>{{eventsOverview[1].change}}</span>
-				<span v-else slot="description" class="cly-vue-events-overview-top-events--green"><i class="fas fa-arrow-up"></i>{{eventsOverview[1].change}}</span>
+				<span v-if="eventsOverview[1].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-down"></i>{{eventsOverview[1].change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-up"></i>{{eventsOverview[1].change}}</span>
 			  </cly-metric-card>
 			  <cly-metric-card :number=eventsOverview[2].value color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 				{{eventsOverview[2].name}}
 				<cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
-				<span v-if="eventsOverview[2].trend='d'" slot="description" class="cly-vue-events-overview-top-events--red"><i class="fas fa-arrow-down"></i>{{eventsOverview[2].change}}</span>
-				<span v-else slot="description" class="cly-vue-events-overview-top-events--green"><i class="fas fa-arrow-up"></i>{{eventsOverview[2].change}}</span>
+				<span v-if="eventsOverview[2].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-down"></i>{{eventsOverview[2].change}}</span>
+				<span v-else slot="description" class="cly-vue-events-overview-top-events__description cly-trend-up"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-up"></i>{{eventsOverview[2].change}}</span>
 			  </cly-metric-card>
 			</cly-metric-cards>
 		  </cly-section>
@@ -65,6 +65,10 @@
 		  <div class="bu-is-flex bu-mb-4">
 			<h3 class="cly-vue-events-overview-subheadings">{{i18n('events.overview.monitor')}} </h3>
 			<cly-tooltip-icon class="cly-vue-events-overview-subheadings--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
+			<div class="cly-vue-events-overview-monitor-events__configure--position">
+				<el-button @click="configureOverview" size="small">{{i18n('events.overview.events.configure.events')}}
+				</el-button>  
+			</div>
 		  </div>
 		  <cly-section class="cly-vue-events-overview-monitor-events">
 			<div>
@@ -89,6 +93,7 @@
 			  </div>
 			</div>
 		  </cly-section>
+		  <overview-drawer :controls="drawers.configureDrawer" :selectedEvents=selectedEvents ></overview-drawer>
 		</cly-main>
 	  </div>		
 </script>
