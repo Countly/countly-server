@@ -7,7 +7,7 @@
             var sessionDurationsSerieData = dto.chartData.map(function(chartDataItem) {
                 return chartDataItem.t;
             });
-            return [{data: sessionDurationsSerieData, label: CV.i18n("session-durations.title")}]
+            return [{data: sessionDurationsSerieData, label: CV.i18n("session-durations.title")}];
         },
         mapSessionDurationsRows: function(dto) {
             var rows = [];
