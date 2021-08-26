@@ -156,7 +156,7 @@
             }
             return mapping;
         },
-        getEventProperties(context, selectedEventName) {
+        getEventProperties: function(context, selectedEventName) {
             var obj;
             if (selectedEventName.startsWith('[CLY]_group')) {
                 context.state.overviewGroupData.every(function(item) {
@@ -197,7 +197,7 @@
             }
             return obj;
         },
-        getConfigureOverview(context) {
+        getConfigureOverview: function(context) {
             return context.state.monitorEvents.overview.slice();
         }
     };
