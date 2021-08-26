@@ -584,10 +584,12 @@
 
                 if (this.exportApi) {
                     formData = this.exportApi();
+                    formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/request");
                 }
                 else if (this.exportQuery) {
                     formData = this.exportQuery();
+                    formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/db");
                 }
                 else if (this.dataSource) { // default export logic for server tables

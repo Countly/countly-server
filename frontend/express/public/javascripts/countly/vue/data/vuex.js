@@ -245,6 +245,9 @@
                 var legacyOptions = _dataTableAdapters.toLegacyRequest(requestParams, options.columns);
                 legacyOptions.sEcho = context.state[counterField];
                 _.extend(requestOptions.data, legacyOptions);
+                if (options.onOverrideRequest) {
+                    options.onOverrideRequest(context, requestOptions);
+                }
                 if (actionParams && actionParams._silent === false) {
                     context.commit(_capitalized("set", statusKey), "pending");
                 }
@@ -258,6 +261,9 @@
                 .then(function(res) {
                     if (!res) {
                         return;
+                    }
+                    if (options.onOverrideResponse) {
+                        options.onOverrideResponse(context, res);
                     }
                     var convertedResponse = _dataTableAdapters.toStandardResponse(res, requestOptions);
                     if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
