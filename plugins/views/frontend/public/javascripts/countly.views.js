@@ -808,15 +808,6 @@
             isLoading: function() {
                 return this.$store.state.countlyViewsPerSession.isLoading;
             },
-            selectedDatePeriod: {
-                get: function() {
-                    return this.$store.state.countlyViewsPerSession.selectedDatePeriod;
-                },
-                set: function(value) {
-                    this.$store.dispatch('countlyViewsPerSession/onSetSelectedDatePeriod', value);
-                    this.$store.dispatch('countlyViewsPerSession/fetchAll');
-                }
-            },
             viewsPerSessionRows: function() {
                 return this.$store.state.countlyViewsPerSession.viewsPerSession.rows;
             },
@@ -844,11 +835,11 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyViewsPerSession/fetchAll');
+                this.$store.dispatch('countlyViewsPerSession/fetchAll', false);
             }
         },
         mounted: function() {
-            this.$store.dispatch('countlyViewsPerSession/fetchAll');
+            this.$store.dispatch('countlyViewsPerSession/fetchAll', true);
         },
     });
 
