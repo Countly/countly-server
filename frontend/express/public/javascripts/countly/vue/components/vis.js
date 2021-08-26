@@ -671,7 +671,7 @@
                         <el-button @click="enableZoom" size="small"\
                             icon="ion-plus-round">\
                         </el-button>\
-                        <el-button @click="resetZoom" size="small"\
+                        <el-button @click="resetZoom" v-show="zoomStatus" size="small"\
                             icon="ion-close-round">\
                         </el-button>\
                     </div>'
