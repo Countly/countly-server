@@ -13,15 +13,6 @@ var SessionFrequencyView = countlyVue.views.create({
         isLoading: function() {
             return this.$store.state.countlySessionFrequency.isLoading;
         },
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlySessionFrequency.selectedDatePeriod;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlySessionFrequency/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlySessionFrequency/fetchAll');
-            }
-        },
         sessionFrequencyRows: function() {
             return this.$store.state.countlySessionFrequency.sessionFrequency.rows;
         },
