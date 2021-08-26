@@ -47,11 +47,15 @@ var SessionOverviewView = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.$store.dispatch('countlySessionOverview/fetchAll', false);
+        },
+        dateChanged: function() {
+            this.$store.dispatch('countlySessionOverview/fetchAll', true);
         }
     },
     mounted: function() {
         this.$store.dispatch('countlySessionOverview/fetchAll', true);
     },
+
 });
 
 //Note: the parent component that renders all session analytics tabs.

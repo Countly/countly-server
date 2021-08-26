@@ -41,6 +41,9 @@ var SessionDurationsView = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.$store.dispatch('countlySessionDurations/fetchAll', false);
+        },
+        dateChanged: function() {
+            this.$store.dispatch('countlySessionDurations/fetchAll', true);
         }
     },
     mounted: function() {

@@ -119,19 +119,16 @@
 
         var sessionOverviewActions = {
             fetchAll: function(context, useLoader) {
-                if (useLoader) {
-                    context.dispatch('onFetchInit');
-                }
-                countlySessionOverview.service.fetchSessionOverview(context.state.selectedDatePeriod)
+                context.dispatch('onFetchInit');
+                context.dispatch('setIsLoadingIfNecessary', {useLoader: useLoader, value: true});
+                countlySessionOverview.service.fetchSessionOverview()
                     .then(function(response) {
                         context.commit('setSessionOverview', response);
-                        if (useLoader) {
-                            context.dispatch('onFetchSuccess');
-                        }
+                        context.dispatch('onFetchSuccess');
+                        context.dispatch('setIsLoadingIfNecessary', {useLoader: useLoader, value: false});
                     }).catch(function(error) {
-                        if (useLoader) {
-                            context.dispatch('onFetchError', error);
-                        }
+                        context.dispatch('onFetchError', error);
+                        context.dispatch('setIsLoadingIfNecessary', {useLoader: useLoader, value: false});
                     });
             },
             onFetchInit: function(context) {
@@ -143,6 +140,11 @@
             onFetchSuccess: function(context) {
                 context.commit('setFetchSuccess');
             },
+            setIsLoadingIfNecessary: function(context, payload) {
+                if (payload.useLoader) {
+                    context.commit('setIsLoading', payload.value);
+                }
+            }
         };
 
         var sessionOverviewMutations = {
@@ -150,19 +152,19 @@
                 state.sessionOverview = value;
             },
             setFetchInit: function(state) {
-                state.isLoading = true;
                 state.hasError = false;
                 state.error = null;
             },
             setFetchError: function(state, error) {
-                state.isLoading = false;
                 state.hasError = true;
                 state.error = error;
             },
             setFetchSuccess: function(state) {
-                state.isLoading = false;
                 state.hasError = false;
                 state.error = null;
+            },
+            setIsLoading: function(state, value) {
+                state.isLoading = value;
             }
         };
         return countlyVue.vuex.Module("countlySessionOverview", {

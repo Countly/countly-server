@@ -836,6 +836,9 @@
         methods: {
             refresh: function() {
                 this.$store.dispatch('countlyViewsPerSession/fetchAll', false);
+            },
+            dateChanged: function() {
+                this.$store.dispatch('countlyViewsPerSession/fetchAll', true);
             }
         },
         mounted: function() {

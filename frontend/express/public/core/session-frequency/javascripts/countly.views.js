@@ -40,11 +40,14 @@ var SessionFrequencyView = countlyVue.views.create({
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch('countlySessionFrequency/fetchAll');
+            this.$store.dispatch('countlySessionFrequency/fetchAll', false);
+        },
+        dateChanged: function() {
+            this.$store.dispatch('countlySessionFrequency/fetchAll', true);
         }
     },
     mounted: function() {
-        this.$store.dispatch('countlySessionFrequency/fetchAll');
+        this.$store.dispatch('countlySessionFrequency/fetchAll', false);
     },
 });
 

@@ -59,19 +59,16 @@
 
         var sessionDurationsActions = {
             fetchAll: function(context, useLoader) {
-                if (useLoader) {
-                    context.dispatch('onFetchInit');
-                }
+                context.dispatch('onFetchInit');
+                context.dispatch('setIsLoadingIfNecessary', {useLoader: useLoader, value: true});
                 countlySessionDurations.service.fetchSessionDurations()
                     .then(function(response) {
                         context.commit('setSessionDurations', response);
-                        if (useLoader) {
-                            context.dispatch('onFetchSuccess');
-                        }
+                        context.dispatch('onFetchSuccess');
+                        context.dispatch('setIsLoadingIfNecessary', {useLoader: useLoader, value: false});
                     }).catch(function(error) {
-                        if (useLoader) {
-                            context.dispatch('onFetchError', error);
-                        }
+                        context.dispatch('onFetchError', error);
+                        context.dispatch('setIsLoadingIfNecessary', {useLoader: useLoader, value: false});
                     });
             },
             onFetchInit: function(context) {
@@ -83,6 +80,11 @@
             onFetchSuccess: function(context) {
                 context.commit('setFetchSuccess');
             },
+            setIsLoadingIfNecessary: function(context, payload) {
+                if (payload.useLoader) {
+                    context.commit('setIsLoading', payload.value);
+                }
+            }
         };
 
         var sessionDurationsMutations = {
@@ -90,19 +92,19 @@
                 state.sessionDurations = value;
             },
             setFetchInit: function(state) {
-                state.isLoading = true;
                 state.hasError = false;
                 state.error = null;
             },
             setFetchError: function(state, error) {
-                state.isLoading = false;
                 state.hasError = true;
                 state.error = error;
             },
             setFetchSuccess: function(state) {
-                state.isLoading = false;
                 state.hasError = false;
                 state.error = null;
+            },
+            setIsLoading: function(state, value) {
+                state.isLoading = value;
             }
         };
 
