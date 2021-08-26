@@ -41,6 +41,16 @@
                 type: Object,
                 default: null,
                 required: false
+            },
+            rowClassName: {
+                type: [String, Function]
+            },
+            headerRowClassName: {
+                type: [String, Function]
+            },
+            isClickable: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -169,6 +179,32 @@
                     pages.push(i);
                 }
                 return pages;
+            },
+            rowClasses: function() {
+                var rowClass = "";
+                if (this.rowClassName) {
+                    if (typeof (this.rowClassName) === "string" && this.rowClassName.length) {
+                        return rowClass + " " + this.rowClassName;
+                    }
+
+                    if (typeof (this.rowClassName) === "function") {
+                        return rowClass + " " + this.rowClassName();
+                    }
+                }
+                return rowClass;
+            },
+            headerClasses: function() {
+                var headerClass = "";
+                if (this.headerRowClassName) {
+                    if (typeof (this.headerRowClassName) === "string" && this.headerRowClassName.length) {
+                        return headerClass + " " + this.headerRowClassName;
+                    }
+
+                    if (typeof (this.headerRowClassName) === "function") {
+                        return headerClass + " " + this.headerRowClassName();
+                    }
+                }
+                return headerClass;
             }
         },
         watch: {
@@ -548,10 +584,12 @@
 
                 if (this.exportApi) {
                     formData = this.exportApi();
+                    formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/request");
                 }
                 else if (this.exportQuery) {
                     formData = this.exportQuery();
+                    formData.type = params.type;
                     url = countlyCommon.API_URL + (formData.url || "/o/export/db");
                 }
                 else if (this.dataSource) { // default export logic for server tables
@@ -706,10 +744,16 @@
                 return this.externalStatus !== 'ready' || (this.externalParams && !this.externalParams.ready);
             },
             classes: function() {
+                var classes = [];
                 if (this.dataSource && this.externalStatus === 'silent-pending') {
-                    return ["silent-loading"];
+                    classes.push("silent-loading");
                 }
-                return [];
+
+                if (this.isClickable) {
+                    classes.push("cly-vue-eldatatable__is-clickable");
+                }
+
+                return classes;
             },
             sourceRows: function() {
                 return this.dataView.rows;

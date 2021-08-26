@@ -5,28 +5,24 @@
     // @vue/component
     var autoRefreshMixin = {
         mounted: function() {
-            if (this.refresh) {
+            if (this.refresh || this.dateChanged) {
                 this.$root.$on("cly-refresh", this.refreshHandler);
             }
         },
         methods: {
             refreshHandler: function(payload) {
-                if (payload && payload.reason === "dateChange") {
-                    if (this.dateChanged) {
-                        // branch to dateChange implementation if any
-                        this.dateChanged();
-                    }
-                    else {
-                        this.refresh(true);
-                    }
+                var isForced = payload && payload.reason === "dateChange";
+                if (isForced && this.dateChanged) {
+                    // branch to dateChange implementation if any
+                    this.dateChanged();
                 }
-                else {
-                    this.refresh(false);
+                else if (this.refresh) {
+                    this.refresh(isForced);
                 }
             }
         },
         beforeDestroy: function() {
-            if (this.refresh) {
+            if (this.refresh || this.dateChanged) {
                 this.$root.$off("cly-refresh", this.refreshHandler);
             }
         }
@@ -345,7 +341,7 @@
                         });
                     },
                     handleClyRefresh: function() {
-                        this.$emit("cly-refresh", {reason: "dateChange"});
+                        this.$root.$emit("cly-refresh", {reason: "dateChange"});
                     }
                 },
                 created: function() {

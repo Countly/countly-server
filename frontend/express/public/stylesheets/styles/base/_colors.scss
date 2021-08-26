@@ -2,6 +2,8 @@
     All countly color sass variables are in this file
 */
 
+$interface-color: #F8F9FA;
+
 $colors: (
     "white": #FFFFFF,
     "black": #000000,
@@ -19,6 +21,7 @@ $colors: (
     "cool-gray-100": #333C48,
     "cool-gray-50": #81868D,
     "cool-gray-40": #A7AEB8,
+    "cool-gray-30": #CFD6E4,
     "cool-gray-20": #E2E4E8,
     "cool-gray-10": #F8FAFD,
 
@@ -82,9 +85,9 @@ $colors: (
 );
 
 //Data table colors
-$table-th-bgcolor: #F6F6F6;
+$table-th-bgcolor: #F5F8F9;
 $table-text-color: #333C48;
-$table-footer-text-color: #81868D;
+$table-footer-text-color: #808A9D;
 
 //Text colors
 $border-color-light: #EBEBEF !default;

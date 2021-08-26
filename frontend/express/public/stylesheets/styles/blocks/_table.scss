@@ -17,11 +17,12 @@
 
 	&__header {
 		height: 56px;
-		border: v.$border-base;
 		border-left: none;
 		border-right: none;
 		box-sizing: border-box;
 		padding: 12px;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
 
 		&--white {
 			background-color: map.get(c.$colors, "white");
@@ -33,33 +34,31 @@
 	&__search {
 		&--grey {
 			input {
-				background-color: #F6F6F6;
+				background-color: #FBFDFE;
 			}
 		}
 	}
 
 	&__footer {
 		height: 40px;
-		border: v.$border-base;
+        box-shadow: 0px 2px 0px #EEF2F5;
 		border-left: none;
 		border-right: none;
 		box-sizing: border-box;
 		padding: 0px 12px;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
 
 		&--white {
 			background-color: map.get(c.$colors, "white");
 			color: c.$table-footer-text-color;
 			font-size: t.$text-smd-size;
 		}
-
-		.el-select, .el-input {
-			width: 70px;
-		}
 	}
 
 	&__vertical-divider {
-		border: v.$border-base;
-		height: 38px;
+		border-left: 1px solid #EEF2F5;
+		height: 40px;
 	}
 
 	.undo-row {

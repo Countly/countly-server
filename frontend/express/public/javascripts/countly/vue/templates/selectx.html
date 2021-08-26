@@ -4,6 +4,7 @@
     :width="width"
     :placeholder="placeholder"
     :disabled="disabled"
+    :pop-class="popClass"
     v-bind="$attrs"
     v-on="$listeners"
     @show="handleDropdownShow"
@@ -28,17 +29,21 @@
             <div class="cly-vue-select-x__header-slot" v-if="!!$scopedSlots.header">
                 <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>
             </div>
-            <el-input
-                v-show="showList"
-                v-if="searchable"
-                ref="searchBox"
-                autocomplete="off"
-                :disabled="disabled"
-                v-model="searchQuery"
-                @keydown.native.esc.stop.prevent="doClose"
-                :placeholder="searchPlaceholder">
-                <i slot="prefix" class="el-input__icon el-icon-search"></i>
-            </el-input>
+            <div class="bu-level">
+                <div class="bu-level-item" v-if="searchable">
+                    <el-input
+                        v-show="showList"
+                        ref="searchBox"
+                        autocomplete="off"
+                        :disabled="disabled"
+                        v-model="searchQuery"
+                        @keydown.native.esc.stop.prevent="doClose"
+                        :placeholder="searchPlaceholder">
+                        <i slot="prefix" class="el-input__icon el-icon-search"></i>
+                    </el-input>
+                </div>
+                <slot name="action"></slot>
+            </div>
         </div>
         <el-tabs
             v-model="activeTabId"

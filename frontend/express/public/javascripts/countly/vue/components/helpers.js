@@ -39,6 +39,23 @@
         }
     ));
 
+    Vue.component("cly-in-page-notification", countlyBaseComponent.extend(
+        {
+            props: {
+                text: {type: String, required: false}
+            },
+            computed: {
+                innerText: function() {
+                    if (this.text) {
+                        return this.text;
+                    }
+                    return "";
+                }
+            },
+            template: '<div class="cly-in-page-notification color-cool-gray-100 bg-red-10 text-medium bu-p-2 center" v-html="innerText"></div>'
+        }
+    ));
+
     Vue.component("cly-empty-home", countlyBaseComponent.extend({
         template: '<div class="cly-vue-empty-home">\n' +
                     '<div class="info">\n' +
@@ -85,15 +102,17 @@
             }
         },
         template: '<div class="cly-vue-diff-helper" v-if="hasDiff">\n' +
-                            '<div class="message">\n' +
-                                '<span class="text-dark">{{madeChanges}}</span>\n' +
-                                '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\n' +
-                            '</div>\n' +
-                            '<div class="buttons">\n' +
-                                '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
-                               '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>\n' +
-                            '</div>\n' +
-                        '</div>'
+                    '<slot name="main">\n' +
+                      '<div class="message">\n' +
+                          '<span class="text-dark">{{madeChanges}}</span>\n' +
+                          '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+                      '</div>\n' +
+                      '<div class="buttons">\n' +
+                          '<cly-button :label="(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
+                         '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>\n' +
+                      '</div>\n' +
+                    '</slot>\n' +
+                  '</div>'
     }));
 
     Vue.component("cly-breakdown-tile", countlyBaseComponent.extend({
@@ -287,10 +306,23 @@
         props: ['value']
     }));
 
+    Vue.component("cly-blank", countlyBaseComponent.extend({
+        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center">\
+                        <h3 class="color-cool-gray-50">{{text}}</h3>\
+                    </div>',
+        props: {
+            text: {
+                type: String,
+                default: '',
+                required: false
+            }
+        }
+    }));
+
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         template: '<cly-select-x\
-                    :additional-pop-classes="[\'cly-event-select\']"\
+                    pop-class="cly-event-select"\
                     all-placeholder="All Events"\
                     search-placeholder="Search in Events"\
                     placeholder="Select Event"\
@@ -315,7 +347,9 @@
         props: {
             blacklistedEvents: {
                 type: Array,
-                default: []
+                default: function() {
+                    return [];
+                }
             },
             width: { type: [Number, Object], default: 400},
             adaptiveLength: {type: Boolean, default: true},

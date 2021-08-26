@@ -1,0 +1,36 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('user-analytics.overview-title')}} </h2>
+            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description"></span>
+        </template>
+		<template v-slot:header-right>
+          <cly-more-options v-if="topDropdown" size="small">
+            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+              <span :class="item.icon"></span>
+              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+            </el-dropdown-item>
+          </cly-more-options>
+        </template>
+    </cly-header>
+    <cly-main>
+		<cly-date-picker-g class="app-version-date-picker-container"></cly-date-picker-g>
+		<cly-section>
+		<cly-chart-time :option="lineOptions" :legend="lineLegend" > </cly-chart-time>
+		</cly-section>
+		<cly-section>
+			<cly-datatable-n  :default-sort="{prop: 'dateVal', order: 'ascending'}" :rows="tableData" :resizable="true" >
+				<template v-slot="scope">
+					<el-table-column sortable="custom" prop="dateVal" :label="i18n('common.date')">
+						<template slot-scope="scope">
+							{{scope.row.date}}
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="u" :label="i18n('common.total-users')"></el-table-column>
+					<el-table-column sortable="custom" prop="n" :label="i18n('common.new-users')"></el-table-column>
+					<el-table-column sortable="custom" prop="returning" :label="i18n('common.returning-users')"></el-table-column>
+				</template>
+			</cly-datatable-n>
+		</cly-section>
+    </cly-main>
+</div>
