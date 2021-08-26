@@ -1,4 +1,4 @@
-/*global countlyVue,countlySession,countlyTotalUsers,Promise*/
+/*global countlyVue,countlySession,countlyTotalUsers,Promise,CV*/
 (function(countlySessionOverview) {
 
     countlySessionOverview.service = {
@@ -26,14 +26,62 @@
             });
             return rows;
         },
-
-        mapSessionOverviewDtoToModel: function(dto) {
+        mapTrendDto: function(trendDto) {
+            if (trendDto === 'u') {
+                return 'up';
+            }
+            if (trendDto === 'd') {
+                return 'down';
+            }
+            return null;
+        },
+        mapChangeDto: function(changeDto) {
+            if (changeDto === 'NA') {
+                return null;
+            }
+            return changeDto.split('%')[0];
+        },
+        findUniqueSessionsTotal: function(dto) {
+            var total = 0;
+            Object.keys(dto.chartDP).forEach(function(key) {
+                if (dto.chartDP[key].label === "Unique Sessions") {
+                    total = dto.chartDP[key].data.reduce(function(sum, dataItem) {
+                        sum += dataItem[1];
+                        return sum;
+                    }, total);
+                }
+            });
+            return total;
+        },
+        mapSessionOverviewTrends: function(dto) {
+            return [
+                {
+                    name: CV.i18n("common.total-sessions"),
+                    value: dto.usage['total-sessions'].total,
+                    percentage: this.mapChangeDto(dto.usage['total-sessions'].change),
+                    trend: this.mapTrendDto(dto.usage['total-sessions'].trend),
+                },
+                {
+                    name: CV.i18n("common.new-sessions"),
+                    value: dto.usage['new-users'].total,
+                    percentage: this.mapChangeDto(dto.usage['new-users'].change),
+                    trend: this.mapTrendDto(dto.usage['new-users'].trend),
+                },
+                {
+                    name: CV.i18n("common.unique-sessions"),
+                    value: dto.usage['unique-sessions'].total,
+                }
+            ];
+        },
+        mapSessionOverviewDtoToModel: function(dpDto, dataDto) {
             var sessionOverviewModel = {
                 series: [],
-                rows: []
+                rows: [],
+                trends: []
             };
-            sessionOverviewModel.series = this.mapSessionOverviewSeries(dto);
-            sessionOverviewModel.rows = this.mapSessionOverviewRows(dto);
+            sessionOverviewModel.series = this.mapSessionOverviewSeries(dpDto);
+            sessionOverviewModel.rows = this.mapSessionOverviewRows(dpDto);
+            sessionOverviewModel.trends = this.mapSessionOverviewTrends(dataDto);
             return sessionOverviewModel;
         },
 
@@ -43,7 +91,10 @@
                 Promise.all([countlySession.initialize(), countlyTotalUsers.initialize("users")])
                     .then(function() {
                         var sessionDP = countlySession.getSessionDP();
-                        resolve(self.mapSessionOverviewDtoToModel(sessionDP));
+                        var sessionData = countlySession.getSessionData();
+                        sessionData.usage['unique-sessions'] = {};
+                        sessionData.usage['unique-sessions'].total = self.findUniqueSessionsTotal(sessionDP);
+                        resolve(self.mapSessionOverviewDtoToModel(sessionDP, sessionData));
                     }).catch(function(error) {
                         reject(error);
                     });
@@ -57,7 +108,8 @@
             return {
                 sessionOverview: {
                     rows: [],
-                    series: []
+                    series: [],
+                    trends: []
                 },
                 isLoading: false,
                 hasError: false,

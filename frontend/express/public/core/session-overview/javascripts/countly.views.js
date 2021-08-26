@@ -34,6 +34,14 @@ var SessionOverviewView = countlyVue.views.create({
                     name: sessionOverviewSerie.label,
                 };
             });
+        },
+        legend: function() {
+            var result = {
+                show: true,
+                type: "primary",
+                data: this.$store.state.countlySessionOverview.sessionOverview.trends
+            };
+            return result;
         }
     },
     methods: {

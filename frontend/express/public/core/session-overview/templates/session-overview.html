@@ -10,7 +10,7 @@
     <cly-main>
         <cly-date-picker-g class="session-overview-date-picker-container"></cly-date-picker-g>
         <cly-section>
-            <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading"></cly-chart-line>
+            <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading" :legend="legend"></cly-chart-line>
         </cly-section>
         <cly-section>
             <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" v-loading="isLoading">
