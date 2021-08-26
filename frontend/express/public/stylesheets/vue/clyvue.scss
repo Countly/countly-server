@@ -1135,6 +1135,8 @@
 
     .cly-vue-popover{
         cursor: pointer;
+        z-index: 2000;
+        
         .trigger {
             display: block!important;
         }
@@ -1511,6 +1513,10 @@
 			}
 		}
 	}
+
+    .cly-vue-blank {
+        height:400px;
+    }
 
     .cly-vue-worldmap {
         .leaflet-container {
@@ -3148,9 +3154,9 @@
     .cly-vue-diff-helper {
         position: fixed;
         z-index: 9999;
-        left: 20px;
-        right: 20px;
-        bottom: 20px;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
         height: 64px;
 
         background: #ffffff;
@@ -3578,6 +3584,10 @@
         padding: 6px 8px;
         height: 20px;
         background: #F6F6F6;
+    }
+
+    .cly-vue-listbox__item-content {
+        width: 100%;
     }
 
     &--disabled {

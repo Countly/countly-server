@@ -172,6 +172,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/events/javascripts/countly.overview.views.js',
                     'frontend/express/public/core/events/javascripts/countly.details.views.js',
                     'frontend/express/public/core/events/javascripts/countly.details.models.js',
+                    'frontend/express/public/core/events/javascripts/countly.compare.models.js',
                     'frontend/express/public/core/user-management/javascripts/countly.overview.models.js',
                     'frontend/express/public/core/user-management/javascripts/countly.overview.views.js'
                 ],

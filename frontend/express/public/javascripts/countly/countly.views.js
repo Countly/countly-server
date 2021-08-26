@@ -1,4 +1,4 @@
-/* global countlyView, Dropzone, groupsModel, countlySession, tippy, countlyAuth, countlyTotalUsers, countlyCommon, app, CountlyHelpers, countlyGlobal, Handlebars, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, UserView, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, getUrls, T, jQuery, $*/
+/* global countlyView, Dropzone, groupsModel, tippy, countlyAuth, countlyCommon, app, CountlyHelpers, countlyGlobal, Handlebars, _, countlyEvent, countlyTaskManager, countlyVersionHistoryManager, countlyTokenManager, ManageUsersView, EventsView, DashboardView, EventsBlueprintView, EventsOverviewView, LongTaskView, DownloadView, TokenManagerView, VersionHistoryView, GraphNotesView, Backbone, pathsToSectionNames, moment, getUrls, T, jQuery, $*/
 
 
 window.GraphNotesView = countlyView.extend({
@@ -432,122 +432,6 @@ window.GraphNotesView = countlyView.extend({
         this.dtable.fnDraw(false);
         app.localize();
     },
-});
-
-window.UserView = countlyView.extend({
-    beforeRender: function() {
-        return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
-    },
-    renderCommon: function(isRefresh) {
-        var sessionData = countlySession.getSessionData(),
-            userDP = countlySession.getUserDP();
-
-        this.templateData = {
-            "page-title": jQuery.i18n.map["users.title"],
-            "logo-class": "users",
-            "big-numbers": {
-                "count": 3,
-                "items": [
-                    {
-                        "title": jQuery.i18n.map["common.total-users"],
-                        "total": sessionData.usage["total-users"].total,
-                        "trend": sessionData.usage["total-users"].trend,
-                        "help": "users.total-users"
-                    },
-                    {
-                        "title": jQuery.i18n.map["common.new-users"],
-                        "total": sessionData.usage["new-users"].total,
-                        "trend": sessionData.usage["new-users"].trend,
-                        "help": "users.new-users"
-                    },
-                    {
-                        "title": jQuery.i18n.map["common.returning-users"],
-                        "total": sessionData.usage["returning-users"].total,
-                        "trend": sessionData.usage["returning-users"].trend,
-                        "help": "users.returning-users"
-                    }
-                ]
-            }
-        };
-
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-            countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
-            CountlyHelpers.applyColors();
-
-            this.dtable = $(".d-table").dataTable(
-                $.extend({}, $.fn.dataTable.defaults, {
-                    aaData: userDP.chartData,
-                    aoColumns: [
-                        {
-                            mData: "date",
-                            sType: "customDate",
-                            sTitle: jQuery.i18n.map["common.date"]
-                        },
-                        {
-                            mData: "u",
-                            sType: "formatted-num",
-                            mRender: function(d) {
-                                return countlyCommon.formatNumber(
-                                    d
-                                );
-                            },
-                            sTitle:
-                                jQuery.i18n.map[
-                                    "common.table.total-users"
-                                ]
-                        },
-                        {
-                            mData: "n",
-                            sType: "formatted-num",
-                            mRender: function(d) {
-                                return countlyCommon.formatNumber(
-                                    d
-                                );
-                            },
-                            sTitle:
-                                jQuery.i18n.map[
-                                    "common.table.new-users"
-                                ]
-                        },
-                        {
-                            mData: "returning",
-                            sType: "formatted-num",
-                            mRender: function(d) {
-                                return countlyCommon.formatNumber(
-                                    d
-                                );
-                            },
-                            sTitle:
-                                jQuery.i18n.map[
-                                    "common.table.returning-users"
-                                ]
-                        }
-                    ]
-                })
-            );
-
-            $(".d-table").stickyTableHeaders();
-
-        }
-    },
-    refresh: function() {
-        var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
-                return false;
-            }
-            self.renderCommon(true);
-            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-
-            $(self.el).find("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
-
-            var userDP = countlySession.getUserDP();
-            countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
-            CountlyHelpers.refreshTable(self.dtable, userDP.chartData);
-            app.localize();
-        });
-    }
 });
 
 window.ManageUsersView = countlyView.extend({
@@ -5836,7 +5720,6 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 
 //register views
 app.graphNotesView = new GraphNotesView();
-app.userView = new UserView();
 app.manageUsersView = new ManageUsersView();
 app.eventsView = new EventsView();
 app.dashboardView = new DashboardView();
@@ -5849,9 +5732,6 @@ app.VersionHistoryView = new VersionHistoryView();
 
 app.route("/analytics/graph-notes", "graphNotes", function() {
     this.renderWhenReady(this.graphNotesView);
-});
-app.route("/analytics/users", "users", function() {
-    this.renderWhenReady(this.userView);
 });
 
 if (countlyAuth.validateRead('global_users')) {
@@ -5870,9 +5750,9 @@ app.route("/manage/tasks", "longTasks", function() {
     this.renderWhenReady(this.longTaskView);
 });
 
-app.route("/analytics/events", "events", function() {
-    this.renderWhenReady(this.eventsView);
-});
+// app.route("/analytics/events", "events", function() {
+//     this.renderWhenReady(this.eventsView);
+// });
 
 app.route('/exportedData/AppUserExport/:task_id', 'userExportTask', function(task_id) {
     this.DownloadView.task_id = task_id;
@@ -5891,9 +5771,9 @@ app.route('/manage/token_manager', 'token_manager', function() {
 app.route('/versions', 'version_history', function() {
     this.renderWhenReady(this.VersionHistoryView);
 });
-app.route("/analytics/events/key/:event", "events", function() {
-    this.renderWhenReady(this.eventsView);
-});
+// app.route("/analytics/events/key/:event", "events", function() {
+//     this.renderWhenReady(this.eventsView);
+// });
 app.route("/analytics/events/:subpageid", "events", function(subpageid) {
     this.eventsView.subpageid = subpageid;
     if (subpageid === 'overview') {

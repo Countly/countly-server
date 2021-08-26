@@ -1408,7 +1408,7 @@ var AppRouter = Backbone.Router.extend({
             self.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
             self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
             self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
-            self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
+            self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events", text: "sidebar.events.overview", priority: 10});
             if (countlyAuth.validateRead('events')) {
                 self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
             }

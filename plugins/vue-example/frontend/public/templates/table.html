@@ -39,7 +39,7 @@
             v-model="isTablePaused"
             active-color="#2FA732">
         </el-switch>
-        <cly-datatable-n :available-dynamic-cols="remoteTableDynamicCols" :data-source="remoteTableDataSource"
+        <cly-datatable-n :default-sort="{prop: 'name', order: 'descending'}" :available-dynamic-cols="remoteTableDynamicCols" :data-source="remoteTableDataSource"
             :resizable="true" :persist-key="remoteTablePersistKey" :paused="isTablePaused">
             <template v-slot="scope">
                 <el-table-column sortable="custom" prop="_id" label="ID">
