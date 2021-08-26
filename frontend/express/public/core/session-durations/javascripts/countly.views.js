@@ -11,7 +11,7 @@ var SessionDurationsView = countlyVue.views.create({
             return this.$store.state.countlySessionDurations.sessionDurations;
         },
         isLoading: function() {
-            return this.$store.state.countlySessionDurations.isLoading;
+            return this.$store.getters['countlySessionDurations/isLoading'];
         },
         sessionDurationsRows: function() {
             return this.$store.state.countlySessionDurations.sessionDurations.rows;

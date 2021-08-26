@@ -11,7 +11,7 @@ var SessionFrequencyView = countlyVue.views.create({
             return this.$store.state.countlySessionFrequency.sessionFrequency;
         },
         isLoading: function() {
-            return this.$store.state.countlySessionFrequency.isLoading;
+            return this.$store.getters['countlySessionFrequency/isLoading'];
         },
         sessionFrequencyRows: function() {
             return this.$store.state.countlySessionFrequency.sessionFrequency.rows;

@@ -52,9 +52,6 @@
                     rows: [],
                     series: []
                 },
-                isLoading: false,
-                hasError: false,
-                error: null
             };
         };
 
@@ -71,48 +68,20 @@
                         context.dispatch('onFetchError', error);
                         context.dispatch('setIsLoadingIfNecessary', {useLoader: useLoader, value: false});
                     });
-            },
-            onFetchInit: function(context) {
-                context.commit('setFetchInit');
-            },
-            onFetchError: function(context, error) {
-                context.commit('setFetchError', error);
-            },
-            onFetchSuccess: function(context) {
-                context.commit('setFetchSuccess');
-            },
-            setIsLoadingIfNecessary: function(context, payload) {
-                if (payload.useLoader) {
-                    context.commit('setIsLoading', payload.value);
-                }
             }
         };
 
         var sessionFrequencyMutations = {
             setSessionFrequency: function(state, value) {
                 state.sessionFrequency = value;
-            },
-            setFetchInit: function(state) {
-                state.hasError = false;
-                state.error = null;
-            },
-            setFetchError: function(state, error) {
-                state.hasError = true;
-                state.error = error;
-            },
-            setFetchSuccess: function(state) {
-                state.hasError = false;
-                state.error = null;
-            },
-            setIsLoading: function(state, value) {
-                state.isLoading = value;
             }
         };
 
         return countlyVue.vuex.Module("countlySessionFrequency", {
             state: getInitialState,
             actions: sessionFrequencyActions,
-            mutations: sessionFrequencyMutations
+            mutations: sessionFrequencyMutations,
+            submodules: [countlyVue.vuex.FetchSubmodule()]
         });
     };
 }(window.countlySessionFrequency = window.countlySessionFrequency || {}));

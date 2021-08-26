@@ -9,7 +9,7 @@ var SessionOverviewView = countlyVue.views.create({
             return this.$store.state.countlySessionOverview.sessionOverview;
         },
         isLoading: function() {
-            return this.$store.state.countlySessionOverview.isLoading;
+            return this.$store.getters['countlySessionOverview/isLoading'];
         },
         sessionOverviewRows: function() {
             return this.$store.state.countlySessionOverview.sessionOverview.rows;

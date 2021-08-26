@@ -806,7 +806,7 @@
                 return this.$store.state.countlyViewsPerSession.viewsPerSession;
             },
             isLoading: function() {
-                return this.$store.state.countlyViewsPerSession.isLoading;
+                return this.$store.getters['countlyViewsPerSession/isLoading'];
             },
             viewsPerSessionRows: function() {
                 return this.$store.state.countlyViewsPerSession.viewsPerSession.rows;
