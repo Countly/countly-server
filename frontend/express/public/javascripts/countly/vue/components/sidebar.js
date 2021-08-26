@@ -284,14 +284,12 @@
                     return;
                 }
                 var fragmentedLink = currLink;
-                currLink = ""
+                currLink = "";
                 for (var iterator = 1; iterator < fragmentedLink.split("/").length; iterator++) {
-                        currLink = currLink + "/" + fragmentedLink.split("/")[iterator];
-                        if(this.checkcurrentManagementTab(currLink)) {
-                            break;
-
-                        }
-                    
+                    currLink = currLink + "/" + fragmentedLink.split("/")[iterator];
+                    if (this.checkcurrentManagementTab(currLink)) {
+                        break;
+                    }
                 }
             }
         });
