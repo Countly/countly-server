@@ -162,44 +162,34 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
-                }
-            },
-            mounted: function() {
-                var currLink = Backbone.history.fragment;
-
-                if (/^\/custom/.test(currLink) === true) {
-                    return;
-                }
-
-                var menus = this.categorizedMenus;
-                var submenus = this.categorizedSubmenus;
-                var foundMenu = false;
-                var currMenu = {};
-                var menu;
-
-                for (var k in menus) {
-                    for (var i = 0; i < menus[k].length; i++) {
-                        menu = menus[k][i];
-                        if (menu.url === "#" + currLink) {
-                            foundMenu = true;
-                            currMenu = menu;
-                            break;
-                        }
-                    }
-
-                    if (foundMenu) {
-                        break;
-                    }
-                }
-
-                if (!foundMenu) {
-                    for (var l in submenus) {
-                        for (var j = 0; j < submenus[l].length; j++) {
-                            menu = submenus[l][j];
-                            if (menu.url === "#" + currLink) {
-                                foundMenu = true;
-                                currMenu = menu;
-                                break;
+                },
+                checkCurrentAnalyticsTab: function(currLink) {
+                    var fragmentedLink = currLink;
+                    var menus = this.categorizedMenus;
+                    var submenus = this.categorizedSubmenus;
+                    var foundMenu = false;
+                    var currMenu = {};
+                    var part1 = "";
+                    var part2 = "";
+                    var menu;
+                    for (var k in menus) {
+                        for (var i = 0; i < menus[k].length; i++) {
+                            menu = menus[k][i];
+                            if (fragmentedLink.split("/").length > 2) {
+                                part1 = "/" + fragmentedLink.split("/")[1];
+                                part2 = part1 + "/" + fragmentedLink.split("/")[2];
+                                if (menu.url === "#" + part1 || menu.url === "#" + part2) {
+                                    foundMenu = true;
+                                    currMenu = menu;
+                                    break;
+                                }
+                            }
+                            else {
+                                if (menu.url === "#" + currLink) {
+                                    foundMenu = true;
+                                    currMenu = menu;
+                                    break;
+                                }
                             }
                         }
 
@@ -207,15 +197,52 @@
                             break;
                         }
                     }
-                }
 
-                if (foundMenu) {
-                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: currMenu});
+                    if (!foundMenu) {
+                        for (var l in submenus) {
+                            for (var j = 0; j < submenus[l].length; j++) {
+                                menu = submenus[l][j];
+                                if (fragmentedLink.split("/").length > 2) {
+                                    part1 = "/" + fragmentedLink.split("/")[1];
+                                    part2 = part1 + "/" + fragmentedLink.split("/")[2];
+                                    if (menu.url === "#" + part1 || menu.url === "#" + part2) {
+                                        foundMenu = true;
+                                        currMenu = menu;
+                                        break;
+                                    }
+                                }
+                                else {
+                                    if (menu.url === "#" + currLink) {
+                                        foundMenu = true;
+                                        currMenu = menu;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (foundMenu) {
+                                break;
+                            }
+                        }
+                    }
+
+
+                    if (foundMenu) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
+                    }
+                    else {
+                        // eslint-disable-next-line no-console
+                        console.log("Analytics menu not found. ", currLink, menus, submenus);
+                    }
+
                 }
-                else {
-                    // eslint-disable-next-line no-console
-                    console.log("Analytics menu not found. ", currLink, menus, submenus);
+            },
+            mounted: function() {
+                var currLink = Backbone.history.fragment;
+                if (/^\/custom/.test(currLink) === true) {
+                    return;
                 }
+                this.checkCurrentAnalyticsTab(currLink);
             }
         });
 
@@ -249,27 +276,39 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
+                },
+                checkCurrentManagementTab: function(currLink) {
+                    var menu = this.menu;
+                    var fragmentedLink = currLink;
+                    if (fragmentedLink.split("/").length > 2) {
+                        var part1 = "/" + fragmentedLink.split("/")[1];
+                        var part2 = part1 + "/" + fragmentedLink.split("/")[2];
+                        var currMenu = menu.filter(function(m) {
+                            return (m.url === "#" + part1 || m.url === "#" + part2);
+                        });
+                    }
+                    else {
+                        currMenu = menu.filter(function(m) {
+                            return m.url === currLink;
+                        });
+                    }
+
+                    if (currMenu.length) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu[0] });
+                    }
+                    else {
+                        // eslint-disable-next-line no-console
+                        console.log("Management menu not found. ", currLink, menu);
+                    }
+
                 }
             },
             mounted: function() {
                 var currLink = Backbone.history.fragment;
-
                 if (/^\/custom/.test(currLink) === true) {
                     return;
                 }
-
-                var menu = this.menu;
-                var currMenu = menu.filter(function(m) {
-                    return m.url === "#" + currLink;
-                });
-
-                if (currMenu.length) {
-                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: currMenu[0]});
-                }
-                else {
-                    // eslint-disable-next-line no-console
-                    console.log("Management menu not found. ", currLink, menu);
-                }
+                this.checkCurrentManagementTab(currLink);
             }
         });
 
