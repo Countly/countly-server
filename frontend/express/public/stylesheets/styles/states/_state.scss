@@ -46,6 +46,16 @@
     }
 }
 
+.text-smallish {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: t.$text-smd-size;
+    font-weight: t.$font-weight-text;
+    line-height: t.$text-button-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
 .text-small {
     color: map.get(c.$colors, "cool-gray-100");
     font-size: t.$text-small-size;
@@ -70,7 +80,7 @@
     }
 
     &.text-small {
-        line-height: t.$heading-6-line-height;     
+        line-height: t.$heading-6-line-height;
         font-weight: t.$font-weight-primary !important;
         margin-bottom: 4px;
     }
@@ -86,13 +96,48 @@
     }
 }
 
+.text-smallest {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: 10px;
+    font-weight: 700;
+    line-height: t.$text-smaller-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
+.text-button {
+    color: map.get(c.$colors, "cool-gray-100");
+    font-size: t.$text-button-size;
+    font-weight: t.$font-weight-text;
+    line-height: t.$text-button-line-height;
+    &.font-weight-bold {
+        font-weight: t.$font-weight-primary !important;
+    }
+}
+
+.cursor-pointer {
+    cursor: pointer
+}
+
+
+@for $i from 1 through 6 {
+    .icon-size-#{$i} {
+        font-size: #{$i*2 + 4}px;
+    }
+}
+
+.text-clickable {
+    cursor: pointer;
+}
+
 @each $name, $value in c.$colors {
     .color-#{$name} {
-        color: $value;
+        color: $value!important;
     }
 
     .bg-#{$name} {
-        background-color: $value;
+        background-color: $value!important;
     }
 }
 
@@ -102,4 +147,29 @@
 
 .no-bg {
     background-color: none;
+}
+
+.blinker {
+    position: relative;
+    top: -1px;
+    width: 6px;
+    height: 6px;
+    border-radius: 8px;
+    background-color: #2fa732;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+    animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+}
+
+.has-tooltip {
+    cursor: pointer;
+}
+
+.has-ellipsis {
+    word-break: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
 }

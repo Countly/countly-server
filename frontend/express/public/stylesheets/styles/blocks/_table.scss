@@ -4,6 +4,11 @@
 @use "sass:map";
 
 .cly-vue-eldatatable {
+
+	&.is-clickable td {
+		cursor: pointer;
+	}
+
 	&.silent-loading {
 		.el-loading-spinner {
 			visibility: hidden;
@@ -12,11 +17,12 @@
 
 	&__header {
 		height: 56px;
-		border: v.$border-base;
 		border-left: none;
 		border-right: none;
 		box-sizing: border-box;
 		padding: 12px;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
 
 		&--white {
 			background-color: map.get(c.$colors, "white");
@@ -28,33 +34,31 @@
 	&__search {
 		&--grey {
 			input {
-				background-color: #F6F6F6;
+				background-color: #FBFDFE;
 			}
 		}
 	}
 
 	&__footer {
 		height: 40px;
-		border: v.$border-base;
+        box-shadow: 0px 2px 0px #EEF2F5;
 		border-left: none;
 		border-right: none;
 		box-sizing: border-box;
 		padding: 0px 12px;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
 
 		&--white {
 			background-color: map.get(c.$colors, "white");
 			color: c.$table-footer-text-color;
 			font-size: t.$text-smd-size;
 		}
-
-		.el-select {
-			width: 70px;
-		}
 	}
 
 	&__vertical-divider {
-		border: v.$border-base;
-		height: 38px;
+		border-left: 1px solid #EEF2F5;
+		height: 40px;
 	}
 
 	.undo-row {
@@ -74,6 +78,28 @@
 		a {
 			color: #017AFF;
 			cursor: pointer;
+		}
+	}
+}
+
+//plain table
+.cly-vue-table {
+	width: 100%;
+	thead {
+		background-color: map.get(c.$colors, "warm-gray-20");
+		border-top: 1px solid map.get(c.$colors, "warm-gray-30");
+		border-bottom: 2px solid map.get(c.$colors, "warm-gray-30");
+		th {
+			color: map.get(c.$colors, "cool-gray-100");
+			font-weight: t.$font-weight-primary;
+			font-size: t.$text-sm-size;
+			padding: 9px;
+			text-align: left;
+		}
+	}
+	tbody {
+		td {
+			padding: 0px 9px;
 		}
 	}
 }

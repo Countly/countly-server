@@ -1,5 +1,7 @@
+@use "../../../stylesheets/styles/base/_typography-variables.scss" as t;
+
 .cly-vue-events-overview-date-picker {
-    padding:7px 24px 16px 24px;
+    margin:7px 24px 16px 24px;
 }
 
 .cly-events-breakdown-horizontal-tile {
@@ -9,16 +11,12 @@
         border-bottom: 1px solid #ECECEC;
         padding: 24px 24px 0px 24px;
     }
-    &__title {
-        font-size: 12px;
-        font-weight: 400;
-        line-height: 20px;
-        padding-bottom: 8px;
-    }
     &__titleoverview {
-        font-size: 12px;
+        color: #333c48;
+        font-size: 14px;
         font-weight: 400;
         line-height: 20px;
+        font-family: t.$font-family;
     }
     &:nth-of-type(3n) {
         .cly-events-breakdown-horizontal-tile__wrapper {
@@ -39,6 +37,9 @@
     font-weight: 500;
     font-size: 20px;
     line-height: 30px;
+    font-family: t.$font-family;
+    color: #333c48;
+    letter-spacing: 0.003em;
     }
     &__overviewvalue {
         font-weight: 500;
@@ -47,8 +48,10 @@
         }
     &__percentage {
         font-size: 14px;
-        font-weight: 300;
+        font-weight: 400;
         line-height: 20px;
+        font-family: t.$font-family;
+        color: #333c48;
     }
     &--green {
         color: #12AF51;
@@ -157,6 +160,9 @@
     line-height: 32px;
     font-weight: 500;
     padding-bottom: 12px;
+    letter-spacing: .003em;
+    font-family: t.$font-family;
+    color: #333c48;
 } 
 
 .cly-vue-events-group {
@@ -174,6 +180,7 @@
     font-size: 12px;
     line-height: 14.52px;
     font-weight: 500;
+    padding-left: 32px;
 } 
 .cly-vue-events-all-segmentation {
     color: #A7AEB8;
@@ -184,12 +191,86 @@
 .cly-vue-events-all-date-picker {
     margin-right:26px
 } 
-.cly-vue-events-all-charts {
-    background:white
-} 
-.cly-vue-events-all-description {
-    padding-bottom:24px
-} 
 .cly-vue-events-all-tooltip {
     margin-left:10px
 } 
+.cly-vue-events-header {
+    padding: 8px 24px 24px 24px;
+    letter-spacing: .003em;
+    font-family: t.$font-family;
+    line-height: t.$heading-2-line-height;
+    border-bottom: 1px solid #ececec;
+    background-color: #fff;
+    &__subheading {
+        &--widget {
+            padding-right: 5.33px;
+            color: #81868d;
+        }
+        &--text {
+            font-family: t.$font-family;
+            line-height: 20px;
+            font-size: 14px;
+            color: #81868d;
+        }
+    }
+    &--tooltip{
+        padding-left: 9.5px;
+    }
+}
+.cly-vue-events-overview-subheadings {
+    padding-right: 9.5px;
+    letter-spacing: .003em;
+    font-family: t.$font-family;
+    &--tooltip {
+        padding-top:3px;
+    }
+    &--font {
+        font-family: t.$font-family;
+    }
+}
+
+.cly-vue-compare-events {
+    .el-select__tags{
+        .el-tag--info{
+        background-color: #81868D;
+        border-color: #e9e9eb;
+        color: #FFFFFF;
+        .el-tag__close{
+            color: #F6F6F6;
+        }
+        }
+    }
+    &__header {
+        padding: 8px 24px 24px 24px;
+        letter-spacing: .003em;
+        font-family: t.$font-family;
+        line-height: 32px;
+        background-color: #fff;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #ececec;
+
+    &--tooltip{
+        padding-left: 9.5px;
+    }
+        
+    }
+    &__button {
+        background-color: #12AF51;
+        color:#FFFFFF
+    }
+    &__graph-section {
+		margin: 0px 24px 0px 24px;
+        &__dropdown {
+			padding: 22px 0px 32px 0px;
+		}
+		&--text{
+			padding-right: 12px;
+			font-weight:500;
+			font-size:12px;
+			color: #333C48;
+			letter-spacing: 0.5px;
+			font-family:  t.$font-family;
+			line-height: 14.52px;
+        }
+    }
+}

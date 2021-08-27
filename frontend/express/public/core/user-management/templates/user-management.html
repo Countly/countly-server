@@ -1,0 +1,29 @@
+<div v-bind:class="[componentId]" class="user-management-view">
+	<cly-tabs class="tab-bar" v-model="currentTab" :route-pattern="'#/' + appId + '/manage/users/:tab'" route-key="tab">
+		<el-tab-pane class="tab-content" name="users" lazy>
+			<span slot="label">Users</span>
+			<cly-header :title="i18n('management-users.view-title')">
+					<template v-slot:header-right>
+							<div class="bu-level-item">
+									<el-button class="manage-users-action-btn" @click="createUser()" type="success" size="small" icon="el-icon-circle-plus">New User
+									</el-button>
+							</div>
+					</template>
+			</cly-header>
+			<data-table @edit-user="onEditUser" :rows="users"></data-table>
+			<drawer :user="user" :features="features" :settings="drawerSettings" :controls="drawers.user"></drawer>
+		</el-tab-pane>
+		<el-tab-pane class="tab-content" name="groups" lazy>
+			<span slot="label">User Groups</span>
+			<cly-header :title="i18n('management-users.groups-view-title')">
+					<template v-slot:header-right>
+							<div class="bu-level-item">
+									<el-button type="success" size="small" icon="el-icon-circle-plus">New User Group
+									</el-button>
+							</div>
+					</template>
+			</cly-header>
+			<data-table :rows="users"></data-table>
+		</el-tab-pane>
+	</cly-tabs>
+</div>

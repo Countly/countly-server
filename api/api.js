@@ -10,7 +10,7 @@ const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
-const {WriteBatcher, ReadBatcher} = require('./parts/data/batcher.js');
+const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
 const pack = require('../package.json');
 
 var t = ["countly:", "api"];
@@ -36,6 +36,7 @@ process.title = t.join(' ');
 plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
+    common.insertBatcher = new InsertBatcher(common.db);
 
     let workers = [];
 
@@ -136,6 +137,7 @@ plugins.connectToAllDatabases().then(function() {
     async function storeBatchedData(code) {
         try {
             await common.writeBatcher.flushAll();
+            await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
         }
         catch (ex) {
@@ -212,6 +214,10 @@ plugins.connectToAllDatabases().then(function() {
             }
             else if (msg.cmd === "endPlugins") {
                 plugins.stopSyncing();
+            }
+            else if (msg.cmd === "batch_insert") {
+                const {collection, doc, db} = msg.data;
+                common.insertBatcher.insert(collection, doc, db);
             }
             else if (msg.cmd === "batch_write") {
                 const {collection, id, operation, db} = msg.data;

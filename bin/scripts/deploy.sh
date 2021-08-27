@@ -1,19 +1,23 @@
 #!/bin/bash
 
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_REPO_SLUG" == "Countly/countly-server" ]; then
-    if [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "next" ]; then
-        openssl aes-256-cbc -K "${encrypted_2b5a1ad4da99_key:?}" -iv "${encrypted_2b5a1ad4da99_iv:?}" -in deploy-key.enc -out deploy-key -d;
-        chmod 600 deploy-key;
+if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
+    GITHUB_BRANCH=${GITHUB_REF#refs/heads/}
+    echo "$GITHUB_BRANCH"
+    if [ "$GITHUB_BRANCH" == "master" ] || [ "$GITHUB_BRANCH" == "next" ]; then
+        echo "$SSH_PRIVATE_KEY" > deploy-key;
+        mkdir -p ~/.ssh;
         mv deploy-key ~/.ssh/id_rsa;
-        ssh -oStrictHostKeyChecking=no "countly@$TRAVIS_BRANCH.count.ly" "bash /home/countly/deploy.sh > /home/countly/logs/countly-deploy-travis.log 2>&1 &"
-        if [ "$TRAVIS_BRANCH" == "master" ]; then
-            ssh -oStrictHostKeyChecking=no "countly@ce.count.ly" "bash /home/countly/deploy.sh > /home/countly/logs/countly-deploy-travis.log 2>&1 &"
+        chmod 600 ~/.ssh/id_rsa;
+        ssh -oStrictHostKeyChecking=no "countly@$GITHUB_BRANCH.count.ly" "bash /home/countly/deploy.sh > /home/countly/logs/countly-deploy-github.log 2>&1 &"
+        if [ "$GITHUB_BRANCH" == "master" ]; then
+            ssh -oStrictHostKeyChecking=no "countly@ce.count.ly" "bash /home/countly/deploy.sh > /home/countly/logs/countly-deploy-github.log 2>&1 &"
         fi
     fi
-    if [ "$TRAVIS_BRANCH" == "feature/new-ui" ]; then
-        openssl aes-256-cbc -K "${encrypted_2b5a1ad4da99_key:?}" -iv "${encrypted_2b5a1ad4da99_iv:?}" -in deploy-key.enc -out deploy-key -d;
-        chmod 600 deploy-key;
+    if [ "$GITHUB_BRANCH" == "feature/new-ui" ]; then
+        echo "$SSH_PRIVATE_KEY" > deploy-key;
+        mkdir -p ~/.ssh;
         mv deploy-key ~/.ssh/id_rsa;
-        ssh -oStrictHostKeyChecking=no "countly@ui.count.ly" "bash /home/countly/deploy.sh > /home/countly/logs/countly-deploy-travis.log 2>&1 &"
+        chmod 600 ~/.ssh/id_rsa;
+        ssh -oStrictHostKeyChecking=no "countly@ui.count.ly" "bash /home/countly/deploy.sh > /home/countly/logs/countly-deploy-github.log 2>&1 &"
     fi
 fi

@@ -5,16 +5,26 @@
     // @vue/component
     var autoRefreshMixin = {
         mounted: function() {
-            var self = this;
-            this.$root.$on("cly-refresh", function() {
-                self.refresh();
-            });
+            if (this.refresh || this.dateChanged) {
+                this.$root.$on("cly-refresh", this.refreshHandler);
+            }
         },
         methods: {
-            refresh: function() {}
+            refreshHandler: function(payload) {
+                var isForced = payload && payload.reason === "dateChange";
+                if (isForced && this.dateChanged) {
+                    // branch to dateChange implementation if any
+                    this.dateChanged();
+                }
+                else if (this.refresh) {
+                    this.refresh(isForced);
+                }
+            }
         },
         beforeDestroy: function() {
-            this.$root.$off();
+            if (this.refresh || this.dateChanged) {
+                this.$root.$off("cly-refresh", this.refreshHandler);
+            }
         }
     };
 
@@ -30,8 +40,7 @@
             });
             if (!options.disableAutoCatch) {
                 return ajaxP.catch(function(err) {
-                    // eslint-disable-next-line no-console
-                    console.log("AJAX Promise error:", err);
+                    app.activeView.onError(err);
                 });
             }
             return ajaxP;
@@ -51,8 +60,10 @@
     // @vue/component
     var commonFormattersMixin = {
         methods: {
+            parseTimeAgo: countlyCommon.formatTimeAgoText,
             formatTimeAgo: countlyCommon.formatTimeAgo,
-            formatNumber: countlyCommon.formatTimeAgo
+            formatNumber: countlyCommon.formatNumber,
+            getShortNumber: countlyCommon.getShortNumber
         }
     };
 
@@ -92,6 +103,9 @@
                     },
                     periodLabel: function(state) {
                         return state.periodLabel;
+                    },
+                    getActiveApp: function(state) {
+                        return state.activeApp;
                     }
                 },
                 mutations: {
@@ -115,6 +129,27 @@
                         if (appObj) {
                             context.commit("setActiveApp", Object.freeze(JSON.parse(JSON.stringify(appObj))));
                         }
+                    }
+                }
+            },
+            countlySidebar: {
+                namespaced: true,
+                state: {
+                    selectedMenuItem: {}
+                },
+                getters: {
+                    getSelectedMenuItem: function(state) {
+                        return state.selectedMenuItem;
+                    }
+                },
+                mutations: {
+                    setSelectedMenuItem: function(state, payload) {
+                        state.selectedMenuItem = payload;
+                    }
+                },
+                actions: {
+                    updateSelectedMenuItem: function(context, payload) {
+                        context.commit('setSelectedMenuItem', payload);
                     }
                 }
             }
@@ -262,7 +297,12 @@
         refresh: function() {
             var self = this;
             if (self.vm) {
-                self.vm.$emit("cly-refresh");
+                self.vm.$root.$emit("cly-refresh", {reason: "periodical"}); // for 10 sec interval
+            }
+        },
+        onError: function(message) {
+            if (this.vm) {
+                this.vm.$root.$emit("cly-error", {message: message});
             }
         },
         afterRender: function() {
@@ -292,11 +332,22 @@
                             </div>',
                 beforeCreate: function() {
                     this.$route.params = self.params;
+                },
+                methods: {
+                    handleClyError: function(payload) {
+                        this.$notify.error({
+                            title: _i18n("common.error"),
+                            message: payload.message
+                        });
+                    },
+                    handleClyRefresh: function() {
+                        this.$root.$emit("cly-refresh", {reason: "dateChange"});
+                    }
+                },
+                created: function() {
+                    this.$on("cly-date-change", this.handleClyRefresh);
+                    this.$on("cly-error", this.handleClyError);
                 }
-            });
-
-            self.vm.$on("cly-date-change", function() {
-                self.vm.$emit("cly-refresh");
             });
         },
         destroy: function() {
@@ -410,14 +461,15 @@
     };
 
     var asyncCreate = function(base) {
-        return function(opts) {
+        return function(opts, baseOverride) {
+            var finalBase = baseOverride || base;
             if (typeof opts.template === "string") {
-                return base.extend(opts);
+                return finalBase.extend(opts);
             }
             return function() {
                 return templateUtil.load(opts.template.fileName).then(function(template) {
                     opts.template = template;
-                    return base.extend(opts);
+                    return finalBase.extend(opts);
                 });
             };
         };

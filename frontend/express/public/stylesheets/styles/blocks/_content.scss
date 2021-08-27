@@ -5,6 +5,11 @@
 */
 
 @use "../base/variables" as v;
+@use "../base/colors" as c;
+
+.cly-vue-theme-clydef {
+    background-color: c.$interface-color;
+}
 
 #analytics-main-view {
 	//There is a rule corresponding to the following rule in the main.css file - #content-container
@@ -13,7 +18,7 @@
 		min-width: 768px;
 		min-height: 400px;
 		margin-left: 272px;
-		padding: 59px 0 35px 0 !important;
+		padding: 0px 0 35px 0 !important;
 		transition: margin-left 0.55s;
 		will-change: margin-left;
 	}
@@ -25,9 +30,31 @@
 }
 
 .cly-vue-section {
-	&__content {
-		border-top: v.$border-base;
-		border-bottom: v.$border-base;
+	&--has-configurator-skin {
+		.cly-vue-section__content {
+			background: #FFFFFF;
+			border: 1px solid #ECECEC;
+			box-sizing: border-box;
+			box-shadow: 0px 1px 0px #ECECEC;
+			border-radius: 4px;
+			.cly-vue-section__sub {
+				border-top: none!important;
+				border-bottom: 1px solid #ECECEC;
+				align-items: center;
+				display: flex;
+			}
+		}
+	}
+
+	&--has-default-skin {
+		.cly-vue-section__content {
+			border-top: v.$border-base;
+			border-bottom: v.$border-base;
+		}
+	}
+
+	.cly-vue-section__content-config {
+		border-bottom: 1px solid #ececec;
 	}
 
 	&:not(:last-child) {

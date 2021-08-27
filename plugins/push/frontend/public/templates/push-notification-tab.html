@@ -1,0 +1,159 @@
+<script type="text/x-template" id="push-notification-tab">
+    <div v-bind:class="[componentId]">
+        <cly-main>
+            <cly-section>
+                <div class="bu-columns bu-is-gapless">
+                    <div class="bu-column bu-is-4">
+                        <el-card shadow="never" class="cly-vue-push-notification-card"> 
+                            <div class="cly-vue-push-notification-card__title">{{i18n('push-notification.total-app-users')}}</div> 
+                            <div class="cly-vue-push-notification-card__content">{{totalAppUsers}}</div>
+                        </el-card>
+                    </div>
+
+                    <div class="bu-column bu-is-4">
+                        <el-card shadow="never" class="cly-vue-push-notification-card">
+                            <div class="cly-vue-push-notification-card__title">{{i18n('push-notification.enabled-users')}}</div>
+                            <div class="cly-vue-push-notification-card__content">{{enabledUsers}}</div>
+                        </el-card>
+                    </div>
+
+                    <div class="bu-column bu-is-4">
+                        <el-card shadow="never" class="cly-vue-push-notification-card">
+                            <div class="cly-vue-push-notification-card__title">{{i18n('push-notification.enabled-users-percentage')}}</div>
+                            <div class="cly-vue-push-notification-card__content">{{formatPercentage(enabledUsers/totalAppUsers)}} %</div>
+                        </el-card>
+                    </div>
+                </div>
+            </cly-section>
+            <div>
+                <div class="bu-level-left" style="margin-bottom:32px">
+                    <div class="bu-level-item">
+                        <div class="cly-vue-platform-filter-label"> 
+                            {{platformFilterLabels[selectedPushNotificationType]}} 
+                        </div>
+                    </div>
+                    <div class="bu-level-item">
+                        <el-select v-model="selectedPlatformFilter">
+                            <el-option :key="item.value" :value="item.value" :label="item.label"
+                                v-for="item in platformFilters"
+                            >
+                            </el-option>
+                        </el-select>
+                    </div>
+                </div>
+            </div>
+            <cly-section>
+                <cly-chart-time :bucket="selectedPeriodFilter" :option="pushNotificationOptions" :height="400" v-loading="isLoading">
+                    <template v-slot:chart-left="scope">
+                        <div style="width: 100px;">
+                            <el-select v-if="selectedPushNotificationType === TypeEnum.ONE_TIME" v-model="selectedOneTimePeriodFilter">
+                                <el-option :key="item.value" :value="item.value" :label="item.label"
+                                    v-for="item in oneTimePeriodFilters"></el-option>
+                            </el-select>
+                            <el-select v-else-if="selectedPushNotificationType === TypeEnum.AUTOMATIC" v-model="selectedAutomaticPeriodFilter">
+                                <el-option :key="item.value" :value="item.value" :label="item.label"
+                                    v-for="item in automaticPeriodFilters"></el-option>
+                            </el-select>
+                            <el-select v-else v-model="selectedTransactionalPeriodFilter">
+                                <el-option :key="item.value" :value="item.value" :label="item.label"
+                                    v-for="item in transactionalPeriodFilters"></el-option>
+                            </el-select>
+                        </div>
+                    </template>
+                </cly-chart-time>
+            </cly-section>
+            <cly-section>
+                <cly-datatable-n  :rows="pushNotificationRows" :available-dynamic-cols="optionalTableColumns" :resizable="true" v-loading="isLoading" @row-click="onRowClick">
+                    <template v-slot:header-left>
+                        <el-select v-model="selectedStatusFilter" >
+                            <el-option
+                                :key="item.value"
+                                :value="item.value"
+                                :label="item.label"
+                                v-for="item in statusFilters[selectedPushNotificationType]">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template v-slot="scope">
+                        <el-table-column sortable="custom" prop="name" :label="i18n('push-notification.table-message-name')" class="cly-vue-push-notification-multi-line-table-data">
+                            <template slot-scope="scope">
+                                <span class="cly-vue-push-notification-multi-line-table-data__first-line">{{scope.row.name}}</span>
+                                <br />
+                                <span class="cly-vue-push-notification-multi-line-table-data__second-line">{{scope.row.platforms.map(function(platform){return platform.label}).join(", ")}}</span>
+                            </template>
+                        </el-table-column>
+                        <template v-for="(col,idx) in scope.dynamicCols">
+                            <el-table-column 
+                                v-if="col.value === 'content'"  
+                                :key="idx" 
+                                sortable="custom" 
+                                :label="col.label">
+                                <template v-slot="rowScope">
+                                    {{rowScope.row.content}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column 
+                                v-if="col.value === 'createdBy'"  
+                                :key="idx" 
+                                sortable="custom" 
+                                :label="col.label">
+                                <template v-slot="rowScope">
+                                    {{rowScope.row.createdBy}}
+                                </template>
+                            </el-table-column>
+                        </template>
+                        <el-table-column sortable="custom" prop="status" :label="i18n('push-notification.table-status')">
+                            <template slot-scope="scope">
+                                <span class="blinker-wrapper" v-bind:style="{backgroundColor:getStatusBackgroundColor(scope.row.status.value).concat(DEFAULT_ALPHA_COLOR_VALUE_HEX)}"> 
+                                    <span class="blinker" v-bind:style="{backgroundColor:getStatusBackgroundColor(scope.row.status.value)}">  </span>{{scope.row.status.label}}
+                                </span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')" class="cly-vue-push-notification-multi-line-table-data">
+                            <template slot-scope="scope">
+                                <span class="cly-vue-push-notification-multi-line-table-data__first-line">{{scope.row.createdDateTime.date}}</span>
+                                <br />
+                                <span class="cly-vue-push-notification-multi-line-table-data__second-line">{{scope.row.createdDateTime.time}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column sortable="custom" prop="sentDateTime" :label="i18n('push-notification.table-date-sent')" class="cly-vue-push-notification-multi-line-table-data">
+                            <template slot-scope="scope">
+                                <span class="cly-vue-push-notification-multi-line-table-data__first-line">{{scope.row.sentDateTime.date}}</span>
+                                <br />
+                                <span class="cly-vue-push-notification-multi-line-table-data__second-line">{{scope.row.sentDateTime.time}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column sortable="custom" prop="sent" :label="i18n('push-notification.table-sent')">
+                        </el-table-column>
+                        <el-table-column sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')">
+                            <template slot-scope="scope">
+                                <div class="bu-level">
+                                    <div class="bu-level-left">
+                                        <div class="bu-level-item first-user-activity-table-data-item">
+                                            <span>{{scope.row.actioned}}</span>
+                                        </div>
+                                        <div class="bu-level-item user-activity-table-data-item-divider">
+                                            <span>|</span>
+                                        </div>
+                                        <div class="bu-level-item user-activity-table-data-item">
+                                            <span>{{formatPercentage(scope.row.actioned/totalAppUsers)}} %</span>
+                                        </div>
+                                    </div>
+                                    <div class="bu-level-right" >
+                                        <div class="bu-level-item">
+                                            <cly-more-options size="small" @command="handleUserEvents($event, scope.row._id )">
+                                                <el-dropdown-item v-if="shouldShowDuplicateUserEvent('scope.row.status.value')" :command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
+                                                <el-dropdown-item v-if="shouldShowDeleteUserEvent('scope.row.status.value')"  :command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
+                                                <el-dropdown-item v-if="shouldShowResendUserEvent('scope.row.status.value')" :command="UserEventEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
+                                            </cly-more-options>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </cly-section>
+        </cly-main>
+    </div>
+</script>

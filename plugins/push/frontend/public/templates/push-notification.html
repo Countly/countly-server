@@ -1,0 +1,23 @@
+<script type="text/x-template" id="push-notification">
+    <div v-bind:class="[componentId]">
+        <cly-header>
+            <template v-slot:header-left>
+                <h2> {{i18n('push-notification.title')}} </h2>
+                <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+            </template>
+            <template v-slot:header-right>
+                <div class="bu-level-item">
+                    <el-button @click="onCreatePushNotification" type="success" size="small" icon="el-icon-circle-plus">{{i18n('push-notification.create-button')}}</el-button>
+                </div>
+            </template>
+            <template v-slot:header-tabs>
+                <cly-dynamic-tabs v-model="selectedPushNotificationTab" :tabs="pushNotificationTabs">
+                    <template v-slot:tables="scope">
+                        <span>{{scope.tab.title}}</span>
+                    </template>
+                </cly-dynamic-tabs>
+            </template>
+        </cly-header>
+        <push-notification-drawer :controls="drawers.pushNotificationDrawer" :type="selectedPushNotificationTab"></push-notification-drawer>
+    </div>
+</script>

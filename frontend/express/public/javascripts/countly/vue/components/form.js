@@ -42,12 +42,17 @@
 
     var MultiStepFormMixin = {
         mixins: [BufferedObjectMixin],
+        props: {
+            requiresAsyncSubmit: {type: Boolean, default: false, required: false},
+            setStepCallbackFn: {type: Function, default: null, required: false}
+        },
         data: function() {
             return {
                 currentStepIndex: 0,
                 stepContents: [],
                 isMounted: false,
-                isSubmissionAllowed: true
+                isSubmissionAllowed: true,
+                isSubmitPending: false
             };
         },
         computed: {
@@ -133,35 +138,56 @@
             this.isMounted = true;
         },
         methods: {
-            setStep: function(newIndex) {
-                if (newIndex >= 0 && newIndex < this.stepContents.length) {
-                    this.currentStepIndex = newIndex;
+            setStep: function(newIndex, originator, internalValidationFailed) {
+                var self = this;
+                var defaultAction = function() {
+                    if (!internalValidationFailed && newIndex >= 0 && newIndex < self.stepContents.length) {
+                        self.currentStepIndex = newIndex;
+                    }
+                };
+                if (this.setStepCallbackFn) {
+                    if (this.setStepCallbackFn(newIndex, self.currentStepIndex, originator)) {
+                        defaultAction();
+                    }
+                }
+                else {
+                    defaultAction();
                 }
             },
-            setStepSafe: function(newIndex) {
-                if (newIndex <= this.lastValidIndex) {
-                    this.setStep(newIndex);
-                }
+            setStepSafe: function(newIndex, originator) {
+                this.beforeLeavingStep();
+                this.setStep(newIndex, originator, newIndex > this.lastValidIndex);
             },
             prevStep: function() {
-                this.setStep(this.currentStepIndex - 1);
+                this.setStep(this.currentStepIndex - 1, 'prev');
             },
             nextStep: function() {
                 this.beforeLeavingStep();
-                if (this.isCurrentStepValid) {
-                    this.setStep(this.currentStepIndex + 1);
-                }
+                this.setStep(this.currentStepIndex + 1, 'next', !this.isCurrentStepValid);
             },
             reset: function() {
                 this.callValidators("reset");
-                this.setStep(0);
+                this.setStep(0, 'reset');
             },
             submit: function(force) {
                 this.beforeLeavingStep();
                 if (this.isSubmissionAllowed || force === true) {
-                    this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
-                    if (this.doClose) {
-                        this.doClose();
+                    if (this.requiresAsyncSubmit) {
+                        this.isSubmitPending = true;
+                        var self = this;
+                        var callback = function(err) {
+                            self.isSubmitPending = false;
+                            if (!err && self.doClose) {
+                                self.doClose();
+                            }
+                        };
+                        this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)), callback);
+                    }
+                    else {
+                        this.$emit("submit", JSON.parse(JSON.stringify(this.editedObject)));
+                        if (this.doClose) {
+                            this.doClose();
+                        }
                     }
                 }
             },
@@ -198,11 +224,12 @@
     Vue.component("cly-form-step", BaseStep.extend({
         props: {
             validatorFn: {type: Function},
+            id: { type: String, required: true },
             screen: {
                 type: String,
                 default: "half",
                 validator: function(value) {
-                    return ['half', 'full', 'custom'].indexOf(value) !== -1;
+                    return ['half', 'full'].indexOf(value) !== -1;
                 }
             }
         },
@@ -223,13 +250,36 @@
                 this.$refs.observer.validate();
             }
         },
+        computed: {
+            isParentReady: function() {
+                if (this.$parent.isToggleable) {
+                    return this.$parent.isOpened;
+                }
+                return true;
+            }
+        },
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
-                    '<div v-show="isActive">\n' +
-                        '<validation-observer ref="observer" v-slot="v">\n' +
+                    '<validation-observer ref="observer" v-slot="v">\n' +
+                        '<div v-show="isActive" v-if="isParentReady">\n' +
                             '<slot/>\n' +
-                        '</validation-observer>\n' +
-                    '</div>\n' +
+                        '</div>\n' +
+                    '</validation-observer>\n' +
                 '</div>'
+    }));
+
+
+    Vue.component("cly-form-field", countlyBaseComponent.extend({
+        props: {
+            label: String
+        },
+        template: '<div class="cly-vue-form-field cly-vue-form-step__section">\
+                        <div class="text-small text-heading">{{label}}</div>\
+                        <validation-provider v-bind="$attrs" v-on="$listeners" v-slot="validation">\
+                            <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}">\
+                                <slot v-bind="validation"/>\
+                            </div>\
+                        </validation-provider>\
+                  </div>'
     }));
 
     countlyVue.mixins.MultiStepForm = MultiStepFormMixin;

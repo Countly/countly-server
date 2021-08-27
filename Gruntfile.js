@@ -1,4 +1,4 @@
-module.exports = function (grunt) {
+module.exports = function(grunt) {
 
     grunt.initConfig({
         eslint: {
@@ -54,6 +54,7 @@ module.exports = function (grunt) {
                     'frontend/express/public/javascripts/utils/dropzone.js',
                     'frontend/express/public/javascripts/utils/webfont.js',
                     'frontend/express/public/javascripts/utils/selectize.min.js',
+                    'frontend/express/public/javascripts/utils/leaflet.js',
                     'frontend/express/public/javascripts/utils/polyfill/es6-promise.auto.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/intersection-observer.js',
                     'frontend/express/public/javascripts/utils/vue/vue.min.js',
@@ -67,8 +68,10 @@ module.exports = function (grunt) {
                     'frontend/express/public/javascripts/utils/vue/vue-good-table.min.js',
                     'frontend/express/public/javascripts/utils/vue/vue2Dropzone.min.js',
                     'frontend/express/public/javascripts/utils/vue/element-ui.js',
+                    'frontend/express/public/javascripts/utils/vue/vue2-leaflet.min.js',
                     'frontend/express/public/javascripts/utils/vue/inViewportMixin.js',
                     'frontend/express/public/javascripts/utils/vue/vuescroll.min.js',
+                    'frontend/express/public/javascripts/utils/vue/vue-google-charts.js',
                     'frontend/express/public/javascripts/utils/jquery.xss.js',
                     'frontend/express/public/javascripts/countly/countly.common.js',
                     'frontend/express/public/javascripts/utils/simpleUpload.min.js',
@@ -136,11 +139,13 @@ module.exports = function (grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/input.js',
                     'frontend/express/public/javascripts/countly/vue/datatable-legacy.js',
                     'frontend/express/public/javascripts/countly/vue/components/datatable.js',
+                    'frontend/express/public/javascripts/countly/vue/components/dialog.js',
                     'frontend/express/public/javascripts/countly/vue/components/drawer.js',
                     'frontend/express/public/javascripts/countly/vue/components/vis.js',
                     'frontend/express/public/javascripts/countly/vue/components/helpers.js',
-                    'frontend/express/public/javascripts/countly/vue/components/static.js',
+                    'frontend/express/public/javascripts/countly/vue/components/sidebar.js',
                     'frontend/express/public/javascripts/countly/vue/components/progress.js',
+                    'frontend/express/public/javascripts/countly/vue/directives/scroll-shadow.js',
                     'frontend/express/public/javascripts/countly/vue/legacy.js',
                     'frontend/express/public/javascripts/countly/countly.vue.legacy.js',
                     'frontend/express/public/javascripts/countly/countly.token.manager.js',
@@ -155,10 +160,21 @@ module.exports = function (grunt) {
                     'frontend/express/public/core/session-durations/javascripts/countly.views.js',
                     'frontend/express/public/core/session-frequency/javascripts/countly.models.js',
                     'frontend/express/public/core/session-frequency/javascripts/countly.views.js',
+                    'frontend/express/public/core/app-version/javascripts/countly.views.js',
+                    'frontend/express/public/core/app-resolution/javascripts/countly.views.js',
+                    'frontend/express/public/core/platform/javascripts/countly.views.js',
+                    'frontend/express/public/core/browser/javascripts/countly.views.js',
+                    'frontend/express/public/core/devices-and-types/javascripts/countly.views.js',
+                    'frontend/express/public/core/devices-and-types/javascripts/countly.models.js',
+                    'frontend/express/public/core/carrier/javascripts/countly.views.js',
+                    'frontend/express/public/core/carrier/javascripts/countly.models.js',
                     'frontend/express/public/core/events/javascripts/countly.overview.models.js',
                     'frontend/express/public/core/events/javascripts/countly.overview.views.js',
                     'frontend/express/public/core/events/javascripts/countly.details.views.js',
-                    'frontend/express/public/core/events/javascripts/countly.details.models.js'
+                    'frontend/express/public/core/events/javascripts/countly.details.models.js',
+                    'frontend/express/public/core/events/javascripts/countly.compare.models.js',
+                    'frontend/express/public/core/user-management/javascripts/countly.overview.models.js',
+                    'frontend/express/public/core/user-management/javascripts/countly.overview.views.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
             }
@@ -189,6 +205,7 @@ module.exports = function (grunt) {
                         'frontend/express/public/stylesheets/vue/clyvue.css',
                         'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
                         'frontend/express/public/stylesheets/selectize/selectize.css',
+                        'frontend/express/public/stylesheets/leaflet/leaflet.css',
                         'frontend/express/public/stylesheets/jsoneditor/codemirror.css',
                         'frontend/express/public/stylesheets/countly-checkbox/countly.checkbox.css',
                         'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
@@ -239,7 +256,7 @@ module.exports = function (grunt) {
             dist: { // Target
                 options: { // Target options
                     style: 'compressed',
-                    update: true // only compile when scss file is newer than css file
+                    update: false // only compile when scss file is newer than css file
                 },
                 files: [
                     { src: 'frontend/express/public/stylesheets/vue/clyvue.scss', dest: 'frontend/express/public/stylesheets/vue/clyvue.css' },
@@ -260,7 +277,7 @@ module.exports = function (grunt) {
     });
 
     //code coverage
-    grunt.event.on('coverage', function (lcovFileContents, done) {
+    grunt.event.on('coverage', function(lcovFileContents, done) {
         // Check below on the section "The coverage event"
         done();
     });
@@ -277,11 +294,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-mocha-test');
 
-    grunt.registerTask('default', ['eslint', 'mochaTest']);
+    grunt.registerTask('default', ['mochaTest']);
 
     grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'cssmin']);
 
-    grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function () {
+    grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
         var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');
         console.log('Preparing production files for following plugins: %j', plugins);
 
@@ -311,7 +328,7 @@ module.exports = function (grunt) {
             }
         }
 
-        plugins.forEach(function (plugin) {
+        plugins.forEach(function(plugin) {
             var files, pluginPath = path.join(__dirname, 'plugins', plugin),
                 javascripts = path.join(pluginPath, 'frontend/public/javascripts'),
                 stylesheets = path.join(pluginPath, 'frontend/public/stylesheets'),
@@ -330,7 +347,7 @@ module.exports = function (grunt) {
                         }
                     }
 
-                    files.forEach(function (name) {
+                    files.forEach(function(name) {
                         var file = path.join(javascripts, name);
                         if (fs.statSync(file).isFile() && name.indexOf('.') !== 0 && name.endsWith('.js')) {
                             js.push('plugins/' + plugin + '/frontend/public/javascripts/' + name);
@@ -341,7 +358,7 @@ module.exports = function (grunt) {
 
             if (fs.existsSync(stylesheets) && fs.statSync(stylesheets).isDirectory()) {
                 files = fs.readdirSync(stylesheets);
-                files.forEach(function (name) {
+                files.forEach(function(name) {
                     var file = path.join(stylesheets, name);
                     if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0 && name.endsWith('.css')) {
                         css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
@@ -377,11 +394,11 @@ module.exports = function (grunt) {
         console.log('Done preparing production files');
     });
 
-    grunt.registerTask('locales', 'Concat all locale files into one', function () {
+    grunt.registerTask('locales', 'Concat all locale files into one', function() {
         var plugins = require('./plugins/plugins.json'), locales = {}, fs = require('fs'), path = require('path');
         console.log('Preparing locale files for core & plugins: %j', plugins);
 
-        var pushLocaleFile = function (name, path) {
+        var pushLocaleFile = function(name, path) {
             var lang = '';
             name = name.replace('.properties', '');
             if (name.indexOf('_') !== -1) {
@@ -402,7 +419,7 @@ module.exports = function (grunt) {
             if (!fs.existsSync(dir)) {
                 return;
             }
-            fs.readdirSync(dir).forEach(function (name) {
+            fs.readdirSync(dir).forEach(function(name) {
                 var file = path.join(dir, name);
                 if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
                     pushLocaleFile(name, dir + '/' + name);
@@ -412,12 +429,12 @@ module.exports = function (grunt) {
 
         [path.join(__dirname, 'frontend/express/public/localization/dashboard'), path.join(__dirname, 'frontend/express/public/localization/help'), path.join(__dirname, 'frontend/express/public/localization/mail')].forEach(processLocaleDir);
 
-        plugins.forEach(function (plugin) {
+        plugins.forEach(function(plugin) {
             var localization = path.join(__dirname, 'plugins', plugin, 'frontend/public/localization');
 
             try {
                 if (fs.statSync(localization).isDirectory()) {
-                    fs.readdirSync(localization).forEach(function (name) {
+                    fs.readdirSync(localization).forEach(function(name) {
                         var file = path.join(localization, name);
                         if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
                             pushLocaleFile(name, 'plugins/' + plugin + '/frontend/public/localization/' + name);

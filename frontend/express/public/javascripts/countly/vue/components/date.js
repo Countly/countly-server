@@ -85,6 +85,7 @@
             rangeMode: 'inBetween',
             minDate: minDate,
             maxDate: maxDate,
+            minTime: new Date(minDate.getTime()),
             inBetweenInput: {
                 raw: {
                     textStart: minDateText,
@@ -98,6 +99,12 @@
                 },
                 parsed: [minDate, maxDate]
             },
+            onmInput: {
+                raw: {
+                    text: minDateText,
+                },
+                parsed: [minDate, minDate]
+            },
             inTheLastInput: {
                 raw: {
                     text: '1',
@@ -106,19 +113,34 @@
                 parsed: [minDate, maxDate]
             },
         };
-        state.label = getRangeLabel(state);
+        state.label = getRangeLabel(state, this.type);
         return state;
     }
 
     var globalDaysRange = [],
         globalMonthsRange = [],
+        globalFutureDaysRange = [],
+        globalFutureMonthsRange = [],
         globalMin = moment([2010, 0, 1]),
         globalMax = moment(),
+        globalFutureMax = moment().add(10, "y"),
         daysCursor = moment(globalMin.toDate()),
         monthsCursor = moment(globalMin.toDate());
 
     while (daysCursor < globalMax) {
         globalDaysRange.push({
+            date: daysCursor.toDate(),
+            title: daysCursor.format("MMMM YYYY"),
+            key: daysCursor.unix(),
+            anchorClass: "anchor-" + daysCursor.unix(),
+        });
+        daysCursor = daysCursor.add(1, "M");
+    }
+
+    globalFutureDaysRange.push(globalDaysRange[globalDaysRange.length - 1]);
+
+    while (daysCursor < globalFutureMax) {
+        globalFutureDaysRange.push({
             date: daysCursor.toDate(),
             title: daysCursor.format("MMMM YYYY"),
             key: daysCursor.unix(),
@@ -137,8 +159,22 @@
         monthsCursor = monthsCursor.add(1, "Y");
     }
 
+    globalFutureMonthsRange.push(globalMonthsRange[globalMonthsRange.length - 1]);
+
+    while (monthsCursor < globalFutureMax) {
+        globalFutureMonthsRange.push({
+            date: monthsCursor.toDate(),
+            title: monthsCursor.format("YYYY"),
+            key: monthsCursor.unix(),
+            anchorClass: "anchor-" + monthsCursor.unix(),
+        });
+        monthsCursor = monthsCursor.add(1, "Y");
+    }
+
     Object.freeze(globalDaysRange);
     Object.freeze(globalMonthsRange);
+    Object.freeze(globalFutureDaysRange);
+    Object.freeze(globalFutureMonthsRange);
 
     /**
      * Creates an initial state object 
@@ -150,15 +186,15 @@
             tableType = "",
             globalRange = null;
 
-        if (instance.type === "monthrange") {
+        if (instance.type.includes("month")) {
             formatter = "YYYY-MM";
             tableType = "month";
-            globalRange = globalMonthsRange;
+            globalRange = instance.isFuture ? globalFutureMonthsRange : globalMonthsRange;
         }
         else {
             formatter = "YYYY-MM-DD";
             tableType = "date";
-            globalRange = globalDaysRange;
+            globalRange = instance.isFuture ? globalFutureDaysRange : globalDaysRange;
         }
 
         var state = {
@@ -185,8 +221,8 @@
             formatter: formatter,
             globalRange: globalRange,
             tableType: tableType,
-            globalMin: globalMin,
-            globalMax: globalMax
+            globalMin: instance.isFuture ? globalMax : globalMin,
+            globalMax: instance.isFuture ? globalFutureMax : globalMax
         };
 
         return _.extend(state, getDefaultInputState(formatter));
@@ -195,21 +231,40 @@
     /**
      * Returns the range label for a given state object
      * @param {Object} state Current state of datepicker
+     * @param {String} type Datepicker type
      * @returns {String} Range label
      */
-    function getRangeLabel(state) {
+    function getRangeLabel(state, type) {
+        type = type || "date";
+        var level = type.replace("range", "");
 
         if (!state.rangeMode || state.rangeMode === 'inBetween') {
             var effectiveRange = [moment(state.minDate), moment(state.maxDate)];
-            if (effectiveRange[1] - effectiveRange[0] > 86400000) {
-                return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
-            }
-            else {
-                return effectiveRange[0].format("lll") + " - " + effectiveRange[1].format("lll");
+            switch (level) {
+            case "date":
+                if (effectiveRange[0].isSame(effectiveRange[1])) { // single point
+                    return effectiveRange[0].format("lll");
+                }
+                else if (effectiveRange[1] - effectiveRange[0] > 86400000) {
+                    return effectiveRange[0].format("ll") + " - " + effectiveRange[1].format("ll");
+                }
+                else {
+                    return effectiveRange[0].format("lll") + " - " + effectiveRange[1].format("lll");
+                }
+                // case "week":
+                //     return;
+            case "month":
+                if (effectiveRange[0].isSame(effectiveRange[1])) { // single point
+                    return effectiveRange[0].format("MMM YYYY");
+                }
+                return effectiveRange[0].format("MMM YYYY") + " - " + effectiveRange[1].format("MMM YYYY");
             }
         }
         else if (state.rangeMode === 'since') {
             return CV.i18n('common.time-period-name.since', moment(state.minDate).format("ll"));
+        }
+        else if (state.rangeMode === 'onm') {
+            return CV.i18n('common.time-period-name.on', moment(state.minDate).format("ll"));
         }
         else if (state.rangeMode === 'inTheLast') {
             var num = parseInt(state.inTheLastInput.raw.text, 10),
@@ -264,19 +319,32 @@
 
     var InputControlsMixin = {
         methods: {
-            tryParsing: function(newVal, target, index) {
-                var parsedRange = target.parsed;
-                var needsSync = newVal !== moment(parsedRange[index]).format(this.formatter);
-                if (needsSync) {
-                    var parsed = moment(newVal);
-                    if (parsed && parsed.isValid() && (parsed >= this.globalMin) && (parsed <= this.globalMax)) {
-                        target.raw['invalid' + index] = false;
-                        parsedRange[index] = parsed.toDate();
-                        this.handleUserInputUpdate(parsedRange[index]);
+            tryParsing: function(newVal, target, sourceIndex, targetIndexes) {
+                var parsedRange = target.parsed,
+                    handleUpdate = false,
+                    self = this;
+
+                targetIndexes = targetIndexes || [sourceIndex];
+                // if no target specified, then it is just a self-update
+
+                var parsed = moment(newVal);
+                targetIndexes.forEach(function(targetIndex) {
+                    var needsSync = newVal !== moment(parsedRange[targetIndex]).format(self.formatter);
+                    if (needsSync) {
+                        if (parsed && parsed.isValid() && (parsed >= self.globalMin) && (parsed <= self.globalMax)) {
+                            target.raw['invalid' + targetIndex] = false;
+                            parsedRange[targetIndex] = parsed.toDate();
+                            if (targetIndex === sourceIndex) {
+                                handleUpdate = true;
+                            }
+                        }
+                        else {
+                            target.raw['invalid' + targetIndex] = true;
+                        }
                     }
-                    else {
-                        target.raw['invalid' + index] = true;
-                    }
+                });
+                if (handleUpdate) {
+                    this.handleUserInputUpdate(parsedRange[sourceIndex]);
                 }
             },
             handleTextStartFocus: function() {
@@ -303,6 +371,12 @@
                     this.sinceInput.raw.invalid0 = false;
                 }
             },
+            handleOnmBlur: function() {
+                if (this.onmInput.raw.invalid0 && this.onmInput.parsed[0]) {
+                    this.onmInput.raw.text = moment(this.onmInput.parsed[0]).format(this.formatter);
+                    this.onmInput.raw.invalid0 = false;
+                }
+            },
             handleUserInputUpdate: function(scrollToDate) {
                 var inputObj = null;
 
@@ -312,6 +386,9 @@
                     break;
                 case 'since':
                     inputObj = this.sinceInput.parsed;
+                    break;
+                case 'onm':
+                    inputObj = this.onmInput.parsed;
                     break;
                 case 'inTheLast':
                     inputObj = this.inTheLastInput.parsed;
@@ -340,17 +417,41 @@
                     },
                     parsed: [minDate, maxDate]
                 };
+            },
+            setCurrentSince: function(minDate, maxDate) {
+                this.sinceInput = {
+                    raw: {
+                        text: moment(minDate).format(this.formatter)
+                    },
+                    parsed: [minDate, maxDate]
+                };
+            },
+            setCurrentOnm: function(minDate, maxDate) {
+                this.onmInput = {
+                    raw: {
+                        text: moment(minDate).format(this.formatter)
+                    },
+                    parsed: [minDate, maxDate]
+                };
             }
         },
         watch: {
             'inBetweenInput.raw.textStart': function(newVal) {
-                this.tryParsing(newVal, this.inBetweenInput, 0);
+                if (this.isRange) {
+                    this.tryParsing(newVal, this.inBetweenInput, 0);
+                }
+                else {
+                    this.tryParsing(newVal, this.inBetweenInput, 0, [0, 1]);
+                }
             },
             'inBetweenInput.raw.textEnd': function(newVal) {
                 this.tryParsing(newVal, this.inBetweenInput, 1);
             },
             'sinceInput.raw.text': function(newVal) {
                 this.tryParsing(newVal, this.sinceInput, 0);
+            },
+            'onmInput.raw.text': function(newVal) {
+                this.tryParsing(newVal, this.onmInput, 0, [0, 1]);
             },
             'inTheLastInput.raw': {
                 deep: true,
@@ -373,8 +474,12 @@
                 return date > this.globalMax || date < this.globalMin;
             },
             handleRangePick: function(val) {
-                this.rangeMode = "inBetween";
-                var firstClick = !this.rangeState.selecting;
+                var firstClick = !this.rangeState.selecting,
+                    singleSelectRange = this.rangeMode === "since" || this.rangeMode === "onm";
+
+                if (!singleSelectRange) {
+                    this.rangeMode = "inBetween";
+                }
                 if (firstClick) {
                     this.rangeBackup = {
                         minDate: this.minDate,
@@ -390,6 +495,19 @@
                     else {
                         minDate = moment(val.minDate).startOf("month").toDate();
                         maxDate = moment(val.minDate).endOf("month").toDate();
+                    }
+
+                    if (!this.isRange || singleSelectRange) {
+                        this.resetRangeState();
+                    }
+
+                    if (this.rangeMode === 'since') {
+                        maxDate = moment().toDate();
+                        this.setCurrentSince(minDate, maxDate);
+                    }
+                    else if (this.rangeMode === 'onm') {
+                        maxDate = minDate;
+                        this.setCurrentOnm(minDate, maxDate);
                     }
 
                     this.setCurrentInBetween(minDate, maxDate);
@@ -445,15 +563,18 @@
                 }
                 this.$refs.vs.scrollIntoView(anchorClass);
             },
+            resetRangeState: function() {
+                this.rangeState = {
+                    endDate: null,
+                    selecting: false,
+                    row: null,
+                    column: null,
+                    focusOn: null
+                };
+            },
             abortPicking: function() {
                 if (this.rangeState.selecting) {
-                    this.rangeState = {
-                        endDate: null,
-                        selecting: false,
-                        row: null,
-                        column: null,
-                        focusOn: null
-                    };
+                    this.resetRangeState();
                     this.minDate = this.rangeBackup.minDate;
                     this.maxDate = this.rangeBackup.maxDate;
                     this.rangeBackup = {
@@ -466,7 +587,7 @@
         }
     };
 
-    Vue.component("cly-date-picker", countlyBaseComponent.extend({
+    Vue.component("cly-date-picker", countlyVue.components.create({
         mixins: [
             _mixins.i18n,
             InputControlsMixin,
@@ -504,15 +625,26 @@
                     }, []);
                 }
                 return [];
+            },
+            isRange: function() {
+                return this.type.includes('range');
+            },
+            isTimePickerEnabled: function() {
+                return this.type === 'date' && this.selectTime;
             }
         },
         props: {
-            value: [Object, String, Array],
+            value: [Object, String, Array, Number],
+            isFuture: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
             type: {
                 type: String,
                 default: "daterange",
                 validator: function(value) {
-                    return ['daterange', 'monthrange'].indexOf(value) !== -1;
+                    return ['date', 'daterange', 'month', 'monthrange'].includes(value);
                 }
             },
             displayShortcuts: {
@@ -536,19 +668,23 @@
                 type: String,
                 default: "mixed",
                 validator: function(value) {
-                    return ['mixed', 'absolute'].indexOf(value) !== -1;
+                    return ['mixed', 'absolute'].includes(value);
                 }
             },
             timestampFormat: {
                 type: String,
                 default: 's',
                 validator: function(value) {
-                    return ['s', 'ms'].indexOf(value) !== -1;
+                    return ['s', 'ms'].includes(value);
                 }
             },
             placement: {
                 type: String,
                 default: 'bottom-start'
+            },
+            selectTime: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
@@ -568,6 +704,10 @@
                 */
                 Object.assign(this.$data, getInitialState(this));
                 this.loadValue(this.value);
+            },
+            'isFuture': function() {
+                Object.assign(this.$data, getInitialState(this));
+                this.loadValue(this.value);
             }
         },
         methods: {
@@ -575,7 +715,7 @@
                 var changes = this.valueToInputState(value),
                     self = this;
 
-                changes.label = getRangeLabel(changes);
+                changes.label = getRangeLabel(changes, this.type);
 
                 Object.keys(changes).forEach(function(fieldKey) {
                     self[fieldKey] = changes[fieldKey];
@@ -595,6 +735,10 @@
                         selectedShortcut: value,
                         customRangeSelection: false
                     };
+                }
+
+                if (Number.isFinite(value) || !this.isRange) {
+                    value = [value, value];
                 }
 
                 var meta = countlyCommon.convertToTimePeriodObj(value),
@@ -621,6 +765,17 @@
                     state.minDate = new Date(this.fixTimestamp(meta.value.since, "input"));
                     state.maxDate = now;
                     state.sinceInput = {
+                        raw: {
+                            text: moment(state.minDate).format(this.formatter),
+                        },
+                        parsed: [state.minDate, state.maxDate]
+                    };
+                }
+                else if (meta.type === "on") {
+                    state.rangeMode = 'onm';
+                    state.minDate = new Date(this.fixTimestamp(meta.value.on, "input"));
+                    state.maxDate = state.minDate;
+                    state.onmInput = {
                         raw: {
                             text: moment(state.minDate).format(this.formatter),
                         },
@@ -655,6 +810,7 @@
                         parsed: [state.minDate, state.maxDate]
                     };
                 }
+                state.minTime = new Date(state.minDate.getTime());
                 return state;
             },
             handleDropdownHide: function(aborted) {
@@ -714,10 +870,21 @@
                 }
                 return newValue;
             },
+            mergeDateTime: function(oDate, oTime) {
+                return new Date(
+                    oDate.getFullYear(),
+                    oDate.getMonth(),
+                    oDate.getDate(),
+                    oTime.getHours(),
+                    oTime.getMinutes(),
+                    oTime.getSeconds()
+                );
+            },
             handleConfirmClick: function() {
                 if (this.rangeMode === 'inBetween' || this.modelMode === "absolute") {
+                    var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
                     this.doCommit([
-                        this.fixTimestamp(this.minDate.valueOf(), "output"),
+                        this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
                         this.fixTimestamp(this.maxDate.valueOf(), "output")
                     ], false);
                 }
@@ -727,6 +894,9 @@
                 else if (this.rangeMode === 'inTheLast') {
                     this.doCommit(this.inTheLastInput.raw.text + this.inTheLastInput.raw.level, false);
                 }
+                else if (this.rangeMode === 'onm') {
+                    this.doCommit({ on: this.fixTimestamp(this.minDate.valueOf(), "output") }, false);
+                }
             },
             handleDiscardClick: function() {
                 this.doDiscard();
@@ -735,139 +905,27 @@
                 this.$refs.dropdown.handleClose();
             },
             doDiscard: function() {
+                this.handleDropdownHide(true);
                 this.doClose();
             },
             doCommit: function(value, isShortcut) {
                 if (value) {
-                    this.$emit("input", value);
+                    var submittedVal = this.isRange ? value : value[0];
+                    var effectiveMinDate = this.isTimePickerEnabled ? this.mergeDateTime(this.minDate, this.minTime) : this.minDate;
+                    this.$emit("input", submittedVal);
                     this.$emit("change", {
                         effectiveRange: [
-                            this.fixTimestamp(this.minDate.valueOf(), "output"),
+                            this.fixTimestamp(effectiveMinDate.valueOf(), "output"),
                             this.fixTimestamp(this.maxDate.valueOf(), "output")
                         ],
                         isShortcut: isShortcut,
-                        value: value
+                        value: submittedVal
                     });
                     this.doClose();
                 }
             }
         },
-        template: '<cly-dropdown\
-                        ref="dropdown"\
-                        @hide="handleDropdownHide"\
-                        @show="handleDropdownShow"\
-                        :placement="placement"\
-                        :placeholder="placeholder"\
-                        :disabled="disabled">\
-                        <template v-slot:trigger="dropdown">\
-                            <slot name="trigger">\
-                                <cly-input-dropdown-trigger\
-                                    ref="trigger"\
-                                    :adaptive-length="true"\
-                                    :arrow="false"\
-                                    :prefix-icon="\'el-icon-date\'"\
-                                    :disabled="disabled"\
-                                    :selected-options="label"\
-                                    :focused="dropdown.focused"\
-                                    :opened="dropdown.visible"\
-                                    :size="size"\
-                                    :placeholder="placeholder">\
-                                </cly-input-dropdown-trigger>\
-                            </slot>\
-                        </template>\
-                        <div class="cly-vue-daterp">\
-                            <div class="cly-vue-daterp__shortcuts-col" v-if="shortcuts && shortcuts.length > 0">\
-                                <div class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"\
-                                    @click="handleCustomRangeClick">\
-                                    Custom Range<i class="el-icon-caret-right"></i>\
-                                </div>\
-                                <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"\
-                                    :class="{\'cly-vue-daterp__shortcut--active\': selectedShortcut == shortcut.value}"\
-                                    v-for="shortcut in shortcuts"\
-                                    @click="handleShortcutClick(shortcut.value)">\
-                                    {{shortcut.label}}\
-                                </div>\
-                            </div>\
-                            <div class="cly-vue-daterp__calendars-col" v-if="customRangeSelection">\
-                                <div class="cly-vue-daterp__input-methods" :class="{\'cly-vue-daterp__hidden-tabs\': !showRelativeModes}">\
-                                    <el-tabs v-model="rangeMode" @tab-click="handleTabChange">\
-                                        <el-tab-pane name="inBetween">\
-                                            <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>\
-                                            <div class="cly-vue-daterp__input-wrapper">\
-                                                <el-input size="small" :class="{\'is-active\': isStartFocused, \'is-error\': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>\
-                                                <span class="text-medium cly-vue-daterp__in-between-conj">and</span>\
-                                                <el-input size="small" :class="{\'is-active\': isEndFocused, \'is-error\': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>\
-                                            </div>\
-                                        </el-tab-pane>\
-                                        <el-tab-pane name="since">\
-                                            <template slot="label"><span class="text-medium font-weight-bold">Since</span></template>\
-                                            <div class="cly-vue-daterp__input-wrapper">\
-                                                <el-input size="small" :class="{\'is-error\': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>\
-                                            </div>\
-                                        </el-tab-pane>\
-                                        <el-tab-pane name="inTheLast">\
-                                            <template slot="label"><span class="text-medium font-weight-bold">In the Last</span></template>\
-                                            <div class="cly-vue-daterp__input-wrapper">\
-                                                <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>\
-                                                <el-select size="small" v-model="inTheLastInput.raw.level">\
-                                                    <el-option v-if="tableType === \'date\'" label="Days" value="days"></el-option>\
-                                                    <el-option v-if="tableType === \'date\'" label="Weeks" value="weeks"></el-option>\
-                                                    <el-option label="Months" value="months"></el-option>\
-                                                </el-select>\
-                                            </div>\
-                                        </el-tab-pane>\
-                                    </el-tabs>\
-                                    <div class="cly-vue-daterp__day-names-wrapper" v-if="tableType === \'date\'">\
-                                        <table class="cly-vue-daterp__day-names"><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></table>\
-                                    </div>\
-                                </div>\
-                                <div class="cly-vue-daterp__calendars-wrapper">\
-                                    <div class="cly-vue-daterp__table-wrap" :class="{\'is-start-focused\': isStartFocused, \'is-end-focused\': isEndFocused}" style="height: 248px" ref="calendarsViewport">\
-                                        <vue-scroll ref="vs" :ops="scrollOps">\
-                                            <div class="cly-vue-daterp__table-view" v-if="tableType === \'month\'">\
-                                                <month-table\
-                                                    v-for="item in globalRange"\
-                                                    :key="item.key"\
-                                                    :date-meta="item"\
-                                                    :in-viewport-requires-root="true"\
-                                                    :in-viewport-root="$refs.calendarsViewport"\
-                                                    selection-mode="range"\
-                                                    :date="item.date"\
-                                                    :min-date="minDate"\
-                                                    :max-date="maxDate"\
-                                                    :disabled-date="disabledDateFn"\
-                                                    :rangeState="rangeState"\
-                                                    @pick="handleRangePick"\
-                                                    @changerange="handleChangeRange">\
-                                                </month-table>\
-                                            </div>\
-                                            <div class="cly-vue-daterp__table-view" v-else>\
-                                                <date-table\
-                                                    v-for="item in globalRange"\
-                                                    :key="item.key"\
-                                                    :date-meta="item"\
-                                                    :in-viewport-requires-root="true"\
-                                                    :in-viewport-root="$refs.calendarsViewport"\
-                                                    selection-mode="range"\
-                                                    :date="item.date"\
-                                                    :min-date="minDate"\
-                                                    :max-date="maxDate"\
-                                                    :disabled-date="disabledDateFn"\
-                                                    :rangeState="rangeState"\
-                                                    @pick="handleRangePick"\
-                                                    @changerange="handleChangeRange">\
-                                                </date-table>\
-                                            </div>\
-                                        </vue-scroll>\
-                                    </div>\
-                                </div>\
-                                <div class="cly-vue-daterp__commit-section">\
-                                    <el-button @click="handleDiscardClick" size="small">{{ i18n("common.cancel") }}</el-button>\
-                                    <el-button @click="handleConfirmClick" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>\
-                                </div>\
-                            </div>\
-                        </div>\
-                    </cly-dropdown>',
+        template: CV.T('/javascripts/countly/vue/templates/datepicker.html')
     }));
 
     var globalDatepicker = countlyBaseComponent.extend({
@@ -887,7 +945,7 @@
                 this.$root.$emit("cly-date-change");
             }
         },
-        template: '<cly-date-picker timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-date-picker>'
+        template: '<cly-date-picker v-bind="$attrs" timestampFormat="ms" :disabled-shortcuts="[\'0days\']" modelMode="absolute" v-model="globalDate" @change="onChange"></cly-date-picker>'
     });
 
     Vue.component("cly-date-picker-g", globalDatepicker);
@@ -899,5 +957,31 @@
         - cly-panel (deprecated)
     */
     Vue.component("cly-global-date-selector-w", globalDatepicker);
+
+    Vue.component("cly-time-picker", {
+        props: {
+            width: {
+                type: Number,
+                default: 100,
+                required: false
+            },
+            format: {
+                type: String,
+                default: 'HH:mm',
+                required: false
+            },
+            clearable: {
+                type: Boolean,
+                default: false,
+                required: false
+            },
+            appendToBody: {
+                type: Boolean,
+                default: true,
+                required: false
+            }
+        },
+        template: '<el-time-picker :append-to-body="appendToBody" :style="{\'width\': width + \'px\'}" class="cly-vue-time-picker" v-bind="$attrs" v-on="$listeners" :format="format" :clearable="clearable"></el-time-picker>'
+    });
 
 }(window.countlyVue = window.countlyVue || {}));

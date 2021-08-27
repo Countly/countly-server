@@ -1,0 +1,87 @@
+.acquisition-sources-view {
+    &__extend-table {
+        > table {
+            width: 100%;
+            margin-bottom: 10px;
+            > tbody > tr > td {
+                padding: 17px 26px;
+                // font-family:  t.$font-family;
+                line-height: 14px;
+                font-weight: 500;
+            }
+            > thead > tr > th {
+                padding: 4px 16px 8px 25px;
+                line-height: 14.52px;
+                letter-spacing: 0.5px;
+                background-color: transparent !important;
+                background: none;
+
+            }
+            > thead > tr {
+                background-color: transparent !important;
+                background: none;
+                > th {
+                    background-color: transparent !important;
+                    background: none;
+                    border: 0px;
+                }
+            }
+
+            > tbody > tr {
+                border-radius: 2px;
+                border: solid 1px #e1e1e1;
+                > td {
+                    height: 20px;
+                    vertical-align: middle;
+                    background-color: #ffffff;
+                    &.narrow {
+                        width: 10%;
+                    }
+                    &:not(:first-child) {
+                        padding: 17px 25px;
+                        // font-family:  t.$font-family;
+                        line-height: 20px;
+                        font-weight: 400;
+                    }
+                }
+            }
+            .link-row {
+                font-family: Ubuntu;
+                font-size: 12px;
+                font-weight: bold;
+                color: #30a732;
+                text-align: center;
+                cursor: pointer;
+                padding: 0;
+                > a {
+                    display: block;
+                    padding: 16px;
+                }
+                &:hover {
+                    background-color: #f1f1f1;
+                }
+        }
+        .horizontal-bar {
+            .span {
+                border-radius: 2px;
+                height: 8px;
+            }
+
+            .left-label {
+                width: 80px;
+            }
+        }
+    }
+    }
+
+    &__date-picker-container {
+        margin-bottom: 32px;
+    }
+}
+
+.acquisition-keywords-view {
+    
+    &__date-picker-container {
+        margin-bottom: 32px;
+    }
+}

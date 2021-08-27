@@ -1,8 +1,9 @@
-/* global jQuery, Vue, ELEMENT */
+/* global jQuery, Vue, ELEMENT, CV */
 
 (function(countlyVue) {
 
-    var countlyBaseComponent = countlyVue.components.BaseComponent;
+    var countlyBaseComponent = countlyVue.components.BaseComponent,
+        _mixins = countlyVue.mixins;
 
     Vue.component("cly-input-dropdown-trigger", countlyBaseComponent.extend({
         props: {
@@ -49,7 +50,7 @@
         template: '<component\
                         :is="componentName"\
                         ref="elInput"\
-                        :class="{ \'is-focus\': focused, \'is-disabled\': disabled }"\
+                        :class="{ \'is-focus\': focused, \'is-disabled\': disabled, \'is-adaptive\': adaptiveLength }"\
                         v-bind="$attrs"\
                         readonly="readonly" \
                         v-model="description"\
@@ -58,7 +59,6 @@
                             <i v-if="arrow" class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
                         </template>\
                     </component>'
-
     }));
 
     var triggerProxy = countlyBaseComponent.extend({
@@ -87,6 +87,9 @@
             placement: {
                 type: String,
                 default: 'bottom-start'
+            },
+            popClass: {
+                type: String
             }
         },
         inject: {
@@ -99,6 +102,9 @@
         computed: {
             popperUid: function() {
                 return "popper-" + this.componentId;
+            },
+            popperClass: function() {
+                return "cly-vue-dropdown__pop" + (this.popClass ? " " + this.popClass : "");
             }
         },
         provide: function() {
@@ -137,8 +143,7 @@
         data: function() {
             return {
                 visible: false,
-                focused: false,
-                popperClass: 'cly-vue-dropdown__pop'
+                focused: false
             };
         },
         beforeDestroy: function() {
@@ -187,12 +192,255 @@
         }
     }));
 
+    Vue.component("cly-fields-select", countlyBaseComponent.extend({
+        mixins: [_mixins.i18n],
+        template: '<cly-dropdown ref="dropdown" v-on="$listeners" class="cly-fields-select__dropdown">\
+                        <template v-slot:trigger="dropdown">\
+                        <slot name="trigger">\
+                            <cly-input-dropdown-trigger\
+                                ref="trigger"\
+                                :disabled="false"\
+                                :adaptive-length="false"\
+                                :focused="dropdown.focused"\
+                                :opened="dropdown.visible"\
+                                :placeholder="label"\>\
+                            </cly-input-dropdown-trigger>\
+                        </slot>\
+                        </template>\
+                        <div class="cly-fields-select default-skin">\
+                        <div class="fields-select-body">\
+                            <div>\
+                            <div>\
+                            <span class="cly-fields-select__title">{{title}}</span>\
+                            <el-button class="cly-fields-select__reset" @click="reset" type="text">Reset Filters</el-button>\
+                            </div>\
+                            <table  \
+                                v-for="field in fields" :key="field.key">\
+                                <tr class="cly-fields-select__field">{{ field.label }}</tr>\
+                                <tr>\
+                                    <el-select class="cly-fields-select__field-dropdown" :placeholder="internalValue[field.key].name?internalValue[field.key].name:internalValue[field.key]" v-model="internalValue[field.key]">\
+                                        <el-option v-for="item in field.items" :key="item.key"\
+                                            :value="item.name">\
+                                        </el-option>\
+                                    </el-select>\
+                                </tr>\
+                            </table>\
+                            </div>\
+                            <div class="controls">\
+                            <el-button v-bind="$attrs" class="cly-fields-select__cancel" @click="close">  {{cancelLabel}}\
+                            </el-button>\
+                            <el-button v-bind="$attrs" class="cly-fields-select__confirm" @click="save">  {{confirmLabel}}\
+                            </el-button>\
+                            </div>\
+                        </div>\
+                        </div>\
+                    </cly-dropdown>',
+        props: {
+            cancelLabel: {
+                type: String,
+                default: CV.i18n("events.general.cancel")
+            },
+            confirmLabel: {
+                type: String,
+                default: CV.i18n("events.general.confirm")
+            },
+            value: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            fields: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            title: {
+                type: String,
+                default: ''
+            }
+
+        },
+        data: function() {
+            return {
+                internalValue: function() {
+                    return {};
+                },
+            };
+        },
+        watch: {
+            value: {
+                immediate: true,
+                handler: function(newVal) {
+
+                    this.internalValue = Object.assign({}, newVal);
+                }
+            },
+        },
+        computed: {
+            label: function() {
+                var self = this;
+                return Object.keys(this.value).map(function(fieldKey) {
+                    if (self.value[fieldKey] && self.value[fieldKey].name) {
+                        return self.value[fieldKey].name;
+                    }
+                }).join(", ");
+            }
+        },
+        methods: {
+            close: function(dontSync) {
+                if (!dontSync) {
+                    this.internalValue = Object.assign({}, this.value);
+                }
+                this.$refs.dropdown.handleClose();
+            },
+            save: function() {
+                this.$emit("input", this.internalValue);
+                this.close(true);
+            },
+            reset: function() {
+                var self = this;
+                this.fields.forEach(function(field) {
+                    if (Object.prototype.hasOwnProperty.call(field, "default")) {
+                        self.$set(self.internalValue, field.key, field.default);
+                    }
+                });
+                this.save();
+            }
+        }
+    }));
+
+    Vue.component("cly-multi-select", countlyBaseComponent.extend({
+        mixins: [_mixins.i18n],
+        template: '<cly-dropdown ref="dropdown" v-on="$listeners" class="cly-multi-select__dropdown">\
+                        <template v-slot:trigger="dropdown">\
+                            <slot name="trigger">\
+                                <cly-input-dropdown-trigger\
+                                ref="trigger"\
+                                :disabled="false"\
+                                :adaptive-length="false"\
+                                :focused="dropdown.focused"\
+                                :opened="dropdown.visible"\
+                                :placeholder="dropdownLabel"\>\
+                                </cly-input-dropdown-trigger>\
+                            </slot>\
+                        </template>\
+                        <div class="cly-multi-select default-skin">\
+                            <div class="cly-multi-select__body">\
+                                <div>\
+                                    <div>\
+                                        <span class="cly-multi-select__title">{{title}}</span>\
+                                        <el-button class="cly-multi-select__reset" @click="reset" type="text">{{resetLabel}}</el-button>\
+                                    </div>\
+                                    <table v-for="field in fields" :key="field.key">\
+                                        <tr class="cly-multi-select__field">{{field.label}}</tr>\
+                                        <tr v-if="\'items\' in field">\
+                                            <el-select class="cly-multi-select__field-dropdown" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                                <el-option v-for="item in field.items" :key="item.value" :value="item.value" :label="item.label"></el-option>\
+                                            </el-select>\
+                                        </tr>\
+                                        <tr v-else-if="\'options\' in field">\
+                                            <cly-select-x v-bind="field" class="cly-multi-select__field-dropdown" :width="320" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                                <template v-slot:header="headerScope" v-if="field.header">\
+                                                    <slot name="header" v-bind="headerScope"></slot>\
+                                                </template>\
+                                                <template v-slot:trigger="triggerScope" v-if="field.trigger">\
+                                                    <slot name="trigger" v-bind="triggerScope"></slot>\
+                                                </template>\
+                                                <template v-slot:action v-if="field.action">\
+                                                    <slot name="action"></slot>\
+                                                </template>\
+                                            </cly-select-x>\
+                                        </tr>\
+                                    </table>\
+                                </div>\
+                                <div class="cly-multi-select__controls">\
+                                    <el-button v-bind="$attrs" class="cly-multi-select__cancel" @click="close">{{cancelLabel}}</el-button>\
+                                    <el-button v-bind="$attrs" class="cly-multi-select__confirm" @click="save">{{confirmLabel}}</el-button>\
+                                </div>\
+                            </div>\
+                        </div>\
+                    </cly-dropdown>',
+        props: {
+            cancelLabel: {type: String, default: CV.i18n("events.general.cancel")},
+            confirmLabel: {type: String, default: CV.i18n("events.general.confirm")},
+            resetLabel: {type: String, default: "Reset Filters"},
+            value: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            },
+            fields: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            title: {type: String, default: "Filter Parameters"}
+        },
+        computed: {
+            optionLabel: function() {
+                return function(field, option) {
+                    return (field.items || field.options || []).find(function(item) {
+                        return item.value === option;
+                    }).label;
+                };
+            },
+            dropdownLabel: function() {
+                var self = this;
+                return this.fields.map(function(field) {
+                    return self.optionLabel(field, self.value[field.key]);
+                }).join(", ");
+            }
+        },
+        data: function() {
+            return {
+                unsavedValue: Object.assign({}, this.value)
+            };
+        },
+        watch: {
+            value: {
+                immediate: true,
+                handler: function(newValue) {
+                    this.unsavedValue = Object.assign({}, newValue);
+                }
+            },
+        },
+        methods: {
+            close: function(dontSync) {
+                if (!dontSync) {
+                    this.unsavedValue = Object.assign({}, this.value);
+                }
+                this.$refs.dropdown.handleClose();
+            },
+            save: function() {
+                this.$emit("input", this.unsavedValue);
+                this.$emit("change", this.unsavedValue);
+                this.close();
+            },
+            reset: function() {
+                var self = this;
+                this.fields.forEach(function(field) {
+                    if ("default" in field) {
+                        self.$set(self.unsavedValue, field.key, field.default);
+                    }
+                });
+                this.save();
+            }
+        }
+    }));
+
+
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
         template: '<cly-dropdown ref="dropdown" v-on="$listeners">\
                         <template v-slot:trigger>\
-                            <el-button :size="size" icon="el-icon-more"></el-button>\
+                            <el-button :size="size" :icon="icon" :type="type">\
+                            <span v-if="text">{{text}}</span>\
+                            </el-button>\
                         </template>\
                         <template v-slot>\
                             <slot>\
@@ -203,6 +451,18 @@
             size: {
                 type: String,
                 default: 'small'
+            },
+            icon: {
+                type: String,
+                default: 'el-icon-more'
+            },
+            text: {
+                type: String,
+                default: null
+            },
+            type: {
+                type: String,
+                default: 'default'
             }
         },
         mounted: function() {

@@ -2,20 +2,17 @@
     <cly-header title="Chart components"></cly-header>
     <cly-main>
         <cly-section title="Line Chart">
-            <cly-chart-line :option="lineOptions">
-                <template v-slot:chart-right="scope">
-                    <!-- <div class="bu-level-item">
-                        <el-select>
-                            <el-option :key="item.value" :value="item.value" :label="item.name"
-                                v-for="item in [1,2]"></el-option>
-                        </el-select>
-                    </div> -->
+            <cly-chart-line :option="lineOptions" :legend="lineLegend">
+                <template v-slot:chart-left>
                 </template>
             </cly-chart-line>
         </cly-section>
         <cly-section title="Time Graph">
             <cly-chart-time :option="largeScaleOptions" :bucket="selBucket" :dummy="true">
                 <template v-slot:chart-left="scope">
+                    <div class="bu-level-item">
+                        <el-button @click="onTimeSeriesButtonClick" size="small">Change series</el-button>
+                    </div>
                     <div class="bu-level-item" style="width: 100px;">
                         <el-select v-model="selBucket">
                             <el-option :key="item" :value="item" :label="item"
@@ -26,23 +23,58 @@
             </cly-chart-time>
         </cly-section>
         <cly-section title="Bar Chart">
-            <cly-chart-bar :option="barOptions"></cly-chart-bar>
+            <cly-chart-bar :option="barOptions" :legend="barLegend"></cly-chart-bar>
         </cly-section>
         <cly-section title="Stacked Bar Chart">
             <cly-chart-bar :option="stackedBarOptions" :showToggle="false"></cly-chart-bar>
         </cly-section>
+        <cly-section title="Bar charts right legend">
+            <cly-chart-bar :option="barOptions" :showDownload="false" :showZoom="false" :showToggle="false" :legend="{position: 'right'}"></cly-chart-bar>
+        </cly-section>
         <cly-section title="Pie Chart">
             <div class="bu-columns bu-is-gapless">
-                <div class="bu-column bu-is-6">
+                <div class="bu-column bu-is-half">
                     <cly-chart-pie :option="pieOptions" :showToggle="false"></cly-chart-pie>
                 </div>
-                <div class="bu-column bu-is-6">
-                    <cly-chart-pie :option="pieOptions" :showToggle="false"></cly-chart-pie>
+                <div class="bu-column bu-is-half">
+                    <cly-chart-pie :option="pieOptions" :legend="{show: false}" :showToggle="false"></cly-chart-pie>
                 </div>
             </div>
             <br />
             <br />
             <cly-chart-pie :option="newPieOptions" :showToggle="false"></cly-chart-pie>
+        </cly-section>
+        <cly-section title="Worldmap">
+            <cly-worldmap
+                countries-title="Sessions by Countries"
+                regions-title="Sessions by Regions"
+                cities-title="Sessions by Cities"
+                value-type="Sessions"
+                :countries-data="countriesData"
+                :regions-data="regionsData"
+                :cities-data="citiesData">
+                <!-- <template v-slot:regions-info>
+                    <span class="text-medium">Sessions</span>
+                </template>
+                <template v-slot:cities-info>
+                    <span class="text-medium">Sessions</span>
+                </template>
+                <template v-slot:tooltip-suffix>
+                    <span class="text-medium">Sessions</span>
+                </template> -->
+            </cly-worldmap>
+        </cly-section>
+        <cly-section title="Worldmap - Simple">
+            <cly-worldmap
+                external-country="TR"
+                external-detail-mode="cities"
+                value-type="Sessions"
+                :show-detail-mode-select="false"
+                :show-navigation="false"
+                :countries-data="countriesData"
+                :regions-data="regionsData"
+                :cities-data="citiesData">
+            </cly-worldmap>
         </cly-section>
     </cly-main>
 </div>

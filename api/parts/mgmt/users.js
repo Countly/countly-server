@@ -87,17 +87,12 @@ usersApi.getAllUsers = function(params) {
                 common.returnOutput(params, {});
                 return false;
             }
-
-
             const bruteforceFails = plugins.getConfig("security").login_tries;
             const bruteforceWait = plugins.getConfig("security").login_wait;
 
             var membersObj = {};
 
             for (let i = 0; i < members.length; i++) {
-                const userApps = getUserApps(members[i]);
-                const adminApps = getAdminApps(members[i]);
-
                 const result = failedLogins.find(x => (x._id === JSON.stringify(["login", members[i].username]))) || { fails: 0 };
 
                 if (result.fails > 0 && result.fails % bruteforceFails === 0 && Math.floor(new Date().getTime() / 1000) < (((result.fails / bruteforceFails) * bruteforceWait) + result.lastFail)) {
@@ -105,13 +100,6 @@ usersApi.getAllUsers = function(params) {
                 }
                 else {
                     members[i].blocked = false;
-                }
-
-                if (adminApps[0] === "") {
-                    adminApps.splice(0, 1);
-                }
-                if (userApps[0] === "") {
-                    userApps[0].splice(0, 1);
                 }
 
                 members[i].global_admin = (members[i].global_admin === true);
@@ -182,8 +170,16 @@ usersApi.createUser = function(params) {
                 'type': 'String'
             },
             'permission': {
-                'required': true,
+                'required': false,
                 'type': 'Object'
+            },
+            'admin_of': {
+                'required': false,
+                'type': 'Array'
+            },
+            'user_of': {
+                'required': false,
+                'type': 'Array'
             },
             'global_admin': {
                 'required': false,
@@ -196,6 +192,34 @@ usersApi.createUser = function(params) {
     if (!(newMember = createUserValidation.obj)) {
         common.returnMessage(params, 400, 'Error: ' + createUserValidation.errors);
         return false;
+    }
+
+    //adding backwards compatability
+    newMember.permission = newMember.permission || {};
+    if (newMember.admin_of) {
+        if (Array.isArray(newMember.admin_of) && newMember.admin_of.length) {
+            newMember.permission.c = newMember.permission.c || {};
+            newMember.permission.r = newMember.permission.r || {};
+            newMember.permission.u = newMember.permission.u || {};
+            newMember.permission.d = newMember.permission.d || {};
+            for (let i = 0; i < newMember.admin_of.length; i++) {
+                newMember.permission.c[newMember.admin_of[i]] = newMember.permission.c[newMember.admin_of[i]] || {all: true, allowed: {}};
+                newMember.permission.r[newMember.admin_of[i]] = newMember.permission.r[newMember.admin_of[i]] || {all: true, allowed: {}};
+                newMember.permission.u[newMember.admin_of[i]] = newMember.permission.u[newMember.admin_of[i]] || {all: true, allowed: {}};
+                newMember.permission.d[newMember.admin_of[i]] = newMember.permission.d[newMember.admin_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete newMember.admin_of;
+    }
+
+    if (newMember.user_of) {
+        if (Array.isArray(newMember.user_of) && newMember.user_of.length) {
+            newMember.permission.r = newMember.permission.r || {};
+            for (let i = 0; i < newMember.user_of.length; i++) {
+                newMember.permission.r[newMember.user_of[i]] = newMember.permission.r[newMember.user_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete newMember.user_of;
     }
 
     common.db.collection('members').findOne({ $or: [{ email: newMember.email }, { username: newMember.username }] }, function(err, member) {
@@ -227,34 +251,34 @@ usersApi.createUser = function(params) {
         newMember.locked = false;
         newMember.username = newMember.username.trim();
         newMember.email = newMember.email.trim();
+        crypto.randomBytes(48, function(errorBuff, buffer) {
+            newMember.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
+            common.db.collection('members').insert(newMember, function(err, member) {
+                if (!err && member && member.ops) {
+                    member = member.ops;
+                }
+                else {
+                    console.log('Error creating user: ', err);
+                }
+                if (member && member.length && !err) {
+                    var timestamp = Math.round(new Date().getTime() / 1000),
+                        prid = sha512Hash(member[0].username + member[0].full_name, timestamp);
+                    common.db.collection('password_reset').insert({"prid": prid, "user_id": member[0]._id, "timestamp": timestamp, "newInvite": true}, {safe: true}, function() {
+                        mail.sendToNewMemberLink(member[0], prid);
+                    });
 
-        common.db.collection('members').insert(newMember, { safe: true }, function(err, member) {
-            if (!err && member && member.ops) {
-                member = member.ops;
-            }
-            if (member && member.length && !err) {
+                    plugins.dispatch("/i/users/create", {
+                        params: params,
+                        data: member[0]
+                    });
+                    delete member[0].password;
 
-                member[0].api_key = common.md5Hash(member[0]._id + (new Date().getTime()));
-                common.db.collection('members').update({ '_id': member[0]._id }, { $set: { api_key: member[0].api_key } }, function() { });
-
-
-                var timestamp = Math.round(new Date().getTime() / 1000),
-                    prid = sha512Hash(member[0].username + member[0].full_name, timestamp);
-                common.db.collection('password_reset').insert({"prid": prid, "user_id": member[0]._id, "timestamp": timestamp, "newInvite": true}, {safe: true}, function() {
-                    mail.sendToNewMemberLink(member[0], prid);
-                });
-
-                plugins.dispatch("/i/users/create", {
-                    params: params,
-                    data: member[0]
-                });
-                delete member[0].password;
-
-                common.returnOutput(params, member[0]);
-            }
-            else {
-                common.returnMessage(params, 500, 'Error creating user');
-            }
+                    common.returnOutput(params, member[0]);
+                }
+                else {
+                    common.returnMessage(params, 500, 'Error creating user');
+                }
+            });
         });
     }
 
@@ -388,6 +412,35 @@ usersApi.updateUser = async function(params) {
 
     if (updatedMember.member_image && updatedMember.member_image === 'delete') {
         updatedMember.member_image = "";
+    }
+
+    //adding backwards compatability
+    if (updatedMember.admin_of) {
+        if (Array.isArray(updatedMember.admin_of) && updatedMember.admin_of.length) {
+            updatedMember.permission = updatedMember.permission || {};
+            updatedMember.permission.c = updatedMember.permission.c || {};
+            updatedMember.permission.r = updatedMember.permission.r || {};
+            updatedMember.permission.u = updatedMember.permission.u || {};
+            updatedMember.permission.d = updatedMember.permission.d || {};
+            for (let i = 0; i < updatedMember.admin_of.length; i++) {
+                updatedMember.permission.c[updatedMember.admin_of[i]] = updatedMember.permission.c[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+                updatedMember.permission.r[updatedMember.admin_of[i]] = updatedMember.permission.r[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+                updatedMember.permission.u[updatedMember.admin_of[i]] = updatedMember.permission.u[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+                updatedMember.permission.d[updatedMember.admin_of[i]] = updatedMember.permission.d[updatedMember.admin_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete updatedMember.admin_of;
+    }
+
+    if (updatedMember.user_of) {
+        if (Array.isArray(updatedMember.user_of) && updatedMember.user_of.length) {
+            updatedMember.permission = updatedMember.permission || {};
+            updatedMember.permission.r = updatedMember.permission.r || {};
+            for (let i = 0; i < updatedMember.user_of.length; i++) {
+                updatedMember.permission.r[updatedMember.user_of[i]] = updatedMember.permission.r[updatedMember.user_of[i]] || {all: true, allowed: {}};
+            }
+        }
+        delete updatedMember.user_of;
     }
 
 

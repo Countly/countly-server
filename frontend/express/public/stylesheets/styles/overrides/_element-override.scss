@@ -4,75 +4,178 @@
 
 @use "../base/typography-variables" as t;
 @use "../base/colors" as c;
+@use "sass:map";
 
 //Element Table overrides
 .el-table {
     color: c.$table-text-color;
+
+    th {
+        padding: 9px 0px;
+        box-sizing: border-box;
+        text-transform: uppercase;
+        font-size: t.$text-sm-size;
+        font-style: normal;
+        font-weight: 500;
+        background-color: c.$table-th-bgcolor;
+        border-bottom-width: 2px;
+        color: map.get(c.$colors, "cool-gray-100");
+
+        .cell {
+            line-height: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        &:hover {
+            .sort-caret.ascending {
+                border-bottom-color: #005DEF;
+            }
+
+            .sort-caret.descending {
+                border-top-color: #005DEF;
+            }
+        }
+
+        &.is-leaf {
+            border-bottom: 2px solid #EEF2F5;
+            border-top: 1px solid #EEF2F5;
+        }
+    }
+
+    td {
+        padding: 12px 0px;
+        font-style: normal;
+        font-weight: normal;
+        font-size: t.$text-md-size;
+        box-sizing: border-box;
+        border-bottom: 1px solid #EEF2F5;
+    }
+
+    th:first-child .cell,
+    td:first-child .cell {
+        padding-left: 16px;
+    }
+
+    th:last-child .cell,
+    td:last-child .cell {
+        padding-right: 16px;
+    }
+
+    .caret-wrapper {
+        height: 15px;
+    }
+
+    .sort-caret {
+        border-width: 4px;
+    }
+
+    .sort-caret.ascending {
+        top: -2px;
+    }
+
+    .sort-caret.descending {
+        bottom: -1px;
+    }
+
+    .ascending .sort-caret.ascending {
+        border-bottom-color: #005DEF;
+    }
+
+    .descending .sort-caret.descending {
+        border-top-color: #005DEF;
+    }
+
+    .cell {
+        word-break: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    &.--enable-row-hover .el-table__body tr:hover>td {
+        background-color: #F9FBFC;
+    }
+
+    &--boder::after, &--group::after, &::before {
+        background-color: #EEF2F5;
+    }
 }
 
-.el-table th {
-    padding: 10px 0px;
-    box-sizing: border-box;
-    text-transform: uppercase;
-    font-size: t.$text-sm-size;
-    font-style: normal;
-    font-weight: 500;
-    background-color: c.$table-th-bgcolor;
-    border-bottom-width: 2px;
-}
+.cly-vue-eldatatable__is-clickable {
+    .el-table {
+        cursor: pointer;
 
-.el-table th .cell {
-    line-height: 15px;
-    letter-spacing: 0.5px;
-}
+        td:first-child {
+            color: #32659D;
+        }
 
-.el-table td {
-    padding: 14px 0px;
-    font-style: normal;
-    font-weight: normal;
-    font-size: t.$text-md-size;
-    box-sizing: border-box;
-}
-
-.el-table td .cell {
-    line-height: 20px;
-}
-
-.el-table th:first-child .cell,
-.el-table td:first-child .cell {
-    padding-left: 23px;
-}
-
-.el-table th:last-child .cell,
-.el-table td:last-child .cell {
-    padding-right: 23px;
-}
-
-.el-table .caret-wrapper {
-    height: 15px;
-}
-
-.el-table .sort-caret {
-    border-width: 4px;
-}
-
-.el-table .sort-caret.ascending {
-    top: -2px;
-}
-
-.el-table .sort-caret.descending {
-    bottom: -1px;
+        &.el-table--enable-row-hover {
+            .el-table__body tr:hover>td:first-child {
+                color: #1A75DA;
+                text-decoration: underline;
+            }
+        }
+    }
 }
 
 .el-radio {
-    &.is-flex {
+    &.is-autosized {
         padding: 12px;
         display: flex;
         width: 100%;
         margin-right: 0;
         height: unset;
     }
-    .el-radio.is-flex.is-bordered+.el-radio.is-flexs.is-bordered {
+    .el-radio.is-autosized.is-bordered + .el-radio.is-autosized.is-bordered {
         margin-left: 10px;
+    }
+}
+
+.el-collapse {
+    &.is-bordered-box {
+        border: 1px solid #ECECEC;
+        box-sizing: border-box;
+        box-shadow: 0px 1px 0px #ECECEC;
+        border-radius: 4px;
+    
+        .el-collapse-item__header {
+            border-radius: 4px;
+            padding: 0rem 1.5rem 0rem 1.5rem;
+            &.is-active {
+                border-bottom-color: #ececec;
+            }
+        }
+        .el-collapse-item__wrap {
+            background-color: transparent;
+        }
+        .el-collapse-item__content {
+            margin: 0rem 1.5rem 0rem 1.5rem;
+        }
+    }
+}
+
+.el-input {
+    &.is-adaptive {
+        .el-input__inner {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 10px;
+            vertical-align: middle;
+        }
+    }
+}
+
+.el-select .el-input.is-adaptive .el-input__inner {
+    padding-right: 30px;
+}
+
+.el-button {
+    &.is-wireframe {
+        background: transparent;
+        border: 1px dashed #0166D6;
+        box-sizing: border-box;
+        box-shadow: 0px 2px 4px rgb(1 122 255 / 7%);
     }
 }

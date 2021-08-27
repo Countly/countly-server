@@ -1,6 +1,6 @@
-/* global jQuery, Vue, _ */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment, countlyTaskManager */
 
-(function(countlyVue) {
+(function(countlyVue, $) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
@@ -36,6 +36,21 @@
             displaySearch: {
                 type: Boolean,
                 default: true
+            },
+            defaultSort: {
+                type: Object,
+                default: null,
+                required: false
+            },
+            rowClassName: {
+                type: [String, Function]
+            },
+            headerRowClassName: {
+                type: [String, Function]
+            },
+            isClickable: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -164,6 +179,32 @@
                     pages.push(i);
                 }
                 return pages;
+            },
+            rowClasses: function() {
+                var rowClass = "";
+                if (this.rowClassName) {
+                    if (typeof (this.rowClassName) === "string" && this.rowClassName.length) {
+                        return rowClass + " " + this.rowClassName;
+                    }
+
+                    if (typeof (this.rowClassName) === "function") {
+                        return rowClass + " " + this.rowClassName();
+                    }
+                }
+                return rowClass;
+            },
+            headerClasses: function() {
+                var headerClass = "";
+                if (this.headerRowClassName) {
+                    if (typeof (this.headerRowClassName) === "string" && this.headerRowClassName.length) {
+                        return headerClass + " " + this.headerRowClassName;
+                    }
+
+                    if (typeof (this.headerRowClassName) === "function") {
+                        return headerClass + " " + this.headerRowClassName();
+                    }
+                }
+                return headerClass;
             }
         },
         watch: {
@@ -222,6 +263,9 @@
                 if (this.lastPage > 0 && this.controlParams.page > this.lastPage) {
                     this.controlParams.page = this.lastPage;
                 }
+                if (this.controlParams.page < 1) {
+                    this.controlParams.page = 1;
+                }
             },
             goToFirstPage: function() {
                 this.controlParams.page = this.firstPage;
@@ -274,6 +318,14 @@
                     sort: [],
                     selectedDynamicCols: false
                 };
+
+                if (this.defaultSort) {
+                    defaultState.sort = [{
+                        field: this.defaultSort.prop,
+                        type: this.defaultSort.order === "ascending" ? "asc" : "desc"
+                    }];
+                }
+
                 if (!this.persistKey) {
                     return defaultState;
                 }
@@ -469,12 +521,170 @@
         }
     };
 
-    Vue.component("cly-datatable-n", countlyBaseComponent.extend({
+    var ExportHandlerMixin = {
+        props: {
+            exportQuery: {
+                type: Function,
+                default: null,
+                required: false
+            },
+            exportApi: {
+                type: Function,
+                default: null,
+                required: false
+            },
+            exportFormat: {
+                type: Function,
+                default: null,
+                required: false
+            }
+        },
+        data: function() {
+            return {
+                hasExport: true,
+                selectedExportType: 'csv',
+                availableExportTypes: [
+                    {'name': '.CSV', value: 'csv'},
+                    {'name': '.JSON', value: 'json'},
+                    {'name': '.XLSX', value: 'xlsx'}
+                ]
+            };
+        },
+        methods: {
+            onExportClick: function() {
+                this.initiateExport({
+                    type: this.selectedExportType
+                });
+            },
+            getDefaultFileName: function(params) {
+                var name = "countly";
+                if (params.title) {
+                    name = params.title.replace(/[\r\n]+/g, "");
+                }
+                if (params.timeDependent) {
+                    //include export range
+                    name += "_for_" + countlyCommon.getDateRange();
+                }
+                else {
+                    //include export date
+                    name += "_on_" + moment().format("DD-MMM-YYYY");
+                }
+                return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
+            },
+            getLocalExportContent: function() {
+                if (this.exportFormat) {
+                    return this.exportFormat(this.rows);
+                }
+                return this.rows;
+            },
+            initiateExport: function(params) {
+
+                var formData = null,
+                    url = null;
+
+                if (this.exportApi) {
+                    formData = this.exportApi();
+                    formData.type = params.type;
+                    url = countlyCommon.API_URL + (formData.url || "/o/export/request");
+                }
+                else if (this.exportQuery) {
+                    formData = this.exportQuery();
+                    formData.type = params.type;
+                    url = countlyCommon.API_URL + (formData.url || "/o/export/db");
+                }
+                else if (this.dataSource) { // default export logic for server tables
+                    url = countlyCommon.API_URL + "/o/export/request";
+
+                    var addr = this.dataSource.requestAddress;
+                    var lastRequest = addr.store.getters[addr.path];
+
+                    var path = lastRequest.url + "?" + (Object.keys(lastRequest.data).reduce(function(acc, key) {
+                        if (key !== "iDisplayLength" && key !== "iDisplayStart" && key !== "sEcho") {
+                            if (typeof lastRequest.data[key] === 'string') {
+                                acc.push(key + "=" + encodeURIComponent(lastRequest.data[key]));
+                            }
+                            else {
+                                acc.push(key + "=" + encodeURIComponent(JSON.stringify(lastRequest.data[key])));
+                            }
+                        }
+                        return acc;
+                    }, ["api_key=" + countlyGlobal.member.api_key]).join("&"));
+
+                    formData = {
+                        type: params.type,
+                        path: path,
+                        prop: "aaData",
+                        filename: this.getDefaultFileName(params),
+                        api_key: countlyGlobal.member.api_key
+                    };
+                }
+                else {
+                    url = countlyCommon.API_URL + "/o/export/data";
+                    formData = {
+                        type: params.type,
+                        data: JSON.stringify(this.getLocalExportContent()),
+                        filename: this.getDefaultFileName(params),
+                        api_key: countlyGlobal.member.api_key
+                    };
+                }
+
+                if (formData.url === "/o/export/requestQuery") {
+                    if (Array.isArray(formData.prop)) {
+                        formData.prop = formData.prop.join(",");
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: formData,
+                        success: function(result) {
+                            var task_id = null;
+                            var fileid = null;
+                            if (result && result.result && result.result.task_id) {
+                                task_id = result.result.task_id;
+                                countlyTaskManager.monitor(task_id);
+                                CountlyHelpers.displayExportStatus(null, fileid, task_id);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            var filename = null;
+                            if (xhr && xhr.responseText && xhr.responseText !== "") {
+                                var ob = JSON.parse(xhr.responseText);
+                                if (ob.result && ob.result.message) {
+                                    error = ob.result.message;
+                                }
+                                if (ob.result && ob.result.filename) {
+                                    filename = ob.result.filename;
+                                }
+                            }
+                            CountlyHelpers.displayExportStatus(error, filename, null);
+                        }
+                    });
+                }
+                else {
+                    var form = $('<form method="POST" action="' + url + '">');
+
+                    $.each(formData, function(k, v) {
+                        if (CountlyHelpers.isJSON(v)) {
+                            form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
+                        }
+                        else {
+                            form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+                        }
+                    });
+                    $('body').append(form);
+                    form.submit();
+                }
+            }
+        }
+    };
+
+    Vue.component("cly-datatable-n", countlyVue.components.create({
         mixins: [
             _mixins.i18n,
             TableExtensionsMixin,
             MutationTrackerMixin,
-            OverlayRowMixin
+            OverlayRowMixin,
+            ExportHandlerMixin
         ],
         props: {
             keyFn: {
@@ -534,10 +744,16 @@
                 return this.externalStatus !== 'ready' || (this.externalParams && !this.externalParams.ready);
             },
             classes: function() {
+                var classes = [];
                 if (this.dataSource && this.externalStatus === 'silent-pending') {
-                    return ["silent-loading"];
+                    classes.push("silent-loading");
                 }
-                return [];
+
+                if (this.isClickable) {
+                    classes.push("cly-vue-eldatatable__is-clickable");
+                }
+
+                return classes;
             },
             sourceRows: function() {
                 return this.dataView.rows;
@@ -551,100 +767,7 @@
                 };
             }
         },
-        template: '<div class="cly-vue-eldatatable" :class="classes">\
-                        <div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">\
-                            <div class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white">\
-                                <div class="bu-level-left">\
-                                    <slot v-bind="commonScope" name="header-left"></slot>\
-                                </div>\
-                                <slot v-bind="commonScope" name="header-full"></slot>\
-                                <div class="bu-level-right">\
-                                    <slot v-bind="commonScope" name="header-right"></slot>\
-                                    <div class="bu-level-item">\
-                                        <cly-select-x\
-                                            v-if="hasDynamicCols"\
-                                            search-placeholder="Search in Columns"\
-                                            placeholder="Edit columns" \
-                                            title="Edit columns"\
-                                            mode="multi-check-sortable"\
-                                            placement="bottom-end"\
-                                            :width="300"\
-                                            :auto-commit="false"\
-                                            :hide-default-tabs="true"\
-                                            :hide-all-options-tab="true"\
-                                            :options="availableDynamicCols"\
-                                            v-model="controlParams.selectedDynamicCols">\
-                                            <template v-slot:trigger>\
-                                                <el-button size="small" icon="el-icon-s-operation"></el-button>\
-                                            </template>\
-                                        </cly-select-x>\
-                                    </div>\
-                                    <div class="bu-level-item" v-if="displaySearch">\
-                                        <el-input size="small" class="cly-vue-eldatatable__search--grey" style="width:200px" prefix-icon="el-icon-search" :placeholder="searchPlaceholder" v-model="searchQueryProxy"></el-input>\
-                                    </div>\
-                                </div>\
-                            </div>\
-                            <el-table\
-                                :border="border"\
-                                :row-key="keyFn"\
-                                :data="mutatedRows"\
-                                :span-method="tableSpanMethod"\
-                                v-bind="$attrs"\
-                                v-on="$listeners"\
-                                @sort-change="onSortChange"\
-                                ref="elTable">\
-                                    <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
-                                        <slot :name="name" v-bind="commonScope"/>\
-                                    </template>\
-                            </el-table>\
-                            <div class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white">\
-                                <div class="bu-level-left">\
-                                    <div class="bu-level-item">\
-                                        {{ i18n("common.items-per-page") }}:\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        <el-select v-model="controlParams.perPage" size="mini">\
-                                            <el-option v-for="pageSize in availablePageSizes" :key="pageSize" :value="pageSize" :label="pageSize"></el-option>\
-                                        </el-select>\
-                                    </div>\
-                                    <div class="bu-level-item cly-vue-eldatatable__vertical-divider">\
-                                    </div>\
-                                    <div class="bu-level-item" style="font-size: 11px">\
-                                        {{ paginationInfo }}\
-                                    </div>\
-                                    <slot v-bind="commonScope" name="footer-left"></slot>\
-                                </div>\
-                                <div class="bu-level-right">\
-                                    <slot v-bind="commonScope" name="footer-right"></slot>\
-                                    <div class="bu-level-item">\
-                                        <div class="cly-vue-eldatatable__table-page-selector">\
-                                            <el-select v-model="controlParams.page" size="mini">\
-                                                <el-option v-for="page in availablePages" :key="page" :value="page" :label="page"></el-option>\
-                                            </el-select>\
-                                        </div>\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        of {{totalPages}} pages\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="fa fa-angle-double-left"></i></span>\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        <span :class="{disabled: !prevAvailable}" @click="goToPrevPage"><i class="fa fa-angle-left"></i></span>\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        <span :class="{disabled: !nextAvailable}" @click="goToNextPage"><i class="fa fa-angle-right"></i></span>\
-                                    </div>\
-                                    <div class="bu-level-item">\
-                                        <span :class="{disabled: !nextAvailable}" @click="goToLastPage"><i class="fa fa-angle-double-right"></i></span>\
-                                    </div>\
-                                </div>\
-                            </div>\
-                            <div>\
-                                <slot name="bottomline" v-bind="commonScope"></slot>\
-                            </div>\
-                        </div>\
-                    </div>'
+        template: CV.T('/javascripts/countly/vue/templates/datatable.html')
     }));
 
     Vue.component("cly-datatable-undo-row", countlyBaseComponent.extend({

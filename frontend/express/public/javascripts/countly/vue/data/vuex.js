@@ -170,6 +170,7 @@
         var getters = {},
             mutations = {},
             actions = {},
+            lastSuccessfulRequestField = "lastSuccessfulRequest",
             lastResponseField = "lastResponse",
             counterField = "requestCounter",
             echoField = "requestLastEcho",
@@ -178,11 +179,13 @@
             resourceName = name,
             statusKey = _capitalized(name, statusField),
             counterKey = _capitalized(name, counterField),
-            paramsKey = _capitalized(name, paramsField);
+            paramsKey = _capitalized(name, paramsField),
+            lastSuccessfulRequestKey = _capitalized(name, lastSuccessfulRequestField);
 
         var state = function() {
             var stateObj = {};
             stateObj[lastResponseField] = _dataTableAdapters.toStandardResponse();
+            stateObj[lastSuccessfulRequestField] = null;
             stateObj[counterField] = 0;
             stateObj[statusField] = "ready";
             stateObj[echoField] = 0;
@@ -201,6 +204,9 @@
         };
         getters[paramsKey] = function(_state) {
             return _state[paramsField];
+        };
+        getters[lastSuccessfulRequestKey] = function(_state) {
+            return _state[lastSuccessfulRequestField];
         };
 
         //
@@ -222,6 +228,10 @@
             _state[statusField] = newValue;
         };
 
+        mutations[_capitalized("set", lastSuccessfulRequestKey)] = function(_state, newValue) {
+            _state[lastSuccessfulRequestField] = newValue;
+        };
+
         //
         actions[_capitalized("fetch", resourceName)] = function(context, actionParams) {
             var promise = null,
@@ -235,6 +245,9 @@
                 var legacyOptions = _dataTableAdapters.toLegacyRequest(requestParams, options.columns);
                 legacyOptions.sEcho = context.state[counterField];
                 _.extend(requestOptions.data, legacyOptions);
+                if (options.onOverrideRequest) {
+                    options.onOverrideRequest(context, requestOptions);
+                }
                 if (actionParams && actionParams._silent === false) {
                     context.commit(_capitalized("set", statusKey), "pending");
                 }
@@ -249,6 +262,9 @@
                     if (!res) {
                         return;
                     }
+                    if (options.onOverrideResponse) {
+                        options.onOverrideResponse(context, res);
+                    }
                     var convertedResponse = _dataTableAdapters.toStandardResponse(res, requestOptions);
                     if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
                         convertedResponse.echo >= context.state[echoField]) {
@@ -256,9 +272,13 @@
                             convertedResponse.rows = options.onReady(context, convertedResponse.rows);
                         }
                         context.commit(_capitalized("set", resourceName), convertedResponse);
+                        context.commit(_capitalized("set", lastSuccessfulRequestKey), requestOptions);
                     }
                 })
-                .catch(function() {
+                .catch(function(err) {
+                    if (typeof options.onError === 'function') {
+                        options.onError(context, err);
+                    }
                     return context.commit(_capitalized("set", resourceName), _dataTableAdapters.toStandardResponse());
                 });
         };
@@ -390,14 +410,16 @@
             paramsPath = null,
             pasteAndFetchPath = null,
             updateParamsPath = null,
-            resourcePath = null;
+            resourcePath = null,
+            requestPath = null;
 
         if (arguments.length === 3 && path) {
             statusPath = path + "/" + _capitalized(resourceName, 'status');
             paramsPath = path + "/" + _capitalized(resourceName, 'params');
             pasteAndFetchPath = path + "/" + _capitalized("pasteAndFetch", resourceName);
             updateParamsPath = path + "/" + _capitalized("updateParams", resourceName);
-            resourcePath = path + "/" + resourceName;
+            resourcePath = path + "/" + resourceName,
+            requestPath = path + "/" + _capitalized(resourceName, 'lastSuccessfulRequest');
         }
         else {
             resourceName = path;
@@ -406,6 +428,7 @@
             pasteAndFetchPath = _capitalized("pasteAndFetch", resourceName);
             updateParamsPath = _capitalized("updateParams", resourceName);
             resourcePath = resourceName;
+            requestPath = _capitalized(resourceName, 'lastSuccessfulRequest');
         }
 
         return {
@@ -429,6 +452,11 @@
                 type: 'vuex-getter',
                 store: storeInstance,
                 path: resourcePath
+            },
+            requestAddress: {
+                type: 'vuex-getter',
+                store: storeInstance,
+                path: requestPath
             }
         };
     };

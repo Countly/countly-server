@@ -1,4 +1,4 @@
-/*global $, jQuery, countlyAuth, countlyCommon, countlyView, CountlyHelpers, countlyGlobal, app, _, T, CompareView, countlyEventCompare, countlyAppCompare, countlyEvent*/
+/*global $, jQuery, countlyAuth, countlyCommon, countlyView, CountlyHelpers, countlyGlobal, app, _, T, CompareView, countlyAppCompare*/
 window.CompareView = countlyView.extend({
     featureName: 'compare',
     selectedMetric: null,
@@ -248,82 +248,82 @@ app.addPageScript("/analytics/events", function() {
     }
 });
 
-var compareEventsViewHelper = {
-    title: jQuery.i18n.map["compare.events.title"],
-    model: countlyEventCompare,
-    defaultMetric: "c",
-    backLink: {
-        href: "#/analytics/events",
-        text: jQuery.i18n.map["compare.events.back"]
-    },
-    compareText: jQuery.i18n.map["compare.events.limit"],
-    maxAlternatives: 20,
-    beforeRender: function() {
+// var compareEventsViewHelper = {
+//     title: jQuery.i18n.map["compare.events.title"],
+//     model: countlyEventCompare,
+//     defaultMetric: "c",
+//     backLink: {
+//         href: "#/analytics/events",
+//         text: jQuery.i18n.map["compare.events.back"]
+//     },
+//     compareText: jQuery.i18n.map["compare.events.limit"],
+//     maxAlternatives: 20,
+//     beforeRender: function() {
 
-    },
-    getTableColumns: function() {
-        return [
-            {
-                "mData": function(row, type) {
-                    if (type === "display") {
-                        return "<div class='color'></div><span class='name'>" + row.name + "</span>";
-                    }
-                    else {
-                        return row.name;
-                    }
+//     },
+//     getTableColumns: function() {
+//         return [
+//             {
+//                 "mData": function(row, type) {
+//                     if (type === "display") {
+//                         return "<div class='color'></div><span class='name'>" + row.name + "</span>";
+//                     }
+//                     else {
+//                         return row.name;
+//                     }
 
-                },
-                sType: "string",
-                "sTitle": jQuery.i18n.map["compare.events.table"],
-                "sClass": "break",
-                "sWidth": "40%"
-            },
-            {
-                "mData": "c",
-                sType: "formatted-num",
-                "mRender": function(d) {
-                    return countlyCommon.formatNumber(d);
-                },
-                "sTitle": jQuery.i18n.map["events.count"]
-            },
-            {
-                "mData": "s",
-                sType: "formatted-num",
-                "mRender": function(d) {
-                    return countlyCommon.formatNumber(d);
-                },
-                "sTitle": jQuery.i18n.map["events.sum"]
-            },
-            {
-                "mData": "dur",
-                sType: "formatted-num",
-                "mRender": function(d) {
-                    return countlyCommon.formatSecond(d);
-                },
-                "sTitle": jQuery.i18n.map["events.dur"]
-            }
-        ];
-    },
-    getAlternatives: function() {
-        var events = countlyEvent.getEvents(false, true);
-        var toReturn = {};
+//                 },
+//                 sType: "string",
+//                 "sTitle": jQuery.i18n.map["compare.events.table"],
+//                 "sClass": "break",
+//                 "sWidth": "40%"
+//             },
+//             {
+//                 "mData": "c",
+//                 sType: "formatted-num",
+//                 "mRender": function(d) {
+//                     return countlyCommon.formatNumber(d);
+//                 },
+//                 "sTitle": jQuery.i18n.map["events.count"]
+//             },
+//             {
+//                 "mData": "s",
+//                 sType: "formatted-num",
+//                 "mRender": function(d) {
+//                     return countlyCommon.formatNumber(d);
+//                 },
+//                 "sTitle": jQuery.i18n.map["events.sum"]
+//             },
+//             {
+//                 "mData": "dur",
+//                 sType: "formatted-num",
+//                 "mRender": function(d) {
+//                     return countlyCommon.formatSecond(d);
+//                 },
+//                 "sTitle": jQuery.i18n.map["events.dur"]
+//             }
+//         ];
+//     },
+//     getAlternatives: function() {
+//         var events = countlyEvent.getEvents(false, true);
+//         var toReturn = {};
 
-        for (var i = 0; i < events.length; i++) {
-            toReturn[events[i].key] = events[i].name || events[i].key;
-            if (events[i].is_event_group) {
-                toReturn[events[i].key] += "<div class='group-badge'><span> (</span>" + jQuery.i18n.prop("common.group") + "<span>)</span></div>";
-            }
-        }
+//         for (var i = 0; i < events.length; i++) {
+//             toReturn[events[i].key] = events[i].name || events[i].key;
+//             if (events[i].is_event_group) {
+//                 toReturn[events[i].key] += "<div class='group-badge'><span> (</span>" + jQuery.i18n.prop("common.group") + "<span>)</span></div>";
+//             }
+//         }
 
-        return toReturn;
-    }
-};
+//         return toReturn;
+//     }
+// };
 
 if (countlyAuth.validateRead(app.compareView.featureName)) {
-    app.route("/analytics/events/compare", 'views', function() {
-        this.compareView.setHelper(compareEventsViewHelper);
-        this.renderWhenReady(this.compareView);
-    });
+    // app.route("/analytics/events/compare", 'views', function() {
+    //     this.compareView.setHelper(compareEventsViewHelper);
+    //     this.renderWhenReady(this.compareView);
+    // });
 }
 /* End of compare for the events view */
 

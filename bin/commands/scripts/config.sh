@@ -12,9 +12,6 @@ usage (){
 if [ -z "$1" ] && [ -z "$2" ]
 then
     usage ;
-elif [ -z "$2" ]
-then
-    nodejs "$DIR/config.js" "$1" ;
 else
-    nodejs "$DIR/config.js" "$1" "$2" ;
+    nodejs "$DIR/config.js" "$@" ;
 fi

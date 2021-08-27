@@ -1,0 +1,695 @@
+@use "sass:map";
+@use "../../../../../frontend/express/public/stylesheets/styles//base/typography-variables" as typography;
+@use "../../../../../frontend/express/public/stylesheets/styles//base/colors" as colors;
+
+.cly-vue-push-notification-card {
+    border-radius: 0px;
+    &__title {
+        font-size: typography.$text-medium-size;
+    }
+    &__content {
+        font-size: typography.$heading-2-size;
+    }
+}
+
+.cly-vue-push-notification-multi-line-table-data {     
+    &__second-line {
+        color: #A7AEB8;
+        font-size: typography.$text-small-size;
+    }
+}
+
+.cly-vue-platform-filter-label {
+    font-size: typography.$heading-3-size;
+    font-weight: typography.$font-weight-primary;
+}
+
+.blinker-wrapper {
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: typography.$text-medium-size
+}
+
+.cly-vue-push-notification-mobile-preview {
+    position: relative;
+
+    &__images {
+        & img {
+            width: 275px;
+            border-radius:2px;
+        }
+    }
+
+    &__ios-message {
+        width: 230px;
+        position: absolute;
+        top: 120px;
+        left: 22px;
+        right: 22px;
+        color: black;
+    }
+
+    &__ios-header {
+        top: 0;
+        right: 0;
+        vertical-align: middle;
+        position: initial;
+        height: 30px;
+        font-size: 9px;
+        line-height: 30px;
+        background-color: white;
+        border-bottom: 1px solid rgba(0, 0, 0, .2);
+        border-radius: 6px 6px 0 0;
+    }
+
+    &__ios-header-image {
+        width: 13px;
+        margin: 8px 3px 8px 8px;
+        border-radius: 4px;
+        float: left;
+    }
+
+    &__ios-header-app-name {
+        display: inline-block;
+        max-width: 180px;
+        max-height: 25px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &__ios-header-close-button {
+        margin-right: 8px;
+        float: right;
+        color: black;
+        opacity: 0.5;
+        font-size: 8px;
+    }
+
+    &__ios-title {
+        background: white;
+        padding: 3px 8px 0;
+        font-size: 10px;
+        font-weight: bold;
+    }
+
+    &__ios-content {
+        font-size: 10.5px;
+        padding: 5px 8px 8px;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        display: -webkit-box;
+        background-color: white;
+        border-radius: 0 0 6px 6px;
+    }
+
+    &__ios-buttons-list {
+        background-color: rgba(255,255,255,.6);
+        border-radius: 6px;
+        color: black;
+        font-size: 16px;
+        font-weight: 100;
+        margin-top: 6px;
+    }
+
+    &__ios-button {
+        position: relative;
+        height: 40px;
+        text-align: center;   
+        line-height: 42px; 
+    }
+
+    &__ios-button:first-child {
+        border-bottom: 1px solid rgba(255,255,255,.3);            
+    }
+
+    &__ios-media {
+        width: 100%;
+        margin: 0;
+        max-height: 140px;
+        border-radius: 0;
+        object-position: center;
+        object-fit: cover;
+        float: left;
+    }
+
+    &__android-message {
+        width: 240px;
+        position: absolute;
+        background-color: rgba(250, 250, 250, .87);
+        top: 148px;
+        left: 18px;
+        right: 15px;
+    }
+
+    &__android-header {
+        top: 0;
+        right: 0;
+        vertical-align: middle;
+        position: initial;
+        height: 25px;
+        font-size: 12px;
+        line-height: 25px;
+        color: #2B2B2B;
+    }
+
+    &__android-header-image {
+        width: 13px;
+        margin: 8px 3px 8px 8px;
+        border-radius: 4px;
+        float: left;
+    }
+
+    &__android-header-app-name {
+        display: inline-block;
+        max-width: 180px;
+        max-height: 25px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &__android-header-time {
+        margin-right: 8px;
+        float: right;
+        color: black;
+        opacity: 0.5;
+        font-size: 8px;
+    }
+
+    &__android-title {
+        color: #2B2B2B;
+        padding: 0 8px 3px;
+        font-size: 11px;
+    }
+
+    &__android-content {
+        position: relative;
+        padding: 0 8px 5px;
+        font-size: 9px;
+        height: 16px;
+        color: #787878;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        display: -webkit-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__android-media {
+        width: 100%;
+        margin: 0;
+        max-height: 140px;
+        border-radius: 0;
+        object-position: center;
+        object-fit: cover;
+        float: left;
+    }
+
+    &__android-buttons-list {
+        color: #737373;
+        font-size: 11px;
+        text-transform: uppercase;
+        display: table;
+        padding-bottom: 10px;
+    }
+
+    &__android-button {
+        display: table-cell;
+        text-align: center;
+        width: 1%;
+    }
+
+    &__platforms {
+
+        width: 70px;
+        margin: 18px auto 0;
+        height: 27px;
+        display: table;
+        table-layout: fixed;
+    }
+
+    &__icon-container {
+        display: table-cell;
+        width: 2%;
+        max-width: 80px;
+        text-align: center;
+        font-size: 12px;
+        padding: 6px 9px;
+        color: #A7A8A8;
+        background-color: #F5F5F5;
+        border: 1px solid #D0D0D0;
+        transition: .6s ease-out;
+        line-height: 15px;
+    }
+
+    &__icon-container:first-child {
+        border-radius: 2px 0 0 2px;
+    }
+
+    &__active-icon {
+        color: #636363;
+        background-color: white;
+        border: 1px solid #37BB29;
+    }
+
+    &__user-property {
+        border-bottom-color: black;
+        border-bottom: 1px dashed #2B2B2B;
+        padding-bottom: 1px;
+        display: inline-block;
+    }
+}
+
+.cly-vue-push-notification-details-summary {
+     
+    &__header {
+        .cly-vue-tabs {
+            border-bottom: none !important;
+            background-color: #fcfcfc !important;
+        }
+    
+        .cly-vue-header {
+            background-color: #fcfcfc;
+        }
+    }
+
+    &__message-preview {
+        margin-top:145px;
+    }
+}
+
+.cly-vue-push-notification-details-summary-card {
+    min-height: 715px;
+}
+
+.cly-vue-push-notification-details-sub-header {
+    margin-right: 2.5%;
+}
+
+.cly-vue-push-notification-details-sub-header-icon {
+    padding-right: 2.5px;
+}
+
+.cly-vue-push-notification-details-sub-header-title {
+    font-size: typography.$text-medium-size;
+    color: #81868D;
+}
+
+.cly-vue-push-notification-details-summary-text {
+    font-size: typography.$text-button-size;
+}
+
+.cly-vue-push-notification-details-summary-header {
+    font-weight: typography.$heading-3-weight;
+    font-size: typography.$heading-3-size;
+    margin-bottom: 1.5%;
+    margin-top: 1.5%;
+}
+
+.cly-vue-push-notification-details-summary-section {
+    margin-left: 1.5%;
+}
+
+.cly-vue-push-notification-details-no-errors-text {
+    display: flex;
+    justify-content: center;
+    height: 675px;
+    align-items: center;
+}
+
+
+.cly-vue-push-notification-drawer {
+
+    &__input-label {
+        font-size: typography.$text-button-size;
+        line-height: 13px;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
+    }
+
+    &__input-description {
+        font-size: typography.$text-small-size;
+        line-height: 16px;
+        color: map.get(colors.$colors,"text-secondary");
+    }
+
+    &__input-suffix {
+        height:100%;
+        color: map.get(colors.$colors,"text-custom-1-active");
+    }
+
+    //platform only
+    &__checkbox-group-header {
+        font-size: typography.$heading-5-size;
+        font-weight: typography.$font-weight-primary;
+        line-height: typography.$heading-5-line-height;
+    }
+
+    &__checkbox-label {
+        line-height: 15px;
+        font-size: typography.$text-sm-size;
+        font-weight: typography.$font-weight-primary;
+        letter-spacing: 0.5px;
+        color: map.get(colors.$colors,"text-secondary");
+    }
+
+    &__checkbox-text {
+        font-size: typography.$text-button-size;
+        line-height: typography.$text-button-line-height;
+        font-weight: normal;
+    }
+
+    &__checkbox-is-error {
+        .el-checkbox__inner {
+            border-color: #F56C6C;
+            background-color: #FBECE5;
+        }
+    }
+
+    //diverge!
+    &__radio-group-header {
+        font-size: typography.$heading-4-size;
+        line-height: typography.$heading-5-line-height;
+        font-weight: typography.$font-weight-primary;
+    }   
+
+    &__line-radio-button-group-header {
+        font-size: typography.$text-button-size;
+        line-height: 13px;
+        font-weight: typography.$font-weight-primary;
+    }
+
+    &__subsection-left {
+        background: #F8FAFD; 
+        border-bottom-right-radius: 0px;
+        border-top-right-radius: 0px;  
+        border-bottom-left-radius: 6px;
+        border-top-left-radius: 6px;
+        border: 1px solid #E2E4E8;
+        min-width: 200px;
+    }
+
+    &__subsection-left-row-active {
+        background:#e1e1e1;
+    }
+
+    &__subsection-left-row:hover {
+        background:darkgrey;
+    }
+
+    &__subsection-left-list-item {
+        list-style: none;
+        width: 100%;
+
+        &:hover {
+            cursor: pointer;
+        }    
+    }
+
+    &__subsection-right {
+        background: #F8FAFD; 
+        border: 1px solid #E2E4E8;
+        border-bottom-left-radius: 0px;
+        border-top-left-radius: 0px;  
+        border-bottom-right-radius: 6px;
+        border-top-right-radius: 6px;
+    }
+
+    &__subsection-border {
+        border: 1px solid #E2E4E8;
+        background: #F8FAFD;
+        border-radius: 6px; 
+    }
+
+    &__review-header {
+        font-size: typography.$heading-3-size;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
+        line-height: typography.$heading-3-line-height;
+    }
+
+    &__review-section-group-header {
+        font-size: 16px;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"black");
+        line-height: 24px;
+    }
+    
+    &__review-section-group-subheader {
+        font-size: typography.$text-small-size;
+        line-height: 15px;
+        letter-spacing: 0.5px;
+        color: map.get(colors.$colors,"cool-gray-100");
+        font-weight: typography.$font-weight-primary;    
+    }
+
+    &__section-group {
+        border-radius: 6px;
+        border: 1px solid #E2E4E8;
+        background: #F8FAFD;
+    }
+}
+
+
+
+.cly-vue-push-notification-large-radio-button-with-description {
+    &__container {
+        flex-basis: 0;
+    }
+
+    &__button {
+        width:100%;
+        height:100px !important;
+    }
+
+    &__title {
+        display: inline-block;
+        color: map.get(colors.$colors,"text-primary");
+        white-space: pre-wrap;
+    }
+
+    &__content {
+        color: map.get(colors.$colors,"text-secondary");
+        font-size: typography.$text-small-size;
+        white-space: pre-line;
+        min-width: 200px;
+    }
+
+    &__content-header{
+        font-size: typography.$heading-3-size;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
+    }
+}
+
+.cly-vue-push-notification-line-radio-button-with-description {
+    &__title {
+        display: inline-block;
+        color: map.get(colors.$colors,"text-primary");
+        white-space: pre-wrap;
+    }
+
+    &__content {
+        color: map.get(colors.$colors,"text-secondary");
+        font-size: typography.$text-small-size;
+        white-space: pre-line;
+        min-width: 200px;
+    }
+
+    &__border {
+        width: 100%;
+        margin-left: 0px !important;
+        .el-radio__label {
+            font-size: typography.$text-button-size;
+            line-height: 16px;
+            width: 100%;
+        }
+    }
+
+    &__no-border {
+        display: block;
+        .el-radio__label {
+            font-size: typography.$text-button-size;
+            line-height: 16px;
+        }
+    }
+}
+
+.cly-vue-push-notification-accordion-with-left-side-arrow {
+    border: 1px solid #ECECEC;
+    .collapse-title {
+        flex: 1 0 90%;
+        order: 1;
+    }
+        
+    .el-collapse-item {
+        .el-collapse-item__header {
+            padding-left: 24px;
+        }
+        &__wrap {
+            padding:24px;
+        }
+    }
+    .el-collapse-item__header {
+        flex: 1 0 auto;
+        order: -1;
+    }
+}
+
+.cly-vue-push-notification-review-section-row {
+    &__label {
+        flex-basis: 30%;
+        font-size: typography.$text-button-size;
+        line-height: 13px;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
+    }
+
+    &__value {
+        font-size: typography.$text-button-size;
+        line-height: 16px;
+        color: map.get(colors.$colors,"cool-gray-100");
+        font-weight: normal;
+        min-width: 200px;
+    }
+}
+
+.cly-vue-push-notification-message-editor-with-emoji-picker {
+
+    &__user-property {
+        padding: 1px 5px 2px;
+        background: #ECECEC;
+        border-radius: 2px;
+        margin-right: 2px;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+}
+
+.cly-vue-push-notification-add-user-property-popover {
+    position: absolute;
+    z-index: 2001;
+    background-color: white;
+    border: 1px solid lightgrey;
+
+    &__inner {
+        border: none;
+        border-radius: 4px;
+        margin: 16px;
+        line-height: 18px;
+    }
+
+    &__select-value {
+        width:320px;
+    }
+
+    &__title {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
+        margin-bottom:24px;
+        color: #333C48;
+    }
+    &__confirm {
+        background: #12AF51;
+        color:white;
+    }
+}
+
+// Vue emoji-picker
+.cly-vue-push-notification-emoji-wrapper{
+    position: relative;
+}
+  
+.regular-input {
+    padding: 0.5rem 1rem;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    width: 20rem;
+    height: 12rem;
+    outline: none;
+}
+
+.regular-input:focus {
+    box-shadow: 0 0 0 3px rgba(66,153,225,.5);
+}
+
+.emoji-invoker {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.emoji-invoker:hover {
+    transform: scale(1.1);
+}
+
+.emoji-invoker > svg {
+    fill: #b1c6d0;
+}
+
+.emoji-picker {
+    position: absolute;
+    right: 0;
+    z-index: 1;
+    font-family: Montserrat;
+    border: 1px solid #ccc;
+    width: 15rem;
+    height: 20rem;
+    overflow: scroll;
+    padding: 1rem;
+    box-sizing: border-box;
+    border-radius: 0.5rem;
+    background: #fff;
+    box-shadow: 1px 1px 8px #c7dbe6;
+}
+
+.emoji-picker__search {
+    display: flex;
+}
+
+.emoji-picker__search > input {
+    flex: 1;
+    border-radius: 10rem;
+    border: 1px solid #ccc;
+    padding: 0.5rem 1rem;
+    outline: none;
+}
+
+.emoji-picker h5 {
+    margin-bottom: 0;
+    color: #b1b1b1;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    cursor: default;
+}
+
+.emoji-picker .emojis {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.emoji-picker .emojis:after {
+    content: "";
+    flex: auto;
+}
+
+.emoji-picker .emojis span {
+    padding: 0.2rem;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.emoji-picker .emojis span:hover {
+    background: #ececec;
+    cursor: pointer;
+}

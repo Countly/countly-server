@@ -1,0 +1,271 @@
+@use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
+@use "../../../../../frontend/express/public/stylesheets/styles/states/_state";
+@use "sass:map";
+
+.cly-vue-theme-clydef {
+	.crashes-statistics-dashboard {
+		margin-bottom: 0 !important;
+
+		&__tiles-container {
+			height: 314px;
+		}
+	}
+
+	.crashes-trend {
+		margin-top: auto;
+		margin-left: 0.5rem;
+		margin-bottom: 0.15rem;
+
+		i {
+			border: 0px solid;
+			border-radius: 100%;
+			text-align: center;
+			vertical-align: middle;
+			width: 14px;
+			height: 14px;
+			padding: 2px;
+			margin-top: -4px;
+		}
+
+		&--up {
+			color: map.get(c.$colors, "red-100");
+
+			i {
+				background-color: map.get(c.$colors, "red-10");
+			}
+		}
+
+		&--down {
+			color: map.get(c.$colors, "green-80");
+
+			i {
+				background-color: map.get(c.$colors, "green-10");
+			}
+		}
+
+		&--neutral {
+			color: map.get(c.$colors, "cool-gray-50");
+
+			i {
+				background-color: map.get(c.$colors, "cool-gray-20");
+			}
+		}
+	}
+
+	.crashes-tile {
+		flex-grow: 1;
+		align-items: center;
+
+		&__donut{
+			margin-left: 1rem;
+		}
+
+		&__content {
+			margin-left: 1rem;
+			margin-right: 1rem;
+			flex-grow: 1;
+		}
+
+		&__content--fill {
+			width: 100%;
+			height: 100%;
+		}
+
+		&__value-container {
+			flex: 0 0 auto;
+		}
+
+		&__description-container {
+			margin-top: auto;
+		}
+
+		&--horizontal {
+			border-right: 1px solid #ECECEC;
+
+		}
+
+		&--vertical {
+			border-bottom: 1px solid #ECECEC;
+		}
+
+		&:last-of-type {
+			border-right: 0;
+			border-bottom: 0;
+		}
+	}
+
+	.crashes-statistics-graph {
+		.cly-vue-section__content {
+			border-bottom-width: 1px !important;
+		}
+
+		.el-tabs {
+			&--card > .el-tabs__header {
+				border-bottom: 2px solid #ECECEC;
+			}
+
+			&--card > .el-tabs__header .el-tabs__item {
+				border-bottom-width: 2px !important;
+			}
+
+			&--card > .el-tabs__header .el-tabs__nav {
+				border: none;
+			}
+
+			&__header .el-tabs__item.is-active {
+				border-bottom-color: #0166D6;
+				border-bottom-width: 2px;
+			}
+
+			&__item {
+				border-left: 1px solid #ECECEC !important;
+				height: auto;
+				text-align: left;
+			}
+
+			&__item:last-of-type {
+				border-right: 1px solid #ECECEC;
+			}
+		}
+	}
+
+	.crashgroup-mobile-diagnostics {
+		&__tiles-container {
+ 			height: 170px;
+		}
+
+		&__tile-content {
+			height: 122px;
+			margin-left: 24px;
+			margin-right: 24px;
+		}
+	}
+
+	.crashgroup-mobile-metrics {
+		&__tiles-container {
+ 			height: 104px;
+		}
+	}
+
+	.crashgroup-detail-tabs {
+		.el-tabs__nav {
+			border-top: 0;
+		}
+	}
+
+	.crash-stacktrace {
+		&__header {
+			margin-bottom: 24px;
+		}
+
+		&__line-numbers {
+			font-family: "Roboto Mono", monospace;
+			font-size: 12px;
+			line-height: 17px; // idk why this needs +1px of code line height lol
+			color: map.get(c.$colors, "cool-gray-40");
+			float: left;
+			padding-right: 0.5em;
+			margin-right: 1em;
+			border-right: 1px solid map.get(c.$colors, "warm-gray-30");
+		}
+
+		&__code {
+			font-family: "Roboto Mono", monospace !important;
+			font-size: 12px;
+			line-height: 16px;
+		}
+	}
+
+	.crash-pre {
+		font-family: "Roboto Mono", monospace;
+		font-size: 12px;
+		line-height: 16px;
+		white-space: pre-wrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		max-width: 60em;
+	}
+
+	.crash-link {
+		text-decoration: underline;
+		cursor: pointer;
+	}
+
+	.crash-link:hover {
+		color: initial;
+	}
+
+	.crashgroup-common-metrics {
+		&__tiles-container {
+ 			height: 104px;
+		}
+	}
+
+	#crash-tabs {
+		.el-tabs__header {
+			margin-bottom: 0px;
+		}
+
+		.el-tabs__content {
+			border-left: 1px solid #ececec;
+			border-right: 1px solid #ececec;
+		}
+	}
+
+	.crash-user-profile-link {
+		font-size: 16px;
+		color: map.get(c.$colors, "cool-gray-40");
+	}
+
+	.crash-badge {
+		@extend .text-smaller;
+
+		padding: 0 4px;
+		letter-spacing: 0.5px;
+
+		&:not(:first-of-type) {
+			margin-left: 4px;
+		}
+
+		&--info {
+			background-color: map.get(c.$colors, "cool-gray-40");
+			color: white;
+		}
+
+		&--negative {
+			background-color: map.get(c.$colors, "red-10");
+			color: map.get(c.$colors, "red-100");
+		}
+
+		&--neutral {
+			background-color: map.get(c.$colors, "yellow-10");
+			color: map.get(c.$colors, "yellow-100");
+		}
+
+		&--positive {
+			background-color: map.get(c.$colors, "green-10");
+			color: map.get(c.$colors, "green-100");
+		}
+	}
+
+	.crash-header-button {
+		padding: 7px 9px;
+	}
+
+	.crash-mark-as {
+		&__button input {
+			width: 100px;
+			padding: 15px 9px;
+		}
+	}
+
+	.crashes-crashgroup-header {
+		&__name {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 50vw;
+		}
+	}
+
+}

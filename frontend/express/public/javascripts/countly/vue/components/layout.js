@@ -83,7 +83,15 @@
             autoGap: {
                 type: Boolean,
                 default: false
-            }
+            },
+            skin: {
+                type: String,
+                default: "default",
+                required: false,
+                validator: function(val) {
+                    return val === "default" || val === "configurator";
+                }
+            },
         },
         computed: {
             levelClass: function() {
@@ -91,9 +99,17 @@
                     "bu-mb-4": this.$scopedSlots.header || this.$slots.header || (this.title && this.title.length),
                     "bu-level": true
                 };
-            }
+            },
+            topClasses: function() {
+                var classes = {};
+                classes["cly-vue-section--has-" + this.skin + "-skin"] = true;
+                return classes;
+            },
+            isConfigSlotUsed: function() {
+                return !!this.$slots.config;
+            },
         },
-        template: '<div class="cly-vue-section">\
+        template: '<div class="cly-vue-section" :class="topClasses">\
                         <div :class="[levelClass]">\
                             <div class="bu-level-left">\
                                 <slot name="header">\
@@ -104,8 +120,15 @@
                             </div>\
                         </div>\
                         <div class="cly-vue-section__content white-bg">\
+                            <div v-if="isConfigSlotUsed" class="cly-vue-section__content-config bu-is-flex bu-px-4 bu-py-2"><slot name="config"></slot></div>\
                             <slot></slot>\
                         </div>\
+                    </div>'
+    }));
+
+    Vue.component("cly-sub-section", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-section__sub bu-px-4 bu-py-2">\
+                        <slot></slot>\
                     </div>'
     }));
 

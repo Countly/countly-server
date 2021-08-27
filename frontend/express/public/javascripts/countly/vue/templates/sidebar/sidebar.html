@@ -1,0 +1,21 @@
+<div class="cly-vue-sidebar bu-is-flex">
+    <div class="cly-vue-sidebar__options bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-space-between">
+        <ul class="bu-is-flex bu-is-flex-direction-column bu-is-flex-align-items-center bu-is-flex-justify-content-center">
+            <li v-for="item in mainOptions" :key="item.name" @click="onClick(item)" class="cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center">
+                <div v-if="item.name === 'app'" class="cly-vue-sidebar__option_app"></div>
+                <div v-if="item.name === 'divider'" class="cly-vue-sidebar__option_divider"></div>
+                <i v-else :class="[item.icon, {'cly-vue-sidebar__option--selected': item.name === selectedOption}]"></i>
+            </li>
+        </ul>
+        <ul class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">
+            <li v-for="item in otherOptions" :key="item.name" @click="onClick(item)" :class="[{'cly-vue-sidebar__option-toggle': item.name === 'toggle'}, 'cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center']">
+                <users-menu v-if="item.name === 'user'" :item="item"></users-menu>
+                <i v-else :class="[item.icon, {'cly-vue-sidebar__option--selected': item.name === selectedOption}]"></i>
+            </li>
+        </ul>
+    </div>
+
+    <analytics-menu v-show="selectedOption === 'analytics'"></analytics-menu>
+    <management-menu v-show="selectedOption === 'management'"></management-menu>
+    <component v-for="item in components" :is="item.component" v-show="selectedOption === item.name" :key="item.name"></component>
+</div>

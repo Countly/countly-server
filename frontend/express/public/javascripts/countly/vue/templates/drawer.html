@@ -33,8 +33,8 @@
                         <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile bu-px-5 bu-py-3">
                             <div class="bu-column bu-is-12 bu-is-flex bu-is-align-items-center bu-is-justify-content-left">
                                 <div class="cly-vue-drawer__steps-header">
-                                    <template v-for="(currentContent, i) in stepContents" :key="i">
-                                        <div @click="setStepSafe(i)" class="cly-vue-drawer__step-label" :class="{'is-locked': i > lastValidIndex, 'is-active': i === currentStepIndex,  'is-passed': i < currentStepIndex}">
+                                    <template v-for="(currentContent, i) in stepContents">
+                                        <div :key="'label_' + i" @click="setStepSafe(i, 'header-click')" class="cly-vue-drawer__step-label" :class="{'is-locked': i > lastValidIndex, 'is-active': i === currentStepIndex,  'is-passed': i < currentStepIndex}">
                                             <div>
                                                 <div class="cly-vue-drawer__step-sign">
                                                     <span class="index text-small" :class="{'color-white': i === currentStepIndex}">{{i + 1}}</span>
@@ -43,20 +43,20 @@
                                                 <div class="cly-vue-drawer__step-title text-medium font-weight-bold">{{currentContent.name}}</div>
                                             </div>
                                         </div>
-                                        <div class="cly-vue-drawer__step-separator" v-if="i < stepContents.length - 1"></div>
+                                        <div :key="'sep_' + i" class="cly-vue-drawer__step-separator" v-if="i < stepContents.length - 1"></div>
                                     </template>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="cly-vue-drawer__steps-container" :class="{'is-multi-step':isMultiStep}">
+                <div class="cly-vue-drawer__steps-container" v-scroll-shadow :class="{'is-multi-step':isMultiStep}">
                     <div class="bu-columns bu-is-gapless bu-is-mobile" v-if="currentScreenMode === 'full'">
                         <div class="bu-column bu-is-12">
                             <h3>{{title}}</h3>
                         </div>
                     </div>
-                    <div class="bu-columns bu-is-gapless bu-is-mobile" :class="{ 'bu-p-5 bu-m-2': currentScreenMode !== 'full' }">
+                    <div class="bu-columns bu-is-gapless bu-is-mobile" :class="{ 'bu-px-5 bu-pb-5 bu-pt-4 bu-mx-2 bu-mb-2 bu-mt-1': currentScreenMode !== 'full' }">
                         <div class="bu-column bu-is-12">
                             <slot name="default"
                                 v-bind="passedScope">
@@ -71,13 +71,13 @@
                                 v-bind="passedScope">
                             </slot>
                         </div>
-                        <el-button @click="prevStep" size="small" v-if="currentStepIndex > 0">{{i18n('common.drawer.previous-step')}}</el-button>
-                        <el-button @click="nextStep" size="small" type="success" v-if="!isLastStep" :disabled="!isCurrentStepValid">{{i18n('common.drawer.next-step')}}</el-button>
-                        <el-button @click="submit" size="small" v-if="isLastStep" type="success" :disabled="!isSubmissionAllowed">{{saveButtonLabel}}</el-button>
+                        <el-button @click="prevStep" size="small" v-if="currentStepIndex > 0" :disabled="isSubmitPending">{{i18n('common.drawer.previous-step')}}</el-button>
+                        <el-button @click="nextStep" size="small" type="success" v-if="!isLastStep" :class="{'is-disabled':!isCurrentStepValid}" :disabled="isSubmitPending">{{i18n('common.drawer.next-step')}}</el-button>
+                        <el-button @click="submit" :loading="isSubmitPending" size="small" v-if="isLastStep" :class="{'is-disabled':!isSubmissionAllowed}" type="success" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
                     </div>
                     <div class="cly-vue-drawer__buttons is-single-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="!isMultiStep">
-                        <el-button @click="doClose" size="small" v-if="hasCancelButton">{{cancelButtonLabel}}</el-button>
-                        <el-button @click="submit" size="small" type="success" :disabled="!isSubmissionAllowed">{{saveButtonLabel}}</el-button>
+                        <el-button @click="doClose" size="small" v-if="hasCancelButton" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>
+                        <el-button @click="submit" :loading="isSubmitPending" size="small" type="success" :class="{'is-disabled':!isSubmissionAllowed}" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
                     </div>
                 </div>
             </div>

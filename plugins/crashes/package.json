@@ -1,6 +1,6 @@
 {
   "name": "countly-crashes",
-  "title": "Crash analytics",
+  "title": "Crash analytics (Vue)",
   "version": "0.5.0",
   "description": "See which users are affected by crashes and exceptions, and take necessary precautions",
   "author": "Count.ly",

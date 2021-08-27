@@ -320,16 +320,10 @@ app.desktopDashboardView = new DesktopDashboardView();
 
 $(document).ready(function() {
     if (countlyAuth.validateRead('core')) {
-        app.addSubMenuForType("desktop", "analytics", {code: "analytics-platforms", url: "#/analytics/platforms", text: "sidebar.analytics.platforms", priority: 80});
-        app.addSubMenuForType("desktop", "analytics", {code: "analytics-versions", url: "#/analytics/versions", text: "sidebar.analytics.app-versions", priority: 60});
-        app.addSubMenuForType("desktop", "analytics", {code: "analytics-resolutions", url: "#/analytics/resolutions", text: "sidebar.analytics.resolutions", priority: 50});
-        app.addSubMenuForType("desktop", "analytics", {code: "analytics-devices", url: "#/analytics/devices", text: "sidebar.analytics.devices", priority: 40});
-        app.addSubMenuForType("desktop", "analytics", {code: "analytics-countries", url: "#/analytics/countries", text: "sidebar.analytics.countries", priority: 30});
-        app.addSubMenuForType("desktop", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.sessions", priority: 20});
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-technology", url: "#/analytics/technology", text: "sidebar.analytics.technology", priority: 40});
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-geo", url: "#/analytics/geo", text: "sidebar.analytics.geo", priority: 30});
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.session", priority: 20});
         app.addSubMenuForType("desktop", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
-
-        app.addSubMenuForType("desktop", "engagement", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 10});
-        app.addSubMenuForType("desktop", "engagement", {code: "analytics-frequency", url: "#/analytics/frequency", text: "sidebar.analytics.session-frequency", priority: 20});
-        app.addSubMenuForType("desktop", "engagement", {code: "analytics-durations", url: "#/analytics/durations", text: "sidebar.engagement.durations", priority: 30});
+        app.addSubMenuForType("desktop", "analytics", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 15});
     }
 });

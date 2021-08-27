@@ -48,6 +48,7 @@
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/selectize/selectize.css?<%= countlyVersion %>" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/leaflet/leaflet.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/countly-checkbox/countly.checkbox.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>stylesheets/jsoneditor/codemirror.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css?<%= countlyVersion %>" />
@@ -92,6 +93,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.xss.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/webfont.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/selectize.min.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/leaflet.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfill/es6-promise.auto.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfill/intersection-observer.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue.min.js?<%= countlyVersion %>"></script>
@@ -104,9 +106,11 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vee-validate.full.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2Dropzone.min.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/element-ui.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/element-ui.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2-leaflet.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/inViewportMixin.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuescroll.min.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-google-charts.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js?<%= countlyVersion %>"></script>
@@ -154,7 +158,7 @@
 	<% } %>
 </head>
 <body>
-	<div id="top-bar">
+	<div id="top-bar" style="display:none">
 		<div class="logo-container">
 			<div id="hide-sidebar-button"></div>
 			<!--
@@ -2711,14 +2715,24 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/input.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/datatable-legacy.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/datatable.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/dialog.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/drawer.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/vis.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/helpers.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/static.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/sidebar.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/progress.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/directives/scroll-shadow.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/legacy.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.vue.legacy.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/device-and-type/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/device-and-type/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/app-resolution/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/app-version/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/jobs/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/platform/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/carrier/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/carrier/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/user-activity/javascripts/countly.models.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/user-activity/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/session-overview/javascripts/countly.models.js?<%= countlyVersion %>"></script>
@@ -2730,7 +2744,14 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.overview.models.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.overview.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.details.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.compare.models.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/events/javascripts/countly.details.views.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/geo-countries/javascripts/countly.cities.models.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/geo-countries/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>core/user-analytics-overview/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/geo-countries/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/user-management/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/user-management/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <% if (javascripts) { %>
 			<% for(var i=0, l=javascripts.length; i<l; i++) {%>
 				<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>

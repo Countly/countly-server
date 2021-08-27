@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyVueExample, countlyCommon, CV */
+/*global app, countlyVue, countlyVueExample, countlyCommon, CV, moment */
 
 (function() {
     var TableView = countlyVue.views.create({
@@ -244,19 +244,23 @@
         }
     });
 
+    var TIMESERIESOPTIONS = {
+        series: [
+            {
+                name: 'Day 1',
+            },
+            {
+                name: "Day 2",
+            }
+        ]
+    };
+
     var TimeGraphView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/tg.html'),
         data: function() {
             return {
                 selBucket: "daily",
-                largeScaleOptions: {
-                    series: [
-                        {
-                            name: 'Random',
-                            data: []
-                        }
-                    ]
-                },
+                largeScaleOptions: TIMESERIESOPTIONS,
                 pieOptions: {
                     series: [
                         {
@@ -266,14 +270,13 @@
                                 { value: 310, name: "Email" },
                                 { value: 234, name: "Ad Networks" },
                                 { value: 135, name: "Video Ads" },
-                                { value: 1548, name: "Search Engines" }
+                                { value: 1548, name: "Search Engines is a long name" }
                             ],
                             label: {
                                 formatter: function() {
                                     return "New users \n 12k";
                                 }
                             },
-                            center: ["25%", "50%"] //Center should be passed as option
                         }
                     ]
                 },
@@ -301,8 +304,8 @@
                     series: [
                         {
                             name: 'Series A',
-                            color: "pink",
-                            data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]]
+                            data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]],
+                            color: 'pink'
                         },
                         {
                             name: 'Series B',
@@ -310,7 +313,8 @@
                         },
                         {
                             name: 'Series C',
-                            data: [[0, 150], [1, 232], [2, 201], [3, 154], [4, 190], [5, 330], [6, 410]]
+                            data: [[0, 150], [1, 232], [2, 201], [3, 154], [4, 190], [5, 330], [6, 410]],
+                            color: "black"
                         },
                         {
                             name: 'Series D',
@@ -319,6 +323,41 @@
                         {
                             name: 'Series E',
                             data: [[0, 820], [1, 932], [2, 901], [3, 934], [4, 1290], [5, 1330], [6, 1320]]
+                        }
+                    ]
+                },
+                lineLegend: {
+                    type: "primary",
+                    data: [
+                        {
+                            name: "Series A",
+                            value: "123",
+                            trend: "up",
+                            percentage: "3.4%",
+                            tooltip: "Total no of series A.",
+                        },
+                        {
+                            name: "Series B",
+                            value: "32,231",
+                        },
+                        {
+                            name: "Series C",
+                            value: "123",
+                            trend: "down",
+                            percentage: "3.4%",
+                            tooltip: "Total no of series C.",
+                        },
+                        {
+                            name: "Series D",
+                            value: "123",
+                            trend: "up",
+                            percentage: "3.4%",
+                        },
+                        {
+                            name: "Series E",
+                            value: "123",
+                            trend: "down",
+                            percentage: "3.4%",
                         }
                     ]
                 },
@@ -338,6 +377,29 @@
                         {
                             name: "Week old users",
                             data: [2, 90, 77, 50, 44, 110, 10],
+                        }
+                    ]
+                },
+                barLegend: {
+                    type: "primary",
+                    data: [
+                        {
+                            name: "Weekly users",
+                            value: "123",
+                            trend: "up",
+                            percentage: "3.4%",
+                            tooltip: "Total no of series A.",
+                        },
+                        {
+                            name: "Weekly new users",
+                            value: "32,231",
+                        },
+                        {
+                            name: "Week old users",
+                            value: "123",
+                            trend: "down",
+                            percentage: "3.4%",
+                            tooltip: "Total no of series C.",
                         }
                     ]
                 },
@@ -362,6 +424,70 @@
                             stack: 'A'
                         }
                     ]
+                },
+                geoChartData: [
+                    ['Country', 'Popularity'],
+                    ['Germany', 200],
+                    ['United States', 300],
+                    ['Brazil', 400],
+                    ['Canada', 500],
+                    ['France', 600],
+                    ['RU', 700]
+                ],
+                geoChartOptions: {},
+                countriesData: {
+                    'TR': {
+                        'value': 250
+                    },
+                    'DE': {
+                        'value': 500
+                    },
+                    'US': {
+                        'value': 1000
+                    },
+                    'GB': {
+                        'value': 1000
+                    },
+                    'ES': {
+                        'value': 1000
+                    },
+                    'NL': {
+                        'value': 1000
+                    },
+                    'JP': {
+                        'value': 1000
+                    },
+                    'NZ': {
+                        'value': 1000
+                    },
+                    'IN': {
+                        'value': 1000
+                    },
+                    'IL': {
+                        'value': 1000
+                    }
+                },
+                regionsData: {
+                    'TR': {
+                        'TR-34': {
+                            'value': 50
+                        }
+                    }
+                },
+                citiesData: {
+                    'US': {
+                        'Los Angeles': {
+                            'value': 30
+                        },
+                    },
+                    'TR': {
+                        'Istanbul': {
+                            'value': 100
+                        },
+                        'Ankara': {
+                            'value': 30
+                        }
+                    }
                 }
             };
         },
@@ -380,6 +506,18 @@
             this.$store.dispatch("countlyVueExample/fetchGraphPoints");
         },
         methods: {
+            onTimeSeriesButtonClick: function() {
+                var opt = JSON.parse(JSON.stringify(TIMESERIESOPTIONS));
+                var seriesLength = this.largeScaleOptions.series.length;
+
+                if (seriesLength === opt.series.length) {
+                    opt.series.splice(1);
+                    this.largeScaleOptions = opt;
+                }
+                else {
+                    this.largeScaleOptions = opt;
+                }
+            },
             refresh: function() {
                 this.$store.dispatch("countlyVueExample/fetchGraphPoints");
             }
@@ -439,6 +577,11 @@
                 selectedMonthRange: '10months',
                 selectedDynamicRange: '10weeks',
                 selectedDynamicType: 'daterange',
+                selectedDate: moment.now(),
+                selectedDateWTime: moment.now(),
+                selectedDateWTimeFuture: moment.now(),
+                selectedMonth: moment().startOf("month").valueOf(),
+                selectedTime: new Date(2016, 9, 10, 18, 40),
             };
         }
     });
@@ -547,32 +690,7 @@
         }
     });
 
-    var MainView_0 = countlyVue.views.create({
-        template: CV.T('/vue-example/templates/main_0.html'),
-        mixins: [
-            countlyVue.mixins.hasDrawers("main"),
-            countlyVue.container.tabsMixin({
-                "externalTabs": "vue/example"
-            })
-        ].concat(countlyVue.container.mixins(["vue/example"])),
-        components: {
-            "table-view": TableView,
-            "form-basics": FormBasics,
-            "form-dropdown": FormDropdown,
-            "tg-view": TimeGraphView,
-            "date-view": DateView,
-            "drawer": ExampleDrawer,
-            "progress-bars-view": ProgressBarsView
-        },
-        data: function() {
-            return {
-                appId: countlyCommon.ACTIVE_APP_ID,
-                currentTab: (this.$route.params && this.$route.params.tab) || "tables",
-            };
-        }
-    });
-
-    var MainView_1 = countlyVue.views.create({
+    var MainView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/main.html'),
         mixins: [
             countlyVue.container.tabsMixin({
@@ -631,27 +749,8 @@
         }
     });
 
-    var getMainView_0 = function() {
-        var vuex = [{
-            clyModel: countlyVueExample
-        }];
-
-        var tabsVuex = countlyVue.container.tabsVuex(["vue/example"]);
-
-        vuex = vuex.concat(tabsVuex);
-
-        return new countlyVue.views.BackboneWrapper({
-            component: MainView_0,
-            vuex: vuex,
-            templates: [
-                "/vue-example/templates/empty.html",
-                "/vue-example/templates/form.html"
-            ]
-        });
-    };
-
     //This is the main view that we use in /vue/example
-    var getMainView_1 = function() {
+    var getMainView = function() {
         var vuex = [{
             clyModel: countlyVueExample
         }];
@@ -661,7 +760,7 @@
         vuex = vuex.concat(tabsVuex);
 
         return new countlyVue.views.BackboneWrapper({
-            component: MainView_1,
+            component: MainView,
             vuex: vuex,
             templates: [
                 "/vue-example/templates/empty.html",
@@ -671,31 +770,17 @@
     };
 
     app.route("/vue/example", 'vue-example', function() {
-        var exampleView = getMainView_1();
+        var exampleView = getMainView();
         this.renderWhenReady(exampleView);
     });
 
     app.route("/vue/example/*tab", 'vue-example-tab', function(tab) {
-        var exampleView = getMainView_1();
+        var exampleView = getMainView();
         var params = {
             tab: tab
         };
         exampleView.params = params;
         this.renderWhenReady(exampleView);
-    });
-
-    app.route("/vue-0", 'vue-0', function() {
-        var newExampleView = getMainView_0();
-        this.renderWhenReady(newExampleView);
-    });
-
-    app.route("/vue-0/*tab", 'vue-0-tab', function(tab) {
-        var newExampleView = getMainView_0();
-        var params = {
-            tab: tab
-        };
-        newExampleView.params = params;
-        this.renderWhenReady(newExampleView);
     });
 
     countlyVue.container.registerTab("vue/example", {

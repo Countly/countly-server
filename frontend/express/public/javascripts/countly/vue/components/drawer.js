@@ -20,14 +20,22 @@
                 saveButtonLabel: {type: String, required: true, default: ""},
                 cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
-                hasCancelButton: {type: Boolean, required: false, default: false},
+                hasCancelButton: {type: Boolean, required: false, default: true},
                 toggleTransition: {
                     type: String,
                     default: 'stdt-slide-right'
-                }
+                },
+                size: {
+                    type: Number,
+                    default: 6,
+                    validator: function(value) {
+                        return value >= 1 && value <= 12;
+                    }
+                },
             },
             data: function() {
                 return {
+                    isToggleable: true,
                     sidecarContents: []
                 };
             },
@@ -42,6 +50,9 @@
                         'has-sidecars': this.hasSidecars
                     };
                     classes["cly-vue-drawer--" + this.currentScreenMode + "-screen"] = true;
+                    if (this.currentScreenMode === 'half') {
+                        classes["cly-vue-drawer--half-screen-" + this.size] = true;
+                    }
                     return classes;
                 }
             },
@@ -49,6 +60,9 @@
                 isOpened: function(newState) {
                     if (!newState) {
                         this.reset();
+                    }
+                    else {
+                        this.$emit("open");
                     }
                     this.setModalState(newState);
                 }

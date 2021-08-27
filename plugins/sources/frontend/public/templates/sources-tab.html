@@ -1,0 +1,74 @@
+<div :class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2>{{i18n('sources.title')}}</h2>
+            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="i18n('sources.description')"></span>
+        </template>
+        <template v-slot:header-right>
+          <cly-more-options @command="handleSourcesCommand($event)" size="small">
+            <el-dropdown-item command="redirect-drill">
+              <span class="ion-person"></span>
+              <span class="bu-ml-1">{{ i18n('common.action-drill-data') }}</span>
+            </el-dropdown-item>
+            <el-dropdown-item command="redirect-drill">
+              <span class="ion-settings"></span>
+              <a href="#/manage/configurations/sources" class="bu-ml-1">{{ i18n('common.action.plugin-settings') }}</a>
+            </el-dropdown-item>
+          </cly-more-options>
+        </template>
+    </cly-header>
+    <cly-main>
+    <cly-date-picker-g class="acquisition-sources-view__date-picker-container"></cly-date-picker-g>    
+    <cly-section>
+      <div class="bu-columns">
+        <div class="acquisition-sources-view__chart-section bu-column bu-is-half">
+          <cly-chart-pie :option="pieSourcesTotalSessions" :showToggle="false"></cly-chart-pie>
+        </div>
+        <div class="bu-column bu-is-half">
+          <cly-chart-pie :option="pieSourcesNewUsers" :showToggle="false"></cly-chart-pie>
+        </div>
+      </div>
+    </cly-section>
+    <cly-section>
+      <cly-datatable-n :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false">
+        <template v-slot:header-left="selectScope">
+        </template>
+        <template v-slot="scope">
+          <el-table-column type="expand">
+            <template slot-scope="rowScope">
+              <extend-table class="acquisition-sources-view__extend-table" v-if="sourcesDetailData[rowScope.row.sources]" :rows="sourcesDetailData[rowScope.row.sources]"></extend-table>
+            </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="sources" :label="i18n('sources.source')">
+            <template v-slot="rowScope">
+                <div>
+                    {{ rowScope.row.sources }}
+                </div>
+            </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="total-sessions" :label="i18n('common.table.total-sessions')">
+              <template v-slot="rowScope">
+                  <div>
+                      {{ rowScope.row.t }}
+                  </div>
+              </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="total-users" :label="i18n('common.table.total-users')">
+              <template v-slot="rowScope">
+                  <div>
+                      {{ rowScope.row.u }}
+                  </div>
+              </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="new-users" :label="i18n('common.new-users')">
+          <template v-slot="rowScope">
+              <div>
+                  {{ rowScope.row.n }}
+              </div>
+          </template>
+          </el-table-column>
+        </template>
+      </cly-datatable-n>
+    </cly-section>
+    </cly-main> 
+</div>

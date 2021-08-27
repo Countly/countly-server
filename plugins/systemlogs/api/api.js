@@ -5,6 +5,9 @@ var pluginOb = {},
     { validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'systemlogs';
+plugins.setConfigs("systemlogs", {
+    preventIPTracking: false
+});
 
 (function() {
     plugins.register("/permissions/features", function(ob) {
@@ -33,7 +36,7 @@ const FEATURE_NAME = 'systemlogs';
                     console.log("Incorrect regex: " + params.qstring.sSearch);
                 }
                 if (reg) {
-                    query.i = {"$regex": reg};
+                    query.a = {"$regex": reg};
                 }
                 //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
             }
@@ -42,7 +45,7 @@ const FEATURE_NAME = 'systemlogs';
                 query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             }
             validateRead(params, FEATURE_NAME, function(paramsNew) {
-                var columns = [null, "ts", "u", "a", "ip", "i"];
+                var columns = [null, "ts", "u", "ip", "a", "i"];
                 common.db.collection('systemlogs').estimatedDocumentCount(function(err1, total) {
                     total--;
                     var cursor = common.db.collection('systemlogs').find(query);
@@ -338,7 +341,16 @@ const FEATURE_NAME = 'systemlogs';
         log.ts = Math.round(new Date().getTime() / 1000);
         log.cd = new Date();
         log.u = user.email || user.username || "";
-        log.ip = common.getIpAddress(params.req);
+
+        var PreventIPTracking = plugins.getConfig("systemlogs").preventIPTracking;
+
+        if (PreventIPTracking) {
+            log.ip = null;
+        }
+        else {
+            log.ip = common.getIpAddress(params.req);
+        }
+
         if (typeof data.app_id !== "undefined") {
             log.app_id = data.app_id;
         }

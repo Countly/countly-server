@@ -181,7 +181,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                     return false;
                 }
 
-                if (!(this.hasAdminAccess(member, params.qstring.app_id))) {
+                if (!(module.exports.hasAdminAccess(member, params.qstring.app_id))) {
                     common.returnMessage(params, 401, 'User does not have right');
                     reject('User does not have right');
                     return false;
@@ -779,7 +779,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                         }
                     }
                     else {
-                        if (!this.hasAdminAccess(member, params.qstring.app_id)) {
+                        if (!module.exports.hasAdminAccess(member, params.qstring.app_id)) {
                             common.returnMessage(params, 401, 'User does not have right');
                             reject('User does not have right');
                             return false;
@@ -807,6 +807,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                         }
                         else if (app) {
                             params.app_id = app._id;
+                            params.app = app;
                             params.appTimezone = app.timezone;
                             params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                         }
@@ -887,24 +888,22 @@ exports.validateDelete = function(params, feature, callback, callbackParam) {
  * @returns {boolean} isAdmin - is that user has admin access on that app?
  */
 exports.hasAdminAccess = function(member, app_id) {
-    if (!member.global_admin) {
-        if (member.permission) {
-            var types = ["c", "r", "u", "d"];
-            var isAdmin = true;
-            for (var i = 0; i < types.length; i++) {
-                if (!member.permission[types[i]][app_id].all) {
-                    isAdmin = false;
-                }
+    var isAdmin = true;
+    // check users who has permission property
+    if (typeof member.permisson !== "undefined") {
+        var types = ["c", "r", "u", "d"];
+        for (var i = 0; i < types.length; i++) {
+            if (!member.permission[types[i]][app_id].all) {
+                isAdmin = false;
             }
-            return isAdmin;
-        }
-        else {
-            return false;
         }
     }
+    // check legacy users who has admin_of property
+    // users should have at least one app in admin_of array
     else {
-        return true;
+        isAdmin = typeof member.admin_of !== "undefined" && member.admin_of.indexOf(app_id) > -1;
     }
+    return isAdmin || member.global_admin;
 };
 
 exports.hasCreateRight = function(feature, app_id, member) {
@@ -930,10 +929,15 @@ exports.getUserApps = function(member) {
         return userApps;
     }
     else {
-        for (var i = 0; i < member.permission._.u.length; i++) {
-            userApps = userApps.concat(member.permission._.u[i]);
+        if (typeof member.permission !== "undefined") {
+            for (var i = 0; i < member.permission._.u.length; i++) {
+                userApps = userApps.concat(member.permission._.u[i]);
+            }
+            return userApps.concat(member.permission._.a);
         }
-        return userApps.concat(member.permission._.a);
+        else {
+            return member.user_of;
+        }
     }
 };
 
@@ -943,6 +947,11 @@ exports.getAdminApps = function(member) {
         return [];
     }
     else {
-        return member.permission._.a;
+        if (typeof member.permission !== "undefined") {
+            return member.permission._.a;
+        }
+        else {
+            return member.admin_of;
+        }
     }
 };
