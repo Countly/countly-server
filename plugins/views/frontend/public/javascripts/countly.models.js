@@ -639,7 +639,7 @@
             state: getInitialState,
             actions: viewsPerSessionActions,
             mutations: viewsPerSessionMutations,
-            submodules: [countlyVue.vuex.FetchSubmodule()]
+            submodules: [countlyVue.vuex.FetchMixin()]
         });
     };
 }(window.countlyViewsPerSession = window.countlyViewsPerSession || {}));

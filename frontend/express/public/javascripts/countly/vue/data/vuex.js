@@ -473,7 +473,7 @@
     countlyVue.vuex.getServerDataSource = getServerDataSource;
     countlyVue.vuex.getLocalStore = getLocalStore;
 
-    var FetchSubmodule = function() {
+    var FetchMixin = function() {
         var countlyFetchState = function() {
             return {
                 hasError: false,
@@ -529,6 +529,6 @@
             mutations: countlyFetchMutations
         });
     };
-    countlyVue.vuex.FetchSubmodule = FetchSubmodule;
+    countlyVue.vuex.FetchMixin = FetchMixin;
 
 }(window.countlyVue = window.countlyVue || {}));

@@ -142,7 +142,7 @@
             state: getInitialState,
             actions: sessionOverviewActions,
             mutations: sessionOverviewMutations,
-            submodules: [countlyVue.vuex.FetchSubmodule()]
+            submodules: [countlyVue.vuex.FetchMixin()]
         });
     };
 }(window.countlySessionOverview = window.countlySessionOverview || {}));

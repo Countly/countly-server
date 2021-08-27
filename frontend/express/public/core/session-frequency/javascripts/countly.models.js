@@ -81,7 +81,7 @@
             state: getInitialState,
             actions: sessionFrequencyActions,
             mutations: sessionFrequencyMutations,
-            submodules: [countlyVue.vuex.FetchSubmodule()]
+            submodules: [countlyVue.vuex.FetchMixin()]
         });
     };
 }(window.countlySessionFrequency = window.countlySessionFrequency || {}));
