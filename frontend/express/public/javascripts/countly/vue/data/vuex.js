@@ -1,4 +1,4 @@
-/* global Vue, Vuex, _, countlyGlobal, CV, Promise */
+/* global Vue, Vuex, _, countlyGlobal, CV, Promise, app */
 
 (function(countlyVue) {
 
@@ -278,6 +278,9 @@
                 .catch(function(err) {
                     if (typeof options.onError === 'function') {
                         options.onError(context, err);
+                    }
+                    else {
+                        app.activeView.onError(err);
                     }
                     return context.commit(_capitalized("set", resourceName), _dataTableAdapters.toStandardResponse());
                 });
