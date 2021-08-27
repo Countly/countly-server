@@ -1,0 +1,14 @@
+.cly-icon {
+    height: 12px;
+    width: 12px;
+    display: inline-block;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.cly-icon- {
+    &zoom {
+        background-image: url("../../../images/icons/zoom-icon.svg");
+    }
+}
