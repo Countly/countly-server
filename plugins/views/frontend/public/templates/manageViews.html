@@ -1,25 +1,36 @@
-<a class="back back-link" href="#/analytics/views">
-    <span  data-localize="views.back-to-views" >views.back-to-views</span>
-</a>
-<div class="widget">
-	<div class="widget-header">
-		<div class="left">
-            <div style="overflow:visible;">
-                <div class="title">{{page-title}}</div>
-            </div>
-        </div>
-        <div class="right">
-            <div class="icon-button green apply-view-changes disabled" data-localize="common.apply-changes"  ></div>
-        </div>
-    </div>
-        <div class="manage-views-table-block">
-        <table class="d-table views-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}">
-        </table>
-        <div class="cly-button-menu" tabindex="1">
-            <a class="item delete-view">
-                <i class="fa fa-trash" />
-                <span data-localize='common.delete'></span>
-            </a>
-        </div>
-    </div>
+<div v-bind:class="[componentId]">
+    <cly-header>
+		<template v-slot:header-top>
+			<cly-back-link link="#/analytics/views" :title ="i18n('views.back-to-views')"></cly-back-link>
+		</template>
+        <template v-slot:header-left>
+            <h2> {{i18n('views.title')}}</h2>
+            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description"></span>
+        </template>
+    </cly-header>
+    <cly-main>
+		<cly-confirm-dialog @cancel="closeDeleteForm" @confirm="submitDeleteForm" :before-close="closeDeleteForm" ref="deleteConfirmDialog" :visible.sync="showDeleteDialog" dialogType="danger" :saveButtonLabel="deleteDialogConfirmText" :cancelButtonLabel="i18n('common.no-dont-delete')" :title="deleteDialogTitle" >
+			<template slot-scope="scope">
+				{{deleteDialogText}}
+			</template>
+		</cly-confirm-dialog>
+		<cly-datatable-n  :data-source="remoteTableDataSource" ref="editViewsTable" @selection-change="handleSelectionChange" >
+			<template v-slot:header-left>
+				<el-button ref="deleteManyButton" :disabled="isDeleteButtonDisabled"  type="danger" @click="deleteManyViews" >{{i18n('common.delete')}}</el-button>
+				<el-button ref="updateManyButton"  :disabled="isUpdateButtonDisabled"  type="success" @click="updateManyViews" >{{i18n('common.apply-changes')}}</el-button>
+				
+			</template>
+				<template v-slot="scope">
+					<el-table-column width="65" type="selection"></el-table-column>
+					<el-table-column sortable="custom" prop="view" :label="i18n('views.table.view')"></el-table-column>
+					<el-table-column sortable="custom" prop="display" :label="i18n('views.display-name')">
+						<template slot-scope="scope">
+						<el-input type="text" v-model="scope.row.display" @input="displayNameChanged(scope.row._id)" ></el-input>
+						</template>
+					</el-table-column>
+					<el-table-column>
+					</el-table-column>
+				</template>
+			</cly-datatable-n>
+    </cly-main>
 </div>
