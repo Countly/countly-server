@@ -39,7 +39,9 @@
             },
             defaultSort: {
                 type: Object,
-                default: null,
+                default: function() {
+                    return { prop: '_id', order: 'asc' };
+                },
                 required: false
             },
             rowClassName: {
