@@ -1,0 +1,14 @@
+<div v-bind:class="[componentId]" class="ratings-tab-view">
+	<cly-header :title="i18n('feedback.widgets')">
+			<template v-slot:header-right>
+        <div class="bu-level-item">
+          <el-button class="manage-users-action-btn" @click="createWidget()" type="success" size="small" icon="el-icon-circle-plus">Add new widget
+          </el-button>
+        </div>
+      </template>
+	</cly-header>
+  <cly-main>
+    <widgets-table @set-status="setWidget" :rows="widgets"></widgets-table>
+    <drawer @widgets-refresh="refresh()" :settings="drawerSettings" :controls="drawers.widget"></drawer>
+  </cly-main>
+</div>

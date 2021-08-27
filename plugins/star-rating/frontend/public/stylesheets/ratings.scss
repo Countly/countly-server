@@ -1,0 +1,235 @@
+.ratings-wrapper {
+  &__cards {
+    border-top: 1px solid #ececec;
+  }
+
+  &__bar-chart {
+    border-bottom: 1px solid #ececec;
+    border-top: 1px solid #ececec;
+  }
+}
+
+.ratings-drawer {
+  &__ratings-texts-input {
+    margin: 5px 0px;
+  }
+
+  &__ratings-popup {
+    width: 450px;
+    height: 515px;
+    border-radius: 13px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+  }
+
+  &__thanks-popup {
+    width: 450px;
+    height: 211px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column;
+    background-color: #fff;
+  }
+
+  &__trigger-button {
+    width: 540px;
+    height: 404px;
+    position: relative;
+
+    img {
+      width: 100%;
+      position: absolute;
+    }
+  }
+
+  &__tb-sticker {
+    position: absolute;
+    background-color: #12AF51;
+    color: white;
+  }
+
+  &__tb-mleft-s {
+    padding: 9px 6px;
+    top: 150px;
+    left: 0px;
+    border-radius: 0px 4px 4px 0px;
+    writing-mode: vertical-lr;
+  }
+
+  &__tb-mleft-m {
+    padding: 15px 10px;
+    top: 150px;
+    left: 0px;
+    border-radius: 0px 4px 4px 0px;
+    writing-mode: vertical-lr;
+  }
+
+  &__tb-mleft-l {
+    padding: 18px 12px;
+    top: 150px;
+    left: 0px;
+    border-radius: 0px 4px 4px 0px;
+    writing-mode: vertical-lr;
+  }
+
+  &__tb-mright-s {
+    padding: 9px 6px;
+    top: 150px;
+    right: 0px;
+    border-radius: 4px 0px 0px 4px;
+    writing-mode: vertical-rl;
+  }
+  
+  &__tb-mright-m {
+    padding: 15px 10px;
+    top: 150px;
+    right: 0px;
+    border-radius: 4px 0px 0px 4px;
+    writing-mode: vertical-rl;
+  }
+
+  &__tb-mright-l {
+    padding: 18px 12px;
+    top: 150px;
+    right: 0px;
+    border-radius: 4px 0px 0px 4px;
+    writing-mode: vertical-rl;
+  }
+
+  &__tb-bleft-s {
+    padding: 6px 9px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    left: 50px;
+  }
+
+  &__tb-bleft-m {
+    padding: 10px 15px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    left: 50px;
+  }
+
+  &__tb-bleft-l {
+    padding: 12px 18px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    left: 50px;
+  }
+
+  &__tb-bright-s {
+    padding: 6px 9px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    right: 50px;
+  }
+
+  &__tb-bright-m {
+    padding: 10px 15px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    right: 50px;
+  }
+
+  &__tb-bright-l {
+    padding: 12px 18px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    right: 50px;
+  }
+
+  &__stage-label {
+    padding: 10px 0px;
+    color: white;
+  }
+
+  &__sidecar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0px;
+  }
+
+  &__rp-ratings-area {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+  }
+
+  &__rp-ratings-item {
+    font-size: 44px;
+    margin: 0px 10px;
+    cursor: pointer;
+  }
+
+  &__rp-ratings-inactive-item {
+    opacity: 0.5;
+  }
+
+  &__rp-ratings-active-item {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  &__rp-question-area {
+    font-size: 24px;
+    width: 50%;
+    text-align: center;
+  }
+
+  &__rp-optional-area {
+    width: 65%;
+    border: 1px solid #0166D6;
+    padding: 10px;
+    border-radius: 4px;
+  }
+
+  &__tp-thanks-message {
+    font-size: 18px;
+    width: 75%;
+    text-align: center;
+  }
+
+  &__tp-icon {
+    span {
+      font-size: 40px;
+      color: #12AF51;
+    }
+  }
+
+  &__rp-callout-button {
+    background-color: #12AF51;
+    color: white;
+    padding: 14px 12px;
+
+    &:hover {
+      background-color: #12AF51;
+      color: white;
+    }
+  }
+
+  &__sticker-size .el-radio__input {
+    display: none;
+  }
+
+  &__sticker-size .el-radio__label {
+    height: 60px;
+    padding-left: 0px;
+    justify-content: space-around;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.ratings-tab-view {
+  &__filter-selector {
+    width: 270px;
+  }
+}
