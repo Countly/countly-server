@@ -164,7 +164,6 @@ function verifyTotals(period) {
             .expect(200)
             .end(function(err, res) {
                 var resDecoded = JSON.parse(res.text);
-
                 resDecoded.iTotalRecords.should.eql(tableResponse[period].iTotalRecords);
                 resDecoded.iTotalDisplayRecords.should.eql(tableResponse[period].iTotalDisplayRecords);
                 if (resDecoded.aaData.length > 0 && tableResponse[period].aaData.length > 0) {
@@ -784,6 +783,237 @@ describe('Testing views plugin', function() {
                 });
         });
         verifyTotals("30days");
+    });
+
+
+
+    describe('reset app', function() {
+        it('should reset data', function(done) {
+            var params = {app_id: APP_ID, "period": "reset"};
+            request
+                .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Success');
+                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                });
+        });
+    });
+
+    describe('verify empty views tables', function() {
+        it('should have 0 views', function(done) {
+            tableResponse.hour = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
+            tableResponse.yesterday = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
+            tableResponse["30days"] = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
+            tableResponse["7days"] = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
+            tableResponse.month = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]}; //this year
+
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&period=30days')
+                .expect(200)
+                .end(function(err, res) {
+                    res.text.should.eql('{"iTotalRecords":0,"iTotalDisplayRecords":0,"aaData":[]}');
+                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                });
+        });
+    });
+
+
+    describe('Testing metric - uve', function() {
+        describe('Check adding view(yesterday)+starting session', function() {
+            it('adding view', function(done) {
+                pushValues("yesterday", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
+
+                pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "n": 1});
+
+                pushValues("7days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
+                tableResponse["30days"].iTotalRecords += 1;
+                tableResponse["30days"].iTotalDisplayRecords += 1;
+                tableResponse["7days"].iTotalRecords += 1;
+                tableResponse["7days"].iTotalDisplayRecords += 1;
+                tableResponse["yesterday"].iTotalRecords += 1;
+                tableResponse["yesterday"].iTotalDisplayRecords += 1;
+
+                if (days_this_year > 1) {
+                    pushValues("month", 0, {"t": 1, "s": 1, "n": 1, "uvalue": 1});
+                    //tableResponse["month"]['aaData'][0]['n']=1;
+                    tableResponse.month.iTotalRecords = 1;
+                    tableResponse.month.iTotalDisplayRecords = 1;
+                }
+
+                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview00", "visit": 1, "start": 1}}]);
+                request
+                    .get('/i?begin_session=1&app_key=' + APP_KEY + '&device_id=' + "user9" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000)) + '&events=' + data)
+                    .expect(200)
+                    .end(function(err, res) {
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+            });
+        });
+
+        describe('verifying totals after last update', function() {
+            verifyTotals("yesterday");
+            verifyTotals("30days");
+            verifyTotals("month");
+            verifyTotals("7days");
+        });
+
+        describe('Ending sesssion', function() {
+            it('request', function(done) {
+                pushValues("yesterday", 0, {"uvc": 1, "b": 1, "e": 1});
+                pushValues("30days", 0, {"uvc": 1, "b": 1, "e": 1});
+                pushValues("7days", 0, { "uvc": 1, "b": 1, "e": 1});
+
+                if (days_this_year > 1) {
+                    tableResponse.month.iTotalRecords = 1;
+                    tableResponse.month.iTotalDisplayRecords = 1;
+                    pushValues("month", 0, {"uvc": 1, "b": 1, "e": 1});
+                    //tableResponse["month"]['aaData'][0]['n']=1;
+                }
+
+                request
+                    .get('/i?end_session=1&app_key=' + APP_KEY + '&device_id=' + "user9" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000) + 1000))
+                    .expect(200)
+                    .end(function(err, res) {
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+            });
+        });
+
+        describe('verifying totals after last update', function() {
+            verifyTotals("yesterday");
+            verifyTotals("30days");
+            verifyTotals("month");
+            verifyTotals("7days");
+        });
+
+        describe('Check adding more data', function() {
+            it('adding view+session', function(done) {
+                pushValues("yesterday", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
+                pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "n": 1, "uvalue": 1});
+                pushValues("7days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1});
+
+                if (days_this_year > 1) {
+                    pushValues("month", 0, {"t": 1, "s": 1, "n": 1, "uvalue": 1});
+                }
+
+                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview00", "visit": 1, "start": 1}}]);
+                request
+                    .get('/i?begin_session=1&app_key=' + APP_KEY + '&device_id=' + "user10" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000)) + '&events=' + data)
+                    .expect(200)
+                    .end(function(err, res) {
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+            });
+
+
+            it('adding different view', function(done) {
+                pushValues("yesterday", 1, {"u": 1, "t": 1, "uvalue": 1, "n": 1});
+                pushValues("30days", 1, {"u": 1, "t": 1, "n": 1});
+                pushValues("7days", 1, {"u": 1, "t": 1, "uvalue": 1, "n": 1});
+
+
+                tableResponse["30days"].iTotalRecords += 1;
+                tableResponse["30days"].iTotalDisplayRecords += 1;
+                tableResponse["7days"].iTotalRecords += 1;
+                tableResponse["7days"].iTotalDisplayRecords += 1;
+                tableResponse["yesterday"].iTotalRecords += 1;
+                tableResponse["yesterday"].iTotalDisplayRecords += 1;
+
+                if (days_this_year > 1) {
+                    pushValues("month", 1, {"t": 1, "n": 1, "uvalue": 1});
+                    tableResponse["month"].iTotalRecords += 1;
+                    tableResponse["month"].iTotalDisplayRecords += 1;
+                }
+
+                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview1", "visit": 1}}]);
+                request
+                    .get('/i?app_key=' + APP_KEY + '&device_id=' + "user10" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000) + 100) + '&events=' + data)
+                    .expect(200)
+                    .end(function(err, res) {
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+            });
+
+
+            it('going back to first one', function(done) {
+                pushValues("yesterday", 0, { "t": 1});
+                pushValues("30days", 0, {"t": 1});
+                pushValues("7days", 0, { "t": 1});
+
+                if (days_this_year > 1) {
+                    pushValues("month", 0, {"t": 1});
+                }
+
+                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview00", "visit": 1}}]);
+                request
+                    .get('/i?app_key=' + APP_KEY + '&device_id=' + "user10" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000) + 150) + '&events=' + data)
+                    .expect(200)
+                    .end(function(err, res) {
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+            });
+
+
+            it('Again to second', function(done) {
+                pushValues("yesterday", 1, { "t": 1});
+                pushValues("30days", 1, {"t": 1});
+                pushValues("7days", 1, { "t": 1});
+
+                if (days_this_year > 1) {
+                    pushValues("month", 1, {"t": 1});
+                }
+
+                var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview1", "visit": 1}}]);
+                request
+                    .get('/i?app_key=' + APP_KEY + '&device_id=' + "user10" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000) + 200) + '&events=' + data)
+                    .expect(200)
+                    .end(function(err, res) {
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+            });
+
+
+            it('Ending session', function(done) {
+                pushValues("yesterday", 1, {"uvc": 1, "e": 1});
+                pushValues("30days", 1, {"uvc": 1, "e": 1});
+                pushValues("7days", 1, { "uvc": 1, "e": 1});
+
+
+                pushValues("yesterday", 0, {"uvc": 1});
+                pushValues("30days", 0, {"uvc": 1});
+                pushValues("7days", 0, { "uvc": 1});
+
+                if (days_this_year > 1) {
+                    pushValues("month", 1, {"uvc": 1, "e": 1});
+                    pushValues("month", 0, {"uvc": 1});
+                    //tableResponse["month"]['aaData'][0]['n']=1;
+                }
+
+                request
+                    .get('/i?end_session=1&app_key=' + APP_KEY + '&device_id=' + "user10" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000) + 1000))
+                    .expect(200)
+                    .end(function(err, res) {
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+            });
+
+        });
+
+        describe('verifying totals after last update', function() {
+            verifyTotals("yesterday");
+            verifyTotals("30days");
+            verifyTotals("month");
+            verifyTotals("7days");
+        });
+
+
+
+
     });
 
 

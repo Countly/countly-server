@@ -164,7 +164,6 @@
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
                 },
                 checkCurrentAnalyticsTab: function(currLink) {
-                    var fragmentedLink = currLink;
                     var menus = this.categorizedMenus;
                     var submenus = this.categorizedSubmenus;
                     var foundMenu = false;
@@ -175,17 +174,17 @@
                     for (var k in menus) {
                         for (var i = 0; i < menus[k].length; i++) {
                             menu = menus[k][i];
-                            if (fragmentedLink.split("/").length > 2) {
-                                part1 = "/" + fragmentedLink.split("/")[1];
-                                part2 = part1 + "/" + fragmentedLink.split("/")[2];
-                                if (menu.url === "#" + part1 || menu.url === "#" + part2) {
-                                    foundMenu = true;
-                                    currMenu = menu;
-                                    break;
-                                }
+
+                            if (menu.url === "#" + currLink) {
+                                foundMenu = true;
+                                currMenu = menu;
+                                break;
                             }
-                            else {
-                                if (menu.url === "#" + currLink) {
+
+                            if (currLink.split("/").length > 2) {
+                                part1 = "/" + currLink.split("/")[1];
+                                part2 = part1 + "/" + currLink.split("/")[2];
+                                if (menu.url === "#" + part1 || menu.url === "#" + part2) {
                                     foundMenu = true;
                                     currMenu = menu;
                                     break;
@@ -202,17 +201,17 @@
                         for (var l in submenus) {
                             for (var j = 0; j < submenus[l].length; j++) {
                                 menu = submenus[l][j];
-                                if (fragmentedLink.split("/").length > 2) {
-                                    part1 = "/" + fragmentedLink.split("/")[1];
-                                    part2 = part1 + "/" + fragmentedLink.split("/")[2];
-                                    if (menu.url === "#" + part1 || menu.url === "#" + part2) {
-                                        foundMenu = true;
-                                        currMenu = menu;
-                                        break;
-                                    }
+
+                                if (menu.url === "#" + currLink) {
+                                    foundMenu = true;
+                                    currMenu = menu;
+                                    break;
                                 }
-                                else {
-                                    if (menu.url === "#" + currLink) {
+
+                                if (currLink.split("/").length > 2) {
+                                    part1 = "/" + currLink.split("/")[1];
+                                    part2 = part1 + "/" + currLink.split("/")[2];
+                                    if (menu.url === "#" + part1 || menu.url === "#" + part2) {
                                         foundMenu = true;
                                         currMenu = menu;
                                         break;
@@ -279,18 +278,19 @@
                 },
                 checkCurrentManagementTab: function(currLink) {
                     var menu = this.menu;
-                    var fragmentedLink = currLink;
-                    if (fragmentedLink.split("/").length > 2) {
-                        var part1 = "/" + fragmentedLink.split("/")[1];
-                        var part2 = part1 + "/" + fragmentedLink.split("/")[2];
-                        var currMenu = menu.filter(function(m) {
-                            return (m.url === "#" + part1 || m.url === "#" + part2);
-                        });
-                    }
-                    else {
-                        currMenu = menu.filter(function(m) {
-                            return m.url === currLink;
-                        });
+
+                    var currMenu = menu.filter(function(m) {
+                        return m.url === currLink;
+                    });
+
+                    if (!currMenu.length) {
+                        if (currLink.split("/").length > 2) {
+                            var part1 = "/" + currLink.split("/")[1];
+                            var part2 = part1 + "/" + currLink.split("/")[2];
+                            currMenu = menu.filter(function(m) {
+                                return (m.url === "#" + part1 || m.url === "#" + part2);
+                            });
+                        }
                     }
 
                     if (currMenu.length) {
