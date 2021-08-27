@@ -71,7 +71,7 @@
             },
             localSearchedRows: function() {
                 var currentArray = this.rows.slice();
-                if (this.controlParams.searchQuery) {
+                if (this.displaySearch && this.controlParams.searchQuery) {
                     var queryLc = this.controlParams.searchQuery.toLowerCase();
                     currentArray = currentArray.filter(function(item) {
                         return Object.keys(item).some(function(fieldKey) {
@@ -147,7 +147,7 @@
                         .replace("_TOTAL_", filteredTotal);
                 }
 
-                if (searchQuery) {
+                if (this.displaySearch && searchQuery) {
                     info += " " + this.i18n("common.filtered").replace("_MAX_", grandTotal);
                 }
                 return info;
@@ -722,10 +722,15 @@
         computed: {
             searchQueryProxy: {
                 get: function() {
-                    return this.controlParams.searchQuery;
+                    if (this.displaySearch) {
+                        return this.controlParams.searchQuery;
+                    }
+                    return '';
                 },
                 set: function(query) {
-                    _.extend(this.controlParams, { searchQuery: query, page: 1});
+                    if (this.displaySearch) {
+                        _.extend(this.controlParams, { searchQuery: query, page: 1});
+                    }
                 }
             },
             forwardedSlots: function() {
