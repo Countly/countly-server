@@ -653,6 +653,8 @@
         },
         methods: {
             onZoomTrigger: function() {
+                this.echartRef.setOption({tooltip: {show: false}}, {notMerge: false});
+
                 this.echartRef.dispatchAction({
                     type: "takeGlobalCursor",
                     key: 'dataZoomSelect',
@@ -663,6 +665,8 @@
                 this.$parent.onZoomTrigger();
             },
             onZoomReset: function() {
+                this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
+
                 this.echartRef.dispatchAction({
                     type: "restore",
                 });
@@ -671,6 +675,8 @@
                 this.$parent.onZoomReset();
             },
             onZoomCancel: function() {
+                this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
+
                 this.echartRef.dispatchAction({
                     type: "takeGlobalCursor",
                     key: 'dataZoomSelect',
@@ -681,6 +687,8 @@
                 this.$parent.onZoomReset();
             },
             onZoomFinished: function() {
+                this.echartRef.setOption({tooltip: {show: true}}, {notMerge: false});
+
                 this.echartRef.dispatchAction({
                     type: "takeGlobalCursor",
                     key: 'dataZoomSelect',
