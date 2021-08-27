@@ -1,0 +1,141 @@
+#cfbg {
+    display: none;
+    position: fixed;
+    height: 100%;
+    z-index: 9999;
+    width: 100%;
+    top: 0;
+    background-color: black;
+    opacity: 0.5;
+    left: 0;
+}
+.countly-feedback-sticker.mright-s {
+    padding: 9px 6px;
+    top: 150px;
+    right: 0px;
+    border-radius: 4px 0px 0px 4px;
+    writing-mode: vertical-rl;
+}
+
+.countly-feedback-sticker.mright-m {
+    padding: 15px 10px;
+    top: 150px;
+    right: 0px;
+    border-radius: 4px 0px 0px 4px;
+    writing-mode: vertical-rl;
+}
+
+.countly-feedback-sticker.mright-l {
+    padding: 18px 12px;
+    top: 150px;
+    right: 0px;
+    border-radius: 4px 0px 0px 4px;
+    writing-mode: vertical-rl;
+}
+.countly-feedback-sticker.mleft-s {
+    padding: 9px 6px;
+    top: 150px;
+    left: 0px;
+    border-radius: 0px 4px 4px 0px;
+    writing-mode: vertical-lr;
+}
+.countly-feedback-sticker.mleft-m {
+    padding: 15px 10px;
+    top: 150px;
+    left: 0px;
+    border-radius: 0px 4px 4px 0px;
+    writing-mode: vertical-lr;
+}
+.countly-feedback-sticker.mleft-l {
+    padding: 18px 12px;
+    top: 150px;
+    left: 0px;
+    border-radius: 0px 4px 4px 0px;
+    writing-mode: vertical-lr;
+}
+.countly-feedback-sticker.bleft-s {
+    padding: 6px 9px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    left: 50px;
+}
+.countly-feedback-sticker.bleft-m {
+    padding: 10px 15px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    left: 50px;
+}
+.countly-feedback-sticker.bleft-l {
+    padding: 12px 18px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    left: 50px;
+}
+.countly-feedback-sticker.bright-s {
+    padding: 6px 9px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    right: 50px;
+}
+
+.countly-feedback-sticker.bright-m {
+    padding: 10px 15px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    right: 50px;
+}
+
+.countly-feedback-sticker.bright-l {
+    padding: 12px 18px;
+    border-radius: 4px 4px 0px 0px;
+    bottom: 0px;
+    right: 50px;
+}
+
+#countly-feedback-iframe {
+    width: 100%;
+    height: 600px;
+    border: none;
+    background: 0 0;
+}
+
+.countly-iframe-wrapper {
+    z-index: 9999;
+    margin-left: calc(50% - 200px);
+    box-sizing: border-box;
+    height: 600px;
+    background: 0 0;
+    position: fixed;
+    top: 100px;
+    width: 400px;
+    display: none;
+}
+
+.countly-feedback-sticker {
+    z-index: 9999;
+    position: fixed;
+    background-color: #13b94d;
+    color: #fff;
+    cursor: pointer;
+    font-family: "Lato", sans-serif;
+    box-sizing: content-box;
+    line-height: normal;
+}
+
+.countly-feedback-close-icon {
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    width: 32px;
+    height: 50px;
+    padding: 0;
+    color: #d6d6d6;
+    font-style: normal;
+    font-size: 32px;
+    font-family: Arial, Baskerville, monospace;
+    line-height: 32px;
+    position: absolute;
+    z-index: 9999;
+    top: 15px;
+    right: 15px;
+}

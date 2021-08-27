@@ -1,0 +1,34 @@
+<div v-bind:class="[componentId]" class="ratings-tab-view">
+	<cly-header :title="i18n('feedback.ratings')">
+			<template v-slot:header-right></template>
+	</cly-header>
+  <cly-main>
+    <div class="bu-level bu-mb-5">
+      <div class="bu-level-left">
+        <div class="bu-level-item">
+          Results for
+          <cly-multi-select class="bu-ml-3 ratings-tab-view__filter-selector" @change="refresh" @updated="prepareVersions" v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
+        </div>
+      </div>
+      <div class="bu-level-right">
+        <div class="bu-level-item">
+          <cly-date-picker-g></cly-date-picker-g>
+        </div>
+      </div>
+    </div>
+    <cly-metric-cards class="ratings-wrapper__cards bu-has-background-white bu-my-5">
+      <cly-metric-card :number="count">
+        Total Ratings
+      </cly-metric-card>
+      <cly-metric-card :number="avg">
+        Average Rating Score
+      </cly-metric-card>
+    </cly-metric-cards>
+    <cly-chart-bar class="ratings-wrapper__bar-chart bu-has-background-white bu-my-5" :option="barOptions"></cly-chart-bar>
+    <cly-dynamic-tabs :comments="feedbackData.aaData" :ratings="cumulativeData" class="bu-my-5" skin="secondary" v-model="dynamicTab" :tabs="tabs">
+      <template v-slot:tables="scope">
+          <span>{{scope.tab.title}}</span>
+      </template>
+    </cly-dynamic-tabs>
+  </cly-main>
+</div>
