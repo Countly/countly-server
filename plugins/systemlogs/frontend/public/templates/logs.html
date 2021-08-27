@@ -10,7 +10,7 @@
     <cly-main>
 		<cly-date-picker-g class="bu-mb-4"></cly-date-picker-g>
 		<cly-section class="bu-mt-4">
-			<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI">
+			<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'ts', order: 'descending'}">
                 <template v-slot="scope">
                     <el-table-column type="expand">
                         <template slot-scope="rowScope">

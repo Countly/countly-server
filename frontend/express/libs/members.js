@@ -228,6 +228,7 @@ function setLoggedInVariables(req, member, countlyDb, callback) {
     req.session.uid = member._id;
     req.session.gadm = (member.global_admin === true);
     req.session.email = member.email;
+    req.session.settings = member.settings;
     var reuse = true;
     if (req.session.temporary_token) {
         reuse = false;
@@ -411,7 +412,6 @@ membersUtility.login = function(req, res, callback) {
                 }
 
                 setLoggedInVariables(req, member, membersUtility.db, function() {
-                    req.session.settings = member.settings;
                     callback(member, true);
                 });
             });

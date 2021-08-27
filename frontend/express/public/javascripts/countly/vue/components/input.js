@@ -210,13 +210,13 @@
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <div\
                                 tabindex="0"\
-                                class="text-medium cly-vue-listbox__item"\
-                                :class="{\'selected\': value === option.value, \'hover\': hovered === option.value}"\
+                                class="text-medium"\
+                                :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group\': option.group}"\
                                 :key="option.value"\
-                                @focus="handleItemHover(option)"\
-                                @mouseenter="handleItemHover(option)"\
-                                @keyup.enter="handleItemClick(option)"\
-                                @click.stop="handleItemClick(option)"\
+                                @focus="!option.group && handleItemHover(option)"\
+                                @mouseenter="!option.group && handleItemHover(option)"\
+                                @keyup.enter="!option.group && handleItemClick(option)"\
+                                @click.stop="!option.group && handleItemClick(option)"\
                                 v-for="option in searchedOptions">\
                                 <div class="cly-vue-listbox__item-content">\
                                     <div class="bu-level">\
