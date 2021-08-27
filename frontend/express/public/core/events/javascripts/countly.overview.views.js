@@ -79,6 +79,13 @@
             add: function() {
                 var self = this;
                 var alreadyExists = false;
+                if (this.selectedEvents.length === 12) {
+                    this.$notify.error({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("events.overview.max-c")
+                    });
+                    return;
+                }
                 this.selectedEvents.every(function(item) {
                     if (self.selectEvent === item.eventKey && self.selectProperty === item.eventProperty) {
                         alreadyExists = true;
