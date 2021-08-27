@@ -199,7 +199,7 @@ fetch.getMergedEventData = function(params, events, options, callback) {
     var eventKeysArr = [];
 
     for (let i = 0; i < events.length; i++) {
-        eventKeysArr.push(events[i] + params.app_id);
+        eventKeysArr.push(events[i] + params.qstring.app_id);
     }
 
     if (!eventKeysArr.length) {
