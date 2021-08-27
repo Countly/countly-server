@@ -57,7 +57,7 @@
             },
             showToggle: {
                 type: Boolean,
-                default: true
+                default: false
             },
             showDownload: {
                 type: Boolean,
@@ -268,6 +268,9 @@
             onSeriesChange: function(v) {
                 this.seriesOptions.type = v;
                 this.$emit("series-toggle", v);
+            },
+            onZoomFinished: function() {
+                this.$refs.header.$refs.zoom.onZoomFinished();
             }
         },
         computed: {
@@ -355,6 +358,12 @@
     */
 
     var BaseLineChart = BaseChart.extend({
+        props: {
+            showToggle: {
+                type: Boolean,
+                default: true
+            },
+        },
         data: function() {
             return {
                 mixinOptions: {},
@@ -535,6 +544,7 @@
         }
     });
 
+    /*
     var ZoomDropdown = countlyBaseComponent.extend({
         props: {
             echartRef: {
@@ -628,6 +638,7 @@
                         </el-select>\
                     </div>"
     });
+    */
 
     var ZoomInteractive = countlyBaseComponent.extend({
         props: {
@@ -637,42 +648,60 @@
         },
         data: function() {
             return {
-                zoomStatus: false
+                zoomStatus: "reset"
             };
         },
         methods: {
-            enableZoom: function() {
-                var zoomStatus;
-
-                if (this.zoomStatus) {
-                    zoomStatus = false;
-                }
-                else {
-                    zoomStatus = true;
-                }
-
+            onZoomTrigger: function() {
                 this.echartRef.dispatchAction({
                     type: "takeGlobalCursor",
                     key: 'dataZoomSelect',
-                    dataZoomSelectActive: zoomStatus
+                    dataZoomSelectActive: true
                 });
 
-                this.zoomStatus = zoomStatus;
+                this.zoomStatus = "triggered";
+                this.$parent.onZoomTrigger();
             },
-            resetZoom: function() {
+            onZoomReset: function() {
                 this.echartRef.dispatchAction({
                     type: "restore",
                 });
 
-                this.zoomStatus = false;
+                this.zoomStatus = "reset";
+                this.$parent.onZoomReset();
+            },
+            onZoomCancel: function() {
+                this.echartRef.dispatchAction({
+                    type: "takeGlobalCursor",
+                    key: 'dataZoomSelect',
+                    dataZoomSelectActive: false
+                });
+
+                this.zoomStatus = "reset";
+                this.$parent.onZoomReset();
+            },
+            onZoomFinished: function() {
+                this.echartRef.dispatchAction({
+                    type: "takeGlobalCursor",
+                    key: 'dataZoomSelect',
+                    dataZoomSelectActive: false
+                });
+
+                this.zoomStatus = "done";
             }
         },
         template: '<div>\
-                        <el-button @click="enableZoom" size="small"\
+                        <div v-if="zoomStatus === \'triggered\'" class="bu-mr-3 color-cool-gray-50 text-smallish">\
+                            Select an area in the chart to zoom\
+                        </div>\
+                        <el-button @click="onZoomTrigger" v-if="zoomStatus === \'reset\'" size="small"\
                             icon="ion-plus-round">\
                         </el-button>\
-                        <el-button @click="resetZoom" v-show="zoomStatus" size="small"\
-                            icon="ion-close-round">\
+                        <el-button @click="onZoomCancel" v-if="zoomStatus === \'triggered\'" size="small">\
+                            Cancel Zoom\
+                        </el-button>\
+                        <el-button @click="onZoomReset" v-if="zoomStatus === \'done\'" size="small">\
+                            Reset Zoom\
                         </el-button>\
                     </div>'
     });
@@ -727,11 +756,11 @@
         },
         data: function() {
             return {
-                height: CHART_HEADER_HEIGHT
+                height: CHART_HEADER_HEIGHT,
+                isZoom: false
             };
         },
         components: {
-            "zoom-dropdown": ZoomDropdown,
             "zoom-interactive": ZoomInteractive,
             "chart-toggle": MagicSwitch
         },
@@ -760,24 +789,27 @@
                 });
 
                 aTag.dispatchEvent(evt);
+            },
+            onZoomTrigger: function() {
+                this.isZoom = true;
+            },
+            onZoomReset: function() {
+                this.isZoom = false;
             }
         },
         template: '<div class="bu-level" :style="{height: height + \'px\'}">\
                         <div class="bu-level-left">\
-                            <slot name="chart-left" v-bind:echart="echartRef"></slot>\
-                            <div class="bu-level-item" v-if="showZoom">\
-                                <zoom-dropdown :echartRef="echartRef"></zoom-dropdown>\
-                            </div>\
+                            <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
                         </div>\
                         <div class="bu-level-right">\
-                            <slot name="chart-right" v-bind:echart="echartRef"></slot>\
-                            <zoom-interactive v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
-                            <div class="bu-level-item" v-if="showDownload">\
+                            <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
+                            <div class="bu-level-item" v-if="showDownload && !isZoom">\
                                 <el-button @click="downloadImage" size="small" icon="el-icon-download"></el-button>\
                             </div>\
-                            <div class="bu-level-item" v-if="showToggle">\
+                            <div class="bu-level-item" v-if="showToggle && !isZoom">\
                                 <chart-toggle v-on="$listeners"></chart-toggle>\
                             </div>\
+                            <zoom-interactive ref="zoom" v-if="showZoom" :echartRef="echartRef" class="bu-level-item"></zoom-interactive>\
                         </div>\
                     </div>'
     });
@@ -1052,7 +1084,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1064,7 +1096,8 @@
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
                                     :option="chartOptions"\
-                                    :autoresize="autoresize">\
+                                    :autoresize="autoresize"\
+                                    @datazoom="onZoomFinished">\
                                 </echarts>\
                             </div>\
                         </div>\
@@ -1099,7 +1132,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1111,7 +1144,8 @@
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
                                     :option="chartOptions"\
-                                    :autoresize="autoresize">\
+                                    :autoresize="autoresize"\
+                                    @datazoom="onZoomFinished">\
                                 </echarts>\
                             </div>\
                         </div>\
@@ -1214,7 +1248,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1226,7 +1260,8 @@
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
                                     :option="chartOptions"\
-                                    :autoresize="autoresize">\
+                                    :autoresize="autoresize"\
+                                    @datazoom="onZoomFinished">\
                                 </echarts>\
                             </div>\
                         </div>\
@@ -1261,7 +1296,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1273,7 +1308,8 @@
                                     v-bind="$attrs"\
                                     v-on="$listeners"\
                                     :option="chartOptions"\
-                                    :autoresize="autoresize">\
+                                    :autoresize="autoresize"\
+                                    @datazoom="onZoomFinished">\
                                 </echarts>\
                             </div>\
                         </div>\
@@ -1332,7 +1368,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div class="cly-vue-chart__echart">\
-                            <chart-header v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -1346,7 +1382,8 @@
                                         v-bind="$attrs"\
                                         v-on="$listeners"\
                                         :option="chartOptions"\
-                                        :autoresize="autoresize">\
+                                        :autoresize="autoresize"\
+                                        @datazoom="onZoomFinished">\
                                     </echarts>\
                                 </div>\
                                 <custom-legend\
