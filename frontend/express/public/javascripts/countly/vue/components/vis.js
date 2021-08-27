@@ -694,8 +694,9 @@
                         <div v-if="zoomStatus === \'triggered\'" class="bu-mr-3 color-cool-gray-50 text-smallish">\
                             Select an area in the chart to zoom\
                         </div>\
-                        <el-button @click="onZoomTrigger" v-if="zoomStatus === \'reset\'" size="small"\
-                            icon="ion-plus-round">\
+                        <el-button @click="onZoomTrigger" v-if="zoomStatus === \'reset\'"\
+                            size="small"\
+                            icon="cly-icon cly-icon-zoom">\
                         </el-button>\
                         <el-button @click="onZoomCancel" v-if="zoomStatus === \'triggered\'" size="small">\
                             Cancel Zoom\
