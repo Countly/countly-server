@@ -11,16 +11,7 @@ var SessionDurationsView = countlyVue.views.create({
             return this.$store.state.countlySessionDurations.sessionDurations;
         },
         isLoading: function() {
-            return this.$store.state.countlySessionDurations.isLoading;
-        },
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlySessionDurations.selectedDatePeriod;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlySessionDurations/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlySessionDurations/fetchAll');
-            }
+            return this.$store.getters['countlySessionDurations/isLoading'];
         },
         sessionDurationsRows: function() {
             return this.$store.state.countlySessionDurations.sessionDurations.rows;
@@ -49,18 +40,21 @@ var SessionDurationsView = countlyVue.views.create({
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch('countlySessionDurations/fetchAll');
+            this.$store.dispatch('countlySessionDurations/fetchAll', false);
+        },
+        dateChanged: function() {
+            this.$store.dispatch('countlySessionDurations/fetchAll', true);
         }
     },
     mounted: function() {
-        this.$store.dispatch('countlySessionDurations/fetchAll');
+        this.$store.dispatch('countlySessionDurations/fetchAll', true);
     },
 });
 
 countlyVue.container.registerTab("/analytics/sessions", {
     priority: 2,
     name: "durations",
-    title: "Session Durations",
+    title: CV.i18n('session-durations.title'),
     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/durations",
     component: SessionDurationsView,
     vuex: [{

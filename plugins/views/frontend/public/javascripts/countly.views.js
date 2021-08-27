@@ -448,16 +448,7 @@
                 return this.$store.state.countlyViewsPerSession.viewsPerSession;
             },
             isLoading: function() {
-                return this.$store.state.countlyViewsPerSession.isLoading;
-            },
-            selectedDatePeriod: {
-                get: function() {
-                    return this.$store.state.countlyViewsPerSession.selectedDatePeriod;
-                },
-                set: function(value) {
-                    this.$store.dispatch('countlyViewsPerSession/onSetSelectedDatePeriod', value);
-                    this.$store.dispatch('countlyViewsPerSession/fetchAll');
-                }
+                return this.$store.getters['countlyViewsPerSession/isLoading'];
             },
             viewsPerSessionRows: function() {
                 return this.$store.state.countlyViewsPerSession.viewsPerSession.rows;
@@ -486,11 +477,14 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyViewsPerSession/fetchAll');
+                this.$store.dispatch('countlyViewsPerSession/fetchAll', false);
+            },
+            dateChanged: function() {
+                this.$store.dispatch('countlyViewsPerSession/fetchAll', true);
             }
         },
         mounted: function() {
-            this.$store.dispatch('countlyViewsPerSession/fetchAll');
+            this.$store.dispatch('countlyViewsPerSession/fetchAll', true);
         },
     });
 
@@ -498,7 +492,8 @@
         countlyVue.container.registerTab("/analytics/sessions", {
             priority: 4,
             name: "views-per-session",
-            title: "Views per Session",
+            title: CV.i18n('views-per-session.title'),
+            route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/views-per-session",
             component: ViewsPerSessionView,
             vuex: [{
                 clyModel: countlyViewsPerSession
