@@ -3,6 +3,9 @@
         <template v-slot:header-left>
             <h2> {{i18n('management-applications.title')}} </h2>
         </template>
+        <template v-slot:header-right>
+            <el-button type="success" icon="el-icon-circle-plus" @click="createNewApp">{{i18n('common.add-new-app-button')}}</el-button>
+        </template>
     </cly-header>
     <cly-main class="bu-pt-4">
         <div class="bu-columns bu-is-gapless">
@@ -20,62 +23,73 @@
                     </cly-listbox>
             </div>
             <div class="bu-column bu-is-9">
-                <h2 class="bu-mb-4"> {{apps[selectedApp].name}} </h2>
+                <cly-more-options size="small" class="bu-is-pulled-right">
+                    <el-dropdown-item :key="idx" v-for="(item, idx) in topOptions">
+                        <span :class="item.icon"></span>
+                        <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+                    </el-dropdown-item>
+                </cly-more-options>
+                <el-switch
+                    v-model="apps[selectedApp].locked"
+                    :active-text="apps[selectedApp].locked ? i18n('common.locked') : i18n('common.unlocked')"
+                    class="bu-is-pulled-right bu-mr-4 bu-mt-2">
+                </el-switch>
+                <h2 class="bu-mb-4"> {{apps[selectedApp] ? apps[selectedApp].name : i18n('common.add-new-app')}} </h2>
                 <cly-section>
                     <div class="bu-columns bu-m-0">
                         <div class="bu-column bu-is-8 bu-mr-4">
                             <cly-form
-                                :initial-edited-object="apps[selectedApp]"
+                                :initial-edited-object="apps[selectedApp] || newApp"
                                 @submit="save">
                                 <template v-slot="formScope">
                                     <cly-form-step :id="formId">
                                         <cly-inline-form-field rules="required" :label="i18n('management-applications.application-name')" prop="name">
                                             <el-input 
-                                                :disabled="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :disabled="isDisabled()"
                                                 :placeholder="i18n('management-applications.application-name')" 
                                                 v-model="formScope.editedObject.name">
                                             </el-input>
                                         </cly-inline-form-field>
-                                        <cly-inline-form-field rules="required" :label="i18n('management-applications.type')" prop="type">
+                                        <cly-inline-form-field rules="required" :label="i18n('management-applications.type')" :help="i18n('management-applications.type.hint')" prop="type">
                                             <el-select 
-                                                :disabled="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :disabled="isDisabled()"
                                                 :placeholder="i18n('management-applications.type')" 
                                                 v-model="formScope.editedObject.type" >
                                                 <el-option :key="type" :value="type" :label="i18n('management-applications.types.' + type)" v-for="(item, type) in types"></el-option>
                                             </el-select>
                                         </cly-inline-form-field>
-                                        <cly-inline-form-field rules="required" :label="i18n('management-applications.app-key')" prop="key">
+                                        <cly-inline-form-field :rules="(!newApp) ? 'required' : ''" :label="i18n('management-applications.app-key')" prop="key" :help="i18n('management-applications.app-key.hint')">
                                             <el-input 
-                                                :readonly="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :readonly="isDisabled()"
                                                 onclick="select()"
-                                                :placeholder="i18n('management-applications.app-key')" 
+                                                :placeholder="i18n(newApp ? 'management-applications.app-key.generate' : 'management-applications.app-key')" 
                                                 v-model="formScope.editedObject.key">
                                             </el-input>
                                         </cly-inline-form-field>
-                                        <cly-inline-form-field rules="required" :label="i18n('countries.table.country')" prop="country">
+                                        <cly-inline-form-field rules="required" :label="i18n('countries.table.country')" prop="country" :help="i18n('management-applications.country.hint')">
                                             <cly-select-x 
-                                                :disabled="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :disabled="isDisabled()"
                                                 :placeholder="i18n('countries.table.country')" 
                                                 v-model="formScope.editedObject.country" 
                                                 :options="countries">
                                             </cly-select-x>
                                         </cly-inline-form-field>
-                                        <cly-inline-form-field rules="required" :label="i18n('management-applications.time-zone')" prop="timezone">
+                                        <cly-inline-form-field rules="required" :label="i18n('management-applications.time-zone')" prop="timezone"  :help="i18n('management-applications.time-zone.hint')">
                                             <cly-select-x 
-                                                :disabled="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :disabled="isDisabled()"
                                                 :placeholder="i18n('management-applications.time-zone')" 
                                                 v-model="formScope.editedObject.timezone" 
                                                 :options="timezones">
                                             </cly-select-x>
                                         </cly-inline-form-field>
-                                        <cly-inline-form-field :label="i18n('management-applications.checksum-salt')" prop="salt">
+                                        <cly-inline-form-field :label="i18n('management-applications.checksum-salt')" prop="salt"  :help="i18n('management-applications.checksum-salt.hint')">
                                             <el-input 
-                                                :disabled="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :disabled="isDisabled()"
                                                 :placeholder="i18n('management-applications.checksum-salt')" 
                                                 v-model="formScope.editedObject.salt">
                                             </el-input>
                                         </cly-inline-form-field>
-                                        <cly-inline-form-field :label="i18n('management-applications.app-id')" prop="_id">
+                                        <cly-inline-form-field v-if="!newApp" :label="i18n('management-applications.app-id')" prop="_id"  :help="i18n('management-applications.app-id.hint')">
                                             <el-input 
                                                 readonly 
                                                 onclick="select()"
@@ -86,18 +100,18 @@
                                     </cly-form-step>
                                     <div class="bu-has-text-right">
                                         <el-button 
-                                            v-if="!apps[selectedApp].locked && adminApps[selectedApp]"
+                                            v-if="!isDisabled()"
                                             :disabled="!formScope.isSubmissionAllowed" 
                                             @click="formScope.submit()" 
-                                            type="primary">{{i18n('common.apply')}}</el-button>
+                                            type="primary">{{i18n( newApp ? 'common.create' : 'common.apply')}}</el-button>
                                     </div>
                                 </template>
                             </cly-form>
                         </div>
                         <div class="bu-column bu-is-3 bu-ml-4 bu-px-4 bu-py-0 account-settings-avatar-box">
-                            <div class="bu-is-vcentered bu-px-3 bu-ml-4">
+                            <div v-if="!newApp" class="bu-is-vcentered bu-px-3 bu-ml-4">
                                 <el-upload 
-                                    v-if="!apps[selectedApp].locked && adminApps[selectedApp]"
+                                    v-if="!isDisabled()"
                                     action="apps/icon" 
                                     :on-success="handleUploadSuccess"
                                     :data="uploadData"
@@ -118,6 +132,51 @@
                             </div>
                         </div>
                     </div>
+                </cly-section>
+                <cly-section>
+                    <el-collapse class="bu-mx-4 app-management-details" @change="loadDetails">
+                        <el-collapse-item :title="i18n('management-applications.app-details')" name="1">
+                            <div v-if="appDetails">
+                                <cly-inline-form-field :label="i18n('management-applications.app-creator')">
+                                    <div v-if="appDetails.app.owner === '' || appDetails.app.owner_id === ''">{{i18n("common.unknown")}}</div>
+                                    <a v-else :href="'#/manage/users/' + appDetails.app.owner_id">{{appDetails.app.owner}}</a>
+                                </cly-inline-form-field>
+                                <cly-inline-form-field :label="i18n('management-applications.app-created-at')">
+                                    <div v-html="appDetails.app.created"></div>
+                                </cly-inline-form-field>
+                                <cly-inline-form-field :label="i18n('management-applications.app-edited-at')">
+                                    <div v-html="appDetails.app.edited"></div>
+                                </cly-inline-form-field>
+                                <cly-inline-form-field :label="i18n('management-applications.app-last-data')">
+                                    {{appDetails.app.last_data}}
+                                </cly-inline-form-field>
+                                <h6 class="bu-mt-4">{{i18n("management-applications.app-users")}}</h6>
+                                <cly-inline-form-field :label="i18n('management-applications.global_admins')">
+                                    <a :href="'#/manage/users/' + user._id" v-for="user in appDetails.global_admin" class="el-button el-button--primary is-plain">
+                                    {{user.full_name || user.username || user._id}}
+                                    </a>&nbsp;
+                                </cly-inline-form-field>
+                                <cly-inline-form-field :label="i18n('management-applications.admins')">
+                                    <a :href="'#/manage/users/' + user._id" v-for="user in appDetails.admin" class="el-button el-button--primary is-plain">
+                                    {{user.full_name || user.username || user._id}}
+                                    </a>&nbsp;
+                                </cly-inline-form-field>
+                                <cly-inline-form-field :label="i18n('management-applications.users')">
+                                    <a :href="'#/manage/users/' + user._id" v-for="user in appDetails.user" class="el-button el-button--primary is-plain">
+                                    {{user.full_name || user.username || user._id}}
+                                    </a>&nbsp;
+                                </cly-inline-form-field>
+                            </div>
+                            <div v-else v-loading="true" style="height: 500px;"></div>
+                        </el-collapse-item>
+                    </el-collapse>
+                </cly-section>
+                <h2 class="bu-mb-2">{{i18n('management-applications.plugins')}} </h2>
+                <cly-section>
+                    <el-collapse class="bu-mx-4 app-management-details" @change="loadDetails">
+                        <el-collapse-item :title="i18n('management-applications.app-details')" name="1">
+                        </el-collapse-item>
+                    </el-collapse>
                 </cly-section>
             </div>
         </div>

@@ -1,4 +1,4 @@
-/*global countlyAuth, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $ */
+/*global countlyAuth, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment */
 (function() {
     var FEATURE_NAME = "global_applications";
 
@@ -10,6 +10,7 @@
                     return this.selectedApp;
                 },
                 set: function(value) {
+                    this.newApp = false;
                     this.selectedApp = value;
                     this.uploadData.app_image_id = countlyGlobal.apps[this.selectedApp]._id + "";
                     this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png")';
@@ -51,7 +52,11 @@
                 });
             }
             var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
+            if (!countlyGlobal.apps[app_id]) {
+                this.createNewApp();
+            }
             return {
+                newApp: this.newApp || false,
                 formId: "app-management-form",
                 types: app.appTypes,
                 countries: countries,
@@ -63,17 +68,43 @@
                 appList: appList,
                 diff: [],
                 changes: {},
-                app_icon: {'background-image': 'url("appimages/' + app_id + '.png")', "background-repeat": "no-repeat", "background-size": "auto 100px"},
+                app_icon: {'background-image': 'url("appimages/' + app_id + '.png?' + Date.now() + '")', "background-repeat": "no-repeat", "background-size": "auto 100px"},
+                appDetails: false,
                 uploadData: {
                     _csrf: countlyGlobal.csrf_token,
                     app_image_id: app_id
-                }
+                },
+                topOptions: [],
+                loadingDetails: false
             };
         },
         beforeCreate: function() {
 
         },
         methods: {
+            createNewApp: function() {
+                this.selectedApp = "new";
+                this.newApp = {};
+                if (Intl && Intl.DateTimeFormat) {
+                    this.newApp.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    var timezones = countlyGlobal.timezones;
+                    for (var countryCode in timezones) {
+                        for (var i = 0; i < timezones[countryCode].z.length;i++) {
+                            for (var countryTimezone in timezones[countryCode].z[i]) {
+                                if (timezones[countryCode].z[i][countryTimezone] === this.newApp.timezone) {
+                                    this.newApp.country = countryCode;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                //this.newApp.key = CountlyHelpers.generatePassword(40, true).toLowerCase();
+                app.navigate("#/manage/apps/new");
+            },
+            isDisabled: function() {
+                return !this.newApp && (this.apps[this.selectedApp].locked || !this.adminApps[this.selectedApp]);
+            },
             handleUploadSuccess: function() {
                 this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png?' + Date.now() + '")';
                 countlyGlobal.apps[this.selectedApp].image = "appimages/" + this.selectedApp + '.png?' + Date.now();
@@ -109,7 +140,35 @@
             },
             save: function(doc) {
                 var self = this;
-                if (countlyGlobal.apps[this.selectedApp].key !== doc.key) {
+                if (this.newApp) {
+                    $.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.apps.w + '/create',
+                        data: {
+                            args: JSON.stringify(doc)
+                        },
+                        dataType: "json",
+                        success: function(data) {
+                            countlyGlobal.apps[data._id] = data;
+                            countlyGlobal.admin_apps[data._id] = data;
+                            Backbone.history.appIds.push(data._id + "");
+                            countlyGlobal.apps[data._id].image = "appimages/" + data._id + ".png";
+                            self.appList.push({
+                                value: data._id + "",
+                                label: data.name
+                            });
+                            self.selectedSearchBar = data._id + "";
+                        },
+                        error: function(xhr, status, error) {
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.not-saved"],
+                                message: error || jQuery.i18n.map["configs.not-changed"],
+                                type: "error"
+                            });
+                        }
+                    });
+                }
+                else if (countlyGlobal.apps[this.selectedApp].key !== doc.key) {
                     var warningText = jQuery.i18n.map["management-applications.app-key-change-warning"];
                     if (countlyGlobal.plugins.indexOf("drill") > -1) {
                         warningText = jQuery.i18n.map["management-applications.app-key-change-warning-EE"];
@@ -177,6 +236,39 @@
                             message: error || jQuery.i18n.map["configs.not-changed"],
                             type: "error"
                         });
+                    }
+                });
+            },
+            loadDetails: function() {
+                this.loadingDetails = true;
+                var self = this;
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.apps.r + '/details',
+                    data: {
+                        app_id: self.selectedApp
+                    },
+                    dataType: "json",
+                    success: function(result) {
+                        self.loadingDetails = false;
+                        if (result && result.app) {
+                            self.appDetails = result;
+                            self.appDetails.app.created = (parseInt(result.app.created_at) === 0) ? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.created_at);
+                            self.appDetails.app.edited = (parseInt(result.app.edited_at) === 0) ? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.edited_at);
+
+                            var ts = self.appDetails.app.last_data;
+                            if (Math.round(ts).toString().length === 10) {
+                                ts *= 1000;
+                            }
+                            self.appDetails.app.last_data = (parseInt(result.app.last_data) === 0) ? jQuery.i18n.map["common.unknown"] : moment(new Date(ts)).format("ddd, D MMM YYYY");
+                        }
+                        else {
+                            CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
+                        }
+                    },
+                    error: function() {
+                        self.loadingDetails = false;
+                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
                     }
                 });
             },
