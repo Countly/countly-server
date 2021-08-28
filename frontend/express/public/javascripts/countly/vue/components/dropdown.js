@@ -413,9 +413,11 @@
                 if (!dontSync) {
                     this.unsavedValue = Object.assign({}, this.value);
                 }
-                this.$refs.selectX.forEach(function(component) {
-                    component.doClose();
-                });
+                if (this.$refs.selectX && this.$refs.selectX.length) {
+                    this.$refs.selectX.forEach(function(component) {
+                        component.doClose();
+                    });
+                }
                 this.$refs.dropdown.handleClose();
             },
             save: function() {
