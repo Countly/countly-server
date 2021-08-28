@@ -341,7 +341,7 @@
                                             </el-select>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
-                                            <cly-select-x v-bind="field" class="cly-multi-select__field-dropdown" :width="320" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                            <cly-select-x ref="selectX" v-bind="field" class="cly-multi-select__field-dropdown" :width="320" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
                                                 <template v-slot:header="headerScope" v-if="field.header">\
                                                     <slot name="header" v-bind="headerScope"></slot>\
                                                 </template>\
@@ -413,6 +413,9 @@
                 if (!dontSync) {
                     this.unsavedValue = Object.assign({}, this.value);
                 }
+                this.$refs.selectX.forEach(function(component) {
+                    component.doClose();
+                });
                 this.$refs.dropdown.handleClose();
             },
             save: function() {
