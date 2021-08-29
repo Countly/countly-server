@@ -355,7 +355,7 @@
                                 <draggable \
                                     handle=".drag-handler"\
                                     v-model="sortedOptions"\
-                                    :options="{disabled: !sortable}">\
+                                    :disabled="!sortable">\
                                 <div\
                                     class="text-medium cly-vue-listbox__item"\
                                     :key="option.value"\
