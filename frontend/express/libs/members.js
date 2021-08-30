@@ -1058,7 +1058,7 @@ membersUtility.updateMember = async function(query = {}, data = {}, upsert = tru
 membersUtility.removeMembers = async function(query = {}) {
     return new Promise((resolve, reject) => {
         if (!Object.keys(query).length) {
-            reject('Invalid query to remove members');
+            return reject('Invalid query to remove members');
         }
 
         this.db.collection('members').remove(query, (err, response) => {
