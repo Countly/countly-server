@@ -1,11 +1,13 @@
 /*global $,countlyAuth,countlyGlobal,T,countlyWidgets,jQuery,countlyCommon,app,countlyDashboards,countlyVue,countlyTimesOfDay */
 
 var featureName = "times_of_day";
+var MAX_SYMBOL_VALUE = 50;
 
 var TimesOfDayView = countlyVue.views.BaseView.extend({
     template: "#times-of-day",
     data: function() {
-        return {};
+        return {
+        };
     },
     computed: {
         timesOfDayRows: function() {
@@ -14,36 +16,81 @@ var TimesOfDayView = countlyVue.views.BaseView.extend({
         isLoading: function() {
             return this.$store.state.countlyTimesOfDay.isLoading;
         },
+        normalizedSymbolCoefficient: function() {
+            if (this.$store.state.countlyTimesOfDay.maxSeriesValue < MAX_SYMBOL_VALUE) {
+                return 1;
+            }
+            return MAX_SYMBOL_VALUE / this.$store.state.countlyTimesOfDay.maxSeriesValue;
+        },
         timesOfDayOptions: function() {
+            var self = this;
             return {
                 title: {
                     text: "Times of day"
                 },
                 tooltip: {
                     position: 'top',
+                    trigger: 'item',
                     formatter: function(params) {
-                        return 'Total users:' + params.value[2] + 'in' + countlyTimesOfDay.service.HOURS[params.value[0]];
+                        return '<div class="bu-is-flex bu-is-flex-direction-column times-of-day__scatter-chart-tooltip"> \n' +
+                                    '<span class="times-of-day__scatter-chart-tooltip-text"> Total users</span>\n' +
+                                    '<span class="times-of-day__scatter-chart-tooltip-total-users-value">' + params.value[2] + '</span> \n' +
+                                    '<span class="times-of-day__scatter-chart-tooltip-text"> between ' + countlyTimesOfDay.service.getHoursPeriod(countlyTimesOfDay.service.HOURS[params.value[0]]) + '</span> \n' +
+                                '</div>';
                     }
                 },
-                grid: {
-                    left: 2,
-                    bottom: 10,
-                    right: 10,
-                    containLabel: true
-                },
                 xAxis: {
-                    data: countlyTimesOfDay.service.HOURS.concat(0),
-                },
-                yAxis: {
                     type: 'category',
-                    data: countlyTimesOfDay.service.WEEK_DAYS,
+                    data: countlyTimesOfDay.service.HOURS,
+                    splitLine: {
+                        show: true
+                    },
                     axisLine: {
                         show: false
                     }
                 },
-                series: [{ name: "Times of day", type: "scatter", data: this.$store.state.countlyTimesOfDay.series}]
+                yAxis: {
+                    type: 'category',
+                    data: countlyTimesOfDay.service.WEEK_DAYS,
+                    nameLocation: 'middle',
+                    boundaryGap: true,
+                    axisTick: {
+                        alignWithLabel: true
+                    }
+                },
+                series: [{
+                    name: "Times of day",
+                    type: "scatter",
+                    symbolSize: function(val) {
+                        var dataIndexValue = 2;
+                        return val[dataIndexValue] * self.normalizedSymbolCoefficient;
+                    },
+                    data: this.$store.state.countlyTimesOfDay.series,
+                }],
+                color: "#39C0C8"
             };
         },
+        selectedFilter: {
+            get: function() {
+                return this.$store.state.countlyTimesOfDay.filters.dataType;
+            },
+            set: function(value) {
+                this.$store.dispatch('countlyTimesOfDay/setFilters', {dataType: value, dateBucketValue: this.$store.state.countlyTimesOfDay.filters.dateBucketValue});
+                this.$store.dispatch('countlyTimesOfDay/fetchAll');
+            }
+        },
+        selectedDateBucketValue: function() {
+            return this.$store.state.countlyTimesOfDay.filters.dateBucketValue;
+        },
+        dateBuckets: function() {
+            return countlyTimesOfDay.service.getDateBucketsList();
+        }
+    },
+    methods: {
+        onSelectDateBucket: function(value) {
+            this.$store.dispatch('countlyTimesOfDay/setFilters', {dataType: this.$store.state.countlyTimesOfDay.filters.dataType, dateBucketValue: value});
+            this.$store.dispatch('countlyTimesOfDay/fetchAll');
+        }
     },
     mounted: function() {
         this.$store.dispatch('countlyTimesOfDay/fetchAll');
@@ -56,11 +103,7 @@ var vuex = [{
 }];
 
 
-$(document).ready(function() {
-    app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
-});
-
-if (countlyAuth.validateRead("times_of_day")) {
+if (countlyAuth.validateRead(featureName)) {
     app.route('/analytics/times-of-day', 'times-of-day', function() {
         var timesOfDayViewWrapper = new countlyVue.views.BackboneWrapper({
             component: TimesOfDayView,

@@ -7,8 +7,22 @@
             </template>
         </cly-header>
         <cly-main>
+            <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mt-5 bu-mb-4"> 
+                <div class="bu-is-flex bu-is-align-items-center">
+                    <div class="bu-mr-1">Results for</div>               
+                    <cly-event-select v-model="selectedFilter" :blacklistedEvents="['[CLY]_view','feedback','[CLY]_crash']"></cly-event-select>
+                </div>
+                <el-select :value="selectedDateBucketValue" @change="onSelectDateBucket"> 
+                    <el-option
+                        v-for="item in dateBuckets"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                    </el-option>
+                </el-select>
+            </div>
             <cly-section>
-                <!-- <cly-chart-scatter :height="400" :option="timesOfDayOptions" v-loading="isLoading"></cly-chart-scatter> -->
+                <cly-chart-generic :height="600"  :option="timesOfDayOptions" :show-zoom="false" :show-toggle="false" v-loading="isLoading"></cly-chart-generic>
             </cly-section>
             <cly-section>
                 <cly-datatable-n  :rows="timesOfDayRows" :resizable="true" v-loading="isLoading">

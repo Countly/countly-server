@@ -1,9 +1,24 @@
-/*global countlyCommon,countlyEvent,d3,jQuery,CV,countlyVue,Promise */
+/*global countlyCommon,countlyEvent,d3,jQuery,CV,countlyVue,Promise,moment */
 (function(countlyTimesOfDay) {
 
     countlyTimesOfDay.service = {
         HOURS: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
         WEEK_DAYS: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+        DateBucketEnum: {
+            PREV_MONTH: "prevMonth",
+            THIS_MONTH: "thisMonth",
+            LAST_THREE_MONTHS: "lastThreeMonths",
+            ALL_TIME: 'allTime',
+        },
+        getDateBucketsList: function() {
+            var self = this;
+            return [
+                {label: "Previous month", value: self.DateBucketEnum.PREV_MONTH},
+                {label: "This Month", value: self.DateBucketEnum.THIS_MONTH},
+                {label: "Last three Months", value: self.DateBucketEnum.LAST_THREE_MONTHS},
+                {label: "All time", value: self.DateBucketEnum.ALL_TIME}
+            ];
+        },
         getHoursPeriod: function(hour) {
             var nextHour = hour + 1;
             if (hour < 10) {
@@ -42,22 +57,53 @@
             });
             return series;
         },
+        findMaxSeriesValue: function(dto) {
+            var maxValue = 0;
+            dto.forEach(function(weekDaySerieItem) {
+                weekDaySerieItem.forEach(function(hourSerieValue) {
+                    if (maxValue < hourSerieValue) {
+                        maxValue = hourSerieValue;
+                    }
+                });
+            });
+            return maxValue;
+        },
         mapTimesOfDayDtoToModel: function(dto) {
+            this.findMaxSeriesValue(dto);
             return {
                 rows: this.mapRows(dto),
-                series: this.mapSeries(dto)
+                series: this.mapSeries(dto),
+                maxSeriesValue: this.findMaxSeriesValue(dto)
             };
         },
-        // eslint-disable-next-line no-unused-vars
+        getDateFromDateBucketValue: function(value) {
+            var year = moment().year();
+            var currentMonth = moment().month() + 1;
+            if (value === this.DateBucketEnum.PREV_MONTH) {
+                return year + ":" + (currentMonth - 1);
+            }
+            if (value === this.DateBucketEnum.THIS_MONTH) {
+                return year + ":" + currentMonth;
+            }
+            if (value === this.DateBucketEnum.LAST_THREE_MONTHS) {
+                return [year + ":" + currentMonth, year + ":" + (currentMonth - 1), year + ":" + (currentMonth - 2)].join(',');
+            }
+            if (value === this.DateBucketEnum.ALL_TIME) {
+                return null;
+            }
+        },
         fetchAll: function(filters) {
             var self = this;
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'times-of-day',
             };
-            if (filters) {
-                data.date_range = filters.dateRange,
-                data.todType = filters.dataType;
+            var dateString = this.getDateFromDateBucketValue(filters.dateBucketValue);
+            if (filters.dateBucketValue && dateString) {
+                data.date_range = dateString;
+            }
+            if (filters.dataType) {
+                data.tod_type = filters.dataType;
             }
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
@@ -72,13 +118,6 @@
                     });
             });
 
-        },
-
-        fetchEvents: function() {
-            return CV.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_URL + "/o",
-            }, {disabledAutoCatch: true});
         }
     };
 
@@ -88,11 +127,11 @@
             return {
                 rows: [],
                 series: [],
-                timesOfDayFilters: {
-                    dateRange: null,
-                    dataType: 'sessions'
+                filters: {
+                    dateBucketValue: countlyTimesOfDay.service.DateBucketEnum.ALL_TIME,
+                    dataType: '[CLY]_session'
                 },
-                dataTypeFilterOptions: [{value: "sessions", label: "Sessions"}],
+                maxSeriesValue: 0,
                 isLoading: false,
                 hasError: false,
                 error: null,
@@ -119,8 +158,8 @@
             onFetchSuccess: function(context) {
                 context.commit('setFetchSuccess');
             },
-            onSetTimesOfDayFilters: function(context, filters) {
-                context.commit('setTimesOfDayFilters', filters);
+            setFilters: function(context, filters) {
+                context.commit('setFilters', filters);
             }
         };
 
@@ -128,9 +167,10 @@
             setTimesOfDay: function(state, value) {
                 state.rows = value.rows;
                 state.series = value.series;
+                state.maxSeriesValue = value.maxSeriesValue;
             },
-            setTimesOfDayFilters: function(state, value) {
-                state.timesOfDayFilters = value;
+            setFilters: function(state, value) {
+                state.filters = value;
             },
             setFetchInit: function(state) {
                 state.isLoading = true;
