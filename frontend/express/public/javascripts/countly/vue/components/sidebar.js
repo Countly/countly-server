@@ -3,6 +3,31 @@
 (function(countlyVue, $) {
 
     $(document).ready(function() {
+        var AppSelector = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/AppSelector.html'),
+            data : function() {
+                return {
+                    activeApp: {}
+                }
+            },
+            props: {
+                selectedApp: {
+                    type: Array,
+                    default: () => [{}]
+                }
+            },
+            methods: {
+                updateDropdowns(event) {
+                    debugger
+                    var app = this.selectedApp.filter(function (e) {
+                        return e.value == event;
+                    });
+                    console.log(app);
+                    this.activeApp = app[0];
+                    this.$emit("change", this.activeApp._id);
+                }
+            }
+        });
 
         var UsersMenu = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/users-menu.html'),
@@ -41,6 +66,9 @@
                     "submenus": "/sidebar/analytics/submenu"
                 })
             ],
+            components: {
+                "app-selector": AppSelector
+            },
             data: function() {
                 var apps = _.sortBy(countlyGlobal.apps, function(app) {
                     return (app.name + "").toLowerCase();
@@ -60,7 +88,8 @@
                     allApps: apps,
                     selectMode: "single-list",
                     selectedAppLocal: null,
-                    selectedAnalyticsMenuLocal: null
+                    selectedAnalyticsMenuLocal: null,
+                    appSelector: false
                 };
             },
             computed: {
@@ -91,7 +120,9 @@
 
                     if (active) {
                         active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
+                        //active.name = active.name + "<br>" + active.type
                     }
+                    
 
                     return active || {};
                 },
@@ -267,6 +298,9 @@
                         console.log("Analytics menu not found. ", currLink, menus, submenus);
                     }
 
+                },
+                toggleAppSelection() {
+                    this.appSelector = !this.appSelector
                 }
             },
             mounted: function() {
@@ -386,10 +420,10 @@
                             name: "app",
                             noSelect: true
                         },
-                        {
-                            name: "search",
-                            icon: "ion-ios-search-strong"
-                        },
+                        // {
+                        //     name: "search",
+                        //     icon: "ion-ios-search-strong"
+                        // },
                         {
                             name: "analytics",
                             icon: "ion-stats-bars"

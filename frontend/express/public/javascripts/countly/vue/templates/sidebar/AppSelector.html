@@ -1,0 +1,12 @@
+<div style="width: 100%;">
+    <el-select @change="updateDropdowns($event)" style="width: 100%" value-key="value" filterable v-model="activeApp"
+        placeholder="Search App" autocomplete=off>
+        <el-option v-for="item in selectedApp" :key="item.value" :label="item.label" :value="item.value">
+            <div style="float: left;display: flex;">
+                <img style="width: 26px;height: 26px;padding-top: 5px;padding-right: 5px;" :src="item.image">
+                <span>{{ item.label }}</span>
+            </div>
+            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.type }}</span>
+        </el-option>
+    </el-select>
+</div>
