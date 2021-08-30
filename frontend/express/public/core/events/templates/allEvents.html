@@ -21,6 +21,14 @@
 			  </cly-listbox>
 			</div>
 			<div class="bu-column bu-is-9">
+				<div class="bu-mr-5" v-for="item in limitAlerts" :key="item" :value="item">
+					<el-alert v-if="item.show"
+					type="warning"
+					class="bu-mb-2"
+					show-icon>
+					<span class="cly-vue-events-all__alerts" slot="title" v-html="item.message"></span>
+				  </el-alert>
+				</div>
 			  <div class="cly-vue-events-all" v-if="!groupData.isGroup">
 				{{selectedEventName}}
 			  </div>

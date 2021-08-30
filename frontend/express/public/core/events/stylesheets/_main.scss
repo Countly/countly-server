@@ -211,6 +211,11 @@
             background-color: map.get(c.$colors, "warm-gray-20");
         }
     }
+    &__alerts {
+        a {
+            text-decoration: underline
+        }
+    }
     font-size: 24px;
     line-height: 32px;
     font-weight: 500;
