@@ -540,21 +540,21 @@
                                         context.commit("setAllEventsList", countlyAllEvents.helpers.getAllEventsList(res, result));
                                         context.commit("setGroupData", countlyAllEvents.helpers.getGroupData(result, context.state.selectedEventName));
                                         context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
-                                    }
-                                });
-                            countlyAllEvents.service.fetchSelectedEventsData(context)
-                                .then(function(response) {
-                                    if (response) {
-                                        context.commit("setSelectedEventsData", response);
-                                        context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);
-                                        context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
-                                        context.commit("setLimitAlerts", countlyAllEvents.helpers.getLimitAlerts(context) || []);
+                                        countlyAllEvents.service.fetchSelectedEventsData(context)
+                                            .then(function(response) {
+                                                if (response) {
+                                                    context.commit("setSelectedEventsData", response);
+                                                    context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);
+                                                    context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
+                                                    context.commit("setLimitAlerts", countlyAllEvents.helpers.getLimitAlerts(context) || []);
 
-                                        countlyAllEvents.service.fetchSelectedEventsOverview(context)
-                                            .then(function(resp) {
-                                                if (resp) {
-                                                    context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
-                                                    context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context)
+                                                        .then(function(resp) {
+                                                            if (resp) {
+                                                                context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
+                                                                context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                            }
+                                                        });
                                                 }
                                             });
                                     }
