@@ -1,0 +1,126 @@
+<div v-bind:class="[componentId]" class="app-management-view">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('management-applications.title')}} </h2>
+        </template>
+    </cly-header>
+    <cly-main class="bu-pt-4">
+        <div class="bu-columns bu-is-gapless">
+            <div class="bu-column bu-is-3 bu-mr-5 app-management-list" style="max-height:681px">
+                <cly-listbox
+                    skin="jumbo"
+                    height="624"
+                    :searchPlaceholder="i18n('common.search')"
+                    :options="appList"
+                    :searchable="true"
+                    v-model="selectedSearchBar">
+                        <template v-slot:option-prefix="option">
+                            <div class="cly-vue-sidebar__app-image bu-mt-2" :style="{backgroundImage: 'url(' + apps[option.value].image + ')'}"></div>
+                        </template>
+                    </cly-listbox>
+            </div>
+            <div class="bu-column bu-is-9">
+                <h2 class="bu-mb-4"> {{apps[selectedApp].name}} </h2>
+                <cly-section>
+                    <div class="bu-columns bu-m-0">
+                        <div class="bu-column bu-is-8 bu-mr-4">
+                            <cly-form
+                                :initial-edited-object="apps[selectedApp]"
+                                @submit="save">
+                                <template v-slot="formScope">
+                                    <cly-form-step :id="formId">
+                                        <cly-inline-form-field rules="required" :label="i18n('management-applications.application-name')" prop="name">
+                                            <el-input 
+                                                :disabled="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :placeholder="i18n('management-applications.application-name')" 
+                                                v-model="formScope.editedObject.name">
+                                            </el-input>
+                                        </cly-inline-form-field>
+                                        <cly-inline-form-field rules="required" :label="i18n('management-applications.type')" prop="type">
+                                            <el-select 
+                                                :disabled="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :placeholder="i18n('management-applications.type')" 
+                                                v-model="formScope.editedObject.type" >
+                                                <el-option :key="type" :value="type" :label="i18n('management-applications.types.' + type)" v-for="(item, type) in types"></el-option>
+                                            </el-select>
+                                        </cly-inline-form-field>
+                                        <cly-inline-form-field rules="required" :label="i18n('management-applications.app-key')" prop="key">
+                                            <el-input 
+                                                :readonly="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                onclick="select()"
+                                                :placeholder="i18n('management-applications.app-key')" 
+                                                v-model="formScope.editedObject.key">
+                                            </el-input>
+                                        </cly-inline-form-field>
+                                        <cly-inline-form-field rules="required" :label="i18n('countries.table.country')" prop="country">
+                                            <cly-select-x 
+                                                :disabled="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :placeholder="i18n('countries.table.country')" 
+                                                v-model="formScope.editedObject.country" 
+                                                :options="countries">
+                                            </cly-select-x>
+                                        </cly-inline-form-field>
+                                        <cly-inline-form-field rules="required" :label="i18n('management-applications.time-zone')" prop="timezone">
+                                            <cly-select-x 
+                                                :disabled="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :placeholder="i18n('management-applications.time-zone')" 
+                                                v-model="formScope.editedObject.timezone" 
+                                                :options="timezones">
+                                            </cly-select-x>
+                                        </cly-inline-form-field>
+                                        <cly-inline-form-field :label="i18n('management-applications.checksum-salt')" prop="salt">
+                                            <el-input 
+                                                :disabled="apps[selectedApp].locked || !adminApps[selectedApp]"
+                                                :placeholder="i18n('management-applications.checksum-salt')" 
+                                                v-model="formScope.editedObject.salt">
+                                            </el-input>
+                                        </cly-inline-form-field>
+                                        <cly-inline-form-field :label="i18n('management-applications.app-id')" prop="_id">
+                                            <el-input 
+                                                readonly 
+                                                onclick="select()"
+                                                :placeholder="i18n('management-applications.app-id')" 
+                                                v-model="formScope.editedObject._id">
+                                            </el-input>
+                                        </cly-inline-form-field>
+                                    </cly-form-step>
+                                    <div class="bu-has-text-right">
+                                        <el-button 
+                                            v-if="!apps[selectedApp].locked && adminApps[selectedApp]"
+                                            :disabled="!formScope.isSubmissionAllowed" 
+                                            @click="formScope.submit()" 
+                                            type="primary">{{i18n('common.apply')}}</el-button>
+                                    </div>
+                                </template>
+                            </cly-form>
+                        </div>
+                        <div class="bu-column bu-is-3 bu-ml-4 bu-px-4 bu-py-0 account-settings-avatar-box">
+                            <div class="bu-is-vcentered bu-px-3 bu-ml-4">
+                                <el-upload 
+                                    v-if="!apps[selectedApp].locked && adminApps[selectedApp]"
+                                    action="apps/icon" 
+                                    :on-success="handleUploadSuccess"
+                                    :data="uploadData"
+                                    :show-file-list="true"
+                                    :limit="1"
+                                    name="app_image"
+                                    accept="image/png, image/jpeg, image/gif"
+                                    class="bu-is-pulled-right">
+                                    <el-button size="small" type="text" class="bu-p-0">{{i18n('user-settings.upload')}}</el-button>
+                                </el-upload>
+                                <p class="bu-has-text-weight-medium">{{i18n('management-applications.icon')}}</p>
+                                <div>
+                                    <div class="account-settings-avatar" :style="app_icon">
+                                    </div>
+                                </div>
+                                <p>&nbsp;</p>
+                                <p class="account-upload-instructions">{{i18n('management-applications.icon-error')}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </cly-section>
+            </div>
+        </div>
+        <cly-diff-helper :diff="diff" @discard="unpatch" @save="save"></cly-diff-helper>
+    </cly-main>
+</div>

@@ -9,16 +9,7 @@ var SessionOverviewView = countlyVue.views.create({
             return this.$store.state.countlySessionOverview.sessionOverview;
         },
         isLoading: function() {
-            return this.$store.state.countlySessionOverview.isLoading;
-        },
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlySessionOverview.selectedDatePeriod;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlySessionOverview/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlySessionOverview/fetchAll');
-            }
+            return this.$store.getters['countlySessionOverview/isLoading'];
         },
         sessionOverviewRows: function() {
             return this.$store.state.countlySessionOverview.sessionOverview.rows;
@@ -43,16 +34,28 @@ var SessionOverviewView = countlyVue.views.create({
                     name: sessionOverviewSerie.label,
                 };
             });
+        },
+        legend: function() {
+            var result = {
+                show: true,
+                type: "primary",
+                data: this.$store.state.countlySessionOverview.sessionOverview.trends
+            };
+            return result;
         }
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch('countlySessionOverview/fetchAll');
+            this.$store.dispatch('countlySessionOverview/fetchAll', false);
+        },
+        dateChanged: function() {
+            this.$store.dispatch('countlySessionOverview/fetchAll', true);
         }
     },
     mounted: function() {
-        this.$store.dispatch('countlySessionOverview/fetchAll');
+        this.$store.dispatch('countlySessionOverview/fetchAll', true);
     },
+
 });
 
 //Note: the parent component that renders all session analytics tabs.
@@ -101,7 +104,7 @@ app.route("/analytics/sessions/*tab", "sessions-tab", function(tab) {
 countlyVue.container.registerTab("/analytics/sessions", {
     priority: 1,
     name: "overview",
-    title: "Session Overview",
+    title: CV.i18n('session-overview.title'),
     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/overview",
     component: SessionOverviewView,
     vuex: [{

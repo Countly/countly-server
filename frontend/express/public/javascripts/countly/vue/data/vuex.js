@@ -1,4 +1,4 @@
-/* global Vue, Vuex, _, countlyGlobal, CV, Promise */
+/* global Vue, Vuex, _, countlyGlobal, CV, Promise, app */
 
 (function(countlyVue) {
 
@@ -279,6 +279,9 @@
                     if (typeof options.onError === 'function') {
                         options.onError(context, err);
                     }
+                    else {
+                        app.activeView.onError(err);
+                    }
                     return context.commit(_capitalized("set", resourceName), _dataTableAdapters.toStandardResponse());
                 });
         };
@@ -472,5 +475,63 @@
     countlyVue.vuex.ServerDataTable = ServerDataTable;
     countlyVue.vuex.getServerDataSource = getServerDataSource;
     countlyVue.vuex.getLocalStore = getLocalStore;
+
+    var FetchMixin = function() {
+        var countlyFetchState = function() {
+            return {
+                hasError: false,
+                error: null,
+                isLoading: false
+            };
+        };
+        var countlyFetchActions = {
+            onFetchInit: function(context) {
+                context.commit('setFetchInit');
+            },
+            onFetchError: function(context, error) {
+                context.commit('setFetchError', error);
+            },
+            onFetchSuccess: function(context) {
+                context.commit('setFetchSuccess');
+            },
+            setIsLoadingIfNecessary: function(context, payload) {
+                if (payload.useLoader) {
+                    context.commit('setIsLoading', payload.value);
+                }
+            }
+        };
+        var countlyFetchMutations = {
+            setFetchInit: function(state) {
+                state.hasError = false;
+                state.error = null;
+            },
+            setFetchError: function(state, error) {
+                state.hasError = true;
+                state.error = error;
+            },
+            setFetchSuccess: function(state) {
+                state.hasError = false;
+                state.error = null;
+            },
+            setIsLoading: function(state, value) {
+                state.isLoading = value;
+            }
+        };
+
+        var countlyFetchGetters = {
+            isLoading: function(state) {
+                return state.isLoading;
+            }
+        };
+
+        return VuexModule('countlyFetch', {
+            namespaced: false,
+            state: countlyFetchState,
+            actions: countlyFetchActions,
+            getters: countlyFetchGetters,
+            mutations: countlyFetchMutations
+        });
+    };
+    countlyVue.vuex.FetchMixin = FetchMixin;
 
 }(window.countlyVue = window.countlyVue || {}));

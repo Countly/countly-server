@@ -1,0 +1,53 @@
+<cly-datatable-n
+    :rows="widgets">
+      <template v-slot="scope">
+          <el-table-column width="120px" sortable="true" prop="status" :label="'Status'">
+              <template v-slot="rowScope">
+                <el-switch :value="rowScope.row.status"
+                  @input="scope.patch(rowScope.row, { status: !rowScope.row.status})"
+                  @change="$emit('set-status', rowScope.row, !rowScope.row.status)">
+                </el-switch>
+              </template>
+          </el-table-column>
+          <el-table-column min-width="150px" :label="'Ratings Widget Name'">
+            <template v-slot="rowScope">
+                <div class="text-small bu-has-text-weight-bold">
+                  {{rowScope.row.popup_header_text}}
+                </div>
+                <div class="text-small">
+                  Widget ID {{rowScope.row._id}}
+                </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="targeting" :label="'Targeting'">
+            <template v-slot="rowScope">
+              <cly-cohort-targeting :targeting="rowScope.row.targeting">
+              </cly-cohort-targeting>
+            </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="rating_score" :label="'Rating Score'">
+            <template v-slot="rowScope">
+                <span class="bu-is-size-4">
+                  {{ rowScope.row.ratingScore }}
+                </span>
+            </template>
+          </el-table-column>
+          <el-table-column sortable="true" prop="responses" :label="'Responses'">
+            <template v-slot="rowScope">
+              <span class="text-medium">
+                {{ rowScope.row.ratingsCount }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column>
+            <template width="50px" :label="'Detail'" v-slot="rowScope">
+              <span class="text-medium">
+                <cly-more-options class="bu-ml-2" size="small" @command="handleCommand($event, rowScope.row._id)">
+                  <el-dropdown-item command="show-detail">Show Detail</el-dropdown-item>
+                </cly-more-options>
+              </span>
+            </template>
+          </el-table-column>
+        </template>
+      </template>
+  </cly-datatable-n>

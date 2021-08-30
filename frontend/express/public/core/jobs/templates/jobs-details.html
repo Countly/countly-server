@@ -9,7 +9,7 @@
     </cly-header>
     <cly-main>
 		<cly-section>
-			<cly-datatable-n :data-source="remoteTableDataSource">
+			<cly-datatable-n :data-source="remoteTableDataSource" :default-sort="{prop: 'next', order: 'descending'}">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="schedule" :label="i18n('jobs.job-schedule')">
                     </el-table-column>

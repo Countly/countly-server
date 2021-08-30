@@ -5,7 +5,7 @@ var plugin = {},
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
-    { validateRead, validateUpdate, validateCreate } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateCreate, validateUser } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'global_plugins';
 
@@ -292,7 +292,7 @@ const FEATURE_NAME = 'global_plugins';
 
     plugins.register("/o/userconfigs", function(ob) {
         var params = ob.params;
-        validateRead(params, FEATURE_NAME, function() {
+        validateUser(params, function() {
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getUserConfigs(params.member.settings);
                 common.returnOutput(params, confs);
@@ -303,17 +303,19 @@ const FEATURE_NAME = 'global_plugins';
 
     plugins.register("/o/themes", function(ob) {
         var params = ob.params;
-        var themeDir = path.resolve(__dirname, "../../../frontend/express/public/themes/");
-        fs.readdir(themeDir, function(err, list) {
-            if (!Array.isArray(list)) {
-                list = [];
-            }
-            list.unshift("");
-            var index = list.indexOf(".gitignore");
-            if (index > -1) {
-                list.splice(index, 1);
-            }
-            common.returnOutput(params, list);
+        validateUser(params, function() {
+            var themeDir = path.resolve(__dirname, "../../../frontend/express/public/themes/");
+            fs.readdir(themeDir, function(err, list) {
+                if (!Array.isArray(list)) {
+                    list = [];
+                }
+                list.unshift("");
+                var index = list.indexOf(".gitignore");
+                if (index > -1) {
+                    list.splice(index, 1);
+                }
+                common.returnOutput(params, list);
+            });
         });
         return true;
     });

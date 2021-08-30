@@ -3524,6 +3524,25 @@
         return array;
     };
 
+    /**
+     * Function that creates a shallow copy of an object excluding specified fields.
+     * Warning: If no excluded fields specified, returns the original reference
+     * @param {Object} obj Main object
+     * @param {Array} excluded Array of excluded fields
+     * @returns {Object} Shallow copy (If no excluded fields, the original reference)
+     */
+    CountlyHelpers.objectWithoutProperties = function(obj, excluded) {
+        if (!obj || !excluded || excluded.length === 0) {
+            return obj;
+        }
+        return Object.keys(obj).reduce(function(acc, val) {
+            if (excluded.indexOf(val) === -1) {
+                acc[val] = obj[val];
+            }
+            return acc;
+        }, {});
+    };
+
     $(document).ready(function() {
         $("#overlay").click(function() {
             var dialog = $(".dialog:visible:not(.cly-loading)");

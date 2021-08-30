@@ -1,21 +1,9 @@
-/* global Vue, jQuery, _, countlyCommon*/
+/* global Vue, jQuery, _, countlyCommon, CountlyHelpers */
 
 (function(countlyVue, $) {
 
     var countlyBaseComponent = countlyVue.components.BaseComponent,
         _mixins = countlyVue.mixins;
-
-    var objectWithoutProperties = function(obj, excluded) {
-        if (!obj || !excluded || excluded.length === 0) {
-            return obj;
-        }
-        return Object.keys(obj).reduce(function(acc, val) {
-            if (excluded.indexOf(val) === -1) {
-                acc[val] = obj[val];
-            }
-            return acc;
-        }, {});
-    };
 
     /*
         Legacy layout components start here
@@ -174,7 +162,7 @@
             },
             computed: {
                 defaultListeners: function() {
-                    return objectWithoutProperties(this.$listeners, ["input"]);
+                    return CountlyHelpers.objectWithoutProperties(this.$listeners, ["input"]);
                 },
                 innerRemoveText: function() {
                     if (this.removeText) {
@@ -292,7 +280,7 @@
             },
             computed: {
                 defaultListeners: function() {
-                    return objectWithoutProperties(this.$listeners, ["input"]);
+                    return CountlyHelpers.objectWithoutProperties(this.$listeners, ["input"]);
                 }
             },
             template: '<textarea class="cly-vue-text-area"\n' +
