@@ -1081,7 +1081,7 @@ membersUtility.removeMembers = async function(query = {}) {
 */
 membersUtility.createMember = async function(data, provider = '', deleteDuplicate = false) {
     let user = {};
-    if (!data || (data && !Object.keys(data).length)) {
+    if (!data || !Object.keys(data).length) {
         throw new Error('Invalid user data provided');
     }
     user._id = data._id || data.id || data.sub;
