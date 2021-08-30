@@ -404,6 +404,40 @@
                 dur: allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration")
             };
 
+        },
+        getLimitAlerts: function(context) {
+            var limitAlert = [];
+            var allEventsList = context.state.allEventsList;
+            var limits = context.state.allEventsData.limits;
+            var eventLimit = {};
+            var eventSegmentationLimit = {};
+            var eventSegmentationLimitValue = {};
+            var availableSegments = context.state.availableSegments.length - 1;
+            var meta = context.state.selectedEventsData.meta;
+            var eventsLength = allEventsList.filter(function(item) {
+                return item.custom.value !== "GROUP";
+            }).length;
+            if (eventsLength >= limits.event_limit) {
+                eventLimit.message = CV.i18n("events.max-event-key-limit", limits.event_limit);
+                eventLimit.show = true;
+                limitAlert.push(eventLimit);
+            }
+            if (!context.state.selectedEventName.startsWith('[CLY]_group')) {
+                if (availableSegments >= limits.event_segmentation_limit) {
+                    eventSegmentationLimit.message = CV.i18n("events.max-segmentation-limit", limits.event_segmentation_limit, context.state.allEventsProcessed.eventName);
+                    eventSegmentationLimit.show = true;
+                    limitAlert.push(eventSegmentationLimit);
+                }
+                context.state.availableSegments.forEach(function(s) {
+                    if (s !== "segment" && meta[s] && meta[s].length >= limits.event_segmentation_value_limit) {
+                        eventSegmentationLimitValue = {};
+                        eventSegmentationLimitValue.message = CV.i18n("events.max-unique-value-limit", limits.event_segmentation_value_limit, s);
+                        eventSegmentationLimitValue.show = true;
+                        limitAlert.push(eventSegmentationLimitValue);
+                    }
+                });
+            }
+            return limitAlert;
         }
     };
 
@@ -484,7 +518,8 @@
                 tableRows: [],
                 selectedEventsOverview: {},
                 allEventsList: [],
-                labels: []
+                labels: [],
+                limitAlerts: []
             };
         };
 
@@ -513,6 +548,7 @@
                                         context.commit("setSelectedEventsData", response);
                                         context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);
                                         context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
+                                        context.commit("setLimitAlerts", countlyAllEvents.helpers.getLimitAlerts(context) || []);
 
                                         countlyAllEvents.service.fetchSelectedEventsOverview(context)
                                             .then(function(resp) {
@@ -611,6 +647,9 @@
             },
             setLabels: function(state, value) {
                 state.labels = value;
+            },
+            setLimitAlerts: function(state, value) {
+                state.limitAlerts = value;
             }
         };
         var allEventsGetters = {
@@ -664,6 +703,9 @@
             },
             labels: function(_state) {
                 return _state.labels;
+            },
+            limitAlerts: function(_state) {
+                return _state.limitAlerts;
             }
         };
         return countlyVue.vuex.Module("countlyAllEvents", {

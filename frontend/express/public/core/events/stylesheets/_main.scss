@@ -2,10 +2,6 @@
 @use "../../../stylesheets/styles/base/colors" as c;
 @use "sass:map";
 
-.cly-vue-events-overview-date-picker {
-    margin:7px 24px 16px 24px;
-}
-
 .cly-events-breakdown-horizontal-tile {
     &__wrapper {
         border-right: 1px solid #ECECEC; 
@@ -83,16 +79,35 @@
         padding: 0px;
     }
     }
+    &__empty {
+        min-height: 100px;
+        &__block {
+            margin: 32px auto 32px auto;
+            max-width: 586px;
+        }
+        &--image {
+            width: 242px;
+            height: 242px;
+            background-image: url('../../../images/dashboard/events-overview-noevents.svg');
+        }
+    }
+    &--text{
+        font-weight:t.$heading-4-weight;
+        font-size:t.$text-small-size;
+        color: map.get(c.$colors, "cool-gray-40");
+        letter-spacing: 0.5px;
+        font-family:  t.$font-family;
+        line-height: 14.52px;
+    }
+    .cly-vue-section__content{
     border: 1px solid #ECECEC;
     border-radius: 4px;
+    }
     &--grey {
       color: #A7AEB8 
     }
     &__heading {
       padding:8px 0px 16px 0px  
-    }
-    &__datepicker-section {
-        padding-left:24px
     }
     &__configure {
         &--position {
@@ -108,6 +123,7 @@
     line-height: t.$heading-4-line-height;
     font-weight: t.$heading-4-weight;
     font-family: t.$font-family;
+    color: map.get(c.$colors, "cool-gray-100");
 }
 &--dragicon {
     margin-right:18px;
@@ -120,6 +136,9 @@
 }
 &__basis {
     flex-basis: 0;
+}
+&__dropdown {
+    min-width: 230px;
 }
 }
 
@@ -187,6 +206,11 @@
 }
 
 .cly-vue-events-all {
+    &__sidebar {
+        .el-input__inner{
+            background-color: map.get(c.$colors, "warm-gray-20");
+        }
+    }
     font-size: 24px;
     line-height: 32px;
     font-weight: 500;

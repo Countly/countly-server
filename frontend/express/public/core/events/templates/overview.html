@@ -13,11 +13,11 @@
 		</cly-header>
 		<cly-main>
 		  <div>
-			<cly-date-picker class="bu-mb-4"  v-model="disabledDatePicker" type="daterange" placeholder="Last 30 Days"  timestampFormat="ms" :disabled="true"></cly-date-picker>
+			<cly-date-picker class="bu-mb-4"  v-model="disabledDatePicker" type="daterange"  timestampFormat="ms" :disabled="true"></cly-date-picker>
 		  </div>
 		  <cly-section>
 			<cly-metric-cards>
-			  <cly-metric-card :number=eventsOverview[0].value color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
+			  <cly-metric-card formatting="long" :number=eventsOverview[0].value color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 				{{eventsOverview[0].name}}
 				<cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
 				<span v-if="eventsOverview[0].trend='d'" slot="description" class="cly-vue-events-overview-top-events__description cly-trend-down"><i class="cly-vue-events-overview-top-events__trend fas fa-arrow-circle-down"></i>{{eventsOverview[0].change}}</span>
@@ -74,11 +74,26 @@
 		  </div>
 		  <cly-section class="cly-vue-events-overview-monitor-events">
 			<div>
-			  <div class="cly-vue-events-overview-monitor-events__datepicker-section">
-				<span class="cly-vue-events-overview-monitor-events--grey">{{i18n('events.overview.time.period')}}</span>
-				<cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms" class="cly-vue-events-overview-date-picker"></cly-date-picker>
+			  <div class="bu-pl-4">
+				<span class="cly-vue-events-overview-monitor-events--grey cly-vue-events-overview-monitor-events--text">{{i18n('events.overview.time.period')}}</span>
+				<cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms" class="bu-m-2"></cly-date-picker>
 			  </div>
-			  <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
+			<div v-if="monitorEventsData.length===0" class="cly-vue-events-overview-monitor-events__empty">
+				<div class="cly-vue-events-overview-monitor-events__empty__block" >
+					 <table>
+						<tr>
+							<td>
+								<p class="cly-vue-events-overview-subheadings">{{i18n('events.all.empty-title')}}</p>
+								<p class="cly-vue-events-overview-monitor-events--grey cly-vue-events-overview-monitor-events--text">{{i18n('events.all.empty-text')}}</p>
+							</td>
+							<td>
+								<div class="cly-vue-events-overview-monitor-events__empty--image ml-4"></div>
+							</td>
+						</tr>
+					 </table>
+				</div>
+			</div>
+			  <div v-else class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
 				<monitor-events-breakdown-horizontal-tile
 				  :trend="item.trend"
 				  :change="item.change"
@@ -101,7 +116,7 @@
 </script>
   <script type="text/x-template" id="overview-tables-events">
 	<div>
-		<cly-datatable-n :rows="eventsTableRows.data">
+		<cly-datatable-n :rows="eventsTableRows.data" class="is-clickable" @row-click="onRowClick">
 		  <template v-slot:header-left="selectScope">
 		  </template>
 		  <template v-slot="scope">

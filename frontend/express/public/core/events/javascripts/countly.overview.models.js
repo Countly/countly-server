@@ -37,7 +37,7 @@
                     event.value = countlyCommon.getShortNumber((data[i].count));
                     event.change = data[i].change;
                     event.trend = data[i].trend;
-                    event.percentage = ((data[i].count / ob.totalCount) * 100).toFixed(1);
+                    event.percentage = ob.totalCount === 0 ? 0 : ((data[i].count / ob.totalCount) * 100).toFixed(1);
                     topEvents.push(event);
                 }
             }
@@ -362,12 +362,12 @@
                                         context.commit("setOverviewGroupData", result);
                                         context.commit("setConfigureEventsList", countlyEventsOverview.helpers.getOverviewConfigureList(res, result));
                                         context.commit("setEventMapping", countlyEventsOverview.helpers.getEventMapping(res, result));
-                                    }
-                                });
-                            countlyEventsOverview.service.fetchMonitorEventsData(events, context)
-                                .then(function(response) {
-                                    if (response) {
-                                        return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context) || []);
+                                        countlyEventsOverview.service.fetchMonitorEventsData(events, context)
+                                            .then(function(response) {
+                                                if (response) {
+                                                    return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context) || []);
+                                                }
+                                            });
                                     }
                                 });
                         }

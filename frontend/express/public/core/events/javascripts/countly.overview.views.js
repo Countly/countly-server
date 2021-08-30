@@ -10,6 +10,11 @@
                 }
             };
         },
+        methods: {
+            onRowClick: function(params) {
+                app.navigate("#/analytics/events/key/" + params.name, true);
+            }
+        },
         computed: {
             eventsTableRows: function() {
                 return this.$store.getters["countlyEventsOverview/detailEvents"];
@@ -235,7 +240,7 @@
         data: function() {
             return {
                 description: CV.i18n('events.overview.title.new'),
-                disabledDatePicker: '30days',
+                disabledDatePicker: '1months',
                 monitorEventsLegend: {"show": false}
             };
         },

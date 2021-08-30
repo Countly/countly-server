@@ -311,6 +311,9 @@
             },
             labels: function() {
                 return this.$store.getters["countlyAllEvents/allEventsProcessed"].chartDP;
+            },
+            limitAlerts: function() {
+                return this.$store.getters["countlyAllEvents/limitAlerts"];
             }
 
         },
@@ -362,16 +365,16 @@
             eventKey: eventKey && eventKey !== "undefined" ? eventKey : undefined
         };
         var EventAllView = getAllEventsView();
-        AllEventsView.params = params;
+        EventAllView.params = params;
         this.renderWhenReady(EventAllView);
     });
 
     app.route("/analytics/events", "all-events", function() {
         var params = {
-            eventKey: undefined
+            eventKey: localStorage.getItem("eventKey") || undefined
         };
         var EventsAllView = getAllEventsView();
-        AllEventsView.params = params;
+        EventsAllView.params = params;
         this.renderWhenReady(EventsAllView);
     });
 
