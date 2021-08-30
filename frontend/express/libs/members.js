@@ -28,12 +28,12 @@ var versionInfo = require('./../version.info'),
 var membersUtility = { };
 //Helper functions
 /**
-  * @property {object} db - Data base connection. Needs to be set befoe callng any other function.
-  */
+ * @property {object} db - Data base connection. Needs to be set befoe callng any other function.
+ */
 membersUtility.db = null;
 /**
-  * @property {object} countlyConfig - countly configuration object
-  */
+ * @property {object} countlyConfig - countly configuration object
+ */
 membersUtility.countlyConfig = configs;
 if (membersUtility.countlyConfig.web && membersUtility.countlyConfig.web.track === "all") {
     membersUtility.countlyConfig.web.track = null;
@@ -41,9 +41,9 @@ if (membersUtility.countlyConfig.web && membersUtility.countlyConfig.web.track =
 
 
 /** Checks remote configuration and sets variables to configuration object
-  * @param {object} countlyConfigOrig - configuration settings object. Original(ar read from file)
-  * @param {object} countlyConfig - contiguration. Changes if are done on this object.
- */
+ * @param {object} countlyConfigOrig - configuration settings object. Original(ar read from file)
+ * @param {object} countlyConfig - contiguration. Changes if are done on this object.
+*/
 membersUtility.recheckConfigs = function(countlyConfigOrig, countlyConfig) {
     var checkUrl = "https://count.ly/configurations/ce/tracking";
     if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
@@ -79,72 +79,72 @@ var origConf = JSON.parse(JSON.stringify(membersUtility.countlyConfig));
 membersUtility.recheckConfigs(origConf, membersUtility.countlyConfig);
 
 /**
-  * Is hashed string argon2?
-  * @param {string} hashedStr | argon2 hashed string
-  * @returns {boolean} return true if string hashed by argon2
-  */
+ * Is hashed string argon2?
+ * @param {string} hashedStr | argon2 hashed string
+ * @returns {boolean} return true if string hashed by argon2
+ */
 function isArgon2Hash(hashedStr) {
     return hashedStr.includes("$argon2");
 }
 
 /**
- * Verify argon2 hash string
- * @param {string} hashedStr - argon2 hashed string
- * @param {string} str - string for verify
- * @returns {promise} verify promise
- **/
+* Verify argon2 hash string
+* @param {string} hashedStr - argon2 hashed string
+* @param {string} str - string for verify
+* @returns {promise} verify promise
+**/
 function verifyArgon2Hash(hashedStr, str) {
     return argon2.verify(hashedStr, str);
 }
 
 /**
- * Create argon2 hash string
- * @param {string} str - string to hash
- * @returns {promise} hash promise
- **/
+* Create argon2 hash string
+* @param {string} str - string to hash
+* @returns {promise} hash promise
+**/
 function argon2Hash(str) {
     return argon2.hash(str);
 }
 
 /**
- * Update user password to new sha512 hash
- * @param {string} id - id of the user document
- * @param {string} password - password to hash
- * @param {object} countlyDb  - data base object
- **/
+* Update user password to new sha512 hash
+* @param {string} id - id of the user document
+* @param {string} password - password to hash
+* @param {object} countlyDb  - data base object
+**/
 function updateUserPasswordToArgon2(id, password, countlyDb) {
     countlyDb.collection('members').update({ _id: id}, { $set: { password: password}});
 }
 
 /**
- * Create sha1 hash string
- * @param {string} str - string to hash
- * @param {boolean} addSalt - should salt be added
- * @returns {string} hashed string
- **/
+* Create sha1 hash string
+* @param {string} str - string to hash
+* @param {boolean} addSalt - should salt be added
+* @returns {string} hashed string
+**/
 function sha1Hash(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : "";
     return crypto.createHmac('sha1', salt + "").update(str + "").digest('hex');
 }
 
 /**
- * Create sha512 hash string
- * @param {string} str - string to hash
- * @param {boolean} addSalt - should salt be added
- * @returns {string} hashed string
- **/
+* Create sha512 hash string
+* @param {string} str - string to hash
+* @param {boolean} addSalt - should salt be added
+* @returns {string} hashed string
+**/
 function sha512Hash(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : "";
     return crypto.createHmac('sha512', salt + "").update(str + "").digest('hex');
 }
 
 /**
-  * Verify member for Argon2 Hash
-  * @param {string} username | User name
-  * @param {password} password | Password string
-  * @param {object} countlyDb  - data base object
-  * @param {Function} callback | Callback function
-  */
+ * Verify member for Argon2 Hash
+ * @param {string} username | User name
+ * @param {password} password | Password string
+ * @param {object} countlyDb  - data base object
+ * @param {Function} callback | Callback function
+ */
 function verifyMemberArgon2Hash(username, password, countlyDb, callback) {
     countlyDb.collection('members').findOne({$and: [{ $or: [ {"username": username}, {"email": username}]}]}, (err, member) => {
         if (member) {
@@ -184,10 +184,10 @@ function verifyMemberArgon2Hash(username, password, countlyDb, callback) {
 }
 
 /**
- * Validate password based on configured settings
- * @param {string} password - password to validatePassword
- * @returns {vary} returns string if there is error, or false if everything is ok
- **/
+* Validate password based on configured settings
+* @param {string} password - password to validatePassword
+* @returns {vary} returns string if there is error, or false if everything is ok
+**/
 function validatePassword(password) {
     if (password.length < plugins.getConfig("security").password_min) {
         return "management-users.password.length";
@@ -204,10 +204,10 @@ function validatePassword(password) {
     return false;
 }
 /**
-  * Function gets session timeout in ms.
-  * @param {object} req - requets object
-  * @returns {integer} Session timeout in ms.
-  */
+ * Function gets session timeout in ms.
+ * @param {object} req - requets object
+ * @returns {integer} Session timeout in ms.
+ */
 var getSessionTimeoutInMs = function(req) {
     var myTimeoutValue = parseInt(plugins.getConfig("frontend", req.session && req.session.settings).session_timeout, 10) * 1000 * 60;
     //max value used by set timeout function
@@ -218,12 +218,12 @@ var getSessionTimeoutInMs = function(req) {
 };
 
 /**
- * Sets variables for logged in session
- * @param {object} req - request object
- * @param {object} member - member object
- * @param {object} countlyDb  -data base reference
- * @param {function} callback - callback function, called after token and variables are set. Returns nothing.
- **/
+* Sets variables for logged in session
+* @param {object} req - request object
+* @param {object} member - member object
+* @param {object} countlyDb  -data base reference
+* @param {function} callback - callback function, called after token and variables are set. Returns nothing.
+**/
 function setLoggedInVariables(req, member, countlyDb, callback) {
     req.session.uid = member._id;
     req.session.gadm = (member.global_admin === true);
@@ -253,9 +253,9 @@ function setLoggedInVariables(req, member, countlyDb, callback) {
 }
 
 /** Clears all inforamtion about user from session parameters. Used when logging ut user.
- * @param {object} req - request object
- * @param {object} res - response object
- */
+* @param {object} req - request object
+* @param {object} res - response object
+*/
 membersUtility.clearReqAndRes = function(req, res) {
     if (req.session) {
         req.session.uid = null;
@@ -269,21 +269,21 @@ membersUtility.clearReqAndRes = function(req, res) {
 };
 
 /**
- * Verifies a user's credentials without logging in.
- *
- * @param {string} username - username or the email address of the user
- * @param {string} password - password
- * @param {function} callback - callback function.  First parameter in callback function is member object if logging in is successful.
- * @example
- *   membersUtility.verifyCredentials(username, password, function(member) {
-         if (member) {
-             // logged in
-         }
-         else {
-             // failed
-         }
-     });
- **/
+* Verifies a user's credentials without logging in.
+*
+* @param {string} username - username or the email address of the user
+* @param {string} password - password
+* @param {function} callback - callback function.  First parameter in callback function is member object if logging in is successful.
+* @example
+*   membersUtility.verifyCredentials(username, password, function(member) {
+        if (member) {
+            // logged in
+        }
+        else {
+            // failed
+        }
+    });
+**/
 membersUtility.verifyCredentials = function(username, password, callback) {
     if (username && password) {
         username = (username + "").trim();
@@ -306,12 +306,12 @@ membersUtility.verifyCredentials = function(username, password, callback) {
 };
 
 /**
- * Update Stats for member.
- *
- * @param {object} member - member properties
- * @example
- *   membersUtility.updateStats(member );
- **/
+* Update Stats for member.
+*
+* @param {object} member - member properties
+* @example
+*   membersUtility.updateStats(member );
+**/
 membersUtility.updateStats = function(member) {
     var countlyConfig = membersUtility.countlyConfig;
 
@@ -348,31 +348,31 @@ membersUtility.updateStats = function(member) {
 };
 
 /**
- * Tries to log in user based passed userame and password. Calls "plugins"
- * methods to notify successful and unsucessful logging in attempts. If
- * successful, sets all session variables and auth token. Passes the member
- * object to the callback if retrieved succesfully, but not necessarily logged
- * in succesfully i.e. a member object will still be returned even if the member
- * was locked. Also passes a boolean parameter to the callback indicating if the
- * login was succesful.
- *
- * @param {object} req - request object
- * @param {string} req.body.username - username
- * @param {string} req.body.password - password
- * @param {object} res - response object
- * @param {function} callback - callback function. First parameter in callback
- * function is member object, if it could be retrieved succesfully. Second
- * parameter is a boolean that is true when logged in succesfully.
- * @example
- *   membersUtility.login(req, res, function(member) {
-         if(member) {
-             // logged in
-         }
-         else {
-             // failed
-         }
-     });
- **/
+* Tries to log in user based passed userame and password. Calls "plugins"
+* methods to notify successful and unsucessful logging in attempts. If
+* successful, sets all session variables and auth token. Passes the member
+* object to the callback if retrieved succesfully, but not necessarily logged
+* in succesfully i.e. a member object will still be returned even if the member
+* was locked. Also passes a boolean parameter to the callback indicating if the
+* login was succesful.
+*
+* @param {object} req - request object
+* @param {string} req.body.username - username
+* @param {string} req.body.password - password
+* @param {object} res - response object
+* @param {function} callback - callback function. First parameter in callback
+* function is member object, if it could be retrieved succesfully. Second
+* parameter is a boolean that is true when logged in succesfully.
+* @example
+*   membersUtility.login(req, res, function(member) {
+        if(member) {
+            // logged in
+        }
+        else {
+            // failed
+        }
+    });
+**/
 
 membersUtility.login = function(req, res, callback) {
     membersUtility.verifyCredentials(req.body.username, req.body.password, (member) => {
@@ -419,27 +419,27 @@ membersUtility.login = function(req, res, callback) {
 };
 
 /**
- * Tries to log in user without verification for external authentication.
- * Similar behavior as the membersUtility.login just bypass the verification
- * as the user is already authenticated by external authentication mechanism
- * such as Active Directory, Azure AD or Ldap
- *
- * @param {object} req - request object
- * @param {string} req.body.username - username
- * @param {object} res - response object
- * @param {function} callback - callback function. First parameter in callback
- * function is member object, if it could be retrieved succesfully. Second
- * parameter is a boolean that is true when logged in succesfully.
- * @example
- *   membersUtility.loginWithExternalAuthentication(req, res, function(member) {
-         if(member) {
-             // logged in
-         }
-         else {
-             // failed
-         }
-     });
- **/
+* Tries to log in user without verification for external authentication.
+* Similar behavior as the membersUtility.login just bypass the verification
+* as the user is already authenticated by external authentication mechanism
+* such as Active Directory, Azure AD or Ldap
+*
+* @param {object} req - request object
+* @param {string} req.body.username - username
+* @param {object} res - response object
+* @param {function} callback - callback function. First parameter in callback
+* function is member object, if it could be retrieved succesfully. Second
+* parameter is a boolean that is true when logged in succesfully.
+* @example
+*   membersUtility.loginWithExternalAuthentication(req, res, function(member) {
+        if(member) {
+            // logged in
+        }
+        else {
+            // failed
+        }
+    });
+**/
 
 membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
     if (!req.body || !req.body.username) {
@@ -488,12 +488,12 @@ membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
 };
 
 /**
- * Removes all other active sessions for user
- * @param {string} userId - id of the user for which to remove sessions
- * @param {string} my_token - current auth token
- * @param {string} my_session - current session id
- * @param {object} countlyDb  -data base reference
- **/
+* Removes all other active sessions for user
+* @param {string} userId - id of the user for which to remove sessions
+* @param {string} my_token - current auth token
+* @param {string} my_session - current session id
+* @param {object} countlyDb  -data base reference
+**/
 function killOtherSessionsForUser(userId, my_token, my_session, countlyDb) {
     countlyDb.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
         var delete_us = [];
@@ -526,10 +526,10 @@ function killOtherSessionsForUser(userId, my_token, my_session, countlyDb) {
 }
 
 /**
- * Logins user with token
- * @param {object} req - request object
- * @param {function} callback - callback function
- **/
+* Logins user with token
+* @param {object} req - request object
+* @param {function} callback - callback function
+**/
 membersUtility.loginWithToken = function(req, callback) {
     var token = req.params.token;
     var pathUrl = req.url.replace(membersUtility.countlyConfig.path, "");
@@ -570,10 +570,10 @@ membersUtility.loginWithToken = function(req, callback) {
 
 
 /**
- * Logs out user  -  clears session info for request and response object
- * @param {object} req - request object
- * @param {object} res - response object
- **/
+* Logs out user  -  clears session info for request and response object
+* @param {object} req - request object
+* @param {object} res - response object
+**/
 membersUtility.logout = function(req, res) {
     if (req.session) {
         if (req.session.uid && req.session.email) {
@@ -593,10 +593,10 @@ membersUtility.logout = function(req, res) {
 };
 
 /**
-  * Function to extend user session. Changes time when session expires and also extends token(if passed).
-  * @param {object} req - request object
-  * @param {string} req.session.auth_token - auth token
- */
+ * Function to extend user session. Changes time when session expires and also extends token(if passed).
+ * @param {object} req - request object
+ * @param {string} req.session.auth_token - auth token
+*/
 membersUtility.extendSession = function(req) {
     req.session.expires = Date.now() + getSessionTimeoutInMs(req);
     if (req.session.auth_token) {
@@ -619,26 +619,26 @@ membersUtility.extendSession = function(req) {
 };
 
 /**
-  * Sets up first user in Countly(if there is none). Req object is used to get mandatory variables from req.body and also there are variables set to have logged in session for new user.
-  * @param {object} req - request object
-  * @param {string} req.body.full_name - Full name. Mandatory.
-  * @param {string} req.body.username - Username. Mandatory.
-  * @param {string} req.body.password  - Password. Mandatory.
-  * @param {string} req.body.email  - E-mail. Mandatory.
-  * @param {function} callback  - Function with one return value - error (if there is one)
-  * @example
-  *   membersUtility.setup(req, res, countlyConfig, function(error) {
-  *      if(error) {
-  *          //there is error while setting up user
-  *          // error === "Wrong request parameters" - not all mandatory parameters passed or there was error during creating user
-  *         // error === "User exists" - There is already at least one user.
-  *           // error === "....." - mongo error while getting user count.
-  *      }
-  *      else {
-  *          //Success
-  *      }
-  *  });
- **/
+ * Sets up first user in Countly(if there is none). Req object is used to get mandatory variables from req.body and also there are variables set to have logged in session for new user.
+ * @param {object} req - request object
+ * @param {string} req.body.full_name - Full name. Mandatory.
+ * @param {string} req.body.username - Username. Mandatory.
+ * @param {string} req.body.password  - Password. Mandatory.
+ * @param {string} req.body.email  - E-mail. Mandatory.
+ * @param {function} callback  - Function with one return value - error (if there is one)
+ * @example
+ *   membersUtility.setup(req, res, countlyConfig, function(error) {
+ *      if(error) {
+ *          //there is error while setting up user
+ *          // error === "Wrong request parameters" - not all mandatory parameters passed or there was error during creating user
+ *         // error === "User exists" - There is already at least one user.
+ *           // error === "....." - mongo error while getting user count.
+ *      }
+ *      else {
+ *          //Success
+ *      }
+ *  });
+**/
 
 membersUtility.setup = function(req, callback) {
     membersUtility.db.collection('members').count(function(err, memberCount) {
@@ -706,18 +706,18 @@ membersUtility.setup = function(req, callback) {
 };
 
 /**
-  * Function validates if email is not used by any other member.
-  * @param {string} email - mandatory. E-mail to check
-  * @param {function} callback -  function with one return value. Returns true if email is not used, false if taken.
-  * @example
-  * membersUtility.checkEmail(email, function(isFree) {
-  *      if(isFree ===true) {
-  *          //email is not taken
-  *      }
-  * });
-  *
-  *
- */
+ * Function validates if email is not used by any other member.
+ * @param {string} email - mandatory. E-mail to check
+ * @param {function} callback -  function with one return value. Returns true if email is not used, false if taken.
+ * @example
+ * membersUtility.checkEmail(email, function(isFree) {
+ *      if(isFree ===true) {
+ *          //email is not taken
+ *      }
+ * });
+ *
+ *
+*/
 membersUtility.checkEmail = function(email, callback) {
     email = (email + "").trim();
     membersUtility.db.collection('members').findOne({email: email}, function(err, member) {
@@ -731,18 +731,18 @@ membersUtility.checkEmail = function(email, callback) {
 };
 
 /**
-  * Function validates if username is not used by any other member.
-  * @param {string} username - mandatory. Username to check.
-  * @param {function} callback -  function with one return value. Returns true if username is free, false if taken.
-  * @example
-  * membersUtility.checkUsername(username, function(isFree) {
-  *      if(isFree ===true) {
-  *          //username is not taken
-  *      }
-  * });
-  *
-  *
- */
+ * Function validates if username is not used by any other member.
+ * @param {string} username - mandatory. Username to check.
+ * @param {function} callback -  function with one return value. Returns true if username is free, false if taken.
+ * @example
+ * membersUtility.checkUsername(username, function(isFree) {
+ *      if(isFree ===true) {
+ *          //username is not taken
+ *      }
+ * });
+ *
+ *
+*/
 membersUtility.checkUsername = function(username, callback) {
     username = (username + "").trim();
     membersUtility.db.collection('members').findOne({username: username}, function(err, member) {
@@ -756,21 +756,21 @@ membersUtility.checkUsername = function(username, callback) {
 };
 
 /**
-  * Sends user password reseting information to given e-mail.
-  * @param {object} req - request object.
-  * @param {string} req.body.email - mandatory. User email.
-  * @param {string} req.body.lang - optional. Language.(default "en"  - english)
-  * @param {function} callback  - function with one return value. Returns member object if successful.
-  * @example
-  * membersUtility.forgot(req, function(member) {
-  *      if(member) {
-  *         //member found
-  *      }
-  *      else {
-  *         //e-mail not passed or user with this e-mail not found
-  *      }
-  * });
- */
+ * Sends user password reseting information to given e-mail.
+ * @param {object} req - request object.
+ * @param {string} req.body.email - mandatory. User email.
+ * @param {string} req.body.lang - optional. Language.(default "en"  - english)
+ * @param {function} callback  - function with one return value. Returns member object if successful.
+ * @example
+ * membersUtility.forgot(req, function(member) {
+ *      if(member) {
+ *         //member found
+ *      }
+ *      else {
+ *         //e-mail not passed or user with this e-mail not found
+ *      }
+ * });
+*/
 membersUtility.forgot = function(req, callback) {
     if (!req || !req.body || !req.body.email) {
         callback(undefined); //to be sure email is passed
@@ -795,13 +795,13 @@ membersUtility.forgot = function(req, callback) {
     }
 };
 /**
-  * Resets user password
-  * @param {object} req - request object
-  * @param {string} req.body.password - mandatory. new password.
-  * @param {string} req.body.again - mandatory.
-  * @param {string} req.body.prid - mandatory. Password reset id.
-  * @param {function} callback - function with one two return values. First one is password validation error(false if no error) and second one is member object if reset is sucessful.
- */
+ * Resets user password
+ * @param {object} req - request object
+ * @param {string} req.body.password - mandatory. new password.
+ * @param {string} req.body.again - mandatory.
+ * @param {string} req.body.prid - mandatory. Password reset id.
+ * @param {function} callback - function with one two return values. First one is password validation error(false if no error) and second one is member object if reset is sucessful.
+*/
 membersUtility.reset = function(req, callback) {
     var result = validatePassword(req.body.password);
     if (result === false) {
@@ -832,14 +832,14 @@ membersUtility.reset = function(req, callback) {
 };
 
 /**
-  * Saves changed user settings
-  * @param {object} req - request object
-  * @param {string} req.body.username - mandatory - username (current or new one to chacge to)
-  * @param {string} req.body.api_key - mandatory. User API KEY (current or the one to change to)
-  * @param {string} req.body.old_pwd  - Old password. Optional. Passed if changing password.
-  * @param {string} req.body.new_pwd  - New password. Optional. Passed if changing password.
-  * @param {function} callback  - function with two return values. First one is true - if successful (false if not sucessful) and the second one - error message(in some cases).
- */
+ * Saves changed user settings
+ * @param {object} req - request object
+ * @param {string} req.body.username - mandatory - username (current or new one to chacge to)
+ * @param {string} req.body.api_key - mandatory. User API KEY (current or the one to change to)
+ * @param {string} req.body.old_pwd  - Old password. Optional. Passed if changing password.
+ * @param {string} req.body.new_pwd  - New password. Optional. Passed if changing password.
+ * @param {function} callback  - function with two return values. First one is true - if successful (false if not sucessful) and the second one - error message(in some cases).
+*/
 membersUtility.settings = function(req, callback) {
     var updatedUser = {};
     if (req.body.username && req.body.api_key) {
