@@ -8,7 +8,8 @@
             data : function() {
                 return {
                     activeApp: {},
-                    centerDialogVisible: true
+                    centerDialogVisible: true,
+                    value: ""
                 }
             },
             props: {
@@ -18,7 +19,7 @@
                 }
             },
             methods: {
-                updateDropdowns(event) {
+                switchActiveApp(event) {
                     var app = this.selectedApp.filter(function (e) {
                         return e.value == event;
                     });
