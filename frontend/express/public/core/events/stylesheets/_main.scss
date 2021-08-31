@@ -206,11 +206,6 @@
 }
 
 .cly-vue-events-all {
-    &__sidebar {
-        .el-input__inner{
-            background-color: map.get(c.$colors, "warm-gray-20");
-        }
-    }
     &__alerts {
         a {
             text-decoration: underline

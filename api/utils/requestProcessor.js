@@ -2058,11 +2058,9 @@ const processRequest = (params) => {
                             console.log('Parse events array failed', params.qstring.events, params.req.url, params.req.body);
                         }
                         if (params.qstring.overview) {
-                            // TODO: handle here, what permission should be required for here?
-                            countlyApi.data.fetch.fetchDataEventsOverview(params);
+                            validateRead(params, 'core', countlyApi.data.fetch.fetchDataEventsOverview);
                         }
                         else {
-                            // TODO: handle here what permission should be required for here?
                             validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventData);
                         }
                     }
