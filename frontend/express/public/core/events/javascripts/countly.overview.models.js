@@ -311,15 +311,15 @@
                 eventMapping: {},
                 eventProperties: [{
                     "label": CV.i18n("events.overview.count"),
-                    "value": CV.i18n("events.overview.count")
+                    "value": "count"
                 },
                 {
                     "label": CV.i18n("events.overview.sum"),
-                    "value": CV.i18n("events.overview.sum")
+                    "value": "sum"
                 },
                 {
                     "label": CV.i18n("events.overview.duration"),
-                    "value": CV.i18n("events.overview.duration")
+                    "value": "dur"
                 }
                 ],
             };

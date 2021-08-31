@@ -50,14 +50,6 @@
                     this.selectEvent = selectedItem;
                     this.$store.dispatch('countlyEventsOverview/fetchEventProperties', selectedItem);
                 }
-            },
-            selectedOverviewEventProperties: {
-                get: function() {
-                    return this.selectProperty;
-                },
-                set: function(selectedItem) {
-                    this.selectProperty = selectedItem;
-                }
             }
         },
         props: {

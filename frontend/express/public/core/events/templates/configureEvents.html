@@ -12,7 +12,7 @@
           <el-option v-for="item in configureEventsList" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
-        <el-select class="cly-events-overview-drawer__dropdown" v-model="selectedOverviewEventProperties" placeholder="Select Property">
+        <el-select class="cly-events-overview-drawer__dropdown" v-model="selectProperty" placeholder="Select Property">
           <el-option v-for="item in eventProperties" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
