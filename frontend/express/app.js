@@ -1145,7 +1145,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         res.header('Expires', '0');
                         res.header('Pragma', 'no-cache');
                         var config = plugins.getConfig("security");
-                        res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", password_min: req.query.password_min || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false}});
+                        res.render('reset', { languages: languages, countlyFavicon: req.countly.favicon, countlyTitle: req.countly.title, countlyPage: req.countly.page, "csrf": req.csrfToken(), "prid": req.params.prid, "message": req.query.message || "", path: countlyConfig.path || "", cdn: countlyConfig.cdn || "", "newinvite": passwordReset.newInvite, themeFiles: req.themeFiles, inject_template: req.template, security: {autocomplete: config.password_autocomplete || false, password_min: config.password_min}});
                     }
                 }
                 else {
@@ -1172,7 +1172,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 }
             }
             else {
-                res.redirect(countlyConfig.path + '/reset/' + req.body.prid + "?message=" + result + "&password_min=" + plugins.getConfig("security").password_min);
+                res.redirect(countlyConfig.path + '/reset/' + req.body.prid + "?message=" + result);
             }
         });
     });
