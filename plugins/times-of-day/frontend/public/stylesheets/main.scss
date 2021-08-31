@@ -19,4 +19,10 @@
         line-height: typography.$heading-5-line-height;
     }
 
+    &__results-text {
+        font-size: typography.$heading-4-size;
+        line-height: typography.$heading-4-line-height;
+        color: map.get(colors.$colors, "cool-gray-100");
+        font-weight: typography.$font-weight-primary
+    }
 }

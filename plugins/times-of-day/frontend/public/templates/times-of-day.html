@@ -6,9 +6,9 @@
         </template>
     </cly-header>
     <cly-main>
-        <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mt-5 bu-mb-4"> 
+        <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-my-5"> 
             <div class="bu-is-flex bu-is-align-items-center">
-                <div class="bu-mr-1">{{i18n('times-of-day.results-for')}}</div>               
+                <div class="bu-mr-1 times-of-day__results-text">{{i18n('times-of-day.results-for')}}</div>               
                 <cly-event-select v-model="selectedFilter" :blacklistedEvents="['[CLY]_view','feedback','[CLY]_crash']"></cly-event-select>
             </div>
             <el-select :value="selectedDateBucketValue" @change="onSelectDateBucket"> 
