@@ -56,16 +56,13 @@
 
         var sessionDurationsActions = {
             fetchAll: function(context, useLoader) {
-                context.dispatch('onFetchInit');
-                context.dispatch('setIsLoadingIfNecessary', {useLoader: useLoader, value: true});
+                context.dispatch('onFetchInit', {useLoader: useLoader});
                 countlySessionDurations.service.fetchSessionDurations()
                     .then(function(response) {
                         context.commit('setSessionDurations', response);
-                        context.dispatch('onFetchSuccess');
-                        context.dispatch('setIsLoadingIfNecessary', {useLoader: useLoader, value: false});
+                        context.dispatch('onFetchSuccess', {useLoader: useLoader});
                     }).catch(function(error) {
-                        context.dispatch('onFetchError', error);
-                        context.dispatch('setIsLoadingIfNecessary', {useLoader: useLoader, value: false});
+                        context.dispatch('onFetchError', {error: error, useLoader: useLoader});
                     });
 
             },

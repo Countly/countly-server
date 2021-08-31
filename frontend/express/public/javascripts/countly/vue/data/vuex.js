@@ -485,14 +485,17 @@
             };
         };
         var countlyFetchActions = {
-            onFetchInit: function(context) {
+            onFetchInit: function(context, payload) {
                 context.commit('setFetchInit');
+                context.dispatch('setIsLoadingIfNecessary', {useLoader: payload.useLoader, value: true });
             },
-            onFetchError: function(context, error) {
-                context.commit('setFetchError', error);
+            onFetchError: function(context, payload) {
+                context.commit('setFetchError', payload.error);
+                context.dispatch('setIsLoadingIfNecessary', {useLoader: payload.useLoader, value: false });
             },
-            onFetchSuccess: function(context) {
+            onFetchSuccess: function(context, payload) {
                 context.commit('setFetchSuccess');
+                context.dispatch('setIsLoadingIfNecessary', {useLoader: payload.useLoader, value: false });
             },
             setIsLoadingIfNecessary: function(context, payload) {
                 if (payload.useLoader) {
