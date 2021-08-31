@@ -7,7 +7,6 @@
         template: CV.T("/slipping-away-users/templates/slipping-away-users.html"),
         data: function() {
             return {
-                description: CV.i18n("slipping-away-users.description"),
                 progressBarColor: "#F96300",
             };
         },

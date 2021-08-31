@@ -2,7 +2,7 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('user-activity.title')}} </h2>
-            <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description"></span>
+            <cly-tooltip-icon :tooltip="i18n('user-activity.description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
         </template>
     </cly-header>
     <cly-main>

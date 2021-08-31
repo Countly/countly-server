@@ -4,7 +4,6 @@
         template: CV.T("/core/user-activity/templates/user-activity.html"),
         data: function() {
             return {
-                description: CV.i18n('user-activity.decription'),
                 barChartItemsLegends: {
                     all: CV.i18n('user-activity.barchart-all-users'),
                     sevenDays: CV.i18n('user-activity.barchart-seven-days'),
