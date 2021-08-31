@@ -79,16 +79,20 @@ class TopEventsJob extends job.Job {
      * @param {String} params.usersCollectionName - users collection name
      * @param {Object} params.ob - it contains all necessary info
      * @param {Object} params.sessionData - dummy session data
+     * @param {Object} params.usersData - dummy users data
      * @returns {Promise.<boolean>} true.
      */
     async getSessionCount(params) {
-        const { ob, sessionData, usersCollectionName } = params;
+        const { ob, sessionData, usersData, usersCollectionName } = params;
         return await new Promise((resolve) => {
             countlyApi.data.fetch.getTimeObj(usersCollectionName, ob, (doc) => {
                 countlyEvents.setDb(doc || {});
                 const sessionProp = countlyEvents.getNumber("t", true);
+                const usersProp = countlyEvents.getNumber("u", true);
                 sessionData.totalSessionCount = sessionProp.total;
                 sessionData.prevSessionCount = sessionProp["prev-total"];
+                usersData.totalUsersCount = usersProp.total;
+                usersData.prevUsersCount = usersProp["prev-total"];
                 resolve(true);
             });
         });
@@ -149,11 +153,11 @@ class TopEventsJob extends job.Job {
      * @param {Object} params - saveAppEvents object
      */
     async saveAppEvents(params) {
-        const { data, sessionData, period, app: { _id }, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration } = params;
+        const { data, sessionData, usersData, period, app: { _id }, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration } = params;
         const encodedData = this.encodeEvents(data);
         const timeSecond = this.timeSecond();
         const currentPeriood = this.mutatePeriod(period);
-        await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).insert({ app_id: _id, ts: timeSecond, period: currentPeriood, data: encodedData, totalCount: totalCount, prevTotalCount: prevTotalCount, totalSum: totalSum, prevTotalSum: prevTotalSum, totalDuration: totalDuration, prevTotalDuration: prevTotalDuration, prevSessionCount: sessionData.prevSessionCount, totalSessionCount: sessionData.totalSessionCount }, (error, records) => !error && records ? res(records) : rej(error)));
+        await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).insert({ app_id: _id, ts: timeSecond, period: currentPeriood, data: encodedData, totalCount: totalCount, prevTotalCount: prevTotalCount, totalSum: totalSum, prevTotalSum: prevTotalSum, totalDuration: totalDuration, prevTotalDuration: prevTotalDuration, prevSessionCount: sessionData.prevSessionCount, totalSessionCount: sessionData.totalSessionCount, prevUsersCount: usersData.prevUsersCount, totalUsersCount: usersData.totalUsersCount }, (error, records) => !error && records ? res(records) : rej(error)));
     }
 
     /**
@@ -170,6 +174,7 @@ class TopEventsJob extends job.Job {
                 for (const period of TopEventsJob.PERIODS) {
                     const data = {};
                     const sessionData = {};
+                    const usersData = {};
                     const usersCollectionName = "users";
                     const ob = { app_id: app._id, appTimezone: app.timezone, qstring: { period: period } };
                     // if (period === "hour") {
@@ -192,8 +197,8 @@ class TopEventsJob extends job.Job {
                         totalDuration += data[event].data.duration.total;
                         prevTotalDuration += data[event].data.duration["prev-total"];
                     }
-                    await this.getSessionCount({ ob, sessionData, usersCollectionName });
-                    await this.saveAppEvents({ app, data, sessionData, period, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration });
+                    await this.getSessionCount({ ob, sessionData, usersData, usersCollectionName });
+                    await this.saveAppEvents({ app, data, sessionData, usersData, period, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration });
                 }
             }
         }

@@ -8,7 +8,7 @@
 		<cly-main>
 		  <div class="bu-mb-4 cly-vue-compare-events">
 			<el-select
-			  style="width:480px"
+			  style="width:620px"
 			  v-model="value"
 			  multiple
 			  filterable
@@ -17,13 +17,13 @@
 			  :multiple-limit=maxLimit
 			  placeholder="Select maximum 20 events to compare">
 			  <el-option
-				v-for="item in allEvents"
-				:key="item"
-				:label="item"
-				:value="item">
+				v-for="item in allEventsList"
+				:key="item.value"
+				:label="item.label"
+				:value="item.value">
 			  </el-option>
 			</el-select>
-			<el-button @click="compareEvents" class="cly-vue-compare-events__button" size="small" >{{i18n('events.compare')}}
+			<el-button :disabled="value.length===0" @click="compareEvents" class="cly-vue-compare-events__button" size="small" >{{i18n('events.compare')}}
 			</el-button>
 		  </div>
 		  <div class="bu-pt-4 bu-mb-4">

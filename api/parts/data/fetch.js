@@ -1216,13 +1216,13 @@ fetch.fetchDataTopEvents = function(params) {
                     common.returnOutput(params, { _id, app_id, ts, period, totalCount, data: sortByCount });
                 }
             }
-            const { data, _id, ts, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration, prevSessionCount, totalSessionCount } = result;
+            const { data, _id, ts, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration, prevSessionCount, totalSessionCount, prevUsersCount, totalUsersCount } = result;
             let _data = Object.keys(data).map(function(key) {
                 const decodeKey = countlyCommon.decode(key);
                 return { name: decodeKey, count: data[key].data.count.total, sum: data[key].data.sum.total, duration: data[key].data.duration.total };
             });
             const sortByCount = _data.sort((a, b) => b.count - a.count).slice(0, limit);
-            common.returnOutput(params, { _id, app_id, ts, period, data: sortByCount, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration, prevSessionCount, totalSessionCount });
+            common.returnOutput(params, { _id, app_id, ts, period, data: sortByCount, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration, prevSessionCount, totalSessionCount, prevUsersCount, totalUsersCount });
         }
     }
     );
