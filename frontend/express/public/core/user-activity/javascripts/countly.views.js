@@ -27,7 +27,7 @@
                 }
             },
             isLoading: function() {
-                return this.$store.state.countlyUserActivity.isLoading;
+                return this.$store.getters['countlyUserActivity/isLoading'];
             },
             seriesTotal: function() {
                 return this.$store.state.countlyUserActivity.seriesTotal;

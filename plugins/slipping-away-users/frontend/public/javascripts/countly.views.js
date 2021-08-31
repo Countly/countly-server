@@ -1,4 +1,4 @@
-/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,CountlyHelpers,countlyCommon */
+/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,CountlyHelpers,countlyCommon*/
 (function() {
 
     var FEATURE_NAME = "slipping_away_users";
@@ -54,7 +54,7 @@
                 return awayUsersCount;
             },
             isLoading: function() {
-                return this.$store.state.countlySlippingAwayUsers.isLoading;
+                return this.$store.getters['countlySlippingAwayUsers/isLoading'];
             }
         },
         methods: {
@@ -96,12 +96,12 @@
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
             if (app.configurationsView) {
-                app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
-                app.configurationsView.registerLabel("slipping-away-users.p1", "slipping.config-first");
-                app.configurationsView.registerLabel("slipping-away-users.p2", "slipping.config-second");
-                app.configurationsView.registerLabel("slipping-away-users.p3", "slipping.config-third");
-                app.configurationsView.registerLabel("slipping-away-users.p4", "slipping.config-fourth");
-                app.configurationsView.registerLabel("slipping-away-users.p5", "slipping.config-fifth");
+                app.configurationsView.registerLabel("slipping-away-users", "slipping-away-users.config-title");
+                app.configurationsView.registerLabel("slipping-away-users.p1", "slipping-away-users.config-first-threshold");
+                app.configurationsView.registerLabel("slipping-away-users.p2", "slipping-away-users.config-second-threshold");
+                app.configurationsView.registerLabel("slipping-away-users.p3", "slipping-away-users.config-third-threshold");
+                app.configurationsView.registerLabel("slipping-away-users.p4", "slipping-away-users.config-fourth-threshold");
+                app.configurationsView.registerLabel("slipping-away-users.p5", "slipping-away-users.config-fifth-threshold");
             }
         }
     });

@@ -14,7 +14,7 @@ var TimesOfDayView = countlyVue.views.create({
             return this.$store.state.countlyTimesOfDay.rows;
         },
         isLoading: function() {
-            return this.$store.state.countlyTimesOfDay.isLoading;
+            return this.$store.getters['countlyTimesOfDay/isLoading'];
         },
         normalizedSymbolCoefficient: function() {
             if (this.$store.state.countlyTimesOfDay.maxSeriesValue < MAX_SYMBOL_VALUE) {

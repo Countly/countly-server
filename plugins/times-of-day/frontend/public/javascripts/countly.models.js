@@ -117,7 +117,6 @@
                         reject(error);
                     });
             });
-
         }
     };
 
@@ -132,9 +131,6 @@
                     dataType: '[CLY]_session'
                 },
                 maxSeriesValue: 0,
-                isLoading: false,
-                hasError: false,
-                error: null,
             };
         };
 
@@ -149,15 +145,6 @@
                         context.dispatch('onFetchError', {error: error, useLoader: useLoader});
                     });
             },
-            onFetchInit: function(context) {
-                context.commit('setFetchInit');
-            },
-            onFetchError: function(context, error) {
-                context.commit('setFetchError', error);
-            },
-            onFetchSuccess: function(context) {
-                context.commit('setFetchSuccess');
-            },
             setFilters: function(context, filters) {
                 context.commit('setFilters', filters);
             }
@@ -171,21 +158,6 @@
             },
             setFilters: function(state, value) {
                 state.filters = value;
-            },
-            setFetchInit: function(state) {
-                state.isLoading = true;
-                state.hasError = false;
-                state.error = null;
-            },
-            setFetchError: function(state, error) {
-                state.isLoading = false;
-                state.hasError = true;
-                state.error = error;
-            },
-            setFetchSuccess: function(state) {
-                state.isLoading = false;
-                state.hasError = false;
-                state.error = null;
             }
         };
 
@@ -193,6 +165,7 @@
             state: getInitialState,
             actions: countlyTimesOfDayActions,
             mutations: countlyTimesOfDayMutations,
+            submodules: [countlyVue.vuex.FetchMixin()]
         });
     };
 
