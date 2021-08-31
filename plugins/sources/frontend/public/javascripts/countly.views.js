@@ -56,8 +56,7 @@
                     ]
                 },
                 dataMap: {},
-                sourcesDetailData: {},
-                hasDrill: false
+                sourcesDetailData: {}
             };
         },
         methods: {
@@ -76,14 +75,6 @@
             },
             sourcesFnKey: function(row) {
                 return row.sources;
-            },
-            handleSourcesCommand: function(e) {
-                switch (e) {
-                case 'redirect-drill': {
-                    window.location.hash = "/drill/" + JSON.stringify({"event": "[CLY]_session", "dbFilter": {}, "byVal": "up.src"});
-                    break;
-                }
-                }
             },
             chartsDataPrepare: function(sourcesData) {
                 var self = this;
@@ -140,6 +131,21 @@
                     });
             }
         },
+        computed: {
+            topDropdown: function() {
+                if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                    return this.externalLinks;
+                }
+                else {
+                    return null;
+                }
+            },
+        },
+        mixins: [
+            countlyVue.container.dataMixin({
+                'externalLinks': '/analytics/sources/links'
+            })
+        ],
         beforeCreate: function() {
             var self = this;
             $.when(countlySources.initialize())
@@ -152,10 +158,6 @@
                     var chartsData = self.chartsDataPrepare(self.sourcesData);
                     self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
                     self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
-
-                    if (countlyGlobal.plugins && countlyGlobal.plugins.indexOf("drill") > -1) {
-                        self.hasDrill = true;
-                    }
                 });
         }
     });
