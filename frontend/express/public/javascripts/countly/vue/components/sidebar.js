@@ -7,7 +7,8 @@
             template: CV.T('/javascripts/countly/vue/templates/sidebar/AppSelector.html'),
             data : function() {
                 return {
-                    activeApp: {}
+                    activeApp: {},
+                    centerDialogVisible: true
                 }
             },
             props: {
@@ -18,13 +19,15 @@
             },
             methods: {
                 updateDropdowns(event) {
-                    debugger
                     var app = this.selectedApp.filter(function (e) {
                         return e.value == event;
                     });
                     console.log(app);
                     this.activeApp = app[0];
                     this.$emit("change", this.activeApp._id);
+                },
+                handleClose() {
+                    this.$emit("close");
                 }
             }
         });

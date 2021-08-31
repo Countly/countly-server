@@ -1,4 +1,4 @@
-<div style="width: 100%;">
+<!-- <div style="width: 100%;">
     <el-select @change="updateDropdowns($event)" style="width: 100%" value-key="value" filterable v-model="activeApp"
         placeholder="Search App" autocomplete=off>
         <el-option v-for="item in selectedApp" :key="item.value" :label="item.label" :value="item.value">
@@ -9,4 +9,29 @@
             <span style="float: right; color: #8492a6; font-size: 13px">{{ item.type }}</span>
         </el-option>
     </el-select>
-</div>
+</div> -->
+
+<cly-dialog
+  :visible.sync="centerDialogVisible"
+  width="50%"
+  :modal="false"
+  center>
+  <cly-listbox
+				skin="jumbo"
+				height="624"
+				:searchPlaceholder="searchPlaceholder"
+				:options="selectedApp"
+				:searchable="true"
+        :bordered="false"
+        :value="value"
+        :before-close="handleClose"
+        @input="updateDropdowns($event)"
+				v-model="activeApp">
+        <template v-slot:option-prefix="option">
+          <img style="width: 26px;":src="option.image"></img>
+      </template>
+      <template v-slot:option-suffix="option">
+          <span class="bu-pr-2 text-medium">{{option.type}}</span>
+      </template>
+			  </cly-listbox>
+</cly-dialog>
