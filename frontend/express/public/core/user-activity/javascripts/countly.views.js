@@ -24,7 +24,7 @@
                 },
                 set: function(value) {
                     this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', value);
-                    this.$store.dispatch('countlyUserActivity/fetchAll');
+                    this.$store.dispatch('countlyUserActivity/fetchAll', true);
                 }
             },
             isLoading: function() {
@@ -71,7 +71,7 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyUserActivity/fetchAll');
+                this.$store.dispatch('countlyUserActivity/fetchAll', false);
             },
             formatPercentage: function(value) {
                 return CountlyHelpers.formatPercentage(value);
@@ -86,7 +86,7 @@
             if (this.$route.params) {
                 this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', {query: this.$route.params });
             }
-            this.$store.dispatch('countlyUserActivity/fetchAll');
+            this.$store.dispatch('countlyUserActivity/fetchAll', true);
         }
     });
 

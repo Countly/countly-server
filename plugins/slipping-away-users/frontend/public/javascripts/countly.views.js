@@ -18,7 +18,7 @@
                 },
                 set: function(value) {
                     this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', value);
-                    this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
+                    this.$store.dispatch("countlySlippingAwayUsers/fetchAll", true);
                 }
             },
             slippingAwayUsers: function() {
@@ -70,14 +70,14 @@
                 window.location.hash = '/users/query/' + JSON.stringify(data);
             },
             refresh: function() {
-                this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
+                this.$store.dispatch("countlySlippingAwayUsers/fetchAll", false);
             },
         },
         mounted: function() {
             if (this.$route.params) {
                 this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', {query: this.$route.params });
             }
-            this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
+            this.$store.dispatch("countlySlippingAwayUsers/fetchAll", true);
         }
     });
 

@@ -139,14 +139,14 @@
         };
 
         var countlyTimesOfDayActions = {
-            fetchAll: function(context) {
-                context.dispatch('onFetchInit');
+            fetchAll: function(context, useLoader) {
+                context.dispatch('onFetchInit', {useLoader: useLoader});
                 countlyTimesOfDay.service.fetchAll(context.state.filters)
                     .then(function(response) {
                         context.commit('setTimesOfDay', response);
-                        context.dispatch('onFetchSuccess');
+                        context.dispatch('onFetchSuccess', {useLoader: useLoader});
                     }).catch(function(error) {
-                        context.dispatch('onFetchError', error);
+                        context.dispatch('onFetchError', {error: error, useLoader: useLoader});
                     });
             },
             onFetchInit: function(context) {

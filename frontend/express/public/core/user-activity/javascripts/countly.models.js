@@ -98,33 +98,21 @@
                 seriesTotal: {},
                 nonEmptyBuckets: countlySession.getLoyalityRange(),
                 userActivityFilters: {query: {}, byVal: []},
-                isLoading: false,
-                hasError: false,
-                error: null
             };
         };
 
         var userActivityActions = {
-            fetchAll: function(context) {
-                context.dispatch('onFetchInit');
+            fetchAll: function(context, useLoader) {
+                context.dispatch('onFetchInit', {useLoader: useLoader});
                 countlyUserActivity.service.fetchUserActivity(context.state.userActivityFilters)
                     .then(function(response) {
                         context.commit('setUserActivity', response.model);
                         context.commit('setNonEmptyBuckets', response.nonEmptyBuckets);
                         context.dispatch('findSeriesTotal', response.model);
-                        context.dispatch('onFetchSuccess');
+                        context.dispatch('onFetchSuccess', {useLoader: useLoader});
                     }).catch(function(error) {
-                        context.dispatch('onFetchError', error);
+                        context.dispatch('onFetchError', {error: error, useLoader: useLoader});
                     });
-            },
-            onFetchInit: function(context) {
-                context.commit('setFetchInit');
-            },
-            onFetchError: function(context, error) {
-                context.commit('setFetchError', error);
-            },
-            onFetchSuccess: function(context) {
-                context.commit('setFetchSuccess');
             },
             onSetUserActivityFilters: function(context, filters) {
                 context.commit('setUserActivityFilters', filters);
@@ -151,26 +139,12 @@
             setSeriesTotal: function(state, result) {
                 state.seriesTotal = result;
             },
-            setFetchInit: function(state) {
-                state.isLoading = true;
-                state.hasError = false;
-                state.error = null;
-            },
-            setFetchError: function(state, error) {
-                state.isLoading = false;
-                state.hasError = true;
-                state.error = error;
-            },
-            setFetchSuccess: function(state) {
-                state.isLoading = false;
-                state.hasError = false;
-                state.error = null;
-            }
         };
         return countlyVue.vuex.Module("countlyUserActivity", {
             state: getInitialState,
             actions: userActivityActions,
-            mutations: userActivityMutations
+            mutations: userActivityMutations,
+            submodules: [countlyVue.vuex.FetchMixin()]
         });
     };
 }(window.countlyUserActivity = window.countlyUserActivity || {}));

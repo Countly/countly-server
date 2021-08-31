@@ -27,14 +27,14 @@
         };
 
         var slippingAwayUsersActions = {
-            fetchAll: function(context) {
-                context.dispatch('onFetchInit');
+            fetchAll: function(context, useLoader) {
+                context.dispatch('onFetchInit', {useLoader: useLoader});
                 countlySlippingAwayUsers.service.fetchSlippingAwayUsers(context.state.slippingAwayUsersFilters)
                     .then(function(response) {
                         context.commit('setSlippingAwayUsers', response);
-                        context.dispatch('onFetchSuccess');
+                        context.dispatch('onFetchSuccess', {useLoader: useLoader});
                     }).catch(function(error) {
-                        context.dispatch('onFetchError', error);
+                        context.dispatch('onFetchError', {error: error, useLoader: useLoader});
                     });
             },
             onFetchInit: function(context) {

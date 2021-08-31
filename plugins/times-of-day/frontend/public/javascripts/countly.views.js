@@ -76,7 +76,7 @@ var TimesOfDayView = countlyVue.views.BaseView.extend({
             },
             set: function(value) {
                 this.$store.dispatch('countlyTimesOfDay/setFilters', {dataType: value, dateBucketValue: this.$store.state.countlyTimesOfDay.filters.dateBucketValue});
-                this.$store.dispatch('countlyTimesOfDay/fetchAll');
+                this.$store.dispatch('countlyTimesOfDay/fetchAll', true);
             }
         },
         selectedDateBucketValue: function() {
@@ -89,11 +89,14 @@ var TimesOfDayView = countlyVue.views.BaseView.extend({
     methods: {
         onSelectDateBucket: function(value) {
             this.$store.dispatch('countlyTimesOfDay/setFilters', {dataType: this.$store.state.countlyTimesOfDay.filters.dataType, dateBucketValue: value});
-            this.$store.dispatch('countlyTimesOfDay/fetchAll');
-        }
+            this.$store.dispatch('countlyTimesOfDay/fetchAll', true);
+        },
+        refresh: function() {
+            this.$store.dispatch('countlyTimesOfDay/fetchAll', false);
+        },
     },
     mounted: function() {
-        this.$store.dispatch('countlyTimesOfDay/fetchAll');
+        this.$store.dispatch('countlyTimesOfDay/fetchAll', true);
     }
 });
 
