@@ -1,10 +1,10 @@
-/*global $,countlyAuth,countlyGlobal,T,countlyWidgets,jQuery,countlyCommon,app,countlyDashboards,countlyVue,countlyTimesOfDay */
+/*global $,countlyAuth,countlyGlobal,T,countlyWidgets,jQuery,countlyCommon,app,countlyDashboards,countlyVue,countlyTimesOfDay,CV */
 
 var featureName = "times_of_day";
 var MAX_SYMBOL_VALUE = 50;
 
-var TimesOfDayView = countlyVue.views.BaseView.extend({
-    template: "#times-of-day",
+var TimesOfDayView = countlyVue.views.create({
+    template: CV.T('/times-of-day/templates/times-of-day.html'),
     data: function() {
         return {
         };
@@ -100,22 +100,16 @@ var TimesOfDayView = countlyVue.views.BaseView.extend({
     }
 });
 
-
-var vuex = [{
-    clyModel: countlyTimesOfDay
-}];
-
-
 if (countlyAuth.validateRead(featureName)) {
-    app.route('/analytics/times-of-day', 'times-of-day', function() {
-        var timesOfDayViewWrapper = new countlyVue.views.BackboneWrapper({
-            component: TimesOfDayView,
-            vuex: vuex,
-            templates: [
-                "/times-of-day/templates/times-of-day.html",
-            ]
-        });
-        this.renderWhenReady(timesOfDayViewWrapper);
+    countlyVue.container.registerTab("/analytics/loyalty", {
+        priority: 3,
+        name: "times-of-day",
+        title: CV.i18n('times-of-day.title'),
+        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/times-of-day",
+        component: TimesOfDayView,
+        vuex: [{
+            clyModel: countlyTimesOfDay
+        }],
     });
 }
 
@@ -385,11 +379,6 @@ app.addPageScript("/custom#", function() {
     }
 });
 
-$(document).ready(function() {
-    if (countlyAuth.validateRead(featureName)) {
-        app.addSubMenu("behavior", {code: "times-of-day", url: "#/analytics/times-of-day", text: "times-of-day.plugin-title", priority: 30});
-    }
-});
 
 if (countlyAuth.validateRead(featureName)) {
     initializeTimesOfDayWidget();

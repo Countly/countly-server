@@ -1,51 +1,49 @@
-<script type="text/x-template" id="times-of-day">
-    <div v-bind:class="[componentId]">
-        <cly-header>
-            <template v-slot:header-left>
-                <h2> {{i18n('times-of-day.title')}} </h2>
-                <cly-tooltip-icon :tooltip="i18n('times-of-day.description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-            </template>
-        </cly-header>
-        <cly-main>
-            <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mt-5 bu-mb-4"> 
-                <div class="bu-is-flex bu-is-align-items-center">
-                    <div class="bu-mr-1">Results for</div>               
-                    <cly-event-select v-model="selectedFilter" :blacklistedEvents="['[CLY]_view','feedback','[CLY]_crash']"></cly-event-select>
-                </div>
-                <el-select :value="selectedDateBucketValue" @change="onSelectDateBucket"> 
-                    <el-option
-                        v-for="item in dateBuckets"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
-                    </el-option>
-                </el-select>
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('times-of-day.title')}} </h2>
+            <cly-tooltip-icon :tooltip="i18n('times-of-day.description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+        </template>
+    </cly-header>
+    <cly-main>
+        <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mt-5 bu-mb-4"> 
+            <div class="bu-is-flex bu-is-align-items-center">
+                <div class="bu-mr-1">Results for</div>               
+                <cly-event-select v-model="selectedFilter" :blacklistedEvents="['[CLY]_view','feedback','[CLY]_crash']"></cly-event-select>
             </div>
-            <cly-section>
-                <cly-chart-generic :height="600"  :option="timesOfDayOptions" :show-zoom="false" :show-toggle="false" v-loading="isLoading"></cly-chart-generic>
-            </cly-section>
-            <cly-section>
-                <cly-datatable-n  :rows="timesOfDayRows" :resizable="true" v-loading="isLoading">
-                    <template v-slot="scope">
-                        <el-table-column sortable="custom" prop="period" :label="i18n('times-of-day.table-hours-period')">
-                        </el-table-column>
-                        <el-table-column sortable="custom" prop="monday" :label="i18n('times-of-day.table-monday')">
-                        </el-table-column>
-                        <el-table-column sortable="custom" prop="tuesday" :label="i18n('times-of-day.table-tuesday')">
-                        </el-table-column>
-                        <el-table-column sortable="custom" prop="wednesday" :label="i18n('times-of-day.table-wednesday')">
-                        </el-table-column>
-                        <el-table-column sortable="custom" prop="thursday" :label="i18n('times-of-day.table-thursday')">
-                        </el-table-column>
-                        <el-table-column sortable="custom" prop="friday" :label="i18n('times-of-day.table-friday')">
-                        </el-table-column>
-                        <el-table-column sortable="custom" prop="saturday" :label="i18n('times-of-day.table-saturday')">
-                        </el-table-column>
-                        <el-table-column sortable="custom" prop="sunday" :label="i18n('times-of-day.table-sunday')">
-                        </el-table-column>
-                    </template>
-                </cly-datatable-n>
-            </cly-section>
-        </cly-main>
-    </div>
-</script>
+            <el-select :value="selectedDateBucketValue" @change="onSelectDateBucket"> 
+                <el-option
+                    v-for="item in dateBuckets"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                </el-option>
+            </el-select>
+        </div>
+        <cly-section>
+            <cly-chart-generic :height="600"  :option="timesOfDayOptions" :show-zoom="false" :show-toggle="false" v-loading="isLoading"></cly-chart-generic>
+        </cly-section>
+        <cly-section>
+            <cly-datatable-n  :rows="timesOfDayRows" :resizable="true" v-loading="isLoading">
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" prop="period" :label="i18n('times-of-day.table-hours-period')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="monday" :label="i18n('times-of-day.table-monday')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="tuesday" :label="i18n('times-of-day.table-tuesday')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="wednesday" :label="i18n('times-of-day.table-wednesday')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="thursday" :label="i18n('times-of-day.table-thursday')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="friday" :label="i18n('times-of-day.table-friday')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="saturday" :label="i18n('times-of-day.table-saturday')">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="sunday" :label="i18n('times-of-day.table-sunday')">
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+    </cly-main>
+</div>

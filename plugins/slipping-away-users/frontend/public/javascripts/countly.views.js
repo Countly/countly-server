@@ -1,4 +1,4 @@
-/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,CountlyHelpers */
+/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,CountlyHelpers,countlyCommon */
 (function() {
 
     var FEATURE_NAME = "slipping_away_users";
@@ -74,39 +74,28 @@
             },
         },
         mounted: function() {
-            if (this.$route.params) {
-                this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', {query: this.$route.params });
+            if (this.$route.params && this.$route.params.query) {
+                this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', {query: this.$route.params.query });
             }
             this.$store.dispatch("countlySlippingAwayUsers/fetchAll", true);
         }
     });
 
-    var vuex = [{
-        clyModel: countlySlippingAwayUsers
-    }];
-
-    var slippingAwayUsersView = new countlyVue.views.BackboneWrapper({
-        component: SlippingAwayUsersView,
-        vuex: vuex,
-        templates: [
-            "/drill/templates/query.builder.v2.html"
-        ]
-    });
-
     if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route("/analytics/slipping-away", 'slipping-away', function() {
-            this.renderWhenReady(slippingAwayUsersView);
-        });
-        app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
-            var queryUrlParameter = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
-            slippingAwayUsersView.params = queryUrlParameter;
-            this.renderWhenReady(slippingAwayUsersView);
+        countlyVue.container.registerTab("/analytics/loyalty", {
+            priority: 2,
+            name: "slipping-away-users",
+            title: CV.i18n('slipping-away-users.title'),
+            route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/slipping-away-users",
+            component: SlippingAwayUsersView,
+            vuex: [{
+                clyModel: countlySlippingAwayUsers
+            }]
         });
     }
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping-away-users.title", priority: 30});
             if (app.configurationsView) {
                 app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
                 app.configurationsView.registerLabel("slipping-away-users.p1", "slipping.config-first");

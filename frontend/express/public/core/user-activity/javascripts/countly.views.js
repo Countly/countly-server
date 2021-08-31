@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyUserActivity,app,CountlyHelpers*/
+/* global countlyVue,CV,countlyUserActivity,app,CountlyHelpers,countlyCommon*/
 (function() {
     var UserActivityView = countlyVue.views.create({
         template: CV.T("/core/user-activity/templates/user-activity.html"),
@@ -83,33 +83,81 @@
             }
         },
         mounted: function() {
-            if (this.$route.params) {
-                this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', {query: this.$route.params });
+            if (this.$route.params && this.$route.params.query) {
+                this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', {query: this.$route.params.query });
             }
             this.$store.dispatch('countlyUserActivity/fetchAll', true);
         }
     });
 
-    var userActivityVuex = [{
-        clyModel: countlyUserActivity
-    }];
 
-    var userActivityViewWrapper = new countlyVue.views.BackboneWrapper({
-        component: UserActivityView,
-        vuex: userActivityVuex,
-        templates: [
-            "/drill/templates/query.builder.v2.html"
-        ]
+    //Note: the parent component that renders all user loyalty tabs.
+    var UserLoyaltyView = countlyVue.views.create({
+        template: CV.T("/core/user-activity/templates/user-loyalty.html"),
+        mixins: [
+            countlyVue.container.tabsMixin({
+                "userLoyaltyTabs": "/analytics/loyalty"
+            })
+        ],
+        data: function() {
+            return {
+                selectedTab: (this.$route.params && this.$route.params.tab) || "user-activity"
+            };
+        },
+        computed: {
+            tabs: function() {
+                return this.userLoyaltyTabs;
+            }
+        },
     });
+
+    var getUserLoyaltyView = function() {
+        var tabsVuex = countlyVue.container.tabsVuex(["/analytics/loyalty"]);
+        return new countlyVue.views.BackboneWrapper({
+            component: UserLoyaltyView,
+            vuex: tabsVuex,
+            templates: [
+                "/drill/templates/query.builder.v2.html"
+            ]
+        });
+    };
 
     app.route("/analytics/loyalty", "loyalty", function() {
-        this.renderWhenReady(userActivityViewWrapper);
+        var userLoyaltyViewWrapper = getUserLoyaltyView();
+        this.renderWhenReady(userLoyaltyViewWrapper);
     });
 
-    app.route("/analytics/loyalty/*query", "loyalty_query", function(query) {
+    app.route("/analytics/loyalty/*tab", "loyalty-tab", function(tab) {
+        var userLoyaltyViewWrapper = getUserLoyaltyView();
+        var params = {
+            tab: tab,
+        };
+        userLoyaltyViewWrapper.params = params;
+        this.renderWhenReady(userLoyaltyViewWrapper);
+    });
+
+    app.route("/analytics/loyalty/*tab/*query", "loyalty-tab", function(tab, query) {
+        var userLoyaltyViewWrapper = getUserLoyaltyView();
+        var params = {
+            tab: tab,
+        };
         var queryUrlParameter = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
-        userActivityViewWrapper.params = queryUrlParameter;
-        this.renderWhenReady(userActivityViewWrapper);
+        if (queryUrlParameter) {
+            params.query = queryUrlParameter;
+        }
+        userLoyaltyViewWrapper.params = params;
+        this.renderWhenReady(userLoyaltyViewWrapper);
+    });
+
+    countlyVue.container.registerTab("/analytics/loyalty", {
+        priority: 1,
+        name: "user-activity",
+        title: CV.i18n('user-activity.title'),
+        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/user-activity",
+        component: UserActivityView,
+        vuex: [{
+            clyModel: countlyUserActivity
+        }],
     });
 })();
 
