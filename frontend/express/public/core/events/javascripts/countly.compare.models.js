@@ -211,7 +211,19 @@
                 },
                 dataType: "json",
             });
-        }
+        },
+        fetchRefreshCompareEventsData: function(context) {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + "/compare/events",
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "action": "refresh",
+                    "events": JSON.stringify(context.state.selectedEvents)
+                },
+                dataType: "json",
+            });
+        },
     };
     countlyCompareEvents.getVuexModule = function() {
 
@@ -253,6 +265,20 @@
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsCompareData", res);
+                            context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
+                            context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, context.state.selectedEvents));
+                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents, context.state.groupData));
+                        }
+                    });
+            },
+            fetchRefreshCompareEventsData: function(context) {
+                return countlyCompareEvents.service.fetchRefreshCompareEventsData(context)
+                    .then(function(res) {
+                        if (res) {
+                            var events = _.keys(res);
+                            for (var i = 0; i < events.length; i++) {
+                                countlyCommon.extendDbObj(context.state.allEventsCompareData[events[i]], res[events[i]]);
+                            }
                             context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
                             context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, context.state.selectedEvents));
                             context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents, context.state.groupData));

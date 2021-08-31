@@ -438,6 +438,13 @@
                 });
             }
             return limitAlert;
+        },
+        extendMeta: function(prevState, selectedEventsData) {
+            for (var metaObj in selectedEventsData.meta) {
+                if (prevState.meta[metaObj] && selectedEventsData.meta[metaObj] && prevState.meta[metaObj].length !== selectedEventsData.meta[metaObj].length) {
+                    selectedEventsData.meta[metaObj] = countlyCommon.union(prevState.meta[metaObj], selectedEventsData.meta[metaObj]);
+                }
+            }
         }
     };
 
@@ -493,6 +500,20 @@
                     "period": context.state.selectedDatePeriod,
                     "timestamp": new Date().getTime(),
                     "overview": true
+                },
+                dataType: "json",
+            });
+        },
+        fetchRefreshSelectedEventsData: function(context) {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "events",
+                    "event": context.state.selectedEventName,
+                    "segmentation": context.state.currentActiveSegmentation === "segment" ? "" : context.state.currentActiveSegmentation,
+                    "action": "refresh"
                 },
                 dataType: "json",
             });
@@ -592,7 +613,47 @@
             },
             fetchHasSegments: function(context, hasSegments) {
                 context.commit('setHasSegments', hasSegments);
-            }
+            },
+            fetchRefreshAllEventsData: function(context) {
+                return countlyAllEvents.service.fetchAllEventsData(context)
+                    .then(function(res) {
+                        if (res) {
+                            context.commit("setAllEventsData", res);
+                            if (!context.state.selectedEventName) {
+                                localStorage.setItem("eventKey", res.list[0]);
+                                context.commit('setSelectedEventName', res.list[0]);
+                            }
+                            countlyAllEvents.service.fetchAllEventsGroupData(context)
+                                .then(function(result) {
+                                    if (result) {
+                                        context.commit("setAllEventsGroupData", result);
+                                        context.commit("setAllEventsList", countlyAllEvents.helpers.getAllEventsList(res, result));
+                                        context.commit("setGroupData", countlyAllEvents.helpers.getGroupData(result, context.state.selectedEventName));
+                                        context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
+                                        countlyAllEvents.service.fetchRefreshSelectedEventsData(context)
+                                            .then(function(response) {
+                                                if (response) {
+                                                    var prevState = Object.assign({}, context.state.selectedEventsData);
+                                                    countlyCommon.extendDbObj(context.state.selectedEventsData, response);
+                                                    countlyAllEvents.helpers.extendMeta(prevState, context.state.selectedEventsData);
+                                                    context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, context.state.selectedEventsData) || []);
+                                                    context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
+                                                    context.commit("setLimitAlerts", countlyAllEvents.helpers.getLimitAlerts(context) || []);
+
+                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context)
+                                                        .then(function(resp) {
+                                                            if (resp) {
+                                                                context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
+                                                                context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                            }
+                                                        });
+                                                }
+                                            });
+                                    }
+                                });
+                        }
+                    });
+            },
 
         };
 

@@ -146,6 +146,12 @@
             compareEvents: function() {
                 this.$store.dispatch('countlyCompareEvents/fetchSelectedEvents', this.value);
                 this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData');
+            },
+            refresh: function() {
+                var selectedEvents = this.$store.getters["countlyCompareEvents/selectedEvents"];
+                if (selectedEvents.length > 0) {
+                    this.$store.dispatch('countlyCompareEvents/fetchRefreshCompareEventsData');
+                }
             }
         },
         computed: {
@@ -326,6 +332,11 @@
                 this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', this.$route.params.eventKey);
             }
             this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+        },
+        methods: {
+            refresh: function() {
+                this.$store.dispatch("countlyAllEvents/fetchRefreshAllEventsData");
+            }
         }
     });
 
