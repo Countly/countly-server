@@ -25,19 +25,19 @@
         methods: {
             isColumnAllowed: function(column) {
                 var events = this.$store.getters["countlyAllEvents/allEventsProcessed"];
-                if (column === "Count") {
+                if (column === CV.i18n('events.all.count')) {
                     if (events && events.tableColumns && events.tableColumns.indexOf(this.labels.count) !== -1) {
                         return true;
                     }
                     return false;
                 }
-                else if (column === "Sum") {
+                else if (column === CV.i18n('events.all.sum')) {
                     if (events && events.tableColumns && events.tableColumns.indexOf(this.labels.sum) !== -1) {
                         return true;
                     }
                     return false;
                 }
-                else if (column === "Duration") {
+                else if (column === CV.i18n('events.all.duration')) {
                     if (events && events.tableColumns && events.tableColumns.indexOf(this.labels.dur) !== -1) {
                         return true;
                     }
