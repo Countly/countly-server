@@ -13,10 +13,10 @@
         getDateBucketsList: function() {
             var self = this;
             return [
-                {label: "Previous month", value: self.DateBucketEnum.PREV_MONTH},
-                {label: "This Month", value: self.DateBucketEnum.THIS_MONTH},
-                {label: "Last three Months", value: self.DateBucketEnum.LAST_THREE_MONTHS},
-                {label: "All time", value: self.DateBucketEnum.ALL_TIME}
+                {label: CV.i18n('times-of-day.previous-month'), value: self.DateBucketEnum.PREV_MONTH},
+                {label: CV.i18n('times-of-day.this-month'), value: self.DateBucketEnum.THIS_MONTH},
+                {label: CV.i18n('times-of-day.last-three-months'), value: self.DateBucketEnum.LAST_THREE_MONTHS},
+                {label: CV.i18n('times-of-day.all-time'), value: self.DateBucketEnum.ALL_TIME}
             ];
         },
         getHoursPeriod: function(hour) {
