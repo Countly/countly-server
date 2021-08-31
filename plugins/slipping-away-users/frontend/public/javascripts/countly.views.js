@@ -1,12 +1,16 @@
-/*global app, countlyAuth, countlySlippingAwayUsers, countlyVue, $, CV, CountlyHelpers */
-//TODO-LA: Use query builder component with modal when it becomes available
-
+/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,CountlyHelpers */
 (function() {
 
     var FEATURE_NAME = "slipping_away_users";
 
-    var SlippingAwayUsersFilter = countlyVue.views.BaseView.extend({
-        template: "#slipping-away-users-filter",
+    var SlippingAwayUsersView = countlyVue.views.create({
+        template: CV.T("/slipping-away-users/templates/slipping-away-users.html"),
+        data: function() {
+            return {
+                description: CV.i18n("slipping-away-users.description"),
+                progressBarColor: "#F96300",
+            };
+        },
         computed: {
             slippingAwayUsersFilters: {
                 get: function() {
@@ -14,22 +18,9 @@
                 },
                 set: function(value) {
                     this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', value);
+                    this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
                 }
             },
-        },
-        methods: {
-            onApplyFilter: function() {
-                this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
-            },
-        }
-    });
-
-    var SlippingAwayUsersBarChart = countlyVue.views.BaseView.extend({
-        template: "#slipping-away-users-bar-chart",
-        data: function() {
-            return {};
-        },
-        computed: {
             slippingAwayUsers: function() {
                 return this.$store.state.countlySlippingAwayUsers.slippingAwayUsers;
             },
@@ -66,23 +57,6 @@
             isLoading: function() {
                 return this.$store.state.countlySlippingAwayUsers.isLoading;
             }
-        }
-    });
-
-    var SlippingAwayUsersTable = countlyVue.views.BaseView.extend({
-        template: "#slipping-away-users-table",
-        data: function() {
-            return {
-                progressBarColor: "#F96300",
-            };
-        },
-        computed: {
-            slippingAwayUsers: function() {
-                return this.$store.state.countlySlippingAwayUsers.slippingAwayUsers;
-            },
-            isLoading: function() {
-                return this.$store.state.countlySlippingAwayUsers.isLoading;
-            }
         },
         methods: {
             onUserListClick: function(timeStamp) {
@@ -94,26 +68,10 @@
                     Object.assign(data, CountlyHelpers.buildFilters(currentFilters));
                 }
                 window.location.hash = '/users/query/' + JSON.stringify(data);
-            }
-        }
-    });
-
-    var SlippingAwayUsersView = countlyVue.views.BaseView.extend({
-        template: "#slipping-away-users",
-        components: {
-            "slipping-away-users-filter": SlippingAwayUsersFilter,
-            "slipping-away-users-bar-chart": SlippingAwayUsersBarChart,
-            "slipping-away-users-table": SlippingAwayUsersTable
-        },
-        data: function() {
-            return {
-                description: CV.i18n("slipping-away-users.description"),
-            };
-        },
-        methods: {
+            },
             refresh: function() {
                 this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
-            }
+            },
         },
         mounted: function() {
             if (this.$route.params) {
@@ -131,7 +89,6 @@
         component: SlippingAwayUsersView,
         vuex: vuex,
         templates: [
-            "/slipping-away-users/templates/slipping-away-users.html",
             "/drill/templates/query.builder.v2.html"
         ]
     });
