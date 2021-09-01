@@ -138,9 +138,9 @@
                     </section>
             
                     <section>
-                        <el-radio-group v-model="elRadioGroup">
-                            <el-radio-button label="New York" outline></el-radio-button>
-                            <el-radio-button label="Washington" outline></el-radio-button>
+                        <el-radio-group :plain="true" v-model="elRadioGroup">
+                            <el-radio-button label="New York"></el-radio-button>
+                            <el-radio-button label="Washington"></el-radio-button>
                         </el-radio-group>
                     </section>
             
@@ -151,8 +151,8 @@
                     </section>
             
                     <section>
-                        <el-checkbox-group v-model="elCheckboxGroup" outline>
-                            <el-checkbox-button outline v-for="city in elCities" :label="city" :key="city">{{city}}</el-checkbox-button>
+                        <el-checkbox-group v-model="elCheckboxGroup" :plain="true">
+                            <el-checkbox-button v-for="city in elCities" :label="city" :key="city">{{city}}</el-checkbox-button>
                         </el-checkbox-group>
                     </section>
                 </div>
