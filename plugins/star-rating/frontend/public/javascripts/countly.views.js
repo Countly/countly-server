@@ -1,4 +1,4 @@
-/*global $, countlyAuth, countlyReporting, starRatingPlugin, countlyGlobal, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyAuth, countlyReporting, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
 var FEATURE_NAME = 'star_rating';
 
 var Drawer = countlyVue.views.create({
@@ -17,17 +17,14 @@ var Drawer = countlyVue.views.create({
                 trigger_positions: [{value: 'mleft', label: 'Center left', key: 'middle-left'}, { value: 'mright', label: 'Center right', key: 'middle-right' }, { value: 'bleft', label: 'Bottom left', key: 'bottom-left'}, { value: 'bright', label: 'Bottom right', key: 'bottom-right' }]
             },
             logoDropzoneOptions: {
-                widget_id: null,
-                url: '/i/feedback/upload-popup-logo',
+                url: '/',
                 createImageThumbnails: false,
                 maxFilesize: 2, // MB
                 autoProcessQueue: false,
-                acceptedFiles: 'image/*',
-                maxFiles: 1,
                 addRemoveLinks: true,
-                dictRemoveFile: 'Remove image',
-                paramName: "logo",
-                params: { _csrf: countlyGlobal.csrf_token }
+                acceptedFiles: 'image/jpeg,image/png,image/gif',
+                dictDefaultMessage: this.i18n('surveys.generic.drop-message'),
+                dictRemoveFile: this.i18n('surveys.generic.remove-file')
             }
         };
     },
@@ -63,9 +60,7 @@ var Drawer = countlyVue.views.create({
                 });
             }
             else {
-                starRatingPlugin.createFeedbackWidget(submitted, function(response) {
-                    self.logoDropzoneOptions.widget_id = response.result.split(" ")[2];
-                    logoDropzone.processQueue();
+                starRatingPlugin.createFeedbackWidget(submitted, function() {
                     self.$emit('widgets-refresh');
                     done();
                 });
@@ -147,6 +142,7 @@ var RatingsTab = countlyVue.views.create({
                 },
                 series: [
                     {
+                        name: CV.i18n('feedback.ratings'),
                         data: [0, 0, 0, 0, 0]
                     }
                 ]
@@ -165,9 +161,9 @@ var RatingsTab = countlyVue.views.create({
             ],
             dynamicTab: 'ratings-table',
             feedbackData: [],
+            cumulativeData: [],
             rating: {},
             platform_version: {},
-            cumulativeData: [],
             sum: 0,
             avg: 0,
             count: 0,
@@ -262,8 +258,8 @@ var RatingsTab = countlyVue.views.create({
 
             // prepare percent values in cumulative data
             self.cumulativeData.forEach(function(star) {
-                if (self.sum !== 0) {
-                    star.percent = ((star.count / self.sum) * 100).toFixed(1);
+                if (self.count !== 0) {
+                    star.percent = ((star.count / self.count) * 100).toFixed(1);
                 }
             });
 
@@ -294,7 +290,8 @@ var RatingsTab = countlyVue.views.create({
             }
         },
         filterUpdated: function() {
-            this.fetch();
+            //this.fetch();
+            this.calCumulativeData();
         }
     },
     computed: {
@@ -356,7 +353,9 @@ var WidgetsTab = countlyVue.views.create({
                 saveButtonLabel: CV.i18n('common.save'),
                 createButtonLabel: CV.i18n('common.create'),
                 isEditMode: false
-            }
+            },
+            widget: '',
+            rating: {}
         };
     },
     methods: {
@@ -405,10 +404,52 @@ var WidgetsTab = countlyVue.views.create({
                 });
             });
         },
+        matchPlatformVersion: function(documentName) {
+            var regexString = '';
+            if (this.widget !== '') {
+                regexString += '(\\*\\*)' + this.widget;
+            }
+            return (new RegExp(regexString, 'i')).test(documentName);
+        },
+        calRatingsCountForWidgets: function() {
+            var self = this;
+            var count = 0;
+            var result = self.rating;
+            var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
+
+            // prepare cumulative data by period object
+            for (var i = 0; i < periodArray.length; i++) {
+                var dateArray = periodArray[i].split('.');
+                var year = dateArray[0];
+                var month = dateArray[1];
+                var day = dateArray[2];
+                if (result[year] && result[year][month] && result[year][month][day]) {
+                    for (var rating in result[year][month][day]) {
+                        if (self.matchPlatformVersion(rating)) {
+                            var rank = (rating.split("**"))[2];
+                            if (self.cumulativeData[rank - 1]) {
+                                count += result[year][month][day][rating].c;
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (var index = 0; index < self.widgets.length; index++) {
+                if (self.widgets[index]._id === self.widget) {
+                    self.widgets[index].ratingsCount = count;
+                }
+            }
+        },
         fetch: function() {
             var self = this;
-            $.when(starRatingPlugin.requestFeedbackWidgetsData())
+            $.when(starRatingPlugin.requestFeedbackWidgetsData(), starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod())
                 .then(function() {
+                    // set platform versions for filter
+                    self.platform_version = starRatingPlugin.getPlatformVersion();
+                    // set rating data for charts
+                    // calculate cumulative data for chart
+                    self.rating = starRatingPlugin.getRatingInPeriod();
                     self.widgets = starRatingPlugin.getFeedbackWidgetsData();
                 });
         }
@@ -465,7 +506,8 @@ var WidgetDetail = countlyVue.views.create({
                 },
                 series: [
                     {
-                        data: [0, 0, 0, 0, 5]
+                        name: CV.i18n('feedback.ratings'),
+                        data: [0, 0, 0, 0, 0]
                     }
                 ]
             },
@@ -481,12 +523,12 @@ var WidgetDetail = countlyVue.views.create({
                     component: CommentsTable
                 }
             ],
-            ratingsForCurrentWidget: [],
+            feedbackData: [],
             cumulativeData: [],
+            count: 0,
             sum: 0,
+            rating: {},
             timesShown: 0,
-            ratingRate: 0,
-            comments: [],
             drawerSettings: {
                 createTitle: CV.i18n('feedback.add-widget'),
                 editTitle: CV.i18n('feedback.edit-widget'),
@@ -502,6 +544,75 @@ var WidgetDetail = countlyVue.views.create({
     methods: {
         backToWidgets: function() {
             window.location.hash = '#/' + countlyCommon.ACTIVE_APP_ID + '/feedback/ratings/widgets';
+        },
+        calCumulativeData: function() {
+            var self = this;
+            // reset values
+            self.count = 0;
+            self.avg = 0;
+            self.sum = 0;
+            // reset cumulative data
+            self.cumulativeData = [{
+                count: 0,
+                percent: 0
+            }, {
+                count: 0,
+                percent: 0
+            }, {
+                count: 0,
+                percent: 0
+            }, {
+                count: 0,
+                percent: 0
+            }, {
+                count: 0,
+                percent: 0
+            }];
+
+            var ratingArray = [];
+            var result = self.rating;
+            var periodArray = countlyCommon.getPeriodObj().currentPeriodArr;
+
+            // prepare cumulative data by period object
+            for (var i = 0; i < periodArray.length; i++) {
+                var dateArray = periodArray[i].split('.');
+                var year = dateArray[0];
+                var month = dateArray[1];
+                var day = dateArray[2];
+                if (result[year] && result[year][month] && result[year][month][day]) {
+                    for (var rating in result[year][month][day]) {
+                        if (self.matchPlatformVersion(rating)) {
+                            var rank = (rating.split("**"))[2];
+                            if (self.cumulativeData[rank - 1]) {
+                                self.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
+                                self.count += result[year][month][day][rating].c;
+                                self.sum += (result[year][month][day][rating].c * rank);
+                                self.avg = self.sum / self.count;
+                                var times = result[year][month][day][rating].c;
+                                while (times--) {
+                                    ratingArray.push(parseInt(rank));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // reset chart data
+            self.barOptions.series[0].data = [];
+            // prepare sum, count and chart data
+            self.cumulativeData.forEach(function(star) {
+                self.barOptions.series[0].data.push(star.count);
+            });
+
+            // prepare percent values in cumulative data
+            self.cumulativeData.forEach(function(star) {
+                if (self.count !== 0) {
+                    star.percent = ((star.count / self.count) * 100).toFixed(1);
+                }
+            });
+
+            ratingArray.sort();
         },
         setWidget: function(state) {
             var self = this;
@@ -534,69 +645,46 @@ var WidgetDetail = countlyVue.views.create({
         },
         matchPlatformVersion: function(documentName) {
             var regexString = '';
-            if (this.ratingFilter.ratings.platform === '') {
+            if (this.activeFilter.platform === '') {
                 regexString += '(\\w+)(\\*\\*)';
             }
             else {
-                regexString += this.ratingFilter.ratings.platform.toString().toUpperCase() + '(\\*\\*)';
+                regexString += this.activeFilter.platform.toString().toUpperCase() + '(\\*\\*)';
             }
-            if (this.ratingFilter.ratings.version === '') {
+            if (this.activeFilter.version === '') {
                 regexString += '(\\w+)(\\S*)(\\w*)(\\*\\*)[1-5]';
             }
             else {
-                regexString += this.ratingFilter.ratings.version.toString() + '(\\*\\*)[1-5]';
+                regexString += this.activeFilter.version.toString() + '(\\*\\*)[1-5]';
             }
-            if (this.ratingFilter.ratings.widget !== '') {
-                regexString += '(\\*\\*)' + this.ratingFilter.ratings.widget.toString();
+            if (this.activeFilter.widget !== '') {
+                regexString += '(\\*\\*)' + this.activeFilter.widget;
             }
             return (new RegExp(regexString, 'i')).test(documentName);
         },
         refresh: function() {
             this.fetch();
         },
-        prepareWidgetDetailData: function() {
-            this.barOptions.series[0].data = [0, 0, 0, 0, 0];
-            this.ratingRate = 0;
-            this.cumulativeData = [{
-                count: 0,
-                percent: 0
-            }, {
-                count: 0,
-                percent: 0
-            }, {
-                count: 0,
-                percent: 0
-            }, {
-                count: 0,
-                percent: 0
-            }, {
-                count: 0,
-                percent: 0
-            }];
-
-            this.sum = this.ratingsForCurrentWidget.iTotalRecords;
-
-            for (var i = 0; i < this.ratingsForCurrentWidget.aaData.length; i++) {
-                this.cumulativeData[this.ratingsForCurrentWidget.aaData[i].rating - 1].count++;
-                this.barOptions.series[0].data[this.ratingsForCurrentWidget.aaData[i].rating - 1]++;
-            }
-
-            if (this.widget.timesShown > 0) {
-                this.ratingRate = parseInt((this.widget.ratingsCount / this.widget.timesShown) * 100);
-            }
-        },
         fetch: function() {
             var self = this;
+            this.activeFilter.widget = this.$route.params.id;
+
             starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
                 self.widget = widget;
+                self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
             });
             // set widget filter as current one
             this.activeFilter.widget = this.widget._id;
-            $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestFeedbackData(this.activeFilter))
+            $.when(starRatingPlugin.requestPlatformVersion(), starRatingPlugin.requestRatingInPeriod(), starRatingPlugin.requesPeriod(), starRatingPlugin.requestFeedbackData(self.activeFilter))
                 .then(function() {
+                    // set platform versions for filter
                     self.platform_version = starRatingPlugin.getPlatformVersion();
-                    self.ratingsForCurrentWidget = starRatingPlugin.getFeedbackData();
-                    self.prepareWidgetDetailData();
+                    // set rating data for charts
+                    // calculate cumulative data for chart
+                    self.rating = starRatingPlugin.getRatingInPeriod();
+                    self.calCumulativeData();
+                    // set comments data for all widgets
+                    self.feedbackData = starRatingPlugin.getFeedbackData();
                 });
         },
         prepareVersions: function(newValue) {
@@ -632,9 +720,12 @@ var WidgetDetail = countlyVue.views.create({
                     default: ""
                 }
             ];
+        },
+        ratingRate: function() {
+            return parseFloat(((this.count / this.widget.timesShown) * 100).toFixed(2));
         }
     },
-    created: function() {
+    mounted: function() {
         this.fetch();
     }
 });

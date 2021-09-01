@@ -1,28 +1,28 @@
 <cly-datatable-n
   :rows="comments">
     <template v-slot="scope">
-        <el-table-column sortable="true" prop="rating" :label="'Rating'">
+        <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')">
             <template v-slot="rowScope">
                 <span class="text-medium">
                   {{rowScope.row.rating}}
                 </span>
             </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="cd" :label="'Time'">
+        <el-table-column sortable="true" prop="cd" :label="i18n('feedback.time')">
           <template v-slot="rowScope">
               <span class="text-medium">
-                {{rowScope.row.cd}}
+                {{ countlyCommon.formatTimeAgo(rowScope.row.cd) }}
               </span>
           </template>
         </el-table-column>
-        <el-table-column prop="comment" :label="'Comment'">
+        <el-table-column prop="comment" :label="i18n('feedback.comment')">
           <template v-slot="rowScope">
               <span class="text-medium">
                 {{ rowScope.row.comment }}
               </span>
           </template>
         </el-table-column>
-        <el-table-column prop="email" :label="'E-mail'">
+        <el-table-column prop="email" :label="i18n('feedback.email')">
           <template v-slot="rowScope">
               <span class="text-medium">
                 {{ rowScope.row.email }}

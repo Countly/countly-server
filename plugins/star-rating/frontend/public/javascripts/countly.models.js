@@ -33,7 +33,8 @@
 
     var widgetJSONProperties = [
         "targeting",
-        "ratings_texts"
+        "ratings_texts",
+        "logo"
     ];
 
     starRatingPlugin.extractWidgetProperties = function(props) {

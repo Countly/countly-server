@@ -1,21 +1,21 @@
 <cly-datatable-n
   :rows="ratings">
     <template v-slot="scope">
-        <el-table-column sortable="true" prop="rating" :label="'Rating'">
+        <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')">
             <template v-slot="rowScope">
                 <span class="text-medium">
                   {{ ratings.indexOf(rowScope.row) + 1 }}
                 </span>
             </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="numberOfRatings" :label="'Number of Ratings'">
+        <el-table-column sortable="true" prop="numberOfRatings" :label="i18n('feedback.number-of-ratings')">
           <template v-slot="rowScope">
               <span class="text-medium">
                 {{ rowScope.row.count }}
               </span>
           </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="percentage" :label="'Percentage'">
+        <el-table-column sortable="true" prop="percentage" :label="i18n('feedback.percentage')">
           <template v-slot="rowScope">
               <span class="text-medium">
                 % {{ rowScope.row.percent }}
