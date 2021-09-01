@@ -47,8 +47,8 @@
 						<template slot-scope="scope">
 								<div class="bu-level-left">
 									<div class="bu-level-item slipping-away-users-table-data-item">
-										<div :class='scope.row.flag' :style='scope.row.styling'></div>
-										<span>{{scope.row.countryTranslated}}</span>
+										<img :src='scope.row.flag' />
+										<span class="bu-pl-4">{{scope.row.countryTranslated}}</span>
 									</div>
 								</div>
 							</template>
