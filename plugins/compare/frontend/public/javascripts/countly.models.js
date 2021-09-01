@@ -1,338 +1,382 @@
-/*global countlyCommon, countlyGlobal, countlyEvent, jQuery, _*/
-(function(countlyEventCompare, $) {
-    //Private Properties
-    var _dbOb = {},
-        _activeAppKey = 0,
-        _initialized = false,
-        _period = null,
-        _events = [];
+/*global countlyVue, CV, _, countlyCommon, jQuery */
+(function(countlyCompareEvents) {
+    countlyCompareEvents.helpers = {
+        getTableRows: function(context) {
+            var tableData = [];
 
-    //Public Methods
-    countlyEventCompare.initialize = function(forEvents) {
-        if (_initialized &&
-            _period === countlyCommon.getPeriodForAjax() &&
-            _activeAppKey === countlyCommon.ACTIVE_APP_KEY &&
-            _.isEqual(_events, forEvents)) {
-            return this.refresh();
-        }
+            for (var i = 0; i < context.state.selectedEvents.length; i++) {
+                var props = countlyCompareEvents.helpers.getProperties(),
+                    tableRow = {
+                        "id": context.state.selectedEvents[i],
+                        "name": context.state.selectedEvents[i].startsWith("[CLY]_group") ? context.state.groupData[context.state.selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(context.state.selectedEvents[i]),
+                        "checked": true
+                    };
 
-        if (!forEvents || forEvents.length === 0) {
-            return true;
-        }
+                for (var prop in props) {
+                    var data = countlyCompareEvents.helpers.getChartData(context, context.state.selectedEvents[i], prop),
+                        tmpPropVals = _.pluck(data.chartData, prop);
 
-        _period = countlyCommon.getPeriodForAjax();
-
-        if (!countlyCommon.DEBUG) {
-            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-            _initialized = true;
-            _events = _.clone(forEvents);
-
-            return $.when(
-                $.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.data.r + "/compare/events",
-                    data: {
-                        "app_id": countlyCommon.ACTIVE_APP_ID,
-                        "period": _period,
-                        "events": JSON.stringify(forEvents)
-                    },
-                    dataType: "json",
-                    success: function(json) {
-                        _dbOb = json;
+                    if (tmpPropVals.length) {
+                        tableRow[prop] = _.reduce(tmpPropVals, function(memo, num) {
+                            return memo + num;
+                        }, 0);
                     }
-                })
-            ).then(function() {
-                return true;
-            });
-        }
-        else {
-            _dbOb = {"2012": {}};
-            return true;
-        }
-    };
+                }
 
-    countlyEventCompare.refresh = function() {
-        if (!countlyCommon.DEBUG) {
-
-            if (_activeAppKey !== countlyCommon.ACTIVE_APP_KEY) {
-                _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-                return this.initialize();
+                tableData.push(tableRow);
             }
 
-            if (!_initialized) {
-                return this.initialize();
+            return tableData;
+        },
+        getEventLongName: function(eventKey, eventMap) {
+            var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+            if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
+                return eventMap[mapKey].name;
+            }
+            else {
+                return eventKey;
+            }
+        },
+        getProperties: function() {
+            return {
+                "c": jQuery.i18n.map["events.count"],
+                "s": jQuery.i18n.map["events.sum"],
+                "dur": jQuery.i18n.map["events.dur"]
+            };
+        },
+        clearObject: function(obj) {
+            if (obj) {
+                if (!obj.c) {
+                    obj.c = 0;
+                }
+                if (!obj.s) {
+                    obj.s = 0;
+                }
+                if (!obj.dur) {
+                    obj.dur = 0;
+                }
+            }
+            else {
+                obj = {"c": 0, "s": 0, "dur": 0};
             }
 
-            return $.when(
-                $.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.data.r + "/compare/events",
-                    data: {
-                        "app_id": countlyCommon.ACTIVE_APP_ID,
-                        "action": "refresh",
-                        "events": JSON.stringify(_events)
+            return obj;
+        },
+        getChartData: function(context, forEvent, metric) {
+            var chartData = [
+                    { data: [], label: forEvent, color: '#DDDDDD', mode: "ghost" },
+                    { data: [], label: forEvent, color: '#333933' }
+                ],
+                dataProps = [
+                    {
+                        name: "p" + metric,
+                        func: function(dataObj) {
+                            return dataObj[metric];
+                        },
+                        period: "previous"
                     },
-                    dataType: "json",
-                    success: function(json) {
-                        var events = _.keys(json);
+                    { name: metric}
+                ];
 
-                        for (var i = 0; i < events.length; i++) {
-                            countlyCommon.extendDbObj(_dbOb[events[i]], json[events[i]]);
-                        }
-                    }
-                })
-            ).then(function() {
-                return true;
-            });
-        }
-        else {
-            _dbOb = {"2012": {}};
-
-            return true;
-        }
-    };
-
-    countlyEventCompare.reset = function() {
-        _dbOb = {};
-        _activeAppKey = 0;
-        _initialized = false;
-        _period = null;
-        _events = [];
-    };
-
-    countlyEventCompare.getChartData = function(forEvent, metric) {
-        var chartData = [
-                { data: [], label: forEvent, color: '#DDDDDD', mode: "ghost" },
-                { data: [], label: forEvent, color: '#333933' }
-            ],
-            dataProps = [
-                {
-                    name: "p" + metric,
-                    func: function(dataObj) {
-                        return dataObj[metric];
-                    },
-                    period: "previous"
-                },
-                { name: metric}
-            ];
-
-        return countlyCommon.extractChartData(_dbOb[forEvent], countlyEventCompare.clearObject, chartData, dataProps);
-    };
-
-    countlyEventCompare.getTableData = function() {
-
-        var tableData = [];
-
-        for (var i = 0; i < _events.length; i++) {
-            var props = countlyEventCompare.getProperties(),
-                tableRow = {
-                    "id": _events[i],
-                    "name": countlyEvent.getEventLongName(_events[i])
+            return countlyCommon.extractChartData(context.state.allEventsCompareData[forEvent], countlyCompareEvents.helpers.clearObject, chartData, dataProps);
+        },
+        getLineChartData: function(context, selectedEvents) {
+            var series = [];
+            if (selectedEvents.length === 1) {
+                var dataObj = countlyCompareEvents.helpers.getChartData(context, selectedEvents[0], context.state.selectedGraphMetric);
+                var data = [];
+                var prevData = [];
+                for (var j = 0;j < dataObj.chartData.length;j++) {
+                    data.push(dataObj.chartData[j][context.state.selectedGraphMetric]);
+                    prevData.push(dataObj.chartData[j]["p" + context.state.selectedGraphMetric]);
+                }
+                var obj = {
+                    name: selectedEvents[0].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[0]] : selectedEvents[0],
+                    data: data,
                 };
-
-            for (var prop in props) {
-                var data = countlyEventCompare.getChartData(_events[i], prop, props[prop]),
-                    tmpPropVals = _.pluck(data.chartData, prop);
-
-                if (tmpPropVals.length) {
-                    tableRow[prop] = _.reduce(tmpPropVals, function(memo, num) {
-                        return memo + num;
-                    }, 0);
+                var prevObj = {
+                    name: CV.i18n("events.compare.previous.period"),
+                    data: prevData,
+                };
+                series.push(obj, prevObj);
+            }
+            else {
+                for (var i = 0;i < selectedEvents.length; i++) {
+                    var dataOb = countlyCompareEvents.helpers.getChartData(context, selectedEvents[i], context.state.selectedGraphMetric);
+                    var seriesData = [];
+                    for (var k = 0;k < dataOb.chartData.length;k++) {
+                        seriesData.push(dataOb.chartData[k][context.state.selectedGraphMetric]);
+                    }
+                    var ob = {
+                        name: selectedEvents[i].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[i]] : selectedEvents[i],
+                        data: seriesData,
+                    };
+                    series.push(ob);
                 }
             }
-
-            tableData.push(tableRow);
-        }
-
-        return tableData;
-    };
-
-    countlyEventCompare.clearObject = function(obj) {
-        if (obj) {
-            if (!obj.c) {
-                obj.c = 0;
+            return {series: series};
+        },
+        getLegendData: function(selectedEvents, groupData) {
+            var lineLegend = {};
+            var legendData = [];
+            if (selectedEvents.length === 1) {
+                var obj = {};
+                var prevObj = {};
+                obj.name = selectedEvents[0].startsWith('[CLY]_group') ? groupData[selectedEvents[0]] : selectedEvents[0];
+                prevObj.name = CV.i18n("events.compare.previous.period");
+                legendData.push(obj, prevObj);
             }
-            if (!obj.s) {
-                obj.s = 0;
+            else {
+                for (var i = 0;i < selectedEvents.length; i++) {
+                    var ob = {};
+                    ob.name = selectedEvents[i].startsWith('[CLY]_group') ? groupData[selectedEvents[i]] : selectedEvents[i];
+                    legendData.push(ob);
+                }
             }
-            if (!obj.dur) {
-                obj.dur = 0;
-            }
-        }
-        else {
-            obj = {"c": 0, "s": 0, "dur": 0};
-        }
-
-        return obj;
-    };
-
-    countlyEventCompare.getProperties = function() {
-        return {
-            "c": jQuery.i18n.map["events.count"],
-            "s": jQuery.i18n.map["events.sum"],
-            "dur": jQuery.i18n.map["events.dur"]
-        };
-    };
-
-})(window.countlyEventCompare = window.countlyEventCompare || {}, jQuery);
-
-
-(function(countlyAppCompare, $) {
-
-    //Private Properties
-    var _appData = {},
-        _sessions = {},
-        _period = null;
-
-    //Public Methods
-    countlyAppCompare.initialize = function(forApps) {
-        if (!forApps || forApps.length === 0) {
-            return true;
-        }
-
-        _period = countlyCommon.getPeriodForAjax();
-
-        return $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r + "/compare/apps",
-            data: {
-                "apps": JSON.stringify(forApps),
-                "period": _period
-            },
-            dataType: "json",
-            success: function(json) {
-
-                _appData.all = {};
-                _appData.all.id = "all";
-                _appData.all.name = jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
-                _appData.all.sessions = {total: 0, trend: 0};
-                _appData.all.users = {total: 0, trend: 0};
-                _appData.all.newusers = {total: 0, trend: 0};
-                _appData.all.duration = {total: 0, trend: 0};
-                _appData.all.avgduration = {total: 0, trend: 0};
-                _sessions.all = {};
-
-                for (var i = 0; i < json.length; i++) {
-                    var appID = json[i].id;
-                    _appData[appID] = json[i];
-                    _appData[appID].duration.total = 0;
-                    _appData[appID].avgduration.total = 0;
-                    _sessions[appID] = {};
-
-                    for (var metric in json[i].charts) {
-                        var key = "draw-" + metric;
-                        _sessions[appID][key] = {
-                            data: json[i].charts[metric]
+            lineLegend.data = legendData;
+            lineLegend.show = true;
+            lineLegend.type = "secondary";
+            return lineLegend;
+        },
+        getAllEventsList: function(eventsList, groupList) {
+            var map = eventsList.map || {};
+            var allEvents = [];
+            if (eventsList) {
+                eventsList.list.forEach(function(item) {
+                    if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
+                        var obj = {
+                            "label": map[item] && map[item].name ? map[item].name : item,
+                            "value": item,
                         };
-
-                        for (var j = 0, l = json[i].charts[metric].length; j < l; j++) {
-
-                            if (!_sessions.all[key]) {
-                                _sessions.all[key] = {};
-                                _sessions.all[key].data = [];
-                            }
-                            if (!_sessions.all[key].data[j]) {
-                                _sessions.all[key].data[j] = [0, 0];
-                            }
-                            _sessions.all[key].data[j][0] = _sessions[appID][key].data[j][0];
-                            _sessions.all[key].data[j][1] += parseFloat(_sessions[appID][key].data[j][1]);
-                            if (key === "draw-total-time-spent") {
-                                _appData.all.duration.total += parseFloat(_sessions[appID][key].data[j][1]);
-                                _appData[appID].duration.total += parseFloat(_sessions[appID][key].data[j][1]);
-                            }
-                        }
+                        allEvents.push(obj);
                     }
-
-                    _appData.all.sessions.total += _appData[appID].sessions.total;
-                    _appData.all.users.total += _appData[appID].users.total;
-                    _appData.all.newusers.total += _appData[appID].newusers.total;
-                    _appData.all.sessions.trend += fromShortNumber(_appData[appID].sessions.change);
-                    _appData.all.users.trend += fromShortNumber(_appData[appID].users.change);
-                    _appData.all.newusers.trend += fromShortNumber(_appData[appID].newusers.change);
-                    _appData.all.duration.trend += fromShortNumber(_appData[appID].duration.change);
-                    _appData.all.avgduration.trend += fromShortNumber(_appData[appID].avgduration.change);
-                    _appData[appID].avgduration.total = (_appData[appID].sessions.total === 0) ? 0 : _appData[appID].duration.total / _appData[appID].sessions.total;
-                }
-
-                for (var current in _appData.all) {
-                    if (_appData.all[current].trend < 0) {
-                        _appData.all[current].trend = "d";
-                    }
-                    else {
-                        _appData.all[current].trend = "u";
-                    }
-                }
-
-                _appData.all.avgduration.total = (_appData.all.sessions.total === 0) ? 0 : _appData.all.duration.total / _appData.all.sessions.total;
-            },
-            error: function() {
-                window.CountlyHelpers.notify({type: 'error', message: jQuery.i18n.map['management-applications.plugins.error.server']});
+                });
             }
+            if (groupList) {
+                groupList.forEach(function(item) {
+                    if (item.status) {
+                        var obj = {
+                            "label": item.name + "(" + CV.i18n("events.all.group") + ")",
+                            "value": item._id,
+                        };
+                        allEvents.push(obj);
+                    }
+                });
+            }
+            return allEvents;
+        },
+        getGroupData: function(groupData) {
+            var obj = {};
+            groupData.forEach(function(item) {
+                obj[item._id] = item.name;
+            });
+            return obj;
+        },
+    };
+
+    countlyCompareEvents.service = {
+        fetchAllEventsData: function(context) {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "get_events",
+                    "period": context.state.selectedDatePeriod,
+                    "preventRequestAbort": true
+                },
+                dataType: "json",
+            });
+        },
+        fetchCompareEventsData: function(context) {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + "/compare/events",
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "period": context.state.selectedDatePeriod,
+                    "events": JSON.stringify(context.state.selectedEvents)
+                },
+                dataType: "json",
+            });
+        },
+        fetchAllEventsGroupData: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "get_event_groups",
+                    "preventRequestAbort": true
+                },
+                dataType: "json",
+            });
+        },
+        fetchRefreshCompareEventsData: function(context) {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + "/compare/events",
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "action": "refresh",
+                    "events": JSON.stringify(context.state.selectedEvents)
+                },
+                dataType: "json",
+            });
+        },
+    };
+    countlyCompareEvents.getVuexModule = function() {
+
+        var getCompareInitialState = function() {
+            return {
+                allEventsData: {},
+                allEventsGroupData: {},
+                allEventsList: [],
+                allEventsCompareData: {},
+                selectedDatePeriod: "30days",
+                selectedEvents: [],
+                tableRows: [],
+                lineChartData: {},
+                selectedGraphMetric: "c",
+                lineLegend: {},
+                groupData: {},
+            };
+        };
+
+        var compareEventsActions = {
+            fetchAllEventsData: function(context) {
+                return countlyCompareEvents.service.fetchAllEventsData(context)
+                    .then(function(res) {
+                        if (res) {
+                            context.commit("setAllEventsData", res);
+                            countlyCompareEvents.service.fetchAllEventsGroupData(context)
+                                .then(function(result) {
+                                    if (result) {
+                                        context.commit("setAllEventsGroupData", result);
+                                        context.commit("setGroupData", countlyCompareEvents.helpers.getGroupData(result));
+                                        context.commit("setAllEventsList", countlyCompareEvents.helpers.getAllEventsList(res, result));
+                                    }
+                                });
+                        }
+                    });
+            },
+            fetchCompareEventsData: function(context) {
+                return countlyCompareEvents.service.fetchCompareEventsData(context)
+                    .then(function(res) {
+                        if (res) {
+                            context.commit("setAllEventsCompareData", res);
+                            context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
+                            context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, context.state.selectedEvents));
+                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents, context.state.groupData));
+                        }
+                    });
+            },
+            fetchRefreshCompareEventsData: function(context) {
+                return countlyCompareEvents.service.fetchRefreshCompareEventsData(context)
+                    .then(function(res) {
+                        if (res) {
+                            var events = _.keys(res);
+                            for (var i = 0; i < events.length; i++) {
+                                countlyCommon.extendDbObj(context.state.allEventsCompareData[events[i]], res[events[i]]);
+                            }
+                            context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
+                            context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, context.state.selectedEvents));
+                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents, context.state.groupData));
+                        }
+                    });
+            },
+            fetchSelectedDatePeriod: function(context, period) {
+                context.commit('setSelectedDatePeriod', period);
+            },
+            fetchSelectedEvents: function(context, events) {
+                context.commit('setSelectedEvents', events);
+            },
+            fetchLineChartData: function(context, selectedEvents) {
+                context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, selectedEvents));
+            },
+            fetchSelectedGraphMetric: function(context, metric) {
+                context.commit("setSelectedGraphMetric", metric);
+            },
+            fetchLegendData: function(context, selectedEvents) {
+                context.commit('setLineLegend', countlyCompareEvents.helpers.getLegendData(selectedEvents, context.state.groupData));
+            }
+        };
+
+        var compareEventsMutations = {
+            setAllEventsData: function(state, value) {
+                state.allEventsData = value;
+            },
+            setAllEventsGroupData: function(state, value) {
+                state.allEventsGroupData = value;
+            },
+            setAllEventsList: function(state, value) {
+                state.allEventsList = value;
+            },
+            setGroupData: function(state, value) {
+                state.groupData = value;
+            },
+            setAllEventsCompareData: function(state, value) {
+                state.allEventsCompareData = value;
+            },
+            setSelectedDatePeriod: function(state, value) {
+                state.selectedDatePeriod = value;
+            },
+            setSelectedEvents: function(state, value) {
+                state.selectedEvents = value;
+            },
+            setTableRows: function(state, value) {
+                state.tableRows = value;
+            },
+            setLineChartData: function(state, value) {
+                state.lineChartData = value;
+            },
+            setLineLegend: function(state, value) {
+                state.lineLegend = value;
+            },
+            setSelectedGraphMetric: function(state, value) {
+                state.selectedGraphMetric = value;
+            }
+        };
+        var compareEventsGetters = {
+            allEvents: function(_state) {
+                return _state.allEventsData;
+            },
+            allEventsGroupData: function(_state) {
+                return _state.allEventsGroupData;
+            },
+            allEventsList: function(_state) {
+                return _state.allEventsList;
+            },
+            allEventsCompareData: function(_state) {
+                return _state.allEventsCompareData;
+            },
+            selectedDatePeriod: function(_state) {
+                return _state.selectedDatePeriod;
+            },
+            selectedEvents: function(_state) {
+                return _state.selectedEvents;
+            },
+            tableRows: function(_state) {
+                return _state.tableRows;
+            },
+            lineChartData: function(_state) {
+                return _state.lineChartData;
+            },
+            lineLegend: function(_state) {
+                return _state.lineLegend;
+            },
+            selectedGraphMetric: function(_state) {
+                return _state.selectedGraphMetric;
+            },
+            groupData: function(_state) {
+                return _state.groupData;
+            }
+        };
+        return countlyVue.vuex.Module("countlyCompareEvents", {
+            state: getCompareInitialState,
+            actions: compareEventsActions,
+            mutations: compareEventsMutations,
+            getters: compareEventsGetters,
         });
     };
-
-    countlyAppCompare.refresh = function() {
-        return true;
-    };
-
-    countlyAppCompare.reset = function() {
-        _appData = {};
-        _sessions = {};
-    };
-
-    countlyAppCompare.getChartData = function(forApp, metric) {
-        if (_sessions[forApp] && _sessions[forApp][metric] && _sessions[forApp][metric].data) {
-            return {
-                chartDP: [[], {
-                    data: _sessions[forApp][metric].data,
-                    label: countlyGlobal.apps[forApp].name
-                }]
-            };
-        }
-        else {
-            return {
-                chartDP: [[], []]
-            };
-        }
-    };
-
-    countlyAppCompare.getTableData = function() {
-        var data = [];
-
-        for (var i in _appData) {
-            data.push(_appData[i]);
-        }
-
-        return data;
-    };
-
-    countlyAppCompare.getProperties = function() {
-        return {
-            "draw-total-sessions": jQuery.i18n.map["common.total-sessions"],
-            "draw-total-users": jQuery.i18n.map["compare.apps.total-unique"],
-            "draw-new-users": jQuery.i18n.map["compare.apps.new-unique"],
-            "draw-total-time-spent": jQuery.i18n.map["dashboard.time-spent"],
-            "draw-time-spent": jQuery.i18n.map["dashboard.avg-time-spent"]
-        };
-    };
-
-    var fromShortNumber = function(str) {
-        if (str === "NA" || str === "∞") {
-            return 0;
-        }
-        else {
-            str = str.slice(0, -1);
-            var rate = 1;
-            if (str.slice(-1) === "K") {
-                str = str.slice(0, -1);
-                rate = 1000;
-            }
-            else if (str.slice(-1) === "M") {
-                str = str.slice(0, -1);
-                rate = 1000000;
-            }
-            return parseFloat(str) * rate;
-        }
-    };
-
-}(window.countlyAppCompare = window.countlyAppCompare || {}, jQuery));
+}(window.countlyCompareEvents = window.countlyCompareEvents || {}));

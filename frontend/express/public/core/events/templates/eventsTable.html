@@ -1,0 +1,58 @@
+<div v-bind:class="[componentId]">
+    <cly-datatable-n :rows="eventsTableRows">
+      <template v-slot:header-left="selectScope">
+      </template>
+      <template v-slot="scope">
+        <el-table-column v-if="selectedSegment !== 'segment'" sortable="true" prop="segment" :label="i18n('events.table.segmentation')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.curr_segment}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column v-else sortable="true" prop="date" :label="i18n('common.date')">
+          <template
+          date v-slot="rowScope">
+            <div>
+              {{rowScope.row.date}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="isColumnAllowed(i18n('events.all.count'))" sortable="true" prop="count" :label="labels.count">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.c}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="isColumnAllowed(i18n('events.all.sum'))" sortable="true" prop="sum" :label="labels.sum">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.s}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="isColumnAllowed(i18n('events.all.duration'))" sortable="true" prop="duration" :label="labels.dur">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.dur}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="isColumnAllowed('AvgSum')" sortable="true" prop="avgSum" :label="i18n('events.table.avg-sum')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.avgSum}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="isColumnAllowed('AvgDur')" sortable="true" prop="avgDur" :label="i18n('events.table.avg-dur')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.avgDur}}
+            </div>
+          </template>
+        </el-table-column>
+      </template>
+    </cly-datatable-n>
+  </div>
