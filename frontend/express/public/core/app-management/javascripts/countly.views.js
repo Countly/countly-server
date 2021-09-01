@@ -1,4 +1,4 @@
-/*global countlyAuth, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment */
+/*global countlyAuth, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment, sdks, countlyPlugins, countlySession, countlyLocation, countlyCity, countlyDevice, countlyCarrier, countlyDeviceDetails, countlyAppVersion, countlyEvent, _ */
 (function() {
     var FEATURE_NAME = "global_applications";
 
@@ -14,6 +14,35 @@
                     this.selectedApp = value;
                     this.uploadData.app_image_id = countlyGlobal.apps[this.selectedApp]._id + "";
                     this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png")';
+                    var pluginsData = countlyPlugins.getConfigsData();
+                    if (!countlyGlobal.apps[this.selectedApp].plugins) {
+                        countlyGlobal.apps[this.selectedApp].plugins = {};
+                    }
+                    var plugins = countlyGlobal.apps[this.selectedApp].plugins || {};
+                    this.appSettings = {};
+                    for (var i in app.appManagementViews) {
+                        if (app.appManagementViews[i].inputs) {
+                            if (!this.appSettings[i]) {
+                                this.appSettings[i] = app.appManagementViews[i];
+                            }
+                            for (var j in app.appManagementViews[i].inputs) {
+                                var parts = j.split(".");
+                                if (parts.length === 2) {
+                                    if (plugins[parts[0]] && typeof plugins[parts[0]][parts[1]] !== "undefined") {
+                                        this.appSettings[i].inputs[j].value = plugins[parts[0]][parts[1]];
+                                    }
+                                    else if (pluginsData[parts[0]] && typeof pluginsData[parts[0]][parts[1]] !== "undefined") {
+                                        this.appSettings[i].inputs[j].value = pluginsData[parts[0]][parts[1]];
+                                    }
+                                }
+                                else if (parts.length === 1) {
+                                    if (typeof plugins[parts[0]] !== "undefined") {
+                                        this.appSettings[i].inputs[j].value = plugins[parts[0]];
+                                    }
+                                }
+                            }
+                        }
+                    }
                     app.navigate("#/manage/apps/" + value);
                 }
             }
@@ -67,6 +96,8 @@
                 adminApps: countlyGlobal.admin_apps || {},
                 appList: appList,
                 diff: [],
+                sdks: [],
+                server: "",
                 changes: {},
                 app_icon: {'background-image': 'url("appimages/' + app_id + '.png?' + Date.now() + '")', "background-repeat": "no-repeat", "background-size": "auto 100px"},
                 appDetails: false,
@@ -74,12 +105,69 @@
                     _csrf: countlyGlobal.csrf_token,
                     app_image_id: app_id
                 },
-                topOptions: [],
-                loadingDetails: false
+                topOptions: [
+                    {value: "clear-1month", label: CV.i18n("management-applications.clear-1month-data")},
+                    {value: "clear-3month", label: CV.i18n("management-applications.clear-3month-data")},
+                    {value: "clear-6month", label: CV.i18n("management-applications.clear-6month-data")},
+                    {value: "clear-1year", label: CV.i18n("management-applications.clear-1year-data")},
+                    {value: "clear-2year", label: CV.i18n("management-applications.clear-2year-data")},
+                    {value: "clear-all", label: CV.i18n("management-applications.clear-all-data")},
+                    //{value: "clear", label: CV.i18n("management-applications.clear-data")},
+                    {value: "reset", label: CV.i18n("management-applications.clear-reset-data"), divided: true},
+                    {value: "delete", label: CV.i18n("management-applications.delete-an-app"), divided: true},
+                ],
+                loadingDetails: false,
+                appSettings: {}
             };
         },
         beforeCreate: function() {
-
+            var self = this;
+            if (countlyGlobal.config && countlyGlobal.config.code) {
+                $.getScript("sdks.js", function() {
+                    var server = (location.protocol || "http:") + "//" + location.hostname + (location.port ? ":" + location.port : "") + "/" + countlyGlobal.path;
+                    if (server.substr(server.length - 1) === '/') {
+                        server = server.substr(0, server.length - 1);
+                    }
+                    if (typeof sdks !== "undefined") {
+                        self.sdks = sdks;
+                        self.server = server;
+                    }
+                });
+            }
+            return $.when(countlyPlugins.initializeConfigs())
+                .then(function() {
+                    if (countlyGlobal.apps[self.selectedApp]) {
+                        var pluginsData = countlyPlugins.getConfigsData();
+                        if (!countlyGlobal.apps[self.selectedApp].plugins) {
+                            countlyGlobal.apps[self.selectedApp].plugins = {};
+                        }
+                        self.appSettings = {};
+                        var plugins = countlyGlobal.apps[self.selectedApp].plugins || {};
+                        for (var i in app.appManagementViews) {
+                            if (app.appManagementViews[i].inputs) {
+                                if (!self.appSettings[i]) {
+                                    self.appSettings[i] = app.appManagementViews[i];
+                                }
+                                for (var j in app.appManagementViews[i].inputs) {
+                                    var parts = j.split(".");
+                                    if (parts.length === 2) {
+                                        if (plugins[parts[0]] && typeof plugins[parts[0]][parts[1]] !== "undefined") {
+                                            self.appSettings[i].inputs[j].value = plugins[parts[0]][parts[1]];
+                                        }
+                                        else if (pluginsData[parts[0]] && typeof pluginsData[parts[0]][parts[1]] !== "undefined") {
+                                            self.appSettings[i].inputs[j].value = pluginsData[parts[0]][parts[1]];
+                                        }
+                                    }
+                                    else if (parts.length === 1) {
+                                        if (typeof plugins[parts[0]] !== "undefined") {
+                                            self.appSettings[i].inputs[j].value = plugins[parts[0]];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
         },
         methods: {
             createNewApp: function() {
@@ -104,6 +192,79 @@
             },
             isDisabled: function() {
                 return !this.newApp && (this.apps[this.selectedApp].locked || !this.adminApps[this.selectedApp]);
+            },
+            handleMenuCommand: function(command) {
+                if (command === "delete") {
+                    this.deleteApp();
+                }
+                else {
+                    var self = this;
+                    var period;
+
+                    if (command === "reset") {
+                        period = "reset";
+                    }
+                    else {
+                        period = command.replace("clear-", "");
+                    }
+
+                    var helper_msg = jQuery.i18n.map["management-applications.clear-confirm-" + period] || jQuery.i18n.map["management-applications.clear-confirm-period"];
+                    var helper_title = jQuery.i18n.map["management-applications.clear-" + period + "-data"] || jQuery.i18n.map["management-applications.clear-all-data"];
+                    var image = "clear-" + period;
+
+                    if (period === "reset") {
+                        image = "reset-the-app";
+                    }
+                    if (period === "all") {
+                        image = "clear-all-app-data";
+                    }
+                    CountlyHelpers.confirm(helper_msg, "popStyleGreen", function(result) {
+                        if (!result) {
+                            return true;
+                        }
+
+                        var appId2 = self.selectedApp;
+
+                        $.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.apps.w + '/reset',
+                            data: {
+                                args: JSON.stringify({
+                                    app_id: appId2,
+                                    period: period
+                                })
+                            },
+                            dataType: "json",
+                            success: function(result1) {
+
+                                if (!result1) {
+                                    CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-admin"], "red");
+                                    return false;
+                                }
+                                else {
+                                    $(document).trigger("/i/apps/reset", { app_id: appId2, period: period });
+
+                                    if (period === "all" || period === "reset") {
+                                        countlySession.reset();
+                                        countlyLocation.reset();
+                                        countlyCity.reset();
+                                        countlyDevice.reset();
+                                        countlyCarrier.reset();
+                                        countlyDeviceDetails.reset();
+                                        countlyAppVersion.reset();
+                                        countlyEvent.reset();
+                                    }
+                                    if (period === "reset") {
+                                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.reset-success"], "black");
+                                    }
+                                    else {
+                                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-success"], "black");
+                                    }
+                                }
+                            }
+                        });
+                    }, [jQuery.i18n.map["common.no-clear"], jQuery.i18n.map["management-applications.yes-clear-app"]], {title: helper_title + "?", image: image});
+                }
             },
             handleUploadSuccess: function() {
                 this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png?' + Date.now() + '")';
@@ -271,6 +432,106 @@
                         CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
                     }
                 });
+            },
+            setAppLock: function(value) {
+                var args = {
+                    app_id: this.selectedApp,
+                    locked: value
+                };
+
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.apps.w + '/update',
+                    data: {
+                        args: JSON.stringify(args)
+                    },
+                    dataType: "json",
+                    success: function(data) {
+                        for (var modAttr in data) {
+                            countlyGlobal.apps[args.app_id][modAttr] = data[modAttr];
+                            countlyGlobal.admin_apps[args.app_id][modAttr] = data[modAttr];
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        CountlyHelpers.alert(error, "red");
+                    }
+                });
+            },
+            deleteApp: function() {
+                var self = this;
+                CountlyHelpers.confirm(jQuery.i18n.map["management-applications.delete-confirm"], "popStyleGreen", function(result) {
+
+                    if (!result) {
+                        return true;
+                    }
+                    var app_id = self.selectedApp;
+
+                    $.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.apps.w + '/delete',
+                        data: {
+                            args: JSON.stringify({
+                                app_id: app_id
+                            })
+                        },
+                        dataType: "json",
+                        success: function() {
+                            $(document).trigger("/i/apps/delete", { app_id: app_id });
+
+                            var index = Backbone.history.appIds.indexOf(app_id + "");
+                            if (index > -1) {
+                                Backbone.history.appIds.splice(index, 1);
+                            }
+                            var index2;
+                            for (var i = 0; i < self.appList.length; i++) {
+                                if (self.appList[i].value === app_id) {
+                                    index2 = i;
+                                    break;
+                                }
+                            }
+
+                            if (typeof index2 === "number") {
+                                self.appList.splice(index2, 1);
+                            }
+
+                            if (_.isEmpty(countlyGlobal.apps)) {
+                                //back to first app screen
+                            }
+                            else {
+
+                                //find next app
+                                var app = (self.appList[index]) ? self.appList[index].value : self.appList[0].value;
+                                self.selectedApp = app;
+                                self.uploadData.app_image_id = countlyGlobal.apps[self.selectedApp]._id + "";
+                                self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png")';
+                                app.navigate("#/manage/apps/" + self.selectedApp);
+                                delete countlyGlobal.apps[app_id];
+                                delete countlyGlobal.admin_apps[app_id];
+
+                                if (countlyCommon.ACTIVE_APP_ID === app_id) {
+                                    app.switchApp(app);
+                                }
+                            }
+                        },
+                        error: function(xhr) {
+                            if (xhr.status === 403) {
+                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.app-locked"], "red");
+                            }
+                            else {
+                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.delete-admin"], "red");
+                            }
+                        }
+                    });
+                }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["management-applications.yes-delete-app"]], {title: jQuery.i18n.map["management-applications.delete-an-app"] + "?", image: "delete-an-app"});
+            },
+            getLabelName: function(id) {
+                return app.configurationsView.getInputLabel(id);
+            },
+            onChange: function(key, value) {
+                var parts = key.split(".");
+                this.appSettings[parts[0]].inputs[key].value = value;
+                this.changes[key] = value;
+                this.appSettings = Object.assign({}, this.appSettings);
             },
             unpatch: function() {}
         }

@@ -1,4 +1,4 @@
-/*global countlyAuth, _,$,countlyPlugins,Handlebars,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyManagementView,countlyVue,CV */
+/*global countlyAuth, _,$,countlyPlugins,jQuery,countlyGlobal,app,countlyCommon,CountlyHelpers,countlyVue,CV */
 
 (function() {
     var FEATURE_PLUGIN_NAME = "global_plugins";
@@ -381,25 +381,7 @@
                 }
             },
             getLabel: function(id) {
-                if (countlyGlobal.plugins.indexOf(id) === -1) {
-                    return jQuery.i18n.map["configs." + id];
-                }
-                if (typeof this.predefinedLabels[id] !== "undefined") {
-                    return jQuery.i18n.map[this.predefinedLabels[id]];
-                }
-                if (jQuery.i18n.map["configs." + id]) {
-                    return jQuery.i18n.map["configs." + id];
-                }
-                if (jQuery.i18n.map["configs." + id.replace(".", "-")]) {
-                    return jQuery.i18n.map["configs." + id.replace(".", "-")];
-                }
-                if (jQuery.i18n.map[id]) {
-                    return jQuery.i18n.map[id];
-                }
-                if (jQuery.i18n.map[id.replace(".", "-")]) {
-                    return jQuery.i18n.map[id.replace(".", "-")] ;
-                }
-                return id;
+                return app.configurationsView.getInputLabel(this.selectedConfig + "." + id);
             },
             getLabelName: function(id, ns) {
                 ns = ns || this.selectedConfig;
@@ -411,24 +393,7 @@
                     return jQuery.i18n.map["configs.user-level-configuration"];
                 }
 
-                if (typeof this.predefinedLabels[ns + "." + id] !== "undefined") {
-                    return jQuery.i18n.map[this.predefinedLabels[ns + "." + id]];
-                }
-                else if (jQuery.i18n.map["configs." + ns + "." + id]) {
-                    return jQuery.i18n.map["configs." + ns + "." + id];
-                }
-                else if (jQuery.i18n.map["configs." + (ns + "." + id).replace(".", "-")]) {
-                    return jQuery.i18n.map["configs." + (ns + "." + id).replace(".", "-")];
-                }
-                else if (jQuery.i18n.map[ns + "." + id]) {
-                    return jQuery.i18n.map[ns + "." + id];
-                }
-                else if (jQuery.i18n.map[(ns + "." + id).replace(".", "-")]) {
-                    return jQuery.i18n.map[(ns + "." + id).replace(".", "-")];
-                }
-                else {
-                    return id;
-                }
+                return app.configurationsView.getInputLabel(this.selectedConfig + "." + id);
             },
             getHelperLabel: function(id, ns) {
                 ns = ns || this.selectedConfig;
@@ -443,13 +408,7 @@
                 }
             },
             getInputType: function(id) {
-                var input = this.predefinedInputs[this.selectedConfig + "." + id];
-                if (typeof input === "function") {
-                    return "function";
-                }
-                if (input && input.input) {
-                    return input.input;
-                }
+                return app.configurationsView.getInputType(this.selectedConfig + "." + id);
             },
             checkIfOverwritten: function(id) {
                 var configsData = countlyPlugins.getConfigsData();
@@ -666,34 +625,10 @@
                 }
             },
             getLabelName: function(id) {
-
-                if (typeof this.predefinedLabels[this.selectedConfig + "." + id] !== "undefined") {
-                    return jQuery.i18n.map[this.predefinedLabels[this.selectedConfig + "." + id]];
-                }
-                else if (jQuery.i18n.map["configs." + this.selectedConfig + "." + id]) {
-                    return jQuery.i18n.map["configs." + this.selectedConfig + "." + id];
-                }
-                else if (jQuery.i18n.map["configs." + (this.selectedConfig + "." + id).replace(".", "-")]) {
-                    return jQuery.i18n.map["configs." + (this.selectedConfig + "." + id).replace(".", "-")];
-                }
-                else if (jQuery.i18n.map[this.selectedConfig + "." + id]) {
-                    return jQuery.i18n.map[this.selectedConfig + "." + id];
-                }
-                else if (jQuery.i18n.map[(this.selectedConfig + "." + id).replace(".", "-")]) {
-                    return jQuery.i18n.map[(this.selectedConfig + "." + id).replace(".", "-")];
-                }
-                else {
-                    return id;
-                }
+                return app.configurationsView.getInputLabel(this.selectedConfig + "." + id);
             },
             getInputType: function(id) {
-                var input = this.predefinedInputs[this.selectedConfig + "." + id];
-                if (typeof input === "function") {
-                    return "function";
-                }
-                if (input && input.input) {
-                    return input.input;
-                }
+                return app.configurationsView.getInputType(this.selectedConfig + "." + id);
             },
             save: function(doc) {
                 var data = {
@@ -874,6 +809,35 @@
         },
         registerStructure: function(id, obj) {
             this.predefinedStructure[id] = obj;
+        },
+        getInputLabel: function(id) {
+            if (typeof this.predefinedLabels[id] !== "undefined") {
+                return jQuery.i18n.map[this.predefinedLabels[id]];
+            }
+            else if (jQuery.i18n.map["configs." + id]) {
+                return jQuery.i18n.map["configs." + id];
+            }
+            else if (jQuery.i18n.map["configs." + (id).replace(".", "-")]) {
+                return jQuery.i18n.map["configs." + (id).replace(".", "-")];
+            }
+            else if (jQuery.i18n.map[id]) {
+                return jQuery.i18n.map[id];
+            }
+            else if (jQuery.i18n.map[(id).replace(".", "-")]) {
+                return jQuery.i18n.map[(id).replace(".", "-")];
+            }
+            else {
+                return id;
+            }
+        },
+        getInputType: function(id) {
+            var input = this.predefinedInputs[id];
+            if (typeof input === "function") {
+                return "function";
+            }
+            if (input && input.input) {
+                return input.input;
+            }
         }
     };
 
@@ -970,75 +934,34 @@
     }
 
     if (countlyAuth.validateUpdate(FEATURE_CONFIG_NAME)) {
-        var configManagementPromise = null;
-        for (var key in showInAppManagment) {
-            app.addAppManagementView(key, jQuery.i18n.map['configs.' + key], countlyManagementView.extend({
-                key: key,
-                initialize: function() {
-                    this.plugin = this.key;
-                },
-                resetTemplateData: function() {
-                    this.template = Handlebars.compile(this.generateTemplate(this.key));
-                },
-                generateTemplate: function(id) {
-                    var fields = '';
-                    this.configsData = countlyPlugins.getConfigsData();
-                    id = this.key || id;
-                    this.cache = {};
-                    this.templateData = {};
-
-                    var appConfigData = this.config();
-                    for (var i in showInAppManagment[id]) {
-                        if (showInAppManagment[id][i] === true) {
-                            var myvalue = "";
-                            if (appConfigData && typeof appConfigData[i] !== "undefined") {
-                                myvalue = appConfigData[i];
-                            }
-                            else if (this.configsData && this.configsData[id] && typeof this.configsData[id][i] !== "undefined") {
-                                myvalue = this.configsData[id][i];
-                            }
-                            this.templateData[i] = myvalue;
-                            var input = app.configurationsView.getInputByType((id + "." + i), myvalue);
-                            var label = app.configurationsView.getInputLabel((id + "." + i), i, true);
-                            if (input && label) {
-                                fields += ('<div id="config-row-' + i + "-" + id.replace(".", "") + '" class="mgmt-plugins-row help-zone-vs" data-help-localize="help.mgmt-plugins.push.ios.type">' +
-                                    '   <div>' + label + '</div>' +
-                                    '   <div>' + input + '</div>' +
-                                    '</div>');
+        countlyPlugins.initializeConfigs().always(function() {
+            var pluginsData = countlyPlugins.getConfigsData();
+            for (var key in showInAppManagment) {
+                var inputs = {};
+                for (var conf in showInAppManagment[key]) {
+                    if (showInAppManagment[key][conf]) {
+                        if (!app.configurationsView.predefinedInputs[key + "." + conf]) {
+                            if (pluginsData[key]) {
+                                var type = typeof pluginsData[key][conf];
+                                if (type === "string") {
+                                    app.configurationsView.registerInput(key + "." + conf, {input: "el-input", attrs: {}});
+                                }
+                                else if (type === "number") {
+                                    app.configurationsView.registerInput(key + "." + conf, {input: "el-input-number", attrs: {}});
+                                }
+                                else if (type === "boolean") {
+                                    app.configurationsView.registerInput(key + "." + conf, {input: "el-switch", attrs: {}});
+                                }
                             }
                         }
-                    }
-                    return fields;
-                },
-                doOnChange: function(name, value) {
-                    if (name) {
-                        name = name.substring(this.key.length + 1);
-                        if (name && countlyCommon.dot(this.templateData, name) !== value) {
-                            countlyCommon.dot(this.templateData, name, value);
+                        if (app.configurationsView.predefinedInputs[key + "." + conf]) {
+                            inputs[key + "." + conf] = app.configurationsView.predefinedInputs[key + "." + conf];
                         }
-
-                        if (this.isSaveAvailable()) {
-                            this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').show();
-                        }
-                        else {
-                            this.el.parent().find("h3[aria-controls=" + this.el.attr("id") + "]").find('.icon-button').hide();
-                        }
-                        this.onChange(name, value);
                     }
-                },
-                beforeRender: function() { // eslint-disable-line no-loop-func
-                    var self = this;
-                    if (!configManagementPromise) {
-                        configManagementPromise = $.when(countlyPlugins.initializeConfigs(), countlyPlugins.initializeActiveAppConfigs());
-                    }
-                    return $.when(configManagementPromise).then(function() {
-                        configManagementPromise = null;
-                        self.template = Handlebars.compile(self.generateTemplate(self.key));
-                        self.savedTemplateData = JSON.stringify(self.templateData);
-                    }).then(function() {});
                 }
-            }));
-        }
+                app.addAppManagementInput(key, jQuery.i18n.map['configs.' + key], inputs);
+            }
+        });
     }
 
     if (countlyAuth.validateRead(FEATURE_PLUGIN_NAME)) {

@@ -23,15 +23,16 @@
                     </cly-listbox>
             </div>
             <div class="bu-column bu-is-9">
-                <cly-more-options size="small" class="bu-is-pulled-right">
-                    <el-dropdown-item :key="idx" v-for="(item, idx) in topOptions">
-                        <span :class="item.icon"></span>
-                        <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+                <cly-more-options v-if="!newApp" size="small" class="bu-is-pulled-right" @command="handleMenuCommand">
+                    <el-dropdown-item :disabled="isDisabled()" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
+                        <el-link :disabled="isDisabled()" class="bu-ml-1">{{item.label}}</el-link>
                     </el-dropdown-item>
                 </cly-more-options>
                 <el-switch
+                    v-if="!newApp"
                     v-model="apps[selectedApp].locked"
                     :active-text="apps[selectedApp].locked ? i18n('common.locked') : i18n('common.unlocked')"
+                    @change="setAppLock"
                     class="bu-is-pulled-right bu-mr-4 bu-mt-2">
                 </el-switch>
                 <h2 class="bu-mb-4"> {{apps[selectedApp] ? apps[selectedApp].name : i18n('common.add-new-app')}} </h2>
@@ -100,8 +101,7 @@
                                     </cly-form-step>
                                     <div class="bu-has-text-right">
                                         <el-button 
-                                            v-if="!isDisabled()"
-                                            :disabled="!formScope.isSubmissionAllowed" 
+                                            :disabled="isDisabled() || !formScope.isSubmissionAllowed" 
                                             @click="formScope.submit()" 
                                             type="primary">{{i18n( newApp ? 'common.create' : 'common.apply')}}</el-button>
                                     </div>
@@ -134,7 +134,7 @@
                     </div>
                 </cly-section>
                 <cly-section>
-                    <el-collapse class="bu-mx-4 app-management-details" @change="loadDetails">
+                    <el-collapse v-if="!newApp" class="bu-mx-4 app-management-details" @change="loadDetails">
                         <el-collapse-item :title="i18n('management-applications.app-details')" name="1">
                             <div v-if="appDetails">
                                 <cly-inline-form-field :label="i18n('management-applications.app-creator')">
@@ -171,13 +171,67 @@
                         </el-collapse-item>
                     </el-collapse>
                 </cly-section>
-                <h2 class="bu-mb-2">{{i18n('management-applications.plugins')}} </h2>
-                <cly-section>
-                    <el-collapse class="bu-mx-4 app-management-details" @change="loadDetails">
-                        <el-collapse-item :title="i18n('management-applications.app-details')" name="1">
+                <h2 class="bu-mb-2" v-if="!newApp" >{{i18n('management-applications.plugins')}} </h2>
+                <cly-section v-if="!newApp" >
+                    <el-collapse class="bu-mx-4 app-management-details">
+                        <el-collapse-item :title="value.title" :name="id" :key="id" v-for="(value, id) in appSettings">
+                            <cly-inline-form-field :key="key" :label="getLabelName(key)" v-for="(conf, key) in value.inputs">
+                                    <el-input
+                                        v-if="conf.input === 'el-input'" 
+                                        @input="onChange(key, $event)"
+                                        :value="conf.value"
+                                        v-bind="conf.attrs"
+                                        >
+                                    </el-input>
+                                    <el-select 
+                                        v-else-if="conf.input === 'el-input'" 
+                                        :value="conf.value"
+                                        v-bind="conf.attrs">
+                                        <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in conf.list"></el-option>
+                                    </el-select>
+                                    <el-slider 
+                                        v-else-if="conf.input === 'el-slider'" 
+                                        @change="onChange(key, $event)"
+                                        :value="conf.value"
+                                        v-bind="conf.attrs">
+                                    </el-slider>
+                                    <el-button
+                                        v-else-if="conf.input === 'el-button'" 
+                                        @click="conf.click()"
+                                        v-bind="conf.attrs">
+                                        {{conf.label}}
+                                    </el-button>
+                                    <el-switch 
+                                        v-else-if="conf.input === 'el-switch'"
+                                        @change="onChange(key, $event)"
+                                        :value="conf.value"
+                                        v-bind="conf.attrs">
+                                    </el-switch>
+                                    <el-input-number 
+                                        v-else-if="conf.input === 'el-input-number'" 
+                                        @change="onChange(key, $event)"
+                                        :max='2147483647' 
+                                        :min='0' 
+                                        :value="conf.value"
+                                        v-bind="conf.attrs">
+                                    </el-input-number>
+                                    <el-input 
+                                        v-else
+                                        @input="onChange(key, $event)"
+                                        :value="conf.value">
+                                    </el-input>
+                                </cly-inline-form-field>
                         </el-collapse-item>
                     </el-collapse>
                 </cly-section>
+                <el-card class="box-card" v-if="!newApp" >
+                    <h3>{{i18n('common.integrate-sdks')}}</h3>
+                    <p>{{i18n('common.integrate-sdks-text')}}</p>
+                    <p class="select-platforms">{{i18n('common.integrate-sdks-platforms')}}</p>
+                    <div v-if="sdks" class="sdks">
+                        <a :href="'http://code.count.ly/integration-' + code + '.html?server=' + server + '&app_key=' + apps[selectedApp].key" target='_blank' v-for="(value, code) in sdks" class="el-button el-button--primary is-plain">{{value.name.replace("SDK", "")}}</a>&nbsp;
+                    </div>
+                </el-card>
             </div>
         </div>
         <cly-diff-helper :diff="diff" @discard="unpatch" @save="save"></cly-diff-helper>
