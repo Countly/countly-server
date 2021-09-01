@@ -60,7 +60,7 @@
         ],
         data: function() {
             return {
-                selectedTab: (this.$route.params && this.$route.params.tab) || "all"
+                selectedTab: (this.$route.params && this.$route.params.tab) || ""
             };
         },
         computed: {
@@ -192,32 +192,30 @@
 
     app.route("/analytics/events/*tab", "events-tab", function(tab) {
         var eventsViewWrapper = getAllEventsView();
-        var params;
-        if (tab.startsWith("key")) {
-            var index = tab.indexOf("/");
-            params = {
-                tab: "all",
-                eventKey: tab.slice(index + 1)
-            };
-        }
-        else {
-            params = {
-                tab: tab,
-                eventKey: undefined
-            };
-        }
+
+        var params = {
+            tab: tab,
+        };
         eventsViewWrapper.params = params;
         this.renderWhenReady(eventsViewWrapper);
     });
 
     countlyVue.container.registerTab("/analytics/events", {
         priority: 1,
-        name: "all",
+        name: "",
         title: "Event Stats",
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/all",
+        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events",
         component: AllEventsView,
         vuex: [{
             clyModel: countlyAllEvents
         }],
+    });
+    app.route("/analytics/events/key/:eventKey", "events", function(eventKey) {
+        var params = {
+            eventKey: eventKey
+        };
+        var eventsViewWrapper = getAllEventsView();
+        eventsViewWrapper.params = params;
+        this.renderWhenReady(eventsViewWrapper);
     });
 })();
