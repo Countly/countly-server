@@ -4012,7 +4012,7 @@ window.EventsView = countlyView.extend({
             }
             $(".event-container").removeClass("active");
             $(this).addClass("active");
-            app.navigate("/analytics/events/key/" + encodeURIComponent(tmpCurrEvent));
+            // app.navigate("/analytics/events/key/" + encodeURIComponent(tmpCurrEvent));
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() {
                 self.refresh(true);

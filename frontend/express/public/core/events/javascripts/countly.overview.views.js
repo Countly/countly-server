@@ -1,32 +1,132 @@
 /* global countlyVue, countlyCommon, countlyEventsOverview,CV,app*/
-var EventsTable = countlyVue.views.BaseView.extend({
-    mixins: [countlyVue.mixins.i18n],
-    data: function() {
-        return {
-            scoreTableExportSettings: {
-                title: "Events",
-                timeDependent: true
+(function() {
+    var EventsTable = countlyVue.views.BaseView.extend({
+        mixins: [countlyVue.mixins.i18n],
+        data: function() {
+            return {
+                scoreTableExportSettings: {
+                    title: "Events",
+                    timeDependent: true
+                }
+            };
+        },
+        methods: {
+            onRowClick: function(params) {
+                app.navigate("#/analytics/events/key/" + params.name, true);
             }
-        };
-    },
-    computed: {
-        eventsTableRows: function() {
-            return this.$store.getters["countlyEventsOverview/detailEvents"];
         },
-    },
-    template: '#overview-tables-events'
-});
+        computed: {
+            eventsTableRows: function() {
+                return this.$store.getters["countlyEventsOverview/detailEvents"];
+            },
+        },
+        template: '#overview-tables-events'
+    });
 
-var EventsBreakdownHorizontalTile = countlyVue.views.BaseView.extend({
-    props: {
-        trend: {
-            type: String
+    var OverviewConfigureDrawer = countlyVue.views.create({
+        template: CV.T('/core/events/templates/configureEvents.html'),
+        data: function() {
+            return {
+                saveButtonLabel: CV.i18n('common.done'),
+                selectEvent: '',
+                selectProperty: '',
+            };
         },
-        change: {
-            type: String
+        computed: {
+            title: function() {
+                return CV.i18n("events.overview.events.configure.events");
+            },
+            eventProperties: function() {
+                return this.$store.getters["countlyEventsOverview/eventProperties"];
+            },
+            configureEventsList: function() {
+                return this.$store.getters["countlyEventsOverview/configureEventsList"];
+            },
+            selectedOverviewEvents: {
+                get: function() {
+                    return this.selectEvent;
+                },
+                set: function(selectedItem) {
+                    this.selectEvent = selectedItem;
+                    this.$store.dispatch('countlyEventsOverview/fetchEventProperties', selectedItem);
+                }
+            }
+        },
+        props: {
+            controls: {
+                type: Object
+            },
+            selectedEvents: {
+                type: Array
+            }
+        },
+        methods: {
+            onClose: function(event) {
+                this.selectEvent = '',
+                this.selectProperty = '',
+                this.$emit("close", event);
+            },
+            onSubmit: function() {
+                var self = this;
+                this.selectedEvents.forEach(function(item, idx) {
+                    self.selectedEvents[idx].order = idx;
+                });
+                this.$store.dispatch('countlyEventsOverview/fetchEditMap', self.selectedEvents);
+            },
+            add: function() {
+                var self = this;
+                var alreadyExists = false;
+                if (this.selectedEvents.length === 12) {
+                    this.$notify.error({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("events.overview.max-c")
+                    });
+                    return;
+                }
+                this.selectedEvents.every(function(item) {
+                    if (self.selectEvent === item.eventKey && self.selectProperty === item.eventProperty) {
+                        alreadyExists = true;
+                        return false;
+                    }
+                    return true;
+                });
+                if (alreadyExists) {
+                    this.$notify.error({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("events.overview.have-already-one")
+                    });
+                }
+                else {
+                    var eventAttributes = this.$store.getters["countlyEventsOverview/eventMapping"][this.selectEvent];
+                    var obj = {
+                        "order": this.selectedEvents.length,
+                        "eventKey": this.selectEvent,
+                        "eventProperty": this.selectProperty,
+                        "is_event_group": eventAttributes.group,
+                        "eventName": eventAttributes.eventName,
+                        "propertyName": eventAttributes[this.selectProperty]
+                    };
+                    this.selectedEvents.push(obj);
+                    this.selectEvent = '';
+                    this.selectProperty = '';
+                }
+            },
+            onDelete: function(id) {
+                this.selectedEvents.splice(id, 1);
+            }
         }
-    },
-    template: '<div class="cly-events-breakdown-horizontal-tile bu-column bu-is-4">\
+    });
+
+    var EventsBreakdownHorizontalTile = countlyVue.views.BaseView.extend({
+        props: {
+            trend: {
+                type: String
+            },
+            change: {
+                type: String
+            }
+        },
+        template: '<div class="cly-events-breakdown-horizontal-tile bu-column bu-is-4">\
     <div class="cly-events-breakdown-horizontal-tile__wrapper">\
     <slot name="title"></slot>\
         <div class="cly-events-breakdown-horizontal-tile__values-list bu-columns bu-is-gapless bu-is-multiline bu-is-mobile">\
@@ -36,8 +136,8 @@ var EventsBreakdownHorizontalTile = countlyVue.views.BaseView.extend({
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
                             <slot name="countValue"></slot>\
-                            <span v-if="trend === \'u\'" class="cly-events-breakdown-horizontal-tile--green"><i class="fas fa-arrow-up"></i>{{change}}</span>\
-                            <span v-else class="cly-events-breakdown-horizontal-tile--red"><i class="fas fa-arrow-down"></i>{{change}}</span>\
+                            <span v-if="trend === \'u\'" class="cly-events-breakdown-horizontal-tile__trend cly-trend-up bu-pl-2"><i class="cly-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-up"></i>{{change}}</span>\
+                            <span v-else class="cly-events-breakdown-horizontal-tile__trend cly-trend-down bu-pl-2"><i class="cly-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-down"></i>{{change}}</span>\
                             </div>\
                         </div>\
                         <slot name="totalPercentage">\
@@ -49,18 +149,18 @@ var EventsBreakdownHorizontalTile = countlyVue.views.BaseView.extend({
         </div>\
     </div>\
 </div>'
-});
+    });
 
-var MonitorEventsBreakdownHorizontalTile = countlyVue.views.BaseView.extend({
-    props: {
-        trend: {
-            type: String
+    var MonitorEventsBreakdownHorizontalTile = countlyVue.views.BaseView.extend({
+        props: {
+            trend: {
+                type: String
+            },
+            change: {
+                type: String
+            }
         },
-        change: {
-            type: String
-        }
-    },
-    template: '<div class="cly-monitor-events-breakdown-horizontal-tile bu-column bu-is-6">\
+        template: '<div class="cly-monitor-events-breakdown-horizontal-tile bu-column bu-is-6">\
     <div class="cly-monitor-events-breakdown-horizontal-tile__wrapper">\
     <slot name="title"></slot>\
         <div class="cly-monitor-events-breakdown-horizontal-tile__values-list bu-columns bu-is-gapless bu-is-multiline bu-is-mobile">\
@@ -70,8 +170,8 @@ var MonitorEventsBreakdownHorizontalTile = countlyVue.views.BaseView.extend({
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
                             <slot name="countValue"></slot>\
-                            <span v-if="trend === \'u\'" class="cly-monitor-events-breakdown-horizontal-tile--green"><i class="fas fa-arrow-up"></i>{{change}}</span>\
-                            <span v-else class="cly-monitor-events-breakdown-horizontal-tile--red"><i class="fas fa-arrow-down"></i>{{change}}</span>\
+                            <span v-if="trend === \'u\'" class="cly-trend-up cly-monitor-events-breakdown-horizontal-tile__trend bu-pl-2"><i class="cly-monitor-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-up"></i>{{change}}</span>\
+                            <span v-else class="cly-trend-down cly-monitor-events-breakdown-horizontal-tile__trend bu-pl-2"><i class="cly-monitor-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-down"></i>{{change}}</span>\
                             </div>\
                         </div>\
                     </div>\
@@ -84,64 +184,77 @@ var MonitorEventsBreakdownHorizontalTile = countlyVue.views.BaseView.extend({
         </div>\
     </div>\
 </div>'
-});
+    });
 
 
-var EventsOverviewView = countlyVue.views.BaseView.extend({
-    template: "#events-overview",
-    components: {
-        "detail-tables": EventsTable,
-        "events-breakdown-horizontal-tile": EventsBreakdownHorizontalTile,
-        "monitor-events-breakdown-horizontal-tile": MonitorEventsBreakdownHorizontalTile
-    },
-    computed: {
-        topEvents: function() {
-            return this.$store.getters["countlyEventsOverview/topEvents"];
+    var EventsOverviewView = countlyVue.views.BaseView.extend({
+        template: "#events-overview",
+        mixins: [countlyVue.mixins.hasDrawers("configureDrawer")],
+        components: {
+            "detail-tables": EventsTable,
+            "events-breakdown-horizontal-tile": EventsBreakdownHorizontalTile,
+            "monitor-events-breakdown-horizontal-tile": MonitorEventsBreakdownHorizontalTile,
+            'overview-drawer': OverviewConfigureDrawer
         },
-        eventsOverview: function() {
-            return this.$store.getters["countlyEventsOverview/eventsOverview"];
-        },
-        monitorEventsData: function() {
-            return this.$store.getters["countlyEventsOverview/monitorEventsData"];
-        },
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.getters["countlyEventsOverview/selectedDatePeriod"];
-            },
-            set: function(value) {
-                this.$store.dispatch('countlyEventsOverview/fetchSelectedDatePeriod', value);
-                this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
+        methods: {
+            configureOverview: function() {
+                this.$store.dispatch('countlyEventsOverview/fetchConfigureOverview');
+                this.openDrawer("configureDrawer", {});
             }
         },
-        updatedAt: function() {
-            var deatilEvents = this.$store.getters["countlyEventsOverview/detailEvents"];
-            return CV.i18n('events.overview.updated') + " " + countlyCommon.formatTimeAgoText(deatilEvents.ts).text;
+        computed: {
+            selectedEvents: function() {
+                return this.$store.getters["countlyEventsOverview/configureOverview"];
+            },
+            topEvents: function() {
+                return this.$store.getters["countlyEventsOverview/topEvents"];
+            },
+            eventsOverview: function() {
+                return this.$store.getters["countlyEventsOverview/eventsOverview"];
+            },
+            monitorEventsData: function() {
+                return this.$store.getters["countlyEventsOverview/monitorEventsData"];
+            },
+            selectedDatePeriod: {
+                get: function() {
+                    return this.$store.getters["countlyEventsOverview/selectedDatePeriod"];
+                },
+                set: function(value) {
+                    this.$store.dispatch('countlyEventsOverview/fetchSelectedDatePeriod', value);
+                    this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
+                }
+            },
+            updatedAt: function() {
+                var deatilEvents = this.$store.getters["countlyEventsOverview/detailEvents"];
+                return CV.i18n('events.overview.updated') + " " + countlyCommon.formatTimeAgoText(deatilEvents.ts).text;
+            }
+        },
+        data: function() {
+            return {
+                description: CV.i18n('events.overview.title.new'),
+                disabledDatePicker: '1months',
+                monitorEventsLegend: {"show": false}
+            };
+        },
+        beforeCreate: function() {
+            this.$store.dispatch('countlyEventsOverview/fetchDetailEvents');
+            this.$store.dispatch('countlyEventsOverview/fetchTopEvents');
+            this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
         }
-    },
-    data: function() {
-        return {
-            description: CV.i18n('events.overview.title.new')
-        };
-    },
-    beforeCreate: function() {
-        this.$store.dispatch('countlyEventsOverview/fetchDetailEvents');
-        this.$store.dispatch('countlyEventsOverview/fetchTopEvents');
-        this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
-    }
-});
+    });
 
-var eventsOverviewVuex = [{
-    clyModel: countlyEventsOverview
-}];
+    var eventsOverviewVuex = [{
+        clyModel: countlyEventsOverview
+    }];
 
-var EventsOverviewViewWrapper = new countlyVue.views.BackboneWrapper({
-    component: EventsOverviewView,
-    vuex: eventsOverviewVuex,
-    templates: [
-        "/core/events/templates/overview.html"
-    ]
-});
+    var EventsOverviewViewWrapper = new countlyVue.views.BackboneWrapper({
+        component: EventsOverviewView,
+        vuex: eventsOverviewVuex,
+        templates: [
+            "/core/events/templates/overview.html" ]
+    });
 
-app.route("/analytics/events/overview", "overview", function() {
-    this.renderWhenReady(EventsOverviewViewWrapper);
-});
+    app.route("/analytics/events/overview", "overview", function() {
+        this.renderWhenReady(EventsOverviewViewWrapper);
+    });
+})();

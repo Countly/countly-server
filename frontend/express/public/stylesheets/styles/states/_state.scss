@@ -116,6 +116,15 @@
     }
 }
 
+.cly-trend-up {
+    font-size: t.$text-md-size;
+    color: map.get(c.$colors, "green-80");
+}
+
+.cly-trend-down {
+    font-size: t.$text-md-size;
+    color: map.get(c.$colors, "red-100");
+}
 .cursor-pointer {
     cursor: pointer
 }
