@@ -18,21 +18,21 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-if="isColumnAllowed(i18n('events.all.count'))" sortable="true" prop="count" :label="labels.count">
+        <el-table-column v-if="isColumnAllowed('count')" sortable="true" prop="count" :label="labels.count">
           <template v-slot="rowScope">
             <div>
               {{rowScope.row.c}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-if="isColumnAllowed(i18n('events.all.sum'))" sortable="true" prop="sum" :label="labels.sum">
+        <el-table-column v-if="isColumnAllowed('sum')" sortable="true" prop="sum" :label="labels.sum">
           <template v-slot="rowScope">
             <div>
               {{rowScope.row.s}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column v-if="isColumnAllowed(i18n('events.all.duration'))" sortable="true" prop="duration" :label="labels.dur">
+        <el-table-column v-if="isColumnAllowed('dur')" sortable="true" prop="duration" :label="labels.dur">
           <template v-slot="rowScope">
             <div>
               {{rowScope.row.dur}}
