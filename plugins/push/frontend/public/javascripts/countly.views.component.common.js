@@ -489,6 +489,11 @@
                 type: String,
                 required: false,
                 default: ""
+            },
+            isRequired: {
+                type: Boolean,
+                required: false,
+                default: false
             }
         },
         data: function() {

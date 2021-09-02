@@ -97,31 +97,31 @@
                     content: {}
                 }
             },
-            settings: {
-                ios: {
-                    subtitle: "",
-                    mediaURL: "",
-                    soundFileName: "",
-                    badgeNumber: "",
-                    onClickURL: "",
-                    json: null,
-                    userData: []
-                },
-                android: {
-                    mediaURL: "",
-                    soundFileName: "",
-                    badgeNumber: "",
-                    icon: "",
-                    onClickURL: "",
-                    json: null,
-                    userData: []
-                },
-                all: {
-                    mediaURL: ""
-                }
-            },
-            type: MessageTypeEnum.CONTENT
         },
+        settings: {
+            ios: {
+                subtitle: "",
+                mediaURL: "",
+                soundFileName: "",
+                badgeNumber: "",
+                onClickURL: "",
+                json: null,
+                userData: []
+            },
+            android: {
+                mediaURL: "",
+                soundFileName: "",
+                badgeNumber: "",
+                icon: "",
+                onClickURL: "",
+                json: null,
+                userData: []
+            },
+            all: {
+                mediaURL: ""
+            }
+        },
+        messageType: MessageTypeEnum.CONTENT,
         localizations: ["default"],
         cohorts: [],
         locations: [],
@@ -192,6 +192,7 @@
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 TargetingEnum: TargetingEnum,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
+                MessageTypeEnum: MessageTypeEnum,
                 WhenToDetermineEnum: WhenToDetermineEnum,
                 DeliveryEnum: DeliveryEnum,
                 TimeZoneEnum: TimeZoneEnum,
@@ -299,13 +300,13 @@
             previewMessageMedia: function() {
                 var result = {};
                 if (this.mediaMetadata[this.PlatformEnum.ANDROID]) {
-                    result[this.PlatformEnum.ANDROID] = {url: this.pushNotificationUnderEdit.message.settings.android.mediaURL, type: this.MediaTypeEnum.IMAGE};
+                    result[this.PlatformEnum.ANDROID] = {url: this.pushNotificationUnderEdit.settings.android.mediaURL, type: this.MediaTypeEnum.IMAGE};
                 }
                 if (this.mediaMetadata[this.PlatformEnum.IOS]) {
-                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.message.settings.ios.mediaURL, type: this.mediaMetadata.ios.type };
+                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.settings.ios.mediaURL, type: this.mediaMetadata.ios.type };
                 }
                 if (this.mediaMetadata[this.PlatformEnum.ALL]) {
-                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.message.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE };
+                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE };
                 }
                 return result;
             },
@@ -368,6 +369,21 @@
                     return buttonIndex !== index;
                 });
                 this.pushNotificationUnderEdit.message[this.activeLocalization].buttons = filteredButtons;
+            },
+            deleteAllNonDefaultLocalizations: function() {
+                var self = this;
+                Object.keys(this.pushNotificationUnderEdit.message).forEach(function(key) {
+                    if (key && key !== 'default') {
+                        self.$delete(self.pushNotificationUnderEdit.message, key);
+                    }
+                });
+            },
+            onMultipleLocalizationChange: function(isChecked) {
+                this.pushNotificationUnderEdit.multipleLocalizations = isChecked;
+                if (!isChecked) {
+                    this.onLocalizationChange({value: 'default', label: "Default"});
+                    this.deleteAllNonDefaultLocalizations();
+                }
             },
             isLocalizationSelected: function(value) {
                 return this.pushNotificationUnderEdit.localizations.filter(function(activeLocalization) {
@@ -435,12 +451,12 @@
             },
             onSendToTestUsers: function() {},
             onSettingChange: function(platform, property, value) {
-                this.pushNotificationUnderEdit.message.settings[platform][property] = value;
+                this.pushNotificationUnderEdit.settings[platform][property] = value;
             },
             onSettingToggle: function(platform, property, value) {
                 this.settings[platform][property] = value;
                 if (!value) {
-                    this.pushNotificationUnderEdit.message.settings[platform][property] = "";
+                    this.pushNotificationUnderEdit.settings[platform][property] = "";
                 }
             },
             onTitleChange: function(value) {
@@ -522,20 +538,20 @@
                 }
             },
             resetAllMediaURLIfNecessary: function() {
-                if (this.pushNotificationUnderEdit.message.settings.android.mediaURL && this.pushNotificationUnderEdit.message.settings.ios.mediaURL) {
-                    this.pushNotificationUnderEdit.message.settings.all.mediaURL = "";
+                if (this.pushNotificationUnderEdit.settings.android.mediaURL && this.pushNotificationUnderEdit.settings.ios.mediaURL) {
+                    this.pushNotificationUnderEdit.settings.all.mediaURL = "";
                 }
             },
             onAllMediaURLInput: function(value) {
                 var self = this;
-                this.pushNotificationUnderEdit.message.settings.all.mediaURL = value;
+                this.pushNotificationUnderEdit.settings.all.mediaURL = value;
                 this.$refs.allMediaURLValidationProvider.validate(value).then(function(result) {
                     self.afterMediaURLValidate(self.PlatformEnum.ALL, result.valid);
                 });
             },
             onAndroidMediaURLInput: function(value) {
                 var self = this;
-                this.pushNotificationUnderEdit.message.settings.android.mediaURL = value;
+                this.pushNotificationUnderEdit.settings.android.mediaURL = value;
                 this.$refs.androidMediaURLValidationProvider.validate(value).then(function(result) {
                     self.afterMediaURLValidate(self.PlatformEnum.ANDROID, result.valid);
                 });
@@ -543,7 +559,7 @@
             },
             onIOSMediaURLInput: function(value) {
                 var self = this;
-                this.pushNotificationUnderEdit.message.settings.ios.mediaURL = value;
+                this.pushNotificationUnderEdit.settings.ios.mediaURL = value;
                 this.$refs.iosMediaURLValidationProvider.validate(value).then(function(result) {
                     self.afterMediaURLValidate(self.PlatformEnum.IOS, result.valid);
                 });
@@ -551,7 +567,7 @@
             },
             afterMediaURLValidate: function(platform, isValid) {
                 if (isValid) {
-                    this.fetchMediaMetadata(platform, this.pushNotificationUnderEdit.message.settings[platform].mediaURL);
+                    this.fetchMediaMetadata(platform, this.pushNotificationUnderEdit.settings[platform].mediaURL);
                 }
                 else {
                     this.mediaMetadata[platform] = null;
