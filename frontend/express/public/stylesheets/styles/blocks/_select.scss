@@ -1,0 +1,197 @@
+@use "../base/colors" as c;
+@use "sass:map";
+
+.cly-vue-select-x {
+    &__pop {
+        .el-tabs {
+            &__nav-wrap::after {
+                background-color: transparent;
+            }
+            &__nav-scroll {
+                padding: 0 14px;
+            }
+            &__header {
+                margin: 0 0 1px 0;
+                z-index: 2000;
+                &::after {
+                    // shadow
+                    content: "";
+                    position: absolute;
+                    width: 100%;
+                    height: 12px;
+                    background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
+                    top: 40px;
+                    opacity: 0.12;
+                }
+            }
+            // &__active-bar {
+            //     padding: 0 15px;
+            //     left: -15px;
+            // }
+        }
+        &--hidden-tabs {
+            .el-tabs {
+                &__header {
+                    &::after {
+                        top: 0px;
+                    }
+                }
+                &__nav-scroll {
+                    display: none;
+                }
+            }
+        }
+        .cly-vue-listbox {
+            padding: 8px;
+        }
+    }
+    &__title {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
+        color: #333c48;
+        padding-bottom: 16px;
+    }
+    &__header-slot {
+        padding-bottom: 16px;
+    }
+    &__header {
+        padding: 16px;
+    }
+    &__footer {
+        border-top: 1px solid #ececec;
+    }
+    &__commit-section {
+        float: right;
+        margin: 16px;
+    }
+
+    &__pop--has-single-option {
+        .cly-vue-select-x__header-slot {
+            padding: 0;
+        }
+        .el-tabs__header::after {
+            content: none;
+        }
+    }
+}
+
+.cly-vue-listbox {
+
+    label.el-checkbox {
+        width: 100%;
+    }
+
+    &.cly-vue-listbox--bordered {
+        border-radius: 7px;
+        border: 1px solid map.get(c.$colors, "cool-gray-40");
+        &.is-focus,
+        &:focus-within {
+            border-color: map.get(c.$colors, "blue-100");
+        }
+    }
+
+    .cly-vue-listbox__no-data {
+        padding: 8px;
+        line-height: 20px;
+        font-weight: normal;
+        color: #333c48;
+        font-size: 14px;
+    }
+
+    .el-checkbox-group {
+        overflow: hidden;
+    }
+
+    .el-checkbox__label {
+        line-height: 20px;
+        font-weight: normal;
+        color: #333c48;
+    }
+
+    .drag-handler {
+        visibility: hidden;
+    }
+
+    &__header {
+        margin: 0 0 1px 0;
+        z-index: 2000;
+        border-bottom: 1px solid #ECECEC;
+        position: relative;
+        &::after {
+            // shadow
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 12px;
+            background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
+            top: 57px;
+            left: 0;
+            opacity: 0.12;
+        }
+    }
+
+    .cly-vue-listbox__item {
+        display: flex;
+        cursor: pointer;
+        align-items: center;
+        justify-content: space-between;
+        &.selected{
+            background-color: map.get(c.$colors, "blue-100");
+            * {
+                color: map.get(c.$colors, "white");
+            }
+        }
+    }
+
+    .cly-vue-listbox__item-content {
+        width: 100%;
+    }
+
+    &--disabled {
+        .cly-vue-listbox__item {
+            background-color: map.get(c.$colors, "warm-gray-20");
+            * {
+                color: map.get(c.$colors, "cool-gray-40");
+            }
+
+            &.selected {
+                opacity: .5;
+            }
+        }
+    }
+
+    &:not(.cly-vue-listbox--disabled) {
+        .cly-vue-listbox__item {
+            &:not(.selected):hover {
+                background-color: map.get(c.$colors, "warm-gray-20");
+                .drag-handler {
+                    visibility: visible;
+                }
+                * {
+                    color: map.get(c.$colors, "blue-100");
+                }
+            }
+        }
+    }
+
+    //Had to give padding 7px because of line height 20px for text-medium
+    &--has-default-skin {
+        .cly-vue-listbox__item {
+            padding: 7px;
+            height: 20px;
+            border-radius: 4px;
+            margin: 8px 0px;
+        }
+    }
+    &--has-jumbo-skin {
+        .cly-vue-listbox__item {
+            padding: 7px;
+            height: 32px;
+            border-bottom: 1px solid #ECECEC;
+            &.selected{
+                border-left: 2px solid map.get(c.$colors, "blue-100");
+            }
+        }
+    }
+}

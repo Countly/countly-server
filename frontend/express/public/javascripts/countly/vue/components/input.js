@@ -210,7 +210,7 @@
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <div\
                                 tabindex="0"\
-                                class="text-medium"\
+                                class="text-medium font-weight-bold"\
                                 :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group\': option.group}"\
                                 :key="option.value"\
                                 @focus="!option.group && handleItemHover(option)"\
@@ -221,10 +221,10 @@
                                 <div class="cly-vue-listbox__item-content">\
                                     <div class="bu-level">\
                                         <div class="bu-level-left">\
-                                            <div class="cly-vue-listbox__item-prefix">\
+                                            <div v-if="$slots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-2">\
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
-                                            <div class="cly-vue-listbox__item-label bu-ml-2">{{option.label}}</div>\
+                                            <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
                                         </div>\
                                         <div class="bu-level-right">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
@@ -357,7 +357,7 @@
                                     v-model="sortedOptions"\
                                     :disabled="!sortable">\
                                 <div\
-                                    class="text-medium cly-vue-listbox__item"\
+                                    class="text-medium font-weight-bold cly-vue-listbox__item"\
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
