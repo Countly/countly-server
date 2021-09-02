@@ -21,7 +21,7 @@
 			<cly-metric-cards>
                 <cly-metric-card :number="item.percent" :color="item.color" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
                     {{item.name}}
-					<span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="item.description"></span>
+					<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="item.description"></span>
 					<template v-slot:number>{{item.value}}</template>
                 </cly-metric-card>
             </cly-metric-cards>
@@ -45,7 +45,7 @@
             </cly-chart-time>
         </cly-section>
 		<cly-section>
-			<cly-datatable-n :default-sort="{prop: 'name', order: 'ascending'}"  :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
+			<cly-datatable-n :default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols"  :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
 				<template v-slot:header-left>
 					<a href="#/analytics/views/manage" class="cly-vue-button button-light-skin ToLink">{{i18n('views.table.edit-views')}}</a>
 				</template>
@@ -55,31 +55,27 @@
 						<cly-check skin="tick" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></cly-check>
 						</template>
 					</el-table-column>
-					<el-table-column sortable="custom" prop="name" :label="i18n('views.table.view')">
+					<el-table-column min-width="210" sortable="custom" prop="name" :label="i18n('views.table.view')">
 						<template slot-scope="scope">
 							{{scope.row.view}}
 						</template>
 					</el-table-column>
-					<el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')"></el-table-column>
-					<el-table-column sortable="custom" prop="n" :label="i18n('common.table.new-users')"></el-table-column>
-					<el-table-column sortable="custom" prop="t" :label="i18n('views.total-visits')"></el-table-column>
-					<el-table-column sortable="custom" prop="d" :label="i18n('views.avg-duration')">
+					
+					<template v-for="(col,idx) in scope.dynamicCols">
+						<el-table-column :min-width="col.width" v-if="col.value === 'd'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
 						<template slot-scope="scope">
 							{{scope.row.dCalc}}
-						</template>
-					</el-table-column>
-					<el-table-column sortable="custom" prop="s" :label="i18n('views.starts')"></el-table-column>
-					<el-table-column sortable="custom" prop="e" :label="i18n('views.exits')"></el-table-column>
-					<el-table-column sortable="custom" prop="b" :label="i18n('views.bounces')"></el-table-column>
-					<el-table-column sortable="custom" prop="br" :label="i18n('views.br')"></el-table-column>
-					
-					<el-table-column v-if="showScrollingCol" sortable="custom" prop="scr" :label="i18n('views.scrolling-avg')">
-						<template slot-scope="scope">
-							{{scope.row.scrCalc}}
-						</template>
-					</el-table-column>
-					<el-table-column sortable="custom" prop="uvc" :label="i18n('views.uvc')"></el-table-column>
-					<el-table-column  v-if="showActionMapColumn"  prop="actionLink" :label="i18n('views.action-map')">
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'scr'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								{{scope.row.scrCalc}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else :key="idx" sortable="custom" :prop="col.value" :label="col.label">
+						</el-table-column>
+					</template>
+					<el-table-column min-width="150"  v-if="showActionMapColumn"  prop="actionLink" :label="i18n('views.action-map')">
 						<template slot-scope="scope">
 								<cly-more-options  v-if="scope.row.useDropdown" :text="i18n('views.table.view')">
 									<el-dropdown-item :key="idx" v-for="(item, idx) in domains">
@@ -89,7 +85,6 @@
 								<div v-else class="go-to-actions-link" @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" >{{i18n("views.table.view")}}</div>
 						</template>
 					</el-table-column>
-					
 				</template>
 			</cly-datatable-n>
 		</cly-section>
