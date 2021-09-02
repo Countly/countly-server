@@ -135,7 +135,6 @@ $bg-color: #24292e;
     &__header {
         padding: 16px 12px;
         position: relative;
-        display: flex;
 
         .el-input__inner {
             height: 50px;
@@ -182,20 +181,6 @@ $bg-color: #24292e;
         border-radius: 4px;
         background-position: center;
         display: inline-block;
-    }
-    &__app-name-type {
-        display: flex;
-        margin-left: 5px;
-        flex-direction: column;
-    }
-    &__app-type {
-        font-size: 12px;
-        font-style: italic;
-        font-weight: lighter;
-
-    }
-    &__app-name {
-        font-size: 14px;
     }
 
     &__analytics-popper {

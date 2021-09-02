@@ -14,20 +14,18 @@
             },
             props: {
                 selectedApp: {
-                    type: Array,
-                    default: () => [{}]
+                    type: Array
                 }
             },
             methods: {
-                switchActiveApp(event) {
+                switchActiveApp: function(event) {
                     var app = this.selectedApp.filter(function (e) {
                         return e.value == event;
                     });
-                    console.log(app);
                     this.activeApp = app[0];
                     this.$emit("change", this.activeApp._id);
                 },
-                handleClose() {
+                handleClose: function() {
                     this.$emit("close");
                 }
             }
@@ -303,7 +301,7 @@
                     }
 
                 },
-                toggleAppSelection() {
+                toggleAppSelection: function() {
                     this.appSelector = !this.appSelector
                 }
             },
