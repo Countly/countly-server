@@ -724,7 +724,7 @@ var WidgetDetail = countlyVue.views.create({
             ];
         },
         ratingRate: function() {
-            return parseFloat(((this.count / this.widget.timesShown) * 100).toFixed(2));
+            return parseFloat(((this.count / this.widget.timesShown) * 100).toFixed(2)) || 0;
         }
     },
     mounted: function() {
