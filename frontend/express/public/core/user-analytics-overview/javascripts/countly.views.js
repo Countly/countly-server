@@ -45,9 +45,9 @@ var UserAnalyticsOverview = countlyVue.views.create({
                 }
             }
             else {
-                series.push({"name": CV.i18n('common.total-users'), data: []});
-                series.push({"name": CV.i18n('common.new-users'), data: []});
-                series.push({"name": CV.i18n('common.returning-users'), data: []});
+                series.push({"name": CV.i18n('common.table.total-users'), data: []});
+                series.push({"name": CV.i18n('common.table.new-users'), data: []});
+                series.push({"name": CV.i18n('common.table.returning-users'), data: []});
             }
 
             return {series: series};
@@ -72,21 +72,21 @@ var UserAnalyticsOverview = countlyVue.views.create({
 
             legend.data = [
                 {
-                    "name": CV.i18n("common.total-users"),
+                    "name": CV.i18n("common.table.total-users"),
                     "value": sessionData.usage["total-users"].total,
                     "trend": (sessionData.usage["total-users"].trend === "d" ? "down" : "up"),
                     "tooltip": CV.i18n("common.table.total-users-desc"),
                     "percentage": sessionData.usage["total-users"].change
                 },
                 {
-                    "name": CV.i18n("common.new-users"),
+                    "name": CV.i18n("common.table.new-users"),
                     "value": sessionData.usage["new-users"].total,
                     "trend": (sessionData.usage["new-users"].trend === "d" ? "down" : "up"),
                     "tooltip": CV.i18n("common.table.new-users-desc"),
                     "percentage": sessionData.usage["new-users"].change
                 },
                 {
-                    "name": CV.i18n("common.returning-users"),
+                    "name": CV.i18n("common.table.returning-users"),
                     "value": sessionData.usage["returning-users"].total,
                     "trend": (sessionData.usage["returning-users"].trend === "d" ? "down" : "up"),
                     "tooltip": CV.i18n("common.table.returning-users-desc"),

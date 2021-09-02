@@ -1,0 +1,38 @@
+<div v-bind:class="[componentId]">
+    <cly-datatable-n  ref="compareEvents" :rows="eventsTableRows" @select="handleCurrentChange" :keyFn="function(row) {return row.id}" @select-all="handleAllChange" >
+      <template v-slot:header-left="selectScope">
+      </template>
+      <template v-slot="scope">
+        <el-table-column fixed="left" type="selection" :reserve-selection="true" width="55">
+        </el-table-column>
+        <el-table-column sortable="true" prop="event" :label="i18n('events.compare.event')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.name}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="true" prop="count" :label="i18n('events.compare.count')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.c}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="true" prop="sum" :label="i18n('events.compare.sum')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.s}}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="true" prop="duration" :label="i18n('events.compare.duration')">
+          <template v-slot="rowScope">
+            <div>
+              {{rowScope.row.dur}}
+            </div>
+          </template>
+        </el-table-column>
+      </template>
+    </cly-datatable-n>
+  </div>
