@@ -146,7 +146,7 @@
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         countlyVue.container.registerTab("/analytics/events", {
             priority: 2,
-            name: "compareEvents",
+            name: "compare",
             title: "Compare Events",
             component: CompareEvents,
             vuex: [{
