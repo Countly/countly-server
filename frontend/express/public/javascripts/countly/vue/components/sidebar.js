@@ -5,12 +5,12 @@
     $(document).ready(function() {
         var AppSelector = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/AppSelector.html'),
-            data : function() {
+            data: function() {
                 return {
                     activeApp: {},
                     centerDialogVisible: true,
                     value: ""
-                }
+                };
             },
             props: {
                 selectedApp: {
@@ -19,8 +19,8 @@
             },
             methods: {
                 switchActiveApp: function(event) {
-                    var app = this.selectedApp.filter(function (e) {
-                        return e.value == event;
+                    var app = this.selectedApp.filter(function(e) {
+                        return e.value === event;
                     });
                     this.activeApp = app[0];
                     this.$emit("change", this.activeApp._id);
@@ -122,10 +122,7 @@
 
                     if (active) {
                         active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
-                        //active.name = active.name + "<br>" + active.type
                     }
-                    
-
                     return active || {};
                 },
                 categorizedMenus: function() {
@@ -302,7 +299,7 @@
 
                 },
                 toggleAppSelection: function() {
-                    this.appSelector = !this.appSelector
+                    this.appSelector = !this.appSelector;
                 }
             },
             mounted: function() {
