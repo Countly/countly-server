@@ -3,13 +3,13 @@
     countlyCompareEvents.helpers = {
         getTableRows: function(context) {
             var tableData = [];
-
+            var tableStateMap = context.state.tableStateMap;
             for (var i = 0; i < context.state.selectedEvents.length; i++) {
                 var props = countlyCompareEvents.helpers.getProperties(),
                     tableRow = {
                         "id": context.state.selectedEvents[i],
-                        "name": context.state.selectedEvents[i].startsWith("[CLY]_group") ? context.state.groupData[context.state.selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(context.state.selectedEvents[i]),
-                        "checked": true
+                        "name": context.state.selectedEvents[i].startsWith("[CLY]_group") ? context.state.groupData[context.state.selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(context.state.selectedEvents[i], context.state.allEventsData.map),
+                        "checked": _.isEmpty(tableStateMap) ? true : tableStateMap[context.state.selectedEvents[i]]
                     };
 
                 for (var prop in props) {
@@ -91,7 +91,7 @@
                     prevData.push(dataObj.chartData[j]["p" + context.state.selectedGraphMetric]);
                 }
                 var obj = {
-                    name: selectedEvents[0].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[0]] : selectedEvents[0],
+                    name: selectedEvents[0].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[0]] : countlyCompareEvents.helpers.getEventLongName(selectedEvents[0], context.state.allEventsData.map),
                     data: data,
                 };
                 var prevObj = {
@@ -108,7 +108,7 @@
                         seriesData.push(dataOb.chartData[k][context.state.selectedGraphMetric]);
                     }
                     var ob = {
-                        name: selectedEvents[i].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[i]] : selectedEvents[i],
+                        name: selectedEvents[i].startsWith('[CLY]_group') ? context.state.groupData[selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(selectedEvents[i], context.state.allEventsData.map),
                         data: seriesData,
                     };
                     series.push(ob);
@@ -116,20 +116,20 @@
             }
             return {series: series};
         },
-        getLegendData: function(selectedEvents, groupData) {
+        getLegendData: function(selectedEvents, groupData, map) {
             var lineLegend = {};
             var legendData = [];
             if (selectedEvents.length === 1) {
                 var obj = {};
                 var prevObj = {};
-                obj.name = selectedEvents[0].startsWith('[CLY]_group') ? groupData[selectedEvents[0]] : selectedEvents[0];
+                obj.name = selectedEvents[0].startsWith('[CLY]_group') ? groupData[selectedEvents[0]] : countlyCompareEvents.helpers.getEventLongName(selectedEvents[0], map);
                 prevObj.name = CV.i18n("events.compare.previous.period");
                 legendData.push(obj, prevObj);
             }
             else {
                 for (var i = 0;i < selectedEvents.length; i++) {
                     var ob = {};
-                    ob.name = selectedEvents[i].startsWith('[CLY]_group') ? groupData[selectedEvents[i]] : selectedEvents[i];
+                    ob.name = selectedEvents[i].startsWith('[CLY]_group') ? groupData[selectedEvents[i]] : countlyCompareEvents.helpers.getEventLongName(selectedEvents[i], map);
                     legendData.push(ob);
                 }
             }
@@ -146,7 +146,7 @@
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
                         var obj = {
                             "label": map[item] && map[item].name ? map[item].name : item,
-                            "value": item,
+                            "value": item
                         };
                         allEvents.push(obj);
                     }
@@ -157,7 +157,7 @@
                     if (item.status) {
                         var obj = {
                             "label": item.name + "(" + CV.i18n("events.all.group") + ")",
-                            "value": item._id,
+                            "value": item._id
                         };
                         allEvents.push(obj);
                     }
@@ -172,6 +172,36 @@
             });
             return obj;
         },
+        getTableStateMap: function(eventsList, groupList) {
+            var map = eventsList.map || {};
+            var allEvents = {};
+            if (eventsList) {
+                eventsList.list.forEach(function(item) {
+                    if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
+                        allEvents[item] = true;
+                    }
+                });
+            }
+            if (groupList) {
+                groupList.forEach(function(item) {
+                    if (item.status) {
+                        allEvents[item._id] = true;
+                    }
+                });
+            }
+            return allEvents;
+        },
+        filterSelectedEvents: function(tableStateMap, selectedEvents) {
+            if (_.isEmpty(tableStateMap)) {
+                return selectedEvents;
+
+            }
+            return selectedEvents.filter(function(item) {
+                if (tableStateMap[item]) {
+                    return item;
+                }
+            });
+        }
     };
 
     countlyCompareEvents.service = {
@@ -240,6 +270,7 @@
                 selectedGraphMetric: "c",
                 lineLegend: {},
                 groupData: {},
+                tableStateMap: {}
             };
         };
 
@@ -255,6 +286,7 @@
                                         context.commit("setAllEventsGroupData", result);
                                         context.commit("setGroupData", countlyCompareEvents.helpers.getGroupData(result));
                                         context.commit("setAllEventsList", countlyCompareEvents.helpers.getAllEventsList(res, result));
+                                        context.commit("setTableStateMap", countlyCompareEvents.helpers.getTableStateMap(res, result));
                                     }
                                 });
                         }
@@ -267,7 +299,7 @@
                             context.commit("setAllEventsCompareData", res);
                             context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
                             context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, context.state.selectedEvents));
-                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents, context.state.groupData));
+                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents, context.state.groupData, context.state.allEventsData.map));
                         }
                     });
             },
@@ -280,8 +312,8 @@
                                 countlyCommon.extendDbObj(context.state.allEventsCompareData[events[i]], res[events[i]]);
                             }
                             context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
-                            context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, context.state.selectedEvents));
-                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents, context.state.groupData));
+                            context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, context.state.selectedEvents)));
+                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, context.state.selectedEvents), context.state.groupData, context.state.allEventsData.map));
                         }
                     });
             },
@@ -292,13 +324,26 @@
                 context.commit('setSelectedEvents', events);
             },
             fetchLineChartData: function(context, selectedEvents) {
-                context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, selectedEvents));
+                context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, selectedEvents)));
             },
             fetchSelectedGraphMetric: function(context, metric) {
                 context.commit("setSelectedGraphMetric", metric);
             },
             fetchLegendData: function(context, selectedEvents) {
-                context.commit('setLineLegend', countlyCompareEvents.helpers.getLegendData(selectedEvents, context.state.groupData));
+                context.commit('setLineLegend', countlyCompareEvents.helpers.getLegendData(selectedEvents, context.state.groupData, context.state.allEventsData.map));
+            },
+            updateTableStateMap: function(context, selection) {
+                var tableRows = context.state.tableRows;
+                for (var i = 0;i < tableRows.length; i++) {
+                    var isSelected = false;
+                    for (var j = 0;j < selection.length;j++) {
+                        if (tableRows[i].id === selection[j].id) {
+                            isSelected = true;
+                            continue;
+                        }
+                    }
+                    context.state.tableStateMap[tableRows[i].id] = isSelected;
+                }
             }
         };
 
@@ -335,6 +380,9 @@
             },
             setSelectedGraphMetric: function(state, value) {
                 state.selectedGraphMetric = value;
+            },
+            setTableStateMap: function(state, value) {
+                state.tableStateMap = value;
             }
         };
         var compareEventsGetters = {
@@ -370,6 +418,9 @@
             },
             groupData: function(_state) {
                 return _state.groupData;
+            },
+            tableStateMap: function(_state) {
+                return _state.tableStateMap;
             }
         };
         return countlyVue.vuex.Module("countlyCompareEvents", {
