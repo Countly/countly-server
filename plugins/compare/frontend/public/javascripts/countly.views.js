@@ -37,26 +37,18 @@
             handleCurrentChange: function(selection) {
                 var selectedEvents = [];
                 selection.forEach(function(item) {
-                    if (item.id.startsWith("[CLY]_group")) {
-                        selectedEvents.push(item.id);
-                    }
-                    else {
-                        selectedEvents.push(item.name);
-                    }
+                    selectedEvents.push(item.id);
                 });
+                this.$store.dispatch('countlyCompareEvents/updateTableStateMap', selection);
                 this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                 this.$store.dispatch('countlyCompareEvents/fetchLegendData', selectedEvents);
             },
             handleAllChange: function(selection) {
                 var selectedEvents = [];
                 selection.forEach(function(item) {
-                    if (item.id.startsWith("[CLY]_group")) {
-                        selectedEvents.push(item.id);
-                    }
-                    else {
-                        selectedEvents.push(item.name);
-                    }
+                    selectedEvents.push(item.id);
                 });
+                this.$store.dispatch('countlyCompareEvents/updateTableStateMap', selection);
                 this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                 this.$store.dispatch('countlyCompareEvents/fetchLegendData', selectedEvents);
             }
@@ -154,7 +146,7 @@
     if (countlyAuth.validateRead(FEATURE_NAME)) {
         countlyVue.container.registerTab("/analytics/events", {
             priority: 2,
-            name: "Compare Events",
+            name: "compareEvents",
             title: "Compare Events",
             component: CompareEvents,
             vuex: [{

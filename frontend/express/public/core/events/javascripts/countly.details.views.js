@@ -60,7 +60,7 @@
         ],
         data: function() {
             return {
-                selectedTab: (this.$route.params && this.$route.params.tab) || ""
+                selectedTab: (this.$route.params && this.$route.params.tab) || "eventsDetail"
             };
         },
         computed: {
@@ -202,7 +202,7 @@
 
     countlyVue.container.registerTab("/analytics/events", {
         priority: 1,
-        name: "",
+        name: "eventsDetail",
         title: "Event Stats",
         route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events",
         component: AllEventsView,
