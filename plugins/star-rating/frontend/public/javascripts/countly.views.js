@@ -1,4 +1,4 @@
-/*global $, countlyAuth, countlyReporting, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyAuth, countlyReporting, countlyGlobal, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
 var FEATURE_NAME = 'star_rating';
 
 var Drawer = countlyVue.views.create({
@@ -17,15 +17,19 @@ var Drawer = countlyVue.views.create({
                 trigger_positions: [{value: 'mleft', label: 'Center left', key: 'middle-left'}, { value: 'mright', label: 'Center right', key: 'middle-right' }, { value: 'bleft', label: 'Bottom left', key: 'bottom-left'}, { value: 'bright', label: 'Bottom right', key: 'bottom-right' }]
             },
             logoDropzoneOptions: {
-                url: '/',
                 createImageThumbnails: false,
                 maxFilesize: 2, // MB
                 autoProcessQueue: false,
                 addRemoveLinks: true,
                 acceptedFiles: 'image/jpeg,image/png,image/gif',
-                dictDefaultMessage: this.i18n('surveys.generic.drop-message'),
-                dictRemoveFile: this.i18n('surveys.generic.remove-file')
-            }
+                dictDefaultMessage: this.i18n('feedback.drop-message'),
+                dictRemoveFile: this.i18n('feedback.remove-file'),
+                url: "/i/feedback/logo",
+                paramName: "logo",
+                params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
+            },
+            logoFile: "",
+            stamp: 0
         };
     },
     methods: {
@@ -47,10 +51,8 @@ var Drawer = countlyVue.views.create({
         onSubmit: function(submitted, done) {
             var self = this;
 
-            var logoDropzone = this.$refs.logoDropzone;
-            var waitingFiles = logoDropzone.getAcceptedFiles();
-            if (waitingFiles.length > 0) {
-                submitted.logo = waitingFiles[waitingFiles.length - 1];
+            if (this.logoFile !== "") {
+                submitted.logo = this.logoFile;
             }
 
             if (this.settings.isEditMode) {
@@ -68,15 +70,15 @@ var Drawer = countlyVue.views.create({
         },
         onOpen: function() {},
         onFileAdded: function() {
-            var logoDropzone = this.$refs.logoDropzone;
-            var acceptedFiles = logoDropzone.getAcceptedFiles();
-            var rejectedFiles = logoDropzone.getRejectedFiles();
-            if (acceptedFiles.length > 0) {
-                logoDropzone.removeFile(acceptedFiles[0]);
-            }
-            if (rejectedFiles.length > 1) {
-                logoDropzone.removeFile(rejectedFiles[0]);
-            }
+            var self = this;
+            this.stamp = Date.now();
+            this.logoDropzoneOptions.params.identifier = this.stamp;
+            setTimeout(function() {
+                self.$refs.logoDropzone.processQueue();
+            }, 1);
+        },
+        onComplete: function(res) {
+            this.logoFile = this.stamp + "." + res.upload.filename.split(".")[1];
         }
     }
 });

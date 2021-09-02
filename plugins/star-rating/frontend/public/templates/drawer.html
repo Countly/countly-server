@@ -201,7 +201,7 @@
           </div>
           <div class="cly-vue-drawer-step__section">
             <div class="text-medium text-heading">
-              {{i18n('surveys.appearance.main-color')}}
+              {{i18n('feedback.main-color')}}
             </div>
             <cly-colorpicker
               reset-value='#FFFFFF'
@@ -210,7 +210,7 @@
           </div>
           <div class="cly-vue-drawer-step__section">
             <div class="text-medium text-heading">
-              {{i18n('surveys.appearance.main-color')}}
+              {{i18n('feedback.font-color')}}
             </div>
             <cly-colorpicker
               reset-value='#FFFFFF'
@@ -219,12 +219,13 @@
           </div>
           <div class="bu-pt-3 bu-pb-4">
             <div class="text-medium text-heading">
-              {{i18n('surveys.appearance.logo')}}
+              {{i18n('feedback.logo')}}
             </div>
             <cly-dropzone
               ref="logoDropzone"
               id="logo-dropzone"
               @vdropzone-file-added="onFileAdded"
+              @vdropzone-complete="onComplete"
               :options="logoDropzoneOptions">
             </cly-dropzone>
           </div>

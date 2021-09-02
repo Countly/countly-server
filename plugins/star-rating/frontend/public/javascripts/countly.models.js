@@ -28,13 +28,13 @@
         "targeting",
         "ratings_texts",
         "rating_symbol",
-        "status"
+        "status",
+        "logo"
     ];
 
     var widgetJSONProperties = [
         "targeting",
-        "ratings_texts",
-        "logo"
+        "ratings_texts"
     ];
 
     starRatingPlugin.extractWidgetProperties = function(props) {
