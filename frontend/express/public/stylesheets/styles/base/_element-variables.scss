@@ -1,6 +1,6 @@
-@use "./typography-variables" as t;
-@use "./variables" as v;
-@use "./colors" as c;
+@use "./typography-variables.scss" as t;
+@use "./variables.scss" as v;
+@use "./colors.scss" as c;
 @use "sass:map";
 
 /* Element Chalk Variables */
@@ -52,6 +52,8 @@ $--color-danger: map.get(c.$colors, "danger");
 $--color-info: map.get(c.$colors, "info");
 /// color|1|Functional Color|1
 $--color-action-blue: map.get(c.$colors, "action-blue");
+$--color-blue-100: map.get(c.$colors, "blue-100");
+$--color-sky-blue-100: map.get(c.$colors, "sky-blue-100");
 
 $--color-success-light: mix($--color-white, $--color-success, 80%) !default;
 $--color-warning-light: mix($--color-white, $--color-warning, 80%) !default;
@@ -78,6 +80,7 @@ $--border-color-light: c.$border-color-light;
 $--border-color-lighter: c.$border-color-lighter;
 /// color|1|Border Color|3
 $--border-color-extra-light: c.$border-color-extra-light;
+$--border-color-light-blue: map.get(c.$colors, "sky-blue-10");
 
 $--color-text-custom-1-active: map.get(c.$colors, "text-custom-1-active");
 $--color-text-custom-1-passive: map.get(c.$colors, "text-custom-1-passive");
@@ -93,7 +96,10 @@ $--link-hover-color: $--color-primary !default;
 
 /* Border
 -------------------------- */
+$--border-width-base: 1px !default;
+$--border-style-base: solid !default;
 $--border-color-hover: $--color-text-placeholder !default;
+$--border-base: $--border-width-base $--border-style-base $--border-color-base !default;
 /// borderRadius|1|Radius|0
 $--border-radius-base: 4px !default;
 /// borderRadius|1|Radius|0
@@ -169,31 +175,32 @@ $--checkbox-font-size: 14px !default;
 $--checkbox-font-weight: t.$font-weight-primary !default;
 /// color||Color|0
 $--checkbox-font-color: $--color-text-regular !default;
-$--checkbox-input-height: 14px !default;
-$--checkbox-input-width: 14px !default;
+$--checkbox-input-height: 16px !default;
+$--checkbox-input-width: 16px !default;
 /// borderRadius||Border|2
 $--checkbox-border-radius: $--border-radius-small !default;
 /// color||Color|0
 $--checkbox-background-color: $--color-white !default;
-$--checkbox-input-border: v.$border-base !default;
+$--checkbox-input-border: 1px solid map.get(c.$colors, "cool-gray-40") !default;
 
 /// color||Color|0
-$--checkbox-disabled-border-color: $--border-color-base !default;
-$--checkbox-disabled-input-fill: #edf2fc !default;
-$--checkbox-disabled-icon-color: $--color-text-placeholder !default;
+$--checkbox-disabled-border-color: $--border-color-lighter;
+$--checkbox-disabled-input-fill: $--color-white !default;
+$--checkbox-disabled-icon-color: $--border-color-lighter !default;
 
-$--checkbox-disabled-checked-input-fill: $--border-color-extra-light !default;
-$--checkbox-disabled-checked-input-border-color: $--border-color-base !default;
-$--checkbox-disabled-checked-icon-color: $--color-text-placeholder !default;
+$--checkbox-disabled-checked-input-fill: $--color-white !default;
+$--checkbox-disabled-checked-input-border-color: $--border-color-lighter;
+$--checkbox-disabled-checked-icon-color: $--border-color-lighter !default;
 
 /// color||Color|0
-$--checkbox-checked-font-color: $--color-primary !default;
-$--checkbox-checked-input-border-color: $--color-primary !default;
+$--checkbox-checked-font-color: map.get(c.$colors, "blue-100") !default;
+$--checkbox-checked-input-border-color: map.get(c.$colors, "blue-100") !default;
 /// color||Color|0
-$--checkbox-checked-background-color: $--color-primary !default;
+$--checkbox-checked-background-color: map.get(c.$colors, "blue-100") !default;
 $--checkbox-checked-icon-color: $--fill-base !default;
+$--checkbox-checked-color-hover: map.get(c.$colors, "sky-blue-100") !default;
 
-$--checkbox-input-border-color-hover: $--color-primary !default;
+$--checkbox-input-border-color-hover: map.get(c.$colors, "blue-100") !default;
 /// height||Other|4
 $--checkbox-bordered-height: 40px !default;
 /// padding||Spacing|3
@@ -218,11 +225,11 @@ $--checkbox-bordered-mini-input-width: 12px !default;
 $--checkbox-bordered-mini-height: 28px !default;
 
 /// color||Color|0
-$--checkbox-button-checked-background-color: $--color-primary !default;
+$--checkbox-button-checked-background-color: $--border-color-light-blue !default;
 /// color||Color|0
-$--checkbox-button-checked-font-color: $--color-white !default;
+$--checkbox-button-checked-font-color: $--color-blue-100 !default;
 /// color||Color|0
-$--checkbox-button-checked-border-color: $--color-primary !default;
+$--checkbox-button-checked-border-color: $--color-blue-100 !default;
 
 
 
@@ -234,36 +241,37 @@ $--radio-font-size: $--font-size-base !default;
 $--radio-font-weight: t.$font-weight-primary !default;
 /// color||Color|0
 $--radio-font-color: $--color-text-regular !default;
-$--radio-input-height: 14px !default;
-$--radio-input-width: 14px !default;
+$--radio-input-height: 16px !default;
+$--radio-input-width: 16px !default;
 /// borderRadius||Border|2
 $--radio-input-border-radius: $--border-radius-circle !default;
 /// color||Color|0
 $--radio-input-background-color: $--color-white !default;
-$--radio-input-border: v.$border-base !default;
+$--radio-input-border: 1px solid map.get(c.$colors, "cool-gray-40") !default;
 /// color||Color|0
 $--radio-input-border-color: $--border-color-base !default;
 /// color||Color|0
 $--radio-icon-color: $--color-white !default;
 
-$--radio-disabled-input-border-color: $--disabled-border-base !default;
-$--radio-disabled-input-fill: $--disabled-fill-base !default;
+$--radio-disabled-input-border-color: $--border-color-lighter;
+$--radio-disabled-input-fill: $--color-white !default;
 $--radio-disabled-icon-color: $--disabled-fill-base !default;
 
-$--radio-disabled-checked-input-border-color: $--disabled-border-base !default;
-$--radio-disabled-checked-input-fill: $--disabled-fill-base !default;
-$--radio-disabled-checked-icon-color: $--color-text-placeholder !default;
+$--radio-disabled-checked-input-border-color: $--border-color-lighter;
+$--radio-disabled-checked-input-fill: $--color-white !default;
+$--radio-disabled-checked-icon-color: $--border-color-lighter;
 
 /// color||Color|0
-$--radio-checked-font-color: $--color-primary !default;
+$--radio-checked-font-color: map.get(c.$colors, "blue-100") !default;
 /// color||Color|0
-$--radio-checked-input-border-color: $--color-primary !default;
+$--radio-checked-input-border-color: map.get(c.$colors, "blue-100") !default;
 /// color||Color|0
 $--radio-checked-input-background-color: $--color-white !default;
 /// color||Color|0
-$--radio-checked-icon-color: $--color-primary !default;
+$--radio-checked-icon-color: map.get(c.$colors, "blue-100") !default;
+$--radio-checked-color-hover: map.get(c.$colors, "sky-blue-100") !default;
 
-$--radio-input-border-color-hover: $--color-primary !default;
+$--radio-input-border-color-hover: map.get(c.$colors, "blue-100") !default;
 
 $--radio-bordered-height: 40px !default;
 $--radio-bordered-padding: 12px 20px 0 10px !default;
@@ -283,11 +291,11 @@ $--radio-bordered-mini-height: 28px !default;
 /// fontSize||Font|1
 $--radio-button-font-size: t.$text-button-size !default;
 /// color||Color|0
-$--radio-button-checked-background-color: $--color-primary !default;
+$--radio-button-checked-background-color: $--border-color-light-blue !default;
 /// color||Color|0
-$--radio-button-checked-font-color: $--color-white !default;
+$--radio-button-checked-font-color: $--color-blue-100 !default;
 /// color||Color|0
-$--radio-button-checked-border-color: $--color-primary !default;
+$--radio-button-checked-border-color: $--color-blue-100 !default;
 $--radio-button-disabled-checked-fill: $--border-color-extra-light !default;
 
 /* Select
@@ -443,7 +451,7 @@ $--input-font-color: $--color-text-regular !default;
 $--input-width: 140px !default;
 /// height||Other|4
 $--input-height: 32px !default;
-$--input-border: v.$border-base !default;
+$--input-border: v.$border-input !default;
 $--input-border-color: $--border-color-base !default;
 /// borderRadius||Border|2
 $--input-border-radius: $--border-radius-base !default;
@@ -455,13 +463,13 @@ $--input-color-disabled: $--font-color-disabled-base !default;
 /// color||Color|0
 $--input-icon-color: $--color-text-placeholder !default;
 /// color||Color|0
-$--input-placeholder-color: $--color-text-placeholder !default;
+$--input-placeholder-color: map.get(c.$colors, "cool-gray-40") !default;
 $--input-max-width: 314px !default;
 
 $--input-hover-border: $--border-color-hover !default;
 $--input-clear-hover-color: $--color-text-secondary !default;
 
-$--input-focus-border: $--color-primary !default;
+$--input-focus-border: map.get(c.$colors, "blue-100") !default;
 $--input-focus-fill: $--color-white !default;
 
 $--input-disabled-fill: $--disabled-fill-base !default;
@@ -472,7 +480,7 @@ $--input-disabled-placeholder-color: $--color-text-placeholder !default;
 /// fontSize||Font|1
 $--input-medium-font-size: 14px !default;
 /// height||Other|4
-$--input-medium-height: 36px !default;
+$--input-medium-height: 40px !default;
 /// fontSize||Font|1
 $--input-small-font-size: 13px !default;
 /// height||Other|4
@@ -546,14 +554,14 @@ $--button-medium-padding-horizontal: 20px !default;
 
 /// fontSize||Font|1
 $--button-small-font-size: 12px !default;
-$--button-small-border-radius: #{$--border-radius-base - 1} !default;
+$--button-small-border-radius: #{$--border-radius-base} !default;
 /// padding||Spacing|3
 $--button-small-padding-vertical: 9px !default;
 /// padding||Spacing|3
 $--button-small-padding-horizontal: 15px !default;
 /// fontSize||Font|1
 $--button-mini-font-size: 12px !default;
-$--button-mini-border-radius: #{$--border-radius-base - 1} !default;
+$--button-mini-border-radius: #{$--border-radius-base} !default;
 /// padding||Spacing|3
 $--button-mini-padding-vertical: 7px !default;
 /// padding||Spacing|3
@@ -564,7 +572,7 @@ $--button-default-font-color: $--color-text-regular !default;
 /// color||Color|0
 $--button-default-background-color: $--color-white !default;
 /// color||Color|0
-$--button-default-border-color: $--border-color-base !default;
+$--button-default-border-color: map.get(c.$colors, "cool-gray-20") !default;
 
 /// color||Color|0
 $--button-disabled-font-color: $--color-text-placeholder !default;
@@ -615,9 +623,14 @@ $--cascader-height: 200px !default;
 /* Switch
 -------------------------- */
 /// color||Color|0
-$--switch-on-color: $--color-primary !default;
+$--switch-on-color: $--border-color-light-blue !default;
+$--switch-on-inset-color: map.get(c.$colors, "sky-blue-50");
 /// color||Color|0
-$--switch-off-color: $--border-color-base !default;
+$--switch-off-color: map.get(c.$colors, "cool-gray-20") !default;
+$--switch-on-circle-color: map.get(c.$colors, "blue-100");
+$--switch-off-circle-color: map.get(c.$colors, "cool-gray-40");
+$--switch-on-circle-hover-color: map.get(c.$colors, "sky-blue-100");
+$--switch-off-circle-hover-color: map.get(c.$colors, "cool-gray-100");
 /// fontSize||Font|1
 $--switch-font-size: $--font-size-base !default;
 $--switch-core-border-radius: 10px !default;
@@ -998,13 +1011,13 @@ $--breakpoints: (
 $--breakpoints-spec: (
   'xs-only' : (max-width: $--sm - 1),
   'sm-and-up' : (min-width: $--sm),
-  'sm-only': "(min-width: #{$--sm}) and (max-width: #{$--md - 1})",
+  'sm-only': (min-width: #{$--sm}) and (max-width: #{$--md - 1}),
   'sm-and-down': (max-width: $--md - 1),
   'md-and-up' : (min-width: $--md),
-  'md-only': "(min-width: #{$--md}) and (max-width: #{$--lg - 1})",
+  'md-only': (min-width: #{$--md}) and (max-width: #{$--lg - 1}),
   'md-and-down': (max-width: $--lg - 1),
   'lg-and-up' : (min-width: $--lg),
-  'lg-only': "(min-width: #{$--lg}) and (max-width: #{$--xl - 1})",
+  'lg-only': (min-width: #{$--lg}) and (max-width: #{$--xl - 1}),
   'lg-and-down': (max-width: $--xl - 1),
   'xl-only' : (min-width: $--xl),
 );
