@@ -1012,7 +1012,6 @@
                         context.commit('setViewsPerSession', response);
                         context.dispatch('onFetchSuccess', {useLoader: useLoader});
                     }).catch(function(error) {
-                        context.dispatch('onFetchError', error);
                         context.dispatch('onFetchError', {error: error, useLoader: useLoader});
                     });
             }
