@@ -1,134 +1,67 @@
-<script type="text/x-template" id="all-events">
-	<div v-bind:class="[componentId]">
-		<div class="cly-vue-events-header bu-is-flex bu-mb-4">
-			<h2> {{i18n('events.all.title.new')}} 
-			</h2>
-			<cly-tooltip-icon class="cly-vue-events-header--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
-		  </div>
-		<cly-main class="bu-pt-4">
-		  <div class="bu-columns bu-is-gapless">
-			<div class="bu-column white-bg bu-is-3 bu-mr-5" style="max-height:681px">
-			  <cly-listbox
-				skin="jumbo"
-				height="624"
-				:searchPlaceholder="searchPlaceholder"
-				:options="allEvents"
-				:searchable="true"
-				v-model="selectedEventFromSearchBar">
-				<template v-slot:option-suffix="option">
-				  <span class="cly-vue-events-group" v-if="option.custom.value">{{option.custom.value}}</span>				
-				</template>
-			  </cly-listbox>
-			</div>
-			<div class="bu-column bu-is-9">
-				<div class="bu-mr-5" v-for="item in limitAlerts" :key="item" :value="item">
-					<el-alert v-if="item.show"
-					type="warning"
-					class="bu-mb-2"
-					show-icon>
-					<span class="cly-vue-events-all__alerts" slot="title" v-html="item.message"></span>
-				  </el-alert>
-				</div>
-			  <div class="cly-vue-events-all" v-if="!groupData.isGroup">
-				{{selectedEventName}}
-			  </div>
-			  <div class="cly-vue-events-all" v-else>
-				{{groupData.name}}<span class="cly-vue-events-group bu-ml-4">{{i18n('events.all.group')}}</span>
-			  </div>
-			  <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="groupData.isGroup && groupData.description">
-				{{groupData.description}}
-			  </div>
-			  <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="!groupData.isGroup && eventDescription">
-				{{eventDescription}}
-			  </div>
-			  <div class="bu-is-flex cly-vue-events-all--padding">
-				<div v-if="hasSegments">
-				  <span class="cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.segmentation')}}</span>
-				  <el-select v-model="selectedSegment" class="cly-vue-events-all--margin">
-					<el-option v-for="item in availableSegments" :key="item" :value="item">
-					</el-option>
-				  </el-select>
-				</div>
-				<div>
-				  <span class="cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.period')}}</span>
-				  <cly-date-picker class="cly-vue-events-all-date-picker" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker>
-				</div>
-			  </div>
-			  <cly-section class="bu-mt-5 bu-mr-5">
-				<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData" :legend="lineLegend">	
-				</cly-chart-bar>
-				<cly-chart-time v-else  :option="chartData" :legend="lineLegend"></cly-chart-time>
-			  </cly-section>
-			  <cly-section class="bu-mt-5 bu-mr-5">
-				<detail-tables></detail-tables>
-			  </cly-section>
-			</div>
-		  </div>
-		</cly-main>
+<div v-bind:class="[componentId]">
+	<div class="cly-vue-events-header bu-is-flex bu-mb-4">
+		<h2> {{i18n('events.all.title.new')}} 
+		</h2>
+		<cly-tooltip-icon class="cly-vue-events-header--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
 	  </div>
-</script>
-<script type="text/x-template" id="tables-events">
-	<div>
-		<cly-datatable-n :rows="eventsTableRows">
-		  <template v-slot:header-left="selectScope">
-		  </template>
-		  <template v-slot="scope">
-			<el-table-column v-if="selectedSegment !== 'segment'" sortable="true" prop="segment" :label="i18n('events.table.segmentation')">
-			  <template v-slot="rowScope">
-				<div>
-				  {{rowScope.row.curr_segment}}
-				</div>
-			  </template>
-			</el-table-column>
-			<el-table-column v-else sortable="true" prop="date" :label="i18n('common.date')">
-			  <template
-			  date v-slot="rowScope">
-				<div>
-				  {{rowScope.row.date}}
-				</div>
-			  </template>
-			</el-table-column>
-			<el-table-column v-if="isColumnAllowed('count')" sortable="true" prop="count" :label="labels.count">
-			  <template v-slot="rowScope">
-				<div>
-				  {{rowScope.row.c}}
-				</div>
-			  </template>
-			</el-table-column>
-			<el-table-column v-if="isColumnAllowed('sum')" sortable="true" prop="sum" :label="labels.sum">
-			  <template v-slot="rowScope">
-				<div>
-				  {{rowScope.row.s}}
-				</div>
-			  </template>
-			</el-table-column>
-			<el-table-column v-if="isColumnAllowed('dur')" sortable="true" prop="duration" :label="labels.dur">
-			  <template v-slot="rowScope">
-				<div>
-				  {{rowScope.row.dur}}
-				</div>
-			  </template>
-			</el-table-column>
-			<el-table-column v-if="isColumnAllowed('AvgSum')" sortable="true" prop="avgSum" :label="i18n('events.table.avg-sum')">
-			  <template v-slot="rowScope">
-				<div>
-				  {{rowScope.row.avgSum}}
-				</div>
-			  </template>
-			</el-table-column>
-			<el-table-column v-if="isColumnAllowed('AvgDur')" sortable="true" prop="avgDur" :label="i18n('events.table.avg-dur')">
-			  <template v-slot="rowScope">
-				<div>
-				  {{rowScope.row.avgDur}}
-				</div>
-			  </template>
-			</el-table-column>
-		  </template>
-		</cly-datatable-n>
-	  </div>	
-</script>
-<script type="text/x-template" id="events-wrapper">
-	<div v-bind:class="[componentId]">
-		<events-pages></events-pages>
-	</div>
-</script>
+	<cly-main class="bu-pt-4">
+	  <div class="bu-columns bu-is-gapless">
+		<div class="bu-column white-bg bu-is-3 bu-mr-5" style="max-height:681px">
+		  <cly-listbox
+			skin="jumbo"
+			height="624"
+			:searchPlaceholder="searchPlaceholder"
+			:options="allEvents"
+			:searchable="true"
+			v-model="selectedEventFromSearchBar">
+			<template v-slot:option-suffix="option">
+			  <span class="cly-vue-events-group" v-if="option.custom.value">{{option.custom.value}}</span>				
+			</template>
+		  </cly-listbox>
+		</div>
+		<div class="bu-column bu-is-9">
+			<div class="bu-mr-5" v-for="item in limitAlerts" :key="item" :value="item">
+				<el-alert v-if="item.show"
+				type="warning"
+				class="bu-mb-2"
+				show-icon>
+				<span class="cly-vue-events-all__alerts" slot="title" v-html="item.message"></span>
+			  </el-alert>
+			</div>
+		  <div class="cly-vue-events-all" v-if="!groupData.isGroup">
+			{{selectedEventName}}
+		  </div>
+		  <div class="cly-vue-events-all" v-else>
+			{{groupData.name}}<span class="cly-vue-events-group bu-ml-4">{{i18n('events.all.group')}}</span>
+		  </div>
+		  <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="groupData.isGroup && groupData.description">
+			{{groupData.description}}
+		  </div>
+		  <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="!groupData.isGroup && eventDescription">
+			{{eventDescription}}
+		  </div>
+		  <div class="bu-is-flex cly-vue-events-all--padding">
+			<div v-if="hasSegments">
+			  <span class="cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.segmentation')}}</span>
+			  <el-select v-model="selectedSegment" class="cly-vue-events-all--margin">
+				<el-option v-for="item in availableSegments" :key="item" :value="item">
+				</el-option>
+			  </el-select>
+			</div>
+			<div>
+			  <span class="cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.period')}}</span>
+			  <cly-date-picker class="cly-vue-events-all-date-picker" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker>
+			</div>
+		  </div>
+		  <cly-section class="bu-mt-5 bu-mr-5">
+			<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData" :legend="lineLegend">	
+			</cly-chart-bar>
+			<cly-chart-time v-else  :option="chartData" :legend="lineLegend"></cly-chart-time>
+		  </cly-section>
+		  <cly-section class="bu-mt-5 bu-mr-5">
+			<detail-tables></detail-tables>
+		  </cly-section>
+		</div>
+	  </div>
+	</cly-main>
+  </div>
