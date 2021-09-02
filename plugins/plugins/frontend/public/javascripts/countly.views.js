@@ -176,7 +176,7 @@
                 }
 
                 var enabledDescendants = _.intersection(countlyPlugins.getRelativePlugins(plugin, "down"), plugins),
-                    disabledAncestors = _.difference(countlyPlugins.getRelativePlugins(plugin, "up"), plugins);
+                    disabledAncestors = _.difference(countlyPlugins.getRelativePlugins(plugin, "up"), plugins, ["___CLY_ROOT___"]);
 
                 if (row.enabled && enabledDescendants.length > 0) {
                     this.curDependents = enabledDescendants;
