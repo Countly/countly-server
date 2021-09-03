@@ -85,10 +85,10 @@
     &.cly-vue-listbox--bordered {
         border-radius: 7px;
         border: 1px solid map.get(c.$colors, "cool-gray-40");
-        &.is-focus,
-        &:focus-within {
-            border-color: map.get(c.$colors, "blue-100");
-        }
+        // &.is-focus,
+        // &:focus-within {
+        //     border-color: map.get(c.$colors, "blue-100");
+        // }
     }
 
     .cly-vue-listbox__no-data {
