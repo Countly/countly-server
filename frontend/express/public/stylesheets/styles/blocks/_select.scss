@@ -1,4 +1,5 @@
 @use "../base/colors" as c;
+@use "../base/typography-variables" as t;
 @use "sass:map";
 
 .cly-vue-select-x {
@@ -94,7 +95,7 @@
     .cly-vue-listbox__no-data {
         padding: 8px;
         line-height: 20px;
-        font-weight: normal;
+        font-weight: t.$font-weight-primary;
         color: #333c48;
         font-size: 14px;
     }
@@ -105,7 +106,7 @@
 
     .el-checkbox__label {
         line-height: 20px;
-        font-weight: normal;
+        font-weight: t.$font-weight-primary;
         color: #333c48;
     }
 

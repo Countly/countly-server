@@ -357,7 +357,7 @@
                                     v-model="sortedOptions"\
                                     :disabled="!sortable">\
                                 <div\
-                                    class="text-medium font-weight-bold cly-vue-listbox__item"\
+                                    class="text-medium cly-vue-listbox__item"\
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/drill/drag-icon.svg" /></div>\
