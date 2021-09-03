@@ -12,22 +12,27 @@
                         <el-input v-model="elInput" size="mini" placeholder="Text"></el-input>
                         <el-input
                             size="medium"
+                            prefix-icon="el-icon-search"
                             placeholder="Pick a date"
                             suffix-icon="el-icon-date"
                             v-model="elInput">
                         </el-input>
                         <el-input
                             size="small"
+                            prefix-icon="el-icon-search"
                             placeholder="Pick a date"
                             suffix-icon="el-icon-date"
                             v-model="elInput">
                         </el-input>
                         <el-input
                             size="mini"
+                            prefix-icon="el-icon-search"
                             placeholder="Pick a date"
                             suffix-icon="el-icon-date"
                             v-model="elInput">
                         </el-input>
+            
+                        <el-input v-model="elInput" placeholder="Text" type="textarea"></el-input>
                     </section>
             
                     <section>
@@ -59,6 +64,13 @@
                     </section>
             
                     <section>
+                        <h3>El-select empty</h3>
+                        <el-select v-model="elSelectValue">
+                            <el-option v-for="item in []" :key="item" :value="item" :label="item"></el-option>
+                        </el-select>
+                    </section>
+            
+                    <section>
                         <h3>Multiple el-select</h3>
                         <el-select :multiple="true" v-model="elSelectMultiValue">
                             <el-option v-for="item in elSelectItems" :key="item" :value="item" :label="item"></el-option>
@@ -80,6 +92,13 @@
                     </section>
             
                     <section>
+                        <el-button type="success">Success</el-button>
+                        <el-button type="success" size="medium">Medium</el-button>
+                        <el-button type="success" size="small">Small</el-button>
+                        <el-button type="success" size="mini">Mini</el-button>
+                    </section>
+            
+                    <section>
                         <el-button type="secondary">Secondary</el-button>
                         <el-button type="secondary" size="medium">Medium</el-button>
                         <el-button type="secondary" size="small">Small</el-button>
@@ -94,10 +113,10 @@
                     </section>
             
                     <section>
-                        <el-button type="text-plain">Text plain</el-button>
-                        <el-button type="text-plain" size="medium">Medium</el-button>
-                        <el-button type="text-plain" size="small">Small</el-button>
-                        <el-button type="text-plain" size="mini">Mini</el-button>
+                        <el-button type="text" plain>Text plain</el-button>
+                        <el-button type="text" size="medium" plain>Medium</el-button>
+                        <el-button type="text" size="small" plain>Small</el-button>
+                        <el-button type="text" size="mini" plain>Mini</el-button>
                     </section>
             
                     <section>
