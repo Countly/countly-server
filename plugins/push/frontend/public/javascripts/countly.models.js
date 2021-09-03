@@ -6,6 +6,44 @@
     var DEBOUNCE_TIME_IN_MS = 250;
     var MB_TO_BYTES_RATIO = 1000000;
 
+    var TypeEnum = Object.freeze({
+        ONE_TIME: "oneTime",
+        AUTOMATIC: "automatic",
+        TRANSACTIONAL: "transactional"
+    });
+    var PeriodEnum = Object.freeze({
+        WEEKLY: "weekly",
+        MONTHLY: "monthly",
+        DAILY: "daily"
+    });
+    var PlatformEnum = Object.freeze({
+        ANDROID: "android",
+        ALL: "all",
+        IOS: "ios"
+    });
+    var StatusEnum = Object.freeze({
+        ALL: "all",
+        SENT: "sent",
+        SENDING: "sending",
+        DRAFT: "draft",
+        NOT_APPROVED: "notApproved",
+        ABORTED: "aborted",
+        FAILED: "failed",
+        STOPPED: "stopped",
+        SCHEDULED: "scheduled"
+    });
+    var LocalizationEnum = Object.freeze({
+        ALL: "all"
+    });
+    var UserEventEnum = Object.freeze({
+        RESEND: 'resend',
+        DUPLICATE: 'duplicate',
+        DELETE: 'delete'
+    });
+    var MediaTypeEnum = Object.freeze({
+        IMAGE: 'image',
+        VIDEO: 'video'
+    });
 
     var StatusFinderHelper = {
         STATUS_SHIFT_OPERATOR_ENUM: {
@@ -42,13 +80,13 @@
     countlyPushNotification.helper = {
         getMessageMediaInitialState: function() {
             var result = {};
-            result[countlyPushNotification.service.PlatformEnum.ALL] = {};
-            result[countlyPushNotification.service.PlatformEnum.IOS] = {};
-            result[countlyPushNotification.service.PlatformEnum.ANDROID] = {};
+            result[PlatformEnum.ALL] = {};
+            result[PlatformEnum.IOS] = {};
+            result[PlatformEnum.ANDROID] = {};
             return result;
         },
         getInitialSeriesStateByType: function(type) {
-            if (type === countlyPushNotification.service.TypeEnum.ONE_TIME) {
+            if (type === TypeEnum.ONE_TIME) {
                 return {
                     monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
                     weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
@@ -59,7 +97,7 @@
             };
         },
         getInitialPeriodsStateByType: function(type) {
-            if (type === countlyPushNotification.service.TypeEnum.ONE_TIME) {
+            if (type === TypeEnum.ONE_TIME) {
                 return {
                     periods: {monthly: [], weekly: []},
                 };
@@ -101,45 +139,212 @@
         },
     };
 
+    countlyPushNotification.mapper = {
+        incoming: {
+            mapType: function(dto) {
+                if (dto.tx === false && dto.auto === true) {
+                    return TypeEnum.AUTOMATIC;
+                }
+                if (dto.tx === true && dto.auto === false) {
+                    return TypeEnum.TRANSACTIONAL;
+                }
+                return TypeEnum.ONE_TIME;
+            },
+            mapStatus: function(status, error) {
+                if (StatusFinderHelper.isSending(status)) {
+                    if (error) {
+                        return {value: 'sending-errors', label: CV.i18n('push-notification.status-sending-errors')};
+                    }
+                    else {
+                        return {value: StatusEnum.SENDING, label: CV.i18n('push-notification.status-sending')};
+                    }
+                }
+                else if (StatusFinderHelper.isAborted(status)) {
+                    return {value: StatusEnum.ABORTED, label: CV.i18n('push-notification.status-aborted')};
+                }
+                else if (StatusFinderHelper.isDone(status)) {
+                    if (error) {
+                        return {value: 'sent-errors', label: CV.i18n('push-notification.status-sent-errors')};
+                    }
+                    else {
+                        return {value: StatusEnum.SENT, label: CV.i18n('push-notification.status-sent')};
+                    }
+                }
+                else if (StatusFinderHelper.isScheduled(status)) {
+                    return {value: StatusEnum.SCHEDULED, label: CV.i18n('push-notification.status-scheduled')};
+                }
+                else if (StatusFinderHelper.isCreated(status)) {
+                    return {value: 'created', label: CV.i18n('push-notification.status-created')};
+                }
+                else if (StatusFinderHelper.isInitial(status)) {
+                    return {value: 'initial', label: CV.i18n('push-notification.status-initial')};
+                }
+                else {
+                    return {value: status, label: status};
+                }
+            },
+            mapSeriesDtoToModel: function(dto, type) {
+                if (type === TypeEnum.ONE_TIME) {
+                    return {
+                        monthly: [{data: dto.actions.monthly.data || [], label: actionsPerformedLabel}, {data: dto.sent.monthly.data || [], label: messagesSentLabel}],
+                        weekly: [{data: dto.actions.weekly.data || [], label: actionsPerformedLabel}, {data: dto.sent.weekly.data || [], label: messagesSentLabel}],
+                    };
+                }
+                else if (type === TypeEnum.AUTOMATIC) {
+                    return {
+                        daily: [{data: dto.actions_automated.daily.data || [], label: actionsPerformedLabel}, {data: dto.sent_automated.daily.data || [], label: messagesSentLabel}]
+                    };
+                }
+                else {
+                    return {
+                        daily: [{data: dto.actions_tx.daily.data || [], label: actionsPerformedLabel}, {data: dto.sent_tx.daily.data || [], label: messagesSentLabel}]
+                    };
+                }
+            },
+            mapPeriods: function(dto, type) {
+                if (type === TypeEnum.ONE_TIME) {
+                    return {weekly: dto.actions.weekly.keys, monthly: dto.actions.monthly.keys};
+                }
+                else if (type === TypeEnum.AUTOMATIC) {
+                    return {weekly: dto.actions_automated.daily.keys};
+                }
+                else {
+                    return {weekly: dto.actions_tx.daily.keys};
+                }
+            },
+            mapPlatforms: function(dto) {
+                return dto.map(function(platformItem) {
+                    if (platformItem === 'i') {
+                        return {label: CV.i18n("push-notification.platform-filter-ios"), value: PlatformEnum.IOS};
+                    }
+                    if (platformItem === 'a') {
+                        return {label: CV.i18n("push-notification.platform-filter-android"), value: PlatformEnum.ANDROID};
+                    }
+                });
+            },
+            mapRowsDtoToModel: function(dto) {
+                var self = this;
+                var rowsModel = [];
+                dto.aaData.forEach(function(pushNotificationDtoItem, index) {
+                    rowsModel[index] = {
+                        _id: pushNotificationDtoItem._id,
+                        name: pushNotificationDtoItem.messagePerLocale["default|t"] || "-",
+                        status: self.mapStatus(pushNotificationDtoItem.result.status, pushNotificationDtoItem.result.error),
+                        createdDateTime: {
+                            date: moment(pushNotificationDtoItem.created).format("MMMM Do YYYY"),
+                            time: moment(pushNotificationDtoItem.created).format("h:mm:ss a")
+                        },
+                        sentDateTime: {
+                            date: moment(pushNotificationDtoItem.date).format("MMMM Do YYYY"),
+                            time: moment(pushNotificationDtoItem.date).format("h:mm:ss a")
+                        },
+                        sent: pushNotificationDtoItem.result.sent,
+                        actioned: pushNotificationDtoItem.result.actioned,
+                        createdBy: pushNotificationDtoItem.creator,
+                        platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
+                        content: pushNotificationDtoItem.messagePerLocale.default,
+                    };
+                });
+                return rowsModel;
+            },
+            mapMessageButtons: function(numberOfButtons, dto) {
+                if (numberOfButtons === 1) {
+                    return [{label: dto.messagePerLocale["default|0|t"], url: dto.messagePerLocale["default|0|l"]}];
+                }
+                if (numberOfButtons === 2) {
+                    return [
+                        {label: dto.messagePerLocale["default|0|t"], url: dto.messagePerLocale["default|0|l"]},
+                        {label: dto.messagePerLocale["default|1|t"], url: dto.messagePerLocale["default|1|l"]},
+                    ];
+                }
+                return [];
+            },
+            mapEndDate: function(type, dto) {
+                if (type === TypeEnum.AUTOMATIC) {
+                    return moment(dto.autoEnd).format("MMMM Do, YYYY, H:mm");
+                }
+                return "never";
+            },
+            mapDeliveryType: function() {
+                //TODO: map push notification delivery type
+                return null;
+            },
+            mapAudienceSelectionType: function() {
+                //TODO: map push notification audience selection type
+                return null;
+            },
+            mapErrors: function(dto) {
+                //TODO: map push notification message errors;
+                return {codes: dto.result.errorCodes, messages: dto.result.error};
+            },
+            mapMedia: function(dto) {
+                var result = {};
+                if (dto.media) {
+                    result[PlatformEnum.ALL] = {url: dto.media, type: MediaTypeEnum.IMAGE};
+                }
+                //TODO-LA:map media for specific platforms
+                return result;
+            },
+            mapPushNotificationDtoToModel: function(dto) {
+                var self = this;
+                var pushNotificationType = this.mapType(dto);
+                return {
+                    id: dto._id,
+                    type: pushNotificationType,
+                    status: self.mapStatus(dto.result.status, dto.result.error),
+                    createdDateTime: {
+                        date: moment(dto.created).valueOf(),
+                        time: moment(dto.created).format("H:mm")
+                    },
+                    sent: dto.result.sent,
+                    actioned: dto.result.actioned,
+                    failed: dto.result.errors,
+                    processed: dto.result.processed,
+                    total: dto.result.total,
+                    createdBy: dto.creator,
+                    platforms: self.mapPlatforms(dto.platforms),
+                    message: {
+                        name: dto.messagePerLocale["default|t"] || "-",
+                        content: dto.messagePerLocale.default,
+                        media: self.mapMedia(dto),
+                        mediaMime: dto.mediaMime,
+                        onClickUrl: dto.url,
+                        numberOfButtons: dto.buttons,
+                        buttons: self.mapMessageButtons(dto.buttons, dto),
+                    },
+                    errors: self.mapErrors(dto),
+                    sound: dto.sound,
+                    cohortIds: dto.cohorts,
+                    geoIds: dto.geos,
+                    expirationDaysInMs: dto.expiration,
+                    startDate: moment(dto.date).format("MMMM Do, YYYY, H:mm"),
+                    endDate: self.mapEndDate(pushNotificationType, dto),
+                    deliveryType: self.mapDeliveryType(pushNotificationType, dto),
+                    audienceSelectionType: self.mapAudienceSelectionType(pushNotificationType, dto),
+                };
+            },
+            mapMediaMetadata: function(metadataDto) {
+                var typeAndFileExtension = metadataDto['content-type'].split('/');
+                return {
+                    type: typeAndFileExtension[0],
+                    extension: typeAndFileExtension[1],
+                    size: metadataDto['content-length'] / MB_TO_BYTES_RATIO,
+                };
+            },
+        },
+        outgoing: {
+
+        }
+    };
+
     countlyPushNotification.service = {
-        TypeEnum: {
-            ONE_TIME: "oneTime",
-            AUTOMATIC: "automatic",
-            TRANSACTIONAL: "transactional"
-        },
-        PeriodEnum: {
-            WEEKLY: "weekly",
-            MONTHLY: "monthly",
-            DAILY: "daily"
-        },
-        PlatformEnum: {
-            ANDROID: "android",
-            ALL: "all",
-            IOS: "ios"
-        },
-        StatusEnum: {
-            ALL: "all",
-            SENT: "sent",
-            SENDING: "sending",
-            DRAFT: "draft",
-            NOT_APPROVED: "notApproved",
-            ABORTED: "aborted",
-            FAILED: "failed",
-            STOPPED: "stopped",
-            SCHEDULED: "scheduled"
-        },
-        LocalizationEnum: {
-            ALL: "all"
-        },
-        UserEventEnum: {
-            RESEND: 'resend',
-            DUPLICATE: 'duplicate',
-            DELETE: 'delete'
-        },
-        MediaTypeEnum: {
-            IMAGE: 'image',
-            VIDEO: 'video'
-        },
+        TypeEnum: TypeEnum,
+        PeriodEnum: PeriodEnum,
+        PlatformEnum: PlatformEnum,
+        StatusEnum: StatusEnum,
+        LocalizationEnum: LocalizationEnum,
+        UserEventEnum: UserEventEnum,
+        MediaTypeEnum: MediaTypeEnum,
         getLocalizationFilterOptions: function() {
             var self = this;
             return [
@@ -155,205 +360,14 @@
             }
             return { auto: false, tx: false};
         },
-        mapType: function(dto) {
-            if (dto.tx === false && dto.auto === true) {
-                return this.TypeEnum.AUTOMATIC;
-            }
-            if (dto.tx === true && dto.auto === false) {
-                return this.TypeEnum.TRANSACTIONAL;
-            }
-            return this.TypeEnum.ONE_TIME;
-        },
-        mapStatus: function(status, error) {
-            if (StatusFinderHelper.isSending(status)) {
-                if (error) {
-                    return {value: 'sending-errors', label: CV.i18n('push-notification.status-sending-errors')};
-                }
-                else {
-                    return {value: this.StatusEnum.SENDING, label: CV.i18n('push-notification.status-sending')};
-                }
-            }
-            else if (StatusFinderHelper.isAborted(status)) {
-                return {value: this.StatusEnum.ABORTED, label: CV.i18n('push-notification.status-aborted')};
-            }
-            else if (StatusFinderHelper.isDone(status)) {
-                if (error) {
-                    return {value: 'sent-errors', label: CV.i18n('push-notification.status-sent-errors')};
-                }
-                else {
-                    return {value: this.StatusEnum.SENT, label: CV.i18n('push-notification.status-sent')};
-                }
-            }
-            else if (StatusFinderHelper.isScheduled(status)) {
-                return {value: this.StatusEnum.SCHEDULED, label: CV.i18n('push-notification.status-scheduled')};
-            }
-            else if (StatusFinderHelper.isCreated(status)) {
-                return {value: 'created', label: CV.i18n('push-notification.status-created')};
-            }
-            else if (StatusFinderHelper.isInitial(status)) {
-                return {value: 'initial', label: CV.i18n('push-notification.status-initial')};
-            }
-            else {
-                return {value: status, label: status};
-            }
-        },
-        mapSeriesDtoToModel: function(dto, type) {
-            if (type === this.TypeEnum.ONE_TIME) {
-                return {
-                    monthly: [{data: dto.actions.monthly.data || [], label: actionsPerformedLabel}, {data: dto.sent.monthly.data || [], label: messagesSentLabel}],
-                    weekly: [{data: dto.actions.weekly.data || [], label: actionsPerformedLabel}, {data: dto.sent.weekly.data || [], label: messagesSentLabel}],
-                };
-            }
-            else if (type === this.TypeEnum.AUTOMATIC) {
-                return {
-                    daily: [{data: dto.actions_automated.daily.data || [], label: actionsPerformedLabel}, {data: dto.sent_automated.daily.data || [], label: messagesSentLabel}]
-                };
-            }
-            else {
-                return {
-                    daily: [{data: dto.actions_tx.daily.data || [], label: actionsPerformedLabel}, {data: dto.sent_tx.daily.data || [], label: messagesSentLabel}]
-                };
-            }
-        },
-        mapPeriods: function(dto, type) {
-            if (type === this.TypeEnum.ONE_TIME) {
-                return {weekly: dto.actions.weekly.keys, monthly: dto.actions.monthly.keys};
-            }
-            else if (type === this.TypeEnum.AUTOMATIC) {
-                return {weekly: dto.actions_automated.daily.keys};
-            }
-            else {
-                return {weekly: dto.actions_tx.daily.keys};
-            }
-        },
-        mapPlatforms: function(dto) {
-            var self = this;
-            return dto.map(function(platformItem) {
-                if (platformItem === 'i') {
-                    return {label: CV.i18n("push-notification.platform-filter-ios"), value: self.PlatformEnum.IOS};
-                }
-                if (platformItem === 'a') {
-                    return {label: CV.i18n("push-notification.platform-filter-android"), value: self.PlatformEnum.ANDROID};
-                }
-            });
-        },
-        mapRowsDtoToModel: function(dto) {
-            var self = this;
-            var rowsModel = [];
-            dto.aaData.forEach(function(pushNotificationDtoItem, index) {
-                rowsModel[index] = {
-                    _id: pushNotificationDtoItem._id,
-                    name: pushNotificationDtoItem.messagePerLocale["default|t"] || "-",
-                    status: self.mapStatus(pushNotificationDtoItem.result.status, pushNotificationDtoItem.result.error),
-                    createdDateTime: {
-                        date: moment(pushNotificationDtoItem.created).format("MMMM Do YYYY"),
-                        time: moment(pushNotificationDtoItem.created).format("h:mm:ss a")
-                    },
-                    sentDateTime: {
-                        date: moment(pushNotificationDtoItem.date).format("MMMM Do YYYY"),
-                        time: moment(pushNotificationDtoItem.date).format("h:mm:ss a")
-                    },
-                    sent: pushNotificationDtoItem.result.sent,
-                    actioned: pushNotificationDtoItem.result.actioned,
-                    createdBy: pushNotificationDtoItem.creator,
-                    platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
-                    content: pushNotificationDtoItem.messagePerLocale.default,
-                };
-            });
-            return rowsModel;
-        },
-        mapMessageButtons: function(numberOfButtons, dto) {
-            if (numberOfButtons === 1) {
-                return [{label: dto.messagePerLocale["default|0|t"], url: dto.messagePerLocale["default|0|l"]}];
-            }
-            if (numberOfButtons === 2) {
-                return [
-                    {label: dto.messagePerLocale["default|0|t"], url: dto.messagePerLocale["default|0|l"]},
-                    {label: dto.messagePerLocale["default|1|t"], url: dto.messagePerLocale["default|1|l"]},
-                ];
-            }
-            return [];
-        },
-        mapEndDate: function(type, dto) {
-            if (type === this.TypeEnum.AUTOMATIC) {
-                return moment(dto.autoEnd).format("MMMM Do, YYYY, H:mm");
-            }
-            return "never";
-        },
-        mapDeliveryType: function() {
-            //TODO: map push notification delivery type
-            return null;
-        },
-        mapAudienceSelectionType: function() {
-            //TODO: map push notification audience selection type
-            return null;
-        },
-        mapErrors: function(dto) {
-            //TODO: map push notification message errors;
-            return {codes: dto.result.errorCodes, messages: dto.result.error};
-        },
-        mapMedia: function(dto) {
-            var result = {};
-            if (dto.media) {
-                result[this.PlatformEnum.ALL] = {url: dto.media, type: this.MediaTypeEnum.IMAGE};
-            }
-            //TODO-LA:map media for specific platforms
-            return result;
-        },
-        mapPushNotificationDtoToModel: function(dto) {
-            var self = this;
-            var pushNotificationType = this.mapType(dto);
-            return {
-                id: dto._id,
-                type: pushNotificationType,
-                status: self.mapStatus(dto.result.status, dto.result.error),
-                createdDateTime: {
-                    date: moment(dto.created).valueOf(),
-                    time: moment(dto.created).format("H:mm")
-                },
-                sent: dto.result.sent,
-                actioned: dto.result.actioned,
-                failed: dto.result.errors,
-                processed: dto.result.processed,
-                total: dto.result.total,
-                createdBy: dto.creator,
-                platforms: self.mapPlatforms(dto.platforms),
-                message: {
-                    name: dto.messagePerLocale["default|t"] || "-",
-                    content: dto.messagePerLocale.default,
-                    media: self.mapMedia(dto),
-                    mediaMime: dto.mediaMime,
-                    onClickUrl: dto.url,
-                    numberOfButtons: dto.buttons,
-                    buttons: self.mapMessageButtons(dto.buttons, dto),
-                },
-                errors: self.mapErrors(dto),
-                sound: dto.sound,
-                cohortIds: dto.cohorts,
-                geoIds: dto.geos,
-                expirationDaysInMs: dto.expiration,
-                startDate: moment(dto.date).format("MMMM Do, YYYY, H:mm"),
-                endDate: self.mapEndDate(pushNotificationType, dto),
-                deliveryType: self.mapDeliveryType(pushNotificationType, dto),
-                audienceSelectionType: self.mapAudienceSelectionType(pushNotificationType, dto),
-            };
-        },
-        mapMediaMetadata: function(metadataDto) {
-            var typeAndFileExtension = metadataDto['content-type'].split('/');
-            return {
-                type: typeAndFileExtension[0],
-                extension: typeAndFileExtension[1],
-                size: metadataDto['content-length'] / MB_TO_BYTES_RATIO,
-            };
-        },
         fetchAll: function(type) {
             var self = this;
             return new Promise(function(resolve, reject) {
                 Promise.all([self.fetchByType(type), self.fetchDashboard(type)])
                     .then(function(responses) {
-                        var rowsModel = self.mapRowsDtoToModel(responses[0]);
-                        var seriesModel = self.mapSeriesDtoToModel(responses[1], type);
-                        var periods = self.mapPeriods(responses[1], type);
+                        var rowsModel = countlyPushNotification.mapper.incoming.mapRowsDtoToModel(responses[0]);
+                        var seriesModel = countlyPushNotification.mapper.incoming.mapSeriesDtoToModel(responses[1], type);
+                        var periods = countlyPushNotification.mapper.incoming.mapPeriods(responses[1], type);
                         var pushNotificationModel = {
                             rows: rowsModel,
                             series: seriesModel,
@@ -415,13 +429,12 @@
             });
         },
         fetchMediaMetadata: function(url) {
-            var self = this;
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     method: 'GET',
                     url: window.countlyCommon.API_URL + '/i/pushes/mime?url=' + url,
                     success: function(data) {
-                        resolve(self.mapMediaMetadata(data.headers));
+                        resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(data.headers));
                     },
                     error: function(error) {
                         reject(error);
@@ -453,7 +466,7 @@
             hasError: false,
             error: null,
             isLoading: false,
-            platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
+            platformFilter: PlatformEnum.ALL,
             localFilter: "de"
         };
     };
@@ -463,7 +476,7 @@
             context.dispatch('onFetchInit');
             countlyPushNotification.service.fetchById(id)
                 .then(function(response) {
-                    var model = countlyPushNotification.service.mapPushNotificationDtoToModel(response);
+                    var model = countlyPushNotification.mapper.incoming.mapPushNotificationDtoToModel(response);
                     context.commit('setPushNotification', model);
                     context.dispatch('onFetchSuccess');
                 }).catch(function(error) {
