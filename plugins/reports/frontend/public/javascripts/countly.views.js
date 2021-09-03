@@ -1360,4 +1360,8 @@ $(document).ready(function() {
             );
         }
     }
+
+    if (countlyGlobal.plugins.indexOf("dashboards") > -1) {
+        countlyVue.container.registerData("/reports/data-type", {label: jQuery.i18n.map["dashboards.report"], value: 'dashboards'});
+    }
 });

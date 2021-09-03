@@ -14,6 +14,12 @@
 
 var AlertDrawer = countlyVue.views.BaseView.extend({
     template: '#alert-drawer',
+    mixins: [
+        countlyVue.container.dataMixin({
+            "externalDataTypeOptions": "/alerts/data-type",
+            "externalAlertDefine": "/alerts/data-define",
+        })
+    ],
     components: {
     },
     data: function () {
@@ -21,80 +27,13 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
         for (var appId in countlyGlobal.apps) {
             appsSelectorOption.push({label: countlyGlobal.apps[appId].name, value: appId});
         }
-        
-        var alertDataTypeOptions = [
-            {label: jQuery.i18n.map["alert.Metric"], value: 'metric'},
-            {label: jQuery.i18n.map["alert.Event"], value: 'event'},
-            {label: jQuery.i18n.map["alert.Crash"], value: 'crash'},
-            {label: jQuery.i18n.map["alert.rating"], value: 'rating'},
-            {label: jQuery.i18n.map["alert.data-point"], value: 'dataPoint'},
-        ];
-
-        var alertDefine = {
-            metric: {
-                target: [
-                    { value: 'Total users', label: 'Total users' },
-                    { value: 'New users', label: 'New users' },
-                    { value: 'Total sessions', label: 'Total sessions' },
-                    { value: 'Average session duration', label: 'Average session duration' },
-                    { value: 'Bounce rate', label: 'Bounce rate (%)' },
-                    { value: 'Number of page views', label: 'Number of page views' },
-                    { value: 'Purchases', label: 'Purchases' },
-                ],
-                condition: [
-                    { value: 'increased by at least', label: 'increased by at least' },
-                    { value: 'decreased by at least', label: 'decreased by at least' },
-                ]
-            },
-            event: {
-                target: [],
-                condition: [
-                    { value: 'increased by at least', label: 'increased by at least' },
-                    { value: 'decreased by at least', label: 'decreased by at least' },
-                ]
-            },
-            crash: {
-                target: [
-                    { value: 'Total crashes', label: 'Total crashes' },
-                    { value: 'New crash occurence', label: 'New crash occurence' },
-                    { value: 'None fatal crash per session', label: 'None fatal crash per session' },
-                    { value: 'Fatal crash per session', label: 'Fatal crash per session' },
-                ],
-                condition: [
-                    { value: 'increased by at least', label: 'increased by at least' },
-                    { value: 'decreased by at least', label: 'decreased by at least' },
-                ]
-            },
-            rating: {
-                target: [
-                    { value: 'Number of ratings', label: 'Number of ratings' },
-                ],
-                condition: [
-                    { value: 'increased by at least', label: 'increased by at least' },
-                    { value: 'decreased by at least', label: 'decreased by at least' },
-                ]
-            },
-            dataPoint: {
-                target: [
-                    { value: 'Number of daily DP', label: 'Daily data points' },
-                    { value: 'Hourly data points', label: 'Hourly data points' },
-                    { value: 'Monthly data points', label: 'Monthly data points' }
-                ],
-                condition: [
-                    { value: 'increased by at least', label: 'increased by at least' },
-                    { value: 'decreased by at least', label: 'decreased by at least' },
-                ]
-            },
-        };    
         var defaultAppsSelectorOption = Object.assign([], appsSelectorOption);
         return {
             title: "",
             saveButtonLabel: "",
             apps: [""],
-            alertDataTypeOptions,
             defaultAppsSelectorOption,
             appsSelectorOption,
-            alertDefine,
             emailOptions:[{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
             showSubType1: true,
             showSubType2: false,
@@ -104,6 +43,81 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
         };
     },
     computed: {
+        alertDataTypeOptions: function() {
+            var alertDataTypeOptions = [
+                {label: jQuery.i18n.map["alert.Metric"], value: 'metric'},
+                {label: jQuery.i18n.map["alert.Event"], value: 'event'},
+                {label: jQuery.i18n.map["alert.Crash"], value: 'crash'},
+                {label: jQuery.i18n.map["alert.rating"], value: 'rating'},
+                {label: jQuery.i18n.map["alert.data-point"], value: 'dataPoint'},
+            ];
+            if (this.externalDataTypeOptions) {
+                alertDataTypeOptions = alertDataTypeOptions.concat(this.externalDataTypeOptions);
+            }
+            return alertDataTypeOptions;
+        },
+        alertDefine: function() {
+            var alertDefine = {
+                metric: {
+                    target: [
+                        { value: 'Total users', label: 'Total users' },
+                        { value: 'New users', label: 'New users' },
+                        { value: 'Total sessions', label: 'Total sessions' },
+                        { value: 'Average session duration', label: 'Average session duration' },
+                        { value: 'Bounce rate', label: 'Bounce rate (%)' },
+                        { value: 'Number of page views', label: 'Number of page views' },
+                        { value: 'Purchases', label: 'Purchases' },
+                    ],
+                    condition: [
+                        { value: 'increased by at least', label: 'increased by at least' },
+                        { value: 'decreased by at least', label: 'decreased by at least' },
+                    ]
+                },
+                event: {
+                    target: [],
+                    condition: [
+                        { value: 'increased by at least', label: 'increased by at least' },
+                        { value: 'decreased by at least', label: 'decreased by at least' },
+                    ]
+                },
+                crash: {
+                    target: [
+                        { value: 'Total crashes', label: 'Total crashes' },
+                        { value: 'New crash occurence', label: 'New crash occurence' },
+                        { value: 'None fatal crash per session', label: 'None fatal crash per session' },
+                        { value: 'Fatal crash per session', label: 'Fatal crash per session' },
+                    ],
+                    condition: [
+                        { value: 'increased by at least', label: 'increased by at least' },
+                        { value: 'decreased by at least', label: 'decreased by at least' },
+                    ]
+                },
+                rating: {
+                    target: [
+                        { value: 'Number of ratings', label: 'Number of ratings' },
+                    ],
+                    condition: [
+                        { value: 'increased by at least', label: 'increased by at least' },
+                        { value: 'decreased by at least', label: 'decreased by at least' },
+                    ]
+                },
+                dataPoint: {
+                    target: [
+                        { value: 'Number of daily DP', label: 'Daily data points' },
+                        { value: 'Hourly data points', label: 'Hourly data points' },
+                        { value: 'Monthly data points', label: 'Monthly data points' }
+                    ],
+                    condition: [
+                        { value: 'increased by at least', label: 'increased by at least' },
+                        { value: 'decreased by at least', label: 'decreased by at least' },
+                    ]
+                },
+            };
+            this.externalAlertDefine.forEach(function(define) {
+                alertDefine = Object.assign(alertDefine, define);
+            });
+            return alertDefine;
+        },
         subDataTypeOptions: function () {
             return alertDefine;
         }
@@ -138,6 +152,11 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
             if (val === 'dataPoint') {
                 this.$data.appsSelectorOption.unshift({value: "all-apps", label: "All apps"});
             }
+            if (val === 'online-users') {
+                this.$data.showSubType2 = false;
+                this.$data.showCondition = false;
+                this.$data.showConditionValue = false;
+            }
             if (!notRest) {
                 this.$children[0].$data.editedObject.selectedApps =[""];
                 this.resetAlertCondition();
@@ -158,7 +177,6 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
         alertDataSubTypeSelected: function (alertDataSubType, notReset) {
             switch(alertDataSubType) {
                 case 'New crash occurence':
-                    this.$data.showSubType2 = false;
                     this.$data.showSubType2 = false;
                     this.$data.showCondition = false;
                     this.$data.showConditionValue = false;
@@ -181,7 +199,15 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
                         });
                     });
                     break;
-                default: 
+                case 't':
+                    this.$data.showUserCount =true;
+                case 'o':
+                case 'm':
+                    this.$data.showSubType2 = false;
+                    this.$data.showCondition = false;
+                    this.$data.showConditionValue = false;
+                    break;
+                    default: 
                     if (!notReset) {
                      this.resetAlertConditionShow();
                     }
@@ -199,6 +225,22 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
             }
         },
         onSubmit: async function (settings) {
+            if (settings._id) {
+                var rows = this.$store.getters["countlyAlerts/table/all"];
+                for (var i = 0; i < rows.length; i++) {
+                    if ((rows[i]._id === settings._id) &&
+                        (rows[i].alertDataType === 'online-users' || settings.alertDataType === 'online-users') &&
+                        (rows[i].alertDataType !== settings.alertDataType)) {
+                        if (rows[i].alertDataType !== 'online-users') {
+                            await this.$store.dispatch("countlyAlerts/deleteAlert", rows[i]._id); 
+                        } else {
+                            await this.$store.dispatch("countlyAlerts/deleteOnlineUsersAlert", rows[i]); 
+                        }
+                        settings._id = null;
+                    }
+                }
+            }
+
             let target = settings.alertDataSubType;
             let subTarget = settings.alertDataSubType2;
             switch(settings.alertDataType) {
@@ -218,6 +260,9 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
                     break;
             }
             
+            
+
+
             let target2 = settings.alertDataSubType2 ? ' (' + subTarget + ')' : '';
             settings.compareDescribe = target + target2 ;
 
@@ -229,9 +274,39 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
                     ' ' + settings.compareValue + "%";
                     break;
             }
-
             delete settings.createdBy;
 
+
+          
+            if (settings.alertDataType === 'online-users') {
+                const config = {
+                    app: settings.selectedApps[0],
+                    app_name: countlyGlobal.apps[settings.selectedApps[0]].name,
+                    name: settings.alertName,
+                    type: settings.alertDataSubType,
+                    def: settings.compareType,
+                    users: parseInt(settings.compareValue, 10),
+                    minutes: parseInt(settings.compareValue2, 10),
+                    email:settings.alertValues,
+                    enabled: true,
+                }
+                if (settings._id) {
+                    config._id = settings._id;
+                }
+                if (config.type === 't') {
+                    config.condition_title = jQuery.i18n.prop("concurrent-users.condition-title", jQuery.i18n.map["concurrent-users." + config.def], countlyCommon.formatNumber(config.users), config.minutes);
+                }
+                else if (config.type === 'o') {
+                    config.condition_title = jQuery.i18n.map["concurrent-users.alert-type.overall-title"];
+                }
+                else if (config.type === 'm') {
+                    config.condition_title = jQuery.i18n.map["concurrent-users.alert-type.monthly-title"];
+                }
+
+                await this.$store.dispatch("countlyAlerts/saveOnlineUsersAlert", config);
+                await this.$store.dispatch("countlyAlerts/table/fetchAll");
+                return;
+            }
             await this.$store.dispatch("countlyAlerts/saveAlert", settings);
             await this.$store.dispatch("countlyAlerts/table/fetchAll");
         },
@@ -239,7 +314,11 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
             this.$emit("close", $event);
         },
         onCopy: function (newState) {
-            this.resetAlertConditionShow();
+            this.$data.showSubType1 = true;
+            this.$data.showSubType2 = false;
+            this.$data.showCondition = false;
+            this.$data.showConditionValue = false;
+
             this.appSelected(newState.selectedApps[0], true);
             this.alertDataSubTypeSelected(newState.alertDataSubType, true);
 
@@ -301,7 +380,11 @@ var TableView = countlyVue.views.BaseView.extend({
                 var self = this;
                 return CountlyHelpers.confirm(jQuery.i18n.prop("alert.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", async function (result) {
                     if (result) {
-                        await self.$store.dispatch("countlyAlerts/deleteAlert", alertID);
+                        if (scope.row.alertDataType === 'online-users') {
+                            await self.$store.dispatch("countlyAlerts/deleteOnlineUsersAlert", scope.row);
+                        } else {
+                            await self.$store.dispatch("countlyAlerts/deleteAlert", alertID);
+                        }
                         await self.$store.dispatch("countlyAlerts/table/fetchAll");
                     }
                 }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["alert.yes-delete-alert"]], {title: jQuery.i18n.map["alert.delete-confirm-title"], image: "delete-an-event"});
@@ -313,7 +396,22 @@ var TableView = countlyVue.views.BaseView.extend({
             diff.forEach(function (item) {
                 status[item.key] = item.newValue;
             });
-            await this.$store.dispatch("countlyAlerts/table/updateStatus", status);
+            var alertStatus = {};
+            var onlineUsersAlertStatus = {}
+            var rows = this.$store.getters["countlyAlerts/table/all"];
+            for (var i = 0; i < rows.length; i++) {
+                if (status[rows[i]._id] !== undefined) {
+                    if (rows[i].alertDataType === 'online-users') {
+                        onlineUsersAlertStatus[rows[i]._id] = status[rows[i]._id];
+                    } else {
+                        alertStatus[rows[i]._id] = status[rows[i]._id];
+                    }
+                }
+            }
+
+            await this.$store.dispatch("countlyAlerts/table/updateStatus", alertStatus);
+            await this.$store.dispatch("countlyAlerts/table/updateOnlineusersAlertStatus", onlineUsersAlertStatus);
+            
             await this.$store.dispatch("countlyAlerts/table/fetchAll");
             scope.unpatch();
         },
@@ -338,7 +436,7 @@ var AlertsHomeViewComponent = countlyVue.views.BaseView.extend({
                {label:'alert.TOTAL_ALERTS_SENT', value: count.t},
                {label:'alert.ALERTS_SENT_TODAY', value: count.today},
             ]
-        } 
+        }
     },
     data: function () {
         return {
@@ -375,4 +473,22 @@ $(document).ready(function() {
     if (countlyAuth.validateRead(app.alertsView.featureName)) {
         app.addMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
     }
+
+    if (countlyGlobal.plugins.indexOf("concurrent_users") > -1) {
+        countlyVue.container.registerData("/alerts/data-type", {label: jQuery.i18n.map["concurrent-users.title"], value: 'online-users'});
+        countlyVue.container.registerData("/alerts/data-define", {
+            "online-users": {
+                target: [
+                    { value: 't', label: jQuery.i18n.map["concurrent-users.alert-type.t"]},
+                    { value: 'o', label: jQuery.i18n.map["concurrent-users.alert-type.o"]},
+                    { value: 'm', label: jQuery.i18n.map["concurrent-users.alert-type.m"]},
+                ],
+                condition: [
+                    { value: 'gt', label: jQuery.i18n.map["concurrent-users.gt"]},
+                    { value: 'lt', label: jQuery.i18n.map["concurrent-users.lt"]},
+                ],
+            }
+        });
+    }
 });
+

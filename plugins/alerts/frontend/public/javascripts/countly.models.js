@@ -169,6 +169,29 @@
                     dataType: "json",
                 });
             },
+            deleteOnlineUsersAlert: function(context, alertConfig) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/delete",
+                    data: {
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "alertId": alertConfig._id,
+                    },
+                    dataType: "json",
+                });
+            },
+            saveOnlineUsersAlert: function(context, alertConfig) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/save",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        "alert": JSON.stringify(alertConfig),
+                    },
+                    dataType: "json",
+                }).then(function(data) {
+                });
+            },
         }
 
         var tableResource = countlyVue.vuex.Module("table", {
@@ -209,7 +232,16 @@
                         dataType: "json",
                     })
                 },
-              
+                updateOnlineusersAlertStatus: function(context, status) {
+                    return CV.$.ajax({
+                        type: "post",
+                        url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/status",
+                        data: {
+                            "status": JSON.stringify(status),
+                        },
+                        dataType: "json",
+                    })
+                },
                 fetchAll: function(context) {
                     return CV.$.ajax({
                         type: "GET",
@@ -247,8 +279,47 @@
                             });
                             /*eslint-enable */
                         }
-                        context.commit("setAll", tableData);
-                        context.commit("setCount", count);
+                        
+                    
+                        if (countlyGlobal.plugins.indexOf("concurrent_users") < 0) {
+                            context.commit("setAll", tableData);
+                            context.commit("setCount", count);
+                            return;
+                        }
+                        CV.$.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r, 
+                            dataType: "json",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                method: "concurrent_alerts",
+                                preventGlobalAbort: true,
+                            },
+                        }).then(function(list) {
+                            for(var i = 0; i < list.length; i++) {
+                                tableData.push({
+                                    ...list[i],
+                                    _id: list[i]._id,
+                                    alertName: list[i].name,
+                                    appNameList: countlyGlobal.apps[list[i].app].name,
+                                    condtionText: list[i].condition_title,
+                                    enabled: list[i].enabled,
+                                    selectedApps: [list[i].app],
+                                    alertDataType: "online-users",
+                                    alertDataSubType: list[i].type,
+                                    compareType: list[i].def,
+                                    compareValue: list[i].users,
+                                    compareValue2: list[i].minutes,
+                                    alertValues: list[i].email,
+                                 });
+
+                            }
+                            context.commit("setAll", tableData);
+                            context.commit("setCount", count);
+                        })
+
+                        
+                        
 
                     });
                 },

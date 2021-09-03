@@ -137,7 +137,7 @@
                 </div>
                 <div class="cly-vue-drawer-step__line ">
                     <el-radio-group v-on:change="dataTypeSelected" v-model="drawerScope.editedObject.alertDataType" class="bu-is-flex alert-data-type-block">
-                        <el-radio-button v-for="(item, idx) in alertDataTypeOptions" :label="item.value" >{{item.label}}</el-radio-button>
+                        <el-radio-button v-for="(item, idx) in alertDataTypeOptions" :label="item.value" :disabled="drawerScope.editedObject._id && drawerScope.editedObject.alertDataType !== item.value">{{item.label}}</el-radio-button>
                     </el-radio-group>
                 </div>
             </div>
@@ -171,6 +171,7 @@
                 </div>
                 <div class="cly-vue-alert-drawer__line">
                 </div>
+       
                 <div class="bu-is-flex bu-mx-2 bu-my-4" v-if="showSubType1">
                     <div class="bu-is-flex-grow-1 bu-mx-1">
                         <validation-provider name="alertDataSubType" rules="required" v-slot="v">
@@ -214,6 +215,45 @@
                                 :class="{'is-error': v.errors.length > 0, 'bu-is-flex': true}"
                             >
                             <i slot="suffix"> % </i>
+                            </el-input>
+                        </validation-provider>
+                    </div>
+
+                    <!-- online users threshold-->
+                    <div class="bu-is-flex-grow-1 bu-mx-1" v-if="drawerScope.editedObject.alertDataSubType === 't'">
+                        <validation-provider name="alertDataSubType" rules="required" v-slot="v">
+                            <cly-select-x
+                            :placeholder="i18n('alert.define-variable')"
+                               mode="single-list"
+                               v-model="drawerScope.editedObject.compareType"
+                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
+                               :options="drawerScope.editedObject.alertDataType && alertDefine[drawerScope.editedObject.alertDataType].condition || []">
+                            </cly-select-x>
+                        </validation-provider>
+                    </div>
+                    <div class="bu-is-flex-grow-1 bu-mx-1 compare-value-block" v-if="drawerScope.editedObject.alertDataSubType === 't'">
+                        <validation-provider name="name" rules="required" v-slot="v">
+                            <el-input
+                                :placeholder="i18n('alert.add-number')"
+                                v-model="drawerScope.editedObject.compareValue"
+                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex': true}"
+                            >
+                            <i slot="suffix"> Users </i>
+                            </el-input>
+                        </validation-provider>
+                    </div>
+                    <div class="bu-is-flex-grow-1 bu-mx-1" v-if="drawerScope.editedObject.alertDataSubType === 't'" style="line-height:30px; white-space: nowrap;">
+                        persists for
+                    </div>
+                    <div class="bu-is-flex-grow-1 bu-mx-1 compare-value-block" v-if="drawerScope.editedObject.alertDataSubType === 't'">
+                        <validation-provider name="name" rules="required" v-slot="v">
+                            <el-input
+                                :disabled="drawerScope.editedObject._id"
+                                :placeholder="i18n('alert.add-number')"
+                                v-model="drawerScope.editedObject.compareValue2"
+                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex': true}"
+                            >
+                            <i slot="suffix"> Minutes </i>
                             </el-input>
                         </validation-provider>
                     </div>
