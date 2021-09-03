@@ -80,7 +80,7 @@
         </div>
         <div class="cly-vue-drawer-step__section">
           <div class="text-small text-heading">
-            {{i18n('feedback.rating-symbol')}}
+            {{i18n('feedback.rating-symbol')}} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
           </div>
           <validation-provider name="rating_symbol" rules="required" v-slot="v">
             <el-select placement="bottom-start" v-model="drawerScope.editedObject.rating_symbol" :placeholder="i18n('feedback.rating-symbol')">
@@ -165,7 +165,7 @@
 			<cly-form-step id="step2" :name="i18n('feedback.widget-appearance')">
         <div class="cly-vue-drawer-step__section">
           <div class="text-big text-heading">
-            {{ i18n('feedback.trigger-button-size') }}
+            {{ i18n('feedback.trigger-button-size') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
           </div>
           <div class="bu-is-flex bu-is-align-items-center">
             <el-radio 
@@ -219,7 +219,7 @@
           </div>
           <div class="bu-pt-3 bu-pb-4">
             <div class="text-medium text-heading">
-              {{i18n('feedback.logo')}}
+              {{i18n('feedback.logo')}} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
             </div>
             <cly-dropzone
               ref="logoDropzone"
@@ -239,7 +239,7 @@
           </div>
           <div class="cly-vue-drawer-step__section">
             <div class="text-small text-heading">
-              {{ i18n('feedback.hide-sticker') }}
+              {{ i18n('feedback.visibility') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
             </div>
             <validation-provider name="contact_email_option" v-slot="v">
               <el-checkbox v-model="drawerScope.editedObject.hide_sticker">{{ i18n('feedback.hide-sticker') }}</el-checkbox>
