@@ -13,13 +13,13 @@
                 };
             },
             props: {
-                selectedApp: {
+                allApps: {
                     type: Array
                 }
             },
             methods: {
                 switchActiveApp: function(event) {
-                    var app = this.selectedApp.filter(function(e) {
+                    var app = this.allApps.filter(function(e) {
                         return e.value === event;
                     });
                     this.activeApp = app[0];
@@ -56,6 +56,32 @@
                         isBoolean: typeof countlyGlobal.usermenu.featureRequestLink === "boolean" && countlyGlobal.usermenu.featureRequestLink
                     }
                 };
+            },
+            methods: {
+                logout: function() {
+                   console.log(this.$store.actions)
+                   this.$store.dispatch("countlyCommon/removeActiveApp");
+                //    this.$store.remove('countly_date');
+                //    this.$store.remove('countly_location_city');
+                   this.logoutRequest()
+                },
+                logoutRequest: function() {
+                    var logoutForm = document.createElement("form");
+                    logoutForm.action = countlyGlobal.path + '/logout';
+                    logoutForm.method = "post";
+                    logoutForm.style.display = "none";
+                    logoutForm.type = "submit";
+    
+                    var logoutForm_csrf = document.createElement("input");
+                    logoutForm_csrf.name = '_csrf';
+                    logoutForm_csrf.value = countlyGlobal.csrf_token;
+                    logoutForm.appendChild(logoutForm_csrf);
+                    document.body.appendChild(logoutForm);
+    
+                    logoutForm.submit();
+                    document.body.removeChild(logoutForm);
+                }
+                
             }
         });
 
@@ -189,6 +215,9 @@
                         app.activeAppKey = appKey;
                         app.switchApp(appId);
                     }
+                },
+                closeAppSelector: function() {
+                    this.appSelector = !this.appSelector;
                 },
                 suffixIconClass: function(dropdown) {
                     return (dropdown.visible ? 'arrow-up is-reverse' : 'arrow-up');
@@ -441,7 +470,7 @@
 
                     if (externalMainOptions && externalMainOptions.length) {
                         for (var i = 0; i < externalMainOptions.length; i++) {
-                            options.splice(3, 0, externalMainOptions[i]);
+                            options.splice(2, 0, externalMainOptions[i]);
                         }
                     }
 

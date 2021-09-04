@@ -129,6 +129,9 @@
                         if (appObj) {
                             context.commit("setActiveApp", Object.freeze(JSON.parse(JSON.stringify(appObj))));
                         }
+                    },
+                    removeActiveApp: function(context) {
+                        context.commit("seActiveApp", null);
                     }
                 }
             },

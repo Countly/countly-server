@@ -1,5 +1,5 @@
-<cly-dialog :visible.sync="centerDialogVisible" width="50%" :modal="false" center>
-    <cly-listbox skin="jumbo" height="624" :options="selectedApp"
+<cly-dialog :visible.sync="centerDialogVisible" width="50%" :modal="false" center @closed="handleClose()">
+    <cly-listbox skin="jumbo" height="624" :options="allApps"
         :searchable="true" :bordered="false" :value="value" @input="switchActiveApp($event)"
         v-model="activeApp">
         <template v-slot:option-prefix="option">
