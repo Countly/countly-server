@@ -183,8 +183,7 @@ var CountryView = countlyVue.views.create({
 
             this.data.table = this.data.table || [];
             for (var z = 0; z < this.data.table.length; z++) {
-                this.data.table[z].flag = "flag " + this.data.table[z].code;
-                this.data.table[z].styling = "margin-top:2px; background-image:url(" + countlyGlobal.path + "/images/flags/" + this.data.table[z].code + ".png);";
+                this.data.table[z].flag = countlyGlobal.path + "/images/flags/" + this.data.table[z].code + ".svg";
             }
             return this.data.table;
         },

@@ -3,8 +3,10 @@
 */
 
 @use "./colors" as c;
+@use "sass:map";
 
 $border-width-base: 1px !default;
 $border-style-base: solid !default;
 
 $border-base: $border-width-base $border-style-base c.$border-color-base !default;
+$border-input: $border-width-base $border-style-base map.get(c.$colors, "cool-gray-30");

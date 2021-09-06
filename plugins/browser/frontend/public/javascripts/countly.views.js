@@ -146,15 +146,7 @@ var AppBrowserView = countlyVue.views.create({
                 pos1 = pos1.scrollLeft;
                 this.$refs.topSlider.scrollTo({x: pos1}, 0);
             }
-        },
-        handleBrowserCommand: function(e) {
-            switch (e) {
-            case 'redirect-drill': {
-                window.location.hash = "/drill/" + JSON.stringify({"event": "[CLY]_session", "dbFilter": {}, "byVal": "up.brw"});
-                break;
-            }
-            }
-        },
+        }
     },
     computed: {
         selectedProperty: {
@@ -227,8 +219,21 @@ var AppBrowserView = countlyVue.views.create({
         },
         tabs: function() {
             return this.browserTabs;
+        },
+        topDropdown: function() {
+            if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                return this.externalLinks;
+            }
+            else {
+                return null;
+            }
         }
-    }
+    },
+    mixins: [
+        countlyVue.container.dataMixin({
+            'externalLinks': '/analytics/browsers/links'
+        })
+    ],
 
 });
 
@@ -241,4 +246,3 @@ if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
         component: AppBrowserView
     });
 }
-

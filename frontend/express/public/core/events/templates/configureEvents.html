@@ -1,0 +1,40 @@
+<cly-drawer 
+  @submit="onSubmit"
+  @close="onClose"
+  :title="title"
+  :saveButtonLabel="saveButtonLabel"
+  v-bind="$props.controls" id="configure-events">
+  <template v-slot:default="drawerScope">
+    <cly-form-step id="first-step">
+      <div class="cly-events-overview-drawer__subheading bu-mt-5 bu-pb-2">{{i18n('events.overview.add.item')}}</div>
+      <div class="bu-mb-4 bu-mt-2 bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center">
+        <el-select class="cly-events-overview-drawer__dropdown" v-model="selectedOverviewEvents" placeholder="Select event">
+          <el-option v-for="item in configureEventsList" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+        <el-select class="cly-events-overview-drawer__dropdown" v-model="selectProperty" placeholder="Select Property">
+          <el-option v-for="item in eventProperties" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+        <el-button @click="add" type="text">{{i18n('events.overview.add.to.list')}}</el-button>
+      </div>
+      <div v-if="selectedEvents.length>0" class="cly-events-overview-drawer__subheading bu-pt-4 bu-mb-2">{{i18n('events.overview.manage.items')}}</div>
+      <div class="bu-pt-2"
+        >
+        <draggable 
+          handle=".drag-icon" 
+          v-model="selectedEvents"
+          >
+          <div class="bu-is-flex bu-is-align-items-center cly-vue-draggable-item bu-mb-2" :key="idx" v-for="(item, idx) in selectedEvents">
+            <i class="bu-is-clickable cly-events-overview-drawer--dragicon drag-icon ion-navicon-round"></i>
+            <div class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center cly-events-overview-drawer__event-records" >
+              <div class="cly-events-overview-drawer__basis bu-is-flex-grow-2">{{ item.eventName }}</div>
+              <div class="cly-events-overview-drawer__basis bu-has-text-centered bu-is-flex-grow-2">{{ item.propertyName }}</div>
+              <div @click="onDelete(idx)" class="cly-events-overview-drawer__basis cly-icon-button--gray bu-has-text-right bu-is-flex-grow-1"><i class="ion-ios-close-empty bu-is-clickable"></i></div>
+            </div>
+          </div>
+        </draggable>
+      </div>
+    </cly-form-step>
+  </template>
+</cly-drawer>

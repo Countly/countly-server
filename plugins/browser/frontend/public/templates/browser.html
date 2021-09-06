@@ -7,12 +7,12 @@
             </span>
         </template>
 		<template v-slot:header-right>
-			<cly-more-options @command="handleBrowserCommand($event)" size="small">
-			 	<el-dropdown-item command="redirect-drill">
-				  <span class="ion-person"></span>
-				  <span class="bu-ml-1">{{i18n('browser.drill-data')}}</span>
+			<cly-more-options v-if="topDropdown" size="small">
+				<el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+				  <span :class="item.icon"></span>
+				  <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
 				</el-dropdown-item>
-			</cly-more-options>
+			  </cly-more-options>
 		  </template>
     </cly-header>
     <cly-main>

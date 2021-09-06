@@ -108,7 +108,7 @@
                           '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\n' +
                       '</div>\n' +
                       '<div class="buttons">\n' +
-                          '<cly-button :label="(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
+                          '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
                          '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>\n' +
                       '</div>\n' +
                     '</slot>\n' +

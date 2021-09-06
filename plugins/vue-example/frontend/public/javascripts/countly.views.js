@@ -148,7 +148,17 @@
                 selectWModel: 1,
                 selectWItems: manyItems,
                 selectDWModel: null,
-                selectDWItems: manyItems
+                selectDWItems: manyItems,
+                elCities: ['New York', 'Washington', 'London'],
+                elInput: 'Hello Element UI!',
+                elSelectValue: "",
+                elSelectItems: [1, 2, 3, 4, 5],
+                elSelectMultiValue: [],
+                elSwitchValue: true,
+                elCheckboxValue: true,
+                elRadioValue: '1',
+                elRadioGroup: 'New York',
+                elCheckboxGroup: ['New York', 'London']
             };
         },
         methods: {
