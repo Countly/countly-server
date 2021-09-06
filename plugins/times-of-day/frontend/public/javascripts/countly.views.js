@@ -40,7 +40,6 @@ var TimesOfDayView = countlyVue.views.create({
                     }
                 },
                 xAxis: {
-                    type: 'category',
                     data: countlyTimesOfDay.service.HOURS,
                     splitLine: {
                         show: true

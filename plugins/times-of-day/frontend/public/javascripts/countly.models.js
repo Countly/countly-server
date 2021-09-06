@@ -69,7 +69,6 @@
             return maxValue;
         },
         mapTimesOfDayDtoToModel: function(dto) {
-            this.findMaxSeriesValue(dto);
             return {
                 rows: this.mapRows(dto),
                 series: this.mapSeries(dto),
