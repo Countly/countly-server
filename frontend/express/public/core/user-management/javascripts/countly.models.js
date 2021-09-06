@@ -1,4 +1,4 @@
-/* global countlyCommon, $ */
+/* global countlyCommon, countlyGlobal, $ */
 
 (function(countlyUserManagement) {
     var _users = [],
@@ -28,6 +28,7 @@
             "_id": null,
             "full_name": null,
             "username": null,
+            "password": null,
             "email": null,
             "permission": { c: {}, r: {}, u: {}, d: {}, _: { u: [[]], a: [] } },
             "global_admin": false,
@@ -133,14 +134,14 @@
 
     countlyUserManagement.fetchFeatures = function() {
         return $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r + '/users/permissions',
-            dataType: "json",
-            success: function(json) {
-                _features = json;
+            type: 'GET',
+            url: countlyCommon.API_URL + "/o/users/permissions",
+            data: {
+                api_key: countlyGlobal.member.api_key,
+                app_id: countlyGlobal.defaultApp._id
             },
-            error: function(/*xhr, status, error*/) {
-                // TODO: handle error
+            success: function(res) {
+                _features = res;
             }
         });
     };
