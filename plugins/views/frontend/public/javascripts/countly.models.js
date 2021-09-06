@@ -35,7 +35,6 @@
                 "action": "getTotals"
             };
 
-
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
@@ -107,7 +106,7 @@
         onReady: function(context, rows) {
             for (var k = 0; k < rows.length; k++) {
                 rows[k].display = rows[k].display || rows[k].view;
-                rows[k].loadedDisplay = rows[k].display;
+                rows[k].editedDisplay = rows[k].display;
             }
             return rows;
         }
@@ -140,6 +139,11 @@
         },
         onReady: function(context, rows) {
             var selected = context.rootState.countlyViews.selectedViews || [];
+            var addSelected = 0;
+            var addedSelected = [];
+            if (selected.length === 0 && (context && context.state && context.state.params && context.state.params.page && context.state.params.page === 1)) { //if first page and nothing selected
+                addSelected = 5;
+            }
             for (var k = 0; k < rows.length; k++) {
                 rows[k].view = rows[k].display || rows[k].view || rows[k]._id;
 
@@ -187,12 +191,24 @@
                 rows[k].actionLink = url + link;
                 //'<a href=' + url + link + ' class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">' + CV.i18n("views.table.view"),+ '</a>';
                 //FOR ACTION MAPS END
+                if (addSelected) {
+                    rows[k].selected = true;
+                    addedSelected.push(rows[k]._id);
+                    addSelected--;
+                    selected.push(rows[k]._id);
+                }
                 if (selected.indexOf(rows[k]._id) > -1) {
                     rows[k].selected = true;
                 }
                 else {
                     rows[k].selected = false;
                 }
+            }
+            if (addedSelected.length > 0) {
+                var persistData = {};
+                persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = addedSelected;
+                countlyCommon.setPersistentSettings(persistData);
+                context.dispatch('onSetSelectedViews', addedSelected);
             }
             return rows;
         }

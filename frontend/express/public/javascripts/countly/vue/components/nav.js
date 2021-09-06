@@ -77,6 +77,13 @@
                 if (tab.length) {
                     return tab[0].component;
                 }
+                else if (this.tabs.length) {
+                    this.$emit("input", this.tabs[0].name);
+                    if (this.tabs[0].route) {
+                        Backbone.history.noHistory(this.tabs[0].route);
+                    }
+                    return this.tabs[0].component;
+                }
 
                 return;
             },
