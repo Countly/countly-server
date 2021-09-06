@@ -31,15 +31,14 @@
                     this.isDeleteButtonDisabled = true;
                 }
             },
-            displayNameChanged: function() {
-                var good = true;
+            displayNameChanged: function(value, scope, rowscope) {
                 var rows = this.$refs.editViewsTable.sourceRows;
                 for (var k = 0; k < rows.length; k++) {
-                    if (rows[k].loadedDisplay !== rows[k].display) {
-                        good = false;
+                    if (rowscope.row._id === rows[k]._id) {
+                        rows[k].editedDisplay = value; //have to change stored value
+                        scope.patch(rowscope.row, {display: value});
                     }
                 }
-                this.isUpdateButtonDisabled = good;
             },
             deleteManyViews: function() {
                 if (this.selectedViews.length > 0) {
@@ -81,12 +80,12 @@
                 var changes = [];
                 var rows = this.$refs.editViewsTable.sourceRows;
                 for (var k = 0; k < rows.length; k++) {
-                    if (rows[k].loadedDisplay !== rows[k].display) {
-                        if (rows[k].display === rows[k].view) {
+                    if (rows[k].editedDisplay !== rows[k].display) {
+                        if (rows[k].editedDisplay === rows[k].view) {
                             changes.push({"key": rows[k]._id, "value": ""});
                         }
                         else {
-                            changes.push({"key": rows[k]._id, "value": rows[k].display});
+                            changes.push({"key": rows[k]._id, "value": rows[k].editedDisplay});
                         }
                     }
                 }
@@ -112,6 +111,71 @@
 
             var cards = this.calculateTotalCards();
             var series = {"series": []};
+            var dynamicCols = [{
+                value: "u",
+                width: "140",
+                label: CV.i18n('common.table.total-users'),
+                default: true
+            },
+            {
+                value: "n",
+                width: "130",
+                label: CV.i18n('common.table.new-users'),
+                default: true
+            },
+            {
+                value: "t",
+                width: "130",
+                label: CV.i18n('views.total-visits'),
+                default: true
+            },
+            {
+                value: "s",
+                width: "130",
+                label: CV.i18n('views.starts'),
+                default: true
+            },
+            {
+                value: "e",
+                width: "130",
+                label: CV.i18n('views.exits'),
+                default: true
+            },
+            {
+                value: "d",
+                width: "130",
+                label: CV.i18n('views.avg-duration'),
+                default: true
+            },
+            {
+                value: "b",
+                width: "130",
+                label: CV.i18n('views.bounces'),
+                default: true
+            },
+            {
+                value: "br",
+                label: CV.i18n('views.br'),
+                width: "140",
+                default: true
+            }];
+
+            if (showScrollingCol) {
+                dynamicCols.push({
+                    value: "scr",
+                    label: CV.i18n('views.scrolling-avg'),
+                    default: true,
+                    width: "130"
+                });
+            }
+
+            dynamicCols.push({
+                value: "uvc",
+                label: CV.i18n('views.uvc'),
+                width: "180",
+                default: true
+            });
+
             return {
                 description: CV.i18n('views.description'),
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyViews", "viewsMainTable"),
@@ -122,6 +186,7 @@
                 lineOptions: series,
                 totalViewCountWarning: "",
                 showViewCountWarning: false,
+                tableDynamicCols: dynamicCols,
                 showActionMapColumn: showActionMapColumn, //for action map
                 domains: [] //for action map
             };
@@ -200,7 +265,6 @@
                 });
             },
             handleSelectionChange: function(selectedRows) {
-
                 var selected = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
                 var map = {};
                 for (var kz = 0; kz < selected.length; kz++) {
@@ -263,14 +327,14 @@
                     {
                         "name": CV.i18n('views.total_page_views.title'),
                         "description": CV.i18n('views.total_page_views.desc'),
-                        "value": totals.t,
+                        "value": countlyCommon.formatNumber(totals.t),
                         "percent": 0,
                         isPercentage: false
                     },
                     {
                         "name": CV.i18n('views.uvc'),
                         "description": CV.i18n('views.unique_page_views.desc'),
-                        "value": totals.uvc,
+                        "value": countlyCommon.formatNumber(totals.uvc),
                         "percent": 0,
                         isPercentage: false
                     },

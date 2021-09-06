@@ -46,14 +46,17 @@ $--color-primary-light-9: mix($--color-white, $--color-primary, 90%) !default; /
 $--color-success: map.get(c.$colors, "success");
 /// color|1|Functional Color|1
 $--color-warning: map.get(c.$colors, "warning");
+$--color-warning-fill: map.get(c.$colors, "yellow-10");
 /// color|1|Functional Color|1
 $--color-danger: map.get(c.$colors, "danger");
+$--color-danger-fill: map.get(c.$colors, "red-10");
 /// color|1|Functional Color|1
 $--color-info: map.get(c.$colors, "info");
 /// color|1|Functional Color|1
 $--color-action-blue: map.get(c.$colors, "action-blue");
 $--color-blue-100: map.get(c.$colors, "blue-100");
 $--color-sky-blue-100: map.get(c.$colors, "sky-blue-100");
+$--color-light-blue-100: map.get(c.$colors, "light-blue-100");
 
 $--color-success-light: mix($--color-white, $--color-success, 80%) !default;
 $--color-warning-light: mix($--color-white, $--color-warning, 80%) !default;
@@ -80,7 +83,7 @@ $--border-color-light: c.$border-color-light;
 $--border-color-lighter: c.$border-color-lighter;
 /// color|1|Border Color|3
 $--border-color-extra-light: c.$border-color-extra-light;
-$--border-color-light-blue: map.get(c.$colors, "sky-blue-10");
+$--border-color-light-blue: map.get(c.$colors, "light-blue-100");
 
 $--color-text-custom-1-active: map.get(c.$colors, "text-custom-1-active");
 $--color-text-custom-1-passive: map.get(c.$colors, "text-custom-1-passive");
@@ -98,7 +101,7 @@ $--link-hover-color: $--color-primary !default;
 -------------------------- */
 $--border-width-base: 1px !default;
 $--border-style-base: solid !default;
-$--border-color-hover: $--color-text-placeholder !default;
+$--border-color-hover: map.get(c.$colors, "cool-gray-50");
 $--border-base: $--border-width-base $--border-style-base $--border-color-base !default;
 /// borderRadius|1|Radius|0
 $--border-radius-base: 4px !default;
@@ -133,6 +136,8 @@ $--font-size-large: t.$text-xl-size !default;
 $--font-size-medium: t.$text-lg-size !default;
 /// fontSize|1|Font Size|0
 $--font-size-base: t.$text-md-size !default;
+/// fontSize|1|Font Size|0
+$--font-size-small-medium: t.$text-smd-size !default;
 /// fontSize|1|Font Size|0
 $--font-size-small: t.$text-sm-size !default;
 /// fontSize|1|Font Size|0
@@ -170,7 +175,7 @@ $--icon-color-base: $--color-info !default;
 /* Checkbox
 -------------------------- */
 /// fontSize||Font|1
-$--checkbox-font-size: 14px !default;
+$--checkbox-font-size: t.$text-md-size;
 /// fontWeight||Font|1
 $--checkbox-font-weight: t.$font-weight-primary !default;
 /// color||Color|0
@@ -225,9 +230,9 @@ $--checkbox-bordered-mini-input-width: 12px !default;
 $--checkbox-bordered-mini-height: 28px !default;
 
 /// color||Color|0
-$--checkbox-button-checked-background-color: $--border-color-light-blue !default;
+$--checkbox-button-checked-background-color: $--color-blue-100;
 /// color||Color|0
-$--checkbox-button-checked-font-color: $--color-blue-100 !default;
+$--checkbox-button-checked-font-color: $--color-white !default;
 /// color||Color|0
 $--checkbox-button-checked-border-color: $--color-blue-100 !default;
 
@@ -291,9 +296,9 @@ $--radio-bordered-mini-height: 28px !default;
 /// fontSize||Font|1
 $--radio-button-font-size: t.$text-button-size !default;
 /// color||Color|0
-$--radio-button-checked-background-color: $--border-color-light-blue !default;
+$--radio-button-checked-background-color: $--color-blue-100 !default;
 /// color||Color|0
-$--radio-button-checked-font-color: $--color-blue-100 !default;
+$--radio-button-checked-font-color: $--color-white !default;
 /// color||Color|0
 $--radio-button-checked-border-color: $--color-blue-100 !default;
 $--radio-button-disabled-checked-fill: $--border-color-extra-light !default;
@@ -307,20 +312,20 @@ $--select-font-size: $--font-size-base !default;
 $--select-close-hover-color: $--color-text-secondary !default;
 
 $--select-input-color: $--color-text-placeholder !default;
-$--select-multiple-input-color: #666 !default;
+$--select-multiple-input-color: $--color-text-regular;
 /// color||Color|0
-$--select-input-focus-border-color: $--color-primary !default;
+$--select-input-focus-border-color: $--color-blue-100;
 /// fontSize||Font|1
-$--select-input-font-size: 14px !default;
+$--select-input-font-size: t.$text-md-size;
 
 $--select-option-color: $--color-text-regular !default;
 $--select-option-disabled-color: $--color-text-placeholder !default;
 $--select-option-disabled-background: $--color-white !default;
 /// height||Other|4
 $--select-option-height: 34px !default;
-$--select-option-hover-background: $--background-color-base !default;
+$--select-option-hover-background: map.get(c.$colors, "warm-gray-20") !default;
 /// color||Color|0
-$--select-option-selected-font-color: $--color-primary !default;
+$--select-option-selected-font-color: $--color-white !default;
 $--select-option-selected-hover: $--background-color-base !default;
 
 $--select-group-color: $--color-info !default;
@@ -332,9 +337,9 @@ $--select-dropdown-shadow: $--box-shadow-light !default;
 $--select-dropdown-empty-color: #999 !default;
 /// height||Other|4
 $--select-dropdown-max-height: 274px !default;
-$--select-dropdown-padding: 6px 0 !default;
+$--select-dropdown-padding: 0px 0 !default;
 $--select-dropdown-empty-padding: 10px 0 !default;
-$--select-dropdown-border: solid 1px $--border-color-light !default;
+$--select-dropdown-border: solid 1px map.get(c.$colors, "cool-gray-40") !default;
 
 /* Alert
 -------------------------- */
@@ -457,7 +462,7 @@ $--input-border-color: $--border-color-base !default;
 $--input-border-radius: $--border-radius-base !default;
 $--input-border-color-hover: $--border-color-hover !default;
 /// color||Color|0
-$--input-background-color: $--color-white !default;
+$--input-background-color: map.get(c.$colors, "cool-gray-05") !default;
 $--input-fill-disabled: $--disabled-fill-base !default;
 $--input-color-disabled: $--font-color-disabled-base !default;
 /// color||Color|0
@@ -472,21 +477,21 @@ $--input-clear-hover-color: $--color-text-secondary !default;
 $--input-focus-border: map.get(c.$colors, "blue-100") !default;
 $--input-focus-fill: $--color-white !default;
 
-$--input-disabled-fill: $--disabled-fill-base !default;
-$--input-disabled-border: $--disabled-border-base !default;
-$--input-disabled-color: $--disabled-color-base !default;
+$--input-disabled-fill: map.get(c.$colors, "warm-gray-20") !default;
+$--input-disabled-border: map.get(c.$colors, "cool-gray-30") !default;
+$--input-disabled-color: map.get(c.$colors, "warm-gray-40") !default;
 $--input-disabled-placeholder-color: $--color-text-placeholder !default;
 
 /// fontSize||Font|1
-$--input-medium-font-size: 14px !default;
+$--input-medium-font-size: t.$text-md-size;
 /// height||Other|4
 $--input-medium-height: 40px !default;
 /// fontSize||Font|1
-$--input-small-font-size: 13px !default;
+$--input-small-font-size: t.$text-md-size;
 /// height||Other|4
 $--input-small-height: 32px !default;
 /// fontSize||Font|1
-$--input-mini-font-size: 12px !default;
+$--input-mini-font-size: t.$text-md-size;
 /// height||Other|4
 $--input-mini-height: 28px !default;
 
@@ -533,66 +538,84 @@ $--tab-vertical-header-count-fill: $--color-text-secondary !default;
 /* Button
 -------------------------- */
 /// fontSize||Font|1
-$--button-font-size: $--font-size-base !default;
+$--button-font-size: t.$text-md-size !default;
 /// fontWeight||Font|1
-$--button-font-weight: t.$font-weight-primary !default;
+$--button-font-weight: t.$font-weight-text !default;
 /// borderRadius||Border|2
 $--button-border-radius: $--border-radius-base !default;
 /// padding||Spacing|3
-$--button-padding-vertical: 12px !default;
+$--button-padding-vertical: 8px !default;
 /// padding||Spacing|3
-$--button-padding-horizontal: 20px !default;
+$--button-padding-horizontal: 12px !default;
 
 /// fontSize||Font|1
-$--button-medium-font-size: $--font-size-base !default;
+$--button-medium-font-size: t.$text-md-size !default;
 /// borderRadius||Border|2
 $--button-medium-border-radius: $--border-radius-base !default;
 /// padding||Spacing|3
-$--button-medium-padding-vertical: 10px !default;
+$--button-medium-padding-vertical: 12px !default;
 /// padding||Spacing|3
-$--button-medium-padding-horizontal: 20px !default;
+$--button-medium-padding-horizontal: 12px !default;
 
 /// fontSize||Font|1
-$--button-small-font-size: 12px !default;
+$--button-small-font-size: t.$text-md-size !default;
 $--button-small-border-radius: #{$--border-radius-base} !default;
 /// padding||Spacing|3
-$--button-small-padding-vertical: 9px !default;
+$--button-small-padding-vertical: 8px !default;
 /// padding||Spacing|3
-$--button-small-padding-horizontal: 15px !default;
+$--button-small-padding-horizontal: 12px !default;
 /// fontSize||Font|1
-$--button-mini-font-size: 12px !default;
+$--button-mini-font-size: t.$text-md-size !default;
 $--button-mini-border-radius: #{$--border-radius-base} !default;
 /// padding||Spacing|3
-$--button-mini-padding-vertical: 7px !default;
+$--button-mini-padding-vertical: 6px !default;
 /// padding||Spacing|3
-$--button-mini-padding-horizontal: 15px !default;
+$--button-mini-padding-horizontal: 12px !default;
 
 /// color||Color|0
-$--button-default-font-color: $--color-text-regular !default;
+$--button-default-font-color: map.get(c.$colors, "cool-gray-100") !default;
 /// color||Color|0
 $--button-default-background-color: $--color-white !default;
 /// color||Color|0
 $--button-default-border-color: map.get(c.$colors, "cool-gray-20") !default;
 
 /// color||Color|0
-$--button-disabled-font-color: $--color-text-placeholder !default;
+$--button-disabled-font-color: map.get(c.$colors, "cool-gray-40") !default;
 /// color||Color|0
-$--button-disabled-background-color: $--color-white !default;
+$--button-disabled-background-color: map.get(c.$colors, "warm-gray-20") !default;
 /// color||Color|0
-$--button-disabled-border-color: $--border-color-lighter !default;
+$--button-disabled-border-color: map.get(c.$colors, "cool-gray-20") !default;
 
 /// color||Color|0
-$--button-primary-border-color: $--color-primary !default;
+$--button-primary-border-color: map.get(c.$colors, "green-80") !default;
 /// color||Color|0
 $--button-primary-font-color: $--color-white !default;
 /// color||Color|0
-$--button-primary-background-color: $--color-primary !default;
+$--button-primary-background-color: map.get(c.$colors, "green-80") !default;
 /// color||Color|0
-$--button-success-border-color: $--color-success !default;
+$--button-primary-hover-color: map.get(c.$colors, "green-100");
+/// color||Color|0
+$--button-secondary-border-color: map.get(c.$colors, "warm-gray-20");
+/// color||Color|0
+$--button-secondary-font-color: map.get(c.$colors, "cool-gray-100");
+/// color||Color|0
+$--button-secondary-background-color: map.get(c.$colors, "warm-gray-20");
+/// color||Color|0
+$--button-secondary-hover-color: map.get(c.$colors, "warm-gray-30");
+/// color||Color|0
+$--button-text-border-color: transparent;
+/// color||Color|0
+$--button-text-font-color: map.get(c.$colors, "cool-gray-100");
+/// color||Color|0
+$--button-text-background-color: transparent;
+/// color||Color|0
+$--button-success-border-color: map.get(c.$colors, "green-80") !default;
 /// color||Color|0
 $--button-success-font-color: $--color-white !default;
 /// color||Color|0
-$--button-success-background-color: $--color-success !default;
+$--button-success-background-color: map.get(c.$colors, "green-80") !default;
+/// color||Color|0
+$--button-success-hover-color: map.get(c.$colors, "green-100");
 /// color||Color|0
 $--button-warning-border-color: $--color-warning !default;
 /// color||Color|0
@@ -612,7 +635,7 @@ $--button-info-font-color: $--color-white !default;
 /// color||Color|0
 $--button-info-background-color: $--color-info !default;
 
-$--button-hover-tint-percent: 20% !default;
+$--button-hover-tint-percent: 10% !default;
 $--button-active-shade-percent: 10% !default;
 
 
@@ -624,7 +647,7 @@ $--cascader-height: 200px !default;
 -------------------------- */
 /// color||Color|0
 $--switch-on-color: $--border-color-light-blue !default;
-$--switch-on-inset-color: map.get(c.$colors, "sky-blue-50");
+$--switch-on-inset-color: map.get(c.$colors, "shadow-blue-100");
 /// color||Color|0
 $--switch-off-color: map.get(c.$colors, "cool-gray-20") !default;
 $--switch-on-circle-color: map.get(c.$colors, "blue-100");
@@ -648,7 +671,7 @@ $--dialog-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !default;
 /// fontSize||Font|1
 $--dialog-title-font-size: $--font-size-large !default;
 /// fontSize||Font|1
-$--dialog-content-font-size: 14px !default;
+$--dialog-content-font-size: t.$text-md-size;
 /// fontLineHeight||LineHeight|2
 $--dialog-font-line-height: $--font-line-height-primary !default;
 /// padding||Spacing|3
@@ -981,7 +1004,7 @@ $--avatar-font-color: #fff !default;
 /// color||Color|0
 $--avatar-background-color: #C0C4CC !default;
 /// fontSize||Font Size|1
-$--avatar-text-font-size: 14px !default;
+$--avatar-text-font-size: t.$text-md-size;
 /// fontSize||Font Size|1
 $--avatar-icon-font-size: 18px !default;
 /// borderRadius||Border|2

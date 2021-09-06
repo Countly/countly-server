@@ -704,7 +704,7 @@
                         </div>\
                         <el-button @click="onZoomTrigger" v-if="zoomStatus === \'reset\'"\
                             size="small"\
-                            icon="cly-icon cly-icon-zoom">\
+                            icon="cly-icon-btn cly-icon-zoom">\
                         </el-button>\
                         <el-button @click="onZoomCancel" v-if="zoomStatus === \'triggered\'" size="small">\
                             Cancel Zoom\

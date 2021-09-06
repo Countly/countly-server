@@ -22,7 +22,7 @@
         },
         computed: {
             iconClass: function() {
-                return (this.opened ? 'arrow-up is-reverse' : 'arrow-up');
+                return (this.opened ? 'cly-icon-arrow-up is-reverse' : 'cly-icon-arrow-up');
             },
             description: function() {
                 if (Array.isArray(this.selectedOptions)) {
@@ -56,7 +56,7 @@
                         v-model="description"\
                         :placeholder="placeholder">\
                         <template slot="suffix">\
-                            <i v-if="arrow" class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
+                            <i v-if="arrow" class="el-select__caret cly-icon-input" :class="[iconClass]"></i>\
                         </template>\
                     </component>'
     }));

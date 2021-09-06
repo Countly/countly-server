@@ -137,7 +137,6 @@
             };
         },
         beforeCreate: function() {
-            countlyCommon.setPeriod("30days");
             this.$store.dispatch('countlyCompareEvents/fetchAllEventsData');
         }
 

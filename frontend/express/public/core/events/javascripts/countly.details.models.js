@@ -399,9 +399,9 @@
                 };
             }
             return {
-                count: allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].count : CV.i18n("events.overview.count"),
-                sum: allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].sum : CV.i18n("events.overview.sum"),
-                dur: allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration")
+                count: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].count : CV.i18n("events.overview.count"),
+                sum: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].sum : CV.i18n("events.overview.sum"),
+                dur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration")
             };
 
         },
@@ -526,7 +526,7 @@
                 allEventsData: {},
                 allEventsGroupData: [],
                 selectedEventsData: {},
-                selectedDatePeriod: "30days",
+                selectedDatePeriod: countlyCommon.getPeriod(),
                 selectedEventName: undefined,
                 groupData: {},
                 currentActiveSegmentation: "segment",

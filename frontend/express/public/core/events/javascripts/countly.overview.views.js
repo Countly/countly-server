@@ -17,7 +17,7 @@
         },
         computed: {
             eventsTableRows: function() {
-                return this.$store.getters["countlyEventsOverview/detailEvents"];
+                return this.$store.getters["countlyEventsOverview/tableRows"];
             },
         },
         template: '#overview-tables-events'
@@ -220,6 +220,7 @@
                     return this.$store.getters["countlyEventsOverview/selectedDatePeriod"];
                 },
                 set: function(value) {
+                    countlyCommon.setPeriod(value);
                     this.$store.dispatch('countlyEventsOverview/fetchSelectedDatePeriod', value);
                     this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
                 }
@@ -237,9 +238,7 @@
             };
         },
         beforeCreate: function() {
-            this.$store.dispatch('countlyEventsOverview/fetchDetailEvents');
-            this.$store.dispatch('countlyEventsOverview/fetchTopEvents');
-            this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
+            this.$store.dispatch('countlyEventsOverview/fetchEventsOverview');
         }
     });
 
