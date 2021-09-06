@@ -17,9 +17,9 @@
                         tmpPropVals = _.pluck(data.chartData, prop);
 
                     if (tmpPropVals.length) {
-                        tableRow[prop] = _.reduce(tmpPropVals, function(memo, num) {
+                        tableRow[prop] = countlyCommon.formatNumber(_.reduce(tmpPropVals, function(memo, num) {
                             return memo + num;
-                        }, 0);
+                        }, 0));
                     }
                 }
 
