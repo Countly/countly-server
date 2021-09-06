@@ -44,7 +44,7 @@
 			<div v-if="hasSegments">
 			  <span class="cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.segmentation')}}</span>
 			  <el-select v-model="selectedSegment" class="cly-vue-events-all--margin">
-				<el-option v-for="item in availableSegments" :key="item" :value="item">
+				<el-option v-for="item in availableSegments" :key="item.value" :value="item.value" :label="item.label">
 				</el-option>
 			  </el-select>
 			</div>

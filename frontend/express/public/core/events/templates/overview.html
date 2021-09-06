@@ -12,8 +12,8 @@
 		  </template>
 		</cly-header>
 		<cly-main>
-		  <div>
-			<cly-date-picker class="bu-mb-4"  v-model="disabledDatePicker" type="daterange"  timestampFormat="ms" :disabled="true"></cly-date-picker>
+		  <div class="bu-mb-4">
+			<el-button disabled icon="el-icon-date">{{i18n('events.overview.last-30days')}}</el-button>
 		  </div>
 		  <cly-section>
 			<cly-metric-cards>
@@ -116,14 +116,13 @@
 </script>
   <script type="text/x-template" id="overview-tables-events">
 	<div>
-		<cly-datatable-n :rows="eventsTableRows.data" class="is-clickable" @row-click="onRowClick">
+		<cly-datatable-n :rows="eventsTableRows" class="is-clickable" @row-click="onRowClick">
 		  <template v-slot:header-left="selectScope">
 		  </template>
 		  <template v-slot="scope">
-			<el-table-column sortable="true" prop="event" :label="i18n('events.overview.event')">
+			<el-table-column sortable="true" prop="name" :label="i18n('events.overview.event')">
 			  <template v-slot="rowScope">
 				<div>
-				  <span :style="{'background-color': rowScope.row.bgColor}" class="nps-dot"></span>
 				  {{rowScope.row.name}}
 				</div>
 			  </template>

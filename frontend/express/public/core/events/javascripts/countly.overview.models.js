@@ -13,27 +13,29 @@
             eventsOverview.push(totalEvents);
             var epu = {};
             epu.name = CV.i18n("events.overview.events.per.user");
-            epu.value = Number((ob.totalCount / ob.totalUsersCount).toFixed(1));
-            res = countlyCommon.getPercentChange(countlyCommon.getShortNumber((ob.prevTotalCount / ob.prevUsersCount).toFixed(1)), countlyCommon.getShortNumber((ob.totalCount / ob.totalUsersCount).toFixed(1)));
+            epu.value = ob.totalCount === 0 && ob.totalUsersCount === 0 ? 0 : Number((ob.totalCount / ob.totalUsersCount).toFixed(1));
+            var prevEpu = ob.prevTotalCount === 0 && ob.prevUsersCount === 0 ? 0 : Number((ob.prevTotalCount / ob.prevUsersCount).toFixed(1));
+            res = countlyCommon.getPercentChange(prevEpu, epu.value);
             epu.change = res.percent;
             epu.trend = res.trend;
             eventsOverview.push(epu);
             var epr = {};
             epr.name = CV.i18n("events.overview.events.per.session");
-            epr.value = Number((ob.totalCount / ob.totalSessionCount).toFixed(1));
-            res = countlyCommon.getPercentChange(countlyCommon.getShortNumber((ob.prevTotalCount / ob.prevSessionCount).toFixed(1)), countlyCommon.getShortNumber((ob.totalCount / ob.totalSessionCount).toFixed(1)));
+            epr.value = ob.totalCount === 0 && ob.totalSessionCount === 0 ? 0 : Number((ob.totalCount / ob.totalSessionCount).toFixed(1));
+            var prevEpr = ob.prevTotalCount === 0 && ob.prevSessionCount === 0 ? 0 : Number((ob.prevTotalCount / ob.prevSessionCount).toFixed(1));
+            res = countlyCommon.getPercentChange(prevEpr, epr.value);
             epr.change = res.percent;
             epr.trend = res.trend;
             eventsOverview.push(epr);
             return eventsOverview;
         },
-        getTopEvents: function(ob) {
+        getTopEvents: function(ob, map) {
             var topEvents = [];
             if (ob.data && ob.data.length > 0) {
                 var data = ob.data;
                 for (var i = 0; i < ob.data.length; i++) {
                     var event = {};
-                    event.name = data[i].name;
+                    event.name = countlyEventsOverview.helpers.getEventLongName(data[i].name, map);
                     event.value = countlyCommon.getShortNumber((data[i].count));
                     event.change = data[i].change;
                     event.trend = data[i].trend;
@@ -198,8 +200,30 @@
             return obj;
         },
         getConfigureOverview: function(context) {
-            return context.state.monitorEvents.overview.slice();
-        }
+            return context.state.monitorEvents.overview ? context.state.monitorEvents.overview.slice() : [];
+        },
+        getTableRows: function(data, map) {
+            if (data && data.length > 0) {
+                return data.map(function(item) {
+                    return {
+                        "count": countlyCommon.formatNumber(item.count),
+                        "sum": countlyCommon.formatNumber(item.sum),
+                        "duration": countlyCommon.formatNumber(item.duration),
+                        "name": countlyEventsOverview.helpers.getEventLongName(item.name, map)
+                    };
+                });
+            }
+            return [];
+        },
+        getEventLongName: function(eventKey, eventMap) {
+            var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
+            if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
+                return eventMap[mapKey].name;
+            }
+            else {
+                return eventKey;
+            }
+        },
     };
 
     countlyEventsOverview.service = {
@@ -304,11 +328,12 @@
                 topEvents: [],
                 monitorEvents: {},
                 monitorEventsData: [],
-                selectedDatePeriod: "30days",
+                selectedDatePeriod: countlyCommon.getPeriod(),
                 configureEventsList: [],
                 overviewGroupData: [],
                 configureOverview: [],
                 eventMapping: {},
+                tableRows: [],
                 eventProperties: [{
                     "label": CV.i18n("events.overview.count"),
                     "value": "count"
@@ -326,21 +351,48 @@
         };
 
         var eventsOverviewActions = {
-            fetchDetailEvents: function(context) {
-                return countlyEventsOverview.service.fetchEvents()
+            fetchEventsOverview: function(context) {
+                return countlyEventsOverview.service.fetchMonitorEvents(context)
                     .then(function(res) {
                         if (res) {
-                            context.commit("setDetailEvents", res || {});
-                            context.commit("setEventOverview", countlyEventsOverview.helpers.getEventOverview(res) || []);
-                            return;
-                        }
-                    });
-            },
-            fetchTopEvents: function(context) {
-                return countlyEventsOverview.service.fetchTopEvents("count", 3)
-                    .then(function(res) {
-                        if (res) {
-                            return context.commit("setTopEvents", countlyEventsOverview.helpers.getTopEvents(res) || []);
+                            context.commit("setMonitorEvents", res || {});
+                            var events = [];
+                            if (res && res.overview) {
+                                context.commit("setConfigureOverview", res.overview.slice());
+                                for (var i = 0; i < res.overview.length; i++) {
+                                    events.push(res.overview[i].eventKey);
+                                }
+                            }
+                            countlyEventsOverview.service.fetchGroupData(context)
+                                .then(function(result) {
+                                    if (result) {
+                                        context.commit("setOverviewGroupData", result);
+                                        context.commit("setConfigureEventsList", countlyEventsOverview.helpers.getOverviewConfigureList(res, result));
+                                        context.commit("setEventMapping", countlyEventsOverview.helpers.getEventMapping(res, result));
+                                        countlyEventsOverview.service.fetchMonitorEventsData(events, context)
+                                            .then(function(response) {
+                                                if (response) {
+                                                    return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context) || []);
+                                                }
+                                            });
+                                    }
+                                });
+                            countlyEventsOverview.service.fetchTopEvents("count", 3)
+                                .then(function(resp) {
+                                    if (resp) {
+                                        return context.commit("setTopEvents", countlyEventsOverview.helpers.getTopEvents(resp, res.map) || []);
+
+                                    }
+                                });
+                            countlyEventsOverview.service.fetchEvents()
+                                .then(function(response) {
+                                    if (response) {
+                                        context.commit("setDetailEvents", response || {});
+                                        context.commit("setEventOverview", countlyEventsOverview.helpers.getEventOverview(response) || []);
+                                        context.commit("setTableRows", countlyEventsOverview.helpers.getTableRows(response.data, res.map) || []);
+                                        return;
+                                    }
+                                });
                         }
                     });
             },
@@ -396,6 +448,9 @@
         var eventsOverviewMutations = {
             setDetailEvents: function(state, value) {
                 state.detailEvents = value;
+            },
+            setTableRows: function(state, value) {
+                state.tableRows = value;
             },
             setEventOverview: function(state, value) {
                 state.eventsOverview = value;
@@ -461,6 +516,9 @@
             },
             eventMapping: function(_state) {
                 return _state.eventMapping;
+            },
+            tableRows: function(_state) {
+                return _state.tableRows;
             }
         };
         return countlyVue.vuex.Module("countlyEventsOverview", {

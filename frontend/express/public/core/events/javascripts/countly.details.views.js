@@ -114,6 +114,23 @@
                 return this.$store.getters["countlyAllEvents/hasSegments"];
             },
             availableSegments: function() {
+                var availableSegments = this.$store.getters["countlyAllEvents/availableSegments"];
+                if (availableSegments) {
+                    return availableSegments.map(function(item) {
+                        if (item === "segment") {
+                            return {
+                                "label": CV.i18n("events.all.any.segmentation"),
+                                "value": item
+                            };
+                        }
+                        else {
+                            return {
+                                "label": item,
+                                "value": item
+                            };
+                        }
+                    });
+                }
                 return this.$store.getters["countlyAllEvents/availableSegments"];
             },
             selectedEventName: function() {
@@ -165,7 +182,6 @@
             return {description: CV.i18n('events.all.title.new') };
         },
         beforeCreate: function() {
-            countlyCommon.setPeriod("30days");
             var currEvent = (this.$route.params && this.$route.params.eventKey) || localStorage.getItem("eventKey");
             if (currEvent) {
                 this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', currEvent);

@@ -263,7 +263,7 @@
                 allEventsGroupData: {},
                 allEventsList: [],
                 allEventsCompareData: {},
-                selectedDatePeriod: "30days",
+                selectedDatePeriod: countlyCommon.getPeriod(),
                 selectedEvents: [],
                 tableRows: [],
                 lineChartData: {},
