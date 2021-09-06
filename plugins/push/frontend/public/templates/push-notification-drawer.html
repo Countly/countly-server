@@ -3,6 +3,7 @@
     @submit="onSubmit"
     @close="onClose"
     @open="onOpen"
+    :set-step-callback-fn="onStepClick"
     :title="title"
     :saveButtonLabel="saveButtonLabel"
     v-bind="controls">

@@ -44,6 +44,44 @@
         IMAGE: 'image',
         VIDEO: 'video'
     });
+    var TargetingEnum = Object.freeze({
+        ALL: 'all',
+        SEGMENTED: "segmented"
+    });
+    var WhenToDetermineEnum = Object.freeze({
+        NOW: 'now',
+        BEFORE: "before"
+    });
+    var DeliveryEnum = Object.freeze({
+        NOW: 'now',
+        LATER: 'later',
+        DELAYED: 'delayed',
+    });
+    var TimeZoneEnum = Object.freeze({
+        SAME: 'same',
+        DEVICE: 'device'
+    });
+    var PastScheduleEnum = Object.freeze({
+        SKIP: 'skip',
+        NEXT_DAY: 'nextDay'
+    });
+    var MessageTypeEnum = Object.freeze({
+        SILENT: 'silent',
+        CONTENT: 'content'
+    });
+    var TriggerEnum = Object.freeze({
+        COHORT_ENTRY: 'cohortEntry',
+        COHORT_EXIT: 'cohortExit',
+        EVENT: 'event'
+    });
+    var AutomaticDeliveryDateEnum = Object.freeze({
+        EVENT_SERVER_DATE: 'eventServerDate',
+        EVENT_DEVICE_DATE: 'eventDeviceDate'
+    });
+    var AutomaticWhenConditionNotMetEnum = Object.freeze({
+        SEND_ANYWAY: 'sendAnyway',
+        CANCEL_ON_EXIT: 'cancelOnExit'
+    });
 
     var StatusFinderHelper = {
         STATUS_SHIFT_OPERATOR_ENUM: {
@@ -333,7 +371,48 @@
             },
         },
         outgoing: {
+            mapType: function(type) {
+                if (type === TypeEnum.AUTOMATIC) {
+                    return {tx: false, auto: true};
+                }
+                if (type === TypeEnum.TRANSACTIONAL) {
+                    return {tx: true, auto: false};
+                }
+                return {tx: false, auto: false};
+            },
+            mapPlatforms: function(model) {
+                return model.map(function(platform) {
+                    if (platform === PlatformEnum.IOS) {
+                        return 'i';
+                    }
+                    if (platform === PlatformEnum.ANDROID) {
+                        return 'a';
+                    }
+                    if (platform === PlatformEnum.ALL) {
+                        return ['i', 'a'];
+                    }
+                });
+            },
+            mapPushNotificationModelToBaseDto: function(pushNotificationModel, type) {
+                var typeDto = this.mapType(type);
+                var resultDto = {
+                    apps: [countlyCommon.ACTIVE_APP_ID],
+                    platforms: this.mapPlatforms(pushNotificationModel.platforms),
+                    cohorts: pushNotificationModel.cohorts,
+                    geos: pushNotificationModel.locations,
+                    delayed: pushNotificationModel.delivery === DeliveryEnum.LATER,
+                    expiration: 604800000,
+                    tx: typeDto.tx,
+                    auto: typeDto.auto,
+                    tz: pushNotificationModel.timezone === TimeZoneEnum.DEVICE,
+                    test: false,
+                };
 
+                if (pushNotificationModel.delivery === DeliveryEnum.LATER) {
+                    resultDto.date = pushNotificationModel.delivery.startDate;
+                }
+                return resultDto;
+            }
         }
     };
 
@@ -345,6 +424,15 @@
         LocalizationEnum: LocalizationEnum,
         UserEventEnum: UserEventEnum,
         MediaTypeEnum: MediaTypeEnum,
+        TargetingEnum: TargetingEnum,
+        WhenToDetermineEnum: WhenToDetermineEnum,
+        DeliveryEnum: DeliveryEnum,
+        TimeZoneEnum: TimeZoneEnum,
+        PastScheduleEnum: PastScheduleEnum,
+        MessageTypeEnum: MessageTypeEnum,
+        TriggerEnum: TriggerEnum,
+        AutomaticDeliveryDateEnum: AutomaticDeliveryDateEnum,
+        AutomaticWhenConditionNotMetEnum: AutomaticWhenConditionNotMetEnum,
         getLocalizationFilterOptions: function() {
             var self = this;
             return [
@@ -445,6 +533,26 @@
         fetchMediaMetadataWithDebounce: _.debounce(function(url, resolveCallback, rejectCallback) {
             this.fetchMediaMetadata(url).then(resolveCallback).catch(rejectCallback);
         }, DEBOUNCE_TIME_IN_MS),
+        prepare: function(pushNotificationModel) {
+            var result = countlyPushNotification.mapper.outgoing.mapPushNotificationModelToBaseDto(pushNotificationModel);
+            var data = {};
+            data.args = JSON.stringify(result);
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    method: 'POST',
+                    url: window.countlyCommon.API_URL + '/i/pushes/prepare?api_key=' + window.countlyGlobal.member.api_key,
+                    data: data,
+                    success: function(response) {
+                        console.log(response);
+                        resolve();
+                    },
+                    error: function(error) {
+                        console.log(error);
+                        reject(error);
+                    }
+                });
+            });
+        }
     };
 
     var getDetailsInitialState = function() {

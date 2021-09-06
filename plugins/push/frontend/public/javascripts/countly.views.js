@@ -36,47 +36,9 @@
     var automaticPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
     var transactionalPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
 
-    var TargetingEnum = {
-        ALL: 'all',
-        SEGMENTED: "segmented"
-    };
-    var WhenToDetermineEnum = {
-        NOW: 'now',
-        BEFORE: "before"
-    };
-    var DeliveryEnum = {
-        NOW: 'now',
-        LATER: 'later',
-        DELAYED: 'delayed',
-    };
-    var TimeZoneEnum = {
-        SAME: 'same',
-        DEVICE: 'device'
-    };
-    var PastScheduleEnum = {
-        SKIP: 'skip',
-        NEXT_DAY: 'nextDay'
-    };
-    var MessageTypeEnum = {
-        SILENT: 'silent',
-        CONTENT: 'content'
-    };
-    var TriggerEnum = {
-        COHORT_ENTRY: 'cohortEntry',
-        COHORT_EXIT: 'cohortExit',
-        EVENT: 'event'
-    };
-    var AutomaticDeliveryDateEnum = {
-        EVENT_SERVER_DATE: 'eventServerDate',
-        EVENT_DEVICE_DATE: 'eventDeviceDate'
-    };
-    var AutomaticWhenConditionNotMetEnum = {
-        SEND_ANYWAY: 'sendAnyway',
-        CANCEL_ON_EXIT: 'cancelOnExit'
-    };
     var messageTypeFilterOptions = [
-        {label: "Content message", value: MessageTypeEnum.CONTENT},
-        {label: "Silent message", value: MessageTypeEnum.SILENT}
+        {label: "Content message", value: countlyPushNotification.service.MessageTypeEnum.CONTENT},
+        {label: "Silent message", value: countlyPushNotification.service.MessageTypeEnum.SILENT}
     ];
 
     var InitialEditedPushNotification = {
@@ -84,8 +46,8 @@
         multipleLocalizations: false,
         name: "",
         platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
-        targeting: TargetingEnum.ALL,
-        whenToDetermine: WhenToDetermineEnum.BEFORE,
+        targeting: countlyPushNotification.service.TargetingEnum.ALL,
+        whenToDetermine: countlyPushNotification.service.BEFORE,
         message: {
             default: {
                 title: "",
@@ -121,26 +83,26 @@
                 mediaURL: ""
             }
         },
-        messageType: MessageTypeEnum.CONTENT,
+        messageType: countlyPushNotification.service.CONTENT,
         localizations: ["default"],
         cohorts: [],
         locations: [],
         delivery: {
-            type: DeliveryEnum.NOW,
+            type: countlyPushNotification.service.DeliveryEnum.NOW,
             startDate: moment().valueOf(),
             endDate: moment().valueOf(),
-            method: DeliveryEnum.NOW
+            method: countlyPushNotification.service.DeliveryEnum.NOW
         },
-        timeZone: TimeZoneEnum.SAME,
-        pastSchedule: PastScheduleEnum.SKIP,
+        timeZone: countlyPushNotification.service.TimeZoneEnum.SAME,
+        pastSchedule: countlyPushNotification.service.PastScheduleEnum.SKIP,
         expiration: {
             days: 7,
             hours: 0
         },
         automatic: {
-            trigger: TriggerEnum.COHORT_ENTRY,
-            deliveryDate: AutomaticDeliveryDateEnum.EVENT_SERVER_DATE,
-            whenNotMet: AutomaticWhenConditionNotMetEnum.SEND_ANYWAY,
+            trigger: countlyPushNotification.service.TriggerEnum.COHORT_ENTRY,
+            deliveryDate: countlyPushNotification.service.AutomaticDeliveryDateEnum.EVENT_SERVER_DATE,
+            whenNotMet: countlyPushNotification.service.AutomaticWhenConditionNotMetEnum.SEND_ANYWAY,
             events: [],
             capping: false,
             maximumMessagesPerUser: 1,
@@ -185,21 +147,23 @@
         data: function() {
             return {
                 loading: false,
+                //NOTE-LA:temporarily loading for drawer prepare method
+                isLoading: false,
                 localizationOptions: [{label: "Default", value: "default"}, {label: "English", value: "en"}, {label: "German", value: "ge"}],
                 userPropertiesOptions: [],
                 eventOptions: [],
                 saveButtonLabel: "Submit",
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
-                TargetingEnum: TargetingEnum,
+                TargetingEnum: countlyPushNotification.service.TargetingEnum,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
-                MessageTypeEnum: MessageTypeEnum,
-                WhenToDetermineEnum: WhenToDetermineEnum,
-                DeliveryEnum: DeliveryEnum,
-                TimeZoneEnum: TimeZoneEnum,
-                PastScheduleEnum: PastScheduleEnum,
-                TriggerEnum: TriggerEnum,
-                AutomaticDeliveryDateEnum: AutomaticDeliveryDateEnum,
-                AutomaticWhenConditionNotMetEnum: AutomaticWhenConditionNotMetEnum,
+                MessageTypeEnum: countlyPushNotification.service.MessageTypeEnum,
+                WhenToDetermineEnum: countlyPushNotification.service.WhenToDetermineEnum,
+                DeliveryEnum: countlyPushNotification.service.DeliveryEnum,
+                TimeZoneEnum: countlyPushNotification.service.TimeZoneEnum,
+                PastScheduleEnum: countlyPushNotification.service.PastScheduleEnum,
+                TriggerEnum: countlyPushNotification.service.TriggerEnum,
+                AutomaticDeliveryDateEnum: countlyPushNotification.service.AutomaticDeliveryDateEnum,
+                AutomaticWhenConditionNotMetEnum: countlyPushNotification.service.AutomaticWhenConditionNotMetEnum,
                 MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
                 messageTypeFilterOptions: messageTypeFilterOptions,
                 activeLocalization: "default",
@@ -290,7 +254,7 @@
                 return !this.pushNotificationUnderEdit.automatic.events.length && !this.pushNotificationUnderEdit.locations.length;
             },
             areLocationsRequired: function() {
-                if (this.pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT) {
+                if (this.pushNotificationUnderEdit.automatic.trigger === countlyPushNotification.service.TriggerEnum.EVENT) {
                     return this.areEventsAndLocationsRequired;
                 }
                 else {
@@ -324,6 +288,12 @@
             }
         },
         methods: {
+            //TODO-LA: callback function of drawer step has to return a Promise
+            // eslint-disable-next-line no-unused-vars
+            onStepClick: function(nextStep, currentStep, originator) {
+                this.prepareMessage();
+                return true;
+            },
             setUserPropertiesOptions: function(userPropertiesOptionsDto) {
                 this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
                     if (userPropertyOptionDto.id) {
@@ -340,7 +310,21 @@
                     });
                 }
             },
-            onSaveDraft: function() {},
+            prepareMessage: function() {
+                //TODO-LA: callback function of drawer step needs to be invoked only once, when user clicks for the first time
+                var self = this;
+                if (!this.isLoading) {
+                    countlyPushNotification.service.prepare(this.pushNotificationUnderEdit, this.type).then(function() {
+                        console.log('prepare has finished successfully');
+                    }).catch(function(error) {
+                        console.log('got error:', error);
+                    }).finally(function() {
+                        console.log('setting isLoading to false');
+                        self.isLoading = false;
+                    });
+                    this.isLoading = true;
+                }
+            },
             onSubmit: function() {},
             resetState: function() {
                 this.activeLocalization = "default",
@@ -602,9 +586,6 @@
                 return this.pushNotificationUnderEdit.platforms.filter(function(selectedPlatform) {
                     return selectedPlatform === platform;
                 }).length > 0;
-            },
-            prepareMessage: function() {
-                //TODO-LA: get message localizations and prepare notification meta-data
             },
         },
         mounted: function() {
@@ -871,7 +852,26 @@
                         name: "errors",
                         component: countlyPushNotificationComponent.DetailsErrorsTab
                     }
-                ]
+                ],
+                usersTargetedOptionsXAxis: {
+                    type: "category",
+                    data: [0],
+                    show: false
+                },
+                usersTargetedOptionsYAxis: {
+                    type: "value",
+                    max: 100,
+                    show: true,
+                    axisLabel: {
+                        formatter: function(value) {
+                            if (value === 0) {
+                                return "";
+                            }
+                            return value;
+                        }
+                    }
+                },
+                barWidth: 75,
             };
         },
         computed: {
@@ -881,25 +881,46 @@
             message: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.message;
             },
-            usersTargetedOptions: function() {
+            pushNotificationChartBars: function() {
                 return {
-                    xAxis: {
-                        type: "category",
-                        data: [0, 1, 2, 3],
-                        show: false
+                    targetedUsers: {
+                        xAxis: this.usersTargetedOptionsXAxis,
+                        yAxis: this.usersTargetedOptionsYAxis,
+                        barWidth: this.barWidth,
+                        series: [{data: [this.findTargetedUsers()], showBackground: true}],
+                        tooltip: {show: false}
                     },
-                    yAxis: {
-                        type: "value",
-                        max: 100,
+                    sentPushNotifications: {
+                        xAxis: this.usersTargetedOptionsXAxis,
+                        yAxis: this.usersTargetedOptionsYAxis,
+                        barWidth: this.barWidth,
+                        series: [{data: [this.findSentPushNotifications()], showBackground: true}],
+                        tooltip: {show: false},
                     },
-                    series: [
-                        {data: [ this.findTargetedUsers(), this.findSentPushNotifications(), this.findClickedPushNotifications(), this.findFailedPushNotifications()], showBackground: true, tooltip: {show: false}},
-                        {data: [0, 0, 0, 0], tooltip: {show: false}},
-                        {data: [0, 0, 0, 0], tooltip: {show: false}},
-                        {data: [0, 0, 0, 0], tooltip: {show: false}}
-                    ]
+                    clickedPushNotifications: {
+                        xAxis: this.usersTargetedOptionsXAxis,
+                        yAxis: this.usersTargetedOptionsYAxis,
+                        barWidth: this.barWidth,
+                        series: [{data: [this.findClickedPushNotifications()], showBackground: true}],
+                        tooltip: {show: false}
+                    },
+                    failedPushNotifications: {
+                        xAxis: this.usersTargetedOptionsXAxis,
+                        yAxis: this.usersTargetedOptionsYAxis,
+                        barWidth: this.barWidth,
+                        series: [{data: [this.findFailedPushNotifications()], showBackground: true}],
+                        tooltip: {show: false}
+                    },
                 };
             },
+            chartBarLegend: function() {
+                return {
+                    show: false
+                };
+            },
+            totalAppUsers: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.total;
+            }
         },
         methods: {
             // eslint-disable-next-line no-unused-vars
@@ -932,7 +953,7 @@
             },
             findTargetedUsers: function() {
                 //TODO-LA: find how to calculate the targeted users;
-                return CountlyHelpers.formatPercentage(100);
+                return CountlyHelpers.formatPercentage(1);
             },
             findSentPushNotifications: function() {
                 return CountlyHelpers.formatPercentage(this.pushNotification.sent / this.pushNotification.total);

@@ -264,18 +264,20 @@
 .cly-vue-push-notification-details-summary {
      
     &__header {
+        margin-top: 64px;
+
         .cly-vue-tabs {
             border-bottom: none !important;
-            background-color: #fcfcfc !important;
+            background-color: #f8f9fa !important;
         }
     
         .cly-vue-header {
-            background-color: #fcfcfc;
+            background-color: #f8f9fa;
         }
     }
 
     &__message-preview {
-        margin-top:145px;
+        margin-top:214px;
     }
 }
 
@@ -318,6 +320,38 @@
     align-items: center;
 }
 
+.cly-vue-push-notification-details-chart-bars {
+
+    $borderBackgroundColor:  #ECECEC;
+
+    border-top: 1px solid $borderBackgroundColor;
+    border-bottom: 1px solid $borderBackgroundColor;
+
+    &__item {
+        flex-basis: 25%;
+        position: relative;
+    }
+    &__border-right {
+        border-right:1px solid $borderBackgroundColor;
+    }
+    &__border-top {
+        border-top:1px solid $borderBackgroundColor;
+    }
+    &__item-legend {
+        position: absolute;
+        width:100%;
+        top:415px;
+        background:white;
+        border-bottom: 1px solid $borderBackgroundColor;
+        border-top:1px solid $borderBackgroundColor;
+    }
+    &__item-legend-percentage {
+        font-weight: 500;
+        font-size: 24px;
+        line-height: 32px;
+        color: #333C48;
+    }
+}
 
 .cly-vue-push-notification-drawer {
 
