@@ -1,4 +1,4 @@
-/* global Vue */
+/* global Vue, app, Promise */
 
 (function(countlyVue) {
 
@@ -146,9 +146,18 @@
                     }
                 };
                 if (this.setStepCallbackFn) {
-                    if (this.setStepCallbackFn(newIndex, self.currentStepIndex, originator)) {
-                        defaultAction();
-                    }
+                    // .resolve() handles non-Promise return values as well
+                    Promise.resolve(this.setStepCallbackFn(newIndex, self.currentStepIndex, originator))
+                        .then(function(value) {
+                            if (value) {
+                                defaultAction();
+                            }
+                        })
+                        .catch(function(err) {
+                            if (app && app.activeView && app.activeView.onError) {
+                                app.activeView.onError(err);
+                            }
+                        });
                 }
                 else {
                     defaultAction();
