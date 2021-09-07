@@ -711,7 +711,7 @@
             },
             skin: { default: "main", type: String},
             disabled: {type: Boolean, default: false},
-            direction: { default: "vertical", type: String}
+            radioDirection: { default: "vertical", type: String}
         },
         computed: {
             topClasses: function() {
@@ -728,39 +728,25 @@
                 return classes;
             },
             wrapperClasses: function() {
-                var direction = "vertical";
-                if (this.$attrs && this.$attrs.radioDirection) {
-                    direction = this.$attrs.radioDirection;
-                }
                 var classes = "radio-wrapper";
-                if (direction === "horizontal") {
+                if (this.radioDirection === "horizontal") {
                     classes = "radio-wrapper radio-wrapper-horizontal bu-columns bu-m-0";
                 }
                 return classes;
             },
             buttonClasses: function() {
-                var direction = "vertical";
-                if (this.$attrs && this.$attrs.radioDirection) {
-                    direction = this.$attrs.radioDirection;
-                }
 
                 var classes = "";
-
-                if (direction === "horizontal") {
+                if (this.radioDirection === "horizontal") {
                     classes = " bu-column bu-p-0";
                 }
                 return classes;
             },
             buttonStyles: function() {
-                var direction = "vertical";
-                if (this.$attrs && this.$attrs.radioDirection) {
-                    direction = this.$attrs.radioDirection;
-                }
 
                 var classes = "";
-
                 var itemCn = this.items.length;
-                if (direction === "horizontal") {
+                if (this.radioDirection === "horizontal") {
                     classes = "width: " + 100 / itemCn + "%;";
                 }
                 return classes;
