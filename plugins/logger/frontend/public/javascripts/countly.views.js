@@ -1,4 +1,4 @@
-/*global $, moment, countlyVue, app, countlyLogger */
+/*global $, moment, countlyVue, app, countlyLogger, CV */
 (function() {
     var isSecondFormat = (Math.round(parseFloat(this.timestamp)) + "").length === 10;
 
