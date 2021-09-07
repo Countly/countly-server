@@ -11,6 +11,8 @@ frontend/express/certificates
 frontend/express/public/javascripts/min
 frontend/express/public/localization/min
 frontend/express/public/stylesheets/*.min.css
+plugins/*/frontend/public/stylesheets/*.css
+plugins/*/frontend/public/stylesheets/*.css.map
 plugins/plugins.json
 frontend/express/public/sdk/
 **/.DS_Store
@@ -23,6 +25,7 @@ frontend/express/public/images/*/
 !frontend/express/public/images/pre-login/
 !frontend/express/public/images/screenshots
 !frontend/express/public/images/heatmap-demos/
+!frontend/express/public/images/icons/
 frontend/express/public/stylesheets/styles/manifest.css
 frontend/express/public/stylesheets/vue/clyvue.css
 frontend/express/public/stylesheets/styles/manifest.css.map

@@ -21,7 +21,7 @@
     "mocha": "^9.0.0",
     "nyc": "^15.0.0",
     "should": "13.2.3",
-    "supertest": "6.1.5"
+    "supertest": "6.1.6"
   },
   "scripts": {
     "test": "grunt --verbose"
@@ -78,6 +78,7 @@
     "nodemailer-sendmail-transport": "1.0.2",
     "nodemailer-smtp-pool": "2.8.3",
     "nodemailer-smtp-transport": "2.7.4",
+    "object-hash": "2.2.0",
     "offline-geocoder": "github:iartem/offline-geocoder",
     "properties-parser": "0.3.1",
     "puppeteer": "^5.5.0",

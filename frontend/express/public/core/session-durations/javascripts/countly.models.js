@@ -1,49 +1,44 @@
-/*global countlyVue, CV, countlyCommon, countlySession, CountlyHelpers, Promise*/
+/*global countlyVue,CV,countlySession,Promise*/
 (function(countlySessionDurations) {
 
     countlySessionDurations.service = {
-        mapSessionDurationsDtoToModel: function(dto, period) {
-            countlySession.setDb(dto);
-            countlyCommon.setPeriod(period);
-            var sessionData = countlySession.getRangeData("ds", "d-ranges", countlySession.explainDurationRange, countlySession.getDurationRange());
-            var sessionDurationsModel = {
-                series: [],
-                rows: []
-            };
-            var sessionDurationsSerieData = sessionData.chartData.map(function(chartDataItem) {
+
+        mapSessionDurationsSeries: function(dto) {
+            var sessionDurationsSerieData = dto.chartData.map(function(chartDataItem) {
                 return chartDataItem.t;
             });
-            sessionDurationsModel.series.push({data: sessionDurationsSerieData, label: CV.i18n("session-durations.title")});
-            sessionData.chartData.forEach(function(chartDataItem, index) {
-                sessionDurationsModel.rows[index] = {
+            return [{data: sessionDurationsSerieData, label: CV.i18n("session-durations.title")}];
+        },
+        mapSessionDurationsRows: function(dto) {
+            var rows = [];
+            dto.chartData.forEach(function(chartDataItem, index) {
+                rows[index] = {
                     duration: chartDataItem.ds,
                     numberOfSessions: chartDataItem.t,
                     percentage: chartDataItem.percentageNumber
                 };
             });
+            return rows;
+        },
+        mapSessionDurationsDtoToModel: function(dto) {
+            var sessionDurationsModel = {
+                series: [],
+                rows: []
+            };
+            sessionDurationsModel.series = this.mapSessionDurationsSeries(dto);
+            sessionDurationsModel.rows = this.mapSessionDurationsRows(dto);
             return sessionDurationsModel;
         },
-
-        fetchSessionDurations: function(period) {
+        fetchSessionDurations: function() {
             var self = this;
-            var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                method: 'users',
-            };
-            if (period) {
-                data.period = CountlyHelpers.getPeriodUrlQueryParameter(period);
-            }
             return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    type: "GET",
-                    url: countlyCommon.API_PARTS.data.r,
-                    data: data,
-                    dataType: "json",
-                }).then(function(response) {
-                    resolve(self.mapSessionDurationsDtoToModel(response, period));
-                }).catch(function(error) {
-                    reject(error);
-                });
+                countlySession.initialize()
+                    .then(function() {
+                        var sessionData = countlySession.getRangeData("ds", "d-ranges", countlySession.explainDurationRange, countlySession.getDurationRange());
+                        resolve(self.mapSessionDurationsDtoToModel(sessionData));
+                    }).catch(function(error) {
+                        reject(error);
+                    });
             });
         }
     };
@@ -56,36 +51,20 @@
                     rows: [],
                     series: []
                 },
-                selectedDatePeriod: "day",
-                sessionDurationsDatePeriods: [],
-                isLoading: false,
-                hasError: false,
-                error: null
             };
         };
 
         var sessionDurationsActions = {
-            fetchAll: function(context) {
-                context.dispatch('onFetchInit');
-                countlySessionDurations.service.fetchSessionDurations(context.state.selectedDatePeriod)
+            fetchAll: function(context, useLoader) {
+                context.dispatch('onFetchInit', {useLoader: useLoader});
+                countlySessionDurations.service.fetchSessionDurations()
                     .then(function(response) {
                         context.commit('setSessionDurations', response);
-                        context.dispatch('onFetchSuccess');
+                        context.dispatch('onFetchSuccess', {useLoader: useLoader});
                     }).catch(function(error) {
-                        context.dispatch('onFetchError', error);
+                        context.dispatch('onFetchError', {error: error, useLoader: useLoader});
                     });
-            },
-            onSetSelectedDatePeriod: function(context, period) {
-                context.commit('setSelectedDatePeriod', period);
-            },
-            onFetchInit: function(context) {
-                context.commit('setFetchInit');
-            },
-            onFetchError: function(context, error) {
-                context.commit('setFetchError', error);
-            },
-            onFetchSuccess: function(context) {
-                context.commit('setFetchSuccess');
+
             },
         };
 
@@ -93,30 +72,13 @@
             setSessionDurations: function(state, value) {
                 state.sessionDurations = value;
             },
-            setSelectedDatePeriod: function(state, value) {
-                state.selectedDatePeriod = value;
-            },
-            setFetchInit: function(state) {
-                state.isLoading = true;
-                state.hasError = false;
-                state.error = null;
-            },
-            setFetchError: function(state, error) {
-                state.isLoading = false;
-                state.hasError = true;
-                state.error = error;
-            },
-            setFetchSuccess: function(state) {
-                state.isLoading = false;
-                state.hasError = false;
-                state.error = null;
-            }
         };
 
         return countlyVue.vuex.Module("countlySessionDurations", {
             state: getInitialState,
             actions: sessionDurationsActions,
-            mutations: sessionDurationsMutations
+            mutations: sessionDurationsMutations,
+            submodules: [countlyVue.vuex.FetchMixin()]
         });
     };
 }(window.countlySessionDurations = window.countlySessionDurations || {}));

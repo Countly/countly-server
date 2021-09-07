@@ -1,16 +1,15 @@
 <div v-bind:class="[componentId]">
     <cly-header>
         <template v-slot:header-left>
-            <h2> {{i18n('session-overview.title')}} 
-            </h2>
-            <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="i18n('session-overview.description')">
-            </span>
+            <h2> {{i18n('session-overview.title')}} </h2>
+            <cly-tooltip-icon :tooltip="i18n('session-overview.description')" icon="ion ion-help-circled" class="bu-ml-4"> </cly-tooltip-icon>
+        </span>
         </template>
     </cly-header>
     <cly-main>
-        <cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms" class="session-overview-date-picker-container"></cly-date-picker>
+        <cly-date-picker-g class="session-overview-date-picker-container"></cly-date-picker-g>
         <cly-section>
-            <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading"></cly-chart-line>
+            <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading" :legend="legend"></cly-chart-line>
         </cly-section>
         <cly-section>
             <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" v-loading="isLoading">

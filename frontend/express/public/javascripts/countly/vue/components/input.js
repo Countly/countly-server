@@ -210,7 +210,7 @@
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <div\
                                 tabindex="0"\
-                                class="text-medium"\
+                                class="text-medium font-weight-bold"\
                                 :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group\': option.group}"\
                                 :key="option.value"\
                                 @focus="!option.group && handleItemHover(option)"\
@@ -221,10 +221,10 @@
                                 <div class="cly-vue-listbox__item-content">\
                                     <div class="bu-level">\
                                         <div class="bu-level-left">\
-                                            <div class="cly-vue-listbox__item-prefix">\
+                                            <div v-if="$slots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-2">\
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
-                                            <div class="cly-vue-listbox__item-label bu-ml-2">{{option.label}}</div>\
+                                            <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
                                         </div>\
                                         <div class="bu-level-right">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
@@ -355,7 +355,7 @@
                                 <draggable \
                                     handle=".drag-handler"\
                                     v-model="sortedOptions"\
-                                    :options="{disabled: !sortable}">\
+                                    :disabled="!sortable">\
                                 <div\
                                     class="text-medium cly-vue-listbox__item"\
                                     :key="option.value"\
@@ -503,6 +503,7 @@
             width: { type: [Number, Object], default: 400},
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
+            showSelectedCount: {type: Boolean, default: false},
             singleOptionSettings: {
                 type: Object,
                 default: function() {
@@ -564,6 +565,14 @@
                     else {
                         this.uncommittedValue = newVal;
                     }
+                }
+            },
+            selectedCountText: function() {
+                if (this.uncommittedValue) {
+                    return CV.i18n('export.export-columns-selected-count', this.uncommittedValue.length, (this.options ? this.options.length : 0));
+                }
+                else {
+                    return CV.i18n('export.export-columns-selected-count', (this.value ? this.value.length : 0), (this.options ? this.options.length : 0));
                 }
             }
         },
@@ -710,7 +719,8 @@
                 }
             },
             skin: { default: "main", type: String},
-            disabled: {type: Boolean, default: false}
+            disabled: {type: Boolean, default: false},
+            radioDirection: { default: "vertical", type: String}
         },
         computed: {
             topClasses: function() {
@@ -725,6 +735,30 @@
                     classes.push("disabled");
                 }
                 return classes;
+            },
+            wrapperClasses: function() {
+                var classes = "radio-wrapper";
+                if (this.radioDirection === "horizontal") {
+                    classes = "radio-wrapper radio-wrapper-horizontal bu-columns bu-m-0";
+                }
+                return classes;
+            },
+            buttonClasses: function() {
+
+                var classes = "";
+                if (this.radioDirection === "horizontal") {
+                    classes = " bu-column bu-p-0";
+                }
+                return classes;
+            },
+            buttonStyles: function() {
+
+                var classes = "";
+                var itemCn = this.items.length;
+                if (this.radioDirection === "horizontal") {
+                    classes = "width: " + 100 / itemCn + "%;";
+                }
+                return classes;
             }
         },
         methods: {
@@ -735,10 +769,10 @@
             }
         },
         template: '<div class="cly-vue-radio-block" v-bind:class="topClasses">\n' +
-                             '<div class="radio-wrapper">\n' +
-                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex">\n' +
-                                    '<div class="bu-is-flex"><div class="box"></div></div>\n' +
-                                    '<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between"><div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="item.description"></span></div>\n' +
+                             '<div :class="wrapperClasses">\n' +
+                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i"  :class="buttonClasses" :styles="buttonStyles" >\n' +
+                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex"><div class="bu-is-flex"><div class="box"></div></div>\n' +
+                                    '<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between"><div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\n' +
                                     '<div class="bu-is-flex bu-is-align-items-baseline number">' +
 										'<h2>{{item.number}}</h2>' +
 										'<div v-if="item.trend == \'u\'" class="trend-up">\n' +
@@ -747,7 +781,7 @@
 										'<div v-if="item.trend == \'d\'" class="trend-down">\n' +
 											'<i class="fas fa-arrow-down"></i><span>{{item.trendValue}}</span>\n' +
 										'</div>\n' +
-									'</div></div>\n' +
+									'</div></div></div>\n' +
                                 '</div>\n' +
                             '</div>\n' +
                         '</div>'

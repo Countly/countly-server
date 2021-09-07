@@ -55,6 +55,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/webfont.js',
                     'frontend/express/public/javascripts/utils/selectize.min.js',
                     'frontend/express/public/javascripts/utils/leaflet.js',
+                    'frontend/express/public/javascripts/utils/js-deep-equals.unsorted.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/es6-promise.auto.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/intersection-observer.js',
                     'frontend/express/public/javascripts/utils/vue/vue.min.js',
@@ -172,7 +173,6 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/events/javascripts/countly.overview.views.js',
                     'frontend/express/public/core/events/javascripts/countly.details.views.js',
                     'frontend/express/public/core/events/javascripts/countly.details.models.js',
-                    'frontend/express/public/core/events/javascripts/countly.compare.models.js',
                     'frontend/express/public/core/user-management/javascripts/countly.overview.models.js',
                     'frontend/express/public/core/user-management/javascripts/countly.overview.views.js'
                 ],

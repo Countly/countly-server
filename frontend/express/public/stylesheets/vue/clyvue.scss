@@ -846,6 +846,32 @@
 				}
             }
         }
+		.radio-wrapper-horizontal {
+			width: 100%;
+			
+			.radio-button  {
+				border-top: 1px solid #ececec;
+				border-bottom: 1px solid #ececec;
+				border-left: 1px solid #ececec;
+				&.selected {
+                    background-color: #F6F6F6;
+					border-bottom: 2px solid #0166D6;
+					border-left: 1px solid #ececec;
+                    .box {
+                        box-shadow: inset 0 0 0 4px #0166D6;
+                        background-color: #fff;
+						border: none;
+                    }
+                }
+				
+				.box {
+					visibility:hidden;
+				}
+			}
+			.radio-button:last-child {
+				border-right: 1px solid #ececec;
+			}
+		}
 
         &.radio-light-skin {
             .radio-button {
@@ -3509,129 +3535,6 @@
     }
 }
 
-.cly-vue-listbox {
-
-    label.el-checkbox {
-        width: 100%;
-    }
-
-    &.cly-vue-listbox--bordered {
-        border-radius: 7px;
-        border: 1px solid c.$border-color-base;
-        &.is-focus,
-        &:focus-within {
-            border-color: map.get(c.$colors, "primary");
-        }
-    }
-
-    .cly-vue-listbox__no-data {
-        padding: 6px 8px;
-        line-height: 20px;
-        font-weight: normal;
-        color: #333c48;
-        font-size: 14px;
-    }
-
-    .el-checkbox-group {
-        overflow: hidden;
-    }
-
-    .el-checkbox__label {
-        line-height: 20px;
-        font-weight: normal;
-        color: #333c48;
-    }
-
-    .drag-handler {
-        visibility: hidden;
-    }
-
-    &__header {
-        margin: 0 0 1px 0;
-        z-index: 2000;
-        border-bottom: 1px solid #ECECEC;
-        position: relative;
-        &::after {
-            // shadow
-            content: "";
-            position: absolute;
-            width: 100%;
-            height: 12px;
-            background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
-            top: 57px;
-            left: 0;
-            opacity: 0.12;
-        }
-    }
-
-    .cly-vue-listbox__item {
-        display: flex;
-        cursor: pointer;
-        align-items: center;
-        justify-content: space-between;
-        &.selected{
-            background-color: #F6F6F6;
-            * {
-                color: #0166D6;
-            }
-        }
-    }
-    
-    .cly-vue-listbox__group {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 6px 8px;
-        height: 20px;
-        background: #F6F6F6;
-    }
-
-    .cly-vue-listbox__item-content {
-        width: 100%;
-    }
-
-    &--disabled {
-        .cly-vue-listbox__item {
-            background-color: #F6F6F6;
-            * {
-                color: #A7AEB8;
-            }
-        }
-    }
-    
-    &:not(.cly-vue-listbox--disabled) {
-        .cly-vue-listbox__item {
-            &:hover {
-                background-color: #F6F6F6;
-                .drag-handler {
-                    visibility: visible;
-                }
-                * {
-                    color: #0166D6;
-                }
-            }
-        }
-    }
-
-    &--has-default-skin {
-        .cly-vue-listbox__item {
-            padding: 6px 8px;
-            height: 20px;
-            border-radius: 4px;
-        }
-    }
-    &--has-jumbo-skin {
-        .cly-vue-listbox__item {
-            padding: 6px 8px;
-            height: 32px;
-            border-bottom: 1px solid #ECECEC;
-            &.selected{
-                border-left: 2px solid #0166D6;
-            }
-        }
-    }
-}
-
 .cly-text-button,
 .cly-icon-button {
     color: map.get(c.$colors, "action-blue");
@@ -3651,81 +3554,6 @@
         cursor: default;
         color: map.get(c.$colors, "text-secondary");
         opacity: 0.7;
-    }
-}
-
-.cly-vue-select-x {
-    &__pop {
-        .el-tabs {
-            &__nav-wrap::after {
-                background-color: transparent;
-            }
-            &__nav-scroll {
-                padding: 0 14px;
-            }
-            &__header {
-                margin: 0 0 1px 0;
-                z-index: 2000;
-                &::after {
-                    // shadow
-                    content: "";
-                    position: absolute;
-                    width: 100%;
-                    height: 12px;
-                    background: linear-gradient(180deg, #333c48 0%, rgba(51, 60, 72, 0.0001) 100%);
-                    top: 40px;
-                    opacity: 0.12;
-                }
-            }
-            // &__active-bar {
-            //     padding: 0 15px;
-            //     left: -15px;
-            // }
-        }
-        &--hidden-tabs {
-            .el-tabs {
-                &__header {
-                    &::after {
-                        top: 0px;
-                    }
-                }
-                &__nav-scroll {
-                    display: none;
-                }
-            }
-        }
-        .cly-vue-listbox {
-            padding: 8px;
-        }
-    }
-    &__title {
-        font-weight: 500;
-        font-size: 16px;
-        line-height: 24px;
-        color: #333c48;
-        padding-bottom: 16px;
-    }
-    &__header-slot {
-        padding-bottom: 16px;
-    }
-    &__header {
-        padding: 16px;
-    }
-    &__footer {
-        border-top: 1px solid #ececec;
-    }
-    &__commit-section {
-        float: right;
-        margin: 16px;
-    }
-
-    &__pop--has-single-option {
-        .cly-vue-select-x__header-slot {
-            padding: 0;
-        }
-        .el-tabs__header::after {
-            content: none;
-        }
     }
 }
 

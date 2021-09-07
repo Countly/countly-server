@@ -4,13 +4,15 @@ var exported = {},
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
+    countlyFs = require('../../../api/utils/countlyFs.js');
 var fetch = require('../../../api/parts/data/fetch.js');
 var ejs = require("ejs"),
+    fs = require('fs'),
     path = require('path'),
     reportUtils = require('../../reports/api/utils.js');
 
-const FEATURE_NAME = 'starrating';
+const FEATURE_NAME = 'star_rating';
 
 const widgetProperties = {
     popup_header_text: {
@@ -49,22 +51,6 @@ const widgetProperties = {
         required: false,
         type: "String"
     },
-    target_devices: {
-        required: false,
-        type: "Object"
-    },
-    target_page: {
-        required: false,
-        type: "String"
-    },
-    target_pages: {
-        required: false,
-        type: "Array"
-    },
-    is_active: {
-        required: false,
-        type: "Boolean"
-    },
     hide_sticker: {
         required: false,
         type: "Boolean"
@@ -84,37 +70,62 @@ const widgetProperties = {
     trigger_size: {
         required: false,
         type: "String"
+    },
+    targeting: {
+        required: false,
+        type: "Object"
+    },
+    ratings_texts: {
+        required: false,
+        type: "Array"
+    },
+    rating_symbol: {
+        required: false,
+        type: "String"
+    },
+    status: {
+        required: true,
+        type: "Boolean"
+    },
+    logo: {
+        required: false,
+        type: "String"
     }
 };
 
 const widgetPropertyPreprocessors = {
-    target_devices: function(targetDevices) {
+    targeting: function(targeting) {
         try {
-            return JSON.parse(targetDevices);
+            return JSON.parse(targeting);
         }
         catch (jsonParseError) {
-            if ((targetDevices !== null) && (typeof targetDevices === "object")) {
-                return targetDevices;
+            if ((targeting !== null) && (typeof targeting === "object")) {
+                return targeting;
             }
             else {
                 return {
-                    desktop: true,
-                    phone: true,
-                    tablet: true
+                    query: {},
+                    steps: []
                 };
             }
         }
     },
-    target_pages: function(targetPages) {
+    ratings_texts: function(ratingsTexts) {
         try {
-            return JSON.parse(targetPages);
+            return JSON.parse(ratingsTexts);
         }
         catch (jsonParseError) {
-            if (Array.isArray(targetPages)) {
-                return targetPages;
+            if (Array.isArray(ratingsTexts)) {
+                return ratingsTexts;
             }
             else {
-                return ["/"];
+                return [
+                    'Very dissatisfied',
+                    'Somewhat dissatisfied',
+                    'Neither satisfied Nor Dissatisfied',
+                    'Somewhat Satisfied',
+                    'Very Satisfied'
+                ];
             }
         }
     },
@@ -125,10 +136,94 @@ const widgetPropertyPreprocessors = {
         catch (jsonParseError) {
             return !!hideSticker;
         }
+    },
+    status: function(status) {
+        try {
+            return !!JSON.parse(status);
+        }
+        catch (jsonParseError) {
+            return !!status;
+        }
     }
 };
 
+/**
+* Function to ensure we hav directory to upload files to
+* @param {function} callback - callback
+**/
+function create_upload_dir(callback) {
+    var dir = path.resolve(__dirname, './../images');
+    fs.mkdir(dir, function(err) {
+        if (err) {
+            if (err.code === 'EEXIST') {
+                callback(true);
+            }
+            else {
+                callback(false);
+            }
+        }
+        else {
+            callback(true);
+        }
+    });
+}
+
+/**
+* Used for file upload
+* @param {object} myfile - file object(if empty - returns)
+* @param {string} id - unique identifier
+* @param {function} callback = callback function
+**/
+function uploadFile(myfile, id, callback) {
+    if (!myfile) {
+        callback(true);
+        return;
+    }
+    var tmp_path = myfile.path;
+    var type = myfile.type;
+    myfile.name = myfile.name || "png";
+    if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+        fs.unlink(tmp_path, function() { });
+        callback("Invalid image format. Must be png or jpeg");
+        return;
+    }
+
+    var ext = myfile.name.split(".");
+    ext = ext[ext.length - 1];
+
+    create_upload_dir(function() {
+        fs.readFile(tmp_path, (err, data) => {
+            if (err) {
+                callback("Failed to upload image");
+                return;
+            }
+            //convert file to data
+            if (data) {
+                try {
+                    var pp = path.resolve(__dirname, './../frontend/public/images/star-rating/' + id + "." + ext);
+                    countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + ext, writeMode: "overwrite" }, function(err3) {
+                        if (err3) {
+                            callback("Failed to upload image");
+                        }
+                        else {
+                            fs.unlink(tmp_path, function() { });
+                            callback(true, id + "." + ext);
+                        }
+                    });
+                }
+                catch (SyntaxError) {
+                    callback("Failed to upload image");
+                }
+            }
+            else {
+                callback("Failed to upload image");
+            }
+        });
+    });
+}
+
 (function() {
+
 
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -153,6 +248,11 @@ const widgetPropertyPreprocessors = {
         }
         var widget = validatedArgs.obj;
         widget.type = "rating";
+        widget.created_at = Date.now();
+        widget.timesShown = 0;
+        widget.ratingsCount = 0;
+        widget.ratingsSum = 0;
+        //widget.created_by = obParams.member._id;
 
         validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
@@ -272,6 +372,26 @@ const widgetPropertyPreprocessors = {
             }
         });
     };
+    var increaseWidgetShowCount = function(ob) {
+        var obParams = ob.params;
+        var widgetId = obParams.qstring.widget_id;
+
+        common.db.collection("feedback_widgets").update({"_id": common.db.ObjectID(widgetId)}, { $inc: { timesShown: 1 } }, function(err, widget) {
+            if (!err && widget) {
+                common.returnMessage(obParams, 200, 'Success');
+                return true;
+            }
+            else if (err) {
+                common.returnMessage(obParams, 500, err.message);
+                return false;
+            }
+            else {
+                common.returnMessage(obParams, 404, "Widget not found");
+                return false;
+            }
+        });
+        return true;
+    };
     var nonChecksumHandler = function(ob) {
         try {
             var events = JSON.parse(ob.params.qstring.events);
@@ -309,6 +429,20 @@ const widgetPropertyPreprocessors = {
         }
     };
 
+    plugins.register("/i/feedback/logo", function(ob) {
+        var params = ob.params;
+        uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
+            if (good) {
+                common.returnMessage(params, 200, filename);
+            }
+            else {
+                common.returnMessage(params, 400, good);
+            }
+        });
+        return true;
+    });
+
+    plugins.register("/i/feedback/show-popup", increaseWidgetShowCount);
     plugins.register("/i/feedback/input", nonChecksumHandler);
     plugins.register("/i", function(ob) {
         var params = ob.params;
@@ -347,6 +481,16 @@ const widgetPropertyPreprocessors = {
                             }
                         });
                     }
+                    // increment ratings count for widget
+                    common.db.collection('feedback_widgets').update({
+                        _id: common.db.ObjectID(currEvent.segmentation.widget_id)
+                    }, {
+                        $inc: { ratingsSum: currEvent.segmentation.rating, ratingsCount: 1 }
+                    }, function(err) {
+                        if (err) {
+                            return false;
+                        }
+                    });
                 }
                 return true;
             });

@@ -77,6 +77,13 @@
                 if (tab.length) {
                     return tab[0].component;
                 }
+                else if (this.tabs.length) {
+                    this.$emit("input", this.tabs[0].name);
+                    if (this.tabs[0].route) {
+                        Backbone.history.noHistory(this.tabs[0].route);
+                    }
+                    return this.tabs[0].component;
+                }
 
                 return;
             },
@@ -149,7 +156,7 @@
                                 </div>\
                             </div>\
                         </div>\
-                        <component v-bind:is="currentTab" v-on="$listeners" class="cly-vue-tab"></component>\
+                        <component v-bind:is="currentTab" v-on="$listeners" v-bind="$attrs" class="cly-vue-tab"></component>\
                     </div>'
     }));
 

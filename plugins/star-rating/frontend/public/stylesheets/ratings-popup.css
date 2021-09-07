@@ -1,0 +1,99 @@
+.ratings-popup {
+  font-family: 'Lato', sans-serif;
+}
+
+.ratings-popup .modal-content {
+  border-radius: 13px;
+  background-color: white;
+  padding: 40px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ratings-popup .emotions-area {
+  width: 100%;
+  display: flex;
+  margin: 20px 0px;
+  justify-content: space-evenly;
+}
+
+.ratings-popup #question-area {
+  font-size: 24px;
+  width: 75%;
+  text-align: center;
+}
+
+.ratings-popup .comment-area {
+  width: 80%;
+  font-size: 14px;
+}
+
+.ratings-popup #comment-section, .ratings-popup #contact-section {
+  margin: 10px 0px;
+  border: 1px solid blue;
+  border-radius: 3px;
+  padding: 10px 5px;
+}
+
+.ratings-popup .buttons-area {
+  margin: 20px 0px;
+}
+
+.ratings-popup .success-emotions-area {
+  font-size: 20px;
+  text-align: center;
+}
+
+.ratings-popup .modal-content .modal-footer {
+  margin-top: 15px;
+}
+
+.ratings-popup #cf-submit-button {
+  background-color: #12AF51;
+  color: white;
+  border: none;
+  padding: 14px 12px;
+  border-radius: 4px;
+}
+
+.ratings-popup .success-icon-area i {
+  color: #12AF51;
+  font-size: 40px;
+}
+
+.ratings-popup .emotions-area span {
+  font-size: 44px;
+  cursor: pointer;
+}
+
+.ratings-popup .success-modal-content {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+  padding: 20px;
+}
+
+#countly-feedback-comment-textarea {
+  display: none;
+  width: calc(100% - 10px);
+  margin: 10px 0px;
+  border: 1px solid #ebebeb;
+  border-radius: 4px;
+  padding: 5px;
+  resize: none;
+  font-family: 'Lato', sans-serif;
+}
+
+#countly-feedback-contact-me-email {
+  display: none;
+  width: calc(100% - 10px);
+  padding: 5px;
+  margin: 10px 0px;
+  border: 1px solid #ebebeb;
+  border-radius: 4px;
+  resize: none;
+}

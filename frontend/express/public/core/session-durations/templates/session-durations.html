@@ -1,14 +1,12 @@
 <div v-bind:class="[componentId]">
     <cly-header>
         <template v-slot:header-left>
-            <h2> {{i18n('session-durations.title')}} 
-            </h2>
-            <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="i18n('session-durations.description')">
-            </span>
+            <h2> {{i18n('session-durations.title')}} </h2>
+            <cly-tooltip-icon :tooltip="i18n('session-durations.description')" icon="ion ion-help-circled" class="bu-ml-4"> </cly-tooltip-icon>
         </template>
     </cly-header>
     <cly-main>
-        <cly-date-picker v-model="selectedDatePeriod" timestampFormat="ms" class="session-durations-date-picker-container"></cly-date-picker>
+        <cly-date-picker-g class="session-durations-date-picker-container"></cly-date-picker-g>
         <cly-section>
             <cly-chart-bar :option="sessionDurationsOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
         </cly-section>

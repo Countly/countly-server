@@ -22,7 +22,7 @@
         },
         computed: {
             iconClass: function() {
-                return (this.opened ? 'arrow-up is-reverse' : 'arrow-up');
+                return (this.opened ? 'cly-icon-arrow-up is-reverse' : 'cly-icon-arrow-up');
             },
             description: function() {
                 if (Array.isArray(this.selectedOptions)) {
@@ -56,7 +56,7 @@
                         v-model="description"\
                         :placeholder="placeholder">\
                         <template slot="suffix">\
-                            <i v-if="arrow" class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
+                            <i v-if="arrow" class="el-select__caret cly-icon-input" :class="[iconClass]"></i>\
                         </template>\
                     </component>'
     }));
@@ -341,7 +341,7 @@
                                             </el-select>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
-                                            <cly-select-x v-bind="field" class="cly-multi-select__field-dropdown" :width="320" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
+                                            <cly-select-x ref="selectX" v-bind="field" class="cly-multi-select__field-dropdown" :width="320" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
                                                 <template v-slot:header="headerScope" v-if="field.header">\
                                                     <slot name="header" v-bind="headerScope"></slot>\
                                                 </template>\
@@ -412,6 +412,11 @@
             close: function(dontSync) {
                 if (!dontSync) {
                     this.unsavedValue = Object.assign({}, this.value);
+                }
+                if (this.$refs.selectX && this.$refs.selectX.length) {
+                    this.$refs.selectX.forEach(function(component) {
+                        component.doClose();
+                    });
                 }
                 this.$refs.dropdown.handleClose();
             },

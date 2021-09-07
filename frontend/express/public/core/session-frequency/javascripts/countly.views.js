@@ -11,16 +11,7 @@ var SessionFrequencyView = countlyVue.views.create({
             return this.$store.state.countlySessionFrequency.sessionFrequency;
         },
         isLoading: function() {
-            return this.$store.state.countlySessionFrequency.isLoading;
-        },
-        selectedDatePeriod: {
-            get: function() {
-                return this.$store.state.countlySessionFrequency.selectedDatePeriod;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlySessionFrequency/onSetSelectedDatePeriod', value);
-                this.$store.dispatch('countlySessionFrequency/fetchAll');
-            }
+            return this.$store.getters['countlySessionFrequency/isLoading'];
         },
         sessionFrequencyRows: function() {
             return this.$store.state.countlySessionFrequency.sessionFrequency.rows;
@@ -49,18 +40,21 @@ var SessionFrequencyView = countlyVue.views.create({
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch('countlySessionFrequency/fetchAll');
+            this.$store.dispatch('countlySessionFrequency/fetchAll', false);
+        },
+        dateChanged: function() {
+            this.$store.dispatch('countlySessionFrequency/fetchAll', true);
         }
     },
     mounted: function() {
-        this.$store.dispatch('countlySessionFrequency/fetchAll');
+        this.$store.dispatch('countlySessionFrequency/fetchAll', false);
     },
 });
 
 countlyVue.container.registerTab("/analytics/sessions", {
     priority: 3,
     name: "frequency",
-    title: "Session Frequency",
+    title: CV.i18n('session-frequency.title'),
     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/sessions/frequency",
     component: SessionFrequencyView,
     vuex: [{

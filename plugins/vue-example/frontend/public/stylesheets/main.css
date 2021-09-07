@@ -9,6 +9,10 @@
     vertical-align: middle;
 }
 
+.vue-example-wrapper .example-cell section {
+    margin-bottom: 20px;
+}
+
 .vue-example-wrapper .options-box div.item {
     padding: 10px 0;
 }

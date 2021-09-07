@@ -45,9 +45,9 @@ var UserAnalyticsOverview = countlyVue.views.create({
                 }
             }
             else {
-                series.push({"name": CV.i18n('common.total-users'), data: []});
-                series.push({"name": CV.i18n('common.new-users'), data: []});
-                series.push({"name": CV.i18n('common.returning-users'), data: []});
+                series.push({"name": CV.i18n('common.table.total-users'), data: []});
+                series.push({"name": CV.i18n('common.table.new-users'), data: []});
+                series.push({"name": CV.i18n('common.table.returning-users'), data: []});
             }
 
             return {series: series};

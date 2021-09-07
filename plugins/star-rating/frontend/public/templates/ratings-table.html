@@ -1,0 +1,26 @@
+<cly-datatable-n class="bu-mt-2"
+  :rows="ratings">
+    <template v-slot="scope">
+        <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')">
+            <template v-slot="rowScope">
+                <span class="text-medium">
+                  <span :class="'rating-color rating-color-' + ratings.indexOf(rowScope.row)"></span> {{ ratings.indexOf(rowScope.row) + 1 }}
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column sortable="true" prop="numberOfRatings" :label="i18n('feedback.number-of-ratings')">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                {{ rowScope.row.count }}
+              </span>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="true" prop="percentage" :label="i18n('feedback.percentage')">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                % {{ rowScope.row.percent }} <span :style="{ width: rowScope.row.percent + 'px'}" :class="'rating-color rating-color-' + ratings.indexOf(rowScope.row)"></span>
+              </span>
+          </template>
+        </el-table-column>
+    </template>
+</cly-datatable-n>

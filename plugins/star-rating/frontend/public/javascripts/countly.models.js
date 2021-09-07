@@ -22,15 +22,19 @@
         "target_page",
         "target_pages",
         "hide_sticker",
-        "is_active",
         "trigger_size",
         "comment_enable",
-        "contact_enable"
+        "contact_enable",
+        "targeting",
+        "ratings_texts",
+        "rating_symbol",
+        "status",
+        "logo"
     ];
 
     var widgetJSONProperties = [
-        "target_pages",
-        "target_devices"
+        "targeting",
+        "ratings_texts"
     ];
 
     starRatingPlugin.extractWidgetProperties = function(props) {
