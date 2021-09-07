@@ -503,6 +503,7 @@
             width: { type: [Number, Object], default: 400},
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
+            showSelectedCount: {type: Boolean, default: false},
             singleOptionSettings: {
                 type: Object,
                 default: function() {
@@ -564,6 +565,14 @@
                     else {
                         this.uncommittedValue = newVal;
                     }
+                }
+            },
+            selectedCountText: function() {
+                if (this.uncommittedValue) {
+                    return CV.i18n('export.export-columns-selected-count', this.uncommittedValue.length, (this.options ? this.options.length : 0));
+                }
+                else {
+                    return CV.i18n('export.export-columns-selected-count', (this.value ? this.value.length : 0), (this.options ? this.options.length : 0));
                 }
             }
         },
