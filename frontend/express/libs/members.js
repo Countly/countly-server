@@ -1012,4 +1012,134 @@ membersUtility.findByUsernameOrEmail = function(input, callback) {
     });
 };
 
+/**
+ * Find Members
+ * @param {Object} query query
+ * @returns {Object[]} list of members
+*/
+membersUtility.findMembers = async function(query = {}) {
+    return new Promise((resolve, reject) => {
+        this.db.collection('members').find(query).toArray((err, members) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(members);
+            }
+        });
+    });
+};
+
+/**
+ * Update Member
+ * @param {Object} query query
+ * @param {Object} data data to update
+ * @param {boolean} upsert upsert
+ * @returns {Object} list of members
+*/
+membersUtility.updateMember = async function(query = {}, data = {}, upsert = true) {
+    return new Promise((resolve, reject) => {
+        this.db.collection('members').update(query, { $set: data }, { upsert }, (err) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(data);
+            }
+        });
+    });
+};
+
+/**
+ * Remove Members
+ * @param {Object} query query
+ * @returns {Object[]} list of members
+*/
+membersUtility.removeMembers = async function(query = {}) {
+    return new Promise((resolve, reject) => {
+        if (!Object.keys(query).length) {
+            return reject('Invalid query to remove members');
+        }
+
+        this.db.collection('members').remove(query, (err, response) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(response);
+            }
+        });
+    });
+};
+
+/**
+ * Create User for external authentication provider
+ * @method createMember
+ * @param {Object} data user data
+ * @param {string} provider auth provider
+ * @param {boolean} deleteDuplicate delete duplicate
+ * @returns {Promise<any>} created or updated user data
+*/
+membersUtility.createMember = async function(data, provider = '', deleteDuplicate = false) {
+    let user = {};
+    if (!data || !Object.keys(data).length) {
+        throw new Error('Invalid user data provided');
+    }
+    user._id = data._id || data.id || data.sub;
+    user.email = data.email || '';
+    user.username = data.username || data.email;
+    user.full_name = data.full_name || data.name || `${data.firstName} ${data.lastName}` || "";
+    user.global_admin = data.global_admin || false;
+    user.locked = (typeof data.locked !== "undefined") ? data.locked : false;
+    user.provider = provider;
+
+    // can be deprecated after all data migrated to provider property
+    user.isAD = (provider === 'ad' || provider === 'azure');
+    user.isCognito = provider === 'cognito';
+
+    user.created_at = data.created_at || Math.floor(((new Date()).getTime()) / 1000);
+
+    user.admin_of = data.admin_of || [];
+    user.user_of = data.user_of || [];
+    user.restrict = data.restrict || [];
+    user.app_restrict = data.app_restrict || {};
+
+    if (data.admin_of && data.admin_of.length) {
+        user.user_of = [...new Set([...data.admin_of, ...data.user_of])];
+    }
+
+    // legacy rbac
+    if (data.marketing_of && data.marketing_of.length) {
+        user.admin_of.push(...data.marketing_of);
+    }
+
+    const buffer = crypto.randomBytes(48);
+    user.api_key = data.api_key || common.md5Hash(buffer.toString('hex') + Math.random());
+    user.password = data.password || common.md5Hash(data.api_key);
+
+    const query = user.email
+        ? {
+            $or: [
+                { _id: user._id },
+                { email: user.email }
+            ]
+        }
+        : { _id: user._id };
+
+    try {
+        const existingMembers = await membersUtility.findMembers(query);
+        if (deleteDuplicate && (existingMembers.length >= 2 || (existingMembers.length === 1 && existingMembers[0]._id !== user._id))) {
+            await membersUtility.removeMembers(query);
+        }
+
+        const memberData = await membersUtility.updateMember(query, user, true);
+
+        return memberData;
+    }
+    catch (error) {
+        console.error(`create member error ${provider} ${error.message}`, error);
+        throw new Error(error);
+    }
+};
+
 module.exports = membersUtility;
