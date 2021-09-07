@@ -52,7 +52,9 @@
                     return "";
                 }
             },
-            template: '<div class="cly-in-page-notification color-cool-gray-100 bg-red-10 text-medium bu-p-2 center" v-html="innerText"></div>'
+            template: '<div class="cly-in-page-notification color-cool-gray-100 bg-red-10 text-medium bu-p-2 center">\
+                            <slot><span v-html="innerText"></span></slot>\
+                        </div>'
         }
     ));
 
