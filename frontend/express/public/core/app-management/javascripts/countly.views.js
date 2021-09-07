@@ -14,35 +14,7 @@
                     this.selectedApp = value;
                     this.uploadData.app_image_id = countlyGlobal.apps[this.selectedApp]._id + "";
                     this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png")';
-                    var pluginsData = countlyPlugins.getConfigsData();
-                    if (!countlyGlobal.apps[this.selectedApp].plugins) {
-                        countlyGlobal.apps[this.selectedApp].plugins = {};
-                    }
-                    var plugins = countlyGlobal.apps[this.selectedApp].plugins || {};
-                    this.appSettings = {};
-                    for (var i in app.appManagementViews) {
-                        if (app.appManagementViews[i].inputs) {
-                            if (!this.appSettings[i]) {
-                                this.appSettings[i] = app.appManagementViews[i];
-                            }
-                            for (var j in app.appManagementViews[i].inputs) {
-                                var parts = j.split(".");
-                                if (parts.length === 2) {
-                                    if (plugins[parts[0]] && typeof plugins[parts[0]][parts[1]] !== "undefined") {
-                                        this.appSettings[i].inputs[j].value = plugins[parts[0]][parts[1]];
-                                    }
-                                    else if (pluginsData[parts[0]] && typeof pluginsData[parts[0]][parts[1]] !== "undefined") {
-                                        this.appSettings[i].inputs[j].value = pluginsData[parts[0]][parts[1]];
-                                    }
-                                }
-                                else if (parts.length === 1) {
-                                    if (typeof plugins[parts[0]] !== "undefined") {
-                                        this.appSettings[i].inputs[j].value = plugins[parts[0]];
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    this.unpatch();
                     app.navigate("#/manage/apps/" + value);
                 }
             }
@@ -137,35 +109,7 @@
             return $.when(countlyPlugins.initializeConfigs())
                 .then(function() {
                     if (countlyGlobal.apps[self.selectedApp]) {
-                        var pluginsData = countlyPlugins.getConfigsData();
-                        if (!countlyGlobal.apps[self.selectedApp].plugins) {
-                            countlyGlobal.apps[self.selectedApp].plugins = {};
-                        }
-                        self.appSettings = {};
-                        var plugins = countlyGlobal.apps[self.selectedApp].plugins || {};
-                        for (var i in app.appManagementViews) {
-                            if (app.appManagementViews[i].inputs) {
-                                if (!self.appSettings[i]) {
-                                    self.appSettings[i] = app.appManagementViews[i];
-                                }
-                                for (var j in app.appManagementViews[i].inputs) {
-                                    var parts = j.split(".");
-                                    if (parts.length === 2) {
-                                        if (plugins[parts[0]] && typeof plugins[parts[0]][parts[1]] !== "undefined") {
-                                            self.appSettings[i].inputs[j].value = plugins[parts[0]][parts[1]];
-                                        }
-                                        else if (pluginsData[parts[0]] && typeof pluginsData[parts[0]][parts[1]] !== "undefined") {
-                                            self.appSettings[i].inputs[j].value = pluginsData[parts[0]][parts[1]];
-                                        }
-                                    }
-                                    else if (parts.length === 1) {
-                                        if (typeof plugins[parts[0]] !== "undefined") {
-                                            self.appSettings[i].inputs[j].value = plugins[parts[0]];
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        self.unpatch();
                     }
                 });
         },
@@ -336,15 +280,15 @@
                     }
                     CountlyHelpers.confirm(warningText, "popStyleGreen popStyleGreenWide", function(result) {
                         if (result) {
-                            self.saveSettings(doc);
+                            self.saveApp(doc);
                         }
                     }, [jQuery.i18n.map["common.no-dont-change"], jQuery.i18n.map["management-applications.app-key-change-warning-confirm"]], {title: jQuery.i18n.map["management-applications.app-key-change-warning-title"], image: "change-the-app-key"});
                 }
                 else {
-                    this.saveSettings(doc);
+                    this.saveApp(doc);
                 }
             },
-            saveSettings: function(doc) {
+            saveApp: function(doc) {
                 doc.app_id = this.selectedApp;
                 delete doc._id;
                 var self = this;
@@ -367,29 +311,10 @@
                                 break;
                             }
                         }
-                        /*if (Object.keys(self.changes).length) {
-                            countlyPlugins.updateUserConfigs(self.changes, function(err) {
-                                if (err) {
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.map["configs.not-saved"],
-                                        message: jQuery.i18n.map["configs.not-changed"],
-                                        type: "error"
-                                    });
-                                }
-                                else {
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.map["configs.changed"],
-                                        message: jQuery.i18n.map["configs.saved"]
-                                    });
-                                }
-                            });
-                        }
-                        else {*/
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["configs.changed"],
                             message: jQuery.i18n.map["configs.saved"]
                         });
-                        //}
                     },
                     error: function(xhr, status, error) {
                         CountlyHelpers.notify({
@@ -533,7 +458,87 @@
                 this.changes[key] = value;
                 this.appSettings = Object.assign({}, this.appSettings);
             },
-            unpatch: function() {}
+            unpatch: function() {
+                this.changes = {};
+                var pluginsData = countlyPlugins.getConfigsData();
+                if (!countlyGlobal.apps[this.selectedApp].plugins) {
+                    countlyGlobal.apps[this.selectedApp].plugins = {};
+                }
+                var plugins = countlyGlobal.apps[this.selectedApp].plugins || {};
+                this.appSettings = {};
+                for (var i in app.appManagementViews) {
+                    if (app.appManagementViews[i].inputs) {
+                        if (!this.appSettings[i]) {
+                            this.appSettings[i] = app.appManagementViews[i];
+                        }
+                        for (var j in app.appManagementViews[i].inputs) {
+                            var parts = j.split(".");
+                            if (parts.length === 2) {
+                                if (plugins[parts[0]] && typeof plugins[parts[0]][parts[1]] !== "undefined") {
+                                    this.appSettings[i].inputs[j].value = plugins[parts[0]][parts[1]];
+                                }
+                                else if (pluginsData[parts[0]] && typeof pluginsData[parts[0]][parts[1]] !== "undefined") {
+                                    this.appSettings[i].inputs[j].value = pluginsData[parts[0]][parts[1]];
+                                }
+                                else {
+                                    this.appSettings[i].inputs[j].value = this.appSettings[i].inputs[j].defaultValue;
+                                }
+                            }
+                            else if (parts.length === 1) {
+                                if (typeof plugins[parts[0]] !== "undefined") {
+                                    this.appSettings[i].inputs[j].value = plugins[parts[0]];
+                                }
+                                else {
+                                    this.appSettings[i].inputs[j].value = this.appSettings[i].inputs[j].defaultValue;
+                                }
+                            }
+                            else {
+                                this.appSettings[i].inputs[j].value = this.appSettings[i].inputs[j].defaultValue;
+                            }
+                        }
+                    }
+                }
+            },
+            saveSettings: function() {
+                var self = this;
+                $.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
+                    data: {
+                        app_id: self.selectedApp,
+                        args: JSON.stringify(self.changes)
+                    },
+                    dataType: "json",
+                    success: function(result) {
+                        if (result.result === 'Nothing changed') {
+                            CountlyHelpers.notify({type: 'warning', message: jQuery.i18n.map['management-applications.plugins.saved.nothing']});
+                        }
+                        else {
+                            CountlyHelpers.notify({title: jQuery.i18n.map['management-applications.plugins.saved.title'], message: jQuery.i18n.map['management-applications.plugins.saved']});
+                        }
+                        if (!countlyGlobal.apps[self.selectedApp].plugins) {
+                            countlyGlobal.apps[self.selectedApp].plugins = {};
+                        }
+                        for (var key in self.changes) {
+                            countlyGlobal.apps[self.selectedApp].plugins[key] = self.changes[key];
+                        }
+                        self.changes = {};
+                    },
+                    error: function(resp, status, error) {
+                        try {
+                            resp = JSON.parse(resp.responseText);
+                        }
+                        catch (ignored) {
+                            //ignored excep
+                        }
+                        CountlyHelpers.notify({
+                            title: jQuery.i18n.map["configs.not-saved"],
+                            message: error || resp.result || jQuery.i18n.map['management-applications.plugins.error.server'],
+                            type: "error"
+                        });
+                    }
+                });
+            }
         }
     });
 

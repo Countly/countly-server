@@ -184,7 +184,8 @@
                                         >
                                     </el-input>
                                     <el-select 
-                                        v-else-if="conf.input === 'el-input'" 
+                                        v-else-if="conf.input === 'el-select'" 
+                                        @change="onChange(key, $event)"
                                         :value="conf.value"
                                         v-bind="conf.attrs">
                                         <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in conf.list"></el-option>
@@ -234,6 +235,6 @@
                 </el-card>
             </div>
         </div>
-        <cly-diff-helper :diff="diff" @discard="unpatch" @save="save"></cly-diff-helper>
+        <cly-diff-helper :diff="Object.keys(changes)" @discard="unpatch" @save="saveSettings"></cly-diff-helper>
     </cly-main>
 </div>

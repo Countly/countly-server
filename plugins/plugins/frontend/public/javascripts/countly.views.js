@@ -397,15 +397,7 @@
             },
             getHelperLabel: function(id, ns) {
                 ns = ns || this.selectedConfig;
-                if (id === "__user") {
-                    return jQuery.i18n.map["configs.help.user-level-configuration"];
-                }
-                else if (jQuery.i18n.map["configs.help." + ns + "." + id]) {
-                    return jQuery.i18n.map["configs.help." + ns + "." + id];
-                }
-                else if (jQuery.i18n.map["configs.help." + (ns + "." + id).replace(".", "-")]) {
-                    return jQuery.i18n.map["configs.help." + (ns + "." + id).replace(".", "-")];
-                }
+                return app.configurationsView.getHelperLabel(id, ns);
             },
             getInputType: function(id) {
                 return app.configurationsView.getInputType(this.selectedConfig + "." + id);
@@ -812,7 +804,7 @@
         },
         getInputLabel: function(id) {
             if (typeof this.predefinedLabels[id] !== "undefined") {
-                return jQuery.i18n.map[this.predefinedLabels[id]];
+                return jQuery.i18n.map[this.predefinedLabels[id]] || this.predefinedLabels[id];
             }
             else if (jQuery.i18n.map[id + ".title"]) {
                 return jQuery.i18n.map[id + ".title"];
@@ -831,6 +823,20 @@
             }
             else {
                 return id;
+            }
+        },
+        getHelperLabel: function(id, ns) {
+            if (id === "__user") {
+                return jQuery.i18n.map["configs.help.user-level-configuration"];
+            }
+            else if (jQuery.i18n.map["configs.help." + ns + "." + id]) {
+                return jQuery.i18n.map["configs.help." + ns + "." + id];
+            }
+            else if (jQuery.i18n.map["configs.help." + (ns + "." + id).replace(".", "-")]) {
+                return jQuery.i18n.map["configs.help." + (ns + "." + id).replace(".", "-")];
+            }
+            else if (this.predefinedInputs[ns + "." + id] && this.predefinedInputs[ns + "." + id].helper) {
+                return jQuery.i18n.map[this.predefinedInputs[ns + "." + id].helper] || this.predefinedInputs[ns + "." + id].helper;
             }
         },
         getInputType: function(id) {
