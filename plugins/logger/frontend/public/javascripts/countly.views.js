@@ -186,5 +186,18 @@
         });
 
         app.addSubMenu("management", { code: "logger", url: "#/manage/logger", text: "logger.title", priority: 60 });
+        if (app.configurationsView) {
+            app.configurationsView.registerLabel("logger.state", "logger.state");
+            app.configurationsView.registerInput("logger.state", {
+                input: "el-select",
+                attrs: {},
+                list: [
+                    {value: 'on', label: CV.i18n("logger.state-on")},
+                    {value: 'off', label: CV.i18n("logger.state-off")},
+                    {value: 'automatic', label: CV.i18n("logger.state-automatic")}
+                ]
+            });
+            app.configurationsView.registerLabel("logger.limit", "logger.limit");
+        }
     });
 })();

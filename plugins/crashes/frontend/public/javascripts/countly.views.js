@@ -953,4 +953,15 @@ jQuery(document).ready(function() {
     }
 
     app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+
+    if (app.configurationsView) {
+        app.configurationsView.registerInput("crashes.grouping_strategy", {
+            input: "el-select",
+            attrs: {},
+            list: [
+                {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
+                {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
+            ]
+        });
+    }
 });

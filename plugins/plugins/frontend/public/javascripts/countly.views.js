@@ -381,7 +381,7 @@
                 }
             },
             getLabel: function(id) {
-                return app.configurationsView.getInputLabel(this.selectedConfig + "." + id);
+                return app.configurationsView.getInputLabel(id);
             },
             getLabelName: function(id, ns) {
                 ns = ns || this.selectedConfig;
@@ -813,6 +813,9 @@
         getInputLabel: function(id) {
             if (typeof this.predefinedLabels[id] !== "undefined") {
                 return jQuery.i18n.map[this.predefinedLabels[id]];
+            }
+            else if (jQuery.i18n.map[id + ".title"]) {
+                return jQuery.i18n.map[id + ".title"];
             }
             else if (jQuery.i18n.map["configs." + id]) {
                 return jQuery.i18n.map["configs." + id];
