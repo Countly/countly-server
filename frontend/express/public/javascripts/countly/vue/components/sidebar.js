@@ -7,9 +7,11 @@
             template: CV.T('/javascripts/countly/vue/templates/sidebar/AppSelector.html'),
             data: function() {
                 return {
-                    activeApp: {},
+                    activeApp: {
+                        value: ""
+                    },
                     centerDialogVisible: true,
-                    value: ""
+                    name: ""
                 };
             },
             props: {
@@ -59,10 +61,9 @@
             },
             methods: {
                 logout: function() {
-                   console.log(this.$store.actions)
                    this.$store.dispatch("countlyCommon/removeActiveApp");
-                //    this.$store.remove('countly_date');
-                //    this.$store.remove('countly_location_city');
+                   store.remove('countly_date');
+                   store.remove('countly_location_city');
                    this.logoutRequest()
                 },
                 logoutRequest: function() {

@@ -1,7 +1,7 @@
 <cly-dialog :visible.sync="centerDialogVisible" width="50%" :modal="false" center @closed="handleClose()">
     <cly-listbox skin="jumbo" height="624" :options="allApps"
         :searchable="true" :bordered="false" :value="value" @input="switchActiveApp($event)"
-        v-model="activeApp">
+        v-model="activeApp.name">
         <template v-slot:option-prefix="option">
             <img style="width: 26px;" :src="option.image"></img>
         </template>

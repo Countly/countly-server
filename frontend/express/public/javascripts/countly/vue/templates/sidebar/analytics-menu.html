@@ -1,9 +1,9 @@
-<div class="cly-vue-sidebar__menu">
-    <div class="cly-vue-app-selector" @click="toggleAppSelection()">
+<div class="cly-vue-sidebar__menu bu-is-flex bu-is-flex-direction-column">
+    <div class="cly-vue-sidebar__app-selector cursor-pointer bu-m-1" @click="toggleAppSelection()">
         <div class="cly-vue-sidebar__header bu-is-flex">
             <div class="cly-vue-sidebar__app-image" :style="{backgroundImage: 'url(' + activeApp.image + ')'}"></div>
             <div>
-                <div class="cly-vue-sidebar__app-name-type bu-is-flex bu-is-flex-direction-column bu-ml-1">
+                <div class="cly-vue-sidebar__app-name-type bu-is-flex bu-is-flex-direction-column bu-ml-2">
                     <span class="cly-vue-sidebar__app-name">{{activeApp.name}}</span>
                     <span class="cly-vue-sidebar__app-type font-italic"> {{activeApp.type}}</span>
                 </div>
