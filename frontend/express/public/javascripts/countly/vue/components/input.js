@@ -503,6 +503,7 @@
             width: { type: [Number, Object], default: 400},
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
+            showSelectedCount: {type: Boolean, default: false},
             singleOptionSettings: {
                 type: Object,
                 default: function() {
@@ -520,8 +521,7 @@
         },
         data: function() {
             return {
-                uncommittedValue: null,
-                selectedCountText: ""
+                uncommittedValue: null
             };
         },
         computed: {
@@ -530,14 +530,6 @@
                     "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.hasTabs,
                     "cly-vue-select-x__pop--has-single-option": this.hasSingleOption
                 };
-            },
-            showSelectedCount: function() {
-                if (this.$attrs.showSelectedCount) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
             },
             currentTab: function() {
                 var self = this;
@@ -561,10 +553,8 @@
             innerValue: {
                 get: function() {
                     if (this.uncommittedValue && this.uncommittedValue !== this.value) {
-                        this.selectedCountText = CV.i18n('export.export-columns-selected-count', this.uncommittedValue.length, this.options.length);
                         return this.uncommittedValue;
                     }
-                    this.selectedCountText = CV.i18n('export.export-columns-selected-count', this.value.length, this.options.length);
                     return this.value;
                 },
                 set: function(newVal) {
@@ -573,9 +563,16 @@
                         this.$emit("change", newVal);
                     }
                     else {
-                        this.selectedCountText = CV.i18n('export.export-columns-selected-count', newVal.length, this.options.length);
                         this.uncommittedValue = newVal;
                     }
+                }
+            },
+            selectedCountText: function() {
+                if (this.uncommittedValue) {
+                    return CV.i18n('export.export-columns-selected-count', this.uncommittedValue.length, (this.options ? this.options.length : 0));
+                }
+                else {
+                    return CV.i18n('export.export-columns-selected-count', (this.value ? this.value.length : 0), (this.options ? this.options.length : 0));
                 }
             }
         },
