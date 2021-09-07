@@ -17,7 +17,7 @@
 				<div class="ratings-drawer__sidecar widget-preview">
 					<div class="preview-stage" v-if="drawerScope.currentStepId === 'step1'" >
 						<div class="bu-is-size-7 ratings-drawer__stage-label">
-							Ratings Popup
+							{{ i18n('feedback.ratings-popup') }}
 						</div>
 						<div class="ratings-drawer__ratings-popup">
               <div class="ratings-drawer__rp-question-area">
@@ -44,13 +44,13 @@
               </div>
             </div>
             <div class="bu-is-size-7 ratings-drawer__stage-label">
-							Thank you Message
+							{{ i18n('feedback.thank-you-message') }}
 						</div>
 						<div class="ratings-drawer__thanks-popup">
               <div class="ratings-drawer__tp-icon">
                 <span class="el-icon-success"></span>
               </div>
-              <div class="ratings-drawer__tp-thanks-message">{{ drawerScope.editedObject.popup_thanks_message }}</div>
+              <div class="bu-has-text-weight-medium ratings-drawer__tp-thanks-message bu-is-size-4">{{ drawerScope.editedObject.popup_thanks_message }}</div>
               <div class="ratings-drawer__tp-footer">
                 <img src="images/surveys/powered-by-countly.svg">
               </div>
@@ -58,7 +58,7 @@
 					</div>
           <div class="preview-stage" v-if="drawerScope.currentStepId !== 'step1'" >
 						<div class="bu-is-size-7 ratings-drawer__stage-label">
-							Trigger Button Preview
+							{{ i18n('feedback.trigger-button-preview') }}
 						</div>
 						<div class="ratings-drawer__trigger-button">
               <img class="ratings-drawer__tb-background" src="star-rating/images/star-rating/browser.svg"/>
@@ -80,7 +80,7 @@
         </div>
         <div class="cly-vue-drawer-step__section">
           <div class="text-small text-heading">
-            {{i18n('feedback.rating-symbol')}}
+            {{i18n('feedback.rating-symbol')}} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
           </div>
           <validation-provider name="rating_symbol" rules="required" v-slot="v">
             <el-select placement="bottom-start" v-model="drawerScope.editedObject.rating_symbol" :placeholder="i18n('feedback.rating-symbol')">
@@ -165,7 +165,7 @@
 			<cly-form-step id="step2" :name="i18n('feedback.widget-appearance')">
         <div class="cly-vue-drawer-step__section">
           <div class="text-big text-heading">
-            Trigger Button Size
+            {{ i18n('feedback.trigger-button-size') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
           </div>
           <div class="bu-is-flex bu-is-align-items-center">
             <el-radio 
@@ -181,7 +181,7 @@
         </div>
         <div class="cly-vue-drawer-step__section">
           <div class="text-big text-heading">
-            Position on the Page
+            {{ i18n('feedback.position-on-the-page') }}
           </div>
           <div class="bu-is-flex text-center ratings-drawer__sticker-size">
             <el-radio 
@@ -201,7 +201,7 @@
           </div>
           <div class="cly-vue-drawer-step__section">
             <div class="text-medium text-heading">
-              {{i18n('surveys.appearance.main-color')}}
+              {{i18n('feedback.main-color')}}
             </div>
             <cly-colorpicker
               reset-value='#FFFFFF'
@@ -210,7 +210,7 @@
           </div>
           <div class="cly-vue-drawer-step__section">
             <div class="text-medium text-heading">
-              {{i18n('surveys.appearance.main-color')}}
+              {{i18n('feedback.font-color')}}
             </div>
             <cly-colorpicker
               reset-value='#FFFFFF'
@@ -219,18 +219,19 @@
           </div>
           <div class="bu-pt-3 bu-pb-4">
             <div class="text-medium text-heading">
-              {{i18n('surveys.appearance.logo')}}
+              {{i18n('feedback.logo')}} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
             </div>
             <cly-dropzone
               ref="logoDropzone"
               id="logo-dropzone"
               @vdropzone-file-added="onFileAdded"
+              @vdropzone-complete="onComplete"
               :options="logoDropzoneOptions">
             </cly-dropzone>
           </div>
           <div class="cly-vue-drawer-step__section">
             <div class="text-small text-heading">
-              Trigger Text
+              {{ i18n('feedback.trigger-text') }}
             </div>
             <validation-provider name="trigger_button_text" v-slot="v">
               <el-input v-model="drawerScope.editedObject.trigger_button_text" :placeholder="i18n('feedback.trigger-text')"></el-input>
@@ -238,7 +239,7 @@
           </div>
           <div class="cly-vue-drawer-step__section">
             <div class="text-small text-heading">
-              Hide sticker
+              {{ i18n('feedback.visibility') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
             </div>
             <validation-provider name="contact_email_option" v-slot="v">
               <el-checkbox v-model="drawerScope.editedObject.hide_sticker">{{ i18n('feedback.hide-sticker') }}</el-checkbox>
@@ -250,7 +251,7 @@
 				<div class="cly-vue-drawer-step__section">
 					<div class="cly-vue-drawer-step__section">
             <div class="text-big text-heading">
-              Segmentation
+              {{ i18n('feedback.segmentation') }}
             </div>
             <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered">
               <div class="bu-column bu-is-12">
@@ -265,7 +266,7 @@
             </div>
             <el-checkbox
               size="small"
-              v-bind:label="i18n('surveys.generic.nps.set-active')"
+              v-bind:label="i18n('feedback.set-feedback-active')"
               v-model="drawerScope.editedObject.status">
             </el-checkbox>
           </div>
