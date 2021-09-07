@@ -8,10 +8,11 @@
             data: function() {
                 return {
                     activeApp: {
+                        name: "",
                         value: ""
                     },
+                    value:"",
                     centerDialogVisible: true,
-                    name: ""
                 };
             },
             props: {
@@ -64,7 +65,7 @@
                    this.$store.dispatch("countlyCommon/removeActiveApp");
                    store.remove('countly_date');
                    store.remove('countly_location_city');
-                   this.logoutRequest()
+                   this.logoutRequest();
                 },
                 logoutRequest: function() {
                     var logoutForm = document.createElement("form");

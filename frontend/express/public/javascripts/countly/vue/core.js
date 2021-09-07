@@ -131,7 +131,7 @@
                         }
                     },
                     removeActiveApp: function(context) {
-                        context.commit("seActiveApp", null);
+                        context.commit("setActiveApp", null);
                     }
                 }
             },

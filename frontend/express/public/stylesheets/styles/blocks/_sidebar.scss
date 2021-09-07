@@ -91,6 +91,8 @@ $bg-color: #24292e;
         box-sizing: border-box;
         height: 100%;
         overflow: scroll;
+        display: flex;
+        flex-direction: column;
     }
 
     &__menu-items,
