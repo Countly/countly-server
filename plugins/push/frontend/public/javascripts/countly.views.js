@@ -861,17 +861,13 @@
                 usersTargetedOptionsYAxis: {
                     type: "value",
                     max: 100,
-                    show: true,
-                    axisLabel: {
-                        formatter: function(value) {
-                            if (value === 0) {
-                                return "";
-                            }
-                            return value;
-                        }
-                    }
+                    show: false,
                 },
-                barWidth: 75,
+                barWidth: 150,
+                barGrid: {
+                    right: "80%",
+                    left: 0,
+                }
             };
         },
         computed: {
@@ -883,34 +879,10 @@
             },
             pushNotificationChartBars: function() {
                 return {
-                    targetedUsers: {
-                        xAxis: this.usersTargetedOptionsXAxis,
-                        yAxis: this.usersTargetedOptionsYAxis,
-                        barWidth: this.barWidth,
-                        series: [{data: [this.findTargetedUsers()], showBackground: true}],
-                        tooltip: {show: false}
-                    },
-                    sentPushNotifications: {
-                        xAxis: this.usersTargetedOptionsXAxis,
-                        yAxis: this.usersTargetedOptionsYAxis,
-                        barWidth: this.barWidth,
-                        series: [{data: [this.findSentPushNotifications()], showBackground: true}],
-                        tooltip: {show: false},
-                    },
-                    clickedPushNotifications: {
-                        xAxis: this.usersTargetedOptionsXAxis,
-                        yAxis: this.usersTargetedOptionsYAxis,
-                        barWidth: this.barWidth,
-                        series: [{data: [this.findClickedPushNotifications()], showBackground: true}],
-                        tooltip: {show: false}
-                    },
-                    failedPushNotifications: {
-                        xAxis: this.usersTargetedOptionsXAxis,
-                        yAxis: this.usersTargetedOptionsYAxis,
-                        barWidth: this.barWidth,
-                        series: [{data: [this.findFailedPushNotifications()], showBackground: true}],
-                        tooltip: {show: false}
-                    },
+                    targetedUsers: this.getDetailsBaseChartOptions(this.findTargetedUsers()),
+                    sentPushNotifications: this.getDetailsBaseChartOptions(this.findSentPushNotifications()),
+                    clickedPushNotifications: this.getDetailsBaseChartOptions(this.findClickedPushNotifications()),
+                    failedPushNotifications: this.getDetailsBaseChartOptions(this.findFailedPushNotifications())
                 };
             },
             chartBarLegend: function() {
@@ -950,6 +922,20 @@
             },
             formatDateAgoText: function(date) {
                 return countlyCommon.formatTimeAgoText(date).text;
+            },
+            getDetailsBaseChartOptions: function(seriesData) {
+                return {
+                    xAxis: this.usersTargetedOptionsXAxis,
+                    yAxis: this.usersTargetedOptionsYAxis,
+                    series: [{data: [seriesData]}, this.getRemainingStackBar(seriesData)],
+                    tooltip: {show: false},
+                    stack: 'total',
+                    grid: this.barGrid,
+                    barWidth: this.barWidth
+                };
+            },
+            getRemainingStackBar: function(value) {
+                return {data: [100 - value], itemStyle: {color: "#E2E4E8"}, silent: true};
             },
             findTargetedUsers: function() {
                 //TODO-LA: find how to calculate the targeted users;
