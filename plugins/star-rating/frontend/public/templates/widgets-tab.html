@@ -1,8 +1,12 @@
 <div v-bind:class="[componentId]" class="ratings-tab-view">
-	<cly-header :title="i18n('feedback.widgets')">
+	<cly-header>
+      <template v-slot:header-left>
+        <h2>{{ i18n('feedback.widgets') }}</h2>
+        &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+      </template>
 			<template v-slot:header-right>
         <div class="bu-level-item">
-          <el-button class="manage-users-action-btn" @click="createWidget()" type="success" size="small" icon="el-icon-circle-plus">Add new widget
+          <el-button class="manage-users-action-btn" @click="createWidget()" type="success" size="small" icon="el-icon-circle-plus"> {{ i18n('feedback.add-new-widget') }}
           </el-button>
         </div>
       </template>
