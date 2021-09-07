@@ -520,7 +520,8 @@
         },
         data: function() {
             return {
-                uncommittedValue: null
+                uncommittedValue: null,
+                selectedCountText: ""
             };
         },
         computed: {
@@ -529,6 +530,14 @@
                     "cly-vue-select-x__pop--hidden-tabs": this.hideDefaultTabs || !this.hasTabs,
                     "cly-vue-select-x__pop--has-single-option": this.hasSingleOption
                 };
+            },
+            showSelectedCount: function() {
+                if (this.$attrs.showSelectedCount) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
             },
             currentTab: function() {
                 var self = this;
@@ -552,8 +561,10 @@
             innerValue: {
                 get: function() {
                     if (this.uncommittedValue && this.uncommittedValue !== this.value) {
+                        this.selectedCountText = CV.i18n('export.export-columns-selected-count', this.uncommittedValue.length, this.options.length);
                         return this.uncommittedValue;
                     }
+                    this.selectedCountText = CV.i18n('export.export-columns-selected-count', this.value.length, this.options.length);
                     return this.value;
                 },
                 set: function(newVal) {
@@ -562,6 +573,7 @@
                         this.$emit("change", newVal);
                     }
                     else {
+                        this.selectedCountText = CV.i18n('export.export-columns-selected-count', newVal.length, this.options.length);
                         this.uncommittedValue = newVal;
                     }
                 }
