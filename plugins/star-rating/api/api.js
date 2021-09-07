@@ -171,7 +171,6 @@ function create_upload_dir(callback) {
 /**
 * Used for file upload
 * @param {object} myfile - file object(if empty - returns)
-* @param {object} changes - object to record logo filname if added(for systemlogs)
 * @param {string} id - unique identifier
 * @param {function} callback = callback function
 **/
