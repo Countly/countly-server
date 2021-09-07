@@ -710,7 +710,8 @@
                 }
             },
             skin: { default: "main", type: String},
-            disabled: {type: Boolean, default: false}
+            disabled: {type: Boolean, default: false},
+            radioDirection: { default: "vertical", type: String}
         },
         computed: {
             topClasses: function() {
@@ -725,6 +726,30 @@
                     classes.push("disabled");
                 }
                 return classes;
+            },
+            wrapperClasses: function() {
+                var classes = "radio-wrapper";
+                if (this.radioDirection === "horizontal") {
+                    classes = "radio-wrapper radio-wrapper-horizontal bu-columns bu-m-0";
+                }
+                return classes;
+            },
+            buttonClasses: function() {
+
+                var classes = "";
+                if (this.radioDirection === "horizontal") {
+                    classes = " bu-column bu-p-0";
+                }
+                return classes;
+            },
+            buttonStyles: function() {
+
+                var classes = "";
+                var itemCn = this.items.length;
+                if (this.radioDirection === "horizontal") {
+                    classes = "width: " + 100 / itemCn + "%;";
+                }
+                return classes;
             }
         },
         methods: {
@@ -735,10 +760,10 @@
             }
         },
         template: '<div class="cly-vue-radio-block" v-bind:class="topClasses">\n' +
-                             '<div class="radio-wrapper">\n' +
-                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex">\n' +
-                                    '<div class="bu-is-flex"><div class="box"></div></div>\n' +
-                                    '<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between"><div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="item.description"></span></div>\n' +
+                             '<div :class="wrapperClasses">\n' +
+                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i"  :class="buttonClasses" :styles="buttonStyles" >\n' +
+                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex"><div class="bu-is-flex"><div class="box"></div></div>\n' +
+                                    '<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between"><div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\n' +
                                     '<div class="bu-is-flex bu-is-align-items-baseline number">' +
 										'<h2>{{item.number}}</h2>' +
 										'<div v-if="item.trend == \'u\'" class="trend-up">\n' +
@@ -747,7 +772,7 @@
 										'<div v-if="item.trend == \'d\'" class="trend-down">\n' +
 											'<i class="fas fa-arrow-down"></i><span>{{item.trendValue}}</span>\n' +
 										'</div>\n' +
-									'</div></div>\n' +
+									'</div></div></div>\n' +
                                 '</div>\n' +
                             '</div>\n' +
                         '</div>'
