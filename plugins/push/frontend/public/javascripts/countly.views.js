@@ -147,8 +147,6 @@
         data: function() {
             return {
                 loading: false,
-                //NOTE-LA:temporarily loading for drawer prepare method
-                isLoading: false,
                 localizationOptions: [],
                 userPropertiesOptions: [],
                 eventOptions: [],
@@ -320,26 +318,26 @@
                 if (this.isReviewNextStepFromContentStep(nextStep, currentStep)) {
                     return this.$refs.content.validate();
                 }
-                return Promise.reject(false);
+                return Promise.resolve(true);
             },
             setLocalizationOptions: function(localizations) {
                 this.localizationOptions = localizations;
             },
             prepareMessage: function() {
-                //TODO-LA: prepareMessage must return a promise 
                 var self = this;
-                var preparePushNotificationModel = Object.assign({}, this.pushNotificationUnderEdit);
-                preparePushNotificationModel.type = this.type;
-                countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
-                    self.setLocalizationOptions(response.localizations);
-                // eslint-disable-next-line no-unused-vars
-                }).catch(function(error) {
-                    //TODO-LA: return promise that rejects to false and display proper error message in drawer
-                    self.setLocalizationOptions([]);
-                }).finally(function() {
-                    self.isLoading = false;
+                return new Promise(function(resolve) {
+                    var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
+                    preparePushNotificationModel.type = self.type;
+                    countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
+                        self.setLocalizationOptions(response.localizations);
+                        resolve(true);
+                    // eslint-disable-next-line no-unused-vars
+                    }).catch(function(error) {
+                        //TODO-LA: dispatch error notification toast
+                        self.setLocalizationOptions([]);
+                        resolve(false);
+                    });
                 });
-                return true;
             },
             onSubmit: function() {},
             resetState: function() {

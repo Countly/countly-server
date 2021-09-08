@@ -606,25 +606,20 @@
             },
             validate: function(value) {
                 var self = this;
-                if (!value) {
-                    value = this.$refs.element.innerHTML;
-                }
-                if (this.isDefaultLocalizationActive) {
-                    return new Promise(function(resolve, reject) {
+                return new Promise(function(resolve) {
+                    if (!value) {
+                        value = self.$refs.element.innerHTML;
+                    }
+                    if (self.isDefaultLocalizationActive) {
                         self.$refs.defaultLocalizationValidationProvider.validate(value).then(function(result) {
                             self.defaultLocalizationValidationErrors = result.errors;
-                            if (result.valid) {
-                                resolve(true);
-                            }
-                            else {
-                                reject(false);
-                            }
+                            resolve(result.valid);
                         });
-                    });
-                }
-                else {
-                    return Promise.resolve(true);
-                }
+                    }
+                    else {
+                        return resolve(true);
+                    }
+                });
             },
             onInput: function(newValue) {
                 this.$emit('change', newValue);
