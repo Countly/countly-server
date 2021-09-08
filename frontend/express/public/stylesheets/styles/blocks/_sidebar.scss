@@ -181,8 +181,9 @@ $bg-color: #24292e;
     }
 
     &__main-menu {
-        overflow: scroll;
+        overflow: auto;
         height: calc(100% - 70px);
+
         ul {
             li {
                 padding: 2px 14px 2px 14px;
