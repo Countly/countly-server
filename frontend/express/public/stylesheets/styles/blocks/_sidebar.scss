@@ -32,9 +32,11 @@ $bg-color: #24292e;
     .el-collapse {
         border: none;
     }
+
     &__app-name {
         font-size: 14px;
     }
+
     &__app-type {
         font-size: 11px;
         opacity: 0.57;
@@ -90,9 +92,6 @@ $bg-color: #24292e;
         padding-bottom: 50px;
         box-sizing: border-box;
         height: 100%;
-        overflow: scroll;
-        display: flex;
-        flex-direction: column;
     }
 
     &__menu-items,
@@ -142,8 +141,14 @@ $bg-color: #24292e;
     }
 
     &__header {
-        padding: 16px 12px;
+        padding: 12px;
         position: relative;
+        left: 60px;
+        top: 16px;
+        border: 1px solid #424243;
+        box-sizing: border-box;
+        box-shadow: 0px 11px 14px rgba(0, 0, 0, 0.371635);
+        border-radius: 4px;
 
         .el-input__inner {
             height: 50px;
@@ -174,6 +179,7 @@ $bg-color: #24292e;
 
     &__main-menu {
         overflow: scroll;
+        height: calc(100% - 70px);
         ul {
             li {
                 padding: 2px 14px 2px 14px;
@@ -188,13 +194,6 @@ $bg-color: #24292e;
         border-radius: 4px;
         background-position: center;
         display: inline-block;
-    }
-    &__app-selector {
-        border: 1px solid #424243;
-        box-sizing: border-box;
-        box-shadow: 0px 11px 14px rgb(0 0 0 / 37%);
-        border-radius: 4px;
-        z-index: 999;
     }
 
     &__analytics-popper {
