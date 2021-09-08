@@ -3,10 +3,11 @@
 }
 
 .vue-example-wrapper .example-cell{
-    margin: 20px;
+    padding: 20px;
     width: 25%;
     display: inline-block;
     vertical-align: middle;
+    box-sizing: border-box;
 }
 
 .vue-example-wrapper .example-cell section {

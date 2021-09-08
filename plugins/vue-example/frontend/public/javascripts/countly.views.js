@@ -158,7 +158,8 @@
                 elCheckboxValue: true,
                 elRadioValue: '1',
                 elRadioGroup: 'New York',
-                elCheckboxGroup: ['New York', 'London']
+                elCheckboxGroup: ['New York', 'London'],
+                elActiveNames: ""
             };
         },
         methods: {
