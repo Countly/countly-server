@@ -3,13 +3,13 @@
         <template v-slot:header-left>
             <h2> {{i18n('management-applications.title')}} </h2>
         </template>
-        <template v-slot:header-right>
+        <template v-if="!firstApp" v-slot:header-right>
             <el-button type="success" icon="el-icon-circle-plus" @click="createNewApp">{{i18n('common.add-new-app-button')}}</el-button>
         </template>
     </cly-header>
     <cly-main class="bu-pt-4">
         <div class="bu-columns bu-is-gapless">
-            <div class="bu-column bu-is-3 bu-mr-5 app-management-list" style="max-height:681px">
+            <div v-if="!firstApp" class="bu-column bu-is-3 bu-mr-5 app-management-list" style="max-height:681px">
                 <cly-listbox
                     skin="jumbo"
                     height="624"
@@ -22,7 +22,13 @@
                         </template>
                     </cly-listbox>
             </div>
-            <div class="bu-column bu-is-9">
+            <div v-if="firstApp" class="bu-column bu-is-1"></div>
+            <div v-if="firstApp" class="bu-column bu-is-3 bu-mr-5">
+                <h1>{{i18n("management-applications.create-first-app-title")}}</h1>
+                <p>{{i18n("management-applications.create-first-app-description")}}</p>
+            </div>
+            <div v-if="firstApp" class="bu-column bu-is-1"></div>
+            <div :class="{'bu-column':true, 'bu-is-9':!firstApp, 'bu-is-6':firstApp}">
                 <cly-more-options v-if="!newApp" size="small" class="bu-is-pulled-right" @command="handleMenuCommand">
                     <el-dropdown-item :disabled="isDisabled()" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
                         <el-link :disabled="isDisabled()" class="bu-ml-1">{{item.label}}</el-link>
@@ -108,7 +114,7 @@
                                 </template>
                             </cly-form>
                         </div>
-                        <div class="bu-column bu-is-3 bu-ml-4 bu-px-4 bu-py-0 account-settings-avatar-box">
+                        <div v-if="!firstApp" class="bu-column bu-is-3 bu-ml-4 bu-px-4 bu-py-0 account-settings-avatar-box">
                             <div v-if="!newApp" class="bu-is-vcentered bu-px-3 bu-ml-4">
                                 <el-upload 
                                     v-if="!isDisabled()"

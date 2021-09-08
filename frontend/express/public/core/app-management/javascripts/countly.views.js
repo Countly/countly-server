@@ -56,7 +56,9 @@
             if (!countlyGlobal.apps[app_id]) {
                 this.createNewApp();
             }
+
             return {
+                firstApp: this.checkIfFirst(),
                 newApp: this.newApp || false,
                 formId: "app-management-form",
                 types: app.appTypes,
@@ -111,9 +113,24 @@
                     if (countlyGlobal.apps[self.selectedApp]) {
                         self.unpatch();
                     }
+                    else if (self.checkIfFirst()) {
+                        self.newApp = Object.assign({}, self.newApp);
+                    }
+                }, function() {
+                    if (self.checkIfFirst()) {
+                        //validation is not triggered on init for some reason, need to retrigger it
+                        self.newApp = Object.assign({}, self.newApp);
+                    }
                 });
         },
         methods: {
+            checkIfFirst: function() {
+                var isFirst = !Object.keys(countlyGlobal.apps).length;
+                if (isFirst && !this.newApp) {
+                    this.createNewApp();
+                }
+                return isFirst;
+            },
             createNewApp: function() {
                 this.selectedApp = "new";
                 this.newApp = {};
@@ -131,8 +148,37 @@
                         }
                     }
                 }
-                //this.newApp.key = CountlyHelpers.generatePassword(40, true).toLowerCase();
+                this.newApp.key = this.generateAPIKey();
                 app.navigate("#/manage/apps/new");
+            },
+            generateAPIKey: function() {
+                var length = 40;
+                var text = [];
+                var chars = "abcdef";
+                var numbers = "0123456789";
+                var all = chars + numbers;
+
+                //1 char
+                text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+                //1 number
+                text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+
+                var j, x, i;
+                //5 any chars
+                for (i = 0; i < Math.max(length - 2, 5); i++) {
+                    text.push(all.charAt(Math.floor(Math.random() * all.length)));
+                }
+
+                //randomize order
+                for (i = text.length; i; i--) {
+                    j = Math.floor(Math.random() * i);
+                    x = text[i - 1];
+                    text[i - 1] = text[j];
+                    text[j] = x;
+                }
+
+                return text.join("");
+
             },
             isDisabled: function() {
                 return !this.newApp && (this.apps[this.selectedApp].locked || !this.adminApps[this.selectedApp]);
@@ -275,6 +321,7 @@
                                 label: data.name
                             });
                             self.selectedSearchBar = data._id + "";
+                            self.firstApp = self.checkIfFirst();
                         },
                         error: function(xhr, status, error) {
                             CountlyHelpers.notify({
@@ -419,6 +466,15 @@
                             if (index > -1) {
                                 Backbone.history.appIds.splice(index, 1);
                             }
+
+                            delete countlyGlobal.apps[app_id];
+                            delete countlyGlobal.admin_apps[app_id];
+
+                            if (_.isEmpty(countlyGlobal.apps)) {
+                                self.firstApp = self.checkIfFirst();
+                                app.navigate("#/manage/apps/new");
+                            }
+
                             var index2;
                             for (var i = 0; i < self.appList.length; i++) {
                                 if (self.appList[i].value === app_id) {
@@ -431,22 +487,17 @@
                                 self.appList.splice(index2, 1);
                             }
 
-                            if (_.isEmpty(countlyGlobal.apps)) {
-                                //back to first app screen
-                            }
-                            else {
+                            if (!_.isEmpty(countlyGlobal.apps)) {
 
                                 //find next app
-                                var app = (self.appList[index]) ? self.appList[index].value : self.appList[0].value;
-                                self.selectedApp = app;
+                                var nextAapp = (self.appList[index2]) ? self.appList[index2].value : self.appList[0].value;
+                                self.selectedApp = nextAapp;
                                 self.uploadData.app_image_id = countlyGlobal.apps[self.selectedApp]._id + "";
                                 self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png")';
                                 app.navigate("#/manage/apps/" + self.selectedApp);
-                                delete countlyGlobal.apps[app_id];
-                                delete countlyGlobal.admin_apps[app_id];
 
                                 if (countlyCommon.ACTIVE_APP_ID === app_id) {
-                                    app.switchApp(app);
+                                    app.switchApp(nextAapp);
                                 }
                             }
                         },
