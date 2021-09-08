@@ -619,9 +619,6 @@
                 cohorts: [],
                 locations: []
             },
-            hasError: false,
-            error: null,
-            isLoading: false,
             platformFilter: PlatformEnum.ALL,
             localFilter: "de"
         };
@@ -629,14 +626,14 @@
 
     var detailsActions = {
         fetchById: function(context, id) {
-            context.dispatch('onFetchInit');
+            context.dispatch('onFetchInit', {useLoader: true});
             countlyPushNotification.service.fetchById(id)
                 .then(function(response) {
                     var model = countlyPushNotification.mapper.incoming.mapPushNotificationDtoToModel(response);
                     context.commit('setPushNotification', model);
-                    context.dispatch('onFetchSuccess');
+                    context.dispatch('onFetchSuccess', {useLoader: true});
                 }).catch(function(error) {
-                    context.dispatch('onFetchError', error);
+                    context.dispatch('onFetchError', {error: error, useLoader: true});
                 });
         },
         onSetLocalFilter: function(context, value) {
@@ -666,27 +663,13 @@
         setPlatformFilter: function(state, value) {
             state.platformFilter = value;
         },
-        setFetchInit: function(state) {
-            state.isLoading = true;
-            state.hasError = false;
-            state.error = null;
-        },
-        setFetchError: function(state, error) {
-            state.isLoading = false;
-            state.hasError = true;
-            state.error = error;
-        },
-        setFetchSuccess: function(state) {
-            state.isLoading = false;
-            state.hasError = false;
-            state.error = null;
-        }
     };
 
     var pushNotificationDetailsModule = countlyVue.vuex.Module("details", {
         state: getDetailsInitialState,
         actions: detailsActions,
-        mutations: detailsMutations
+        mutations: detailsMutations,
+        submodules: [countlyVue.vuex.FetchMixin()]
     });
 
     countlyPushNotification.getVuexModule = function() {
@@ -706,23 +689,20 @@
                 },
                 statusFilter: countlyPushNotification.service.StatusEnum.ALL,
                 platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
-                isLoading: false,
-                hasError: false,
-                error: null,
                 totalPushMessagesSent: null,
                 totalUserActionsPerformed: null,
             };
         };
 
         var pushNotificationActions = {
-            fetchAll: function(context) {
-                context.dispatch('onFetchInit');
+            fetchAll: function(context, useLoader) {
+                context.dispatch('onFetchInit', {useLoader: useLoader});
                 countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType)
                     .then(function(response) {
                         context.commit('setPushNotifications', response);
-                        context.dispatch('onFetchSuccess');
+                        context.dispatch('onFetchSuccess', {useLoader: useLoader});
                     }).catch(function(error) {
-                        context.dispatch('onFetchError', error);
+                        context.dispatch('onFetchError', {error: error, useLoader: useLoader});
                     });
             },
             onDeletePushNotification: function(context, id) {
@@ -752,15 +732,6 @@
             onSetStatusFilter: function(context, value) {
                 context.commit('setStatusFilter', value);
             },
-            onFetchInit: function(context) {
-                context.commit('setFetchInit');
-            },
-            onFetchError: function(context, error) {
-                context.commit('setFetchError', error);
-            },
-            onFetchSuccess: function(context) {
-                context.commit('setFetchSuccess');
-            },
         };
 
         var pushNotificationMutations = {
@@ -783,28 +754,13 @@
             setPlatformFilter: function(state, value) {
                 state.platformFilter = value;
             },
-            setFetchInit: function(state) {
-                state.isLoading = true;
-                state.hasError = false;
-                state.error = null;
-            },
-            setFetchError: function(state, error) {
-                state.isLoading = false;
-                state.hasError = true;
-                state.error = error;
-            },
-            setFetchSuccess: function(state) {
-                state.isLoading = false;
-                state.hasError = false;
-                state.error = null;
-            }
         };
 
         return countlyVue.vuex.Module("countlyPushNotification", {
             state: getInitialState,
             actions: pushNotificationActions,
             mutations: pushNotificationMutations,
-            submodules: [pushNotificationDetailsModule]
+            submodules: [pushNotificationDetailsModule, countlyVue.vuex.FetchMixin()]
         });
     };
 

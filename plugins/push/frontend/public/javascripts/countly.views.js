@@ -673,7 +673,7 @@
                 return this.$store.state.countlyPushNotification.pushNotifications;
             },
             isLoading: function() {
-                return this.$store.state.countlyPushNotification.isLoading;
+                return this.$store.getters['countlyPushNotification/isLoading'];
             },
             pushNotificationRows: function() {
                 return this.pushNotifications.rows;
@@ -720,7 +720,7 @@
                 },
                 set: function(value) {
                     this.$store.dispatch("countlyPushNotification/onSetPlatformFilter", value);
-                    this.$store.dispatch("countlyPushNotification/fetchAll");
+                    this.$store.dispatch("countlyPushNotification/fetchAll", true);
                 }
             },
             selectedPlatformFilterLabel: function() {
@@ -740,7 +740,7 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyPushNotification/fetchAll');
+                this.$store.dispatch('countlyPushNotification/fetchAll', false);
             },
             formatPercentage: function(value, decimalPlaces) {
                 return CountlyHelpers.formatPercentage(value, decimalPlaces);
@@ -795,7 +795,7 @@
             }
         },
         mounted: function() {
-            this.$store.dispatch('countlyPushNotification/fetchAll');
+            this.$store.dispatch('countlyPushNotification/fetchAll', true);
         }
     });
 
@@ -918,7 +918,10 @@
             },
             totalAppUsers: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.total;
-            }
+            },
+            isLoading: function() {
+                return this.$store.getters['countlyPushNotification/details/isLoading'];
+            },
         },
         methods: {
             // eslint-disable-next-line no-unused-vars

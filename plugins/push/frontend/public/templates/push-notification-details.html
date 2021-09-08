@@ -66,7 +66,7 @@
             <cly-section>
                 <div class="bu-is-flex cly-vue-push-notification-details-chart-bars">
                     <div class="bu-is-flex bu-is-flex-direction-column cly-vue-push-notification-details-chart-bars__item cly-vue-push-notification-details-chart-bars__border-right">
-                        <cly-chart-bar :option="pushNotificationChartBars.targetedUsers" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
+                        <cly-chart-bar :option="pushNotificationChartBars.targetedUsers" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> Users Targeted  <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
@@ -76,7 +76,7 @@
                         </div>
                     </div>
                     <div class="bu-is-flex bu-is-flex-direction-column cly-vue-push-notification-details-chart-bars__item cly-vue-push-notification-details-chart-bars__border-right"> 
-                        <cly-chart-bar :option="pushNotificationChartBars.sentPushNotifications" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
+                        <cly-chart-bar :option="pushNotificationChartBars.sentPushNotifications" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> Sent Notifications  <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
@@ -86,7 +86,7 @@
                         </div>
                     </div>
                     <div class="bu-is-flex bu-is-flex-direction-column cly-vue-push-notification-details-chart-bars__item cly-vue-push-notification-details-chart-bars__border-right"> 
-                        <cly-chart-bar :option="pushNotificationChartBars.clickedPushNotifications":legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
+                        <cly-chart-bar :option="pushNotificationChartBars.clickedPushNotifications" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> Clicked Notifications <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
@@ -96,7 +96,7 @@
                         </div>
                     </div>
                     <div class="bu-is-flex bu-is-flex-direction-column cly-vue-push-notification-details-chart-bars__item"> 
-                        <cly-chart-bar :option="pushNotificationChartBars.failedPushNotifications" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
+                        <cly-chart-bar :option="pushNotificationChartBars.failedPushNotifications" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
                         <div class="cly-vue-push-notification-details-chart-bars__item-legend"> 
                             <div class="bu-my-4 bu-ml-6"> 
                                 <div class="text-medium"> Failed <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
