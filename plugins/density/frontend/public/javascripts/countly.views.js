@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyGlobal*/
+/* global countlyVue,CV,countlyCommon*/
 var AppDensityView = countlyVue.views.create({
     template: CV.T("/density/templates/density.html"),
     data: function() {
@@ -46,7 +46,6 @@ var AppDensityView = countlyVue.views.create({
                                 return this.$store.state.countlyDevicesAndTypes.appDensity;
                             },
                             appDensityRows: function() {
-                                console.log(this.appDensity.chartData,'rows');
                                 return this.appDensity.chartData;
                             },
                             isLoading: function() {
@@ -159,7 +158,7 @@ var AppDensityView = countlyVue.views.create({
             }
         },
         graphColors: function() {
-            return ["#017AFF", "#39C0C8", "#F5C900", "#6C47FF", "#017AFF","#39C0C8"];
+            return ["#017AFF", "#39C0C8", "#F5C900", "#6C47FF", "#017AFF", "#39C0C8"];
         },
         appDensity: function() {
             return this.$store.state.countlyDevicesAndTypes.appDensity;
@@ -238,10 +237,10 @@ var AppDensityView = countlyVue.views.create({
 
 });
 
-    countlyVue.container.registerTab("/analytics/technology", {
-        priority: 7,
-        name: "densities",
-        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/densities",
-        title: CV.i18n('density.title'),
-        component: AppDensityView
-    });
+countlyVue.container.registerTab("/analytics/technology", {
+    priority: 7,
+    name: "densities",
+    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/densities",
+    title: CV.i18n('density.title'),
+    component: AppDensityView
+});

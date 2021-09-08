@@ -1,4 +1,4 @@
-/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser*/
+/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser,countlyDensity*/
 (function(countlyDevicesAndTypes) {
 
     CountlyHelpers.createMetricModel(window.countlyDevicesAndTypes, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
@@ -213,27 +213,25 @@
             }
             chartData.versions = stacked_version;
 
-       
             return chartData;
         },
         calculateDensity: function() {
             var chartData = [];
-            var calculatedchartData = [];            
+            var calculatedchartData = [];
             var segmentedDataTotalSession, segmentedDataTotalUsers, segmentedDataNewUsers;
 
             // calculate chartData
             var segmentedData = countlyDensity.getOSSegmentedData(countlyCommon.ACTIVE_APP_ID).os;
-            for(var i=0; i<segmentedData.length; i++) {
+            for (var i = 0; i < segmentedData.length; i++) {
                 segmentedDataTotalSession = 0;
                 segmentedDataTotalUsers = 0;
                 segmentedDataNewUsers = 0;
-                for(var j=0; j<countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData.length; j++) {
+                for (var j = 0; j < countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData.length; j++) {
                     segmentedDataTotalSession += parseInt(countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData[j].t);
                     segmentedDataTotalUsers += parseInt(countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData[j].u);
                     segmentedDataNewUsers += parseInt(countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData[j].n);
-        
                 }
-                calculatedchartData.push({density: segmentedData[i].name, t:segmentedDataTotalSession, u:segmentedDataTotalUsers, n:segmentedDataNewUsers});
+                calculatedchartData.push({density: segmentedData[i].name, t: segmentedDataTotalSession, u: segmentedDataTotalUsers, n: segmentedDataNewUsers});
             }
             chartData.chartData = calculatedchartData;
 
@@ -248,9 +246,9 @@
 
             // calculate versions
             var stacked_version = [];
-            for (var i = 0; i < chartData.chartData.length; i++) {
-                var tmpDensityVersion = countlyDensity.getOSSegmentedData(chartData.chartData[i].density).chartData;
-                stacked_version.push({"label": chartData.chartData[i].density, "u": chartData.chartData[i].u, "t": chartData.chartData[i].t, "n": chartData.chartData[i].n, "data": tmpDensityVersion});
+            for (var t = 0; t < chartData.chartData.length; t++) {
+                var tmpDensityVersion = countlyDensity.getOSSegmentedData(chartData.chartData[t].density).chartData;
+                stacked_version.push({"label": chartData.chartData[t].density, "u": chartData.chartData[t].u, "t": chartData.chartData[t].t, "n": chartData.chartData[t].n, "data": tmpDensityVersion});
             }
             chartData.versions = stacked_version;
 
@@ -494,7 +492,7 @@
             setSelectedBrowser: function(state, value) {
                 state.selectedBrowser = value;
             },
-            setSelectedDensity : function(state, value) {
+            setSelectedDensity: function(state, value) {
                 state.selectedDensity = value;
             },
             setSelectedDatePeriod: function(state, value) {
