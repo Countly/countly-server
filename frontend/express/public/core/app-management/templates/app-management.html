@@ -175,7 +175,8 @@
                 <cly-section v-if="!newApp" >
                     <el-collapse class="bu-mx-4 app-management-details">
                         <el-collapse-item :title="value.title" :name="id" :key="id" v-for="(value, id) in appSettings">
-                            <cly-inline-form-field :key="key" :label="getLabelName(key)" v-for="(conf, key) in value.inputs">
+                            <component v-if="value.component" v-bind:is="value.component"></component>
+                            <cly-inline-form-field v-else :key="key" :label="getLabelName(key)" v-for="(conf, key) in value.inputs">
                                     <el-input
                                         v-if="conf.input === 'el-input'" 
                                         @input="onChange(key, $event)"

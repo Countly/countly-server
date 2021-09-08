@@ -214,6 +214,18 @@
                 this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png?' + Date.now() + '")';
                 countlyGlobal.apps[this.selectedApp].image = "appimages/" + this.selectedApp + '.png?' + Date.now();
             },
+            loadComponents: function() {
+                var cc = countlyVue.container.dataMixin({
+                    'appSettingsComponents': '/app/settings'
+                });
+                cc = cc.data();
+                var allComponents = cc.appSettingsComponents;
+                for (var i = 0; i < allComponents.length; i++) {
+                    if (allComponents[i]._id && allComponents[i].title && allComponents[i].component) {
+                        this.appSettings[allComponents[i]._id] = allComponents[i];
+                    }
+                }
+            },
             sortBy: function(arrayToSort, sortList) {
                 if (!sortList.length) {
                     return arrayToSort;
@@ -498,6 +510,7 @@
                         }
                     }
                 }
+                this.loadComponents();
             },
             saveSettings: function() {
                 var self = this;
