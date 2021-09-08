@@ -1,4 +1,4 @@
-/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment*/
+/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
         props: {
@@ -610,9 +610,20 @@
                     value = this.$refs.element.innerHTML;
                 }
                 if (this.isDefaultLocalizationActive) {
-                    this.$refs.defaultLocalizationValidationProvider.validate(value).then(function(result) {
-                        self.defaultLocalizationValidationErrors = result.errors;
+                    return new Promise(function(resolve, reject) {
+                        self.$refs.defaultLocalizationValidationProvider.validate(value).then(function(result) {
+                            self.defaultLocalizationValidationErrors = result.errors;
+                            if (result.valid) {
+                                resolve(true);
+                            }
+                            else {
+                                reject(false);
+                            }
+                        });
                     });
+                }
+                else {
+                    return Promise.resolve(true);
                 }
             },
             onInput: function(newValue) {
@@ -630,8 +641,6 @@
                     element.dispatchEvent(event);
                 });
             }
-            //TODO-LA: trigger validation when user tries to go to next step instead of when component is mounted
-            this.validate();
         },
         beforeDestroy: function() {
             //TODO-LA: remove all user properties elements' event listeners

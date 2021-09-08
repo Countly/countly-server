@@ -521,7 +521,7 @@
                                     class="bu-ml-1"                        
                                     v-tooltip.top-left="isDefaultLocalizationActive?'Default message is required':null"
                                     :checked="isLocalizationSelected(localization.value)" 
-                                    :disabled="localization.value === 'default'" 
+                                    :disabled="isDefaultLocalization(localization.value)" 
                                     :key="localization.value" 
                                     @change="onLocalizationChange(localization)">
                                 </el-checkbox>

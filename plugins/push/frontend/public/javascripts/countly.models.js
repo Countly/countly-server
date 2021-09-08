@@ -1,10 +1,12 @@
-/*global countlyVue, CV, countlyCommon, Promise, moment,_*/
+/*global countlyVue,CV,countlyCommon,Promise,moment,_,countlyGlobalLang,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.messages-sent-serie-name');
     var actionsPerformedLabel = CV.i18n('push-notification.actions-performed-serie-name');
     var DEBOUNCE_TIME_IN_MS = 250;
     var MB_TO_BYTES_RATIO = 1000000;
+    var DEFAULT_LOCALIZATION_VALUE = 'default';
+    var DEFAULT_LOCALIZATION_LABEL = 'Default';
 
     var TypeEnum = Object.freeze({
         ONE_TIME: "oneTime",
@@ -174,6 +176,9 @@
                 }
             });
             return components;
+        },
+        getDefaultLocalization: function() {
+            return {label: DEFAULT_LOCALIZATION_LABEL, value: DEFAULT_LOCALIZATION_VALUE};
         },
     };
 
@@ -369,6 +374,33 @@
                     size: metadataDto['content-length'] / MB_TO_BYTES_RATIO,
                 };
             },
+            mapLocalizationItemByKey: function(localizationKey) {
+                return { label: countlyGlobalLang.languages[localizationKey].englishName, value: localizationKey};
+            },
+            hasNoUsersToPrepare: function(preparePushNotificationDto) {
+                return preparePushNotificationDto.build.total === 0;
+            },
+            hasDefaultLocalizationOnly: function(preparePushNotificationDto) {
+                return Object.keys(preparePushNotificationDto.build.count).length === 0;
+            },
+            mapLocalizationOptionsFromPrepareDto: function(preparePushNotificationDto) {
+                var self = this;
+                if (this.hasNoUsersToPrepare(preparePushNotificationDto)) {
+                    throw new Error('No users were found from selected configuration');
+                }
+                if (this.hasDefaultLocalizationOnly(preparePushNotificationDto)) {
+                    return [countlyPushNotification.helper.getDefaultLocalization()];
+                }
+                var result = Object.keys(preparePushNotificationDto.build.count).map(function(localKey) {
+                    var localizationItem = self.mapLocalizationItemByKey(localKey);
+                    localizationItem.percentage = CountlyHelpers.formatPercentage(preparePushNotificationDto.build.count[localKey] / preparePushNotificationDto.build.total);
+                    return localizationItem;
+                });
+                result.unshift(countlyPushNotification.helper.getDefaultLocalization());
+                return {
+                    localizations: result
+                };
+            }
         },
         outgoing: {
             mapType: function(type) {
@@ -393,15 +425,25 @@
                     }
                 });
             },
-            mapPushNotificationModelToBaseDto: function(pushNotificationModel, type) {
-                var typeDto = this.mapType(type);
+            convertExpirationToMS: function(expirationObject) {
+                var result = 0;
+                if (expirationObject.days) {
+                    result += moment.duration(expirationObject.days, 'd').asMilliseconds();
+                }
+                if (expirationObject.hours) {
+                    result += moment.duration(expirationObject.hours, 'h').asMilliseconds();
+                }
+                return result;
+            },
+            mapPushNotificationModelToBaseDto: function(pushNotificationModel) {
+                var typeDto = this.mapType(pushNotificationModel.type);
                 var resultDto = {
                     apps: [countlyCommon.ACTIVE_APP_ID],
                     platforms: this.mapPlatforms(pushNotificationModel.platforms),
-                    cohorts: pushNotificationModel.cohorts,
-                    geos: pushNotificationModel.locations,
+                    cohorts: [].concat(pushNotificationModel.cohorts),
+                    geos: [].concat(pushNotificationModel.locations),
                     delayed: pushNotificationModel.delivery === DeliveryEnum.LATER,
-                    expiration: 604800000,
+                    expiration: this.convertExpirationToMS(pushNotificationModel.expiration),
                     tx: typeDto.tx,
                     auto: typeDto.auto,
                     tz: pushNotificationModel.timezone === TimeZoneEnum.DEVICE,
@@ -417,6 +459,8 @@
     };
 
     countlyPushNotification.service = {
+        DEFAULT_LOCALIZATION_VALUE: DEFAULT_LOCALIZATION_VALUE,
+        DEFAULT_LOCALIZATION_LABEL: DEFAULT_LOCALIZATION_LABEL,
         TypeEnum: TypeEnum,
         PeriodEnum: PeriodEnum,
         PlatformEnum: PlatformEnum,
@@ -535,19 +579,23 @@
         }, DEBOUNCE_TIME_IN_MS),
         prepare: function(pushNotificationModel) {
             var result = countlyPushNotification.mapper.outgoing.mapPushNotificationModelToBaseDto(pushNotificationModel);
-            var data = {};
-            data.args = JSON.stringify(result);
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
-                    method: 'POST',
-                    url: window.countlyCommon.API_URL + '/i/pushes/prepare?api_key=' + window.countlyGlobal.member.api_key,
-                    data: data,
+                    type: "POST",
+                    url: window.countlyCommon.API_URL + '/i/pushes/prepare',
+                    data: {
+                        args: JSON.stringify(result)
+                    },
+                    dataType: "json",
                     success: function(response) {
-                        console.log(response);
-                        resolve();
+                        try {
+                            resolve(countlyPushNotification.mapper.incoming.mapLocalizationOptionsFromPrepareDto(response));
+                        }
+                        catch (error) {
+                            reject(error);
+                        }
                     },
                     error: function(error) {
-                        console.log(error);
                         reject(error);
                     }
                 });

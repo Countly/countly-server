@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment,countlyEventsOverview*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment,countlyEventsOverview,Promise*/
 (function() {
 
     var AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = [
@@ -47,12 +47,12 @@
         name: "",
         platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
         targeting: countlyPushNotification.service.TargetingEnum.ALL,
-        whenToDetermine: countlyPushNotification.service.BEFORE,
+        whenToDetermine: countlyPushNotification.service.WhenToDetermineEnum.BEFORE,
         message: {
             default: {
                 title: "",
                 content: "",
-                localizationLabel: "Default",
+                localizationLabel: countlyPushNotification.service.DEFAULT_LOCALIZATION_LABEL,
                 buttons: [],
                 properties: {
                     title: {},
@@ -83,8 +83,8 @@
                 mediaURL: ""
             }
         },
-        messageType: countlyPushNotification.service.CONTENT,
-        localizations: ["default"],
+        messageType: countlyPushNotification.service.MessageTypeEnum.CONTENT,
+        localizations: [countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE],
         cohorts: [],
         locations: [],
         delivery: {
@@ -149,7 +149,7 @@
                 loading: false,
                 //NOTE-LA:temporarily loading for drawer prepare method
                 isLoading: false,
-                localizationOptions: [{label: "Default", value: "default"}, {label: "English", value: "en"}, {label: "German", value: "ge"}],
+                localizationOptions: [],
                 userPropertiesOptions: [],
                 eventOptions: [],
                 saveButtonLabel: "Submit",
@@ -166,8 +166,8 @@
                 AutomaticWhenConditionNotMetEnum: countlyPushNotification.service.AutomaticWhenConditionNotMetEnum,
                 MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
                 messageTypeFilterOptions: messageTypeFilterOptions,
-                activeLocalization: "default",
-                selectedLocalizationFilter: "default",
+                activeLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
+                selectedLocalizationFilter: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 isConfirmed: false,
                 expandedPlatformSettings: [],
                 isEndDateEnabled: false,
@@ -217,7 +217,7 @@
                 return "+Add Second button";
             },
             isDefaultLocalizationActive: function() {
-                return this.activeLocalization === 'default';
+                return this.activeLocalization === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
             },
             isAddButtonDisabled: function() {
                 return this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.length === 2;
@@ -225,7 +225,7 @@
             selectedLocalizationFilterOptions: function() {
                 var self = this;
                 return this.pushNotificationUnderEdit.localizations.map(function(selectedLocalization) {
-                    return {label: self.pushNotificationUnderEdit.message[selectedLocalization].localizationLabel, value: selectedLocalization};
+                    return {label: self.pushNotificationUnderEdit.message[selectedLocalization].label, value: selectedLocalization};
                 });
             },
             selectedLocalizationMessage: function() {
@@ -288,12 +288,6 @@
             }
         },
         methods: {
-            //TODO-LA: callback function of drawer step has to return a Promise
-            // eslint-disable-next-line no-unused-vars
-            onStepClick: function(nextStep, currentStep, originator) {
-                this.prepareMessage();
-                return true;
-            },
             setUserPropertiesOptions: function(userPropertiesOptionsDto) {
                 this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
                     if (userPropertyOptionDto.id) {
@@ -310,25 +304,47 @@
                     });
                 }
             },
-            prepareMessage: function() {
-                //TODO-LA: callback function of drawer step needs to be invoked only once, when user clicks for the first time
-                var self = this;
-                if (!this.isLoading) {
-                    countlyPushNotification.service.prepare(this.pushNotificationUnderEdit, this.type).then(function() {
-                        console.log('prepare has finished successfully');
-                    }).catch(function(error) {
-                        console.log('got error:', error);
-                    }).finally(function() {
-                        console.log('setting isLoading to false');
-                        self.isLoading = false;
-                    });
-                    this.isLoading = true;
+            isDeliveryNextStepFromInfoStep: function(nextStep, currentStep) {
+                return nextStep === 1 && currentStep === 0;
+            },
+            isReviewNextStepFromContentStep: function(nextStep, currentStep) {
+                return nextStep === 3 && currentStep === 2;
+            },
+            isContentNextStepFromInfoStep: function(nextStep, currentStep) {
+                return nextStep === 2 && currentStep === 0;
+            },
+            onStepClick: function(nextStep, currentStep) {
+                if (this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep)) {
+                    return this.prepareMessage();
                 }
+                if (this.isReviewNextStepFromContentStep(nextStep, currentStep)) {
+                    return this.$refs.content.validate();
+                }
+                return Promise.reject(false);
+            },
+            setLocalizationOptions: function(localizations) {
+                this.localizationOptions = localizations;
+            },
+            prepareMessage: function() {
+                //TODO-LA: prepareMessage must return a promise 
+                var self = this;
+                var preparePushNotificationModel = Object.assign({}, this.pushNotificationUnderEdit);
+                preparePushNotificationModel.type = this.type;
+                countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
+                    self.setLocalizationOptions(response.localizations);
+                // eslint-disable-next-line no-unused-vars
+                }).catch(function(error) {
+                    //TODO-LA: return promise that rejects to false and display proper error message in drawer
+                    self.setLocalizationOptions([]);
+                }).finally(function() {
+                    self.isLoading = false;
+                });
+                return true;
             },
             onSubmit: function() {},
             resetState: function() {
-                this.activeLocalization = "default",
-                this.selectedLocalizationFilter = "default",
+                this.activeLocalization = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
+                this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 this.isConfirmed = false,
                 this.expandedPlatformSettings = [],
                 this.isEndDateEnabled = false;
@@ -354,10 +370,15 @@
                 });
                 this.pushNotificationUnderEdit.message[this.activeLocalization].buttons = filteredButtons;
             },
-            deleteAllNonDefaultLocalizations: function() {
+            removeAllNonDefaultSelectedLocalizations: function() {
+                this.pushNotificationUnderEdit.localizations = this.pushNotificationUnderEdit.localizations.filter(function(selectedLocalization) {
+                    return selectedLocalization === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+                });
+            },
+            deleteAllNonDefaultLocalizationMessages: function() {
                 var self = this;
                 Object.keys(this.pushNotificationUnderEdit.message).forEach(function(key) {
-                    if (key && key !== 'default') {
+                    if (key && key !== countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE) {
                         self.$delete(self.pushNotificationUnderEdit.message, key);
                     }
                 });
@@ -365,13 +386,18 @@
             onMultipleLocalizationChange: function(isChecked) {
                 this.pushNotificationUnderEdit.multipleLocalizations = isChecked;
                 if (!isChecked) {
-                    this.onLocalizationChange({value: 'default', label: "Default"});
-                    this.deleteAllNonDefaultLocalizations();
+                    this.setActiveLocalization(countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE);
+                    this.resetMessageInHTMLToActiveLocalization();
+                    this.deleteAllNonDefaultLocalizationMessages();
+                    this.removeAllNonDefaultSelectedLocalizations();
                 }
             },
+            isDefaultLocalization: function(value) {
+                return value === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+            },
             isLocalizationSelected: function(value) {
-                return this.pushNotificationUnderEdit.localizations.filter(function(activeLocalization) {
-                    return value === activeLocalization;
+                return this.pushNotificationUnderEdit.localizations.filter(function(selectedLocalization) {
+                    return value === selectedLocalization;
                 }).length > 0;
             },
             addEmptyLocalizationMessageIfNotFound: function(localization) {
@@ -424,7 +450,7 @@
                 }
                 else {
                     this.removeLocalization(localization.value);
-                    this.setActiveLocalization("default");
+                    this.setActiveLocalization(countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE);
                     this.resetMessageInHTMLToActiveLocalization();
                 }
             },
