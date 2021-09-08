@@ -1,6 +1,6 @@
 <div class="cly-vue-sidebar__menu">
-    <div class="cly-vue-sidebar__header cursor-pointer bu-m-3 bu-mb-4" @click="toggleAppSelection()">
-        <div class="cly-vue-sidebar__app-selector bu-is-flex">
+    <div class="cly-vue-sidebar__header">
+        <div class="cly-vue-sidebar__app-selector bu-pl-2 bu-is-flex bu-is-align-items-center cursor-pointer" @click="toggleAppSelection()">
             <div class="cly-vue-sidebar__app-image" :style="{backgroundImage: 'url(' + activeApp.image + ')'}"></div>
             <div>
                 <div class="cly-vue-sidebar__app-name-type bu-is-flex bu-is-flex-direction-column bu-ml-2">
@@ -8,7 +8,7 @@
                     <span class="cly-vue-sidebar__app-type font-italic"> {{activeApp.type}}</span>
                 </div>
             </div>
-            <span class="el-input__suffix">
+            <span class="el-input__suffix bu-pr-4">
                 <span class="el-input__suffix-inner">
                     <i class="el-select__caret el-input__icon bu-mr-2 ion-arrow-down-b"></i>
                 </span>
@@ -25,10 +25,9 @@
                             <el-collapse-item :title="i18nM(menu.title)" :name="menu.name" :icon="{position: 'right', direction: 'down'}">
                                 <ul>
                                     <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
-                                        <div
-                                            :class="['cly-vue-sidebar__submenu-items',
+                                        <div :class="['cly-vue-sidebar__submenu-items',
                                                     {'cly-vue-sidebar__submenu-items--selected': selectedMenuItem.name === submenu.name}]"
-                                                    @click="onMenuItemClick(submenu)">
+                                            @click="onMenuItemClick(submenu)">
                                             <a :href="submenu.url">
                                                 <div class="has-ellipsis">{{i18nM(submenu.title)}}</div>
                                             </a>
@@ -38,10 +37,9 @@
                             </el-collapse-item>
                         </el-collapse>
                     </div>
-                    <div v-else
-                        :class="['cly-vue-sidebar__menu-items',
+                    <div v-else :class="['cly-vue-sidebar__menu-items',
                                 {'cly-vue-sidebar__menu-items--selected': selectedMenuItem.name === menu.name}]"
-                                @click="onMenuItemClick(menu)">
+                        @click="onMenuItemClick(menu)">
                         <a :href="menu.url">
                             <div class="has-ellipsis">{{i18nM(menu.title)}}</div>
                         </a>

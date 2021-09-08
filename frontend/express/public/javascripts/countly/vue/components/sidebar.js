@@ -11,7 +11,7 @@
                         name: "",
                         value: ""
                     },
-                    value:"",
+                    value: "",
                     centerDialogVisible: true,
                 };
             },
@@ -61,13 +61,13 @@
                 };
             },
             methods: {
-                logout: function () {
+                logout: function() {
                     this.$store.dispatch("countlyCommon/removeActiveApp");
-                    // store.remove('countly_date');
-                    // store.remove('countly_location_city');
+                    store.remove('countly_date');
+                    store.remove('countly_location_city');
                     this.logoutRequest();
                 },
-                logoutRequest: function () {
+                logoutRequest: function() {
                     var logoutForm = document.createElement("form");
                     logoutForm.action = countlyGlobal.path + '/logout';
                     logoutForm.method = "post";
@@ -78,11 +78,9 @@
                     logoutForm_csrf.value = countlyGlobal.csrf_token;
                     logoutForm.appendChild(logoutForm_csrf);
                     document.body.appendChild(logoutForm);
-
                     logoutForm.submit();
                     document.body.removeChild(logoutForm);
                 }
-                
             }
         });
 
