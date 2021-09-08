@@ -1,161 +1,162 @@
-/* global countlyVue,CV,countlyUserActivity,app,CountlyHelpers*/
-var UserActivityFilter = countlyVue.views.BaseView.extend({
-    template: "#user-activity-filter",
-    computed: {
-        userActivityFilters: {
-            get: function() {
-                return this.$store.state.countlyUserActivity.userActivityFilters;
-            },
-            set: function(value) {
-                this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', value);
-            }
-        }
-    },
-    methods: {
-        onApplyFilter: function() {
-            this.$store.dispatch('countlyUserActivity/fetchAll');
-        }
-    }
-});
-
-var UserActivityBarChart = countlyVue.views.BaseView.extend({
-    template: "#user-activity-bar-chart",
-    data: function() {
-        return {
-            barChartItemsLegends: {
-                all: CV.i18n('user-activity.barchart-all-users'),
-                sevenDays: CV.i18n('user-activity.barchart-seven-days'),
-                thirtyDays: CV.i18n('user-activity.barchart-thirty-days')
-            },
-        };
-    },
-    computed: {
-        userActivity: function() {
-            return this.$store.state.countlyUserActivity.userActivity;
-        },
-        seriesTotal: function() {
-            return this.$store.state.countlyUserActivity.seriesTotal;
-        },
-
-        userActivityOptions: function() {
+/* global countlyVue,CV,countlyUserActivity,app,CountlyHelpers,countlyCommon*/
+(function() {
+    var UserActivityView = countlyVue.views.create({
+        template: CV.T("/core/user-activity/templates/user-activity.html"),
+        data: function() {
             return {
-                xAxis: {
-                    data: this.xAxisUserActivitySessionBuckets
+                barChartItemsLegends: {
+                    all: CV.i18n('user-activity.barchart-all-users'),
+                    sevenDays: CV.i18n('user-activity.barchart-seven-days'),
+                    thirtyDays: CV.i18n('user-activity.barchart-thirty-days')
                 },
-                series: this.yAxisUserActivityCountSeries
+                progressBarColor: "#39C0C8",
+                DECIMAL_PLACES_FORMAT: 2,
             };
         },
-        xAxisUserActivitySessionBuckets: function() {
-            return this.$store.state.countlyUserActivity.nonEmptyBuckets;
-        },
-        yAxisUserActivityCountSeries: function() {
-            var self = this;
-            return Object.keys(this.userActivity).map(function(userActivityKey) {
+        computed: {
+            userActivity: function() {
+                return this.$store.state.countlyUserActivity.userActivity;
+            },
+            userActivityFilters: {
+                get: function() {
+                    return this.$store.state.countlyUserActivity.userActivityFilters;
+                },
+                set: function(value) {
+                    this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', value);
+                    this.$store.dispatch('countlyUserActivity/fetchAll', true);
+                }
+            },
+            isLoading: function() {
+                return this.$store.getters['countlyUserActivity/isLoading'];
+            },
+            seriesTotal: function() {
+                return this.$store.state.countlyUserActivity.seriesTotal;
+            },
+            userActivityRows: function() {
+                var rows = [];
+                var self = this;
+                Object.keys(self.userActivity).forEach((function(userActivityKey) {
+                    var userActivitySerie = self.userActivity[userActivityKey];
+                    userActivitySerie.forEach(function(userActivitySerieItem, userActivitySerieItemIndex) {
+                        self.addEmptyRowIfNotFound(rows, userActivitySerieItemIndex);
+                        rows[userActivitySerieItemIndex].bucket = userActivitySerieItem._id;
+                        rows[userActivitySerieItemIndex][userActivityKey] = userActivitySerieItem.count;
+                    });
+                }));
+                return rows;
+            },
+            userActivityOptions: function() {
                 return {
-                    data: self.userActivity[userActivityKey].map(function(item) {
-                        return item.count;
-                    }),
-                    name: self.barChartItemsLegends[userActivityKey],
+                    xAxis: {
+                        data: this.xAxisUserActivitySessionBuckets
+                    },
+                    series: this.yAxisUserActivityCountSeries
                 };
-            });
-        },
-        isLoading: function() {
-            return this.$store.state.countlyUserActivity.isLoading;
-        }
-    }
-});
-
-var UserActivityTable = countlyVue.views.BaseView.extend({
-    template: "#user-activity-table",
-    data: function() {
-        return {
-            progressBarColor: "#39C0C8",
-            DECIMAL_PLACES_FORMAT: 2,
-        };
-    },
-    methods: {
-        formatPercentage: function(value) {
-            if (isNaN(value)) {
-                return 0;
-            }
-            return parseFloat((Math.round(value * 100)).toFixed(this.DECIMAL_PLACES));
-        },
-        addEmptyRowIfNotFound: function(rowsArray, index) {
-            if (!rowsArray[index]) {
-                rowsArray.push({});
-            }
-        }
-    },
-    computed: {
-        userActivity: function() {
-            return this.$store.state.countlyUserActivity.userActivity;
-        },
-        isLoading: function() {
-            return this.$store.state.countlyUserActivity.isLoading;
-        },
-        seriesTotal: function() {
-            return this.$store.state.countlyUserActivity.seriesTotal;
-        },
-        userActivityRows: function() {
-            var rows = [];
-            var self = this;
-            Object.keys(self.userActivity).forEach((function(userActivityKey) {
-                var userActivitySerie = self.userActivity[userActivityKey];
-                userActivitySerie.forEach(function(userActivitySerieItem, userActivitySerieItemIndex) {
-                    self.addEmptyRowIfNotFound(rows, userActivitySerieItemIndex);
-                    rows[userActivitySerieItemIndex].bucket = userActivitySerieItem._id;
-                    rows[userActivitySerieItemIndex][userActivityKey] = userActivitySerieItem.count;
+            },
+            xAxisUserActivitySessionBuckets: function() {
+                return this.$store.state.countlyUserActivity.nonEmptyBuckets;
+            },
+            yAxisUserActivityCountSeries: function() {
+                var self = this;
+                return Object.keys(this.userActivity).map(function(userActivityKey) {
+                    return {
+                        data: self.userActivity[userActivityKey].map(function(item) {
+                            return item.count;
+                        }),
+                        name: self.barChartItemsLegends[userActivityKey],
+                    };
                 });
-            }));
-            return rows;
+            },
         },
-    }
-});
+        methods: {
+            refresh: function() {
+                this.$store.dispatch('countlyUserActivity/fetchAll', false);
+            },
+            formatPercentage: function(value) {
+                return CountlyHelpers.formatPercentage(value);
+            },
+            addEmptyRowIfNotFound: function(rowsArray, index) {
+                if (!rowsArray[index]) {
+                    rowsArray.push({});
+                }
+            }
+        },
+        mounted: function() {
+            if (this.$route.params && this.$route.params.query) {
+                this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', {query: this.$route.params.query });
+            }
+            this.$store.dispatch('countlyUserActivity/fetchAll', true);
+        }
+    });
 
-var UserActivityView = countlyVue.views.BaseView.extend({
-    template: "#user-activity",
-    components: {
-        "user-activity-filter": UserActivityFilter,
-        "user-activity-bar-chart": UserActivityBarChart,
-        "user-activity-table": UserActivityTable
-    },
-    data: function() {
-        return {
-            description: CV.i18n('user-activity.decription')
+
+    //Note: the parent component that renders all user loyalty tabs.
+    var UserLoyaltyView = countlyVue.views.create({
+        template: CV.T("/core/user-activity/templates/user-loyalty.html"),
+        mixins: [
+            countlyVue.container.tabsMixin({
+                "userLoyaltyTabs": "/analytics/loyalty"
+            })
+        ],
+        data: function() {
+            return {
+                selectedTab: (this.$route.params && this.$route.params.tab) || "user-activity"
+            };
+        },
+        computed: {
+            tabs: function() {
+                return this.userLoyaltyTabs;
+            }
+        },
+    });
+
+    var getUserLoyaltyView = function() {
+        var tabsVuex = countlyVue.container.tabsVuex(["/analytics/loyalty"]);
+        return new countlyVue.views.BackboneWrapper({
+            component: UserLoyaltyView,
+            vuex: tabsVuex,
+            templates: [
+                "/drill/templates/query.builder.v2.html"
+            ]
+        });
+    };
+
+    app.route("/analytics/loyalty", "loyalty", function() {
+        var userLoyaltyViewWrapper = getUserLoyaltyView();
+        this.renderWhenReady(userLoyaltyViewWrapper);
+    });
+
+    app.route("/analytics/loyalty/*tab", "loyalty-tab", function(tab) {
+        var userLoyaltyViewWrapper = getUserLoyaltyView();
+        var params = {
+            tab: tab,
         };
-    },
-    methods: {
-        refresh: function() {
-            this.$store.dispatch('countlyUserActivity/fetchAll');
+        userLoyaltyViewWrapper.params = params;
+        this.renderWhenReady(userLoyaltyViewWrapper);
+    });
+
+    app.route("/analytics/loyalty/*tab/*query", "loyalty-tab", function(tab, query) {
+        var userLoyaltyViewWrapper = getUserLoyaltyView();
+        var params = {
+            tab: tab,
+        };
+        var queryUrlParameter = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
+        if (queryUrlParameter) {
+            params.query = queryUrlParameter;
         }
-    },
-    mounted: function() {
-        if (this.$route.params) {
-            this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', {query: this.$route.params });
-        }
-        this.$store.dispatch('countlyUserActivity/fetchAll');
-    }
-});
+        userLoyaltyViewWrapper.params = params;
+        this.renderWhenReady(userLoyaltyViewWrapper);
+    });
 
-var userActivityVuex = [{
-    clyModel: countlyUserActivity
-}];
+    countlyVue.container.registerTab("/analytics/loyalty", {
+        priority: 1,
+        name: "user-activity",
+        title: CV.i18n('user-activity.title'),
+        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/user-activity",
+        component: UserActivityView,
+        vuex: [{
+            clyModel: countlyUserActivity
+        }],
+    });
+})();
 
-var userActivityViewWrapper = new countlyVue.views.BackboneWrapper({
-    component: UserActivityView,
-    vuex: userActivityVuex,
-    templates: [
-        "/core/user-activity/templates/user-activity.html",
-        "/drill/templates/query.builder.v2.html"
-    ]
-});
-
-app.route("/analytics/loyalty", "loyalty", function() {
-    this.renderWhenReady(userActivityViewWrapper);
-});
-
-app.route("/analytics/loyalty/*query", "loyalty_query", function(query) {
-    var queryUrlParameter = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
-    userActivityViewWrapper.params = queryUrlParameter;
-    this.renderWhenReady(userActivityViewWrapper);
-});

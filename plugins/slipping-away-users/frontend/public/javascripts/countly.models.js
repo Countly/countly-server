@@ -20,31 +20,19 @@
             return {
                 slippingAwayUsers: [],
                 slippingAwayUsersFilters: { query: {}, byVal: []},
-                isLoading: false,
-                hasError: false,
-                error: null,
             };
         };
 
         var slippingAwayUsersActions = {
-            fetchAll: function(context) {
-                context.dispatch('onFetchInit');
+            fetchAll: function(context, useLoader) {
+                context.dispatch('onFetchInit', {useLoader: useLoader});
                 countlySlippingAwayUsers.service.fetchSlippingAwayUsers(context.state.slippingAwayUsersFilters)
                     .then(function(response) {
                         context.commit('setSlippingAwayUsers', response);
-                        context.dispatch('onFetchSuccess');
+                        context.dispatch('onFetchSuccess', {useLoader: useLoader});
                     }).catch(function(error) {
-                        context.dispatch('onFetchError', error);
+                        context.dispatch('onFetchError', {error: error, useLoader: useLoader});
                     });
-            },
-            onFetchInit: function(context) {
-                context.commit('setFetchInit');
-            },
-            onFetchError: function(context, error) {
-                context.commit('setFetchError', error);
-            },
-            onFetchSuccess: function(context) {
-                context.commit('setFetchSuccess');
             },
             onSetSlippingAwayUsersFilters: function(context, filters) {
                 context.commit('setSlippingAwayUsersFilters', filters);
@@ -57,21 +45,6 @@
             },
             setSlippingAwayUsersFilters: function(state, value) {
                 state.slippingAwayUsersFilters = value;
-            },
-            setFetchInit: function(state) {
-                state.isLoading = true;
-                state.hasError = false;
-                state.error = null;
-            },
-            setFetchError: function(state, error) {
-                state.isLoading = false;
-                state.hasError = true;
-                state.error = error;
-            },
-            setFetchSuccess: function(state) {
-                state.isLoading = false;
-                state.hasError = false;
-                state.error = null;
             }
         };
 
@@ -79,6 +52,7 @@
             state: getInitialState,
             actions: slippingAwayUsersActions,
             mutations: slippingAwayUsersMutations,
+            submodules: [countlyVue.vuex.FetchMixin()]
         });
     };
 }(window.countlySlippingAwayUsers = window.countlySlippingAwayUsers || {}));

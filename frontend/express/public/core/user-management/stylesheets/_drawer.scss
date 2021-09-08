@@ -1,5 +1,10 @@
 .user-management-drawer-content {
 
+  &__under-input-text {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
   &__top-section {
     display: flex;
     flex-direction: row;
@@ -13,14 +18,10 @@
     justify-content: space-between;
   }
 
-  &__inputs-area {
-    //width: calc(100% - 310px);
-
-    &__input-wrapper {
-      margin-top: 10px;
-    }
+  &__input-wrapper {
+    margin-top: 10px;
   }
-
+  
   &__label {
     display: flex;
     justify-content: space-between;
@@ -244,6 +245,10 @@
     line-height: 13px;
     color: #333C48;
     width: fit-content;
+  }
+
+  &__group-selector {
+    width: 100%;
   }
 
   .check-label {
