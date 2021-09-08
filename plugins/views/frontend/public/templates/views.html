@@ -29,7 +29,7 @@
 		<div class="bu-columns bu-is-gapless">
 			<h4 class="bu-pt-1">{{i18n('views.based-on')}}</h4>
 			<div class ="bu-pl-1 bu-pr-1">
-				<el-select v-model="selectedProperty">
+				<el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
                     <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
                 </el-select>
 			</div>
