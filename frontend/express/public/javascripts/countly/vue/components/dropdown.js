@@ -40,6 +40,16 @@
                     return "el-pseudo-input";
                 }
                 return "el-input";
+            },
+            classes: function() {
+                var classes = {
+                    'is-focus': this.focused,
+                    'is-disabled': this.disabled,
+                    'is-adaptive': this.adaptiveLength,
+                    'is-arrow': this.arrow
+                };
+
+                return classes;
             }
         },
         methods: {
@@ -50,13 +60,13 @@
         template: '<component\
                         :is="componentName"\
                         ref="elInput"\
-                        :class="{ \'is-focus\': focused, \'is-disabled\': disabled, \'is-adaptive\': adaptiveLength }"\
+                        :class="classes"\
                         v-bind="$attrs"\
                         readonly="readonly" \
                         v-model="description"\
                         :placeholder="placeholder">\
-                        <template slot="suffix">\
-                            <i v-if="arrow" class="el-select__caret" :class="[iconClass]"></i>\
+                        <template slot="suffix" v-if="arrow">\
+                            <i class="el-select__caret" :class="[iconClass]"></i>\
                         </template>\
                     </component>'
     }));
@@ -317,12 +327,13 @@
                         <template v-slot:trigger="dropdown">\
                             <slot name="trigger">\
                                 <cly-input-dropdown-trigger\
-                                ref="trigger"\
-                                :disabled="false"\
-                                :adaptive-length="false"\
-                                :focused="dropdown.focused"\
-                                :opened="dropdown.visible"\
-                                :placeholder="dropdownLabel"\>\
+                                    ref="trigger"\
+                                    :disabled="false"\
+                                    :adaptive-length="adaptiveLength"\
+                                    :focused="dropdown.focused"\
+                                    :opened="dropdown.visible"\
+                                    :arrow="arrow"\
+                                    :placeholder="dropdownLabel">\
                                 </cly-input-dropdown-trigger>\
                             </slot>\
                         </template>\
@@ -366,6 +377,8 @@
             cancelLabel: {type: String, default: CV.i18n("events.general.cancel")},
             confirmLabel: {type: String, default: CV.i18n("events.general.confirm")},
             resetLabel: {type: String, default: "Reset Filters"},
+            adaptiveLength: {type: Boolean, default: true},
+            arrow: {type: Boolean, default: false},
             value: {
                 type: Object,
                 default: function() {

@@ -504,6 +504,7 @@
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
             showSelectedCount: {type: Boolean, default: false},
+            arrow: {type: Boolean, default: true},
             singleOptionSettings: {
                 type: Object,
                 default: function() {

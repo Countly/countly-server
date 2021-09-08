@@ -333,6 +333,7 @@
                     :hide-all-options-tab="true"\
                     :single-option-settings="singleOptionSettings"\
                     :adaptive-length="adaptiveLength"\
+                    :arrow="arrow"\
                     :width="width"\
                     v-bind="$attrs"\
                     v-on="$listeners">\
@@ -355,6 +356,7 @@
             },
             width: { type: [Number, Object], default: 400},
             adaptiveLength: {type: Boolean, default: true},
+            arrow: {type: Boolean, default: false},
             title: { type: String, require: false}
         },
         data: function() {
