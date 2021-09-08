@@ -351,14 +351,14 @@
                         self.loadingDetails = false;
                         if (result && result.app) {
                             self.appDetails = result;
-                            self.appDetails.app.created = (parseInt(result.app.created_at) === 0) ? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.created_at);
-                            self.appDetails.app.edited = (parseInt(result.app.edited_at) === 0) ? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.edited_at);
+                            self.appDetails.app.created = (parseInt(result.app.created_at, 10) === 0) ? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.created_at);
+                            self.appDetails.app.edited = (parseInt(result.app.edited_at, 10) === 0) ? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.edited_at);
 
                             var ts = self.appDetails.app.last_data;
                             if (Math.round(ts).toString().length === 10) {
                                 ts *= 1000;
                             }
-                            self.appDetails.app.last_data = (parseInt(result.app.last_data) === 0) ? jQuery.i18n.map["common.unknown"] : moment(new Date(ts)).format("ddd, D MMM YYYY");
+                            self.appDetails.app.last_data = (parseInt(result.app.last_data, 10) === 0) ? jQuery.i18n.map["common.unknown"] : moment(new Date(ts)).format("ddd, D MMM YYYY");
                         }
                         else {
                             CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
