@@ -1,143 +1,247 @@
-/*global $, jQuery, countlyAuth, countlyCommon, countlyDeviceDetails, countlyView, countlyTotalUsers, countlyDensity, T, app, addDrill, CountlyHelpers, DensityView*/
-window.DensityView = countlyView.extend({
-    initialize: function() {
+/* global countlyVue,CV,countlyCommon,countlyGlobal*/
+var AppDensityView = countlyVue.views.create({
+    template: CV.T("/density/templates/density.html"),
+    data: function() {
+        return {
+            scrollOptions: {
+                vuescroll: {},
+                scrollPanel: {
+                    initialScrollX: false,
+                },
+                rail: {
+                    gutterOfSide: "0px"
+                },
+                bar: {
+                    background: "#A7AEB8",
+                    size: "6px",
+                    specifyBorderRadius: "3px",
+                    keepShow: true
+                }
+            },
+            scrollCards: {
+                vuescroll: {},
+                scrollPanel: {
+                    initialScrollX: false,
+                },
+                rail: {
+                    gutterOfSide: "0px"
+                },
+                bar: {
+                    background: "#A7AEB8",
+                    size: "6px",
+                    specifyBorderRadius: "3px",
+                    keepShow: false
+                }
+            },
+            description: CV.i18n('density.plugin-description'),
+            dynamicTab: "density-table",
+            densityTabs: [
+                {
+                    title: CV.i18n('density.title'),
+                    name: "density-table",
+                    component: countlyVue.views.create({
+                        template: CV.T("/density/templates/density_table.html"),
+                        computed: {
+                            appDensity: function() {
+                                return this.$store.state.countlyDevicesAndTypes.appDensity;
+                            },
+                            appDensityRows: function() {
+                                console.log(this.appDensity.chartData,'rows');
+                                return this.appDensity.chartData;
+                            },
+                            isLoading: function() {
+                                return this.$store.state.countlyDevicesAndTypes.isLoading;
+                            }
+                        }
+                    })
+                },
+                {
+                    title: CV.i18n('density.versions'),
+                    name: "version-table",
+                    component: countlyVue.views.create({
+                        template: CV.T("/density/templates/version_table.html"),
+                        data: function() {
+                            return {
+                                versions: [],
+                                versionDetail: []
+                            };
+                        },
+                        computed: {
+                            isLoading: function() {
+                                return this.$store.state.countlyDevicesAndTypes.isLoading;
+                            },
+                            appDensity: function() {
+                                return this.$store.state.countlyDevicesAndTypes.appDensity;
+                            },
+                            selectedDensity: {
+                                set: function(value) {
+                                    this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDensity', value);
+                                },
+                                get: function() {
+                                    return this.$store.state.countlyDevicesAndTypes.selectedDensity;
+                                }
+                            }
+                        },
+                        watch: {
+                            selectedDensity: function(newValue) {
+                                this.calculateVersions(newValue);
+                            },
+                            versions: function() {
+                                this.calculateVersionsDetail();
+                            }
+                        },
+                        methods: {
+                            calculateVersions: function(newValue) {
+                                if (newValue) {
+                                    this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDensity', newValue);
+                                }
+                                else {
+                                    this.selectedDensity = this.appDensity.versions[0].label;
+                                    this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedDensity', this.selectedDensity);
+                                }
 
-    },
-    activePlatform: {},
-    beforeRender: function() {
-        var self = this;
-        return $.when(T.render('/density/templates/density.html', function(src) {
-            self.template = src;
-        }), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function() {});
-    },
-    pageScript: function() {
-        var self = this;
-        $(".density-segmentation .segmentation-option").on("click", function() {
-            self.activePlatform[countlyCommon.ACTIVE_APP_ID] = $(this).data("value");
-            self.refresh();
-        });
-        app.localize();
-    },
-    renderCommon: function(isRefresh) {
-        var platformData = countlyDeviceDetails.getPlatformData();
-        platformData.chartData.sort(function(a, b) {
-            return (a.os_ > b.os_) ? 1 : ((b.os_ > a.os_) ? -1 : 0);
-        });
+                                var tempVersions = [];
+                                for (var k = 0; k < this.appDensity.versions.length; k++) {
+                                    tempVersions.push({"value": this.appDensity.versions[k].label, "name": this.appDensity.versions[k].label});
+                                }
 
-        var chartHTML = "";
+                                this.versions = tempVersions;
+                            },
+                            calculateVersionsDetail: function() {
+                                var versionDetail = [];
 
-        if (platformData && platformData.chartDP && platformData.chartDP.dp && platformData.chartDP.dp.length) {
-            for (var i = 0; i < platformData.chartDP.dp.length; i++) {
-                chartHTML += '<div class="hsb-container"><div class="label">' + platformData.chartDP.dp[i].label + '</div><div class="chart"><svg id="hsb-platform' + i + '"></svg></div></div>';
-            }
-        }
-        if (!this.activePlatform[countlyCommon.ACTIVE_APP_ID]) {
-            this.activePlatform[countlyCommon.ACTIVE_APP_ID] = (platformData.chartData[0]) ? platformData.chartData[0].os_ : "";
-        }
-
-        this.templateData = {
-            "page-title": jQuery.i18n.map["density.title"],
-            "logo-class": "densities",
-            "chartHTML": chartHTML,
-            "chart-helper": "density.chart",
-            "table-helper": "",
-            "active-platform": this.activePlatform[countlyCommon.ACTIVE_APP_ID],
-            "platforms": platformData.chartData
+                                for (var k = 0; k < this.appDensity.versions.length; k++) {
+                                    if (this.appDensity.versions[k].label === this.selectedDensity) {
+                                        versionDetail = this.appDensity.versions[k].data || [];
+                                    }
+                                }
+                                this.versionDetail = versionDetail;
+                            }
+                        },
+                        mounted: function() {
+                            this.calculateVersions();
+                            this.calculateVersionsDetail();
+                        }
+                    })
+                }
+            ]
         };
-
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-            if (typeof addDrill !== "undefined") {
-                $(".widget-header .left .title").first().after(addDrill("up.dnst"));
+    },
+    mounted: function() {
+        this.$store.dispatch('countlyDevicesAndTypes/fetchDensity');
+    },
+    methods: {
+        refresh: function() {
+            this.$store.dispatch('countlyDevicesAndTypes/fetchDensity');
+        },
+        handleCardsScroll: function() {
+            if (this.$refs && this.$refs.bottomSlider) {
+                var pos1 = this.$refs.topSlider.getPosition();
+                pos1 = pos1.scrollLeft;
+                this.$refs.bottomSlider.scrollTo({x: pos1}, 0);
             }
-            this.pageScript();
-
-            countlyCommon.drawHorizontalStackedBars(platformData.chartDP.dp, "#hsb-platforms");
-
-            if (platformData && platformData.chartDP) {
-                for (var chartDPIndex = 0; chartDPIndex < platformData.chartDP.dp.length; chartDPIndex++) {
-                    var tmpOsVersion = countlyDensity.getOSSegmentedData(platformData.chartDP.dp[chartDPIndex].label);
-
-                    countlyCommon.drawHorizontalStackedBars(tmpOsVersion.chartDP.dp, "#hsb-platform" + chartDPIndex, chartDPIndex);
-                }
-            }
-
-            var oSVersionData = countlyDensity.getOSSegmentedData(this.activePlatform[countlyCommon.ACTIVE_APP_ID]);
-
-            this.dtable = $('#dataTableOne').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": oSVersionData.chartData,
-                "aoColumns": [
-                    { "mData": "density", "sTitle": jQuery.i18n.map["density.table.density"] },
-                    {
-                        "mData": "t",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-sessions"]
-                    },
-                    {
-                        "mData": "u",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.total-users"]
-                    },
-                    {
-                        "mData": "n",
-                        sType: "formatted-num",
-                        "mRender": function(d) {
-                            return countlyCommon.formatNumber(d);
-                        },
-                        "sTitle": jQuery.i18n.map["common.table.new-users"]
-                    }
-                ]
-            }));
-
-            $("#dataTableOne").stickyTableHeaders();
-
-            if (!countlyAuth.validateRead('drill')) {
-                $('#drill-down-for-view').hide();
+        },
+        handleBottomScroll: function() {
+            if (this.$refs && this.$refs.topSlider) {
+                var pos1 = this.$refs.bottomSlider.getPosition();
+                pos1 = pos1.scrollLeft;
+                this.$refs.topSlider.scrollTo({x: pos1}, 0);
             }
         }
     },
-    refresh: function() {
-        var self = this;
-        $.when(this.beforeRender()).then(function() {
-            if (app.activeView !== self) {
-                return false;
+    computed: {
+        selectedProperty: {
+            set: function(value) {
+                this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedProperty', value);
+            },
+            get: function() {
+                return this.$store.state.countlyDevicesAndTypes.selectedProperty;
             }
-            self.renderCommon(true);
-            var oSVersionData = countlyDensity.getOSSegmentedData(self.activePlatform[countlyCommon.ACTIVE_APP_ID]),
-                platformData = countlyDeviceDetails.getPlatformData(),
-                newPage = $("<div>" + self.template(self.templateData) + "</div>");
+        },
+        graphColors: function() {
+            return ["#017AFF", "#39C0C8", "#F5C900", "#6C47FF", "#017AFF","#39C0C8"];
+        },
+        appDensity: function() {
+            return this.$store.state.countlyDevicesAndTypes.appDensity;
+        },
+        appResolution: function() {
+            return this.$store.state.countlyDevicesAndTypes.appResolution;
+        },
+        chooseProperties: function() {
+            return [{"value": "t", "name": CV.i18n('common.table.total-sessions')}, {"value": "u", "name": CV.i18n('common.table.total-users')}, {"value": "n", "name": CV.i18n('common.table.new-users')}];
+        },
+        densityItems: function() {
+            var display = [];
+            var property = this.$store.state.countlyDevicesAndTypes.selectedProperty;
+            var data = this.appDensity.chartData || [];
 
-            $(self.el).find(".widget-content").replaceWith(newPage.find(".widget-content"));
-            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
-            $(self.el).find(".density-widget").replaceWith(newPage.find(".density-widget"));
-
-            if (platformData && platformData.chartDP) {
-                for (var i = 0; i < platformData.chartDP.dp.length; i++) {
-                    var tmpOsVersion = countlyDensity.getOSSegmentedData(platformData.chartDP.dp[i].label);
-
-                    countlyCommon.drawHorizontalStackedBars(tmpOsVersion.chartDP.dp, "#hsb-platform" + i, i);
+            for (var k = 0; k < data.length; k++) {
+                var percent = Math.round((data[k][property] || 0) * 1000 / (this.appDensity.totals[property] || 1)) / 10;
+                display.push({
+                    "name": data[k].density,
+                    "value": countlyCommon.getShortNumber(data[k][property] || 0),
+                    "percent": percent,
+                    "percentText": percent + " % " + CV.i18n('common.of-total'),
+                    "info": CV.i18n('common.info'),
+                    "color": this.graphColors[k]
+                });
+            }
+            return display;
+        },
+        densityVersions: function() {
+            var property = this.$store.state.countlyDevicesAndTypes.selectedProperty;
+            var returnData = [];
+            var densities = this.appDensity.versions || [];
+            for (var z = 0; z < densities.length; z++) {
+                var display = [];
+                var data = densities[z].data;
+                for (var k = 0; k < data.length; k++) {
+                    var percent = Math.round((data[k][property] || 0) * 1000 / (densities[z][property] || 1)) / 10;
+                    display.push({
+                        "name": data[k].density,
+                        "value": countlyCommon.getShortNumber(data[k][property] || 0),
+                        "percent": percent,
+                        "bar": [{
+                            percentage: percent,
+                            color: this.graphColors[z]
+                        }
+                        ]
+                    });
                 }
+                returnData.push({"data": display, "label": densities[z].label, itemCn: display.length});
             }
+            return returnData;
+        },
+        appDensityRows: function() {
+            return this.appDensity.chartData;
+        },
+        isLoading: function() {
+            return this.$store.state.countlyDevicesAndTypes.isLoading;
+        },
+        tabs: function() {
+            return this.densityTabs;
+        },
+        topDropdown: function() {
+            if (this.externalLinks && Array.isArray(this.externalLinks) && this.externalLinks.length > 0) {
+                return this.externalLinks;
+            }
+            else {
+                return null;
+            }
+        }
+    },
+    mixins: [
+        countlyVue.container.dataMixin({
+            'externalLinks': '/analytics/densities/links'
+        })
+    ],
 
-            CountlyHelpers.refreshTable(self.dtable, oSVersionData.chartData);
-
-            self.pageScript();
-        });
-    }
 });
-//register views
-app.densityView = new DensityView();
 
-app.route("/analytics/density", 'desity', function() {
-    this.renderWhenReady(this.densityView);
-});
-
-$(document).ready(function() {
-    app.addSubMenu("analytics", {code: "analytics-density", url: "#/analytics/density", text: "sidebar.analytics.densities", priority: 45});
-});
+    countlyVue.container.registerTab("/analytics/technology", {
+        priority: 7,
+        name: "densities",
+        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/densities",
+        title: CV.i18n('density.title'),
+        component: AppDensityView
+    });
