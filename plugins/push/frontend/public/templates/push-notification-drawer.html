@@ -37,7 +37,7 @@
             @close="closeAddUserPropertyPopover">
         </add-user-property-popover>
         <div class="bu-column bu-is-10 bu-is-offset-1">
-            <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')" @click="function(){console.log('onclick')}">
+            <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')" v-loading="isLoading" @click="function(){console.log('onclick')}">
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Message Name</div>
                     <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for message name</div>
@@ -92,8 +92,7 @@
                                     reserve-keyword
                                     placeholder="Please select a cohort"
                                     :class="{'is-error': validation.errors.length > 0}"
-                                    style="width:100%"
-                                    :loading="loading">
+                                    style="width:100%">
                                     <el-option
                                         v-for="item in cohortOptions"
                                         :key="item.value"
@@ -115,8 +114,7 @@
                                     reserve-keyword
                                     placeholder="Please select a location"
                                     :class="{'is-error': validation.errors.length > 0}"
-                                    style="width:100%"
-                                    :loading="loading">
+                                    style="width:100%">
                                     <el-option
                                         v-for="item in locationOptions"
                                         :key="item.value"
@@ -189,8 +187,7 @@
                                     reserve-keyword
                                     placeholder="Please select an event"
                                     :class="{'is-error': validation.errors.length > 0}"
-                                    style="width:100%"
-                                    :loading="loading">
+                                    style="width:100%">
                                     <el-option
                                         v-for="item in eventOptions"
                                         :key="item.value"
@@ -214,8 +211,7 @@
                                     reserve-keyword
                                     placeholder="Please select a cohort"
                                     :class="{'is-error': validation.errors.length > 0}"
-                                    style="width:100%"
-                                    :loading="loading">
+                                    style="width:100%">
                                     <el-option
                                         v-for="item in cohortOptions"
                                         :key="item.value"
@@ -238,8 +234,7 @@
                                 reserve-keyword
                                 placeholder="Please select a location"
                                 :class="{'is-error': validation.errors.length > 0}"
-                                style="width:100%"
-                                :loading="loading">
+                                style="width:100%">
                                 <el-option
                                     v-for="item in locationOptions"
                                     :key="item.value"

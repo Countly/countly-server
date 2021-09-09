@@ -146,7 +146,7 @@
         mixins: [countlyVue.mixins.i18n],
         data: function() {
             return {
-                loading: false,
+                isLoading: false,
                 localizationOptions: [],
                 userPropertiesOptions: [],
                 eventOptions: [],
@@ -323,19 +323,30 @@
             setLocalizationOptions: function(localizations) {
                 this.localizationOptions = localizations;
             },
+            setIsLoading: function(value) {
+                this.isLoading = value;
+            },
             prepareMessage: function() {
                 var self = this;
+                this.setIsLoading(true);
                 return new Promise(function(resolve) {
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
                     countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
                         resolve(true);
-                    // eslint-disable-next-line no-unused-vars
                     }).catch(function(error) {
-                        //TODO-LA: dispatch error notification toast
                         self.setLocalizationOptions([]);
+                        if (error.message === 'No users were found from selected configuration') {
+                            CountlyHelpers.notify({
+                                title: "No users were found with selected configuration",
+                                message: "Selected cohort and location target options resulted in zero users found. Please try a different configuration.",
+                                type: "warning"
+                            });
+                        }
                         resolve(false);
+                    }).finally(function() {
+                        self.setIsLoading(false);
                     });
                 });
             },
