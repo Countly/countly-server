@@ -248,10 +248,8 @@
     <el-card class="box-card cly-vue-push-notification-details-summary-card">
         <div slot="header" class="clearfix">
             <span>{{i18n('push-notification-details.localization-filter-label')}}</span>
-            <el-select v-model="selectedLocalizationFilter">
-                <el-option :key="item.value" :value="item.value" :label="item.label"
-                    v-for="item in localizationFilters"
-                >
+            <el-select v-model="selectedLocalization">
+                <el-option v-for="item in localizations" :key="item.value" :value="item.value" :label="item.label">
                 </el-option>
             </el-select>
         </div>
@@ -261,7 +259,7 @@
                     {{i18n('push-notification-details.message-title')}}
                 </div>
                 <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
-                    {{message.name}}
+                    {{message.title}}
                 </div>
             </div>
             <div class="bu-columns">
@@ -316,7 +314,7 @@
                         {{i18n('push-notification-details.targeted-users')}}
                     </div>
                     <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
-                        {{pushNotification.cohortIds && pushNotification.cohortIds.toString()}}
+                        {{pushNotification.cohorts.toString()}}
                     </div>
                 </div>
                 <div class="bu-columns">
@@ -324,7 +322,7 @@
                         {{i18n('push-notification-details.geolocation')}}
                     </div>
                     <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
-                        {{pushNotification.geoIds && pushNotification.geoIds.toString()}}
+                        {{pushNotification.locations.toString()}}
                     </div>
                 </div>
                 <div class="bu-columns">

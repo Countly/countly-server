@@ -180,6 +180,9 @@
         getDefaultLocalization: function() {
             return {label: DEFAULT_LOCALIZATION_LABEL, value: DEFAULT_LOCALIZATION_VALUE};
         },
+        hasNoUsersToSendPushNotification: function(pushNotificationDto) {
+            return pushNotificationDto.build.total === 0;
+        },
     };
 
     countlyPushNotification.mapper = {
@@ -290,18 +293,6 @@
                 });
                 return rowsModel;
             },
-            mapMessageButtons: function(numberOfButtons, dto) {
-                if (numberOfButtons === 1) {
-                    return [{label: dto.messagePerLocale["default|0|t"], url: dto.messagePerLocale["default|0|l"]}];
-                }
-                if (numberOfButtons === 2) {
-                    return [
-                        {label: dto.messagePerLocale["default|0|t"], url: dto.messagePerLocale["default|0|l"]},
-                        {label: dto.messagePerLocale["default|1|t"], url: dto.messagePerLocale["default|1|l"]},
-                    ];
-                }
-                return [];
-            },
             mapEndDate: function(type, dto) {
                 if (type === TypeEnum.AUTOMATIC) {
                     return moment(dto.autoEnd).format("MMMM Do, YYYY, H:mm");
@@ -328,42 +319,65 @@
                 //TODO-LA:map media for specific platforms
                 return result;
             },
-            mapPushNotificationDtoToModel: function(dto) {
+            mapMessageLocalizationButtons: function(localization, dto) {
+                var buttons = [];
+                if (dto.messagePerLocale[localization + '|0|t'] || dto.messagePerLocale[localization + '|0|l']) {
+                    buttons.push({label: dto.messagePerLocale[localization + "|0|t"], url: dto.messagePerLocale[localization + "|0|l"]});
+                }
+                if (dto.messagePerLocale[localization + '|1|t'] || dto.messagePerLocale[localization + '|1|l']) {
+                    buttons.push({label: dto.messagePerLocale[localization + "|0|t"], url: dto.messagePerLocale[localization + "|0|l"]});
+                }
+                return buttons;
+            },
+            mapMessageLocalization: function(localization, dto) {
+                return {
+                    title: dto.messagePerLocale[localization + '|t'],
+                    content: dto.messagePerLocale[localization],
+                    media: this.mapMedia(dto),
+                    mediaMime: dto.mediaMime,
+                    onClickUrl: dto.url,
+                    numberOfButtons: dto.buttons,
+                    buttons: this.mapMessageLocalizationButtons(localization, dto)
+                };
+            },
+            mapMessageLocalizationsList: function(localizations, dto) {
                 var self = this;
+                var messages = {};
+                localizations.forEach(function(localizationItem) {
+                    messages[localizationItem.value] = self.mapMessageLocalization(localizationItem.value, dto);
+                });
+                return messages;
+            },
+            mapPushNotificationDtoToModel: function(dto) {
                 var pushNotificationType = this.mapType(dto);
+                var localizations = this.mapLocalizations(dto);
                 return {
                     id: dto._id,
                     type: pushNotificationType,
-                    status: self.mapStatus(dto.result.status, dto.result.error),
+                    status: this.mapStatus(dto.result.status, dto.result.error),
                     createdDateTime: {
                         date: moment(dto.created).valueOf(),
                         time: moment(dto.created).format("H:mm")
                     },
+                    name: dto.messagePerLocale[DEFAULT_LOCALIZATION_VALUE + '|t'] || "-", //NOTE-LA: old api does not support push notification name, instead use the message title.
                     sent: dto.result.sent,
                     actioned: dto.result.actioned,
                     failed: dto.result.errors,
                     processed: dto.result.processed,
                     total: dto.result.total,
                     createdBy: dto.creator,
-                    platforms: self.mapPlatforms(dto.platforms),
-                    message: {
-                        name: dto.messagePerLocale["default|t"] || "-",
-                        content: dto.messagePerLocale.default,
-                        media: self.mapMedia(dto),
-                        mediaMime: dto.mediaMime,
-                        onClickUrl: dto.url,
-                        numberOfButtons: dto.buttons,
-                        buttons: self.mapMessageButtons(dto.buttons, dto),
-                    },
-                    errors: self.mapErrors(dto),
+                    platforms: this.mapPlatforms(dto.platforms),
+                    localizations: localizations,
+                    message: this.mapMessageLocalizationsList(localizations, dto),
+                    errors: this.mapErrors(dto),
                     sound: dto.sound,
-                    cohortIds: dto.cohorts,
-                    geoIds: dto.geos,
+                    cohorts: dto.cohorts || [],
+                    locations: dto.geos || [],
                     expirationDaysInMs: dto.expiration,
                     startDate: moment(dto.date).format("MMMM Do, YYYY, H:mm"),
-                    endDate: self.mapEndDate(pushNotificationType, dto),
-                    deliveryType: self.mapDeliveryType(pushNotificationType, dto),
-                    audienceSelectionType: self.mapAudienceSelectionType(pushNotificationType, dto),
+                    endDate: this.mapEndDate(pushNotificationType, dto),
+                    deliveryType: this.mapDeliveryType(pushNotificationType, dto),
+                    audienceSelectionType: this.mapAudienceSelectionType(pushNotificationType, dto),
                 };
             },
             mapMediaMetadata: function(metadataDto) {
@@ -374,32 +388,27 @@
                     size: metadataDto['content-length'] / MB_TO_BYTES_RATIO,
                 };
             },
-            mapLocalizationItemByKey: function(localizationKey) {
+            mapLocalizationByKey: function(localizationKey) {
                 return { label: countlyGlobalLang.languages[localizationKey].englishName, value: localizationKey};
             },
-            hasNoUsersToPrepare: function(preparePushNotificationDto) {
-                return preparePushNotificationDto.build.total === 0;
-            },
-            hasDefaultLocalizationOnly: function(preparePushNotificationDto) {
-                return Object.keys(preparePushNotificationDto.build.count).length === 0;
-            },
-            mapLocalizationOptionsFromPrepareDto: function(preparePushNotificationDto) {
-                var self = this;
-                if (this.hasNoUsersToPrepare(preparePushNotificationDto)) {
-                    throw new Error('No users were found from selected configuration');
+            hasDefaultLocalizationOnly: function(pushNotificationDto) {
+                if (pushNotificationDto.build) {
+                    return Object.keys(pushNotificationDto.build.count).length === 0;
                 }
-                if (this.hasDefaultLocalizationOnly(preparePushNotificationDto)) {
+                return true;
+            },
+            mapLocalizations: function(pushNotificationDto) {
+                var self = this;
+                if (this.hasDefaultLocalizationOnly(pushNotificationDto)) {
                     return [countlyPushNotification.helper.getDefaultLocalization()];
                 }
-                var result = Object.keys(preparePushNotificationDto.build.count).map(function(localKey) {
-                    var localizationItem = self.mapLocalizationItemByKey(localKey);
-                    localizationItem.percentage = CountlyHelpers.formatPercentage(preparePushNotificationDto.build.count[localKey] / preparePushNotificationDto.build.total);
+                var result = Object.keys(pushNotificationDto.build.count).map(function(localKey) {
+                    var localizationItem = self.mapLocalizationByKey(localKey);
+                    localizationItem.percentage = CountlyHelpers.formatPercentage(pushNotificationDto.build.count[localKey] / pushNotificationDto.build.total);
                     return localizationItem;
                 });
                 result.unshift(countlyPushNotification.helper.getDefaultLocalization());
-                return {
-                    localizations: result
-                };
+                return result;
             }
         },
         outgoing: {
@@ -477,12 +486,6 @@
         TriggerEnum: TriggerEnum,
         AutomaticDeliveryDateEnum: AutomaticDeliveryDateEnum,
         AutomaticWhenConditionNotMetEnum: AutomaticWhenConditionNotMetEnum,
-        getLocalizationFilterOptions: function() {
-            var self = this;
-            return [
-                {label: CV.i18n("push-notification-details.localization-filter-all"), value: self.LocalizationEnum.ALL}
-            ];
-        },
         getTypeUrlParameter: function(type) {
             if (type === this.TypeEnum.AUTOMATIC) {
                 return {auto: true, tx: false};
@@ -588,11 +591,12 @@
                     },
                     dataType: "json",
                     success: function(response) {
-                        try {
-                            resolve(countlyPushNotification.mapper.incoming.mapLocalizationOptionsFromPrepareDto(response));
+                        if (countlyPushNotification.helper.hasNoUsersToSendPushNotification(response)) {
+                            reject(new Error('No users were found from selected configuration'));
                         }
-                        catch (error) {
-                            reject(error);
+                        else {
+                            var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(response);
+                            resolve({localizations: localizations, total: response.build.total});
                         }
                     },
                     error: function(error) {
@@ -607,8 +611,10 @@
         return {
             pushNotification: {
                 message: {
-                    buttons: [],
-                    media: countlyPushNotification.helper.getMessageMediaInitialState()
+                    default: {
+                        buttons: [],
+                        media: countlyPushNotification.helper.getMessageMediaInitialState()
+                    }
                 },
                 platforms: [],
                 processed: 0,
@@ -620,7 +626,7 @@
                 locations: []
             },
             platformFilter: PlatformEnum.ALL,
-            localFilter: "de"
+            localFilter: "default"
         };
     };
 
@@ -641,15 +647,6 @@
         },
         onSetPlatformFilter: function(context, value) {
             context.commit('setPlatformFilter', value);
-        },
-        onFetchInit: function(context) {
-            context.commit('setFetchInit');
-        },
-        onFetchError: function(context, error) {
-            context.commit('setFetchError', error);
-        },
-        onFetchSuccess: function(context) {
-            context.commit('setFetchSuccess');
         },
     };
 

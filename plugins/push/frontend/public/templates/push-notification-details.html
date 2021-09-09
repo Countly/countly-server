@@ -2,7 +2,7 @@
     <div v-bind:class="[componentId]">
         <cly-header class="cly-vue-push-notification-details-header">
             <template v-slot:header-left>
-                <h2> {{pushNotification.message.name }} </h2>
+                <h2> {{pushNotification.name }} </h2>
             </template>
             <template v-slot:header-top>
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>
@@ -54,10 +54,8 @@
                         </div>
                     </div>
                     <div class="bu-level-item">
-                        <el-select v-model="selectedLocalizationFilter">
-                            <el-option :key="item.value" :value="item.value" :label="item.label"
-                                v-for="item in localizationFilters"
-                            >
+                        <el-select v-model="selectedLocalization">
+                            <el-option v-for="item in localizations" :key="item.value" :value="item.value" :label="item.label">
                             </el-option>
                         </el-select>
                     </div>
@@ -121,7 +119,7 @@
                         </cly-header>
                     </div>
                     <div class="bu-column">
-                        <mobile-message-preview :title="message.name" :content="message.content" :platforms="pushNotification.platforms.map(function(platform){return platform.value})" :media="message.media" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
+                        <mobile-message-preview :title="message.title" :content="message.content" :platforms="pushNotification.platforms.map(function(platform){return platform.value})" :media="message.media" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
                     </div>
                 </div>
             </div>

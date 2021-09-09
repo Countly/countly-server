@@ -649,13 +649,15 @@
         template: '#details-message-tab',
         data: function() {
             return {
-                selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
-                localizationFilters: countlyPushNotification.service.getLocalizationFilterOptions()
+                selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
             };
         },
         computed: {
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message;
+                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
+            },
+            localizations: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
             }
         }
     });

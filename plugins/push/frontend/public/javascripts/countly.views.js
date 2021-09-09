@@ -855,8 +855,7 @@
             return {
                 selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
                 platformFilters: platformFilterOptions,
-                selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
-                localizationFilters: countlyPushNotification.service.getLocalizationFilterOptions(),
+                selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
                 currentSummaryTab: "message",
                 UserEventEnum: countlyPushNotification.service.UserEventEnum,
@@ -899,7 +898,7 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message;
+                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
             },
             pushNotificationChartBars: function() {
                 return {
@@ -920,6 +919,9 @@
             isLoading: function() {
                 return this.$store.getters['countlyPushNotification/details/isLoading'];
             },
+            localizations: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+            }
         },
         methods: {
             // eslint-disable-next-line no-unused-vars
