@@ -112,7 +112,7 @@
                 }, true);
             },
             passedScope: function() {
-                var defaultKeys = ["editedObject", "currentStepId", "isSubmissionAllowed", "submit"],
+                var defaultKeys = ["editedObject", "currentStepId", "isSubmissionAllowed", "submit", "reset", "validate"],
                     self = this;
 
                 var passed = defaultKeys.reduce(function(acc, val) {
@@ -199,6 +199,9 @@
                         }
                     }
                 }
+            },
+            validate: function() {
+                this.callValidators("touch");
             },
             beforeLeavingStep: function() {
                 this.callValidators("touch");

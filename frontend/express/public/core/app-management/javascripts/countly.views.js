@@ -113,14 +113,8 @@
                     if (countlyGlobal.apps[self.selectedApp]) {
                         self.unpatch();
                     }
-                    else if (self.checkIfFirst()) {
-                        self.newApp = Object.assign({}, self.newApp);
-                    }
                 }, function() {
-                    if (self.checkIfFirst()) {
-                        //validation is not triggered on init for some reason, need to retrigger it
-                        self.newApp = Object.assign({}, self.newApp);
-                    }
+
                 });
         },
         methods: {

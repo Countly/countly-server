@@ -105,7 +105,7 @@
                                             </el-input>
                                         </cly-inline-form-field>
                                     </cly-form-step>
-                                    <div class="bu-has-text-right">
+                                    <div class="bu-has-text-right" @mouseenter="formScope.validate()">
                                         <el-button 
                                             :disabled="isDisabled() || !formScope.isSubmissionAllowed" 
                                             @click="formScope.submit()" 
