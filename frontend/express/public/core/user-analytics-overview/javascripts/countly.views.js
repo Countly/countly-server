@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app*/
+/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery*/
 var UserAnalyticsOverview = countlyVue.views.create({
     template: CV.T("/core/user-analytics-overview/templates/overview.html"),
     data: function() {
@@ -72,21 +72,21 @@ var UserAnalyticsOverview = countlyVue.views.create({
 
             legend.data = [
                 {
-                    "name": CV.i18n("common.table.total-users"),
+                    "name": jQuery.i18n.map["common.table.total-users"],
                     "value": sessionData.usage["total-users"].total,
                     "trend": (sessionData.usage["total-users"].trend === "d" ? "down" : "up"),
                     "tooltip": CV.i18n("common.table.total-users-desc"),
                     "percentage": sessionData.usage["total-users"].change
                 },
                 {
-                    "name": CV.i18n("common.table.new-users"),
+                    "name": jQuery.i18n.map["common.table.new-users"],
                     "value": sessionData.usage["new-users"].total,
                     "trend": (sessionData.usage["new-users"].trend === "d" ? "down" : "up"),
                     "tooltip": CV.i18n("common.table.new-users-desc"),
                     "percentage": sessionData.usage["new-users"].change
                 },
                 {
-                    "name": CV.i18n("common.table.returning-users"),
+                    "name": jQuery.i18n.map["common.table.returning-users"],
                     "value": sessionData.usage["returning-users"].total,
                     "trend": (sessionData.usage["returning-users"].trend === "d" ? "down" : "up"),
                     "tooltip": CV.i18n("common.table.returning-users-desc"),
