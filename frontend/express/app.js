@@ -1576,7 +1576,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         return res.send(false);
                     }
 
-                    return res.send(true);
+                    return res.send({path: countlyConfig.path + "/images/screenshots/" + imageName});
                 });
             }
         });
