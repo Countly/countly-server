@@ -454,11 +454,13 @@
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
-        template: '<cly-dropdown ref="dropdown" v-on="$listeners">\
+        template: '<cly-dropdown ref="dropdown" :placement="placement" :disabled="disabled" v-on="$listeners">\
                         <template v-slot:trigger>\
-                            <el-button :size="size" :icon="icon" :type="type">\
-                            <span v-if="text">{{text}}</span>\
-                            </el-button>\
+                            <slot name="trigger">\
+                                <el-button :size="size" :icon="icon" :type="type">\
+                                <span v-if="text">{{text}}</span>\
+                                </el-button>\
+                            </slot>\
                         </template>\
                         <template v-slot>\
                             <slot>\
@@ -481,16 +483,29 @@
             type: {
                 type: String,
                 default: 'default'
-            }
+            },
+            disabled: {
+                type: Boolean,
+                default: false
+            },
+            placement: {
+                type: String,
+                default: 'bottom-start'
+            },
         },
         mounted: function() {
             this.$on('menu-item-click', this.handleMenuItemClick);
         },
         methods: {
             handleMenuItemClick: function(command, instance) {
-                this.$emit('command', command, instance);
-                this.$refs.dropdown.handleClose();
+                if (!this.disabled) {
+                    this.$emit('command', command, instance);
+                    this.$refs.dropdown.handleClose();
+                }
             }
+        },
+        beforeDestroy: function() {
+            this.$off();
         }
     }));
 
