@@ -7,22 +7,24 @@
         data: function() {
             return {
                 scope: {},
+                highlightedRows: {},
                 curRow: {},
                 curDependents: [],
+                components: {},
                 defaultSort: {prop: 1, order: "asc"},
                 loading: false,
                 tryCount: 0,
                 pluginsData: [],
                 localTableTrackedFields: ['enabled'],
-                filterList: {all: true, enabled: false, disabled: false},
+                filterValue: "all",
                 changes: {},
                 dialog: {type: "", showDialog: false, saveButtonLabel: "", cancelButtonLabel: "", title: "", text: ""}
             };
         },
         beforeCreate: function() {
             var self = this;
-            return $.when(countlyPlugins.initialize())
-                .then(function() {
+            return $.when(countlyPlugins.initialize()).then(
+                function() {
                     try {
                         self.pluginsData = JSON.parse(JSON.stringify(countlyPlugins.getData()));
                     }
@@ -32,9 +34,51 @@
                     for (var i = 0; i < self.pluginsData.length; i++) {
                         self.formatRow(self.pluginsData[i]);
                     }
-                });
+                }
+            );
+        },
+        mounted: function() {
+            this.loadComponents();
         },
         methods: {
+            refresh: function() {
+                var self = this;
+                return $.when(countlyPlugins.initialize()).then(
+                    function() {
+                        try {
+                            self.pluginsData = JSON.parse(JSON.stringify(countlyPlugins.getData()));
+                        }
+                        catch (ex) {
+                            self.pluginsData = [];
+                        }
+                        for (var i = 0; i < self.pluginsData.length; i++) {
+                            self.formatRow(self.pluginsData[i]);
+                        }
+                    }
+                );
+            },
+            updateRow: function(code) {
+                this.highlightedRows[code] = true;
+                this.refresh();
+            },
+            loadComponents: function() {
+                var cc = countlyVue.container.dataMixin({
+                    'pluginComponents': '/plugins/header'
+                });
+                cc = cc.data();
+                var allComponents = cc.pluginComponents;
+                for (var i = 0; i < allComponents.length; i++) {
+                    if (allComponents[i]._id && allComponents[i].component) {
+                        this.components[allComponents[i]._id] = allComponents[i];
+                    }
+                }
+                this.components = Object.assign({}, this.components);
+            },
+            tableRowClassName: function(ob) {
+                if (this.highlightedRows[ob.row.code]) {
+                    return "plugin-highlighted-row";
+                }
+            },
             formatRow: function(row) {
                 row._id = row.code;
                 row.name = jQuery.i18n.map[row.code + ".plugin-title"] || jQuery.i18n.map[row.code + ".title"] || row.title;
@@ -131,8 +175,7 @@
                 this.dialog = {type: "", showDialog: false, saveButtonLabel: "", cancelButtonLabel: "", title: "", text: ""};
             },
             filter: function(type) {
-                this.filterList = {all: false, enabled: false, disabled: false};
-                this.filterList[type] = true;
+                this.filterValue = type;
                 try {
                     var self = this;
                     var plugins = JSON.parse(JSON.stringify(countlyPlugins.getData()));
