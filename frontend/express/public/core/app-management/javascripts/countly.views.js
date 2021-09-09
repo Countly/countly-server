@@ -306,6 +306,7 @@
                         },
                         dataType: "json",
                         success: function(data) {
+                            data.locked = false;
                             countlyGlobal.apps[data._id] = data;
                             countlyGlobal.admin_apps[data._id] = data;
                             Backbone.history.appIds.push(data._id + "");
@@ -511,6 +512,15 @@
             },
             onChange: function(key, value) {
                 var parts = key.split(".");
+                if (!this.appSettings[parts[0]]) {
+                    this.appSettings[parts[0]] = {title: this.getLabelName(parts[0]), inputs: {}};
+                }
+                if (!this.appSettings[parts[0]].inputs) {
+                    this.appSettings[parts[0]].inputs = {};
+                }
+                if (!this.appSettings[parts[0]].inputs[key]) {
+                    this.appSettings[parts[0]].inputs[key] = {};
+                }
                 this.appSettings[parts[0]].inputs[key].value = value;
                 this.changes[key] = value;
                 this.appSettings = Object.assign({}, this.appSettings);
