@@ -230,18 +230,18 @@
                 return this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter];
             },
             enabledUsers: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.enabledUsers;
+                return this.$store.state.countlyPushNotification.main.enabledUsers;
             },
             selectedMessageLocale: function() {
                 return this.pushNotificationUnderEdit.message[this.activeLocalization];
             },
             cohortOptions: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.cohorts.map(function(cohort) {
+                return this.$store.state.countlyPushNotification.main.cohorts.map(function(cohort) {
                     return {label: cohort.name.replace(/&quot;/g, '\\"'), value: cohort._id};
                 });
             },
             locationOptions: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.locations.map(function(location) {
+                return this.$store.state.countlyPushNotification.main.locations.map(function(location) {
                     return {label: location.title, value: location._id};
                 });
             },
@@ -665,16 +665,13 @@
         },
         computed: {
             selectedPushNotificationType: function() {
-                return this.$store.state.countlyPushNotification.selectedPushNotificationType;
-            },
-            pushNotifications: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications;
+                return this.$store.state.countlyPushNotification.main.selectedPushNotificationType;
             },
             isLoading: function() {
-                return this.$store.getters['countlyPushNotification/isLoading'];
+                return this.$store.getters['countlyPushNotification/main/isLoading'];
             },
             pushNotificationRows: function() {
-                return this.pushNotifications.rows;
+                return this.$store.state.countlyPushNotification.main.rows;
             },
             pushNotificationOptions: function() {
                 var series = this.yAxisPushNotificationSeries;
@@ -686,16 +683,16 @@
                 };
             },
             totalAppUsers: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.totalAppUsers;
+                return this.$store.state.countlyPushNotification.main.totalAppUsers;
             },
             enabledUsers: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.enabledUsers;
+                return this.$store.state.countlyPushNotification.main.enabledUsers;
             },
             xAxisPushNotificationPeriods: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.periods[this.selectedPeriodFilter];
+                return this.$store.state.countlyPushNotification.main.periods[this.selectedPeriodFilter];
             },
             yAxisPushNotificationSeries: function() {
-                return this.pushNotifications.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
+                return this.$store.state.countlyPushNotification.main.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
                     return {
                         data: pushNotificationSerie.data,
                         name: pushNotificationSerie.label
@@ -704,21 +701,19 @@
             },
             selectedStatusFilter: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.statusFilter;
+                    return this.$store.state.countlyPushNotification.main.statusFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/onSetStatusFilter", value);
-                //TODO-LA: filter table by status
-                // this.$store.dispatch("countlyPushNotification/fetchByType");
+                    this.$store.dispatch("countlyPushNotification/main/onSetStatusFilter", value);
                 }
             },
             selectedPlatformFilter: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.platformFilter;
+                    return this.$store.state.countlyPushNotification.main.platformFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/onSetPlatformFilter", value);
-                    this.$store.dispatch("countlyPushNotification/fetchAll", true);
+                    this.$store.dispatch("countlyPushNotification/main/onSetPlatformFilter", value);
+                    this.$store.dispatch("countlyPushNotification/main/fetchAll", true);
                 }
             },
             selectedPlatformFilterLabel: function() {
@@ -738,20 +733,20 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyPushNotification/fetchAll', false);
+                this.$store.dispatch('countlyPushNotification/main/fetchAll', false);
             },
             formatPercentage: function(value, decimalPlaces) {
                 return CountlyHelpers.formatPercentage(value, decimalPlaces);
             },
             handleUserEvents: function(event, pushNotificationId) {
                 if (event === this.UserEventEnum.DUPLICATE) {
-                    this.$store.dispatch('countlyPushNotification/onDuplicatePushNotification', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/main/onDuplicatePushNotification', pushNotificationId);
                 }
                 else if (event === this.UserEventEnum.RESEND) {
-                    this.$store.dispatch('countlyPushNotification/onResendPushNotification', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/main/onResendPushNotification', pushNotificationId);
                 }
                 else {
-                    this.$store.dispatch('countlyPushNotification/onDeletePushNotification', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/main/onDeletePushNotification', pushNotificationId);
                 }
             },
             //TODO-LA: use status action specifications when ready
@@ -793,7 +788,7 @@
             }
         },
         mounted: function() {
-            this.$store.dispatch('countlyPushNotification/fetchAll', true);
+            this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
         }
     });
 
@@ -812,11 +807,11 @@
         computed: {
             selectedPushNotificationTab: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.selectedPushNotificationType;
+                    return this.$store.state.countlyPushNotification.main.selectedPushNotificationType;
                 },
                 set: function(value) {
-                    this.$store.dispatch('countlyPushNotification/onSetPushNotificationType', value);
-                    this.$store.dispatch('countlyPushNotification/fetchAll');
+                    this.$store.dispatch('countlyPushNotification/main/onSetPushNotificationType', value);
+                    this.$store.dispatch('countlyPushNotification/main/fetchAll');
                 }
             }
         },

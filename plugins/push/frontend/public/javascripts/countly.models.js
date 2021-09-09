@@ -348,6 +348,17 @@
                 });
                 return messages;
             },
+            mapMainDtoToModel: function(allPushNotificationsDto, dashboardDto, type) {
+                return {
+                    rows: this.mapRowsDtoToModel(allPushNotificationsDto),
+                    series: this.mapSeriesDtoToModel(dashboardDto, type),
+                    periods: this.mapPeriods(dashboardDto, type),
+                    totalAppUsers: dashboardDto.users,
+                    enabledUsers: dashboardDto.enabled,
+                    locations: dashboardDto.geos || [],
+                    cohorts: dashboardDto.cohorts || []
+                };
+            },
             mapPushNotificationDtoToModel: function(dto) {
                 var pushNotificationType = this.mapType(dto);
                 var localizations = this.mapLocalizations(dto);
@@ -500,19 +511,7 @@
             return new Promise(function(resolve, reject) {
                 Promise.all([self.fetchByType(type), self.fetchDashboard(type)])
                     .then(function(responses) {
-                        var rowsModel = countlyPushNotification.mapper.incoming.mapRowsDtoToModel(responses[0]);
-                        var seriesModel = countlyPushNotification.mapper.incoming.mapSeriesDtoToModel(responses[1], type);
-                        var periods = countlyPushNotification.mapper.incoming.mapPeriods(responses[1], type);
-                        var pushNotificationModel = {
-                            rows: rowsModel,
-                            series: seriesModel,
-                            periods: periods,
-                            totalAppUsers: responses[1].users,
-                            enabledUsers: responses[1].enabled,
-                            locations: responses[1].geos || [],
-                            cohorts: responses[1].cohorts || []
-                        };
-                        resolve(pushNotificationModel);
+                        resolve(countlyPushNotification.mapper.incoming.mapMainDtoToModel(responses[0], responses[1], type));
                     }).catch(function(error) {
                         reject(error);
                     });
@@ -669,95 +668,94 @@
         submodules: [countlyVue.vuex.FetchMixin()]
     });
 
+    var getMainInitialState = function() {
+        return {
+            selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
+            series: {
+                monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
+                weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
+            },
+            rows: [],
+            periods: {monthly: [], weekly: []},
+            totalAppUsers: null,
+            enabledUsers: null,
+            statusFilter: countlyPushNotification.service.StatusEnum.ALL,
+            platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
+            totalPushMessagesSent: null,
+            totalUserActionsPerformed: null,
+        };
+    };
+
+    var mainActions = {
+        fetchAll: function(context, useLoader) {
+            context.dispatch('onFetchInit', {useLoader: useLoader});
+            countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType)
+                .then(function(response) {
+                    context.commit('setPushNotifications', response);
+                    context.dispatch('onFetchSuccess', {useLoader: useLoader});
+                }).catch(function(error) {
+                    context.dispatch('onFetchError', {error: error, useLoader: useLoader});
+                });
+        },
+        onDeletePushNotification: function(context, id) {
+            context.dispatch('onFetchInit');
+            countlyPushNotification.service.deleteById(id)
+                .then(function() {
+                    context.dispatch('fetchAll');
+                }).catch(function() {
+                    //TODO:dispatch notification toast with error message
+                });
+        },
+        // eslint-disable-next-line no-unused-vars
+        onDuplicatePushNotification: function(context, id) {
+            //TODO: open create push notification drawer
+        },
+        // eslint-disable-next-line no-unused-vars
+        onResendPushNotification: function(context, id) {
+            //TODO: resend push notification
+        },
+        onSetPushNotificationType: function(context, value) {
+            context.commit('setPushNotificationType', value);
+            context.commit('resetPushNotifications');
+        },
+        onSetPlatformFilter: function(context, value) {
+            context.commit('setPlatformFilter', value);
+        },
+        onSetStatusFilter: function(context, value) {
+            context.commit('setStatusFilter', value);
+        },
+    };
+
+    var mainMutations = {
+        setPushNotificationType: function(state, value) {
+            state.selectedPushNotificationType = value;
+        },
+        resetPushNotifications: function(state) {
+            state.series = countlyPushNotification.helper.getInitialSeriesStateByType(state.selectedPushNotificationType);
+            state.rows = [];
+            state.periods = countlyPushNotification.helper.getInitialPeriodsStateByType(state.selectedPushNotificationType);
+        },
+        setPushNotifications: function(state, value) {
+            state = Object.assign(state, value);
+        },
+        setStatusFilter: function(state, value) {
+            state.statusFilter = value;
+        },
+        setPlatformFilter: function(state, value) {
+            state.platformFilter = value;
+        },
+    };
+
+    var pushNotificationMainModule = countlyVue.vuex.Module("main", {
+        state: getMainInitialState,
+        actions: mainActions,
+        mutations: mainMutations,
+        submodules: [countlyVue.vuex.FetchMixin()]
+    });
+
     countlyPushNotification.getVuexModule = function() {
-
-        var getInitialState = function() {
-            return {
-                selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
-                pushNotifications: {
-                    series: {
-                        monthly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}],
-                        weekly: [{data: [], label: actionsPerformedLabel}, {data: [], label: messagesSentLabel}]
-                    },
-                    rows: [],
-                    periods: {monthly: [], weekly: []},
-                    totalAppUsers: null,
-                    enabledUsers: null
-                },
-                statusFilter: countlyPushNotification.service.StatusEnum.ALL,
-                platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
-                totalPushMessagesSent: null,
-                totalUserActionsPerformed: null,
-            };
-        };
-
-        var pushNotificationActions = {
-            fetchAll: function(context, useLoader) {
-                context.dispatch('onFetchInit', {useLoader: useLoader});
-                countlyPushNotification.service.fetchAll(context.state.selectedPushNotificationType)
-                    .then(function(response) {
-                        context.commit('setPushNotifications', response);
-                        context.dispatch('onFetchSuccess', {useLoader: useLoader});
-                    }).catch(function(error) {
-                        context.dispatch('onFetchError', {error: error, useLoader: useLoader});
-                    });
-            },
-            onDeletePushNotification: function(context, id) {
-                context.dispatch('onFetchInit');
-                countlyPushNotification.service.deleteById(id)
-                    .then(function() {
-                        context.dispatch('fetchAll');
-                    }).catch(function() {
-                        //TODO:dispatch notification toast with error message
-                    });
-            },
-            // eslint-disable-next-line no-unused-vars
-            onDuplicatePushNotification: function(context, id) {
-                //TODO: open create push notification drawer
-            },
-            // eslint-disable-next-line no-unused-vars
-            onResendPushNotification: function(context, id) {
-                //TODO: resend push notification
-            },
-            onSetPushNotificationType: function(context, value) {
-                context.commit('setPushNotificationType', value);
-                context.commit('resetPushNotifications');
-            },
-            onSetPlatformFilter: function(context, value) {
-                context.commit('setPlatformFilter', value);
-            },
-            onSetStatusFilter: function(context, value) {
-                context.commit('setStatusFilter', value);
-            },
-        };
-
-        var pushNotificationMutations = {
-            setPushNotificationType: function(state, value) {
-                state.selectedPushNotificationType = value;
-            },
-            resetPushNotifications: function(state) {
-                state.pushNotifications = {
-                    series: countlyPushNotification.helper.getInitialSeriesStateByType(state.selectedPushNotificationType),
-                    rows: [],
-                    periods: countlyPushNotification.helper.getInitialPeriodsStateByType(state.selectedPushNotificationType),
-                };
-            },
-            setPushNotifications: function(state, value) {
-                state.pushNotifications = value;
-            },
-            setStatusFilter: function(state, value) {
-                state.statusFilter = value;
-            },
-            setPlatformFilter: function(state, value) {
-                state.platformFilter = value;
-            },
-        };
-
         return countlyVue.vuex.Module("countlyPushNotification", {
-            state: getInitialState,
-            actions: pushNotificationActions,
-            mutations: pushNotificationMutations,
-            submodules: [pushNotificationDetailsModule, countlyVue.vuex.FetchMixin()]
+            submodules: [pushNotificationMainModule, pushNotificationDetailsModule]
         });
     };
 
