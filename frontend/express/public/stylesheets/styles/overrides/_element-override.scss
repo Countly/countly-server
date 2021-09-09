@@ -85,14 +85,6 @@
         border-top-color: #005DEF;
     }
 
-    .cell {
-        word-break: normal;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        vertical-align: middle;
-    }
-
     &.--enable-row-hover .el-table__body tr:hover>td {
         background-color: #F9FBFC;
     }
@@ -100,22 +92,22 @@
     &--boder::after, &--group::after, &::before {
         background-color: #EEF2F5;
     }
-}
 
-.cly-vue-eldatatable__is-clickable {
-    .el-table {
-        cursor: pointer;
+    //Final css
 
-        td:first-child {
-            color: #32659D;
-        }
+    .cell,
+    .cell > * {
+        word-break: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
 
-        &.el-table--enable-row-hover {
-            .el-table__body tr:hover>td:first-child {
-                color: #1A75DA;
-                text-decoration: underline;
-            }
-        }
+    .cell > .el-checkbox,
+    .cell > .el-switch,
+    .cell > .el-radio {
+        overflow: unset;
     }
 }
 
