@@ -165,6 +165,9 @@
         methods: {
             onFormSubmit: function(submitted) {
                 this.submittedForm = submitted;
+            },
+            handleCommand: function() {
+
             }
         }
     });
@@ -314,7 +317,7 @@
                     // },
                     series: [
                         {
-                            name: 'Series A',
+                            name: 'series-A',
                             data: [{value: [0, 120]}, [1, 132], [2, 101], [3, 134], [4, 90], [5, 230], [6, 210]],
                             color: 'pink'
                         },
@@ -341,7 +344,8 @@
                     type: "primary",
                     data: [
                         {
-                            name: "Series A",
+                            name: "series-A",
+                            label: "Series A",
                             value: "123",
                             trend: "up",
                             percentage: "3.4%",

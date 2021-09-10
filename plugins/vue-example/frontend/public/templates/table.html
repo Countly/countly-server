@@ -27,6 +27,14 @@
                     <el-table-column v-else :key="idx" sortable="custom" :prop="col.value" :label="col.label">
                     </el-table-column>
                 </template>
+                <el-table-column width="100" align="center">
+                    <template v-slot="rowScope">
+                        <cly-more-options size="small" @command="handleCommand($event, scope, rowScope.row)">
+                            <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                            <el-dropdown-item command="remove">{{i18n('common.delete')}}</el-dropdown-item>
+                        </cly-more-options>
+                    </template>
+                </el-table-column>
             </template>
             <template v-slot:bottomline="scope">
                 <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()">
