@@ -122,8 +122,27 @@
                     setActiveApp: function(state, activeApp) {
                         state.activeApp = activeApp;
                     },
+                    /**
+                     * 
+                     * @param {*} state 
+                     * @param {*} additionalApps
+                     * Additional app can be Array or an
+                     * individual object
+                     */
                     addToAllApps: function(state, additionalApps) {
-                        state.allApps.push(additionalApps);
+                        if (Array.isArray(additionalApps)) {
+                            var allApps = state.allApps.concat(additionalApps);
+                            state.allApps = allApps;
+                            
+                        } else {
+                            state.allApps.push(additionalApps);
+                        }
+                    },
+                    removeFromAllApps: function(state, appToRemove) {
+                        state.allApps.splice(state.allApps.findIndex(a => a.value === appToRemove.value) , 1)
+                    },
+                    deleteAllApps: function(state) {
+                        state.allApps = [];
                     }
                 },
                 actions: {
@@ -142,6 +161,19 @@
                     },
                     addToAllApps: function(context, additionalApps) {
                         context.commit("addToAllApps", additionalApps);
+                    },
+                    removeFromAllApps: function(context, appToRemove) {
+                        if (Array.isArray(appToRemove)) {
+                           appToRemove.forEach(function(app) {
+                               context.commit("removeFromAllApps", app)
+
+                           })
+                        } else {
+                            context.commit("removeFromAllApps", appToRemove)
+                        }
+                    },
+                    deleteAllApps: function(context) {
+                        context.commit("deleteAllApps")
                     }
                     
                 }
