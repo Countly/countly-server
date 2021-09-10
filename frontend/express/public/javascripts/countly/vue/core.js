@@ -95,7 +95,8 @@
                 state: {
                     period: countlyCommon.getPeriod(),
                     periodLabel: countlyCommon.getDateRangeForCalendar(),
-                    activeApp: null
+                    activeApp: null,
+                    allApps: []
                 },
                 getters: {
                     period: function(state) {
@@ -106,6 +107,9 @@
                     },
                     getActiveApp: function(state) {
                         return state.activeApp;
+                    },
+                    getAllApps: function(state) {
+                        return state.allApps;
                     }
                 },
                 mutations: {
@@ -117,6 +121,9 @@
                     },
                     setActiveApp: function(state, activeApp) {
                         state.activeApp = activeApp;
+                    },
+                    addToAllApps: function(state, additionalApps) {
+                        state.allApps.push(additionalApps);
                     }
                 },
                 actions: {
@@ -132,7 +139,11 @@
                     },
                     removeActiveApp: function(context) {
                         context.commit("setActiveApp", null);
+                    },
+                    addToAllApps: function(context, additionalApps) {
+                        context.commit("addToAllApps", additionalApps);
                     }
+                    
                 }
             },
             countlySidebar: {
