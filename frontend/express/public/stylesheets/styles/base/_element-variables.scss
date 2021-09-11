@@ -587,13 +587,13 @@ $--button-disabled-background-color: map.get(c.$colors, "warm-gray-20") !default
 $--button-disabled-border-color: map.get(c.$colors, "cool-gray-20") !default;
 
 /// color||Color|0
-$--button-primary-border-color: map.get(c.$colors, "green-80") !default;
+$--button-primary-border-color: map.get(c.$colors, "blue-100") !default;
 /// color||Color|0
 $--button-primary-font-color: $--color-white !default;
 /// color||Color|0
-$--button-primary-background-color: map.get(c.$colors, "green-80") !default;
+$--button-primary-background-color: map.get(c.$colors, "blue-100") !default;
 /// color||Color|0
-$--button-primary-hover-color: map.get(c.$colors, "green-100");
+$--button-primary-hover-color: map.get(c.$colors, "sky-blue-100");
 /// color||Color|0
 $--button-secondary-border-color: map.get(c.$colors, "warm-gray-20");
 /// color||Color|0
