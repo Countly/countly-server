@@ -7,14 +7,22 @@
             template: CV.T('/javascripts/countly/vue/templates/sidebar/AppSelector.html'),
             data: function() {
                 return {
-                    activeApp: {
-                        name: "",
-                        value: ""
-                    },
-                    value: "",
                     centerDialogVisible: true,
                     app_selector__dialog_box: "cly-vue-sidebar__app-selector__dialog_box"
                 };
+            },
+            computed: {
+                activeApp: {
+                    get: function() {
+                        var app = this.$store.getters["countlyCommon/getActiveApp"];
+                        var tempApp = Object.assign({data: 0}, app);
+                        tempApp["value"] = tempApp._id;
+                        return tempApp;
+                    },
+                    set: function(activeApp) {
+                        this.$store.dispatch("countlyCommon/updateActiveApp", activeApp.id);
+                    }
+                }
             },
             props: {
                 allApps: {
@@ -122,27 +130,8 @@
                     });
                     return apps;
                 },
-                selectedApp: {
-                    get: function() {
-                        var activeApp = this.$store.getters["countlyCommon/getActiveApp"];
-
-                        if (!this.selectedAppLocal) {
-                            if (!activeApp) {
-                                // eslint-disable-next-line no-undef
-                                // console.log("sidebar:: active app not set");
-                            }
-
-                            this.selectedAppLocal = activeApp && activeApp._id;
-                        }
-
-                        return this.selectedAppLocal;
-                    },
-                    set: function(id) {
-                        this.selectedAppLocal = id;
-                    }
-                },
                 activeApp: function() {
-                    var selectedAppId = this.selectedApp;
+                    var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"]._id;
                     var active = this.allApps.find(function(a) {
                         return a._id === selectedAppId;
                     });
