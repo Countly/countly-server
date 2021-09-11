@@ -162,6 +162,7 @@
                     },
                     removeActiveApp: function(context) {
                         context.commit("setActiveApp", null);
+                        store.remove('countly_active_app');
                     },
                     addToAllApps: function(context, additionalApps) {
                         context.commit("addToAllApps", additionalApps);
