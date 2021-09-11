@@ -1,28 +1,30 @@
 <div class="cly-vue-sidebar__menu">
     <div class="cly-vue-sidebar__header">
-        <div class="cly-vue-sidebar__app-selector bu-pl-2 bu-is-flex bu-is-align-items-center cursor-pointer" @click="toggleAppSelection()">
-            <div class="cly-vue-sidebar__app-image" :style="{backgroundImage: 'url(' + activeApp.image + ')'}"></div>
-            <div>
+        <div class="cly-vue-sidebar__app-selector bu-level bu-p-2 bu-is-flex bu-is-align-items-center cursor-pointer"
+            @click="toggleAppSelection()">
+            <div class="bu-level-right">
+                <div class="cly-vue-sidebar__app-image" :style="{backgroundImage: 'url(' + activeApp.image + ')'}"></div>
                 <div class="cly-vue-sidebar__app-name-type bu-is-flex bu-is-flex-direction-column bu-ml-2">
                     <span class="cly-vue-sidebar__app-name">{{activeApp.name}}</span>
-                    <span class="cly-vue-sidebar__app-type"> {{activeApp.type}}</span>
+                    <span class="text-smaller color-white cly-vue-sidebar__app-type bu-is-capitalized"> {{activeApp.type}}</span>
                 </div>
             </div>
-            <span class="el-input__suffix bu-pr-4">
-                <span class="el-input__suffix-inner">
-                    <i class="el-select__caret el-input__icon bu-mr-2 ion-arrow-down-b"></i>
+            <span class="bu-level-right">
+                <span>
+                    <i class="bu-mr-2 ion-arrow-down-b"></i>
                 </span>
             </span>
         </div>
     </div>
-    <app-selector @change="onChange" @close="closeAppSelector()" v-if="appSelector" :allApps="allApps"></app-selector>
+    <app-selector @change="onChange" @close="toggleAppSelection()" v-if="appSelector" :allApps="allApps"></app-selector>
     <div class="cly-vue-sidebar__main-menu">
         <div v-for="(cat, idx) in categories" :data-category="cat.name">
             <ul>
                 <li v-for="(menu, idx) in categorizedMenus[cat.name]">
                     <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
                         <el-collapse v-model="selectedAnalyticsMenu" accordion>
-                            <el-collapse-item :title="i18nM(menu.title)" :name="menu.name" :icon="{position: 'right', direction: 'down'}">
+                            <el-collapse-item :title="i18nM(menu.title)" :name="menu.name"
+                                :icon="{position: 'right', direction: 'down'}">
                                 <ul>
                                     <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
                                         <div :class="['cly-vue-sidebar__submenu-items',

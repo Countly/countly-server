@@ -117,8 +117,8 @@
                     apps = apps.map(function(a) {
                         a.label = a.name;
                         a.value = a._id;
-    
                         return a;
+                        //a.image = countlyGlobal.path + "appimages/" + active._id + ".png"
                     });
                     return apps;
 
@@ -217,9 +217,7 @@
                         app.activeAppKey = appKey;
                         app.switchApp(appId);
                     }
-                },
-                closeAppSelector: function() {
-                    this.appSelector = !this.appSelector;
+                    this.toggleAppSelection();
                 },
                 suffixIconClass: function(dropdown) {
                     return (dropdown.visible ? 'arrow-up is-reverse' : 'arrow-up');
