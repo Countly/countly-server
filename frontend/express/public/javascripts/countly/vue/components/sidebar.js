@@ -97,22 +97,7 @@
                 "app-selector": AppSelector
             },
             data: function() {
-                var apps = _.sortBy(countlyGlobal.apps, function(app) {
-                    return (app.name + "").toLowerCase();
-                });
-                if (countlyGlobal.member.appSortList) {
-                    apps = this.sortBy(apps, countlyGlobal.member.appSortList);
-                }
-
-                apps = apps.map(function(a) {
-                    a.label = a.name;
-                    a.value = a._id;
-
-                    return a;
-                });
-
                 return {
-                    allApps: apps,
                     selectMode: "single-list",
                     selectedAppLocal: null,
                     selectedAnalyticsMenuLocal: null,

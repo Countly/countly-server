@@ -119,8 +119,11 @@
                     setPeriodLabel: function(state, periodLabel) {
                         state.periodLabel = periodLabel;
                     },
-                    setActiveApp: function(state, activeApp) {
-                        state.activeApp = activeApp;
+                    setActiveApp: function(state, id) {
+                        var appObj = state.allApps[id];
+                        if (appObj) {
+                            state.activeApp = Object.freeze(JSON.parse(JSON.stringify(appObj)));
+                        }  
                     },
                     /**
                      * 
@@ -131,18 +134,22 @@
                      */
                     addToAllApps: function(state, additionalApps) {
                         if (Array.isArray(additionalApps)) {
-                            var allApps = state.allApps.concat(additionalApps);
-                            state.allApps = allApps;
-                            
+                            additionalApps.forEach(function(app){
+                                state.allApps[app._id] = app;
+                            })
                         } else {
-                            state.allApps.push(additionalApps);
+                            state.allApps[additionalApps._id] = additionalApps;
                         }
                     },
                     removeFromAllApps: function(state, appToRemove) {
-                        state.allApps = state.allApps.filter(function(a){ return a._id !== appToRemove._id})
+                        var appObj = state.allApps[appToRemove.id];
+                        if(appObj) {
+                            delete state.allApps[appToRemove.id];
+                        }
+                        
                     },
                     deleteAllApps: function(state) {
-                        state.allApps = [];
+                        state.allApps = null;
                     }
                 },
                 actions: {
@@ -151,12 +158,7 @@
                         context.commit("setPeriodLabel", obj.label);
                     },
                     updateActiveApp: function(context, id) {
-                        var appObj = state.allApps.filter(function(apps) {
-                            return apps._id === id
-                        })
-                        if (appObj.length !== 0) {
-                            context.commit("setActiveApp", Object.freeze(JSON.parse(JSON.stringify(appObj[0]))));
-                        }
+                        context.commit("setActiveApp", id);
                     },
                     removeActiveApp: function(context) {
                         context.commit("setActiveApp", null);
