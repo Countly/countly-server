@@ -13,6 +13,7 @@
                     },
                     value: "",
                     centerDialogVisible: true,
+                    app_selector__dialog_box: "cly-vue-sidebar__app-selector__dialog_box"
                 };
             },
             props: {
@@ -113,7 +114,6 @@
                     if (countlyGlobal.member.appSortList) {
                         apps = this.sortBy(apps, countlyGlobal.member.appSortList);
                     }
-    
                     apps = apps.map(function(a) {
                         a.label = a.name;
                         a.value = a._id;
@@ -121,7 +121,6 @@
                         //a.image = countlyGlobal.path + "appimages/" + active._id + ".png"
                     });
                     return apps;
-
                 },
                 selectedApp: {
                     get: function() {

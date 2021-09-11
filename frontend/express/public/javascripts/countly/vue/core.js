@@ -123,7 +123,7 @@
                         var appObj = state.allApps[id];
                         if (appObj) {
                             state.activeApp = Object.freeze(JSON.parse(JSON.stringify(appObj)));
-                        }  
+                        }
                     },
                     /**
                      * 
@@ -134,19 +134,19 @@
                      */
                     addToAllApps: function(state, additionalApps) {
                         if (Array.isArray(additionalApps)) {
-                            additionalApps.forEach(function(app){
+                            additionalApps.forEach(function(app) {
                                 state.allApps[app._id] = app;
-                            })
-                        } else {
+                            });
+                        }
+                        else {
                             state.allApps[additionalApps._id] = additionalApps;
                         }
                     },
                     removeFromAllApps: function(state, appToRemove) {
                         var appObj = state.allApps[appToRemove.id];
-                        if(appObj) {
+                        if (appObj) {
                             delete state.allApps[appToRemove.id];
                         }
-                        
                     },
                     deleteAllApps: function(state) {
                         state.allApps = null;
@@ -169,15 +169,14 @@
                     removeFromAllApps: function(context, appToRemove) {
                         if (Array.isArray(appToRemove)) {
                            appToRemove.forEach(function(app) {
-                               context.commit("removeFromAllApps", app)
-
-                           })
+                                context.commit("removeFromAllApps", app);
+                            })
                         } else {
-                            context.commit("removeFromAllApps", appToRemove)
+                            context.commit("removeFromAllApps", appToRemove);
                         }
                     },
                     deleteAllApps: function(context) {
-                        context.commit("deleteAllApps")
+                        context.commit("deleteAllApps");
                     }
                     
                 }
