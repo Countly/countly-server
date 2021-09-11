@@ -8,7 +8,6 @@
 
 //Element Table overrides
 .el-table {
-    color: c.$table-text-color;
 
     th {
         padding: 9px 0px;
@@ -17,9 +16,7 @@
         font-size: t.$text-sm-size;
         font-style: normal;
         font-weight: 500;
-        background-color: c.$table-th-bgcolor;
         border-bottom-width: 2px;
-        color: map.get(c.$colors, "cool-gray-100");
 
         .cell {
             line-height: 16px;
@@ -37,18 +34,20 @@
         }
 
         &.is-leaf {
-            border-bottom: 2px solid #EEF2F5;
-            border-top: 1px solid #EEF2F5;
+            border-bottom-width: 2px;
         }
     }
 
     td {
-        padding: 12px 0px;
+        padding: 14px 0px;
         font-style: normal;
         font-weight: normal;
         font-size: t.$text-md-size;
         box-sizing: border-box;
-        border-bottom: 1px solid #EEF2F5;
+
+        .cell {
+            line-height: 20px;
+        }
     }
 
     th:first-child .cell,
@@ -84,16 +83,6 @@
     .descending .sort-caret.descending {
         border-top-color: #005DEF;
     }
-
-    &.--enable-row-hover .el-table__body tr:hover>td {
-        background-color: #F9FBFC;
-    }
-
-    &--boder::after, &--group::after, &::before {
-        background-color: #EEF2F5;
-    }
-
-    //Final css
 
     .cell,
     .cell > * {
