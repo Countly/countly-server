@@ -120,6 +120,24 @@
                 };
             },
             computed: {
+                allApps: function() {
+                    var storedApp = this.$store.getters["countlyCommon/getAllApps"];
+                    var apps = _.sortBy(storedApp, function(app) {
+                        return (app.name + "").toLowerCase();
+                    });
+                    if (countlyGlobal.member.appSortList) {
+                        apps = this.sortBy(apps, countlyGlobal.member.appSortList);
+                    }
+    
+                    apps = apps.map(function(a) {
+                        a.label = a.name;
+                        a.value = a._id;
+    
+                        return a;
+                    });
+                    return apps;
+
+                },
                 selectedApp: {
                     get: function() {
                         var activeApp = this.$store.getters["countlyCommon/getActiveApp"];

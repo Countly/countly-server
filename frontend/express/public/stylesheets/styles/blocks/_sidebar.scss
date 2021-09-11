@@ -46,8 +46,12 @@ $bg-color: #24292e;
     }
 
     &__app-type {
-        font-size: 11px;
-        opacity: 0.57;
+        font-family: Inter;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 10px;
+        line-height: 12px;
+        letter-spacing: 0.5px;
     }
 
     &__options {

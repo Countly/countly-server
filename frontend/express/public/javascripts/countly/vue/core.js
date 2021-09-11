@@ -96,7 +96,7 @@
                     period: countlyCommon.getPeriod(),
                     periodLabel: countlyCommon.getDateRangeForCalendar(),
                     activeApp: null,
-                    allApps: []
+                    allApps: countlyGlobal.apps
                 },
                 getters: {
                     period: function(state) {
@@ -139,7 +139,7 @@
                         }
                     },
                     removeFromAllApps: function(state, appToRemove) {
-                        state.allApps.splice(state.allApps.findIndex(a => a.value === appToRemove.value) , 1)
+                        state.allApps = state.allApps.filter(function(a){ return a._id !== appToRemove._id})
                     },
                     deleteAllApps: function(state) {
                         state.allApps = [];
@@ -151,9 +151,11 @@
                         context.commit("setPeriodLabel", obj.label);
                     },
                     updateActiveApp: function(context, id) {
-                        var appObj = countlyGlobal.apps[id];
-                        if (appObj) {
-                            context.commit("setActiveApp", Object.freeze(JSON.parse(JSON.stringify(appObj))));
+                        var appObj = state.allApps.filter(function(apps) {
+                            return apps._id === id
+                        })
+                        if (appObj.length !== 0) {
+                            context.commit("setActiveApp", Object.freeze(JSON.parse(JSON.stringify(appObj[0]))));
                         }
                     },
                     removeActiveApp: function(context) {
