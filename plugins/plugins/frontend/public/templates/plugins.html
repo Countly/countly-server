@@ -8,7 +8,7 @@
 		<cly-section>
 			<cly-datatable-n :rows="pluginsData" :tracked-fields="localTableTrackedFields" :default-sort="{prop: 'name', order: 'ascending'}">
                 <template v-slot="scope">
-                    <el-table-column fixed="left" width="100" sortable prop="enabled">
+                    <el-table-column type="switch" fixed="left" width="100" sortable prop="enabled">
                         <template v-slot="rowScope">
                             <el-switch :value="rowScope.row.enabled"
                                 @input="onToggle(scope, rowScope.row)">

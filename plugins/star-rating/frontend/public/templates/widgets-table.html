@@ -1,7 +1,7 @@
 <cly-datatable-n
     :rows="widgets">
       <template v-slot="scope">
-          <el-table-column width="120px" sortable="true" prop="status" :label="i18n('feedback.status')">
+          <el-table-column width="120px" type="switch" sortable="true" prop="status" :label="i18n('feedback.status')">
               <template v-slot="rowScope">
                 <el-switch :value="rowScope.row.status"
                   @input="scope.patch(rowScope.row, { status: !rowScope.row.status})"

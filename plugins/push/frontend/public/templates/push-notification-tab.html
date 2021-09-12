@@ -63,7 +63,7 @@
                 </cly-chart-time>
             </cly-section>
             <cly-section>
-                <cly-datatable-n  :rows="pushNotificationRows" :available-dynamic-cols="optionalTableColumns" :resizable="true" v-loading="isLoading" @row-click="onRowClick">
+                <cly-datatable-n  :rows="pushNotificationRows" :available-dynamic-cols="optionalTableColumns" :resizable="true" v-loading="isLoading">
                     <template v-slot:header-left>
                         <el-select v-model="selectedStatusFilter" >
                             <el-option
@@ -75,9 +75,9 @@
                         </el-select>
                     </template>
                     <template v-slot="scope">
-                        <el-table-column sortable="custom" prop="name" :label="i18n('push-notification.table-message-name')" class="cly-vue-push-notification-multi-line-table-data">
+                        <el-table-column type="clickable" sortable="custom" prop="name" :label="i18n('push-notification.table-message-name')" class="cly-vue-push-notification-multi-line-table-data">
                             <template slot-scope="scope">
-                                <span class="cly-vue-push-notification-multi-line-table-data__first-line">{{scope.row.name}}</span>
+                                <span class="cly-vue-push-notification-multi-line-table-data__first-line" @click="onRowClick(scope.row)">{{scope.row.name}}</span>
                                 <br />
                                 <span class="cly-vue-push-notification-multi-line-table-data__second-line">{{scope.row.platforms.map(function(platform){return platform.label}).join(", ")}}</span>
                             </template>
