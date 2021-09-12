@@ -34,8 +34,22 @@
                     var app = this.allApps.filter(function(e) {
                         return e.value === event;
                     });
-                    this.activeApp = app[0];
-                    this.$emit("change", this.activeApp._id);
+                    this.onChange(app[0]._id);
+                },
+                onChange: function(id) {
+                    var selectedApp = this.allApps.find(function(a) {
+                        return a._id === id;
+                    });
+
+                    var appKey = selectedApp.key;
+                    var appName = selectedApp.name;
+                    var appId = selectedApp._id;
+                    if (app.activeAppKey !== appKey) {
+                        app.activeAppName = appName;
+                        app.activeAppKey = appKey;
+                        app.switchApp(appId);
+                    }
+                    this.handleClose();
                 },
                 handleClose: function() {
                     this.$emit("close");
@@ -192,21 +206,6 @@
                 }
             },
             methods: {
-                onChange: function(id) {
-                    var selectedApp = this.allApps.find(function(a) {
-                        return a._id === id;
-                    });
-
-                    var appKey = selectedApp.key;
-                    var appName = selectedApp.name;
-                    var appId = selectedApp._id;
-                    if (app.activeAppKey !== appKey) {
-                        app.activeAppName = appName;
-                        app.activeAppKey = appKey;
-                        app.switchApp(appId);
-                    }
-                    this.toggleAppSelection();
-                },
                 suffixIconClass: function(dropdown) {
                     return (dropdown.visible ? 'arrow-up is-reverse' : 'arrow-up');
                 },
