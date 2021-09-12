@@ -518,7 +518,14 @@
                         };
                     }
                 }
+
                 return DEFAULT_ROW;
+            },
+            onMouseEnter: function(row) {
+                this.patch(row, {hover: true});
+            },
+            onMouseLeave: function(row) {
+                this.unpatch(row, ["hover"]);
             }
         }
     };

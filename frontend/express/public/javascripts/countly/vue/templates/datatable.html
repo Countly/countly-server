@@ -62,6 +62,8 @@
             :row-class-name="rowClasses"
             :header-row-class-name="headerClasses"
             @sort-change="onSortChange"
+            @cell-mouse-enter="onMouseEnter"
+            @cell-mouse-leave="onMouseLeave"
             ref="elTable">
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>
