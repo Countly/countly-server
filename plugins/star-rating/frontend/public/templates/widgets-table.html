@@ -40,13 +40,11 @@
               </span>
             </template>
           </el-table-column>
-          <el-table-column>
-            <template width="50px" :label="i18n('feedback.detail')" v-slot="rowScope">
-              <span class="text-medium">
-                <cly-more-options class="bu-ml-2" size="small" @command="handleCommand($event, rowScope.row._id)">
+          <el-table-column type="options">
+            <template :label="i18n('feedback.detail')" v-slot="rowScope">
+                <cly-more-options v-if="rowScope.row.hover" class="bu-ml-2" size="small" @command="handleCommand($event, rowScope.row._id)">
                   <el-dropdown-item command="show-detail"> {{ i18n('feedback.show-detail') }}</el-dropdown-item>
                 </cly-more-options>
-              </span>
             </template>
           </el-table-column>
         </template>

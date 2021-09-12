@@ -5,10 +5,6 @@
 
 .cly-vue-eldatatable {
 
-	&.is-clickable td {
-		cursor: pointer;
-	}
-
 	&.silent-loading {
 		.el-loading-spinner {
 			visibility: hidden;

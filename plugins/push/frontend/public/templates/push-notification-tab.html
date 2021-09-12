@@ -139,16 +139,16 @@
                                             <span>{{formatPercentage(scope.row.actioned/totalAppUsers)}} %</span>
                                         </div>
                                     </div>
-                                    <div class="bu-level-right" >
-                                        <div class="bu-level-item">
-                                            <cly-more-options size="small" @command="handleUserEvents($event, scope.row._id )">
-                                                <el-dropdown-item v-if="shouldShowDuplicateUserEvent('scope.row.status.value')" :command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
-                                                <el-dropdown-item v-if="shouldShowDeleteUserEvent('scope.row.status.value')"  :command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
-                                                <el-dropdown-item v-if="shouldShowResendUserEvent('scope.row.status.value')" :command="UserEventEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
-                                            </cly-more-options>
-                                        </div>
-                                    </div>
                                 </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column type="options">
+                            <template slot-scope="scope">
+                                <cly-more-options v-if="scope.row.hover" size="small" @command="handleUserEvents($event, scope.row._id )">
+                                    <el-dropdown-item v-if="shouldShowDuplicateUserEvent('scope.row.status.value')" :command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowDeleteUserEvent('scope.row.status.value')"  :command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowResendUserEvent('scope.row.status.value')" :command="UserEventEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
+                                </cly-more-options>
                             </template>
                         </el-table-column>
                     </template>
