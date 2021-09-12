@@ -521,11 +521,32 @@
 
                 return DEFAULT_ROW;
             },
-            onMouseEnter: function(row) {
-                this.patch(row, {hover: true});
+            onCellMouseEnter: function(row) {
+                var thisRowKey = this.keyOf(row);
+                var hovered = this.mutatedRows.filter(function(r) {
+                    return r.hover;
+                });
+
+                for (var i = 0; i < hovered.length; i++) {
+                    var rowKey = this.keyOf(hovered[i]);
+
+                    if (thisRowKey !== rowKey) {
+                        this.unpatch(hovered[i], ["hover"]);
+                    }
+                }
+
+                if (!row.hover) {
+                    this.patch(row, {hover: true});
+                }
             },
-            onMouseLeave: function(row) {
-                this.unpatch(row, ["hover"]);
+            onNoCellMouseEnter: function() {
+                var hovered = this.mutatedRows.filter(function(r) {
+                    return r.hover;
+                });
+
+                for (var i = 0; i < hovered.length; i++) {
+                    this.unpatch(hovered[i], ["hover"]);
+                }
             }
         }
     };
