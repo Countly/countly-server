@@ -237,7 +237,7 @@ var AppBrowserView = countlyVue.views.create({
 
 });
 
-if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+if (countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
     countlyVue.container.registerTab("/analytics/technology", {
         priority: 6,
         name: "browsers",

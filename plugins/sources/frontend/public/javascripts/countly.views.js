@@ -259,10 +259,10 @@
     }
 
     $(document).ready(function() {
-        if (countlyAuth.validateRead(FEATURE_NAME) && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+        if (countlyAuth.validateRead(FEATURE_NAME) && countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
             app.addSubMenuForType("web", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 90});
         }
-        else if (countlyAuth.validateRead(FEATURE_NAME) && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
+        else if (countlyAuth.validateRead(FEATURE_NAME) && countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
             app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 90});
         }
     });
