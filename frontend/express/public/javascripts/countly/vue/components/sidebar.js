@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone*/
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store*/
 
 (function(countlyVue, $) {
 
@@ -15,7 +15,7 @@
                 activeApp: {
                     get: function() {
                         var app = this.$store.getters["countlyCommon/getActiveApp"];
-                        var tempApp = Object.assign({data: 0}, app);
+                        var tempApp = Object.assign({}, app);
                         return tempApp._id;
                     },
                     set: function(activeApp) {

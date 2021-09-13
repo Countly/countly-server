@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store */
 
 (function(countlyVue, $) {
 
@@ -125,13 +125,6 @@
                             state.activeApp = Object.freeze(JSON.parse(JSON.stringify(appObj)));
                         }
                     },
-                    /**
-                     * 
-                     * @param {*} state 
-                     * @param {*} additionalApps
-                     * Additional app can be Array or an
-                     * individual object
-                     */
                     addToAllApps: function(state, additionalApps) {
                         if (Array.isArray(additionalApps)) {
                             additionalApps.forEach(function(app) {
@@ -169,17 +162,17 @@
                     },
                     removeFromAllApps: function(context, appToRemove) {
                         if (Array.isArray(appToRemove)) {
-                           appToRemove.forEach(function(app) {
+                            appToRemove.forEach(function(app) {
                                 context.commit("removeFromAllApps", app);
-                            })
-                        } else {
+                            });
+                        }
+                        else {
                             context.commit("removeFromAllApps", appToRemove);
                         }
                     },
                     deleteAllApps: function(context) {
                         context.commit("deleteAllApps");
                     }
-                    
                 }
             },
             countlySidebar: {
