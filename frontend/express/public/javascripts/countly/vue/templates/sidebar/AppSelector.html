@@ -1,7 +1,7 @@
 <cly-dialog :visible.sync="centerDialogVisible" :custom-class = "app_selector__dialog_box" :show-close = "false" width="35%" :modal="false" center @closed="handleClose()">
     <span slot="title" class="dialog-title bu-level">
         <span class="bu-level-left text-big">Select App</span>
-        <el-button class="bu-level-right" type="success">Compare App</el-button>
+        <el-button class="bu-level-right" type="text">Compare App</el-button>
       </span>
     <cly-listbox skin="jumbo" height="624" :options="allApps"
         :searchable="true" :bordered="false" v-model="activeApp">
