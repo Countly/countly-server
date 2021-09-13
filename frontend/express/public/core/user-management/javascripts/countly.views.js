@@ -568,7 +568,12 @@
             this.renderWhenReady(this.ManageUsersView);
         });
 
-        app.route("/manage/users/:tab", "manage-users-tab", function() {
+        app.route("/manage/users/:tab", "manage-users-tab", function(tab) {
+            var params = {
+                tab: tab
+            };
+
+            this.ManageUsersView.params = params;
             // inject current tab state to vue state
             this.renderWhenReady(this.ManageUsersView);
         });

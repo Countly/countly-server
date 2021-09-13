@@ -540,6 +540,12 @@
                 }
             },
             onNoCellMouseEnter: function() {
+                this.removeHovered();
+            },
+            onElTableClickOutside: function() {
+                this.removeHovered();
+            },
+            removeHovered: function() {
                 var hovered = this.mutatedRows.filter(function(r) {
                     return r.hover;
                 });
