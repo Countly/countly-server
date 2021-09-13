@@ -1,8 +1,54 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone*/
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store*/
 
 (function(countlyVue, $) {
 
     $(document).ready(function() {
+        var AppSelector = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/AppSelector.html'),
+            data: function() {
+                return {
+                    centerDialogVisible: true,
+                    app_selector__dialog_box: "cly-vue-sidebar__app-selector__dialog_box"
+                };
+            },
+            computed: {
+                activeApp: {
+                    get: function() {
+                        var app = this.$store.getters["countlyCommon/getActiveApp"];
+                        var tempApp = Object.assign({}, app);
+                        return tempApp._id;
+                    },
+                    set: function(activeApp) {
+                        this.onChange(activeApp);
+                    }
+                }
+            },
+            props: {
+                allApps: {
+                    type: Array
+                }
+            },
+            methods: {
+                onChange: function(id) {
+                    var selectedApp = this.allApps.find(function(a) {
+                        return a._id === id;
+                    });
+
+                    var appKey = selectedApp.key;
+                    var appName = selectedApp.name;
+                    var appId = selectedApp._id;
+                    if (app.activeAppKey !== appKey) {
+                        app.activeAppName = appName;
+                        app.activeAppKey = appKey;
+                        app.switchApp(appId);
+                    }
+                    this.handleClose();
+                },
+                handleClose: function() {
+                    this.$emit("close");
+                }
+            }
+        });
 
         var UsersMenu = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/users-menu.html'),
@@ -29,6 +75,28 @@
                         isBoolean: typeof countlyGlobal.usermenu.featureRequestLink === "boolean" && countlyGlobal.usermenu.featureRequestLink
                     }
                 };
+            },
+            methods: {
+                logout: function() {
+                    this.$store.dispatch("countlyCommon/removeActiveApp");
+                    store.remove('countly_date');
+                    store.remove('countly_location_city');
+                    this.logoutRequest();
+                },
+                logoutRequest: function() {
+                    var logoutForm = document.createElement("form");
+                    logoutForm.action = countlyGlobal.path + '/logout';
+                    logoutForm.method = "post";
+                    logoutForm.style.display = "none";
+                    logoutForm.type = "submit";
+                    var logoutForm_csrf = document.createElement("input");
+                    logoutForm_csrf.name = '_csrf';
+                    logoutForm_csrf.value = countlyGlobal.csrf_token;
+                    logoutForm.appendChild(logoutForm_csrf);
+                    document.body.appendChild(logoutForm);
+                    logoutForm.submit();
+                    document.body.removeChild(logoutForm);
+                }
             }
         });
 
@@ -41,50 +109,36 @@
                     "submenus": "/sidebar/analytics/submenu"
                 })
             ],
+            components: {
+                "app-selector": AppSelector
+            },
             data: function() {
-                var apps = _.sortBy(countlyGlobal.apps, function(app) {
-                    return (app.name + "").toLowerCase();
-                });
-                if (countlyGlobal.member.appSortList) {
-                    apps = this.sortBy(apps, countlyGlobal.member.appSortList);
-                }
-
-                apps = apps.map(function(a) {
-                    a.label = a.name;
-                    a.value = a._id;
-
-                    return a;
-                });
-
                 return {
-                    allApps: apps,
                     selectMode: "single-list",
                     selectedAppLocal: null,
-                    selectedAnalyticsMenuLocal: null
+                    selectedAnalyticsMenuLocal: null,
+                    appSelector: false
                 };
             },
             computed: {
-                selectedApp: {
-                    get: function() {
-                        var activeApp = this.$store.getters["countlyCommon/getActiveApp"];
-
-                        if (!this.selectedAppLocal) {
-                            if (!activeApp) {
-                                // eslint-disable-next-line no-undef
-                                // console.log("sidebar:: active app not set");
-                            }
-
-                            this.selectedAppLocal = activeApp && activeApp._id;
-                        }
-
-                        return this.selectedAppLocal;
-                    },
-                    set: function(id) {
-                        this.selectedAppLocal = id;
+                allApps: function() {
+                    var storedApp = this.$store.getters["countlyCommon/getAllApps"];
+                    var apps = _.sortBy(storedApp, function(app) {
+                        return (app.name + "").toLowerCase();
+                    });
+                    if (countlyGlobal.member.appSortList) {
+                        apps = this.sortBy(apps, countlyGlobal.member.appSortList);
                     }
+                    apps = apps.map(function(a) {
+                        a.label = a.name;
+                        a.value = a._id;
+                        return a;
+                        //a.image = countlyGlobal.path + "appimages/" + active._id + ".png"
+                    });
+                    return apps;
                 },
                 activeApp: function() {
-                    var selectedAppId = this.selectedApp;
+                    var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"]._id;
                     var active = this.allApps.find(function(a) {
                         return a._id === selectedAppId;
                     });
@@ -92,7 +146,6 @@
                     if (active) {
                         active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
                     }
-
                     return active || {};
                 },
                 categorizedMenus: function() {
@@ -146,20 +199,6 @@
                 }
             },
             methods: {
-                onChange: function(id) {
-                    var selectedApp = this.allApps.find(function(a) {
-                        return a._id === id;
-                    });
-
-                    var appKey = selectedApp.key;
-                    var appName = selectedApp.name;
-                    var appId = selectedApp._id;
-                    if (app.activeAppKey !== appKey) {
-                        app.activeAppName = appName;
-                        app.activeAppKey = appKey;
-                        app.switchApp(appId);
-                    }
-                },
                 suffixIconClass: function(dropdown) {
                     return (dropdown.visible ? 'arrow-up is-reverse' : 'arrow-up');
                 },
@@ -267,6 +306,9 @@
                         console.log("Analytics menu not found. ", currLink, menus, submenus);
                     }
 
+                },
+                toggleAppSelection: function() {
+                    this.appSelector = !this.appSelector;
                 }
             },
             mounted: function() {
@@ -386,10 +428,10 @@
                             name: "app",
                             noSelect: true
                         },
-                        {
-                            name: "search",
-                            icon: "ion-ios-search-strong"
-                        },
+                        // {
+                        //     name: "search",
+                        //     icon: "ion-ios-search-strong"
+                        // },
                         {
                             name: "analytics",
                             icon: "ion-stats-bars"
@@ -408,7 +450,7 @@
 
                     if (externalMainOptions && externalMainOptions.length) {
                         for (var i = 0; i < externalMainOptions.length; i++) {
-                            options.splice(3, 0, externalMainOptions[i]);
+                            options.splice(2, 0, externalMainOptions[i]);
                         }
                     }
 
