@@ -16,11 +16,10 @@
                     get: function() {
                         var app = this.$store.getters["countlyCommon/getActiveApp"];
                         var tempApp = Object.assign({data: 0}, app);
-                        tempApp["value"] = tempApp._id;
-                        return tempApp;
+                        return tempApp._id;
                     },
                     set: function(activeApp) {
-                        this.$store.dispatch("countlyCommon/updateActiveApp", activeApp.id);
+                        this.onChange(activeApp);
                     }
                 }
             },
@@ -30,12 +29,6 @@
                 }
             },
             methods: {
-                switchActiveApp: function(event) {
-                    var app = this.allApps.filter(function(e) {
-                        return e.value === event;
-                    });
-                    this.onChange(app[0]._id);
-                },
                 onChange: function(id) {
                     var selectedApp = this.allApps.find(function(a) {
                         return a._id === id;

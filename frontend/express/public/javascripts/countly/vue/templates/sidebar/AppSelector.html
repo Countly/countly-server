@@ -4,7 +4,7 @@
         <el-button class="bu-level-right" type="success">Compare App</el-button>
       </span>
     <cly-listbox skin="jumbo" height="624" :options="allApps"
-        :searchable="true" :bordered="false" :value="activeApp.value"  @input="switchActiveApp($event)">
+        :searchable="true" :bordered="false" v-model="activeApp">
         <template v-slot:option-prefix="option">
             <img style="width: 21px;border-radius: 10px;" :src="option.image"></img>
         </template>
