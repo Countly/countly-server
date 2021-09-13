@@ -325,11 +325,6 @@
                 type: Object,
                 required: true,
             },
-            isHTML: {
-                type: Boolean,
-                required: false,
-                default: false,
-            }
         },
         computed: {
             isAndroidPlatformSelected: function() {
@@ -658,7 +653,17 @@
             },
             localizations: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+            },
+            previewMessageTitle: function() {
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.title);
+            },
+            previewMessageContent: function() {
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.content);
             }
+        },
+        components: {
+            'user-property-preview': countlyPushNotificationComponent.UserPropertyPreview,
+            'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview
         }
     });
 

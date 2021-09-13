@@ -152,6 +152,48 @@
             }
             return htmlString;
         },
+        getUserPropertyAsHTMLString: function(index, userProperty) {
+            var newElement = document.createElement("span");
+            newElement.setAttribute("id", "id-" + index);
+            newElement.setAttribute("contentEditable", false);
+            newElement.setAttribute("data-user-property-label", userProperty.k);
+            newElement.setAttribute("data-user-property-value", userProperty.k);
+            newElement.setAttribute("data-user-property-fallback", userProperty.f);
+            newElement.innerText = userProperty.k + "|" + userProperty.f;
+            return newElement.outerHTML;
+        },
+        decodeMessageSpecialCharacters: function(message) {
+            var textArea = document.createElement('textarea');
+            textArea.innerHTML = message;
+            return textArea.value;
+        },
+        insertUserPropertyAtIndex: function(message, index, userProperty) {
+            return [message.slice(0, index), userProperty, message.slice(index)].join('');
+        },
+        buildMessageTextInHTML: function(message, userPropertiesDto) {
+            if (!message || !userPropertiesDto) {
+                return message || "";
+            }
+            var self = this;
+            var messageInHTMLString = this.decodeMessageSpecialCharacters(message);
+            var buildMessageLength = 0;
+            var previousIndex = undefined;
+            Object.keys(userPropertiesDto).forEach(function(currentUserPropertyIndex, index) {
+                var userPropertyInHTMLString = self.getUserPropertyAsHTMLString(currentUserPropertyIndex, userPropertiesDto[currentUserPropertyIndex]);
+                if (index === 0) {
+                    messageInHTMLString = self.insertUserPropertyAtIndex(messageInHTMLString, currentUserPropertyIndex, userPropertyInHTMLString);
+                    buildMessageLength = Number(currentUserPropertyIndex) + userPropertyInHTMLString.length;
+                }
+                else {
+                    var addedStringLength = currentUserPropertyIndex - previousIndex;
+                    var newIndex = buildMessageLength + addedStringLength;
+                    messageInHTMLString = self.insertUserPropertyAtIndex(messageInHTMLString, newIndex, userPropertyInHTMLString);
+                    buildMessageLength += userPropertyInHTMLString.length + addedStringLength;
+                }
+                previousIndex = currentUserPropertyIndex;
+            });
+            return messageInHTMLString;
+        },
         getPreviewMessageComponentsList: function(content) {
             var self = this;
             var htmlTitle = document.createElement("div");
@@ -331,8 +373,8 @@
             },
             mapMessageLocalization: function(localization, dto) {
                 return {
-                    title: dto.messagePerLocale[localization + '|t'],
-                    content: dto.messagePerLocale[localization],
+                    title: countlyPushNotification.helper.buildMessageTextInHTML(dto.messagePerLocale[localization + '|t'], dto.messagePerLocale[localization + "|tp"]),
+                    content: countlyPushNotification.helper.buildMessageTextInHTML(dto.messagePerLocale[localization], dto.messagePerLocale[localization + "|p"]),
                     media: this.mapMedia(dto),
                     mediaMime: dto.mediaMime,
                     onClickUrl: dto.url,

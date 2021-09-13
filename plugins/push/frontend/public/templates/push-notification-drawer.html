@@ -15,7 +15,6 @@
                 :content="pushNotificationUnderEdit.message[activeLocalization].content" 
                 :platforms="pushNotificationUnderEdit.platforms" 
                 :media="previewMessageMedia" 
-                :isHTML="true"
                 :buttons="pushNotificationUnderEdit.message[activeLocalization].buttons.map(function(item){return item.label})">
             </mobile-message-preview>
         </cly-content>

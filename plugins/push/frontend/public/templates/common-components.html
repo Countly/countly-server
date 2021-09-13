@@ -117,27 +117,17 @@
                 <img v-if="mediaPreview[PlatformEnum.IOS].url || mediaPreview[PlatformEnum.ALL].url" class="cly-vue-push-notification-mobile-preview__ios-media" v-bind:src="mediaPreview[PlatformEnum.IOS].url || mediaPreview[PlatformEnum.ALL].url" /> 
             </template>
             <div class="cly-vue-push-notification-mobile-preview__ios-title">
-                <template v-if="isHTML">
-                    <template v-for="(component) in titlePreviewComponentsList">
-                        <keep-alive>
-                            <component v-bind:is="component.name" :value="component.value"></component>
-                        </keep-alive>
-                    </template>
-                </template>
-                <template v-else>
-                    {{title}}
+                <template v-for="(component) in titlePreviewComponentsList">
+                    <keep-alive>
+                        <component v-bind:is="component.name" :value="component.value"></component>
+                    </keep-alive>
                 </template>
             </div>
             <div class="cly-vue-push-notification-mobile-preview__ios-content">
-                <template v-if="isHTML">
-                    <template v-for="(component) in contentPreviewComponentsList">
-                        <keep-alive>
-                            <component v-bind:is="component.name" :value="component.value"></component>
-                        </keep-alive>
-                    </template>
-                </template>
-                <template v-else>
-                    {{content}}
+                <template v-for="(component) in contentPreviewComponentsList">
+                    <keep-alive>
+                        <component v-bind:is="component.name" :value="component.value"></component>
+                    </keep-alive>
                 </template>
             </div>
             <div class="cly-vue-push-notification-mobile-preview__ios-buttons-list">
@@ -155,27 +145,17 @@
                 </span>
             </div>
             <div class="cly-vue-push-notification-mobile-preview__android-title">
-                <template v-if="isHTML">
-                    <template v-for="(component) in titlePreviewComponentsList">
-                        <keep-alive>
-                            <component v-bind:is="component.name" :value="component.value"></component>
-                        </keep-alive>
-                    </template>
-                </template>
-                <template v-else>
-                    {{title}}
+                <template v-for="(component) in titlePreviewComponentsList">
+                    <keep-alive>
+                        <component v-bind:is="component.name" :value="component.value"></component>
+                    </keep-alive>
                 </template>
             </div>
             <div class="cly-vue-push-notification-mobile-preview__android-content">
-                <template v-if="isHTML">
-                    <template v-for="(component) in contentPreviewComponentsList">
-                        <keep-alive>
-                            <component v-bind:is="component.name" :value="component.value"></component>
-                        </keep-alive>
-                    </template>
-                </template>
-                <template v-else>
-                    {{content}}
+                <template v-for="(component) in contentPreviewComponentsList">
+                    <keep-alive>
+                        <component v-bind:is="component.name" :value="component.value"></component>
+                    </keep-alive>
                 </template>
             </div>
             <div class="cly-vue-push-notification-mobile-preview__android-buttons-list">
@@ -259,7 +239,11 @@
                     {{i18n('push-notification-details.message-title')}}
                 </div>
                 <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
-                    {{message.title}}
+                    <template v-for="(component) in previewMessageTitle">
+                        <keep-alive>
+                            <component v-bind:is="component.name" :value="component.value"></component>
+                        </keep-alive>
+                    </template>
                 </div>
             </div>
             <div class="bu-columns">
@@ -267,7 +251,11 @@
                     {{i18n('push-notification-details.message-content')}}
                 </div>
                 <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
-                    {{message.content}}
+                    <template v-for="(component) in previewMessageContent">
+                        <keep-alive>
+                            <component v-bind:is="component.name" :value="component.value"></component>
+                        </keep-alive>
+                    </template>
                 </div>
             </div>
             <template v-if="message.numberOfButtons>0">
