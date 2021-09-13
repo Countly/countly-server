@@ -64,7 +64,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="cly-vue-drawer__footer">
+                <div class="cly-vue-drawer__footer" v-if="isMultiStep || hasCancelButton || saveButtonLabel">
                     <div class="cly-vue-drawer__buttons is-multi-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="isMultiStep">
                         <div class="cly-vue-drawer__controls-left-pc">
                             <slot name="controls-left"
@@ -77,7 +77,7 @@
                     </div>
                     <div class="cly-vue-drawer__buttons is-single-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="!isMultiStep">
                         <el-button @click="doClose" size="small" v-if="hasCancelButton" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>
-                        <el-button @click="submit" :loading="isSubmitPending" size="small" type="success" :class="{'is-disabled':!isSubmissionAllowed}" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
+                        <el-button v-if="saveButtonLabel" @click="submit" :loading="isSubmitPending" size="small" type="success" :class="{'is-disabled':!isSubmissionAllowed}" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
                     </div>
                 </div>
             </div>
