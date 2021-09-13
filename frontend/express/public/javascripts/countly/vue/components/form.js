@@ -242,9 +242,14 @@
                 }
             }
         },
+        data: function() {
+            return {
+                watchHandle: null
+            };
+        },
         mounted: function() {
             var self = this;
-            this.$watch(function() {
+            this.watchHandle = this.$watch(function() {
                 return self.$refs.observer.flags.valid;
             },
             function(newVal) {
@@ -266,6 +271,9 @@
                 }
                 return true;
             }
+        },
+        beforeDestroy: function() {
+            this.watchHandle(); // unwatch
         },
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
                     '<validation-observer ref="observer" v-slot="v">\n' +
