@@ -490,7 +490,7 @@
             },
             placement: {
                 type: String,
-                default: 'bottom-start'
+                default: 'bottom-end'
             },
         },
         mounted: function() {
