@@ -50,6 +50,12 @@
         }
     }
 
+    &.el-table--has-options td {
+        .cell {
+            line-height: 23px;
+        }
+    }
+
     th:first-child .cell,
     td:first-child .cell {
         padding-left: 16px;
