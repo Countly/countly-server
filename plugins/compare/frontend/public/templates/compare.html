@@ -31,7 +31,7 @@
     <cly-section>
     <div class="cly-vue-compare-events__graph-section">
       <div class="cly-vue-compare-events__graph-section__dropdown">
-      <span class="cly-vue-compare-events__graph-section--text" >METRIC</span>
+      <span class="cly-vue-compare-events__graph-section--text" >{{i18n('events.compare.previous.metric')}}</span>
       <el-select v-model="selectedGraph">
         <el-option v-for="item in availableMetrics" :key="item" :value="item">
         </el-option>
