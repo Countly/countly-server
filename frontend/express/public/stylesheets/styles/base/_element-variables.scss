@@ -322,7 +322,7 @@ $--select-option-color: $--color-text-regular !default;
 $--select-option-disabled-color: $--color-text-placeholder !default;
 $--select-option-disabled-background: $--color-white !default;
 /// height||Other|4
-$--select-option-height: 34px !default;
+$--select-option-height: 29px !default;
 $--select-option-hover-background: map.get(c.$colors, "warm-gray-20") !default;
 /// color||Color|0
 $--select-option-selected-font-color: $--color-white !default;
@@ -783,8 +783,8 @@ $--tree-expand-icon-color: $--color-text-placeholder !default;
 /* Dropdown
 -------------------------- */
 $--dropdown-menu-box-shadow: $--box-shadow-light !default;
-$--dropdown-menuItem-hover-fill: $--color-primary-light-9 !default;
-$--dropdown-menuItem-hover-color: $--link-color !default;
+$--dropdown-menuItem-hover-fill: $--select-option-hover-background !default;
+$--dropdown-menuItem-hover-color: $--color-blue-100 !default;
 
 /* Badge
 -------------------------- */
