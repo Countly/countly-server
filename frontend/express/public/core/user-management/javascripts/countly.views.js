@@ -567,7 +567,7 @@
         app.route("/manage/users", "manage-users", function() {
             var params = {
                 tab: "users"
-            }
+            };
 
             this.ManageUsersView.params = params;
             this.renderWhenReady(this.ManageUsersView);
