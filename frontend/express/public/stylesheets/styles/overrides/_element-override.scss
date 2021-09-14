@@ -90,8 +90,7 @@
         border-top-color: #005DEF;
     }
 
-    .cell,
-    .cell > * {
+    .cell {
         word-break: normal;
         overflow: hidden;
         text-overflow: ellipsis;
