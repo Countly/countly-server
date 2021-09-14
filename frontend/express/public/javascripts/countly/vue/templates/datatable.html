@@ -1,6 +1,6 @@
 <div class="cly-vue-eldatatable" :class="classes">
     <div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">
-        <div class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white">
+        <div class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white" @mouseenter="onNoCellMouseEnter">
             <div class="bu-level-left">
                 <slot v-bind="commonScope" name="header-left"></slot>
             </div>
@@ -62,12 +62,14 @@
             :row-class-name="rowClasses"
             :header-row-class-name="headerClasses"
             @sort-change="onSortChange"
+            @cell-mouse-enter="onCellMouseEnter"
+            v-click-outside="onElTableClickOutside"
             ref="elTable">
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>
                 </template>
         </el-table>
-        <div class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white">
+        <div class="bu-level cly-vue-eldatatable__footer cly-vue-eldatatable__footer--white" @mouseenter="onNoCellMouseEnter">
             <div class="bu-level-left">
                 <div class="bu-level-item text-smallish bu-mr-0">
                     {{ i18n("common.items-per-page") }}:

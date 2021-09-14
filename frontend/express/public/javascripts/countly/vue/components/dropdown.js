@@ -454,7 +454,7 @@
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
-        template: '<cly-dropdown ref="dropdown" :placement="placement" :disabled="disabled" v-on="$listeners">\
+        template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :placement="placement" :disabled="disabled" v-on="$listeners">\
                         <template v-slot:trigger>\
                             <slot name="trigger">\
                                 <el-button :size="size" :icon="icon" :type="type">\
@@ -490,7 +490,7 @@
             },
             placement: {
                 type: String,
-                default: 'bottom-start'
+                default: 'bottom-end'
             },
         },
         mounted: function() {

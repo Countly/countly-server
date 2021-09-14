@@ -518,7 +518,41 @@
                         };
                     }
                 }
+
                 return DEFAULT_ROW;
+            },
+            onCellMouseEnter: function(row) {
+                var thisRowKey = this.keyOf(row);
+                var hovered = this.mutatedRows.filter(function(r) {
+                    return r.hover;
+                });
+
+                for (var i = 0; i < hovered.length; i++) {
+                    var rowKey = this.keyOf(hovered[i]);
+
+                    if (thisRowKey !== rowKey) {
+                        this.unpatch(hovered[i], ["hover"]);
+                    }
+                }
+
+                if (!row.hover) {
+                    this.patch(row, {hover: true});
+                }
+            },
+            onNoCellMouseEnter: function() {
+                this.removeHovered();
+            },
+            onElTableClickOutside: function() {
+                this.removeHovered();
+            },
+            removeHovered: function() {
+                var hovered = this.mutatedRows.filter(function(r) {
+                    return r.hover;
+                });
+
+                for (var i = 0; i < hovered.length; i++) {
+                    this.unpatch(hovered[i], ["hover"]);
+                }
             }
         }
     };
