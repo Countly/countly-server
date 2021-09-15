@@ -148,9 +148,9 @@
             var groupData = context.state.groupData.displayMap;
             var eventMap = allEvents.map;
             var mapKey = context.state.selectedEventName.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
-            var countString = (mapKey.startsWith('[CLY]_group') && groupData.c) ? groupData.c : (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"];
-            var sumString = (mapKey.startsWith('[CLY]_group') && groupData.s) ? groupData.s : (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"];
-            var durString = (mapKey.startsWith('[CLY]_group') && groupData.d) ? groupData.d : (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
+            var countString = (mapKey.startsWith('[CLY]_group') && groupData.c) ? groupData.c : (eventMap && eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"];
+            var sumString = (mapKey.startsWith('[CLY]_group') && groupData.s) ? groupData.s : (eventMap && eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"];
+            var durString = (mapKey.startsWith('[CLY]_group') && groupData.d) ? groupData.d : (eventMap && eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
 
             if (context.state.currentActiveSegmentation !== "segment" && context.state.hasSegments) {
                 var segments = res.meta[context.state.currentActiveSegmentation].slice();
