@@ -1,5 +1,6 @@
 @use "../base/colors" as c;
 @use "../base/typography-variables" as t;
+@use "../base/variables" as v;
 @use "sass:map";
 
 .cly-vue-select-x {
@@ -138,9 +139,9 @@
         align-items: center;
         justify-content: space-between;
         &.selected{
-            background-color: map.get(c.$colors, "blue-100");
+            background-color: v.$select-dropdown-item-default-selected-bg-color;
             * {
-                color: map.get(c.$colors, "white");
+                color: v.$select-dropdown-item-default-selected-color;
             }
         }
     }
@@ -165,24 +166,23 @@
     &:not(.cly-vue-listbox--disabled) {
         .cly-vue-listbox__item {
             &:not(.selected):hover {
-                background-color: map.get(c.$colors, "warm-gray-20");
+                background-color: v.$select-dropdown-item-default-hover-bg-color;
                 .drag-handler {
                     visibility: visible;
                 }
                 * {
-                    color: map.get(c.$colors, "blue-100");
+                    color: v.$select-dropdown-item-default-hover-color;
                 }
             }
         }
     }
 
-    //Had to give padding 7px because of line height 20px for text-medium
     &--has-default-skin {
         .cly-vue-listbox__item {
-            padding: 7px;
-            height: 20px;
+            padding: v.$select-dropdown-item-default-padding;
             border-radius: 4px;
-            margin: 8px 0px;
+            margin: v.$select-dropdown-item-default-margin 0px;
+            line-height: v.$select-dropdown-item-default-height;
         }
     }
     &--has-jumbo-skin {
