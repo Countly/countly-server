@@ -7,6 +7,7 @@
     var MB_TO_BYTES_RATIO = 1000000;
     var DEFAULT_LOCALIZATION_VALUE = 'default';
     var DEFAULT_LOCALIZATION_LABEL = 'Default';
+    var USER_PROPERTY_SUBSTITUE_CHAR = '\u200B';
 
     var TypeEnum = Object.freeze({
         ONE_TIME: "oneTime",
@@ -152,48 +153,6 @@
             }
             return htmlString;
         },
-        getUserPropertyAsHTMLString: function(index, userProperty) {
-            var newElement = document.createElement("span");
-            newElement.setAttribute("id", "id-" + index);
-            newElement.setAttribute("contentEditable", false);
-            newElement.setAttribute("data-user-property-label", userProperty.k);
-            newElement.setAttribute("data-user-property-value", userProperty.k);
-            newElement.setAttribute("data-user-property-fallback", userProperty.f);
-            newElement.innerText = userProperty.k + "|" + userProperty.f;
-            return newElement.outerHTML;
-        },
-        decodeMessageSpecialCharacters: function(message) {
-            var textArea = document.createElement('textarea');
-            textArea.innerHTML = message;
-            return textArea.value;
-        },
-        insertUserPropertyAtIndex: function(message, index, userProperty) {
-            return [message.slice(0, index), userProperty, message.slice(index)].join('');
-        },
-        buildMessageTextInHTML: function(message, userPropertiesDto) {
-            if (!message || !userPropertiesDto) {
-                return message || "";
-            }
-            var self = this;
-            var messageInHTMLString = this.decodeMessageSpecialCharacters(message);
-            var buildMessageLength = 0;
-            var previousIndex = undefined;
-            Object.keys(userPropertiesDto).forEach(function(currentUserPropertyIndex, index) {
-                var userPropertyInHTMLString = self.getUserPropertyAsHTMLString(currentUserPropertyIndex, userPropertiesDto[currentUserPropertyIndex]);
-                if (index === 0) {
-                    messageInHTMLString = self.insertUserPropertyAtIndex(messageInHTMLString, currentUserPropertyIndex, userPropertyInHTMLString);
-                    buildMessageLength = Number(currentUserPropertyIndex) + userPropertyInHTMLString.length;
-                }
-                else {
-                    var addedStringLength = currentUserPropertyIndex - previousIndex;
-                    var newIndex = buildMessageLength + addedStringLength;
-                    messageInHTMLString = self.insertUserPropertyAtIndex(messageInHTMLString, newIndex, userPropertyInHTMLString);
-                    buildMessageLength += userPropertyInHTMLString.length + addedStringLength;
-                }
-                previousIndex = currentUserPropertyIndex;
-            });
-            return messageInHTMLString;
-        },
         getPreviewMessageComponentsList: function(content) {
             var self = this;
             var htmlTitle = document.createElement("div");
@@ -229,6 +188,53 @@
 
     countlyPushNotification.mapper = {
         incoming: {
+            getUserPropertyElement: function(index, userProperty) {
+                var newElement = document.createElement("span");
+                newElement.setAttribute("id", "id-" + index);
+                newElement.setAttribute("contentEditable", false);
+                newElement.setAttribute("data-user-property-label", userProperty.k);
+                newElement.setAttribute("data-user-property-value", userProperty.k);
+                newElement.setAttribute("data-user-property-fallback", userProperty.f);
+                newElement.innerText = userProperty.k + "|" + userProperty.f;
+                return newElement.outerHTML;
+            },
+            decodeMessage: function(message) {
+                var textArea = document.createElement('textarea');
+                textArea.innerHTML = message;
+                return textArea.value;
+            },
+            insertUserPropertyAtIndex: function(message, index, userProperty) {
+                return [message.slice(0, index), userProperty, message.slice(index)].join('');
+            },
+            sortUserProperties: function(userPropertiesDto) {
+                return Object.keys(userPropertiesDto).sort(function(firstUserPropertyId, secondUserPropertyId) {
+                    return firstUserPropertyId - secondUserPropertyId;
+                });
+            },
+            buildMessageText: function(message, userPropertiesDto) {
+                if (!message || !userPropertiesDto) {
+                    return message || "";
+                }
+                var self = this;
+                var messageInHTMLString = this.decodeMessage(message);
+                var buildMessageLength = 0;
+                var previousIndex = undefined;
+                this.sortUserProperties(userPropertiesDto).forEach(function(currentUserPropertyIndex, index) {
+                    var userPropertyStringElement = self.getUserPropertyElement(currentUserPropertyIndex, userPropertiesDto[currentUserPropertyIndex]);
+                    if (index === 0) {
+                        messageInHTMLString = self.insertUserPropertyAtIndex(messageInHTMLString, currentUserPropertyIndex, userPropertyStringElement);
+                        buildMessageLength = Number(currentUserPropertyIndex) + userPropertyStringElement.length;
+                    }
+                    else {
+                        var addedStringLength = currentUserPropertyIndex - previousIndex;
+                        var newIndex = buildMessageLength + addedStringLength;
+                        messageInHTMLString = self.insertUserPropertyAtIndex(messageInHTMLString, newIndex, userPropertyStringElement);
+                        buildMessageLength += userPropertyStringElement.length + addedStringLength;
+                    }
+                    previousIndex = currentUserPropertyIndex;
+                });
+                return messageInHTMLString;
+            },
             mapType: function(dto) {
                 if (dto.tx === false && dto.auto === true) {
                     return TypeEnum.AUTOMATIC;
@@ -373,8 +379,8 @@
             },
             mapMessageLocalization: function(localization, dto) {
                 return {
-                    title: countlyPushNotification.helper.buildMessageTextInHTML(dto.messagePerLocale[localization + '|t'], dto.messagePerLocale[localization + "|tp"]),
-                    content: countlyPushNotification.helper.buildMessageTextInHTML(dto.messagePerLocale[localization], dto.messagePerLocale[localization + "|p"]),
+                    title: this.buildMessageText(dto.messagePerLocale[localization + '|t'], dto.messagePerLocale[localization + "|tp"]),
+                    content: this.buildMessageText(dto.messagePerLocale[localization], dto.messagePerLocale[localization + "|p"]),
                     media: this.mapMedia(dto),
                     mediaMime: dto.mediaMime,
                     onClickUrl: dto.url,
@@ -465,6 +471,58 @@
             }
         },
         outgoing: {
+            replaceUserProperties: function(localizedMessage, container) {
+                var element = document.createElement('div');
+                element.innerHTML = localizedMessage[container];
+                Object.keys(localizedMessage.properties[container]).forEach(function(propertyId) {
+                    var userPropElement = element.querySelector("#id-" + propertyId);
+                    element.replaceChild(document.createTextNode(USER_PROPERTY_SUBSTITUE_CHAR), userPropElement);
+                });
+                return element.innerHTML;
+            },
+            getUserPropertiesIndices: function(localizedMessage, container) {
+                var indices = [];
+                var element = document.createElement('div');
+                element.innerHTML = this.replaceUserProperties(localizedMessage, container);
+                var substitutedUserPropertyRegexp = new RegExp(USER_PROPERTY_SUBSTITUE_CHAR, 'g');
+                var match = null;
+                var userPropertyIndexCounter = 0;
+                while ((match = substitutedUserPropertyRegexp.exec(element.textContent)) !== null) {
+                    indices.push(match.index - userPropertyIndexCounter);
+                    userPropertyIndexCounter += 1;
+                }
+                return indices;
+            },
+            hasUserProperties: function(localizedMessage, container) {
+                return localizedMessage.properties && localizedMessage.properties[container];
+            },
+            removeUserProperties: function(message, container) {
+                var element = document.createElement('div');
+                element.innerHTML = message[container];
+                Object.keys(message.properties[container]).forEach(function(userPropertyId) {
+                    var userPropertyElement = element.querySelector("#id-" + userPropertyId);
+                    element.removeChild(userPropertyElement);
+                });
+                return element.innerHTML;
+            },
+            getMessageText: function(message, container) {
+                var element = document.createElement('div');
+                element.innerHTML = message;
+                if (message.properties && message.properties[container]) {
+                    element.innerHTML = this.removeUserProperties(message, container);
+                }
+                return element.textContent;
+            },
+            convertExpirationToMS: function(expirationObject) {
+                var result = 0;
+                if (expirationObject.days) {
+                    result += moment.duration(expirationObject.days, 'd').asMilliseconds();
+                }
+                if (expirationObject.hours) {
+                    result += moment.duration(expirationObject.hours, 'h').asMilliseconds();
+                }
+                return result;
+            },
             mapType: function(type) {
                 if (type === TypeEnum.AUTOMATIC) {
                     return {tx: false, auto: true};
@@ -487,16 +545,6 @@
                     }
                 });
             },
-            convertExpirationToMS: function(expirationObject) {
-                var result = 0;
-                if (expirationObject.days) {
-                    result += moment.duration(expirationObject.days, 'd').asMilliseconds();
-                }
-                if (expirationObject.hours) {
-                    result += moment.duration(expirationObject.hours, 'h').asMilliseconds();
-                }
-                return result;
-            },
             mapPushNotificationModelToBaseDto: function(pushNotificationModel) {
                 var typeDto = this.mapType(pushNotificationModel.type);
                 var resultDto = {
@@ -516,7 +564,45 @@
                     resultDto.date = pushNotificationModel.delivery.startDate;
                 }
                 return resultDto;
-            }
+            },
+            mapUserPropertiesToDto: function(localizedMessage, container) {
+                var userPropertyDto = {};
+                if (this.hasUserProperties(localizedMessage, container)) {
+                    var indices = this.getUserPropertiesIndices(localizedMessage, container);
+                    Object.keys(localizedMessage.properties[container]).forEach(function(userPropertyId, index) {
+                        userPropertyDto[indices[index]] = {
+                            f: localizedMessage.properties[container][userPropertyId].fallback,
+                            c: localizedMessage.properties[container][userPropertyId].isUppercase,
+                            k: localizedMessage.properties[container][userPropertyId].value
+                        };
+                    });
+                }
+                return userPropertyDto;
+            },
+            mapButtonsModelToDto: function(localizationKey, localizedMessage) {
+                var result = {};
+                localizedMessage.buttons.forEach(function(localizedButton, index) {
+                    if (localizedButton.label) {
+                        result[localizationKey + "|" + index + "|t"] = localizedButton.label;
+                    }
+                    if (localizedButton.url) {
+                        result[localizationKey + "|" + index + "|l"] = localizedButton.url;
+                    }
+                });
+                return result;
+            },
+            mapMessageModelToDto: function(pushNotificationModel) {
+                var self = this;
+                var messagePerLocale = {};
+                Object.keys(pushNotificationModel.message).forEach(function(localizationKey) {
+                    messagePerLocale[localizationKey] = self.getMessageText(pushNotificationModel.message[localizationKey], 'content');
+                    messagePerLocale[localizationKey + '|t'] = self.getMessageText(pushNotificationModel.message[localizationKey], 'title');
+                    messagePerLocale[localizationKey + '|p'] = self.mapUserPropertiesToDto(pushNotificationModel.message[localizationKey], 'content');
+                    messagePerLocale[localizationKey + '|tp'] = self.mapUserPropertiesToDto(pushNotificationModel.message[localizationKey], 'title');
+                    Object.assign(messagePerLocale, self.mapButtonsModelToDto(localizationKey, pushNotificationModel.message[localizationKey]));
+                });
+                return messagePerLocale;
+            },
         }
     };
 
@@ -645,6 +731,9 @@
                     }
                 });
             });
+        },
+        save: function(pushNotificationModel) {
+            countlyPushNotification.mapper.outgoing.mapMessageModelToDto(pushNotificationModel);
         }
     };
 

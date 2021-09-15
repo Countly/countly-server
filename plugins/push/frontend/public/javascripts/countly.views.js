@@ -350,7 +350,9 @@
                     });
                 });
             },
-            onSubmit: function() {},
+            onSubmit: function() {
+                countlyPushNotification.service.save(this.pushNotificationUnderEdit);
+            },
             resetState: function() {
                 this.activeLocalization = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,

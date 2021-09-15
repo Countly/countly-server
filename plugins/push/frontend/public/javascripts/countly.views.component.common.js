@@ -516,9 +516,6 @@
             }
         },
         methods: {
-            appendZeroWidthSpace: function() {
-                this.$refs.element.appendChild(document.createTextNode('\u200B'));
-            },
             setCursorAtEnd: function() {
                 var selection = window.getSelection();
                 var textRange = document.createRange();
@@ -550,7 +547,6 @@
                 newElement.innerText = this.defaultLabelPreview;
                 newElement.onclick = this.getOnUserPropertyClickEventListener(id, container);
                 this.$refs.element.appendChild(newElement);
-                this.appendZeroWidthSpace();
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.onUserPropertyClick(id, container, newElement);
             },
