@@ -80,7 +80,7 @@
                         query: JSON.stringify(CountlyHelpers.buildFilters(filters))
                     },
                     dataType: "json",
-                }).then(function(response) {
+                }, {disableAutoCatch: true}).then(function(response) {
                     var nonEmptyBuckets = countlyUserActivity.helpers.findNonEmptyBuckets(response);
                     resolve({model: self.mapUserActivityDtoToModel(response, nonEmptyBuckets), nonEmptyBuckets: nonEmptyBuckets});
                 }).catch(function(error) {

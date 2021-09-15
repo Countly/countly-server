@@ -520,7 +520,10 @@
             viewsPerSessionOptions: function() {
                 return {
                     xAxis: {
-                        data: this.xAxisViewsPerSessionBuckets
+                        data: this.xAxisViewsPerSessionBuckets,
+                        axisLabel: {
+                            color: "#333C48"
+                        }
                     },
                     series: this.yAxisViewsPerSessionCountSerie
                 };

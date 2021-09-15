@@ -19,7 +19,10 @@ var SessionFrequencyView = countlyVue.views.create({
         sessionFrequencyOptions: function() {
             return {
                 xAxis: {
-                    data: this.xAxisSessionFrequency
+                    data: this.xAxisSessionFrequency,
+                    axisLabel: {
+                        color: "#333C48"
+                    }
                 },
                 series: this.yAxisSessionFrequencyCountSerie
             };

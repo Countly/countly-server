@@ -19,7 +19,10 @@ var SessionDurationsView = countlyVue.views.create({
         sessionDurationsOptions: function() {
             return {
                 xAxis: {
-                    data: this.xAxisSessionDurationsPeriods
+                    data: this.xAxisSessionDurationsPeriods,
+                    axisLabel: {
+                        color: "#333C48"
+                    }
                 },
                 series: this.yAxisSessionDurationsCountSeries
             };

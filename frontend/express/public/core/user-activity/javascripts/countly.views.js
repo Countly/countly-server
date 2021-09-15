@@ -48,7 +48,10 @@
             userActivityOptions: function() {
                 return {
                     xAxis: {
-                        data: this.xAxisUserActivitySessionBuckets
+                        data: this.xAxisUserActivitySessionBuckets,
+                        axisLabel: {
+                            color: "#333C48"
+                        }
                     },
                     series: this.yAxisUserActivityCountSeries
                 };
@@ -74,6 +77,9 @@
             },
             formatPercentage: function(value) {
                 return CountlyHelpers.formatPercentage(value);
+            },
+            formatNumber: function(value) {
+                return countlyCommon.formatNumber(value);
             },
             addEmptyRowIfNotFound: function(rowsArray, index) {
                 if (!rowsArray[index]) {

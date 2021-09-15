@@ -93,6 +93,9 @@ var TimesOfDayView = countlyVue.views.create({
         refresh: function() {
             this.$store.dispatch('countlyTimesOfDay/fetchAll', false);
         },
+        formatNumber: function(value) {
+            return countlyCommon.formatNumber(value);
+        },
     },
     mounted: function() {
         this.$store.dispatch('countlyTimesOfDay/fetchAll', true);
