@@ -1,4 +1,6 @@
 /* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone*/
+var pluginObject = {},
+languages = require('../../../../../locale.conf');
 
 (function(countlyVue, $) {
 
@@ -366,22 +368,11 @@
             computed: {
 
                 allLanguages: function() {
-                    var options = [{
-                        code: 'EN',
-                        name: 'EN'
-                      }, {
-                        code: 'TR',
-                        name: 'TR'
-                      }, {
-                        code: 'RS',
-                        name: 'RS'
-                      },];
-                      
-                      return options;
+                      return languages;
                 },
 
                 langTitle: function() {
-                    return 'EN';//countlyCommon.BROWSER_LANG_SHORT.toUpperCase()
+                    return countlyCommon.BROWSER_LANG_SHORT.toUpperCase()
                 },
 
                 components: function() {
