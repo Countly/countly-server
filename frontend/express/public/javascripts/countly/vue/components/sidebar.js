@@ -372,7 +372,7 @@
                 },
 
                 selLang: function() {
-                    return countlyCommon.BROWSER_LANG_SHORT;
+                    return 'en';//countlyCommon.BROWSER_LANG_SHORT;
                 },
 
                 components: function() {
