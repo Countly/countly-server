@@ -13,7 +13,7 @@
                 <!-- <el-select v-else-if="item.name === 'language'" v-model="value"  :adaptive-length="true" :borderless="true">
                     <el-option v-for="lang in allLanguages" :key="lang.code" :value="lang.code" :label="lang.name"></el-option>
                 </el-select> -->
-                <p v-else-if="item.name === 'language'">  {{langTitle}}</p>
+                <p v-else-if="item.name === 'language'">{{allLanguages}}</p>
                 <i v-else :class="[item.icon, {'cly-vue-sidebar__option--selected': item.name === selectedOption}]"></i>
             </li>
         </ul>

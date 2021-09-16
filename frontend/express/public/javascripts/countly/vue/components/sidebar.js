@@ -366,7 +366,7 @@
             computed: {
 
                 allLanguages: function() {
-                    return languages;
+                    return languages.length;
                 },
 
                 langTitle: function() {
