@@ -221,12 +221,12 @@
                                 <div class="cly-vue-listbox__item-content">\
                                     <div class="bu-level">\
                                         <div class="bu-level-left">\
-                                            <div v-if="$slots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-2">\
+                                            <div v-if="!!$scopedSlots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-2">\
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
                                             <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
                                         </div>\
-                                        <div class="bu-level-right">\
+                                        <div class="bu-level-right" v-if="!!$scopedSlots[\'option-suffix\']">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
                                         </div>\
                                     </div>\
@@ -504,6 +504,7 @@
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
             showSelectedCount: {type: Boolean, default: false},
+            arrow: {type: Boolean, default: true},
             singleOptionSettings: {
                 type: Object,
                 default: function() {

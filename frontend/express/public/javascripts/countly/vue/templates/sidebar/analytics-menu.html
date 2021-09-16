@@ -1,44 +1,35 @@
 <div class="cly-vue-sidebar__menu">
     <div class="cly-vue-sidebar__header">
-        <cly-select-x
-            search-placeholder=""
-            placeholder="Select App"
-            v-model="selectedApp"
-            :mode="selectMode"
-            :options="allApps"
-            @change="onChange"
-            popClass="cly-vue-sidebar__analytics-popper"
-            prefixIcon="el-icon-platform-eleme"
-            label="web"
-            :width="200">
-            <template v-slot:trigger="slotProps">
-                <el-input
-                    v-model="activeApp.name"
-                    readonly="readonly"
-                    clearable>
-                    <template slot="prefix">
-                        <div class="cly-vue-sidebar__app-image" :style="{backgroundImage: 'url(' + activeApp.image + ')'}"></div>
-                    </template>
-                    <template slot="suffix">
-                        <i class="el-select__caret el-input__icon" :class="['el-icon-' + suffixIconClass(slotProps.dropdown)]"></i>
-                    </template>
-                </el-input>
-            </template>
-        </cly-select-x>
+        <div class="cly-vue-sidebar__app-selector bu-level bu-p-3 cursor-pointer"
+            @click="toggleAppSelection()">
+            <div class="bu-level-left">
+                <div class="cly-vue-sidebar__app-image" :style="{backgroundImage: 'url(' + activeApp.image + ')'}"></div>
+                <div class="cly-vue-sidebar__app-name-type bu-is-flex bu-is-flex-direction-column bu-ml-2">
+                    <span class="cly-vue-sidebar__app-name">{{activeApp.name}}</span>
+                    <span class="text-smaller color-white cly-vue-sidebar__app-type bu-is-capitalized"> {{activeApp.type}}</span>
+                </div>
+            </div>
+            <span class="bu-level-right">
+                <span>
+                    <i v-if="allApps && allApps.length && allApps.length > 1" class="ion-arrow-down-b"></i>
+                </span>
+            </span>
+        </div>
     </div>
+    <app-selector @close="toggleAppSelection()" v-if="appSelector && allApps && allApps.length && allApps.length > 1" :allApps="allApps"></app-selector>
     <div class="cly-vue-sidebar__main-menu">
         <div v-for="(cat, idx) in categories" :data-category="cat.name">
             <ul>
                 <li v-for="(menu, idx) in categorizedMenus[cat.name]">
                     <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
                         <el-collapse v-model="selectedAnalyticsMenu" accordion>
-                            <el-collapse-item :title="i18nM(menu.title)" :name="menu.name" :icon="{position: 'right', direction: 'down'}">
+                            <el-collapse-item :title="i18nM(menu.title)" :name="menu.name"
+                                :icon="{position: 'right', direction: 'down'}">
                                 <ul>
                                     <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
-                                        <div
-                                            :class="['cly-vue-sidebar__submenu-items',
+                                        <div :class="['cly-vue-sidebar__submenu-items',
                                                     {'cly-vue-sidebar__submenu-items--selected': selectedMenuItem.name === submenu.name}]"
-                                                    @click="onMenuItemClick(submenu)">
+                                            @click="onMenuItemClick(submenu)">
                                             <a :href="submenu.url">
                                                 <div class="has-ellipsis">{{i18nM(submenu.title)}}</div>
                                             </a>
@@ -48,10 +39,9 @@
                             </el-collapse-item>
                         </el-collapse>
                     </div>
-                    <div v-else
-                        :class="['cly-vue-sidebar__menu-items',
+                    <div v-else :class="['cly-vue-sidebar__menu-items',
                                 {'cly-vue-sidebar__menu-items--selected': selectedMenuItem.name === menu.name}]"
-                                @click="onMenuItemClick(menu)">
+                        @click="onMenuItemClick(menu)">
                         <a :href="menu.url">
                             <div class="has-ellipsis">{{i18nM(menu.title)}}</div>
                         </a>

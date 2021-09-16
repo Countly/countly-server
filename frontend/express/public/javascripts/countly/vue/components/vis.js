@@ -882,7 +882,7 @@
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
                                 @click="onClick(item, index)">\
                                 <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
                                 <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                             </div>\
                         </vue-scroll>\
@@ -910,7 +910,7 @@
                             @click="onClick(item, index)">\
                             <div class="cly-vue-chart-legend__first-row">\
                                 <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__p-title">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__p-title">{{item.label || item.name}}</div>\
                                 <div class="cly-vue-chart-legend__p-tooltip" v-if="item.tooltip">\
                                     <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
                                 </div>\

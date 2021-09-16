@@ -112,7 +112,7 @@
                 }, true);
             },
             passedScope: function() {
-                var defaultKeys = ["editedObject", "currentStepId", "isSubmissionAllowed", "submit"],
+                var defaultKeys = ["editedObject", "currentStepId", "isSubmissionAllowed", "submit", "reset", "validate"],
                     self = this;
 
                 var passed = defaultKeys.reduce(function(acc, val) {
@@ -200,6 +200,9 @@
                     }
                 }
             },
+            validate: function() {
+                this.callValidators("touch");
+            },
             beforeLeavingStep: function() {
                 this.callValidators("touch");
                 this.$emit("before-leaving-step");
@@ -242,9 +245,14 @@
                 }
             }
         },
+        data: function() {
+            return {
+                watchHandle: null
+            };
+        },
         mounted: function() {
             var self = this;
-            this.$watch(function() {
+            this.watchHandle = this.$watch(function() {
                 return self.$refs.observer.flags.valid;
             },
             function(newVal) {
@@ -266,6 +274,9 @@
                 }
                 return true;
             }
+        },
+        beforeDestroy: function() {
+            this.watchHandle(); // unwatch
         },
         template: '<div class="cly-vue-content" :id="elementId" v-if="isActive || alwaysMounted">\n' +
                     '<validation-observer ref="observer" v-slot="v">\n' +
@@ -293,11 +304,13 @@
 
     Vue.component("cly-inline-form-field", countlyVue.components.BaseComponent.extend({
         props: {
-            label: String
+            label: String,
+            help: String,
         },
         template: '<div class="cly-vue-form-field cly-vue-form-step__section bu-columns bu-is-vcentered bu-px-1 bu-mx-1">\
                         <div class="bu-column bu-is-4 bu-p-0">\
                             <p class="bu-has-text-weight-medium">{{label}} <span v-if="$attrs.rules && $attrs.rules.indexOf(\'required\') !== -1">*</span></p>\
+                            <p v-if="help" v-html="help"></p>\
                         </div>\
                         <div class="bu-column bu-is-8 bu-has-text-left bu-p-0">\
                             <validation-provider v-if="$attrs.rules" :name="label" v-bind="$attrs" v-on="$listeners" v-slot="validation">\

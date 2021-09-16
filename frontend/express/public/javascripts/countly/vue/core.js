@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store */
 
 (function(countlyVue, $) {
 
@@ -95,7 +95,8 @@
                 state: {
                     period: countlyCommon.getPeriod(),
                     periodLabel: countlyCommon.getDateRangeForCalendar(),
-                    activeApp: null
+                    activeApp: null,
+                    allApps: countlyGlobal.apps
                 },
                 getters: {
                     period: function(state) {
@@ -106,6 +107,9 @@
                     },
                     getActiveApp: function(state) {
                         return state.activeApp;
+                    },
+                    getAllApps: function(state) {
+                        return state.allApps;
                     }
                 },
                 mutations: {
@@ -115,8 +119,30 @@
                     setPeriodLabel: function(state, periodLabel) {
                         state.periodLabel = periodLabel;
                     },
-                    setActiveApp: function(state, activeApp) {
-                        state.activeApp = activeApp;
+                    setActiveApp: function(state, id) {
+                        var appObj = state.allApps[id];
+                        if (appObj) {
+                            state.activeApp = Object.freeze(JSON.parse(JSON.stringify(appObj)));
+                        }
+                    },
+                    addToAllApps: function(state, additionalApps) {
+                        if (Array.isArray(additionalApps)) {
+                            additionalApps.forEach(function(app) {
+                                state.allApps[app._id] = app;
+                            });
+                        }
+                        else {
+                            state.allApps[additionalApps._id] = additionalApps;
+                        }
+                    },
+                    removeFromAllApps: function(state, appToRemove) {
+                        var appObj = state.allApps[appToRemove.id];
+                        if (appObj) {
+                            delete state.allApps[appToRemove.id];
+                        }
+                    },
+                    deleteAllApps: function(state) {
+                        state.allApps = null;
                     }
                 },
                 actions: {
@@ -125,10 +151,27 @@
                         context.commit("setPeriodLabel", obj.label);
                     },
                     updateActiveApp: function(context, id) {
-                        var appObj = countlyGlobal.apps[id];
-                        if (appObj) {
-                            context.commit("setActiveApp", Object.freeze(JSON.parse(JSON.stringify(appObj))));
+                        context.commit("setActiveApp", id);
+                    },
+                    removeActiveApp: function(context) {
+                        context.commit("setActiveApp", null);
+                        store.remove('countly_active_app');
+                    },
+                    addToAllApps: function(context, additionalApps) {
+                        context.commit("addToAllApps", additionalApps);
+                    },
+                    removeFromAllApps: function(context, appToRemove) {
+                        if (Array.isArray(appToRemove)) {
+                            appToRemove.forEach(function(app) {
+                                context.commit("removeFromAllApps", app);
+                            });
                         }
+                        else {
+                            context.commit("removeFromAllApps", appToRemove);
+                        }
+                    },
+                    deleteAllApps: function(context) {
+                        context.commit("deleteAllApps");
                     }
                 }
             },

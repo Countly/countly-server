@@ -133,6 +133,9 @@
                     legendData.push(ob);
                 }
             }
+            if (legendData.length > 3) {
+                lineLegend.position = "right";
+            }
             lineLegend.data = legendData;
             lineLegend.show = true;
             lineLegend.type = "secondary";

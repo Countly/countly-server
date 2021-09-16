@@ -1,0 +1,18 @@
+<cly-dialog :visible.sync="centerDialogVisible" :custom-class="app_selector__dialog_box" :show-close="false" width="35%"
+    :modal="false" center @closed="handleClose()">
+    <span slot="title" class="dialog-title bu-level">
+        <span class="bu-level-left text-big">Select App</span>
+        <span class="bu-level-right">
+            <el-button type="text">Compare apps</el-button>
+            <i class="ion-arrow-right-c"></i>
+        </span>
+    </span>
+    <cly-listbox skin="jumbo" height="624" :options="allApps" :searchable="true" :bordered="false" v-model="activeApp">
+        <template v-slot:option-prefix="option">
+            <img style="width: 21px;border-radius: 10px;" :src="option.image"></img>
+        </template>
+        <template v-slot:option-suffix="option">
+            <span class="bu-pr-2 bu-is-capitalized text-medium">{{option.type}}</span>
+        </template>
+    </cly-listbox>
+</cly-dialog>

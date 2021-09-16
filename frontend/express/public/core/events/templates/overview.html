@@ -6,17 +6,17 @@
 			</h2>
 			<cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
 		  </template>
-		  <template v-slot:header-bottom>
+		  <template v-slot:header-bottom v-if="eventsOverview.length>0">
 			<i class="far fa-clock cly-vue-events-header__subheading--widget"></i>
 			<span class="cly-vue-events-header__subheading--text">{{updatedAt}}</span>
 		  </template>
 		</cly-header>
 		<cly-main>
-		  <div class="bu-mb-4">
+		  <div class="bu-mb-4" v-if="eventsOverview.length>0">
 			<el-button disabled icon="el-icon-date">{{i18n('events.overview.last-30days')}}</el-button>
 		  </div>
 		  <cly-section>
-			<cly-metric-cards>
+			<cly-metric-cards v-if="eventsOverview.length>0">
 			  <cly-metric-card formatting="long" :number=eventsOverview[0].value color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center">
 				{{eventsOverview[0].name}}
 				<cly-tooltip-icon class="cly-vue-events-overview-top-events--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
@@ -38,7 +38,7 @@
 			  </cly-metric-card>
 			</cly-metric-cards>
 		  </cly-section>
-		  <h4 class="bu-pt-2 bu-mb-4 cly-vue-events-overview-subheadings--font">{{i18n('events.overview.top.events.by.count')}} </h4>
+		  <h4 class="bu-pt-2 bu-mb-4 cly-vue-events-overview-subheadings--font" v-if="eventsOverview.length>0">{{i18n('events.overview.top.events.by.count')}} </h4>
 		  <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline white-bg">
 			<events-breakdown-horizontal-tile 
 			  :trend="item.trend"
@@ -116,13 +116,13 @@
 </script>
   <script type="text/x-template" id="overview-tables-events">
 	<div>
-		<cly-datatable-n :rows="eventsTableRows" class="is-clickable" @row-click="onRowClick">
+		<cly-datatable-n :rows="eventsTableRows" class="is-clickable">
 		  <template v-slot:header-left="selectScope">
 		  </template>
 		  <template v-slot="scope">
-			<el-table-column sortable="true" prop="name" :label="i18n('events.overview.event')">
+			<el-table-column sortable="true" type="clickable" prop="name" :label="i18n('events.overview.event')">
 			  <template v-slot="rowScope">
-				<div>
+				<div @click="onRowClick(rowScope.row)">
 				  {{rowScope.row.name}}
 				</div>
 			  </template>
