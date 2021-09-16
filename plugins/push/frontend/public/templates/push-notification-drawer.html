@@ -661,7 +661,9 @@
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isJsonEnabled',value)}"
                                 label="Send JSON"
                                 description="We can add some kind of description for sending JSON data">
-                                <el-input v-model="pushNotificationUnderEdit.settings.ios.json" type="textarea" @input="function(value){onSettingChange(PlatformEnum.IOS,'json',value)}" placeholder="Enter JSON data"></el-input>
+                                <validation-provider rules="json" v-slot="validation">
+                                    <el-input v-model="pushNotificationUnderEdit.settings.ios.json" type="textarea" @input="function(value){onSettingChange(PlatformEnum.IOS,'json',value)}" placeholder="Enter JSON data" :class="{'is-error': validation.errors.length > 0}"></el-input>
+                                </validation-provider>
                             </message-setting-element>
                             <message-setting-element 
                                 :toggle="settings.ios.isUserDataEnabled"
@@ -749,7 +751,9 @@
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isJsonEnabled',value)}"
                                 label="Send JSON"
                                 description="We can add some kind of description for sending JSON data">
-                                <el-input v-model="pushNotificationUnderEdit.settings.android.json" type="textarea" @input="function(value){onSettingChange(PlatformEnum.ANDROID,'json',value)}" placeholder="Enter JSON data"></el-input>
+                                <validation-provider rules="json" v-slot="validation">
+                                    <el-input v-model="pushNotificationUnderEdit.settings.android.json" type="textarea" @input="function(value){onSettingChange(PlatformEnum.ANDROID,'json',value)}" placeholder="Enter JSON data" :class="{'is-error': validation.errors.length > 0}"></el-input>
+                                </validation-provider>
                             </message-setting-element>
                             <message-setting-element 
                                 :toggle="settings.android.isUserDataEnabled"
