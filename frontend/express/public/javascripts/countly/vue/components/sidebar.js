@@ -443,7 +443,7 @@
                         },
                         {
                             name: "language",
-                            //icon: "ion-person",
+                            icon: "ion-person",
                             noSelect: true
                           //  member: this.member
                         },
