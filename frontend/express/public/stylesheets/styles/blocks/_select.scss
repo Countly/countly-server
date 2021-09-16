@@ -43,9 +43,9 @@
                 }
             }
         }
-        .cly-vue-listbox {
-            padding: 8px;
-        }
+        // .cly-vue-listbox {
+        //     padding: v.$select-dropdown-item-default-padding;
+        // }
     }
     &__title {
         font-weight: 500;
@@ -79,14 +79,15 @@
 }
 
 .cly-vue-listbox {
+    background-color: map.get(c.$colors, "white");
 
     label.el-checkbox {
         width: 100%;
     }
 
     &.cly-vue-listbox--bordered {
-        border-radius: 7px;
-        border: 1px solid map.get(c.$colors, "cool-gray-40");
+        border-radius: 4px;
+        border: 1px solid map.get(c.$colors, "warm-gray-30");
         // &.is-focus,
         // &:focus-within {
         //     border-color: map.get(c.$colors, "blue-100");
@@ -117,7 +118,7 @@
 
     &__header {
         margin: 0 0 1px 0;
-        z-index: 2000;
+        z-index: 1997;
         border-bottom: 1px solid #ECECEC;
         position: relative;
         &::after {
@@ -181,18 +182,31 @@
         .cly-vue-listbox__item {
             padding: v.$select-dropdown-item-default-padding;
             border-radius: 4px;
-            margin: v.$select-dropdown-item-default-margin 0px;
             line-height: v.$select-dropdown-item-default-height;
         }
     }
     &--has-jumbo-skin {
         .cly-vue-listbox__item {
-            padding: 7px;
-            height: 32px;
+            padding: v.$select-dropdown-item-default-padding;
+            height: 55px;
+            box-sizing: border-box;
             border-bottom: 1px solid #ECECEC;
             &.selected{
-                border-left: 2px solid map.get(c.$colors, "blue-100");
+                border-left: 2px solid v.$select-dropdown-item-default-selected-bg-color;
+                background-color: map.get(c.$colors, "warm-gray-20");
+                * {
+                    color: v.$select-dropdown-item-default-selected-bg-color;
+                }
             }
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+    }
+    &--has-margin {
+        .cly-vue-listbox__item {
+            margin: v.$select-dropdown-item-default-margin;
         }
     }
 }

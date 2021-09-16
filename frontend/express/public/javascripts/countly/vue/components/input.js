@@ -75,6 +75,7 @@
         props: {
             options: {type: Array},
             bordered: {type: Boolean, default: true},
+            margin: {type: Boolean, default: true},
             skin: {
                 type: String,
                 default: "default",
@@ -134,7 +135,8 @@
                 var classes = {
                     "is-focus": this.focused,
                     "cly-vue-listbox--bordered": this.bordered,
-                    "cly-vue-listbox--disabled": this.disabled
+                    "cly-vue-listbox--disabled": this.disabled,
+                    "cly-vue-listbox--has-margin": this.margin && !(this.skin === "jumbo")
                 };
                 classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
                 return classes;

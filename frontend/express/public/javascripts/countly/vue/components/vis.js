@@ -1407,12 +1407,6 @@
                     </div>'
     }));
 
-    Vue.component("cly-chart-geo", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-chart">\
-                        Deprecated. Please use cly-worldmap.\
-                    </div>'
-    }));
-
     Vue.component("cly-worldmap", countlyVue.components.create({
         components: {
             'l-map': Vue2Leaflet.LMap,
