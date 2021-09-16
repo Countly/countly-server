@@ -1,6 +1,6 @@
 /* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone*/
 
-var languages = require('../../../../../locale.conf');
+// var languages = require('../../../../../locale.conf');
 
 (function(countlyVue, $) {
 
@@ -368,26 +368,26 @@ var languages = require('../../../../../locale.conf');
             computed: {
 
                 allLanguages: function() {
-                    // var language = [
-                    //     { "code": "tr", "name": "Türkçe" },
-                    //     { "code": "de", "name": "Deutsch" },
-                    //     { "code": "et", "name": "Eesti" },
-                    //     { "code": "en", "name": "English" },
-                    //     { "code": "es", "name": "Español" },
-                    //     { "code": "el", "name": "Ελληνικά" },
-                    //     { "code": "fr", "name": "Français" },
-                    //     { "code": "it", "name": "Italiano" },
-                    //     { "code": "lv", "name": "Latviski" },
-                    //     { "code": "hu", "name": "Magyar" },
-                    //     { "code": "nl", "name": "Nederlands" },
-                    //     { "code": "pt", "name": "Português" },
-                    //     { "code": "ru", "name": "Русский язык" },
-                    //     { "code": "vi", "name": "Tiếng Việt" },
-                    //     { "code": "zh", "name": "中文" },
-                    //     { "code": "ja", "name": "日本語" },
-                    //     { "code": "ko", "name": "한국어" }
-                    // ];
-                      return languages;
+                    var language = [
+                        { "code": "tr", "name": "Türkçe" },
+                        { "code": "de", "name": "Deutsch" },
+                        { "code": "et", "name": "Eesti" },
+                        { "code": "en", "name": "English" },
+                        { "code": "es", "name": "Español" },
+                        { "code": "el", "name": "Ελληνικά" },
+                        { "code": "fr", "name": "Français" },
+                        { "code": "it", "name": "Italiano" },
+                        { "code": "lv", "name": "Latviski" },
+                        { "code": "hu", "name": "Magyar" },
+                        { "code": "nl", "name": "Nederlands" },
+                        { "code": "pt", "name": "Português" },
+                        { "code": "ru", "name": "Русский язык" },
+                        { "code": "vi", "name": "Tiếng Việt" },
+                        { "code": "zh", "name": "中文" },
+                        { "code": "ja", "name": "日本語" },
+                        { "code": "ko", "name": "한국어" }
+                    ];
+                      return language;
                 },
 
                 selLang: function() {
