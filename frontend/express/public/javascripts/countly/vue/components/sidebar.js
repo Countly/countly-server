@@ -464,9 +464,9 @@
                         },
                         {
                             name: "language",
-                            icon: "ion-person",
-                            noSelect: true
-                          //  member: this.member
+                           // icon: "ion-person",
+                            noSelect: true,
+                            member: this.member
                         },
                         {
                             name: "toggle",
