@@ -21,8 +21,11 @@
                     <template v-slot:option-prefix="option">
                         <img :src="option.icon"></img>
                     </template>
+                    <template v-slot:option-label="option">
+                        <div class="cly-vue-listbox__item-label color-blue-100">{{option.label}}</div>
+                    </template>
                     <template v-slot:option-suffix="option">
-                        <span class="bu-pr-2 text-medium">{{option.custom.value}}</span>
+                        <span class="bu-pr-2 text-medium color-blue-100">{{option.custom.value}}</span>
                     </template>
                 </cly-listbox>
             </div>
@@ -65,7 +68,7 @@
                     :value="focusedRegion"
                     @input="focusToRegion($event)">
                     <template v-slot:option-suffix="option">
-                        <span class="bu-pr-2 text-medium">{{option.custom.value}}</span>
+                        <span class="bu-pr-2 text-medium color-blue-100">{{option.custom.value}}</span>
                     </template>
                 </cly-listbox>
             </div>
@@ -79,7 +82,7 @@
                     :value="focusedCity"
                     @input="focusToCity($event)">
                     <template v-slot:option-suffix="option">
-                        <span class="bu-pr-2 text-medium">{{option.custom.value}}</span>
+                        <span class="bu-pr-2 text-medium color-blue-100">{{option.custom.value}}</span>
                     </template>
                 </cly-listbox>
             </div>

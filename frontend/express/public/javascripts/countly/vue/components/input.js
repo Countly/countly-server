@@ -226,7 +226,9 @@
                                             <div v-if="!!$scopedSlots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-2">\
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
-                                            <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
+                                            <slot name="option-label" v-bind="option">\
+                                                <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
+                                            </slot>\
                                         </div>\
                                         <div class="bu-level-right" v-if="!!$scopedSlots[\'option-suffix\']">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
