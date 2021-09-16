@@ -1,6 +1,6 @@
 /* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone*/
 
-// var languages = require('../../../../../locale.conf');
+var languages = require('../../../../../locale.conf');
 
 (function(countlyVue, $) {
 
@@ -387,11 +387,11 @@
                         { "code": "ja", "name": "日本語" },
                         { "code": "ko", "name": "한국어" }
                     ];
-                      return language;
+                      return languages;
                 },
 
                 selLang: function() {
-                    return countlyCommon.BROWSER_LANG_SHORT;
+                    return 'en';//countlyCommon.BROWSER_LANG_SHORT;
                 },
 
                 components: function() {
