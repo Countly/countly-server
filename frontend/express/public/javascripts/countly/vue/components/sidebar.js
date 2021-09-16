@@ -368,7 +368,7 @@
             computed: {
 
                 allLanguages: function() {
-                      return languages;
+                      return countlyGlobal.languages;
                 },
 
                 selLang: function() {
