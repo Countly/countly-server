@@ -372,7 +372,7 @@ languages = require('../../../../../locale.conf');
                 },
 
                 langTitle: function() {
-                    return countlyCommon.BROWSER_LANG_SHORT.toUpperCase()
+                    return countlyCommon.BROWSER_LANG_SHORT;
                 },
 
                 components: function() {
