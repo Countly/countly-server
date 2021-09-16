@@ -1,6 +1,6 @@
 /* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone*/
-var pluginObject = {},
-languages = require('../../../../../locale.conf');
+
+var languages = require('../../../../../locale.conf');
 
 (function(countlyVue, $) {
 
