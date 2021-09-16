@@ -351,7 +351,11 @@
                 });
             },
             onSubmit: function() {
-                countlyPushNotification.service.save(this.pushNotificationUnderEdit);
+                var model = Object.assign({}, this.pushNotificationUnderEdit);
+                var options = {};
+                options.totalAppUsers = this.$store.state.countlyPushNotification.main.totalAppUsers;
+                options.localizations = this.localizationOptions;
+                countlyPushNotification.service.save(model, options);
             },
             resetState: function() {
                 this.activeLocalization = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,

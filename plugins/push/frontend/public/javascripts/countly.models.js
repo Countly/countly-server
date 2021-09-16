@@ -179,7 +179,7 @@
             return components;
         },
         getDefaultLocalization: function() {
-            return {label: DEFAULT_LOCALIZATION_LABEL, value: DEFAULT_LOCALIZATION_VALUE};
+            return {label: DEFAULT_LOCALIZATION_LABEL, value: DEFAULT_LOCALIZATION_VALUE, percentage: 100};
         },
         hasNoUsersToSendPushNotification: function(pushNotificationDto) {
             return pushNotificationDto.build.total === 0;
@@ -463,6 +463,7 @@
                 }
                 var result = Object.keys(pushNotificationDto.build.count).map(function(localKey) {
                     var localizationItem = self.mapLocalizationByKey(localKey);
+                    localizationItem.count = pushNotificationDto.build.count[localKey];
                     localizationItem.percentage = CountlyHelpers.formatPercentage(pushNotificationDto.build.count[localKey] / pushNotificationDto.build.total);
                     return localizationItem;
                 });
@@ -545,7 +546,17 @@
                     }
                 });
             },
-            mapPushNotificationModelToBaseDto: function(pushNotificationModel) {
+            mapLocalizations: function(localizations, totalAppUsers) {
+                return localizations.map(function(localizationModel) {
+                    return {
+                        value: localizationModel.value,
+                        title: localizationModel.label,
+                        count: localizationModel.value === DEFAULT_LOCALIZATION_VALUE ? totalAppUsers : localizationModel.count,
+                        percent: localizationModel.percentage
+                    };
+                });
+            },
+            mapModelToBaseDto: function(pushNotificationModel) {
                 var typeDto = this.mapType(pushNotificationModel.type);
                 var resultDto = {
                     apps: [countlyCommon.ACTIVE_APP_ID],
@@ -591,7 +602,7 @@
                 });
                 return result;
             },
-            mapMessageModelToDto: function(pushNotificationModel) {
+            mapMessageLocalization: function(pushNotificationModel) {
                 var self = this;
                 var messagePerLocale = {};
                 Object.keys(pushNotificationModel.message).forEach(function(localizationKey) {
@@ -603,6 +614,12 @@
                 });
                 return messagePerLocale;
             },
+            mapMessageModelToDto: function(pushNotificationModel, options) {
+                var result = {};
+                result.messagePerLocale = this.mapMessageLocalization(pushNotificationModel);
+                result.locales = this.mapLocalizations(options.localizations, options.totalAppUsers);
+                Object.assign(result, this.mapModelToBaseDto(pushNotificationModel));
+            }
         }
     };
 
@@ -708,7 +725,7 @@
             this.fetchMediaMetadata(url).then(resolveCallback).catch(rejectCallback);
         }, DEBOUNCE_TIME_IN_MS),
         prepare: function(pushNotificationModel) {
-            var result = countlyPushNotification.mapper.outgoing.mapPushNotificationModelToBaseDto(pushNotificationModel);
+            var result = countlyPushNotification.mapper.outgoing.mapModelToBaseDto(pushNotificationModel);
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "POST",
@@ -732,8 +749,8 @@
                 });
             });
         },
-        save: function(pushNotificationModel) {
-            countlyPushNotification.mapper.outgoing.mapMessageModelToDto(pushNotificationModel);
+        save: function(pushNotificationModel, options) {
+            countlyPushNotification.mapper.outgoing.mapMessageModelToDto(pushNotificationModel, options);
         }
     };
 
