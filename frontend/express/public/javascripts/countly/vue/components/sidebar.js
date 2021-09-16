@@ -364,6 +364,15 @@
                 };
             },
             computed: {
+
+                allLanguages: function() {
+                    return languages;
+                },
+
+                langTitle: function() {
+                    return countlyCommon.BROWSER_LANG_SHORT.toUpperCase()
+                },
+
                 components: function() {
                     var options = [];
 
@@ -431,6 +440,12 @@
                             icon: "ion-person",
                             noSelect: true,
                             member: this.member
+                        },
+                        {
+                            name: "language",
+                            //icon: "ion-person",
+                            noSelect: true
+                          //  member: this.member
                         },
                         {
                             name: "toggle",
