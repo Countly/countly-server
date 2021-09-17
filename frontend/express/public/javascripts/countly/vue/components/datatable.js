@@ -457,12 +457,14 @@
                     self.trackedFields.forEach(function(fieldName) {
                         if (self.patches[rowKey] && Object.prototype.hasOwnProperty.call(self.patches[rowKey], fieldName)) {
                             var patch = self.patches[rowKey][fieldName];
-                            diff.push({
-                                key: JSON.parse(rowKey),
-                                field: fieldName,
-                                newValue: patch.newValue,
-                                originalValue: patch.originalValue
-                            });
+                            if (patch.originalValue !== patch.newValue) {
+                                diff.push({
+                                    key: JSON.parse(rowKey),
+                                    field: fieldName,
+                                    newValue: patch.newValue,
+                                    originalValue: patch.originalValue
+                                });
+                            }
                         }
                     });
                 });
