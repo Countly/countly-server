@@ -29,7 +29,7 @@
                 </template>
                 <el-table-column align="center" type="options">
                     <template v-slot="rowScope">
-                        <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
+                        <cly-more-options v-if="rowScope.row.hover" @command="handleCommand($event, scope, rowScope.row)">
                             <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
                             <el-dropdown-item command="remove">{{i18n('common.delete')}}</el-dropdown-item>
                         </cly-more-options>
