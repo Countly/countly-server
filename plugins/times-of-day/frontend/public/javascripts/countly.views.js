@@ -34,7 +34,7 @@ var TimesOfDayView = countlyVue.views.create({
                     formatter: function(params) {
                         return '<div class="bu-is-flex bu-is-flex-direction-column times-of-day__scatter-chart-tooltip"> \n' +
                                     '<span class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.total-users') + '</span>\n' +
-                                    '<span class="times-of-day__scatter-chart-tooltip-total-users-value">' + params.value[2] + '</span> \n' +
+                                    '<span class="times-of-day__scatter-chart-tooltip-total-users-value">' + self.formatNumber(params.value[2]) + '</span> \n' +
                                     '<span class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.between') + ' ' + countlyTimesOfDay.service.getHoursPeriod(countlyTimesOfDay.service.HOURS[params.value[0]]) + '</span> \n' +
                                 '</div>';
                     }
@@ -50,7 +50,15 @@ var TimesOfDayView = countlyVue.views.create({
                 },
                 yAxis: {
                     type: 'category',
-                    data: countlyTimesOfDay.service.WEEK_DAYS,
+                    data: [
+                        CV.i18n('times-of-day.monday'),
+                        CV.i18n('times-of-day.tuesday'),
+                        CV.i18n('times-of-day.wednesday'),
+                        CV.i18n('times-of-day.thursday'),
+                        CV.i18n('times-of-day.friday'),
+                        CV.i18n('times-of-day.saturday'),
+                        CV.i18n('times-of-day.sunday')
+                    ],
                     nameLocation: 'middle',
                     boundaryGap: true,
                     axisTick: {

@@ -24,41 +24,41 @@
             <cly-chart-generic :height="600"  :option="timesOfDayOptions" :show-zoom="false" :show-toggle="false" v-loading="isLoading"></cly-chart-generic>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="timesOfDayRows" :resizable="true" v-loading="isLoading">
+            <cly-datatable-n  :rows="timesOfDayRows" :resizable="false" v-loading="isLoading">
                 <template v-slot="scope">
-                    <el-table-column sortable="custom" prop="period" :label="i18n('times-of-day.table-hours-period')">
+                    <el-table-column fixed width="240" sortable="custom" prop="period" :label="i18n('times-of-day.table-hours-period')">
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="monday" :label="i18n('times-of-day.monday')">
+                    <el-table-column  width="240" sortable="custom" prop="monday" :label="i18n('times-of-day.monday')">
                         <template slot-scope="scope">
                             {{formatNumber(scope.row.monday)}}
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="tuesday" :label="i18n('times-of-day.tuesday')">
+                    <el-table-column width="240" sortable="custom" prop="tuesday" :label="i18n('times-of-day.tuesday')">
                         <template slot-scope="scope">
                             {{formatNumber(scope.row.tuesday)}}
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="wednesday" :label="i18n('times-of-day.wednesday')">
+                    <el-table-column width="240" sortable="custom" prop="wednesday" :label="i18n('times-of-day.wednesday')">
                         <template slot-scope="scope">
                             {{formatNumber(scope.row.wednesday)}}
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="thursday" :label="i18n('times-of-day.thursday')">
+                    <el-table-column width="240" sortable="custom" prop="thursday" :label="i18n('times-of-day.thursday')">
                         <template slot-scope="scope">
                             {{formatNumber(scope.row.thursday)}}
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="friday" :label="i18n('times-of-day.friday')">
+                    <el-table-column width="240" sortable="custom" prop="friday" :label="i18n('times-of-day.friday')">
                         <template slot-scope="scope">
                             {{formatNumber(scope.row.friday)}}
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="saturday" :label="i18n('times-of-day.saturday')">
+                    <el-table-column width="240" sortable="custom" prop="saturday" :label="i18n('times-of-day.saturday')">
                         <template slot-scope="scope">
                             {{formatNumber(scope.row.saturday)}}
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="sunday" :label="i18n('times-of-day.sunday')">
+                    <el-table-column width="240" sortable="custom" prop="sunday" :label="i18n('times-of-day.sunday')">
                         <template slot-scope="scope">
                             {{formatNumber(scope.row.sunday)}}
                         </template>
