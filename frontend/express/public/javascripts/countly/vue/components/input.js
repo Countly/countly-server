@@ -75,6 +75,7 @@
         props: {
             options: {type: Array},
             bordered: {type: Boolean, default: true},
+            margin: {type: Boolean, default: true},
             skin: {
                 type: String,
                 default: "default",
@@ -134,7 +135,8 @@
                 var classes = {
                     "is-focus": this.focused,
                     "cly-vue-listbox--bordered": this.bordered,
-                    "cly-vue-listbox--disabled": this.disabled
+                    "cly-vue-listbox--disabled": this.disabled,
+                    "cly-vue-listbox--has-margin": this.margin && !(this.skin === "jumbo")
                 };
                 classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
                 return classes;
@@ -224,7 +226,9 @@
                                             <div v-if="!!$scopedSlots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-2">\
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
-                                            <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
+                                            <slot name="option-label" v-bind="option">\
+                                                <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
+                                            </slot>\
                                         </div>\
                                         <div class="bu-level-right" v-if="!!$scopedSlots[\'option-suffix\']">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
