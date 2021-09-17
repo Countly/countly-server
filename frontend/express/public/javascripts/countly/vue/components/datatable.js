@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment, countlyTaskManager */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment, countlyTaskManager, _merge */
 
 (function(countlyVue, $) {
 
@@ -402,8 +402,9 @@
                     self = this;
                 var newPatch = Object.keys(fields).reduce(function(acc, fieldKey) {
                     if (self.patches[rowKey] && Object.prototype.hasOwnProperty.call(self.patches[rowKey], fieldKey)) {
+                        var newValue = self.patches[rowKey][fieldKey].newValue;
                         var originalValue = self.patches[rowKey][fieldKey].originalValue;
-                        if (originalValue !== fields[fieldKey]) {
+                        if (newValue !== fields[fieldKey]) {
                             acc[fieldKey] = { originalValue: originalValue, newValue: fields[fieldKey] };
                         }
                     }
@@ -412,6 +413,8 @@
                     }
                     return acc;
                 }, {});
+
+                newPatch = _merge({}, self.patches[rowKey] || {}, newPatch);
 
                 Vue.set(this.patches, rowKey, newPatch);
             },
