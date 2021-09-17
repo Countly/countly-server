@@ -61,7 +61,6 @@
             v-on="$listeners"
             @sort-change="onSortChange"
             @cell-mouse-enter="onCellMouseEnter"
-            v-click-outside="onElTableClickOutside"
             ref="elTable">
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>
