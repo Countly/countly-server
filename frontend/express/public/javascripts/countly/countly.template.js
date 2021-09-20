@@ -1167,11 +1167,15 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard: function() {
+        var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
         if (countlyGlobal.member.restrict && countlyGlobal.member.restrict.indexOf("#/") !== -1) {
             return;
         }
         if (_.isEmpty(countlyGlobal.apps)) {
             this.renderWhenReady(this.manageAppsView);
+        }
+        else if (type === "mobile" || type === "web" || type === "desktop") {
+            this.renderWhenReady(app.HomeView);
         }
         else if (typeof this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== "undefined") {
             this.renderWhenReady(this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]);

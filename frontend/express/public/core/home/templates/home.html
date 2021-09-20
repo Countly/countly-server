@@ -1,0 +1,87 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('sidebar.home')}} 
+            </h2>
+            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description"></span>
+        </template>
+		<template v-slot:header-right>
+			<cly-select-x
+                v-if="showComponentSelector"
+                search-placeholder=""
+                placeholder="i18n('dashboard.customize-home')"
+                :title="i18n('dashboard.customize-home')"
+                mode="multi-check-sortable"
+                placement="bottom-end"
+                :width="392"
+                :auto-commit="false"
+                :hide-default-tabs="true"
+                :hide-all-options-tab="true"
+				:searchable="false"
+                :options="componentSelector"
+				@input="setSelectedComponents"
+                v-model="selectedDynamicComponents"
+				showSelectedCount >
+                <template v-slot:trigger>
+                    <el-button size="small" icon="ion-navicon-round"> {{i18n('common.customize')}} </el-button>
+                </template>
+            </cly-select-x>
+			<cly-more-options size="small" class="bu-pl-2" @command="Selected">
+				<el-dropdown-item command="download"  >
+				  {{i18n('common.download')}} 
+				</el-dropdown-item>
+			</cly-more-options>
+			
+		</template>
+    </cly-header>
+	<cly-main>
+		<div id="main_home_view">
+			<div v-for="(item0, idx0) in topComponents" class="bu-pb-5">
+				<div class="bu-level bu-pb-3" v-if="item0.label">
+						<div class="bu-level-left">
+							<h2>{{item0.label}}</h2>
+							<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2" v-tooltip.top-center="item0.description"></span>
+						</div>
+						<div class="bu-level-right">
+							<a v-if="item0.linkTo" class="cly-back-link text-medium" :href="item0.linkTo.href"><span>{{item0.linkTo.label}}<i class="fas fa-arrow-right bu-pl-3"></i></span></a>
+						</div>
+				</div>
+				<component v-if="item0.component" v-bind:is="item0.component"></component>
+			</div>
+
+			<cly-date-picker-g></cly-date-picker-g>
+			<div  v-for="(item, idx) in ordered" class="bu-pt-5" >
+				<div v-if="item.itemgroup">
+					<div class="bu-columns bu-is-gapless">
+						<div  v-for="(item0, idx0) in item.data" v-if="registredComponents[item0._id]" class="bu-column bu-is-6">
+							<div :class="item0.classes">
+								<div class="bu-level bu-pb-3">
+									<div class="bu-level-left">
+										<h2>{{registredComponents[item0._id].label}}</h2>
+										<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="registredComponents[item0._id].description"></span>
+									</div>
+									<div class="bu-level-right">
+										<a v-if="registredComponents[item0._id].linkTo" class="cly-back-link text-medium" :href="registredComponents[item0._id].linkTo.href"><span>{{registredComponents[item0._id].linkTo.label}}<i class="fas fa-arrow-right bu-pl-3"></i></span></a>
+									</div>
+								</div>
+								<component v-if="registredComponents[item0._id].component" v-bind:is="registredComponents[item0._id].component"></component>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div v-if="registredComponents[item._id]">
+					<div class="bu-level bu-pb-3">
+						<div class="bu-level-left">
+							<h2>{{registredComponents[item._id].label}}</h2>
+							<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="registredComponents[item._id].description"></span>
+						</div>
+						<div class="bu-level-right">
+							<a v-if="registredComponents[item._id].linkTo" class="cly-back-link text-medium" :href="registredComponents[item._id].linkTo.href"><span>{{registredComponents[item._id].linkTo.label}}<i class="fas fa-arrow-right bu-pl-3"></i></span></a>
+						</div>
+					</div>
+					<component v-if="registredComponents[item._id].component" v-bind:is="registredComponents[item._id].component"></component>
+				</div>
+			</div>
+		</div>
+	</cly-main>
+</div>

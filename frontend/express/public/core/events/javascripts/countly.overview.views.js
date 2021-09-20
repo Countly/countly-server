@@ -256,4 +256,50 @@
     app.route("/analytics/events/overview", "overview", function() {
         this.renderWhenReady(EventsOverviewViewWrapper);
     });
+
+
+    var EventsHomeWidget = countlyVue.views.create({
+        template: CV.T("/core/events/templates/eventsHomeWidget.html"),
+        data: function() {
+            return {
+                items: [],
+                linkTo: {"label": CV.i18n('events.go-to-events'), "href": "#/analytics/events/overview"}
+            };
+        },
+        mounted: function() {
+            var self = this;
+            this.$store.dispatch('countlyEventsOverview/fetchTopEvents',5).then(function() {
+                self.calculateAllData();
+            });
+        },
+        beforeCreate: function() {
+            this.module = countlyEventsOverview.getVuexModule();
+            CV.vuex.registerGlobally(this.module);
+        },
+        beforeDestroy: function() {
+            CV.vuex.unregister(this.module.name);
+        },
+        methods: {
+            refresh: function() {
+                var self = this;
+                this.$store.dispatch('countlyEventsOverview/fetchTopEvents', 5).then(function() {
+                    self.calculateAllData();
+                });
+            },
+            calculateAllData: function() {
+                var data = this.$store.getters["countlyEventsOverview/topEvents"];
+                data = data.splice(0, 5);
+                this.items = data;
+            }
+        }
+    });
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "events-dashboard-widget",
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: true,
+        order: 2,
+        component: EventsHomeWidget
+    });
+
 })();
