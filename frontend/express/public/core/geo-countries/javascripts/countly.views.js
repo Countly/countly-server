@@ -234,6 +234,101 @@ var GeoAnalyticsView = countlyVue.views.create({
     }
 });
 
+
+var CountriesHomeWidget = countlyVue.views.create({
+    template: CV.T("/core/geo-countries/templates/countriesHomeWidget.html"),
+    data: function() {
+        var buttonText = "";
+        var buttonLink = "#/analytics/geo/countries/All";
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country) {
+            buttonText = CV.i18n('common.show') + " " + countlyLocation.getCountryName(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country);
+            buttonLink = "#/analytics/geo/countries/" + countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].country;
+        }
+        else {
+            buttonText = CV.i18n('common.show') + " " + CV.i18n("countries.table.country");
+        }
+
+        return {
+            path: "",
+            buttonText: buttonText,
+            buttonLink: buttonLink
+
+        };
+    },
+    beforeCreate: function() {
+        this.module = countlyCountry.getVuexModule();
+        CV.vuex.registerGlobally(this.module);
+    },
+    beforeDestroy: function() {
+        CV.vuex.unregister(this.module.name);
+    },
+    mounted: function() {
+        this.$store.dispatch('countlyCountry/fetchData');
+    },
+    methods: {
+        refresh: function() {
+            this.$store.dispatch('countlyCountry/fetchData');
+        },
+        swithToCityView: function() {
+            windows.location.href = this.path;
+        },
+        regionClick: function(region) {
+            this.path = "#/analytics/geo/countries/" + region;
+            this.$refs.toCityViewLink.href = this.path;
+            this.$refs.toCityViewLink.click();
+        },
+    },
+    computed: {
+        data: function() {
+            return this.$store.state.countlyCountry.data || {};
+        },
+        chooseProperties: function() {
+            var totals = this.data.totals || {};
+            totals.t = totals.t || {};
+            totals.u = totals.u || {};
+            totals.n = totals.n || {};
+            return [
+                {"value": "t", "label": CV.i18n('common.table.total-sessions'), "trend": totals.t.trend, "number": countlyCommon.getShortNumber(totals.t.total || 0), "trendValue": totals.t.change},
+                {"value": "u", "label": CV.i18n('common.table.total-users'), "trend": totals.u.trend, "number": countlyCommon.getShortNumber(totals.u.total || 0), "trendValue": totals.u.change},
+                {"value": "n", "label": CV.i18n('common.table.new-users'), "trend": totals.n.trend, "number": countlyCommon.getShortNumber(totals.n.total || 0), "trendValue": totals.n.change}
+            ];
+        },
+        countriesData: function() {
+            var geoChart = {};
+            var table = this.data.table || [];
+            var selectedProperty = this.$store.state.countlyCountry.selectedProperty || "t";
+            for (var k = 0; k < table.length; k++) {
+                geoChart[table[k].country] = {"value": table[k][selectedProperty]};
+            }
+            return geoChart;
+        },
+        selectedProperty: {
+            set: function(value) {
+                this.$store.dispatch('countlyCountry/onSetSelectedProperty', value);
+            },
+            get: function() {
+                return this.$store.state.countlyCountry.selectedProperty;
+            }
+        }
+    }
+
+
+});
+
+
+countlyVue.container.registerData("/home/widgets", {
+    _id: "countries-dashboard-widget",
+    label: CV.i18n('countries.title'),
+    description: CV.i18n('countries.description'),
+    enabled: {"default": true}, //object. For each type set if by default enabled
+    available: {"default": true}, //object. default - for all app types. For other as specified.
+    order: 8, //sorted by ascending
+    placeBeforeDatePicker: false,
+    component: CountriesHomeWidget,
+    linkTo: {"label": CV.i18n('countries.go-to-countries'), "href": "#/analytics/geo/countries"}
+});
+
+
 var getGeoAnalyticsView = function() {
     var tabsVuex = countlyVue.container.tabsVuex(["/analytics/geo"]);
     return new countlyVue.views.BackboneWrapper({
