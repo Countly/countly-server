@@ -9,3 +9,11 @@
 .version-graph-block:last-child {
 margin-bottom: 12px;
 }
+
+.technologyDashboardWidget>.bu-column:nth-child(odd)>.cly-vue-section{
+	padding-right:8px;
+}
+
+.technologyDashboardWidget>.bu-column:nth-child(even)>.cly-vue-section{
+	padding-left:8px;
+}
