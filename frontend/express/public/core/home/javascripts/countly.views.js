@@ -67,7 +67,9 @@ var HomeViewView = countlyVue.views.create({
 
                     if (typeof userSettings[allComponents[k]._id] !== "undefined") {
                         enabled = userSettings[allComponents[k]._id].enabled || false;
-                        order = userSettings[allComponents[k]._id].order || 0;
+                        if (typeof userSettings[allComponents[k]._id].order !== "undefined") {
+                            order = userSettings[allComponents[k]._id].order;
+                        }
                     }
 
                     if (!this.registredComponents[allComponents[k]._id]) {
@@ -146,13 +148,9 @@ var HomeViewView = countlyVue.views.create({
                         not_changed = false;
                     }
                 }
-                if (!not_changed) {
-                    this.ordered = forOrdering;
-                }
             }
             else {
                 not_changed = false;
-                this.ordered = forOrdering;
             }
 
             if (!not_changed) {
@@ -175,7 +173,10 @@ var HomeViewView = countlyVue.views.create({
             //save for users
             var userSettings = {};
             for (var k in this.registredComponents) {
-                if (values.indexOf(k) === -1) {
+                if (this.registredComponents[k].placeBeforeDatePicker === true) {
+                    userSettings[k] = {"enabled": true};
+                }
+                else if (values.indexOf(k) === -1) {
                     userSettings[k] = {"enabled": false};
                     this.registredComponents[k].enabled = false;
                 }

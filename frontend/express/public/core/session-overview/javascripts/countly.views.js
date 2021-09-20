@@ -227,7 +227,7 @@ countlyVue.container.registerData("/home/widgets", {
     description: CV.i18n('session-overview.description'),
     enabled: {"default": true}, //object. For each type set if by default enabled
     available: {"default": true}, //object. default - for all app types. For other as specified.
-    order: 1, //sorted by ascending
+    order: 0, //sorted by ascending
     placeBeforeDatePicker: false,
     component: SessionHomeWidget,
     linkTo: {"label": CV.i18n('dashboard.go-to-sessions'), "href": "#/analytics/sessions"}
