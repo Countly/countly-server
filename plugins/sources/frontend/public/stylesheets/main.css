@@ -1,3 +1,19 @@
 .source-table tr{cursor: pointer;}
 .source-20{width: 20%;}
 .source-40{width: 40%;}
+
+.bu-is-6 .keywordsDashboardWidget .cly-vue-metric-cards .cly-vue-metric-card {
+	flex-basis:100%;
+	width:100%;
+	border-bottom: 1px solid #ececec;
+	border-left:none;
+	border-right:none;
+	
+}
+.bu-is-6 .keywordsDashboardWidget .cly-vue-metric-cards .cly-vue-metric-card:last-child {
+	border-bottom:none;
+}
+.bu-is-6 .keywordsDashboardWidget .cly-vue-metric-cards .cly-vue-metric-card .cly-vue-metric-card__wrapper {
+	border-left:none;
+	border-right:none;
+}
