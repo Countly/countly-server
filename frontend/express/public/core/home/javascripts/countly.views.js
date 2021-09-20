@@ -151,7 +151,17 @@ var HomeViewView = countlyVue.views.create({
                 }
             }
             else {
+                not_changed = false;
                 this.ordered = forOrdering;
+            }
+
+            if (!not_changed) {
+
+                this.ordered = [];
+                var self = this;
+                setTimeout(function() {
+                    self.ordered = forOrdering;
+                }, 1000);
             }
 
             if (this.componentSelector.length > 0) {
