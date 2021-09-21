@@ -1,0 +1,10 @@
+.populator-template-drawer {
+    &__up-key {
+        flex-basis: 160px;
+        flex-shrink: 1;
+    }
+
+    &__up-values {
+        flex-grow: 1;
+    }
+}

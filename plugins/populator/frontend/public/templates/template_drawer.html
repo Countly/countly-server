@@ -1,0 +1,42 @@
+<cly-drawer ref="drawer" @submit="onSubmit" class="populator-template-drawer" v-bind="$props.controls" name="populatorTemplate" :title="title" saveButtonLabel="Save" :size="4">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="create-template-step">
+            <div class="cly-vue-drawer-step__section">
+                <div class="text-button font-weight-bold bu-mb-2">Template Name</div>
+                <validation-provider name="name" rules="required" v-slot="v">
+                    <el-input class="bu-is-shadowless" :class="{'is-error': v.errors.length > 0}" v-model="drawerScope.editedObject.name"></el-input>
+                </validation-provider>
+            </div>
+            <div class="cly-vue-drawer-step__section">
+                <h4 class="bu-mb-4">Custom User Properties</h4>
+                <div class="populator-template-drawer__up-container" v-for="(up, upIndex) in (drawerScope.editedObject.up || [])" :key="up[0]">
+                    <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center">
+                        <div class="text-small text-uppercase">Custom User Property Details</div>
+                        <el-button class="color-red-100" type="text">Delete Property</el-button>
+                    </div>
+                    <div class="bu-is-flex">
+                        <div class="populator-template-drawer__up-key bu-is-flex bu-is-flex-direction-column">
+                            <div class="text-medium">
+                                Key
+                            </div>
+                            <div>
+                                <el-input v-model="up[0]"></el-input>
+                            </div>
+                        </div>
+                        <div class="populator-template-drawer__up-values bu-is-flex bu-is-flex-direction-column">
+                            <div class="text-medium">
+                                Values
+                            </div>
+                            <div>
+                                <el-select v-model="up[1]" multiple filterable allow-create></el-select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <el-button @click="addUserProperty(drawerScope.editedObject)">+ Add a Custom Property</el-button>
+            </div>
+        </div>
+    </cly-form-step>
+</template>
+</cly-drawer>

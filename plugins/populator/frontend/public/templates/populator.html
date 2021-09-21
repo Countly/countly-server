@@ -1,0 +1,59 @@
+<div>
+    <cly-tabs v-model="currentTab">
+        <el-tab-pane name="data-populator" label="Data Populator">
+            <cly-header>
+                <template v-slot:header-left>
+                    <h2>
+                        Data Populator
+                        <cly-tooltip-icon></cly-tooltip-icon>
+                    </h2>
+                </template>
+            </cly-header>
+            <cly-main>
+                I am data populator :)
+            </cly-main>
+        </el-tab-pane>
+        <el-tab-pane name="templates" label="Templates">
+            <cly-header>
+                <template v-slot:header-left>
+                    <h2>
+                        Templates
+                        <cly-tooltip-icon></cly-tooltip-icon>
+                    </h2>
+                </template>
+                <template v-slot:header-right>
+                    <el-button @click="newTemplate">Create new template</el-button>
+                </template>
+            </cly-header>
+            <cly-main>
+                <cly-datatable-n :rows="templates">
+                    <template v-slot="scope">
+                        <el-table-column prop="name" label="Name" width="220" sortable></el-table-column>
+                        <el-table-column label="Type" width="200" sortable>
+                            <template slot-scope="col">
+                                {{ col.row.isDefault ? "Default" : "Custom" }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="upCount" label="Number of User Properties" width="240" sortable></el-table-column>
+                        <el-table-column prop="eventCount" label="Number of Events" width="240" sortable></el-table-column>
+                        <el-table-column prop="lastEditedBy" label="Edited by" sortable>
+                            <template slot-scope="col">
+                                {{ col.row.lastEditedBy || "-" }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column fixed="right" width="80">
+                            <template slot-scope="col">
+                                <cly-more-options @command="changeTemplate($event, col.row)">
+                                    <el-dropdown-item command="edit" v-if="!col.row.isDefault">Edit</el-dropdown-item>
+                                    <el-dropdown-item command="delete" v-if="!col.row.isDefault">Delete</el-dropdown-item>
+                                    <el-dropdown-item command="duplicate">Duplicate</el-dropdown-item>
+                                </cly-more-options>
+                            </template>
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </cly-main>
+        </el-tab-pane>
+    </cly-tabs>
+    <cly-populator-template-drawer ref="populatorTemplateDrawer" :controls="drawers.populatorTemplate"></cly-populator-template-drawer>
+</div>
