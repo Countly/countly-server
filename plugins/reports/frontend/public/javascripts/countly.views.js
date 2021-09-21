@@ -1040,10 +1040,19 @@ var TableView = countlyVue.views.BaseView.extend({
         },
     },
     data: function () {
-     
+        var tableDynamicCols = [{
+            value: "emails",
+            label: jQuery.i18n.map['reports.emails'],
+            required: true, 
+        },{
+            value: "timeColumn",
+            label: jQuery.i18n.map['reports.time'],
+            required: true, 
+        }]; 
         return {
             localTableTrackedFields: ['enabled'],
             isAdmin: countlyGlobal.member.global_admin,
+            tableDynamicCols,
         };
     },
     methods: {

@@ -3,11 +3,11 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('reports.title')}}
-            </h2><span class="ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('reports.tips')"/>
+            </h2><span class="cly-vue-tooltip-icon ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('reports.tips')"/>
         </template>
         <template v-slot:header-right>
-            <div id="create-report" class="cly-vue-button button-green-skin" v-on:click="createReport()"><i class="el-icon-circle-plus"/> {{i18n('reports.create')}}</div>
-    </template>
+            <el-button type="success" icon="el-icon-circle-plus" v-on:click="createReport()">{{i18n('reports.create')}}</el-button>
+        </template>
     </cly-header>
 
     <cly-main>
@@ -21,6 +21,7 @@
 <script  type="text/x-template" id="reports-table">
 <cly-section>
     <cly-datatable-n
+        :available-dynamic-cols="tableDynamicCols" 
         class="cly-vue-reports-table"
         :tracked-fields="localTableTrackedFields"
         :rows="tableRows" :resizable="false" >
