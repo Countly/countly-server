@@ -552,39 +552,38 @@
         },
     });
 
-	var ViewsHomeWidget = countlyVue.views.create({
-		template: CV.T("/views/templates/viewsHomeWidget.html"),
-		data: function() {
-			return {
-				dataBlocks:[]
-			}
-		},
-		mounted: function() {
-			var self = this;
-			self.$store.dispatch('countlyViews/fetchTotals').then(function() {
-				self.dataBlocks = self.calculateAllData();
+    var ViewsHomeWidget = countlyVue.views.create({
+        template: CV.T("/views/templates/viewsHomeWidget.html"),
+        data: function() {
+            return {
+                dataBlocks: []
+            };
+        },
+        mounted: function() {
+            var self = this;
+            self.$store.dispatch('countlyViews/fetchTotals').then(function() {
+                self.dataBlocks = self.calculateAllData();
             });
-		},
-		beforeCreate: function(){
-			this.module = countlyViews.getVuexModule();
-			CV.vuex.registerGlobally(this.module);
-		},
-		beforeDestroy: function() {
+        },
+        beforeCreate: function() {
+            this.module = countlyViews.getVuexModule();
+            CV.vuex.registerGlobally(this.module);
+        },
+        beforeDestroy: function() {
             CV.vuex.unregister(this.module.name);
         },
-		methods: {
-			refresh: function() {
-				var self = this;
+        methods: {
+            refresh: function() {
+                var self = this;
                 self.$store.dispatch('countlyViews/fetchTotals').then(function() {
-					self.dataBlocks = self.calculateAllData();
-				});
-			},
-			calculateAllData: function() {
-				var totals = {};
-				if(this.$store && this.$store.state && this.$store.state.countlyViews)
-				{
-					totals = this.$store.state.countlyViews.totals || {};
-				}
+                    self.dataBlocks = self.calculateAllData();
+                });
+            },
+            calculateAllData: function() {
+                var totals = {};
+                if (this.$store && this.$store.state && this.$store.state.countlyViews) {
+                    totals = this.$store.state.countlyViews.totals || {};
+                }
                 totals.t = totals.t || 0;
                 totals.uvc = totals.uvc || 0;
                 totals.s = totals.s || 0;
@@ -620,11 +619,11 @@
                         "color": "#F96300"
                     }
                 ];
-			}
-		}
-	});
-	
-	if (countlyAuth.validateRead(FEATURE_NAME)) {
+            }
+        }
+    });
+
+    if (countlyAuth.validateRead(FEATURE_NAME)) {
         countlyVue.container.registerTab("/analytics/sessions", {
             priority: 4,
             name: "views-per-session",
@@ -661,21 +660,21 @@
             this.viewsEditView.params = params;
             this.renderWhenReady(this.viewsEditView);
         });
-		
-		
-		countlyVue.container.registerData("/home/widgets", {
+
+
+        countlyVue.container.registerData("/home/widgets", {
             _id: "views-dashboard-widget",
-			label: CV.i18n('views.title'),
-			description: CV.i18n('views.description'),
-			enabled:{"default":true}, //object. For each type set if by default enabled
-			available: {"default":true},//object. default - for all app types. For other as specified.
-			placeBeforeDatePicker:false,
-			linkTo:{"label":CV.i18n('views.go-to-views'), "href":"#/analytics/views"},
-			width: 6,
-			order: 4,
-            component:ViewsHomeWidget
+            label: CV.i18n('views.title'),
+            description: CV.i18n('views.description'),
+            enabled: {"default": true}, //object. For each type set if by default enabled
+            available: {"default": true}, //object. default - for all app types. For other as specified.
+            placeBeforeDatePicker: false,
+            linkTo: {"label": CV.i18n('views.go-to-views'), "href": "#/analytics/views"},
+            width: 6,
+            order: 4,
+            component: ViewsHomeWidget
         });
-		
+
     }
 
     window.ActionMapView = countlyView.extend({

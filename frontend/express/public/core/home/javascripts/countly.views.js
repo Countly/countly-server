@@ -18,15 +18,6 @@ var HomeViewView = countlyVue.views.create({
     mounted: function() {
         this.loadAllWidgets();
     },
-    beforeDestroy: function() {
-        //call killing vuex modules there.
-        for (var k in this.registredComponents) {
-            var cc = this.registredComponents[k].component();
-            if (this.registredComponents[k] && this.registredComponents[k].component && this.registredComponents[k].component.module) {
-                CV.vuex.unregister(this.registredComponents[k].component.module.name);
-            }
-        }
-    },
     methods: {
         refresh: function() {
             this.loadAllWidgets();
