@@ -302,7 +302,7 @@
                         {{i18n('push-notification-details.targeted-users')}}
                     </div>
                     <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
-                        {{pushNotification.cohorts.toString()}}
+                        {{pushNotification.cohorts.map(function(cohort){ return cohort.name}).join(', ')}}
                     </div>
                 </div>
                 <div class="bu-columns">
@@ -310,7 +310,7 @@
                         {{i18n('push-notification-details.geolocation')}}
                     </div>
                     <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
-                        {{pushNotification.locations.toString()}}
+                        {{pushNotification.locations.map(function(location) {return location.name}).join(', ')}}
                     </div>
                 </div>
                 <div class="bu-columns">
@@ -318,7 +318,7 @@
                         {{i18n('push-notification-details.when-to-determine')}}
                     </div>
                     <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
-                        {{pushNotification.audienceSelectionType}}
+                        {{audienceSelectionOptions[pushNotification.audienceSelectionType].label}}
                     </div>
                 </div>
             </div>
@@ -331,7 +331,7 @@
                         {{i18n('push-notification-details.delivery-type')}}
                     </div>
                     <div class="bu-column bu-is-10 cly-vue-push-notification-details-summary-text">
-                        {{pushNotification.deliveryType}}
+                        {{deliveryTypeOptions[pushNotification.deliveryType].label}}
                     </div>
                 </div>
                 <div class="bu-columns">

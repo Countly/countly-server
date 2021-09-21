@@ -667,13 +667,15 @@
         template: '#details-targeting-tab',
         data: function() {
             return {
-                DAY_TO_MS_RATIO: 86400 * 1000
+                DAY_TO_MS_RATIO: 86400 * 1000,
+                audienceSelectionOptions: countlyPushNotification.service.audienceSelectionOptions,
+                deliveryTypeOptions: countlyPushNotification.service.deliveryTypeOptions,
             };
         },
         computed: {
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
-            }
+            },
         },
         methods: {
             convertDaysInMsToDays: function(daysInMs) {

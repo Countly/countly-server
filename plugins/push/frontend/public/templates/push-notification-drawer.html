@@ -5,6 +5,7 @@
     @open="onOpen"
     :set-step-callback-fn="onStepClick"
     :title="title"
+    :requires-async-submit="true"
     :saveButtonLabel="saveButtonLabel"
     v-bind="controls">
     <template v-slot:sidecars="drawerScope">
@@ -307,7 +308,7 @@
                         </large-radio-button-with-description>
                     </div>
                 </div>
-                <div v-if="type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL" class="cly-vue-drawer-step__section">
+                <div v-if="type === TypeEnum.AUTOMATIC" class="cly-vue-drawer-step__section">
                     <div class="bu-is-flex bu-is-flex-direction-column">
                         <div class="bu-is-flex bu-is-align-items-center">
                             <el-switch v-model="isEndDateEnabled" class="bu-mr-1"></el-switch>
@@ -830,16 +831,16 @@
                     Targeting
                 </div>
                 <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
-                    <review-section-row label="Targeted users" :value="pushNotificationUnderEdit.targeting"></review-section-row>
-                    <review-section-row label="Current number of users" :value="pushNotificationUnderEdit.currentNumberOfUsers"></review-section-row>
-                    <review-section-row label="When to determine" :value="pushNotificationUnderEdit.whenToDetermine"></review-section-row>
+                    <review-section-row label="Targeted users" :value="targetingOptions[pushNotificationUnderEdit.targeting].label"></review-section-row>
+                    <review-section-row label="Current number of users" :value="currentNumberOfUsers"></review-section-row>
+                    <review-section-row label="When to determine" :value="audienceSelectionOptions[pushNotificationUnderEdit.whenToDetermine].label"></review-section-row>
                 </div>
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
                     Delivery
                 </div>
                 <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
-                    <review-section-row label="Delivery type" :value="pushNotificationUnderEdit.delivery.type"></review-section-row>
-                    <review-section-row label="Scheduled for" :value="pushNotificationUnderEdit.delivery.type"></review-section-row>
+                    <review-section-row label="Delivery type" :value="deliveryTypeOptions[pushNotificationUnderEdit.delivery.type].label"></review-section-row>
+                    <review-section-row label="Scheduled for" :value="previewMessageScheduledFor"></review-section-row>
                     <review-section-row label="Expiration time" :value="'Message will expire after ' +pushNotificationUnderEdit.expiration.days+ ' days and ' +pushNotificationUnderEdit.expiration.hours+ ' hours'"></review-section-row>
                 </div>
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
