@@ -59,7 +59,7 @@
             dfd.resolve();
         }
         else {
-            $.ajax({
+            CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {

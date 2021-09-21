@@ -137,7 +137,7 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
             this.$data.apps= [val];
             if (val) {
                 countlyEvent.getEventsForApps([val], function(eventData) {
-                    const eventOptions = eventData.map(function(e){
+                    var eventOptions = eventData.map(function(e){
                         return {value: e.value, label: e.name};
                     });
                     self.$data.alertDefine['event']["target"] = eventOptions;
@@ -279,7 +279,7 @@ var AlertDrawer = countlyVue.views.BaseView.extend({
 
           
             if (settings.alertDataType === 'online-users') {
-                const config = {
+                var config = {
                     app: settings.selectedApps[0],
                     app_name: countlyGlobal.apps[settings.selectedApps[0]].name,
                     name: settings.alertName,
@@ -354,10 +354,19 @@ var TableView = countlyVue.views.BaseView.extend({
         },
     },
     data: function () {
-        const appsSelectorOption = [];
+        var appsSelectorOption = [];
         for (let id in countlyGlobal.apps) {
             appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
         } 
+        var tableDynamicCols = [{
+            value: "alertName",
+            label: jQuery.i18n.map['alert.Alert_Name'],
+            required: true, 
+        },{
+            value: "appNameList",
+            label: jQuery.i18n.map['alert.Application'],
+            required: true, 
+        }];
         
         return {
             appsSelectorOption,
@@ -367,6 +376,7 @@ var TableView = countlyVue.views.BaseView.extend({
             isAdmin: countlyGlobal.member.global_admin,
             canUpdate: countlyAuth.validateUpdate(app.alertsView.featureName),
             canDelete: countlyAuth.validateDelete(app.alertsView.featureName),
+            tableDynamicCols,
         };
     },
     methods: {

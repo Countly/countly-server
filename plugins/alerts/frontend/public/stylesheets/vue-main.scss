@@ -1,23 +1,16 @@
 #alerts-view {
-    .text-heading.title {
-        font-size: 13px;
-    }
 
     .cly-vue-alerts-table {
         .is-option-button {
             visibility: hidden;
-            .el-select {
-                -webkit-box-shadow: unset;
-                box-shadow: unset;
-                border-radius: unset;
-            }
-            
         }
         tr:hover .is-option-button {
             visibility: visible;
         }
     }
-
+    .cly-vue-drawer__steps-view {
+        min-width: 850px;
+    }
     .compare-value-block {
         .el-input__suffix {
             line-height: 32px;

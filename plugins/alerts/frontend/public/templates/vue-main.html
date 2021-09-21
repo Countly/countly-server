@@ -4,11 +4,11 @@
             <template v-slot:header-left>
                 <h2> {{i18n('alert.plugin-title')}}
                 </h2>
-                <span class="ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('alert.tips')">
+                <span class="cly-vue-tooltip-icon ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('alert.tips')">
                 </span>
             </template>
             <template v-slot:header-right>
-                <div id="create-alert" v-if="canCreate" class="cly-vue-button button-green-skin" v-on:click="createAlert()"><i class="el-icon-circle-plus"/> {{i18n('alert.Add_New_Alert')}}</div>
+            <el-button type="success" icon="el-icon-circle-plus" v-on:click="createAlert()">{{i18n('alert.Add_New_Alert')}}</el-button>
         </template>
         </cly-header>
     
@@ -34,6 +34,7 @@
 <script  type="text/x-template" id="alerts-table">
     <cly-section>
         <cly-datatable-n
+            :available-dynamic-cols="tableDynamicCols" 
             class="cly-vue-alerts-table"
             :tracked-fields="localTableTrackedFields"
             :rows="tableRows" :resizable="false" >
@@ -56,7 +57,7 @@
                     </template>
                 </el-table-column>
                
-                <el-table-column fixed min-width="240"  :label="i18n('alert.Alert_Name')" sortable="true">
+                <el-table-column fixed min-width="240"  prop="alertName" :label="i18n('alert.Alert_Name')" sortable="true">
                     <template slot-scope="scope">
                         <div v-html="scope.row.alertName"></div>
                     </template>
@@ -81,7 +82,7 @@
     
                             </div> 
                           <div class="bu-level-right">
-                             <cly-more-options size="small" @command="handleHookEditCommand($event, scope)">
+                             <cly-more-options class="is-option-button" size="small" @command="handleHookEditCommand($event, scope)">
                                 <el-dropdown-item v-if="canUpdate" icon="el-icon-document-copy" command="edit-comment">
                                     {{i18n('alert.Edit')}}
                                 </el-dropdown-item>
@@ -107,6 +108,7 @@
     
 <script  type="text/x-template" id="alert-drawer">
     <cly-drawer
+        
         @submit="onSubmit"
         @close="onClose"
         @copy="onCopy"
@@ -116,7 +118,7 @@
         <template v-slot:default="drawerScope">
             <cly-form-step id="alert-drawer-main">
             
-            <div class="bu-py-4">
+            <div class="bu-py-4 cly-alert-drawer">
                 <div class="text-medium text-heading title">
                     {{i18n('alert.Alert_Name')}}
                 </div>
