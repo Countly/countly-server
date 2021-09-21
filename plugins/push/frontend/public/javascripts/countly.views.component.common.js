@@ -152,7 +152,7 @@
     countlyPushNotificationComponent.ReviewSectionRow = countlyVue.views.create({
         props: {
             value: {
-                type: String,
+                type: String | Number,
                 default: ""
             },
             label: {

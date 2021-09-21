@@ -194,8 +194,11 @@
         hasNoUsersToSendPushNotification: function(pushNotificationDto) {
             return pushNotificationDto.build.total === 0;
         },
-        isNoPushCredentialsError: function(response) {
-            return response.error === 'No push credentials';
+        isNoPushCredentialsError: function(error) {
+            return error.message === 'No push credentials';
+        },
+        isNoUsersFoundError: function(error) {
+            return error.message === 'No users were found from selected configuration';
         },
         convertDatetimeToMS: function(datetime) {
             var result = 0;
@@ -372,7 +375,7 @@
                 return dto.date ? DeliveryEnum.LATER : DeliveryEnum.NOW;
             },
             mapAudienceSelectionType: function(dto) {
-                return dto.delayed ? WhenToDetermineEnum.NOW : WhenToDetermineEnum.BEFORE;
+                return dto.delayed ? WhenToDetermineEnum.BEFORE : WhenToDetermineEnum.NOW;
             },
             mapErrors: function(dto) {
                 //TODO-LA: map push notification message errors;
@@ -641,11 +644,11 @@
                     platforms: this.mapPlatforms(pushNotificationModel.platforms),
                     cohorts: [].concat(pushNotificationModel.cohorts),
                     geos: [].concat(pushNotificationModel.locations),
-                    delayed: pushNotificationModel.delivery === DeliveryEnum.LATER,
+                    delayed: pushNotificationModel.whenToDtermine === WhenToDetermineEnum.BEFORE,
                     expiration: expirationInMS,
                     tx: typeDto.tx,
                     auto: typeDto.auto,
-                    tz: pushNotificationModel.timezone === TimeZoneEnum.DEVICE,
+                    tz: pushNotificationModel.timezone === TimeZoneEnum.SAME ? new Date().getTimezoneOffset() : false,
                     test: false,
                     source: 'dash',
                     type: 'message'
@@ -663,7 +666,6 @@
                 }
                 dto.messagePerLocale = this.mapMessageLocalization(pushNotificationModel);
                 dto.locales = this.mapLocalizations(options.localizations, options.totalAppUsers);
-                dto.delayed = pushNotificationModel.whenToDtermine === WhenToDetermineEnum.BEFORE;
                 if (pushNotificationModel.delivery.type === DeliveryEnum.LATER) {
                     dto.date = new Date(pushNotificationModel.delivery.startDate);
                 }
@@ -688,7 +690,6 @@
                 dto.autoOnEntry = pushNotificationModel.automatic.trigger === TriggerEnum.COHORT_ENTRY;
                 dto.autoCancelTrigger = pushNotificationModel.automatic.whenNotMet === AutomaticWhenConditionNotMetEnum.CANCEL_ON_EXIT;
                 dto.autoEvents = pushNotificationModel.automatic.events;
-                dto.delayed = true;
                 dto.buttons = pushNotificationModel.message.default.buttons.length;
                 if (pushNotificationModel.delivery.type === DeliveryEnum.LATER) {
                     dto.date = new Date(pushNotificationModel.delivery.startDate);
@@ -722,7 +723,6 @@
                 }
                 dto.messagePerLocale = this.mapMessageLocalization(pushNotificationModel);
                 dto.locales = this.mapLocalizations(options.localizations, options.totalAppUsers);
-                dto.delayed = pushNotificationModel.whenToDtermine === WhenToDetermineEnum.BEFORE;
                 if (pushNotificationModel.delivery.type === DeliveryEnum.LATER) {
                     dto.date = new Date(pushNotificationModel.delivery.startDate);
                 }
@@ -897,10 +897,12 @@
                     },
                     dataType: "json",
                     success: function(response) {
-                        if (countlyPushNotification.helper.isNoPushCredentialsError(response)) {
-                            throw new Error(response.error);
+                        if (response.error) {
+                            reject(new Error(response.error));
                         }
-                        resolve(countlyPushNotification.mapper.incoming.mapDtoToModel(response));
+                        else {
+                            resolve();
+                        }
                     },
                     error: function(error) {
                         reject(error);

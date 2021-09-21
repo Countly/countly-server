@@ -291,7 +291,18 @@
             },
             shouldDisplayAndroidSettings: function() {
                 return this.shouldDisplayPlatformSettings(this.PlatformEnum.ANDROID);
-            }
+            },
+            previewCohorts: function() {
+                var self = this;
+                var selectedCohorts = this.$store.state.countlyPushNotification.main.cohorts.filter(function(cohort) {
+                    return self.pushNotificationUnderEdit.cohorts.some(function(selectedCohortId) {
+                        return cohort._id === selectedCohortId;
+                    });
+                });
+                return selectedCohorts.map(function(cohort) {
+                    return cohort.name.replace(/&quot;/g, '\\"');
+                });
+            },
         },
         methods: {
             setUserPropertiesOptions: function(userPropertiesOptionsDto) {
@@ -353,7 +364,7 @@
                         resolve(true);
                     }).catch(function(error) {
                         self.setLocalizationOptions([]);
-                        if (error.message === 'No users were found from selected configuration') {
+                        if (countlyPushNotification.helper.isNoUsersFoundError(error)) {
                             CountlyHelpers.notify({
                                 title: "No users were found with selected configuration",
                                 message: "Selected cohort and location target options resulted in zero users found. Please try a different configuration.",
@@ -368,6 +379,7 @@
                 });
             },
             onSubmit: function(_, done) {
+                var self = this;
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
                 var options = {};
@@ -375,13 +387,23 @@
                 options.localizations = this.localizationOptions;
                 countlyPushNotification.service.save(model, options).then(function() {
                     done();
-                }).catch(function() {
+                    self.$store.dispatch("countlyPushNotification/main/fetchAll", true);
+                }).catch(function(error) {
                     //TODO:log error
-                    CountlyHelpers.notify({
-                        title: "Unknown error occurred",
-                        message: "Please try again later.",
-                        type: "error"
-                    });
+                    if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
+                        CountlyHelpers.notify({
+                            title: "No Push credentials",
+                            message: "There were no push credentials found for selected platform/s.",
+                            type: "error"
+                        });
+                    }
+                    else {
+                        CountlyHelpers.notify({
+                            title: "Unknown error occurred",
+                            message: "Please try again later.",
+                            type: "error"
+                        });
+                    }
                     done(true);
                 });
             },

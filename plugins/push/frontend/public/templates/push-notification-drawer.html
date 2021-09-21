@@ -831,9 +831,10 @@
                     Targeting
                 </div>
                 <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
-                    <review-section-row label="Targeted users" :value="targetingOptions[pushNotificationUnderEdit.targeting].label"></review-section-row>
+                    <review-section-row v-if="type === TypeEnum.ONE_TIME || type === TypeEnum.TRANSACTIONAL" label="Targeted users" :value="targetingOptions[pushNotificationUnderEdit.targeting].label"></review-section-row>
+                    <review-section-row v-if="type === TypeEnum.AUTOMATIC" label="Targeted users" :value="previewCohorts.join(', ')"></review-section-row>
                     <review-section-row label="Current number of users" :value="currentNumberOfUsers"></review-section-row>
-                    <review-section-row label="When to determine" :value="audienceSelectionOptions[pushNotificationUnderEdit.whenToDetermine].label"></review-section-row>
+                    <review-section-row v-if="type === TypeEnum.ONE_TIME" label="When to determine" :value="audienceSelectionOptions[pushNotificationUnderEdit.whenToDetermine].label"></review-section-row>
                 </div>
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
                     Delivery
