@@ -292,6 +292,10 @@
                 return wrapped.map(function(item) {
                     return item.opt;
                 });
+            },
+            commitValue: function(val) {
+                this.$emit("input", val);
+                this.$emit("change", val);
             }
         },
         computed: {
@@ -316,12 +320,10 @@
                         var sorted = wrapped.map(function(item) {
                             return item.value;
                         });
-                        this.$emit("input", sorted);
-                        this.$emit("change", sorted);
+                        this.commitValue(sorted);
                     }
                     else {
-                        this.$emit("input", newVal);
-                        this.$emit("change", newVal);
+                        this.commitValue(newVal);
                     }
                 }
             },
