@@ -214,12 +214,12 @@
                                 tabindex="0"\
                                 class="text-medium font-weight-bold"\
                                 :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group\': option.group}"\
-                                :key="option.value"\
+                                :key="\'i\' + idx + \'.\' + option.value"\
                                 @focus="!option.group && handleItemHover(option)"\
                                 @mouseenter="!option.group && handleItemHover(option)"\
                                 @keyup.enter="!option.group && handleItemClick(option)"\
                                 @click.stop="!option.group && handleItemClick(option)"\
-                                v-for="option in searchedOptions">\
+                                v-for="(option, idx) in searchedOptions">\
                                 <div class="cly-vue-listbox__item-content">\
                                     <div class="bu-level">\
                                         <div class="bu-level-left">\
