@@ -685,6 +685,11 @@
             selectTime: {
                 type: Boolean,
                 default: false
+            },
+            allowOnSelection: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         data: function() {

@@ -75,7 +75,7 @@
                             </el-select>
                         </div>
                     </el-tab-pane>
-                    <el-tab-pane name="onm">
+                    <el-tab-pane name="onm" v-if="allowOnSelection">
                         <template slot="label"><span class="text-medium font-weight-bold">On</span></template>
                         <div class="cly-vue-daterp__input-wrapper">
                             <el-input size="small" :class="{'is-error': onmInput.raw.invalid0}" v-model="onmInput.raw.text" @blur="handleOnmBlur"></el-input>
