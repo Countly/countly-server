@@ -963,6 +963,9 @@
             this.module = countlyCrashes.getVuexModule();
             CV.vuex.registerGlobally(this.module);
         },
+        beforeDestroy: function() {
+            CV.vuex.unregister(this.module.name);
+        },
         methods: {
             refresh: function() {
                 var self = this;

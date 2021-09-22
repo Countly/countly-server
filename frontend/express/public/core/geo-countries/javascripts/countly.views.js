@@ -251,7 +251,9 @@ var CountriesHomeWidget = countlyVue.views.create({
         return {
             path: "",
             buttonText: buttonText,
-            buttonLink: buttonLink
+            buttonLink: buttonLink,
+            chooseProperties: this.calculateProperties(),
+            countriesData: this.calculateCountriesData()
 
         };
     },
@@ -263,11 +265,19 @@ var CountriesHomeWidget = countlyVue.views.create({
         CV.vuex.unregister(this.module.name);
     },
     mounted: function() {
-        this.$store.dispatch('countlyCountry/fetchData');
+        var self = this;
+        this.$store.dispatch('countlyCountry/fetchData').then(function() {
+            self.chooseProperties = self.calculateProperties();
+            self.countriesData = self.calculateCountriesData();
+        });
     },
     methods: {
         refresh: function() {
-            this.$store.dispatch('countlyCountry/fetchData');
+            var self = this;
+            this.$store.dispatch('countlyCountry/fetchData').then(function() {
+                self.chooseProperties = self.calculateProperties();
+                self.countriesData = self.calculateCountriesData();
+            });
         },
         swithToCityView: function() {
             windows.location.href = this.path;
@@ -277,31 +287,30 @@ var CountriesHomeWidget = countlyVue.views.create({
             this.$refs.toCityViewLink.href = this.path;
             this.$refs.toCityViewLink.click();
         },
-    },
-    computed: {
-        data: function() {
-            return this.$store.state.countlyCountry.data || {};
-        },
-        chooseProperties: function() {
-            var totals = this.data.totals || {};
+        calculateProperties: function() {
+            var totals = this.$store.state.countlyCountry.data || {};
+            totals = totals.totals || {};
             totals.t = totals.t || {};
             totals.u = totals.u || {};
             totals.n = totals.n || {};
             return [
-                {"value": "t", "label": CV.i18n('common.table.total-sessions'), "trend": totals.t.trend, "number": countlyCommon.getShortNumber(totals.t.total || 0), "trendValue": totals.t.change},
-                {"value": "u", "label": CV.i18n('common.table.total-users'), "trend": totals.u.trend, "number": countlyCommon.getShortNumber(totals.u.total || 0), "trendValue": totals.u.change},
-                {"value": "n", "label": CV.i18n('common.table.new-users'), "trend": totals.n.trend, "number": countlyCommon.getShortNumber(totals.n.total || 0), "trendValue": totals.n.change}
+                {"value": "t", "label": CV.i18n('common.table.total-sessions'), "trend": totals.t.trend || "u", "number": countlyCommon.getShortNumber(totals.t.total || 0), "trendValue": totals.t.change || "NaN"},
+                {"value": "u", "label": CV.i18n('common.table.total-users'), "trend": totals.t.trend || "u", "number": countlyCommon.getShortNumber(totals.u.total || 0), "trendValue": totals.u.change || "NaN"},
+                {"value": "n", "label": CV.i18n('common.table.new-users'), "trend": totals.t.trend || "u", "number": countlyCommon.getShortNumber(totals.n.total || 0), "trendValue": totals.n.change || "NaN"}
             ];
         },
-        countriesData: function() {
+        calculateCountriesData: function() {
             var geoChart = {};
-            var table = this.data.table || [];
+            var data = this.$store.state.countlyCountry.data || {};
+            var table = data.table || [];
             var selectedProperty = this.$store.state.countlyCountry.selectedProperty || "t";
             for (var k = 0; k < table.length; k++) {
                 geoChart[table[k].country] = {"value": table[k][selectedProperty]};
             }
             return geoChart;
         },
+    },
+    computed: {
         selectedProperty: {
             set: function(value) {
                 this.$store.dispatch('countlyCountry/onSetSelectedProperty', value);
@@ -311,8 +320,6 @@ var CountriesHomeWidget = countlyVue.views.create({
             }
         }
     }
-
-
 });
 
 

@@ -476,7 +476,7 @@
             fetchHomeDashboard: function(context) {
                 return countlyDevicesAndTypes.service.fetchHomeDashboardData().then(function() {
                     var totals = countlyDevicesAndTypes.service.calculateHomeTotals();
-                    context.commit('setDashboardTotals', totals);
+                    return context.commit('setDashboardTotals', totals);
 
                 });
             },
