@@ -67,7 +67,10 @@
                     var queryLc = this.controlParams.searchQuery.toLowerCase();
                     currentArray = currentArray.filter(function(item) {
                         return Object.keys(item).some(function(fieldKey) {
-                            return item[fieldKey].toString().toLowerCase().indexOf(queryLc) > -1;
+                            if (item[fieldKey] === null || item[fieldKey] === undefined) {
+                                return false;
+                            }
+                            return (item[fieldKey] + "").toLowerCase().indexOf(queryLc) > -1;
                         });
                     });
                 }
