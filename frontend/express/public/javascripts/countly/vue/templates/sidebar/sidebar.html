@@ -10,10 +10,10 @@
         <ul class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">
             <li v-for="item in otherOptions" :key="item.name" @click="onClick(item)" :class="[{'cly-vue-sidebar__option-toggle': item.name === 'toggle'}, 'cly-vue-sidebar__option bu-is-flex bu-is-justify-content-center bu-is-align-items-center']">
                 <users-menu v-if="item.name === 'user'" :item="item"></users-menu>
-                <el-select v-else-if="item.name === 'language'" v-model="selLang" :borderless="true">
+                <el-select v-else-if="item.name === 'language'" v-model="selLang" :adaptive-length="true" :borderless="true">
                     <el-option v-for="lang in allLanguages" :key="lang.code" :value="lang.code" :label="lang.name"></el-option>
                 </el-select>
-                <i v-else :class="[item.icon, {'cly-vue-sidebar__option--selected': item.name === selectedOption}]"></i>
+                <!-- <i v-else :class="[item.icon, {'cly-vue-sidebar__option--selected': item.name === selectedOption}]"></i> -->
             </li>
         </ul>
     </div>
