@@ -47,7 +47,7 @@
         if (!Object.prototype.hasOwnProperty.call(this.dict[id], "tabs")) {
             this.dict[id].tabs = [];
         }
-        tab.priority = tab.priority || this.dict[id].tabs.length;
+        tab.priority = tab.priority || 1000;
         var putAt = 0;
         for (var zz = this.dict[id].tabs.length; zz > 0; zz--) {
             if (this.dict[id].tabs[zz - 1].priority < tab.priority) {
