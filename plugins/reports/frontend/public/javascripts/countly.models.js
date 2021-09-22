@@ -175,6 +175,9 @@
                         app_id: countlyCommon.ACTIVE_APP_ID
                     },
                     dataType: "json",
+                    success: function(result) {
+                        CountlyHelpers.notify({message: jQuery.i18n.map['reports.save-report-success']});
+                    }
                 });
             },
         }
@@ -205,6 +208,9 @@
                             args: JSON.stringify(status),
                         },
                         dataType: "json",
+                        success: function(result) {
+                            CountlyHelpers.notify({message: jQuery.i18n.map['reports.save-report-status-success']});
+                        }
                     })
                 },
                 fetchAll: function(context) {

@@ -56,4 +56,8 @@
         }
         
     }
+    .email-column {
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
 }

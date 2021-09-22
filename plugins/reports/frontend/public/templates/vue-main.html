@@ -43,7 +43,7 @@
 
             <el-table-column min-width="230" :label="(i18n('reports.emails'))" sortable="true">
             <template slot-scope="scope" sortable="true">
-                <div v-html="scope.row.emails.join(' ')"></div>
+                <div class="email-column" v-html="scope.row.emails.join(' ')"></div>
             </template>
                 
             </el-table-column>
@@ -136,6 +136,7 @@
                         filterable
                         remote
                         default-first-option
+                        no-data-text="Please input full email address"
                         :remote-method="emailInputFilter"
                         :placeholder="i18n('reports.email-placeholder')">
                         <el-option
