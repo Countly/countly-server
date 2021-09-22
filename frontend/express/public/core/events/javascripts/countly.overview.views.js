@@ -268,7 +268,7 @@
         },
         mounted: function() {
             var self = this;
-            this.$store.dispatch('countlyEventsOverview/fetchTopEvents',5).then(function() {
+            this.$store.dispatch('countlyEventsOverview/fetchTopEvents', 5).then(function() {
                 self.calculateAllData();
             });
         },

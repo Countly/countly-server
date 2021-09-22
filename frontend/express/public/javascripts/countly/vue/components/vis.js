@@ -1859,7 +1859,7 @@
                     self.geojsonDetail = json;
                     self.country = country;
                     self.regionsToLatLng = {};
-					json.features = json.features || {};
+                    json.features = json.features || {};
                     json.features.forEach(function(f) {
                         self.regionsToLatLng[f.properties.iso_3166_2] = {
                             lat: f.properties.lat || 0,

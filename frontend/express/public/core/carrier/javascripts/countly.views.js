@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyAppCarrier,*/
+/* global countlyVue,CV,countlyCommon,countlyAppCarrier,countlyGlobal*/
 var AppCarrierView = countlyVue.views.create({
     template: CV.T("/core/carrier/templates/carrier.html"),
     data: function() {
