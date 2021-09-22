@@ -447,7 +447,7 @@
                             name: "language",
                            // icon: "ion-person",
                             noSelect: true,
-                            member: this.member
+                            //member: this.member
                         },
                         {
                             name: "toggle",
