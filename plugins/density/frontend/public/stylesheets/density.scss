@@ -1,95 +1,82 @@
-.technology-density-wrapper .all-density-versions {
-    border-left:1px solid #ececec;
-    height: 264px;
-    border-top: 1px solid #ececec;
-    border-bottom: 1px solid #ececec;
-    background-color: #fff;
-}
-
-.technology-density-wrapper .empty-versions {
-    height: 264px;
-    position:relative;
-    border-left: 1px solid #ececec;
-    border-top: 1px solid #ececec;
-    border-bottom: 1px solid #ececec;
-    background-color: #fff;
-}
-.technology-density-wrapper .empty-versions div {
-    font-family: Inter;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 14px;
-    line-height: 20px;
-    color:#333C48;
-    position: absolute;
-    top: 50%;
-    text-align: center;
-    width: 100%;
-}
-
-.technology-density-wrapper .version-graph-title {
-    font-family: Inter;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 14px;
-    line-height: 20px;
-    color:#333C48;
-}
-
-.technology-density-wrapper .version-graph-title div:first-child {
-    text-align:left;
-}
-.technology-density-wrapper .version-graph-title div:nth-child(2) {
-    text-align:right;
-}
-
-.technology-density-wrapper .version-graph-block .version-graph-title{
-    margin:0px;
-    padding-bottom:4px;
-}
-.technology-density-wrapper .version-graph-title .bu-column {
-    padding:0px;
-}
-
-.technology-density-wrapper .cly-vue-metric-card__wrapper .bu-is-flex-direction-column {
-    margin-right: -1.5rem;
-}
-
-.technology-density-wrapper .selector_wrapper {
-    position:relative;
-    top:-5px;
-    margin-left: 8px;
-}
-
-.technology-density-wrapper .devices-date-picker-container {
-    margin-bottom:32px;
-}
-
-.technology-density-wrapper .metric-cards-wrapper {
-    height: 117px;
-    padding-bottom: 20px;
-}
-
-.technology-density-wrapper .density-versions-wrapper {
-    height: 300px;
-    padding-bottom: 20px;
-
-    .__view {
-        width:auto !important;
+.technology-density-wrapper {
+    &__all-density-versions {
+        border-left:1px solid #ececec;
+        height: 264px;
+        border-top: 1px solid #ececec;
+        border-bottom: 1px solid #ececec;
+        background-color: #fff;
     }
-}
 
-.technology-density-wrapper .metric-cards-wrapper .bu-columns {
-    flex-wrap: nowrap;
-}
+    &__date-picker {
+        margin-bottom:32px;
+    }
 
-.technology-density-wrapper .metric-cards-wrapper .cly-vue-metric-card {
-    border-top: 1px solid #ececec;
-    border-bottom: 1px solid #ececec;
-    background-color: #fff;
-    width: fit-content !important;
+    &__empty-versions {
+        height: 264px;
+        position:relative;
+        border-left: 1px solid #ececec;
+        border-top: 1px solid #ececec;
+        border-bottom: 1px solid #ececec;
+        background-color: #fff;
 
-    &__wrapper {
-        margin-right: 30px;
+        div {
+            font-family: Inter;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 20px;
+            color:#333C48;
+            position: absolute;
+            top: 50%;
+            text-align: center;
+            width: 100%;
+        }
+    }
+
+    &__version-graph-title {
+        font-family: Inter;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 20px;
+        color:#333C48;
+
+        div:first-child {
+            text-align:left;   
+        }
+
+        div:nth-child(2) {
+            text-align:right;
+        } 
+    }
+
+
+    &__version-graph-title {
+        font-family: Inter;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 20px;
+        color:#333C48;
+        margin-left: 0%;
+        margin-bottom: 12px;
+        margin-top: 0%;
+        margin-right: 0%;
+        
+        div:first-child {
+            text-align: left;
+        }
+
+        div:nth-child(2) {
+            text-align: right;
+        }
+    }
+
+    &__version-graph-block {
+        margin-bottom: 12px;
+
+        div:first-child {
+            margin-bottom: 2px;
+        }
     }
 }
