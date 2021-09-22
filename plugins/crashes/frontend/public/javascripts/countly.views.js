@@ -945,6 +945,78 @@
         crashId = crash;
         this.renderWhenReady(getBinaryImagesView());
     });
+
+    var CrashesDashboardWidget = countlyVue.views.create({
+        template: CV.T("/crashes/templates/crashesHomeWidget.html"),
+        data: function() {
+            return {
+                crashesItems: []
+            };
+        },
+        mounted: function() {
+            var self = this;
+            this.$store.dispatch("countlyCrashes/overview/refresh").then(function() {
+                self.calculateAllData();
+            });
+        },
+        beforeCreate: function() {
+            this.module = countlyCrashes.getVuexModule();
+            CV.vuex.registerGlobally(this.module);
+        },
+        methods: {
+            refresh: function() {
+                var self = this;
+                this.$store.dispatch("countlyCrashes/overview/refresh").then(function() {
+                    self.calculateAllData();
+                });
+            },
+            calculateAllData: function() {
+
+                var data = this.$store.getters["countlyCrashes/overview/dashboardData"];
+                var blocks = [];
+
+                var getUs = [{"name": CV.i18n('crashes.total-crashes'), "info": "", "prop": "cr", "r": true}, {"name": CV.i18n('crashes.unique'), "info": "", "prop": "cru", "r": true}, {"name": CV.i18n('crashes.total-per-session'), "info": "", "prop": "cr-session", "r": true}, {"name": CV.i18n('crashes.free-users'), "info": "", "prop": "crau", "p": true}, {"name": CV.i18n('crashes.free-sessions'), "info": "", "prop": "crses", "p": true}];
+
+
+                for (var k = 0; k < getUs.length; k++) {
+                    data[getUs[k].prop] = data[getUs[k].prop] || {};
+                    var value = data[getUs[k].prop].total;
+                    if (!getUs[k].p) {
+                        value = countlyCommon.formatNumber(data[getUs[k].prop].total || 0);
+                    }
+
+                    blocks.push({
+                        "name": getUs[k].name,
+                        "reverse": getUs[k].r,
+                        "value": value,
+                        "info": getUs[k].info,
+                        "trend": data[getUs[k].prop].trend,
+                        "change": data[getUs[k].prop].change
+                    });
+                }
+
+                this.crashesItems = blocks;
+            }
+        },
+        computed: {
+
+        }
+    });
+
+
+
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "crashes-dashboard-widget",
+        label: CV.i18n('crashes.app-performance'),
+        description: CV.i18n('crashes.plugin-description'),
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: false,
+        order: 9,
+        linkTo: {"label": CV.i18n('crashes.go-to-crashes'), "href": "#/crashes"},
+        component: CrashesDashboardWidget
+    });
+
 })();
 
 jQuery(document).ready(function() {
