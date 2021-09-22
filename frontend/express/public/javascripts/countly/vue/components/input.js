@@ -214,12 +214,12 @@
                                 tabindex="0"\
                                 class="text-medium font-weight-bold"\
                                 :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group\': option.group}"\
-                                :key="option.value"\
+                                :key="\'i\' + idx + \'.\' + option.value"\
                                 @focus="!option.group && handleItemHover(option)"\
                                 @mouseenter="!option.group && handleItemHover(option)"\
                                 @keyup.enter="!option.group && handleItemClick(option)"\
                                 @click.stop="!option.group && handleItemClick(option)"\
-                                v-for="option in searchedOptions">\
+                                v-for="(option, idx) in searchedOptions">\
                                 <div class="cly-vue-listbox__item-content">\
                                     <div class="bu-level">\
                                         <div class="bu-level-left">\
@@ -292,6 +292,10 @@
                 return wrapped.map(function(item) {
                     return item.opt;
                 });
+            },
+            commitValue: function(val) {
+                this.$emit("input", val);
+                this.$emit("change", val);
             }
         },
         computed: {
@@ -316,12 +320,10 @@
                         var sorted = wrapped.map(function(item) {
                             return item.value;
                         });
-                        this.$emit("input", sorted);
-                        this.$emit("change", sorted);
+                        this.commitValue(sorted);
                     }
                     else {
-                        this.$emit("input", newVal);
-                        this.$emit("change", newVal);
+                        this.commitValue(newVal);
                     }
                 }
             },
@@ -522,6 +524,16 @@
             popClass: {
                 type: String,
                 required: false
+            },
+            minItems: {
+                type: Number,
+                default: 0,
+                required: false
+            },
+            maxItems: {
+                type: Number,
+                default: Number.MAX_SAFE_INTEGER,
+                required: false
             }
         },
         data: function() {
@@ -563,7 +575,7 @@
                     return this.value;
                 },
                 set: function(newVal) {
-                    if (this.autoCommit) {
+                    if (this.autoCommit && this.isItemCountValid) {
                         this.$emit("input", newVal);
                         this.$emit("change", newVal);
                     }
@@ -579,6 +591,12 @@
                 else {
                     return CV.i18n('export.export-columns-selected-count', (this.value ? this.value.length : 0), (this.options ? this.options.length : 0));
                 }
+            },
+            isItemCountValid: function() {
+                if (this.mode === "single-list" || this.autoCommit) {
+                    return true;
+                }
+                return Array.isArray(this.innerValue) && this.innerValue.length >= this.minItems && this.innerValue.length <= this.maxItems;
             }
         },
         mounted: function() {
@@ -618,6 +636,9 @@
                 }
             },
             doCommit: function() {
+                if (!this.isItemCountValid) {
+                    return;
+                }
                 if (this.uncommittedValue) {
                     this.$emit("input", this.uncommittedValue);
                     this.$emit("change", this.uncommittedValue);

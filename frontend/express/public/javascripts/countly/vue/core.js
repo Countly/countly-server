@@ -29,7 +29,33 @@
     };
 
     var _i18n = function() {
-        return jQuery.i18n.prop.apply(null, arguments);
+        var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        if (!appType || appType === "mobile") {
+            return jQuery.i18n.prop.apply(null, arguments);
+        }
+        else {
+            var key = arguments[0];
+            if (!jQuery.i18n.map[appType + "." + key]) {
+                // Key miss
+                return jQuery.i18n.prop.apply(null, arguments);
+            }
+            else {
+                // Key hit
+                var argsCopy = Array.prototype.slice.call(arguments);
+                argsCopy[0] = appType + "." + key;
+                return jQuery.i18n.prop.apply(null, argsCopy);
+            }
+        }
+    };
+
+    var _i18nM = function(key) {
+        var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        if (!appType || appType === "mobile") {
+            return jQuery.i18n.map[key];
+        }
+        else {
+            return jQuery.i18n.map[appType + "." + key] || jQuery.i18n.map[key];
+        }
     };
 
     var _$ = {
@@ -51,9 +77,7 @@
     var i18nMixin = {
         methods: {
             i18n: _i18n,
-            i18nM: function(key) {
-                return jQuery.i18n.map[key];
-            }
+            i18nM: _i18nM
         }
     };
 
@@ -533,6 +557,7 @@
 
     var rootElements = {
         i18n: _i18n,
+        i18nM: _i18nM,
         $: _$,
         mixins: _mixins,
         views: _views,
