@@ -156,6 +156,9 @@
                         "alert_config": JSON.stringify(alertConfig),
                     },
                     dataType: "json",
+                    success: function(result) {
+                        CountlyHelpers.notify({message: jQuery.i18n.map['alerts.save-alert-success']});
+                    }
                 }).then(function(data) {
                 });
             },
@@ -189,6 +192,9 @@
                         "alert": JSON.stringify(alertConfig),
                     },
                     dataType: "json",
+                    success: function(result) {
+                        CountlyHelpers.notify({message: jQuery.i18n.map['alerts.save-alert-success']});
+                    }
                 }).then(function(data) {
                 });
             },
@@ -230,7 +236,10 @@
                             "status": JSON.stringify(status),
                         },
                         dataType: "json",
-                    })
+                        success: function(result) {
+                            CountlyHelpers.notify({message: jQuery.i18n.map['alerts.update-status-success']});
+                        }
+                    });
                 },
                 updateOnlineusersAlertStatus: function(context, status) {
                     return CV.$.ajax({
@@ -240,6 +249,9 @@
                             "status": JSON.stringify(status),
                         },
                         dataType: "json",
+                        success: function(result) {
+                            CountlyHelpers.notify({message: jQuery.i18n.map['alerts.update-status-success']});
+                        }
                     })
                 },
                 fetchAll: function(context) {
@@ -316,6 +328,7 @@
                             }
                             context.commit("setAll", tableData);
                             context.commit("setCount", count);
+                        
                         })
 
                         

@@ -27,6 +27,7 @@
             </div>
         </cly-main>
         <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
+        <cly-in-page-notification text="totalViewCountWarning" v-if="true"></cly-in-page-notification>
     </div>
     </script>
     
@@ -244,7 +245,7 @@
                             </el-input>
                         </validation-provider>
                     </div>
-                    <div class="bu-is-flex-grow-1 bu-mx-1" v-if="drawerScope.editedObject.alertDataSubType === 't'" style="line-height:30px; white-space: nowrap;">
+                    <div class="bu-is-flex-grow-1 bu-mx-1 text-medium" v-if="drawerScope.editedObject.alertDataSubType === 't'" style="line-height:30px; white-space: nowrap;">
                         persists for
                     </div>
                     <div class="bu-is-flex-grow-1 bu-mx-1 compare-value-block" v-if="drawerScope.editedObject.alertDataSubType === 't'">
@@ -276,6 +277,7 @@
                             filterable
                             remote
                             default-first-option
+                            no-data-text="Please input full email address"
                             :remote-method="emailInputFilter"
                             placeholder="Input Email address">
                             <el-option
