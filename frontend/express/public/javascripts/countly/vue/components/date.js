@@ -631,6 +631,9 @@
             },
             isTimePickerEnabled: function() {
                 return this.type === 'date' && this.selectTime;
+            },
+            weekdays: function() {
+                return moment.weekdaysMin();
             }
         },
         props: {
