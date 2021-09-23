@@ -1,12 +1,10 @@
-/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser,countlyDensity*/
+/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser, countlyGlobal, countlyDensity*/
 (function(countlyDevicesAndTypes) {
 
     CountlyHelpers.createMetricModel(window.countlyDevicesAndTypes, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
     countlyDevicesAndTypes.os_mapping = countlyOsMapping; //./frontend/express/public/javascripts/countly/countly.device.osmapping.js
 
     //CountlyDeviceList - ./frontend/express/public/javascripts/countly/countly.device.list.js
-
-
     countlyDevicesAndTypes.getCleanVersion = function(version) {
         for (var i in countlyDevicesAndTypes.os_mapping) {
             version = version.replace(new RegExp("^" + countlyDevicesAndTypes.os_mapping[i].short, "g"), "");
@@ -131,6 +129,21 @@
                 countlyTotalUsers.initialize("platform_versions"),
                 countlyTotalUsers.initialize("resolutions"));
         },
+        fetchHomeDashboardData: function() {
+            //app type is mobile
+
+            var appType = "";
+            if (countlyGlobal && countlyGlobal.apps && countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
+                appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+            }
+
+            if (appType === "web") {
+                return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices")), countlyBrowser.initialize(), countlyTotalUsers.initialize("browser");
+            }
+            else {
+                return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices"), countlyTotalUsers.initialize("app_versions"), countlyTotalUsers.initialize("device_type"));
+            }
+        },
         fetchDeviceTypes: function() {
             return $.when(countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("device_type"));
         },
@@ -254,6 +267,91 @@
 
             return chartData;
         },
+        calculateHomeTotals: function() {
+
+            var tops = {};
+            var loadTotalsFor = [
+                {"model": countlyDevice, "label": "devices", "func": countlyDevicesAndTypes.helpers.getDeviceFullName},
+                {
+                    "model": countlyBrowser,
+                    "label": "browser",
+                    "func": function(rangeArr) {
+                        return rangeArr;
+                    }
+                },
+                {
+                    "model": countlyDevicesAndTypes,
+                    "label": "os",
+                    "func": function(rangeArr) {
+                        if (countlyDevicesAndTypes.os_mapping[rangeArr.toLowerCase()]) {
+                            return countlyDevicesAndTypes.os_mapping[rangeArr.toLowerCase()].name;
+                        }
+                        return rangeArr;
+                    }
+                },
+                {
+                    "model": countlyDevicesAndTypes,
+                    "label": "app_versions",
+                    "func": function(rangeArr) {
+                        return rangeArr.replace(/:/g, ".");
+                    }
+                },
+                {
+                    "model": countlyDevicesAndTypes,
+                    "label": "device_type",
+                    "func": function(rangeArr) {
+                        return rangeArr;
+                    }
+                }
+            ];
+            //countlyDevicesAndTypes.helpers.loadTableFromModel(countlyDevicesAndTypes, metric, options.func)
+
+
+            var property = "t";
+            for (var pp = 0; pp < loadTotalsFor.length; pp++) {
+
+                var tableData = countlyDevicesAndTypes.helpers.loadTableFromModel(loadTotalsFor[pp].model, loadTotalsFor[pp].label, loadTotalsFor[pp].func);
+                tableData = tableData || {};
+                tableData = tableData.chartData || [];
+
+                var totals = 0;
+                var topN = [];
+
+
+                for (var k = 0; k < tableData.length; k++) {
+                    totals += tableData[k][property];
+                    if (topN.length < 5) {
+                        topN.push(tableData[k]);
+                        topN = topN.sort(function(a, b) {
+                            return a[property] - b[property];
+                        });
+                    }
+                    else {
+                        if (topN[2][property] < tableData[k][property]) {
+                            topN[2] = tableData[k];
+                            topN = topN.sort(function(a, b) {
+                                return a[property] - b[property];
+                            });
+                        }
+                    }
+                }
+                for (var z = 0; z < topN.length; z++) {
+                    topN[z] = {"name": topN[z][loadTotalsFor[pp].label], "percent": Math.round((topN[z][property] || 0) * 1000 / (totals || 1)) / 10, "value": topN[z][property]};
+                }
+                tops[loadTotalsFor[pp].label] = topN;
+            }
+
+            for (var key in tops) {
+                for (var z1 = 0; z1 < tops[key].length; z1++) {
+                    tops[key][z1].bar = [{
+                        percentage: tops[key][z1].percent,
+                        color: "#017AFF"
+                    }
+                    ];
+                }
+            }
+            return tops;
+        },
         calculateDevices: function() {
             var metric = "devices";
             var tableData = countlyDevicesAndTypes.helpers.loadTableFromModel(countlyDevice, "devices", countlyDevicesAndTypes.helpers.getDeviceFullName);
@@ -339,6 +437,7 @@
                 appDensity: {"chart": {}, "table": []},
                 deviceTypes: {"pie": {"newUsers": [], "totalSessions": []}, "chart": {}, "totals": {}, "table": []},
                 appDevices: {"pie": {"newUsers": [], "totalSessions": []}, "totals": {}, "table": []},
+                dashboardTotals: [],
                 minNonEmptyBucketsLength: 0,
                 nonEmptyBuckets: [],
                 isLoading: false,
@@ -428,6 +527,13 @@
                     context.dispatch('onFetchError', error);
                 });
             },
+            fetchHomeDashboard: function(context) {
+                return countlyDevicesAndTypes.service.fetchHomeDashboardData().then(function() {
+                    var totals = countlyDevicesAndTypes.service.calculateHomeTotals();
+                    return context.commit('setDashboardTotals', totals);
+
+                });
+            },
             onFetchInit: function(context) {
                 context.commit('setFetchInit');
             },
@@ -458,6 +564,9 @@
             setResolution: function(state, value) {
                 state.appResolution = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appResolution);
+            },
+            setDashboardTotals: function(state, value) {
+                state.dashboardTotals = value;
             },
             setDeviceTypes: function(state, value) {
                 state.deviceTypes = value;

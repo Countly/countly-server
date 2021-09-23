@@ -396,6 +396,17 @@
                         }
                     });
             },
+            fetchTopEvents: function(context, count) {
+                return countlyEventsOverview.service.fetchMonitorEvents(context).then(function(res) {
+                    if (res) {
+                        return countlyEventsOverview.service.fetchTopEvents("count", count).then(function(resp) {
+                            if (resp) {
+                                return context.commit("setTopEvents", countlyEventsOverview.helpers.getTopEvents(resp, res.map) || []);
+                            }
+                        });
+                    }
+                });
+            },
             fetchMonitorEvents: function(context) {
                 return countlyEventsOverview.service.fetchMonitorEvents(context)
                     .then(function(res) {

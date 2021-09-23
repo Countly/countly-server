@@ -1,0 +1,27 @@
+<div v-bind:class="[componentId]">
+	<cly-section class="geo-countries-section" >
+		<cly-section class="geo-analytics-data">
+			<div class="bu-columns bu-is-gapless">
+				<div style="width:256px;">
+					<cly-radio-block v-bind:items="chooseProperties" type="vertical" v-model="selectedProperty"></cly-radio-block>
+				</div>
+				<div class="bu-column" style="position:relative">
+					<cly-worldmap
+						external-country=""
+						external-detail-mode="world"
+						value-type="Sessions"
+						:show-detail-mode-select="false"
+						:show-navigation="false"
+						:prevent-going-to-country="true"
+						:countries-data="countriesData"
+						@country-click="regionClick"
+						>
+					</cly-worldmap>
+					<div style="position: absolute; top: 20px; left:20px;">
+						<a  ref="toCityViewLink" class="cly-vue-button button-light-skin ToLink" :href="buttonLink">{{buttonText}}</a>
+					</div>
+				</div>
+			</div>
+		</cly-section>
+	</cly-section>
+</div>

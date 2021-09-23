@@ -318,6 +318,38 @@ function killAllSessionForUser(userId) {
 
 }
 
+usersApi.updateHomeSettings = function(params) {
+    params = params || {};
+    params.qstring = params.qstring || {};
+    if (!params.member) {
+        common.returnMessage(params, 400, 'Could not get member');
+    }
+    else if (!params.qstring.homeSettings) {
+        common.returnMessage(params, 400, '`homeSettings` should contain stringified object with home settings');
+    }
+    else if (!params.qstring.app_id) {
+        common.returnMessage(params, 400, '`app_id` must be passed');
+    }
+    else {
+        try {
+            params.qstring.homeSettings = JSON.parse(params.qstring.homeSettings);
+        }
+        catch (SyntaxError) {
+            params.qstring.homeSettings = {};
+        }
+        var updateObj = {};
+        updateObj["homeSettings." + params.qstring.app_id] = params.qstring.homeSettings;
+        common.db.collection('members').update({_id: common.db.ObjectID(params.member._id + "")}, {"$set": updateObj}, function(err3 /* , res1*/) {
+            if (err3) {
+                console.log(err3);
+                common.returnMessage(params, 400, 'Mongo error');
+            }
+            else {
+                common.returnMessage(params, 200, 'Success');
+            }
+        });
+    }
+};
 /**
 * Updates dashboard user's data and output result to browser
 * @param {params} params - params object
