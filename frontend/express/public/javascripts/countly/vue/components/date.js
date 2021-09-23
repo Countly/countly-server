@@ -693,6 +693,16 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            minInputWidth: {
+                type: Number,
+                default: -1,
+                required: false
+            },
+            maxInputWidth: {
+                type: Number,
+                default: -1,
+                required: false
             }
         },
         data: function() {

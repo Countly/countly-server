@@ -138,7 +138,7 @@
                     return apps;
                 },
                 activeApp: function() {
-                    var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"]._id;
+                    var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"] && this.$store.getters["countlyCommon/getActiveApp"]._id;
                     var active = this.allApps.find(function(a) {
                         return a._id === selectedAppId;
                     });

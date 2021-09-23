@@ -509,6 +509,16 @@
             width: { type: [Number, Object], default: 400},
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
+            minInputWidth: {
+                type: Number,
+                default: -1,
+                required: false
+            },
+            maxInputWidth: {
+                type: Number,
+                default: -1,
+                required: false
+            },
             showSelectedCount: {type: Boolean, default: false},
             arrow: {type: Boolean, default: true},
             singleOptionSettings: {
