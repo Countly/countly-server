@@ -50,39 +50,14 @@
         } 
     }
 
-    h4 {
-        font-family: Inter;
-        font-style: normal;
-        font-weight: 500;
-        font-size: 16px;
-        line-height: 24px;
-        color:#333C48;
-    }
-
-    h5 {
-        font-family: Inter;
-        font-style: normal;
-        font-weight: 500;
-        font-size: 14px;
-        line-height: 24px;
-        color: #333C48;
-        margin-bottom:20px;
-    }
-
-    &__metric-cards-wrapper {
-        height: 117px;
-        padding-bottom: 20px;
-
-        .cly-vue-metric-card {
-            border-top: 1px solid #ececec;
-            border-bottom: 1px solid #ececec;
-            background-color: #fff;
-        }
+    .cly-vue-metric-card {
+        width: fit-content !important;
     }
 
     &__browser-versions-wrapper {
-        height: 300px;
-        padding-bottom: 20px;
+        .__view {
+            width:auto !important;
+        }
     }
 
     &__version-graph-title {
