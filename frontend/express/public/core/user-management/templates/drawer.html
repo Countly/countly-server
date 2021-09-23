@@ -13,14 +13,13 @@
 		:saveButtonLabel="$props.settings.editMode ? $props.settings.saveButtonLabel : $props.settings.createButtonLabel"
 		v-bind="$props.controls">
 		<template v-slot:default="drawerScope">
-      <cly-form-step screen="full">
+      <cly-form-step id="user-main" screen="full">
         <div class="user-management-drawer-content">
           <div class="bu-columns">
             <div class="bu-column">
               <div class="user-management-drawer-content__input-wrapper">
                 <div class="user-management-drawer-content__label">
                   <div class="text-small text-heading">{{ i18n('management-users.full-name') }}</div>
-                  <div class="user-management-drawer-content__help-text"></div>
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required" v-slot="v">
@@ -31,7 +30,6 @@
               <div class="user-management-drawer-content__input-wrapper">
                 <div class="user-management-drawer-content__label">
                   <div class="text-small text-heading">{{ i18n('management-users.username') }}</div>
-                  <div class="user-management-drawer-content__help-text"></div>
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required" v-slot="v">
@@ -39,22 +37,29 @@
                   </validation-provider>
                 </div>
               </div>
-              <div v-if="!$props.settings.editMode" class="user-management-drawer-content__input-wrapper">
+              <div class="user-management-drawer-content__input-wrapper">
                 <div class="user-management-drawer-content__label">
                   <div class="text-small text-heading">{{ i18n('management-users.password') }}</div>
-                  <div class="user-management-drawer-content__help-text"></div>
                 </div>
-                <div class="user-management-drawer-content__input">
+                <div v-if="!$props.settings.editMode" class="user-management-drawer-content__input">
                   <validation-provider rules="required" v-slot="v">
                     <el-input v-model="drawerScope.editedObject.password" :placeholder="i18n('management-users.enter-password')"></el-input>
                   </validation-provider>
                   <div @click="generatePassword()" class="user-management-drawer-content__under-input-text bu-mt-1 bu-is-size-7">{{ i18n('management-users.generate-password') }}</div>
                 </div>
+                <div v-if="$props.settings.editMode" class="user-management-drawer-content__input">
+                  <validation-provider v-if="changePasswordFlag" rules="required" v-slot="v">
+                    <el-input v-model="drawerScope.editedObject.password" :placeholder="i18n('management-users.enter-password')"></el-input>
+                  </validation-provider>
+                  <div v-if="!changePasswordFlag" @click="changePasswordFlag = !changePasswordFlag" class="user-management-drawer-content__under-input-text bu-mt-1 bu-is-size-7">{{ i18n('management-users.change-password') }}</div>
+                </div>
               </div>
               <div class="user-management-drawer-content__input-wrapper">
                 <div class="user-management-drawer-content__label">
                   <div class="text-small text-heading">{{ i18n('management-users.email') }}</div>
-                  <div class="user-management-drawer-content__help-text"></div>
+                  <div class="user-management-drawer-content__help-text">
+                    Some short description can be placed here.
+                  </div>
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required|email" v-slot="v">
@@ -114,12 +119,11 @@
                   <span class="user-management-drawer-content__section-header"> {{ i18n('management-users.grant-admin-access-to-apps') }} <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
                 </div>
                 <div>
-                  <span class="user-management-drawer-content__help-text"></span>
                 </div>
               </div>
               <div class="user-management-drawer-content__section-content">
                 <div class="user-management-drawer-content__label user-management-drawer-content__label--pl-10">
-                  <div class="text-small text-heading user-management-drawer-content__label--text-secondary">Some app selection related description can be placed here</div>
+                  <div class="text-small text-heading user-management-drawer-content__label--text-secondary">{{ i18n('management-users.grant-admin-access-description') }}</div>
                 </div>
                 <div class="input" v-if="drawerScope.editedObject.permission">
                   <el-select placement="bottom-start" @change="onAdminAppsChanged" class="user-management-drawer-content__app-selector" v-model="drawerScope.editedObject.permission._.a" multiple :placeholder="i18n('token_manager.select-apps')">
@@ -136,7 +140,7 @@
             <div v-if="!drawerScope.editedObject.global_admin && !group._id" :key="index" v-for="(set, index) in permissionSets" class="user-management-drawer-content__drawer-sub-section">
               <div class="user-management-drawer-content__section-title">
                 <div>
-                  <span class="user-management-drawer-content__section-header">{{ i18n('management-users.grand-user-access-to-apps') }} <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
+                  <span class="user-management-drawer-content__section-header">{{ i18n('management-users.grant-user-access-to-apps') }} <cly-tooltip-icon icon="ion ion-help-circled"></cly-tooltip-icon></span>
                 </div>
                 <div>
                   <cly-more-options v-if="index > 0" size="small" @command="handleCommand($event, index)">
