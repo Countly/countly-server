@@ -33,6 +33,9 @@ var UserAnalyticsOverview = countlyVue.views.create({
             var userDP = countlySession.getUserDP();
             for (var k = 0; k < userDP.chartData.length; k++) {
                 userDP.chartData[k].dateVal = k; //because we get them all always sorted by date
+                userDP.chartData[k].fu = countlyCommon.formatNumber(userDP.chartData[k].u || 0);
+                userDP.chartData[k].fr = countlyCommon.formatNumber(userDP.chartData[k].returning || 0);
+                userDP.chartData[k].fn = countlyCommon.formatNumber(userDP.chartData[k].n || 0);
             }
             return userDP.chartData;
         },
