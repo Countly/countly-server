@@ -47,16 +47,18 @@
         if (!Object.prototype.hasOwnProperty.call(this.dict[id], "tabs")) {
             this.dict[id].tabs = [];
         }
-        tab.priority = tab.priority || 1000;
-        var putAt = 0;
-        for (var zz = this.dict[id].tabs.length; zz > 0; zz--) {
-            if (this.dict[id].tabs[zz - 1].priority < tab.priority) {
-                putAt = zz;
-                break;
+        tab.priority = tab.priority || 0;
+        var putAt = this.dict[id].tabs.length;
+
+        if (tab.priority) {
+            for (var zz = 0; zz < this.dict[id].tabs.length; zz++) {
+                if (this.dict[id].tabs[zz].priority && this.dict[id].tabs[zz].priority > tab.priority) {
+                    putAt = zz;
+                    break;
+                }
             }
         }
         this.dict[id].tabs.splice(putAt, 0, tab);
-        //this.dict[id].tabs.push(tab);
     };
 
     Container.prototype.registerMixin = function(id, mixin) {
