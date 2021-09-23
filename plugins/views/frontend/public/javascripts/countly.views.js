@@ -7,7 +7,7 @@
         template: CV.T("/views/templates/manageViews.html"),
         data: function() {
             return {
-                description: CV.i18n('views.description'),
+                description: CV.i18n('views.title-desc'),
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyViews", "viewsEditTable"),
                 isDeleteButtonDisabled: true,
                 isUpdateButtonDisabled: true,
@@ -665,7 +665,7 @@
         countlyVue.container.registerData("/home/widgets", {
             _id: "views-dashboard-widget",
             label: CV.i18n('views.title'),
-            description: CV.i18n('views.description'),
+            description: CV.i18n('views.title-desc'),
             enabled: {"default": true}, //object. For each type set if by default enabled
             available: {"default": true}, //object. default - for all app types. For other as specified.
             placeBeforeDatePicker: false,
