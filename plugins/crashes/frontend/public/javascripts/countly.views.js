@@ -965,6 +965,7 @@
         },
         beforeDestroy: function() {
             CV.vuex.unregister(this.module.name);
+            this.module = null;
         },
         methods: {
             refresh: function() {

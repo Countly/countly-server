@@ -244,6 +244,7 @@ var TechnologyHomeWidget = countlyVue.views.create({
     },
     beforeDestroy: function() {
         CV.vuex.unregister(this.module.name);
+        this.module = null;
     },
     mounted: function() {
         var self = this;

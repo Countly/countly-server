@@ -37,10 +37,11 @@
                         homeSettings: JSON.stringify(data)
                     },
                     dataType: "json"
-                }, {disableAutoCatch: true}).then(function(/*json*/) {
-
+                }, {disableAutoCatch: true}).then(function() {
+                    //if we are here  - update is fine
+                    return context.commit('setUpdateError', null);
                 }).catch(function(error) {
-                    context.dispatch('onFetchError', error);
+                    return context.commit('setUpdateError', error);
                 });
             },
             onFetchInit: function(context) {
@@ -70,6 +71,9 @@
                 else {
                     state.image = data.path;
                 }
+            },
+            setUpdateError: function(state, error) {
+                state.updateError = error;
             },
             setFetchError: function(state, error) {
                 state.isLoading = false;

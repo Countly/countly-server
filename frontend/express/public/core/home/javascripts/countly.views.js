@@ -163,6 +163,7 @@ var HomeViewView = countlyVue.views.create({
         setSelectedComponents: function(values) {
             //save for users
             var userSettings = {};
+            var self = this;
             for (var k in this.registredComponents) {
                 if (this.registredComponents[k].placeBeforeDatePicker === true) {
                     userSettings[k] = {"enabled": true};
@@ -181,12 +182,17 @@ var HomeViewView = countlyVue.views.create({
             countlyGlobal.member.homeSettings[countlyCommon.ACTIVE_APP_ID] = userSettings;
 
             this.$store.dispatch('countlyHomeView/updateHomeView', userSettings).then(function() {
-                CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                if (self.$store.state.countlyHomeView.updateError) {
+                    CountlyHelpers.notify({type: "error", title: jQuery.i18n.map["common.error"], message: jQuery.i18n.map["common.error"], sticky: false, clearAll: true});
+                }
+                else {
+                    CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                }
             });
 
             this.calculatePlacedComponents();
         },
-        Selected: function(command) {
+        selected: function(command) {
             if (command === "download") {
                 var self = this;
                 CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: "Starting image generation.you will be notified when it is ready. Please do not leave site.", sticky: true, clearAll: true});

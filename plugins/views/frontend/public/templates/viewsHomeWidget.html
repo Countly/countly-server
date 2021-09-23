@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]">
-	<cly-section class="viewsDashboardWidget">
+	<cly-section class="views-dashboard-widget">
 		<cly-metric-cards>
                 <cly-metric-card :number="item.percent" :color="item.color" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in dataBlocks">
                     {{item.name}}
