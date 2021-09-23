@@ -591,7 +591,8 @@
         mixins: [
             _mixins.i18n,
             InputControlsMixin,
-            CalendarsMixin
+            CalendarsMixin,
+            ELEMENT.utils.Emitter
         ],
         components: {
             'date-table': dateTableComponent,
@@ -841,6 +842,7 @@
                 var self = this;
                 this.$forceUpdate();
                 this.$nextTick(function() {
+                    self.broadcast('ElSelectDropdown', 'updatePopper');
                     self.scrollTo(self.minDate);
                 });
             },
@@ -848,6 +850,7 @@
                 this.customRangeSelection = true;
                 var self = this;
                 this.$nextTick(function() {
+                    self.broadcast('ElSelectDropdown', 'updatePopper');
                     self.$forceUpdate();
                     self.scrollTo(self.minDate);
                 });
