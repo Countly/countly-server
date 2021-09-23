@@ -50,29 +50,11 @@
         } 
     }
 
- 
-
     .cly-vue-metric-card {
         width: fit-content !important;
-        border-top: 1px solid #ececec;
-        border-bottom: 1px solid #ececec;
-        background-color: #fff;
-
-        &__wrapper {
-            margin-right: 30px;
-        }
-    }
-
-    &__metric-cards-wrapper {
-        height: 117px;
-        padding-bottom: 20px;
-       
     }
 
     &__browser-versions-wrapper {
-        height: 300px;
-        padding-bottom: 20px;
-
         .__view {
             width:auto !important;
         }
