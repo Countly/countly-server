@@ -497,8 +497,6 @@
                     periods: this.mapPeriods(dashboardDto, type),
                     totalAppUsers: dashboardDto.users,
                     enabledUsers: dashboardDto.enabled,
-                    locations: dashboardDto.geos || [],
-                    cohorts: dashboardDto.cohorts || []
                 };
             },
             mapDtoDtoBaseModel: function(dto) {
@@ -620,20 +618,14 @@
                 return result;
             },
             //TODO-LA:Re-use the mapper from target location
-            mapPushNotificationDtoToLocationTargetModel: function(dto) {
-                var self = this;
-                return dto.geos.map(function(geoItem) {
+            mapLocationTarget: function(dto) {
+                return dto.map(function(locationItem) {
                     return {
-                        _id: geoItem._id,
-                        name: geoItem.title,
-                        radius: geoItem.radius,
-                        unit: geoItem.unit,
-                        application: {
-                            _id: geoItem.app,
-                            name: self.getAppNameById(geoItem.app)
-                        },
-                        coordinates: geoItem.geo.coordinates.join(", "),
-                        address: geoItem.address
+                        _id: locationItem._id,
+                        name: locationItem.title,
+                        radius: locationItem.radius,
+                        unit: locationItem.unit,
+                        coordinates: locationItem.geo.coordinates.join(", "),
                     };
                 });
             },
@@ -1046,7 +1038,7 @@
             });
         },
         fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty) {
-            if (!shouldFetchIfEmpty && !cohortIdsList.length) {
+            if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
                 return Promise.resolve([]);
             }
             return new Promise(function(resolve, reject) {
@@ -1061,7 +1053,7 @@
                     dataType: "json",
                     success: function(response) {
                         var result = response.aaData;
-                        if (cohortIdsList.length) {
+                        if (cohortIdsList && cohortIdsList.length) {
                             result = response.aaData.filter(function(cohort) {
                                 return cohortIdsList.some(function(cohortId) {
                                     return cohort._id === cohortId;
@@ -1069,6 +1061,37 @@
                             });
                         }
                         resolve(result);
+                    },
+                    error: function(error) {
+                        reject(error);
+                    }
+                }, {disableAutoCatch: true});
+            });
+        },
+        fetchLocations: function(locationIdsList, shouldFetchIfEmpty) {
+            if (!shouldFetchIfEmpty && locationIdsList && !locationIdsList.length) {
+                return Promise.resolve([]);
+            }
+            return new Promise(function(resolve, reject) {
+                //TODO-LA:re-use the target location service to fetch locations;
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        method: "get_locations",
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        var targetLocations = countlyPushNotification.mapper.incoming.mapLocationTarget(response);
+                        if (locationIdsList && locationIdsList.length) {
+                            targetLocations = targetLocations.filter(function(targetLocationItem) {
+                                return locationIdsList.some(function(locationId) {
+                                    return targetLocationItem.id === locationId;
+                                });
+                            });
+                        }
+                        resolve(targetLocations);
                     },
                     error: function(error) {
                         reject(error);
@@ -1085,27 +1108,7 @@
                         reject(error);
                     });
             });
-        },
-        fetchLocations: function(locationIdsList, shouldFetchIfEmpty) {
-            if (!shouldFetchIfEmpty && !locationIdsList.length) {
-                return Promise.resolve([]);
-            }
-            return new Promise(function(resolve, reject) {
-                countlyPushNotification.service.fetchDashboard().then(function(response) {
-                    var targetLocations = countlyPushNotification.mapper.incoming.mapPushNotificationDtoToLocationTargetModel(response);
-                    if (locationIdsList.length) {
-                        targetLocations = targetLocations.filter(function(targetLocationItem) {
-                            return locationIdsList.some(function(locationId) {
-                                return targetLocationItem.id === locationId;
-                            });
-                        });
-                    }
-                    resolve(targetLocations);
-                }).catch(function(error) {
-                    reject(error);
-                });
-            });
-        },
+        }
     };
 
     var getDetailsInitialState = function() {

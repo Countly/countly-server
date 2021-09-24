@@ -95,9 +95,9 @@
                                     style="width:100%">
                                     <el-option
                                         v-for="item in cohortOptions"
-                                        :key="item.value"
-                                        :label="item.label"
-                                        :value="item.value">
+                                        :key="item._id"
+                                        :label="item.name"
+                                        :value="item._id">
                                     </el-option>
                                 </el-select>
                             </validation-provider>
@@ -117,9 +117,9 @@
                                     style="width:100%">
                                     <el-option
                                         v-for="item in locationOptions"
-                                        :key="item.value"
-                                        :label="item.label"
-                                        :value="item.value">
+                                        :key="item._id"
+                                        :label="item.name"
+                                        :value="item._id">
                                     </el-option>
                                 </el-select>    
                             </validation-provider>
@@ -214,9 +214,9 @@
                                     style="width:100%">
                                     <el-option
                                         v-for="item in cohortOptions"
-                                        :key="item.value"
-                                        :label="item.label"
-                                        :value="item.value">
+                                        :key="item._id"
+                                        :label="item.name"
+                                        :value="item._id">
                                     </el-option>
                                 </el-select>         
                             </validation-provider>      
@@ -237,9 +237,9 @@
                                 style="width:100%">
                                 <el-option
                                     v-for="item in locationOptions"
-                                    :key="item.value"
-                                    :label="item.label"
-                                    :value="item.value">
+                                    :key="item._id"
+                                    :label="item.name"
+                                    :value="item._id">
                                 </el-option>
                             </el-select> 
                         </validation-provider>

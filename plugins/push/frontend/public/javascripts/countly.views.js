@@ -151,6 +151,8 @@
                 isLoading: false,
                 localizationOptions: [],
                 userPropertiesOptions: [],
+                cohortOptions: [],
+                locationOptions: [],
                 eventOptions: [],
                 saveButtonLabel: "Submit",
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
@@ -245,16 +247,6 @@
             selectedMessageLocale: function() {
                 return this.pushNotificationUnderEdit.message[this.activeLocalization];
             },
-            cohortOptions: function() {
-                return this.$store.state.countlyPushNotification.main.cohorts.map(function(cohort) {
-                    return {label: cohort.name.replace(/&quot;/g, '\\"'), value: cohort._id};
-                });
-            },
-            locationOptions: function() {
-                return this.$store.state.countlyPushNotification.main.locations.map(function(location) {
-                    return {label: location.title, value: location._id};
-                });
-            },
             areCohortsAndLocationsRequired: function() {
                 return !this.pushNotificationUnderEdit.cohorts.length && !this.pushNotificationUnderEdit.locations.length;
             },
@@ -301,7 +293,7 @@
             },
             previewCohorts: function() {
                 var self = this;
-                var selectedCohorts = this.$store.state.countlyPushNotification.main.cohorts.filter(function(cohort) {
+                var selectedCohorts = this.cohortOptions.filter(function(cohort) {
                     return self.pushNotificationUnderEdit.cohorts.some(function(selectedCohortId) {
                         return cohort._id === selectedCohortId;
                     });
@@ -312,7 +304,7 @@
             },
             previewLocations: function() {
                 var self = this;
-                return this.$store.state.countlyPushNotification.main.locations.filter(function(location) {
+                return this.locationOptions.filter(function(location) {
                     return self.pushNotificationUnderEdit.locations.some(function(selectedLocationId) {
                         return location._id === selectedLocationId;
                     });
@@ -677,12 +669,42 @@
                     self.setMediaMetadata(platform, {});
                 });
             },
+            setCohortOptions: function(cohorts) {
+                this.cohortOptions = cohorts;
+            },
+            fetchCohorts: function() {
+                var self = this;
+                countlyPushNotification.service.fetchCohorts()
+                    .then(function(cohorts) {
+                        self.setCohortOptions(cohorts);
+                    }).catch(function() {
+                        self.setCohortOptions([]);
+                        //NOTE: log the error
+                    });
+            },
+            setLocationOptions: function(locations) {
+                this.locationOptions = locations;
+            },
+            fetchLocations: function() {
+                var self = this;
+                countlyPushNotification.service.fetchLocations()
+                    .then(function(locations) {
+                        self.setLocationOptions(locations);
+                    }).catch(function() {
+                        self.setLocationOptions([]);
+                        //NOTE: log the error
+                    });
+            },
+            setEventOptions: function(events) {
+                this.eventOptions = events;
+            },
             fetchAllEvents: function() {
                 var self = this;
                 countlyPushNotification.service.fetchEvents()
                     .then(function(events) {
-                        self.eventOptions = events;
+                        self.setEventOptions(events);
                     }).catch(function() {
+                        self.setEventOptions([]);
                         //NOTE: log the error;
                     });
             },
@@ -698,6 +720,8 @@
             },
         },
         mounted: function() {
+            this.fetchCohorts();
+            this.fetchLocations();
             this.fetchAllEvents();
             this.getUserProperties();
         },
