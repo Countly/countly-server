@@ -60,13 +60,13 @@
         var countlyCountryActions = {
             fetchData: function(context) {
                 context.dispatch('onFetchInit');
-                countlyCountry.service.fetchData().then(function() {
+                return countlyCountry.service.fetchData().then(function() {
                     countlyCountry.setDb(countlySession.getDb());
                     var countries = countlyCountry.service.calculateData();
                     context.commit('setData', countries);
-                    context.dispatch('onFetchSuccess');
+                    return context.dispatch('onFetchSuccess');
                 }).catch(function(error) {
-                    context.dispatch('onFetchError', error);
+                    return context.dispatch('onFetchError', error);
                 });
             },
             onFetchInit: function(context) {

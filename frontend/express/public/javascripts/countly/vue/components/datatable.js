@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment, countlyTaskManager */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, moment, countlyTaskManager, _merge */
 
 (function(countlyVue, $) {
 
@@ -43,16 +43,6 @@
                     return { prop: '_id', order: 'asc' };
                 },
                 required: false
-            },
-            rowClassName: {
-                type: [String, Function]
-            },
-            headerRowClassName: {
-                type: [String, Function]
-            },
-            isClickable: {
-                type: Boolean,
-                default: false
             }
         },
         computed: {
@@ -77,7 +67,10 @@
                     var queryLc = this.controlParams.searchQuery.toLowerCase();
                     currentArray = currentArray.filter(function(item) {
                         return Object.keys(item).some(function(fieldKey) {
-                            return item[fieldKey].toString().toLowerCase().indexOf(queryLc) > -1;
+                            if (item[fieldKey] === null || item[fieldKey] === undefined) {
+                                return false;
+                            }
+                            return (item[fieldKey] + "").toLowerCase().indexOf(queryLc) > -1;
                         });
                     });
                 }
@@ -181,32 +174,6 @@
                     pages.push(i);
                 }
                 return pages;
-            },
-            rowClasses: function() {
-                var rowClass = "";
-                if (this.rowClassName) {
-                    if (typeof (this.rowClassName) === "string" && this.rowClassName.length) {
-                        return rowClass + " " + this.rowClassName;
-                    }
-
-                    if (typeof (this.rowClassName) === "function") {
-                        return rowClass + " " + this.rowClassName();
-                    }
-                }
-                return rowClass;
-            },
-            headerClasses: function() {
-                var headerClass = "";
-                if (this.headerRowClassName) {
-                    if (typeof (this.headerRowClassName) === "string" && this.headerRowClassName.length) {
-                        return headerClass + " " + this.headerRowClassName;
-                    }
-
-                    if (typeof (this.headerRowClassName) === "function") {
-                        return headerClass + " " + this.headerRowClassName();
-                    }
-                }
-                return headerClass;
             }
         },
         watch: {
@@ -402,8 +369,9 @@
                     self = this;
                 var newPatch = Object.keys(fields).reduce(function(acc, fieldKey) {
                     if (self.patches[rowKey] && Object.prototype.hasOwnProperty.call(self.patches[rowKey], fieldKey)) {
+                        var newValue = self.patches[rowKey][fieldKey].newValue;
                         var originalValue = self.patches[rowKey][fieldKey].originalValue;
-                        if (originalValue !== fields[fieldKey]) {
+                        if (newValue !== fields[fieldKey]) {
                             acc[fieldKey] = { originalValue: originalValue, newValue: fields[fieldKey] };
                         }
                     }
@@ -412,6 +380,8 @@
                     }
                     return acc;
                 }, {});
+
+                newPatch = _merge({}, self.patches[rowKey] || {}, newPatch);
 
                 Vue.set(this.patches, rowKey, newPatch);
             },
@@ -457,12 +427,14 @@
                     self.trackedFields.forEach(function(fieldName) {
                         if (self.patches[rowKey] && Object.prototype.hasOwnProperty.call(self.patches[rowKey], fieldName)) {
                             var patch = self.patches[rowKey][fieldName];
-                            diff.push({
-                                key: JSON.parse(rowKey),
-                                field: fieldName,
-                                newValue: patch.newValue,
-                                originalValue: patch.originalValue
-                            });
+                            if (patch.originalValue !== patch.newValue) {
+                                diff.push({
+                                    key: JSON.parse(rowKey),
+                                    field: fieldName,
+                                    newValue: patch.newValue,
+                                    originalValue: patch.originalValue
+                                });
+                            }
                         }
                     });
                 });
@@ -540,9 +512,6 @@
                 }
             },
             onNoCellMouseEnter: function() {
-                this.removeHovered();
-            },
-            onElTableClickOutside: function() {
                 this.removeHovered();
             },
             removeHovered: function() {
@@ -788,10 +757,6 @@
                 var classes = [];
                 if (this.dataSource && this.externalStatus === 'silent-pending') {
                     classes.push("silent-loading");
-                }
-
-                if (this.isClickable) {
-                    classes.push("cly-vue-eldatatable__is-clickable");
                 }
 
                 return classes;

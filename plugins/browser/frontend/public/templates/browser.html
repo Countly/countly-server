@@ -25,12 +25,12 @@
 				</el-select>
 			</div>
 		</div>
-		<div class="technology-analytics-wrapper-browser__metric-cards-wrapper">
+		<div class="bg-white bu-mb-4 technology-analytics-wrapper-browser__metric-cards-wrapper">
 		<vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
 			<cly-metric-cards class="bu-is-flex-wrap-nowrap">
                 <cly-metric-card :is-percentage="true" :columnWidth=3  :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in browserItems">
                     {{item.name}}
-					<template v-slot:number>{{item.value}}</template>
+					<template v-slot:number>{{item.value}}</template> 
 					<template v-slot:description>
                       <span class="text-medium">{{item.percentText}}</span> 
                     </template>
@@ -43,7 +43,7 @@
 			<vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 				<div class="bu-columns bu-is-gapless">
 					<div class="bu-column bu-is-3 " :key="idx" v-for="(item, idx) in browserVersions">
-						<div class="empty-versions bu-p-3" v-if="item.itemCn === 0">
+						<div class="technology-analytics-wrapper-browser__empty-versions bu-p-3" v-if="item.itemCn === 0">
 							<div>{{i18n('common.table.no-data')}}</div>
 						</div>
 						<div class="technology-analytics-wrapper-browser__all-browser-versions bu-p-3" v-else>

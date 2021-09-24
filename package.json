@@ -43,6 +43,7 @@
     "countly-sdk-nodejs": "*",
     "countly-sdk-web": "*",
     "csurf": "1.11.0",
+    "csvtojson": "2.0.10",
     "docdash": "1.2.0",
     "ejs": "3.1.6",
     "errorhandler": "1.5.1",
@@ -83,9 +84,9 @@
     "properties-parser": "0.3.1",
     "puppeteer": "^5.5.0",
     "request": "2.88.2",
-    "underscore": "1.13.1",
     "sass": "^1.32.8",
     "uglify-js": "3.10.4",
+    "underscore": "1.13.1",
     "yamljs": "0.3.0"
   },
   "jshintConfig": {

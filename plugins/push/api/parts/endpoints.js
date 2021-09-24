@@ -14,7 +14,6 @@ var common = require('../../../../api/utils/common.js'),
     N = require('./note.js'),
     jobs = require('../../../../api/parts/jobs'),
     plugins = require('../../../pluginManager.js'),
-    geoip = require('geoip-lite'),
     momenttz = require('moment-timezone'),
     SEP = '|';
 
@@ -108,20 +107,21 @@ function cachedData(note) {
             sen = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + app_id).digest('hex'),
             act = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_action') + app_id).digest('hex'),
             app = 'app_users' + app_id,
-            geo = 'geos',
 
-            // query on app users to list users with any token
-            qtk = {
-                $or: [...new Set(Object.keys(C.DB_USER_MAP).map(k => C.DB_USER_MAP[k]).filter(f => ['i', 'a'].indexOf(f.charAt(0)) !== -1))].map(f => {
-                    return {[C.DB_USER_MAP.tokens + f]: true};
-                })
-            },
-            // query on geos for this app
-            qge = {deleted: {$exists: false}, $or: [{app: common.db.ObjectID(app_id)}, {app: {$exists: false}}]},
-            // query on cohorts
-            qqh = {app_id: app_id},
+            // platform token queries ({$or: [{tkip: true}, {tkia: true}, {tkid: true}]})
+            ptq = [],
 
             rxp = /([0-9]{4}):([0-9]{1,2})/;
+
+        Object.values(N.Platform).forEach(p => {
+            let fields = Object.values(C.DB_USER_MAP).filter(f => f[0] === p);
+            fields = fields.filter((f, i) => fields.indexOf(f) === i);
+            ptq.push({
+                $or: fields.map(f => ({
+                    [C.DB_USER_MAP.tokens + f]: true
+                }))
+            });
+        });
 
         if (moment().isoWeek() === wks[0]) {
             wks.push(wks.shift());
@@ -132,18 +132,22 @@ function cachedData(note) {
         // log.d('mts', mts);
         // log.d('wks', wks);
         // log.d('que', que);
-        // log.d('qtk', qtk);
+        // log.d('ptq', JSON.stringify(ptq));
 
-        Promise.all([
+        Promise.all(ptq.map(q => common.dbPromise(app, 'count', q)).concat([
             common.dbPromise(sen, 'find', que),
             common.dbPromise(act, 'find', que),
-            common.dbPromise(app, 'count', qtk),
             common.dbPromise(app, 'estimatedDocumentCount'),
-            getCohortsPluginApi() ? common.dbPromise('cohorts', 'find', qqh) : Promise.resolve(),
-            getGeoPluginApi() ? common.dbPromise(geo, 'find', qge) : Promise.resolve(),
-            getGeoPluginApi() ? new Promise((resolve) => resolve(geoip.lookup(params.ip_address))) : Promise.resolve()
-        ]).then(results => {
+        ])).then(results => {
             try {
+                let counts = results.splice(0, ptq.length),
+                    enabled = {total: 0};
+
+                Object.values(N.Platform).forEach((p, i) => {
+                    enabled[p] = counts[i] || 0;
+                    enabled.total += enabled[p];
+                });
+
                 var events = results.slice(0, 2).map(events1 => {
                     var ret = {weekly: {data: Array(wks.length).fill(0), keys: wkt}, monthly: {data: Array(mts.length).fill(0), keys: mtt}, total: 0};
                     var retAuto = { daily: { data: Array(30).fill(0), keys: Array(30).fill(0).map((x, k) => k)}, total: 0 };
@@ -223,11 +227,11 @@ function cachedData(note) {
                     actions: events[1].m,
                     actions_automated: events[1].a,
                     actions_tx: events[1].t,
-                    enabled: results[2] || 0,
-                    users: results[3] ? results[3] : 0,
-                    cohorts: results[4] || [],
-                    geos: results[5] || [],
-                    location: results[6] ? results[6].ll || null : null
+                    enabled,
+                    users: results[2] ? results[2] : 0,
+                    cohorts: results[3] || [],
+                    geos: results[4] || [],
+                    location: results[5] ? results[5].ll || null : null
                 });
             }
             catch (error) {
@@ -1052,30 +1056,6 @@ function cachedData(note) {
 
         common.returnOutput(params, result);
     });
-
-    var geoPlugin, cohortsPlugin;
-
-    /** gets geo plugin api
-     * @returns {object} plugins.getPluginsApis().geo or null 
-     */
-    function getGeoPluginApi() {
-        if (geoPlugin === undefined) {
-            geoPlugin = plugins.getPluginsApis().geo || null;
-        }
-
-        return geoPlugin;
-    }
-
-    /** gets cohorts plugin api
-     * @returns {object} plugins.getPluginsApis().cohorts or null 
-     */
-    function getCohortsPluginApi() {
-        if (cohortsPlugin === undefined) {
-            cohortsPlugin = plugins.getPluginsApis().cohorts || null;
-        }
-
-        return cohortsPlugin;
-    }
 
     api.getAllMessages = function(params) {
         var query = {

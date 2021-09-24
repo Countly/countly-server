@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app*/
+/* global countlyVue,CV,countlyCommon,countlyDevicesAndTypes,app, countlyGlobal*/
 var DevicesTabView = countlyVue.views.create({
     template: CV.T("/core/device-and-type/templates/devices-tab.html"),
     mounted: function() {
@@ -227,4 +227,97 @@ countlyVue.container.registerTab("/analytics/technology", {
     vuex: [{
         clyModel: countlyDevicesAndTypes
     }]
+});
+
+
+//Tehnology Dashboard widget
+var TechnologyHomeWidget = countlyVue.views.create({
+    template: CV.T("/core/device-and-type/templates/technologyHomeWidget.html"),
+    data: function() {
+        return {
+            dataBlocks: [],
+        };
+    },
+    beforeCreate: function() {
+        this.module = countlyDevicesAndTypes.getVuexModule();
+        CV.vuex.registerGlobally(this.module);
+    },
+    beforeDestroy: function() {
+        CV.vuex.unregister(this.module.name);
+        this.module = null;
+    },
+    mounted: function() {
+        var self = this;
+        this.$store.dispatch('countlyDevicesAndTypes/fetchHomeDashboard').then(function() {
+            self.dataBlocks = self.calculateAllData();
+        });
+    },
+    methods: {
+        refresh: function() {
+            var self = this;
+            this.$store.dispatch('countlyDevicesAndTypes/fetchHomeDashboard').then(function() {
+                self.dataBlocks = self.calculateAllData();
+            });
+        },
+        calculateAllData: function() {
+            var tops = {};
+            if (this.$store.state && this.$store.state.countlyDevicesAndTypes && this.$store.state.countlyDevicesAndTypes.dashboardTotals) {
+                tops = this.$store.state.countlyDevicesAndTypes.dashboardTotals || {};
+            }
+
+            var appType = "";
+            if (countlyGlobal && countlyGlobal.apps && countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
+                appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+            }
+
+
+            var dd = [
+                {
+                    "title": CV.i18n('common.bar.top-platform'),
+                    "description": CV.i18n('common.bar.top-platform.description'),
+                    "data": tops.os || []
+                },
+                {
+                    "title": CV.i18n('common.bar.top-devices'),
+                    "description": CV.i18n('common.bar.top-devices.description'),
+                    "data": tops.devices || []
+                }];
+
+            if (appType === "web") {
+                dd.push({
+                    "title": CV.i18n('common.bar.top-browsers'),
+                    "description": CV.i18n('common.bar.top-browsers.description'),
+                    "data": tops.browser || []
+                });
+            }
+            else {
+                dd.push({
+                    "title": CV.i18n('common.bar.top-app-versions'),
+                    "description": CV.i18n('common.bar.top-app-versions.description'),
+                    "data": tops.app_versions || []
+                });
+            }
+
+            dd.push(
+                {
+                    "title": CV.i18n('common.bar.top-device-types'),
+                    "description": CV.i18n('common.bar.top-device-types.description'),
+                    "data": tops.device_type || []
+                }
+            );
+            return dd;
+        }
+    }
+});
+
+countlyVue.container.registerData("/home/widgets", {
+    _id: "technology-dashboard-widget",
+    label: CV.i18n('sidebar.analytics.technology'),
+    description: CV.i18n('sidebar.analytics.technology-description'),
+    enabled: {"default": true}, //object. For each type set if by default enabled
+    available: {"default": true}, //object. default - for all app types. For other as specified.
+    order: 6, //sorted by ascending
+    placeBeforeDatePicker: false,
+    component: TechnologyHomeWidget,
+    linkTo: {"label": CV.i18n('devices.go-to-technology'), "href": "#/analytics/technology/devices-and-types"}
 });

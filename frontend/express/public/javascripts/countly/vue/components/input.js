@@ -75,6 +75,7 @@
         props: {
             options: {type: Array},
             bordered: {type: Boolean, default: true},
+            margin: {type: Boolean, default: true},
             skin: {
                 type: String,
                 default: "default",
@@ -134,7 +135,8 @@
                 var classes = {
                     "is-focus": this.focused,
                     "cly-vue-listbox--bordered": this.bordered,
-                    "cly-vue-listbox--disabled": this.disabled
+                    "cly-vue-listbox--disabled": this.disabled,
+                    "cly-vue-listbox--has-margin": this.margin && !(this.skin === "jumbo")
                 };
                 classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
                 return classes;
@@ -212,19 +214,21 @@
                                 tabindex="0"\
                                 class="text-medium font-weight-bold"\
                                 :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group\': option.group}"\
-                                :key="option.value"\
+                                :key="\'i\' + idx + \'.\' + option.value"\
                                 @focus="!option.group && handleItemHover(option)"\
                                 @mouseenter="!option.group && handleItemHover(option)"\
                                 @keyup.enter="!option.group && handleItemClick(option)"\
                                 @click.stop="!option.group && handleItemClick(option)"\
-                                v-for="option in searchedOptions">\
+                                v-for="(option, idx) in searchedOptions">\
                                 <div class="cly-vue-listbox__item-content">\
                                     <div class="bu-level">\
                                         <div class="bu-level-left">\
                                             <div v-if="!!$scopedSlots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-2">\
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
-                                            <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
+                                            <slot name="option-label" v-bind="option">\
+                                                <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
+                                            </slot>\
                                         </div>\
                                         <div class="bu-level-right" v-if="!!$scopedSlots[\'option-suffix\']">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
@@ -288,6 +292,10 @@
                 return wrapped.map(function(item) {
                     return item.opt;
                 });
+            },
+            commitValue: function(val) {
+                this.$emit("input", val);
+                this.$emit("change", val);
             }
         },
         computed: {
@@ -312,12 +320,10 @@
                         var sorted = wrapped.map(function(item) {
                             return item.value;
                         });
-                        this.$emit("input", sorted);
-                        this.$emit("change", sorted);
+                        this.commitValue(sorted);
                     }
                     else {
-                        this.$emit("input", newVal);
-                        this.$emit("change", newVal);
+                        this.commitValue(newVal);
                     }
                 }
             },
@@ -503,6 +509,16 @@
             width: { type: [Number, Object], default: 400},
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
+            minInputWidth: {
+                type: Number,
+                default: -1,
+                required: false
+            },
+            maxInputWidth: {
+                type: Number,
+                default: -1,
+                required: false
+            },
             showSelectedCount: {type: Boolean, default: false},
             arrow: {type: Boolean, default: true},
             singleOptionSettings: {
@@ -517,6 +533,16 @@
             },
             popClass: {
                 type: String,
+                required: false
+            },
+            minItems: {
+                type: Number,
+                default: 0,
+                required: false
+            },
+            maxItems: {
+                type: Number,
+                default: Number.MAX_SAFE_INTEGER,
                 required: false
             }
         },
@@ -559,7 +585,7 @@
                     return this.value;
                 },
                 set: function(newVal) {
-                    if (this.autoCommit) {
+                    if (this.autoCommit && this.isItemCountValid) {
                         this.$emit("input", newVal);
                         this.$emit("change", newVal);
                     }
@@ -575,6 +601,12 @@
                 else {
                     return CV.i18n('export.export-columns-selected-count', (this.value ? this.value.length : 0), (this.options ? this.options.length : 0));
                 }
+            },
+            isItemCountValid: function() {
+                if (this.mode === "single-list" || this.autoCommit) {
+                    return true;
+                }
+                return Array.isArray(this.innerValue) && this.innerValue.length >= this.minItems && this.innerValue.length <= this.maxItems;
             }
         },
         mounted: function() {
@@ -614,6 +646,9 @@
                 }
             },
             doCommit: function() {
+                if (!this.isItemCountValid) {
+                    return;
+                }
                 if (this.uncommittedValue) {
                     this.$emit("input", this.uncommittedValue);
                     this.$emit("change", this.uncommittedValue);

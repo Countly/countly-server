@@ -11,6 +11,8 @@
             <cly-input-dropdown-trigger
                 ref="trigger"
                 :adaptive-length="true"
+                :min-width="minInputWidth"
+                :max-width="maxInputWidth"
                 :arrow="true"
                 :prefix-icon="'el-icon-date'"
                 :disabled="disabled"
@@ -26,7 +28,7 @@
         <div class="cly-vue-daterp__shortcuts-col" v-if="shortcuts && shortcuts.length > 0">
             <div class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"
                 @click="handleCustomRangeClick">
-                Custom Range<i class="el-icon-caret-right"></i>
+                {{i18n('common.time-period-select.custom-range')}}<i class="el-icon-caret-right"></i>
             </div>
             <div class="text-medium font-weight-bold cly-vue-daterp__shortcut"
                 :class="{'cly-vue-daterp__shortcut--active': selectedShortcut == shortcut.value}"
@@ -39,11 +41,13 @@
             <div class="cly-vue-daterp__input-methods" :class="{'cly-vue-daterp__hidden-tabs': !showRelativeModes || !isRange}">
                 <el-tabs v-model="rangeMode" @tab-click="handleTabChange">
                     <el-tab-pane name="inBetween">
-                        <template slot="label"><span class="text-medium font-weight-bold">In Between</span></template>
+                        <template slot="label">
+                            <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.range')}}</span>
+                        </template>
                         <div class="cly-vue-daterp__input-wrapper">
                             <template v-if="isRange">
                                 <el-input size="small" :class="{'is-active': isStartFocused, 'is-error': inBetweenInput.raw.invalid0}" @focus="handleTextStartFocus" @blur="handleTextStartBlur" v-model="inBetweenInput.raw.textStart"></el-input>
-                                <span class="text-medium cly-vue-daterp__in-between-conj">and</span>
+                                <span class="text-medium cly-vue-daterp__in-between-conj">{{i18n('common.and')}}</span>
                                 <el-input size="small" :class="{'is-active': isEndFocused, 'is-error': inBetweenInput.raw.invalid1}" @focus="handleTextEndFocus" @blur="handleTextEndBlur" v-model="inBetweenInput.raw.textEnd"></el-input>
                             </template>
                             <template v-else>
@@ -59,31 +63,39 @@
                         </div>
                     </el-tab-pane>
                     <el-tab-pane name="since">
-                        <template slot="label"><span class="text-medium font-weight-bold">Since</span></template>
+                        <template slot="label">
+                            <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.since')}}</span>
+                        </template>
                         <div class="cly-vue-daterp__input-wrapper">
                             <el-input size="small" :class="{'is-error': sinceInput.raw.invalid0}" v-model="sinceInput.raw.text" @blur="handleSinceBlur"></el-input>
                         </div>
                     </el-tab-pane>
                     <el-tab-pane name="inTheLast">
-                        <template slot="label"><span class="text-medium font-weight-bold">In the Last</span></template>
+                        <template slot="label">
+                            <span class="text-medium font-weight-bold">{{i18n('common.time-period-select.last-n')}}</span>
+                        </template>
                         <div class="cly-vue-daterp__input-wrapper">
                             <el-input size="small" v-model.number="inTheLastInput.raw.text"></el-input>
                             <el-select size="small" v-model="inTheLastInput.raw.level">
-                                <el-option v-if="tableType === 'date'" label="Days" value="days"></el-option>
-                                <el-option v-if="tableType === 'date'" label="Weeks" value="weeks"></el-option>
-                                <el-option label="Months" value="months"></el-option>
+                                <el-option v-if="tableType === 'date'" :label="i18n('common.buckets.days')" value="days"></el-option>
+                                <el-option v-if="tableType === 'date'" :label="i18n('common.buckets.weeks')" value="weeks"></el-option>
+                                <el-option :label="i18n('common.buckets.months')" value="months"></el-option>
                             </el-select>
                         </div>
                     </el-tab-pane>
-                    <el-tab-pane name="onm">
-                        <template slot="label"><span class="text-medium font-weight-bold">On</span></template>
+                    <el-tab-pane name="onm" v-if="allowOnSelection">
+                        <template slot="label"><span class="text-medium font-weight-bold">{{i18n('common.time-period-select.on')}}</span></template>
                         <div class="cly-vue-daterp__input-wrapper">
                             <el-input size="small" :class="{'is-error': onmInput.raw.invalid0}" v-model="onmInput.raw.text" @blur="handleOnmBlur"></el-input>
                         </div>
                     </el-tab-pane>
                 </el-tabs>
                 <div class="cly-vue-daterp__day-names-wrapper" v-if="tableType === 'date'">
-                    <table class="cly-vue-daterp__day-names"><tr><th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th></tr></table>
+                    <table class="cly-vue-daterp__day-names">
+                        <tr>
+                            <th v-for="dayName in weekdays">{{ dayName }}</th>
+                        </tr>
+                    </table>
                 </div>
             </div>
             <div class="cly-vue-daterp__calendars-wrapper">
@@ -138,7 +150,7 @@
             </div>
             <div class="cly-vue-daterp__commit-section">
                 <el-button @click="handleDiscardClick" size="small">{{ i18n("common.cancel") }}</el-button>
-                <el-button @click="handleConfirmClick" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>
+                <el-button @click="handleConfirmClick" type="success" size="small">{{ i18n("common.confirm") }}</el-button>
             </div>
         </div>
     </div>
