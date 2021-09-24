@@ -841,23 +841,23 @@
                 }
                 this.isVisible = false;
             },
+            refreshCalendarDOM: function() {
+                if (this.customRangeSelection) {
+                    var self = this;
+                    this.$nextTick(function() {
+                        self.broadcast('ElSelectDropdown', 'updatePopper');
+                        self.$forceUpdate();
+                        self.scrollTo(self.minDate);
+                    });
+                }
+            },
             handleDropdownShow: function() {
-                var self = this;
-                this.$nextTick(function() {
-                    self.broadcast('ElSelectDropdown', 'updatePopper');
-                    this.$forceUpdate();
-                    self.scrollTo(self.minDate);
-                });
                 this.isVisible = true;
+                this.refreshCalendarDOM();
             },
             handleCustomRangeClick: function() {
                 this.customRangeSelection = true;
-                var self = this;
-                this.$nextTick(function() {
-                    self.broadcast('ElSelectDropdown', 'updatePopper');
-                    self.$forceUpdate();
-                    self.scrollTo(self.minDate);
-                });
+                this.refreshCalendarDOM();
             },
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
