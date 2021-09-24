@@ -37,7 +37,7 @@
                 {{shortcut.label}}
             </div>
         </div>
-        <div class="cly-vue-daterp__calendars-col" v-if="customRangeSelection">
+        <div class="cly-vue-daterp__calendars-col" v-if="isVisible && customRangeSelection">
             <div class="cly-vue-daterp__input-methods" :class="{'cly-vue-daterp__hidden-tabs': !showRelativeModes || !isRange}">
                 <el-tabs v-model="rangeMode" @tab-click="handleTabChange">
                     <el-tab-pane name="inBetween">
@@ -99,7 +99,7 @@
                 </div>
             </div>
             <div class="cly-vue-daterp__calendars-wrapper">
-                <div class="cly-vue-daterp__table-wrap" :class="{'is-start-focused': isStartFocused, 'is-end-focused': isEndFocused}" style="height: 248px" ref="calendarsViewport">
+                <div class="cly-vue-daterp__table-wrap" :class="{'is-point': !isRange, 'is-start-focused': isStartFocused, 'is-end-focused': isEndFocused}" style="height: 248px" ref="calendarsViewport">
                     <vue-scroll ref="vs" :ops="scrollOps">
                         <div class="cly-vue-daterp__table-view" v-if="tableType === 'month'">
                             <month-table
