@@ -37,7 +37,7 @@
             @close="closeAddUserPropertyPopover">
         </add-user-property-popover>
         <div class="bu-column bu-is-10 bu-is-offset-1">
-            <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')" v-loading="isLoading" @click="function(){console.log('onclick')}">
+            <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')" v-loading="isLoading">
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Message Name</div>
                     <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for message name</div>
@@ -905,8 +905,10 @@
                             CONFIRMATION
                             <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-confirmation-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
-                        <div class="bu-is-flex">
-                            <el-checkbox v-model="isConfirmed"></el-checkbox> 
+                        <div class="bu-is-flex bu-is-align-items-center">
+                            <validation-provider v-slot="validation" :rules="{required:true}">
+                                <el-checkbox type="checkbox" v-model="isConfirmed" :class="{'cly-vue-push-notification-drawer__checkbox-is-error':validation.errors.length > 0}"></el-checkbox> 
+                            </validation-provider>
                             <div class="cly-vue-push-notification-review-section-row__value bu-ml-1">
                                 I am ready to send this message to real-users
                             </div>

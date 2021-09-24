@@ -18,9 +18,9 @@
     ]);
 
     var statusFilterOptions = {};
-    statusFilterOptions[countlyPushNotification.TypeEnum.ONE_TIME] = ONE_TIME_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
-    statusFilterOptions[countlyPushNotification.TypeEnum.AUTOMATIC] = AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
-    statusFilterOptions[countlyPushNotification.TypeEnum.TRANSACTIONAL] = TRANSACTIONAL_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
+    statusFilterOptions[countlyPushNotification.service.TypeEnum.ONE_TIME] = ONE_TIME_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
+    statusFilterOptions[countlyPushNotification.service.TypeEnum.AUTOMATIC] = AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
+    statusFilterOptions[countlyPushNotification.service.TypeEnum.TRANSACTIONAL] = TRANSACTIONAL_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
 
     var platformFilterOptions = [
         {label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL},
