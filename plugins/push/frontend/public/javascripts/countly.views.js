@@ -265,7 +265,7 @@
                 return !this.pushNotificationUnderEdit.automatic.events.length && !this.pushNotificationUnderEdit.locations.length;
             },
             areLocationsRequired: function() {
-                if (this.pushNotificationUnderEdit.automatic.trigger === countlyPushNotification.service.TriggerEnum.EVENT) {
+                if (this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
                     return this.areEventsAndLocationsRequired;
                 }
                 else {
@@ -372,6 +372,13 @@
             setIsLoading: function(value) {
                 this.isLoading = value;
             },
+            dispatchUnknownErrorNotification: function() {
+                CountlyHelpers.notify({
+                    title: "Unknown error occurred",
+                    message: "Please try again later.",
+                    type: "error"
+                });
+            },
             prepareMessage: function() {
                 var self = this;
                 this.setIsLoading(true);
@@ -391,6 +398,9 @@
                                 message: "Selected cohort and location target options resulted in zero users found. Please try a different configuration.",
                                 type: "warning"
                             });
+                        }
+                        else {
+                            this.dispatchUnknownErrorNotification();
                         }
                         //TODO:log error
                         resolve(false);
@@ -418,11 +428,7 @@
                         });
                     }
                     else {
-                        CountlyHelpers.notify({
-                            title: "Unknown error occurred",
-                            message: "Please try again later.",
-                            type: "error"
-                        });
+                        this.dispatchUnknownErrorNotification();
                     }
                     //TODO:log error
                     done(true);
