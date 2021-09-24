@@ -490,13 +490,20 @@
                 });
                 return messages;
             },
+            mapEnabledUsers: function(dto) {
+                var result = {};
+                result[PlatformEnum.ALL] = dto.enabled.total;
+                result[PlatformEnum.ANDROID] = dto.enabled.a + dto.enabled.h;
+                result[PlatformEnum.IOS] = dto.enabled.i;
+                return result;
+            },
             mapMainDtoToModel: function(allPushNotificationsDto, dashboardDto, type) {
                 return {
                     rows: this.mapRowsDtoToModel(allPushNotificationsDto),
                     series: this.mapSeriesDtoToModel(dashboardDto, type),
                     periods: this.mapPeriods(dashboardDto, type),
                     totalAppUsers: dashboardDto.users,
-                    enabledUsers: dashboardDto.enabled,
+                    enabledUsers: this.mapEnabledUsers(dashboardDto),
                 };
             },
             mapDtoDtoBaseModel: function(dto) {
@@ -1184,6 +1191,11 @@
     });
 
     var getMainInitialState = function() {
+        var enabledUsers = {};
+        enabledUsers[PlatformEnum.ALL] = 0;
+        enabledUsers[PlatformEnum.IOS] = 0;
+        enabledUsers[PlatformEnum.ANDROID] = 0;
+
         return {
             selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
             series: {
@@ -1193,7 +1205,7 @@
             rows: [],
             periods: {monthly: [], weekly: []},
             totalAppUsers: null,
-            enabledUsers: null,
+            enabledUsers: enabledUsers,
             statusFilter: countlyPushNotification.service.StatusEnum.ALL,
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
             totalPushMessagesSent: null,

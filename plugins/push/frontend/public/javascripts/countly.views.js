@@ -17,11 +17,10 @@
         {label: CV.i18n("push-notification.status-not-approved"), value: countlyPushNotification.service.StatusEnum.NOT_APPROVED},
     ]);
 
-    var statusFilterOptions = {
-        oneTime: ONE_TIME_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS,
-        automatic: AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS,
-        transactional: TRANSACTIONAL_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS
-    };
+    var statusFilterOptions = {};
+    statusFilterOptions[countlyPushNotification.TypeEnum.ONE_TIME] = ONE_TIME_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
+    statusFilterOptions[countlyPushNotification.TypeEnum.AUTOMATIC] = AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
+    statusFilterOptions[countlyPushNotification.TypeEnum.TRANSACTIONAL] = TRANSACTIONAL_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
 
     var platformFilterOptions = [
         {label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL},
@@ -242,7 +241,19 @@
                 return this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter];
             },
             enabledUsers: function() {
-                return this.$store.state.countlyPushNotification.main.enabledUsers;
+                var self = this;
+                var total = 0;
+                if (this.pushNotificationUnderEdit.platforms.some(function(selectedPlatform) {
+                    return selectedPlatform === self.PlatformEnum.ANDROID;
+                })) {
+                    total += this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.ANDROID];
+                }
+                if (this.pushNotificationUnderEdit.platforms.some(function(selectedPlatform) {
+                    return selectedPlatform === self.PlatformEnum.IOS;
+                })) {
+                    total += this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.IOS];
+                }
+                return total;
             },
             selectedMessageLocale: function() {
                 return this.pushNotificationUnderEdit.message[this.activeLocalization];
@@ -757,6 +768,7 @@
                 transactionalPeriodFilters: transactionalPeriodFilterOptions,
                 selectedTransactionalPeriodFilter: countlyPushNotification.service.PeriodEnum.DAILY,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 UserEventEnum: countlyPushNotification.service.UserEventEnum,
                 optionalTableColumns: [
                     {
@@ -795,7 +807,7 @@
                 return this.$store.state.countlyPushNotification.main.totalAppUsers;
             },
             enabledUsers: function() {
-                return this.$store.state.countlyPushNotification.main.enabledUsers;
+                return this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.ALL];
             },
             xAxisPushNotificationPeriods: function() {
                 return this.$store.state.countlyPushNotification.main.periods[this.selectedPeriodFilter];
