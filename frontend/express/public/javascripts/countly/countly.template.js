@@ -3504,6 +3504,16 @@ var AppRouter = Backbone.Router.extend({
         this.appManagementViews[plugin] = {title: title, view: View};
     },
     /**
+     * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
+     * @memberof app
+     * @param {string} plugin - plugin name
+     * @param {string} title  - plugin title
+     * @param {Array} inputs - plugin inputs
+     */
+    addAppManagementInput: function(plugin, title, inputs) {
+        this.appManagementViews[plugin] = {title: title, inputs: inputs};
+    },
+    /**
     * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here
     * @param {string} id - the same value on your input data-id attributes
     * @param {object} options - different callbacks for data modification
