@@ -89,11 +89,13 @@
                     logoutForm.method = "post";
                     logoutForm.style.display = "none";
                     logoutForm.type = "submit";
+    
                     var logoutForm_csrf = document.createElement("input");
                     logoutForm_csrf.name = '_csrf';
                     logoutForm_csrf.value = countlyGlobal.csrf_token;
                     logoutForm.appendChild(logoutForm_csrf);
                     document.body.appendChild(logoutForm);
+    
                     logoutForm.submit();
                     document.body.removeChild(logoutForm);
                 }
@@ -442,7 +444,8 @@
                         },
                         {
                             name: "management",
-                            icon: "ion-wrench"
+                            icon: "ion-wrench",
+                            tooltip: "Management"
                         }
                     ];
 
@@ -461,12 +464,14 @@
                         {
                             name: "clipboard",
                             icon: "ion-clipboard",
-                            noSelect: true
+                            noSelect: true,
+                            tooltip: "Help Center"
                         },
                         {
                             name: "notifications",
                             icon: "ion-android-notifications",
-                            noSelect: true
+                            noSelect: true,
+                            tooltip: "Assistant"
                         },
                         {
                             name: "user",
