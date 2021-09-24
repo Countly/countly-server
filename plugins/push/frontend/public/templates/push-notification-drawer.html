@@ -131,13 +131,13 @@
                             </div>
                             <div class="bu-is-flex bu-is-flex-direction-column">
                                 <line-radio-button-with-description 
-                                    :label="WhenToDetermineEnum.BEFORE"
-                                    v-model="pushNotificationUnderEdit.whenToDetermine"
+                                    :label="AudienceSelectionEnum.BEFORE"
+                                    v-model="pushNotificationUnderEdit.audienceSelection"
                                     title="Determine users right before sending the message">
                                 </line-radio-button-with-description>
                                 <line-radio-button-with-description 
-                                    :label="WhenToDetermineEnum.NOW"
-                                    v-model="pushNotificationUnderEdit.whenToDetermine"
+                                    :label="AudienceSelectionEnum.NOW"
+                                    v-model="pushNotificationUnderEdit.audienceSelection"
                                     title="Determine users now">
                                 </line-radio-button-with-description>
                             </div>
@@ -252,13 +252,13 @@
                             </div>
                             <div class="bu-is-flex bu-is-flex-direction-column">
                                 <line-radio-button-with-description 
-                                    :label="AutomaticDeliveryDateEnum.EVENT_SERVER_DATE"
-                                    v-model="pushNotificationUnderEdit.automatic.deliveryDate"
+                                    :label="DeliveryDateCalculationEnum.EVENT_SERVER_DATE"
+                                    v-model="pushNotificationUnderEdit.automatic.deliveryDateCalculation"
                                     title="Relative to the date event arrived to the server">
                                 </line-radio-button-with-description>
                                 <line-radio-button-with-description 
-                                    :label="AutomaticDeliveryDateEnum.EVENT_DEVICE_DATE"
-                                    v-model="pushNotificationUnderEdit.automatic.deliveryDate"
+                                    :label="DeliveryDateCalculationEnum.EVENT_DEVICE_DATE"
+                                    v-model="pushNotificationUnderEdit.automatic.deliveryDateCalculation"
                                     title="Relative to the date event occurred on a device">
                                 </line-radio-button-with-description>
                             </div>
@@ -272,13 +272,13 @@
                             </div>
                             <div class="bu-is-flex bu-is-flex-direction-column">
                                 <line-radio-button-with-description 
-                                    :label="AutomaticWhenConditionNotMetEnum.SEND_ANYWAY"
-                                    v-model="pushNotificationUnderEdit.automatic.whenNotMet"
+                                    :label="TriggerNotMetEnum.SEND_ANYWAY"
+                                    v-model="pushNotificationUnderEdit.automatic.triggerNotMet"
                                     title="Send anyway">
                                 </line-radio-button-with-description>
                                 <line-radio-button-with-description 
-                                    :label="AutomaticWhenConditionNotMetEnum.CANCEL_ON_EXIT"
-                                    v-model="pushNotificationUnderEdit.automatic.whenNotMet"
+                                    :label="TriggerNotMetEnum.CANCEL_ON_EXIT"
+                                    v-model="pushNotificationUnderEdit.automatic.triggerNotMet"
                                     title="Cancel when user exits selected cohort(s)">
                                 </line-radio-button-with-description>
                             </div>
@@ -294,35 +294,35 @@
                     </div>
                     <div class="bu-level bu-is-flex-wrap-wrap">
                         <large-radio-button-with-description
-                            :label="DeliveryEnum.NOW"
+                            :label="SendEnum.NOW"
                             v-model="pushNotificationUnderEdit.delivery.type"
                             title="Send now"
                             description="Some description for send now option goes here">
                         </large-radio-button-with-description>
                         <large-radio-button-with-description
-                            :label="DeliveryEnum.LATER"
+                            :label="SendEnum.LATER"
                             v-model="pushNotificationUnderEdit.delivery.type"
                             title="Schedule for later"
                             :hasTopMargin="true">    
-                            <cly-date-picker v-bind:disabled="pushNotificationUnderEdit.delivery.type === DeliveryEnum.NOW" v-model="pushNotificationUnderEdit.delivery.startDate" timestampFormat="ms" type="date" :select-time="true" :is-future="true"></cly-date-picker>
+                            <cly-date-picker v-bind:disabled="pushNotificationUnderEdit.delivery.type === SendEnum.NOW" v-model="pushNotificationUnderEdit.delivery.startDate" timestampFormat="ms" type="date" :select-time="true" :is-future="true"></cly-date-picker>
                         </large-radio-button-with-description>
                     </div>
                 </div>
                 <div v-if="type === TypeEnum.AUTOMATIC" class="cly-vue-drawer-step__section">
                     <div class="bu-is-flex bu-is-flex-direction-column">
                         <div class="bu-is-flex bu-is-align-items-center">
-                            <el-switch v-model="isEndDateEnabled" class="bu-mr-1"></el-switch>
+                            <el-switch v-model="pushNotificationUnderEdit.delivery.isEndDateSet" class="bu-mr-1"></el-switch>
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                                 Set End Date
                                 <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             </div>
                         </div>
                         <div style="width:200px">
-                            <cly-date-picker class="bu-ml-6" v-bind:disabled="!isEndDateEnabled" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms" type="date" width="200" :select-time="true" :is-future="true"></cly-date-picker>
+                            <cly-date-picker class="bu-ml-6" v-bind:disabled="!pushNotificationUnderEdit.delivery.isEndDateSet" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms" type="date" width="200" :select-time="true" :is-future="true"></cly-date-picker>
                         </div>
                     </div>
                 </div>
-                <template v-if="type === TypeEnum.ONE_TIME && pushNotificationUnderEdit.delivery.type === DeliveryEnum.LATER">
+                <template v-if="type === TypeEnum.ONE_TIME && pushNotificationUnderEdit.delivery.type === SendEnum.LATER">
                     <div class="cly-vue-drawer-step__section">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                             Timezone
@@ -330,14 +330,14 @@
                         </div>
                         <div class="bu-level bu-is-flex-wrap-wrap">
                             <large-radio-button-with-description
-                                :label="TimeZoneEnum.SAME"
-                                v-model="pushNotificationUnderEdit.timeZone"
+                                :label="TimezoneEnum.SAME"
+                                v-model="pushNotificationUnderEdit.timezone"
                                 title="Deliver to all users at the same time"
                                 description="Some description goes here">
                             </large-radio-button-with-description>
                             <large-radio-button-with-description
-                                :label="TimeZoneEnum.DEVICE"
-                                v-model="pushNotificationUnderEdit.timeZone"
+                                :label="TimezoneEnum.DEVICE"
+                                v-model="pushNotificationUnderEdit.timezone"
                                 title="Deliver in user's local time as per device timezone"
                                 description="Some description goes here">
                             </large-radio-button-with-description>
@@ -367,19 +367,19 @@
                     <div class="cly-vue-push-notification-drawer__input-description">Choose when your message should be delivered</div>
                     <div class="bu-level bu-is-flex-wrap-wrap">
                         <large-radio-button-with-description
-                            :label="DeliveryEnum.NOW"
-                            v-model="pushNotificationUnderEdit.delivery.method"
+                            :label="DeliveryMethodEnum.IMMEDIATELY"
+                            v-model="pushNotificationUnderEdit.automatic.deliveryMethod"
                             title="Immediately"
                             description="Some description for send now option goes here">
                         </large-radio-button-with-description>
                         <large-radio-button-with-description
-                            :label="DeliveryEnum.LATER"
-                            v-model="pushNotificationUnderEdit.delivery.method"
+                            :label="DeliveryMethodEnum.DELAYED"
+                            v-model="pushNotificationUnderEdit.automatic.deliveryMethod"
                             title="Delayed"
                             :hasTopMargin="true">    
                             <validation-provider v-slot="validation" rules="required|integer">
                                 <el-input 
-                                    :disabled="pushNotificationUnderEdit.delivery.method !== DeliveryEnum.LATER" 
+                                    :disabled="pushNotificationUnderEdit.automatic.deliveryMethod !== DeliveryMethodEnum.DELAYED" 
                                     v-model="pushNotificationUnderEdit.automatic.delayed.days" 
                                     controls-position="right"
                                     :class="{'is-error': validation.errors.length > 0}"
@@ -392,7 +392,7 @@
                             </validation-provider>
                             <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23|min:1|max:2">
                                 <el-input 
-                                    :disabled="pushNotificationUnderEdit.delivery.method !== DeliveryEnum.LATER" 
+                                    :disabled="pushNotificationUnderEdit.automatic.deliveryMethod !== DeliveryMethodEnum.DELAYED" 
                                     v-model="pushNotificationUnderEdit.automatic.delayed.hours" 
                                     controls-position="right" 
                                     :min="0" 
@@ -803,6 +803,8 @@
                     </div>
                 </div>
                 <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
+                    <review-section-row label="Message name" :value="pushNotificationUnderEdit.name"></review-section-row>
+                    <review-section-row label="Platforms" :value="previewPlatforms.join(', ')"></review-section-row>
                     <review-section-row label="Title">
                         <div>
                             <template v-for="(component) in previewMessageTitle">
@@ -827,23 +829,59 @@
                     </template>
                     <review-section-row label="Media URL" :value="pushNotificationUnderEdit.settings.all.mediaURL"></review-section-row>
                 </div>
-                <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
-                    Targeting
-                </div>
-                <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
-                    <review-section-row v-if="type === TypeEnum.ONE_TIME || type === TypeEnum.TRANSACTIONAL" label="Targeted users" :value="targetingOptions[pushNotificationUnderEdit.targeting].label"></review-section-row>
-                    <review-section-row v-if="type === TypeEnum.AUTOMATIC" label="Targeted users" :value="previewCohorts.join(', ')"></review-section-row>
-                    <review-section-row label="Current number of users" :value="currentNumberOfUsers"></review-section-row>
-                    <review-section-row v-if="type === TypeEnum.ONE_TIME" label="When to determine" :value="audienceSelectionOptions[pushNotificationUnderEdit.whenToDetermine].label"></review-section-row>
-                </div>
+                <template v-if="type === TypeEnum.ONE_TIME | type === TypeEnum.AUTOMATIC">
+                    <div  class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
+                        Targeting
+                    </div>
+                    <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
+                        <template v-if="type === TypeEnum.ONE_TIME">
+                            <review-section-row label="Targeted users">
+                                <template v-if="pushNotificationUnderEdit.targeting === TargetingEnum.ALL">
+                                    {{targetingOptions[pushNotificationUnderEdit.targeting].label}}
+                                </template>
+                                <template v-else>
+                                    {{previewCohorts.join(', ')}}
+                                </template>
+                            </review-section-row>
+                            <review-section-row label="Current number of users" :value="currentNumberOfUsers"></review-section-row>
+                            <review-section-row label="Geolocation(s)" :value="previewLocations.join(', ')"></review-section-row>
+                            <review-section-row label="When to determine" :value="audienceSelectionOptions[pushNotificationUnderEdit.audienceSelection].label"></review-section-row>
+                        </template>
+                        <template v-if="type === TypeEnum.AUTOMATIC">
+                            <review-section-row label="Trigger Type" :value="triggerOptions[pushNotificationUnderEdit.automatic.trigger].label"></review-section-row>
+                            <review-section-row v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT" label="Event(s)" :value="pushNotificationUnderEdit.automatic.events.join(', ')"></review-section-row>
+                            <review-section-row v-else label="Cohort(s)" :value="previewCohorts.join(', ')"></review-section-row>
+                            <review-section-row label="Geolocation(s)" :value="previewLocations.join(', ')"></review-section-row>
+                            <review-section-row v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT" label="Delivery date calculation" :value="deliveryDateCalculationOptions[pushNotificationUnderEdit.automatic.deliveryDateCalculation].label"></review-section-row>
+                            <review-section-row v-else label="Behavior when trigger condition is no longer met" :value="triggerNotMetOptions[pushNotificationUnderEdit.automatic.triggerNotMet].label"></review-section-row>
+                        </template>
+                    </div>
+                </template>
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
                     Delivery
                 </div>
                 <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
-                    <review-section-row label="Delivery type" :value="deliveryTypeOptions[pushNotificationUnderEdit.delivery.type].label"></review-section-row>
-                    <review-section-row label="Scheduled for" :value="previewMessageScheduledFor"></review-section-row>
-                    <review-section-row label="Expiration time" :value="'Message will expire after ' +pushNotificationUnderEdit.expiration.days+ ' days and ' +pushNotificationUnderEdit.expiration.hours+ ' hours'"></review-section-row>
-                </div>
+                    <template v-if="type === TypeEnum.ONE_TIME">
+                        <review-section-row label="Delivery type" :value="startDateOptions[pushNotificationUnderEdit.delivery.type].label"></review-section-row>
+                        <review-section-row label="Scheduled for" :value="formatDateTime(pushNotificationUnderEdit.delivery.startDate)"></review-section-row>
+                        <review-section-row label="Expiration time" :value="'Message will expire after ' +pushNotificationUnderEdit.expiration.days+ ' days and ' +pushNotificationUnderEdit.expiration.hours+ ' hours'"></review-section-row>    
+                    </template>
+                    <template v-if="type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL">
+                        <review-section-row label="Delivery Timeframe" :value="startDateOptions[pushNotificationUnderEdit.delivery.type].label"></review-section-row>
+                        <review-section-row label="Start date" :value="formatDateTime(pushNotificationUnderEdit.delivery.startDate)"></review-section-row>
+                        <review-section-row v-if="type === TypeEnum.AUTOMATIC" label="End date" :value="formatDateTime(pushNotificationUnderEdit.delivery.endDate)"></review-section-row>
+                        <review-section-row v-if="type === TypeEnum.AUTOMATIC" label="Delivery Method" :value="deliveryMethodOptions[pushNotificationUnderEdit.automatic.deliveryMethod].label"></review-section-row>
+                        <review-section-row label="Capping">
+                            <template v-if="pushNotificationUnderEdit.automatic.capping">
+                                Maximum {{pushNotificationUnderEdit.automatic.maximumMessagesPerUser}} messages <br />
+                                Minimum {{pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.days}} days and {{pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.hours}} hours between messages 
+                            </template>
+                            <template v-else>
+                                No capping
+                            </template>
+                        </review-section-row>
+                    </template>
+               </div>
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
                     Confirmation
                 </div>

@@ -8,7 +8,7 @@
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>
             </template>
             <template v-slot:header-right>
-                <cly-more-options size="small" @command="handleUserEvents($event, scope.row._id )">
+                <cly-more-options size="small" @command="handleUserEvents($event, pushNotification.id)">
                     <el-dropdown-item :command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
                     <el-dropdown-item :command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
                     <el-dropdown-item :command="UserEventEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>

@@ -636,6 +636,25 @@
         },
     });
 
+    countlyPushNotification.DetailsTabRow = countlyVue.views.create({
+        template: '#details-tab-row',
+        props: {
+            value: {
+                type: String | Number,
+                default: ""
+            },
+            label: {
+                type: String,
+                default: ""
+            },
+        },
+        computed: {
+            hasDefaultSlot: function() {
+                return Boolean(this.$slots.default);
+            }
+        },
+    });
+
     countlyPushNotificationComponent.DetailsMessageTab = countlyVue.views.create({
         template: '#details-message-tab',
         data: function() {
@@ -659,7 +678,8 @@
         },
         components: {
             'user-property-preview': countlyPushNotificationComponent.UserPropertyPreview,
-            'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview
+            'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview,
+            'details-tab-row': countlyPushNotification.DetailsTabRow
         }
     });
 
@@ -668,19 +688,35 @@
         data: function() {
             return {
                 DAY_TO_MS_RATIO: 86400 * 1000,
+                TypeEnum: countlyPushNotification.service.TypeEnum,
+                TargetingEnum: countlyPushNotification.service.TargetingEnum,
+                TriggerEnum: countlyPushNotification.service.TriggerEnum,
+                startDateOptions: countlyPushNotification.service.startDateOptions,
+                targetingOptions: countlyPushNotification.service.targetingOptions,
                 audienceSelectionOptions: countlyPushNotification.service.audienceSelectionOptions,
-                deliveryTypeOptions: countlyPushNotification.service.deliveryTypeOptions,
+                triggerOptions: countlyPushNotification.service.triggerOptions,
+                triggerNotMetOptions: countlyPushNotification.service.triggerNotMetOptions,
+                deliveryDateCalculationOptions: countlyPushNotification.service.deliveryDateCalculationOptions,
+                deliveryMethodOptions: countlyPushNotification.service.deliveryMethodOptions,
             };
         },
         computed: {
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
+            previewCohorts: function() {
+                return this.pushNotification.cohorts.map(function(cohortItem) {
+                    return cohortItem.name;
+                });
+            },
         },
         methods: {
             convertDaysInMsToDays: function(daysInMs) {
                 return daysInMs / this.DAY_TO_MS_RATIO;
             }
+        },
+        components: {
+            'details-tab-row': countlyPushNotification.DetailsTabRow
         }
     });
 

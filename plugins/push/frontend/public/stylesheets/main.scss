@@ -262,7 +262,7 @@
 }
 
 .cly-vue-push-notification-details-summary {
-     
+    
     &__header {
         margin-top: 64px;
 
@@ -298,19 +298,29 @@
     color: #81868D;
 }
 
-.cly-vue-push-notification-details-summary-text {
-    font-size: typography.$text-button-size;
-}
 
-.cly-vue-push-notification-details-summary-header {
-    font-weight: typography.$heading-3-weight;
-    font-size: typography.$heading-3-size;
-    margin-bottom: 1.5%;
-    margin-top: 1.5%;
-}
+.cly-vue-push-notification-details-summary {
 
-.cly-vue-push-notification-details-summary-section {
-    margin-left: 1.5%;
+    &__header {
+        font-weight: typography.$heading-3-weight;
+        font-size: typography.$heading-3-size;
+    }
+
+    &__label {
+        flex-basis: 20%;
+        font-size: typography.$text-button-size;
+        line-height: 13px;
+        font-weight: typography.$font-weight-primary;
+        color: map.get(colors.$colors,"cool-gray-100");
+    }
+
+    &__value {
+        font-size: typography.$text-button-size;
+        line-height: 16px;
+        color: map.get(colors.$colors,"cool-gray-100");
+        font-weight: normal;
+        min-width: 200px;
+    }
 }
 
 .cly-vue-push-notification-details-no-errors-text {
@@ -318,6 +328,14 @@
     justify-content: center;
     height: 675px;
     align-items: center;
+}
+
+.cly-vue-push-notification-details-summary-card {
+    .el_card {
+        &__body {
+            padding:0;
+        }
+    }
 }
 
 .cly-vue-push-notification-details-chart-bars {

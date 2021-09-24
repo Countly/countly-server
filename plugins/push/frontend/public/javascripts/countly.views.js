@@ -48,7 +48,7 @@
         name: "",
         platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
         targeting: countlyPushNotification.service.TargetingEnum.ALL,
-        whenToDetermine: countlyPushNotification.service.WhenToDetermineEnum.BEFORE,
+        audienceSelection: countlyPushNotification.service.AudienceSelectionEnum.BEFORE,
         message: {
             default: {
                 title: "",
@@ -89,21 +89,26 @@
         cohorts: [],
         locations: [],
         delivery: {
-            type: countlyPushNotification.service.DeliveryEnum.NOW,
+            type: countlyPushNotification.service.SendEnum.NOW,
             startDate: moment().valueOf(),
             endDate: moment().valueOf(),
-            method: countlyPushNotification.service.DeliveryEnum.NOW
+            isEndDateSet: false
         },
-        timeZone: countlyPushNotification.service.TimeZoneEnum.SAME,
+        timezone: countlyPushNotification.service.TimezoneEnum.SAME,
         pastSchedule: countlyPushNotification.service.PastScheduleEnum.SKIP,
         expiration: {
             days: 7,
             hours: 0
         },
         automatic: {
+            deliveryMethod: countlyPushNotification.service.DeliveryMethodEnum.IMMEDIATELY,
+            delayed: {
+                days: 0,
+                hours: 0
+            },
+            deliveryDateCalculation: countlyPushNotification.service.DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
             trigger: countlyPushNotification.service.TriggerEnum.COHORT_ENTRY,
-            deliveryDate: countlyPushNotification.service.AutomaticDeliveryDateEnum.EVENT_SERVER_DATE,
-            whenNotMet: countlyPushNotification.service.AutomaticWhenConditionNotMetEnum.SEND_ANYWAY,
+            triggerNotMet: countlyPushNotification.service.TriggerNotMetEnum.SEND_ANYWAY,
             events: [],
             capping: false,
             maximumMessagesPerUser: 1,
@@ -111,10 +116,6 @@
                 days: 0,
                 hours: 0
             },
-            delayed: {
-                days: 0,
-                hours: 0
-            }
         },
     };
 
@@ -156,23 +157,27 @@
                 TargetingEnum: countlyPushNotification.service.TargetingEnum,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
                 MessageTypeEnum: countlyPushNotification.service.MessageTypeEnum,
-                WhenToDetermineEnum: countlyPushNotification.service.WhenToDetermineEnum,
-                DeliveryEnum: countlyPushNotification.service.DeliveryEnum,
-                TimeZoneEnum: countlyPushNotification.service.TimeZoneEnum,
+                AudienceSelectionEnum: countlyPushNotification.service.AudienceSelectionEnum,
+                SendEnum: countlyPushNotification.service.SendEnum,
+                DeliveryMethodEnum: countlyPushNotification.service.DeliveryMethodEnum,
+                TimezoneEnum: countlyPushNotification.service.TimezoneEnum,
                 PastScheduleEnum: countlyPushNotification.service.PastScheduleEnum,
                 TriggerEnum: countlyPushNotification.service.TriggerEnum,
-                AutomaticDeliveryDateEnum: countlyPushNotification.service.AutomaticDeliveryDateEnum,
-                AutomaticWhenConditionNotMetEnum: countlyPushNotification.service.AutomaticWhenConditionNotMetEnum,
+                DeliveryDateCalculationEnum: countlyPushNotification.service.DeliveryDateCalculationEnum,
+                TriggerNotMetEnum: countlyPushNotification.service.TriggerNotMetEnum,
                 MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
                 messageTypeFilterOptions: messageTypeFilterOptions,
+                startDateOptions: countlyPushNotification.service.startDateOptions,
                 targetingOptions: countlyPushNotification.service.targetingOptions,
                 audienceSelectionOptions: countlyPushNotification.service.audienceSelectionOptions,
-                deliveryTypeOptions: countlyPushNotification.service.deliveryTypeOptions,
+                triggerOptions: countlyPushNotification.service.triggerOptions,
+                triggerNotMetOptions: countlyPushNotification.service.triggerNotMetOptions,
+                deliveryDateCalculationOptions: countlyPushNotification.service.deliveryDateCalculationOptions,
+                deliveryMethodOptions: countlyPushNotification.service.deliveryMethodOptions,
                 activeLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 selectedLocalizationFilter: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 isConfirmed: false,
                 expandedPlatformSettings: [],
-                isEndDateEnabled: false,
                 settings: JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState)),
                 userPropertiesIdCounter: 0,
                 selectedUserPropertyId: null,
@@ -283,14 +288,16 @@
             previewMessageContent: function() {
                 return countlyPushNotification.helper.getPreviewMessageComponentsList(this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter].content);
             },
-            previewMessageScheduledFor: function() {
-                return moment(this.pushNotificationUnderEdit.delivery.startDate).format("MMMM Do YYYY");
-            },
             shouldDisplayIOSSettings: function() {
                 return this.shouldDisplayPlatformSettings(this.PlatformEnum.IOS);
             },
             shouldDisplayAndroidSettings: function() {
                 return this.shouldDisplayPlatformSettings(this.PlatformEnum.ANDROID);
+            },
+            previewPlatforms: function() {
+                return this.pushNotificationUnderEdit.platforms.map(function(selectedPlatform) {
+                    return countlyPushNotification.service.platformOptions[selectedPlatform].label;
+                });
             },
             previewCohorts: function() {
                 var self = this;
@@ -303,8 +310,19 @@
                     return cohort.name.replace(/&quot;/g, '\\"');
                 });
             },
+            previewLocations: function() {
+                var self = this;
+                return this.$store.state.countlyPushNotification.main.locations.filter(function(location) {
+                    return self.pushNotificationUnderEdit.locations.some(function(selectedLocationId) {
+                        return location._id === selectedLocationId;
+                    });
+                });
+            }
         },
         methods: {
+            formatDateTime: function(dateTime, format) {
+                return countlyPushNotification.helper.formatDateTime(dateTime, format);
+            },
             setUserPropertiesOptions: function(userPropertiesOptionsDto) {
                 this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
                     if (userPropertyOptionDto.id) {
@@ -389,7 +407,6 @@
                     done();
                     self.$store.dispatch("countlyPushNotification/main/fetchAll", true);
                 }).catch(function(error) {
-                    //TODO:log error
                     if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
                         CountlyHelpers.notify({
                             title: "No Push credentials",
@@ -404,6 +421,7 @@
                             type: "error"
                         });
                     }
+                    //TODO:log error
                     done(true);
                 });
             },
@@ -412,7 +430,6 @@
                 this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 this.isConfirmed = false,
                 this.expandedPlatformSettings = [],
-                this.isEndDateEnabled = false;
                 this.selectedUserPropertyContainer = "title";
                 this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
                 this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(InitialEditedPushNotification));
@@ -808,13 +825,13 @@
             },
             handleUserEvents: function(event, pushNotificationId) {
                 if (event === this.UserEventEnum.DUPLICATE) {
-                    this.$store.dispatch('countlyPushNotification/main/onDuplicatePushNotification', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/main/onDuplicate', pushNotificationId);
                 }
                 else if (event === this.UserEventEnum.RESEND) {
-                    this.$store.dispatch('countlyPushNotification/main/onResendPushNotification', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/main/onResend', pushNotificationId);
                 }
                 else {
-                    this.$store.dispatch('countlyPushNotification/main/onDeletePushNotification', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/main/onDelete', pushNotificationId);
                 }
             },
             //TODO-LA: use status action specifications when ready
@@ -988,7 +1005,7 @@
         },
         methods: {
             // eslint-disable-next-line no-unused-vars
-            handleUserEvents: function(event, id) {
+            handleUserEvents: function(event, pushNotificationId) {
             },
             getStatusBackgroundColor: function() {
                 if (this.pushNotification.status) {
