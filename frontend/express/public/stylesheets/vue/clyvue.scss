@@ -633,19 +633,22 @@
             }
         }
 
+        @mixin cell-hover() {
+            background: #FFFFFF;
+            border: 2px solid #0166D6;
+            color: map.get(c.$colors, "text-custom-1-active");
+        }
+
+
         &__table-wrap.is-start-focused {
             .el-date-table .start-date {
                 > div span {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
             .el-month-table .start-date {
                 > div a {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
         }
@@ -653,32 +656,24 @@
         &__table-wrap.is-end-focused {
             .el-date-table .end-date {
                 > div span {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
             .el-month-table .end-date {
                 > div a {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
         }
         &__table-wrap.is-point {
             .el-date-table .available:not(.in-range) {
                  > div:hover span {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
             .el-month-table td:not(.in-range) {
                 > div:hover a {
-                   background: #FFFFFF;
-                   border: 2px solid #0166D6;
-                   color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                }
            }
         }
