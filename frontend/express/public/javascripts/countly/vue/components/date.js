@@ -707,7 +707,9 @@
             }
         },
         data: function() {
-            return getInitialState(this);
+            var data = getInitialState(this);
+            data.isVisible = false;
+            return data;
         },
         watch: {
             'value': {
@@ -837,14 +839,16 @@
                 if (aborted) {
                     this.loadValue(this.value);
                 }
+                this.isVisible = false;
             },
             handleDropdownShow: function() {
                 var self = this;
-                this.$forceUpdate();
                 this.$nextTick(function() {
                     self.broadcast('ElSelectDropdown', 'updatePopper');
+                    this.$forceUpdate();
                     self.scrollTo(self.minDate);
                 });
+                this.isVisible = true;
             },
             handleCustomRangeClick: function() {
                 this.customRangeSelection = true;
