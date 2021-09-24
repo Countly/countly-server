@@ -666,6 +666,22 @@
                 }
             }
         }
+        &__table-wrap.is-point {
+            .el-date-table .available:not(.in-range) {
+                 > div:hover span {
+                    background: #FFFFFF;
+                    border: 2px solid #0166D6;
+                    color: map.get(c.$colors, "text-custom-1-active");
+                }
+            }
+            .el-month-table td:not(.in-range) {
+                > div:hover a {
+                   background: #FFFFFF;
+                   border: 2px solid #0166D6;
+                   color: map.get(c.$colors, "text-custom-1-active");
+               }
+           }
+        }
     }
 
     .cly-vue-generic-radio {
