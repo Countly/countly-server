@@ -89,13 +89,11 @@
                     logoutForm.method = "post";
                     logoutForm.style.display = "none";
                     logoutForm.type = "submit";
-    
                     var logoutForm_csrf = document.createElement("input");
                     logoutForm_csrf.name = '_csrf';
                     logoutForm_csrf.value = countlyGlobal.csrf_token;
                     logoutForm.appendChild(logoutForm_csrf);
                     document.body.appendChild(logoutForm);
-    
                     logoutForm.submit();
                     document.body.removeChild(logoutForm);
                 }
