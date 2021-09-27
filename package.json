@@ -72,7 +72,7 @@
     "mongodb": "3.6.10",
     "nginx-conf": "1.5.0",
     "node-xlsx-stream": "^0.1.8",
-    "nodemailer": "6.6.3",
+    "nodemailer": "6.6.5",
     "nodemailer-sendmail-transport": "1.0.2",
     "nodemailer-smtp-pool": "2.8.3",
     "nodemailer-smtp-transport": "2.7.4",
