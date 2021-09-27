@@ -186,7 +186,7 @@
                     },
                     removeFromAllApps: function(context, appToRemove_id) {
                         if (Array.isArray(appToRemove_id)) {
-                            appToRemove.forEach(function(app) {
+                            appToRemove_id.forEach(function(app) {
                                 context.commit("removeFromAllApps", app);
                             });
                         }
