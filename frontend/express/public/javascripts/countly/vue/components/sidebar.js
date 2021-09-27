@@ -114,7 +114,7 @@
                 return {
                     selectMode: "single-list",
                     selectedAppLocal: null,
-                    selectedAnalyticsMenuLocal: null,
+                    selectedAnalyticsMenu: null,
                     appSelector: false
                 };
             },
@@ -176,24 +176,11 @@
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
                     if (selected.menu === "analytics") {
+                        this.selectedAnalyticsMenu = selected.item && selected.item.parent_code;
                         return selected.item;
                     }
 
                     return {};
-                },
-                selectedAnalyticsMenu: {
-                    get: function() {
-                        var selectedAnalyticsMenu = this.selectedMenuItem;
-
-                        if (!this.selectedAnalyticsMenuLocal) {
-                            return selectedAnalyticsMenu.parent_code;
-                        }
-
-                        return this.selectedAnalyticsMenuLocal;
-                    },
-                    set: function(m) {
-                        this.selectedAnalyticsMenuLocal = m;
-                    }
                 }
             },
             methods: {

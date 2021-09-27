@@ -22,7 +22,7 @@
             <ul>
                 <li v-for="(menu, idx) in categorizedMenus[cat.name]" class="bu-px-3 bu-my-1">
                     <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
-                        <el-collapse v-model="selectedAnalyticsMenu" accordion>
+                        <el-collapse v-model="selectedAnalyticsMenu" accordion :class="[{'cly-vue-sidebar__el-collapse--selected': selectedMenuItem.parent_code === menu.name}]">
                             <el-collapse-item :title="i18nM(menu.title)" :name="menu.name"
                                 :icon="{position: 'right', direction: 'down'}">
                                 <ul>
