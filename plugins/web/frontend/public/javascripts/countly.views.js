@@ -513,7 +513,7 @@ $(document).ready(function() {
         app.addSubMenuForType("web", "analytics", {code: "analytics-geo", url: "#/analytics/geo", text: "sidebar.analytics.geo", priority: 30});
         app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.session", priority: 20});
         app.addSubMenuForType("web", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
-        app.addSubMenuForType("web", "analytics", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.visitor-loyalty", priority: 15});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 15});
     }
 
     app.addAppSwitchCallback(function(appId) {
@@ -554,7 +554,7 @@ $(document).ready(function() {
             jQuery.i18n.map["common.table.returning-users"] = jQuery.i18n.map["web.common.table.returning-users"];
             jQuery.i18n.map["common.bar.top-users"] = jQuery.i18n.map["web.common.bar.top-users"];
             jQuery.i18n.map["sidebar.analytics.users"] = jQuery.i18n.map["web.sidebar.analytics.users"];
-            jQuery.i18n.map["sidebar.analytics.visitor-loyalty"] = jQuery.i18n.map["web.sidebar.analytics.user-loyalty"];
+            jQuery.i18n.map["sidebar.analytics.user-loyalty"] = jQuery.i18n.map["web.sidebar.analytics.user-loyalty"];
             jQuery.i18n.map["users.title"] = jQuery.i18n.map["web.users.title"];
             jQuery.i18n.map["crashes.users"] = jQuery.i18n.map["web.crashes.users"];
             jQuery.i18n.map["crashes.affected-users"] = jQuery.i18n.map["web.crashes.affected-users"];
