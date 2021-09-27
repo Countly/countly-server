@@ -244,6 +244,9 @@ const processRequest = (params) => {
                 case 'deleteOwnAccount':
                     validateDelete(params, 'global_users', countlyApi.mgmt.users.deleteOwnAccount);
                     break;
+                case 'updateHomeSettings':
+                    validateUpdate(params, 'global_users', countlyApi.mgmt.users.updateHomeSettings);
+                    break;
                 case 'ack':
                     validateUserForWriteAPI(countlyApi.mgmt.users.ackNotification, params);
                     break;

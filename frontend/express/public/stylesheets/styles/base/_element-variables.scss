@@ -323,9 +323,11 @@ $--select-option-disabled-color: $--color-text-placeholder !default;
 $--select-option-disabled-background: $--color-white !default;
 /// height||Other|4
 $--select-option-height: 34px !default;
-$--select-option-hover-background: map.get(c.$colors, "warm-gray-20") !default;
+$--select-option-hover-background: v.$select-dropdown-item-default-hover-bg-color !default;
+$--select-option-hover-color: v.$select-dropdown-item-default-hover-color;
 /// color||Color|0
-$--select-option-selected-font-color: $--color-white !default;
+$--select-option-selected-font-color: v.$select-dropdown-item-default-selected-color !default;
+$--select-option-selected-bg-color: v.$select-dropdown-item-default-selected-bg-color;
 $--select-option-selected-hover: $--background-color-base !default;
 
 $--select-group-color: $--color-info !default;
@@ -341,6 +343,10 @@ $--select-dropdown-padding: 0px 0 !default;
 $--select-dropdown-empty-padding: 10px 0 !default;
 $--select-dropdown-border: solid 1px map.get(c.$colors, "cool-gray-40") !default;
 
+$--select-dropdown-item-default-height: v.$select-dropdown-item-default-height;
+$--select-dropdown-item-default-font-size: v.$select-dropdown-item-default-font-size;
+$--select-dropdown-item-default-padding: v.$select-dropdown-item-default-padding;
+$--select-dropdown-item-default-margin: v.$select-dropdown-item-default-margin;
 /* Alert
 -------------------------- */
 $--alert-padding: 8px 16px !default;
@@ -731,7 +737,7 @@ $--popover-background-color: $--color-white !default;
 $--popover-font-size: $--font-size-base !default;
 /// color||Color|0
 $--popover-border-color: $--border-color-lighter !default;
-$--popover-arrow-size: 6px !default;
+$--popover-arrow-size: 0px !default;
 /// padding||Spacing|3
 $--popover-padding: 12px !default;
 $--popover-padding-large: 18px 20px !default;
@@ -783,8 +789,8 @@ $--tree-expand-icon-color: $--color-text-placeholder !default;
 /* Dropdown
 -------------------------- */
 $--dropdown-menu-box-shadow: $--box-shadow-light !default;
-$--dropdown-menuItem-hover-fill: $--color-primary-light-9 !default;
-$--dropdown-menuItem-hover-color: $--link-color !default;
+$--dropdown-menuItem-hover-fill: v.$select-dropdown-item-default-hover-bg-color !default;
+$--dropdown-menuItem-hover-color: v.$select-dropdown-item-default-hover-color !default;
 
 /* Badge
 -------------------------- */

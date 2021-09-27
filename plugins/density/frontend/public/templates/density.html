@@ -1,52 +1,68 @@
-<div class="widget">
-	<div class="widget-header">
-		<div class="left">
-			<div class="title">{{page-title}}</div>
+<div class="technology-density-wrapper" v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('density.title')}} 
+            </h2>
+            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="description">
+            </span>
+        </template>
+		<template v-slot:header-right>
+			<cly-more-options v-if="topDropdown" size="small">
+				<el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+				  <span :class="item.icon"></span>
+				  <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+				</el-dropdown-item>
+			  </cly-more-options>
+		  </template>
+    </cly-header>
+    <cly-main>
+		<cly-date-picker-g class="technology-density-wrapper__date-picker"></cly-date-picker-g>
+		<div class="bu-columns bu-is-gapless">
+			<h4>{{i18n('density.densities-for')}}</h4>
+			<div class ="selector_wrapper">
+				<el-select v-model="selectedProperty">
+					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
+				</el-select>
+			</div>
 		</div>
-		{{> date-selector }}
-	</div>
-    {{#if graph-description}}
-    <div class="graph-description">{{graph-description}}</div>
-    {{/if}}
-    <div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} {{#if chartHTML}}  {{else}} height:300px; padding-top:35px; padding-bottom:10px; {{/if}}{{/if}}">
-        {{#if chartHTML}}
-            {{{chartHTML}}}
-        {{else}}
-        <div class="graph-no-data" style="display: block;">
-            <div class="inner">
-                <div class="icon"></div>
-                <div class="text" data-localize="common.graph.no-data"></div>
-            </div>
-        </div>
-        {{/if}}
-	</div>
-</div>
-<div class="widget density-widget">
-    {{#if platforms}}
-	<div class="widget-header">
-		<div class="left">
-            <div class="title small" data-localize="density.densities-for"></div>
-            <div>
-                <div class="cly-select float density-segmentation">
-                    <div class="select-inner">
-                        <div class="text-container">
-                            <div class="text">{{active-platform}}</div>
-                        </div>
-                        <div class="right combo"></div>
-                    </div>
-                    <div class="select-items square" style="width:220px;">
-                        <div>
-                            {{#eachOfArray platforms}}
-                            <div data-value="{{value.origos_}}" class="segmentation-option item">{{value.os_}}</div>
-                            {{/eachOfArray}}
-                        </div>
-                    </div>
-                </div>
-            </div>
+		<div class="bu-mb-4 bg-white technology-density-wrapper__metric-cards-wrapper">
+		<vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
+			<cly-metric-cards class="bu-is-flex-wrap-nowrap">
+                <cly-metric-card :is-percentage="true" :columnWidth=3  :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in densityItems">
+                    {{item.name}}
+					<template v-slot:number>{{item.value}}</template>
+					<template v-slot:description>
+                      <span class="text-medium">{{item.percentText}}</span> 
+                    </template>
+                </cly-metric-card>
+            </cly-metric-cards>
+		</vue-scroll>
 		</div>
-    </div>
-    {{/if}}
-</div>
-<div class="density-table">
-<table id="dataTableOne" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+	    <h5> {{i18n('density.distribution')}} </h5>
+		<div class="technology-density-wrapper__density-versions-wrapper">
+			<vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
+				<div class="bu-columns bu-is-gapless">
+					<div class="bu-column bu-is-3 " :key="idx" v-for="(item, idx) in densityVersions">
+						<div class="technology-density-wrapper__empty-versions bu-p-3" v-if="item.itemCn === 0">
+							<div>{{i18n('common.table.no-data')}}</div>
+						</div>
+						<div class="technology-density-wrapper__all-density-versions bu-p-3" v-else>
+							<vue-scroll :ops="scrollOptions">
+								<div :key="idx2" v-for="(item2, idx2) in item.data" >
+									<div class="technology-density-wrapper__version-graph-block bu-p-3">
+										<div class="technology-density-wrapper__bu-columns version-graph-title">
+											<div class="bu-column">{{item2.name}}</div>
+											<div class="bu-column">{{item2.value}} | {{item2.percent}} % </div>
+										</div>
+										<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
+									</div>
+								</div>
+							</vue-scroll>
+						</div>
+					</div>
+				</div>
+			</vue-scroll>
+		</div>
+		<cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs"></cly-dynamic-tabs> 
+    </cly-main>
 </div>

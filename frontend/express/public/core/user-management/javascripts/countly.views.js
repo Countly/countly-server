@@ -97,6 +97,7 @@
         ],
         data: function() {
             return {
+                changePasswordFlag: false,
                 apps: [],
                 permissionSets: [],
                 adminAppSelector: '',
@@ -287,7 +288,7 @@
                 if (this.settings.editMode) {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.editUser(this.user._id, submitted, function(res) {
-                        if (!res.result) {
+                        if (res.result) {
                             if (typeof self.group._id !== "undefined") {
                                 groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
                                     .then(function() {});
@@ -319,7 +320,6 @@
                                     message: CV.i18n('management-users.updated-message'),
                                     type: 'success'
                                 });
-                                clearCheck();
                                 done();
                             }
                         }
@@ -335,7 +335,7 @@
                 else {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.createUser(submitted, function(res) {
-                        if (!res.result) {
+                        if (res.full_name) {
                             if (typeof self.group._id !== "undefined") {
                                 groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
                                     .then(function() {});
@@ -456,7 +456,7 @@
                 this.group = groupVal;
             }
         },
-        beforeCreated: function() {
+        created: function() {
             for (var app in countlyGlobal.apps) {
                 this.apps.push({value: countlyGlobal.apps[app]._id, label: countlyGlobal.apps[app].name });
             }

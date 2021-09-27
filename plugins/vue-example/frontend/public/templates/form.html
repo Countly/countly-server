@@ -76,7 +76,14 @@
                             <el-option v-for="item in elSelectItems" :key="item" :value="item" :label="item"></el-option>
                         </el-select>
                     </section>
-            
+
+                    <cly-section title="Dropdown">
+                        <cly-more-options placement="top-start" @command="">
+                            <el-dropdown-item>{{i18n('common.edit')}}</el-dropdown-item>
+                            <el-dropdown-item>{{i18n('common.delete')}}</el-dropdown-item>
+                        </cly-more-options>
+                    </cly-section>
+
                     <section>
                         <h3>Default Buttons</h3>
                         <el-button>Default</el-button>
@@ -222,9 +229,18 @@
                     {{selectedLB}}
                 </div>
             </cly-section>
+            <cly-section title="ListBox">
+                <div class="example-cell">
+                    <cly-listbox skin="jumbo" v-model="selectedLB" :options="listBoxOptions">
+                    </cly-listbox>
+                </div>
+                <div class="example-cell">
+                    {{selectedLB}}
+                </div>
+            </cly-section>
             <cly-section title="CheckListBox">
                 <div class="example-cell">
-                    <cly-checklistbox v-model="selectedCLB" :options.sync="clistBoxOptions" :sortable="true">
+                    <cly-checklistbox v-model="selectedCLB" :margin="false" :options.sync="clistBoxOptions" :sortable="true">
                     </cly-checklistbox>
                 </div>
                 <div class="example-cell">

@@ -1167,11 +1167,15 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard: function() {
+        var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
         if (countlyGlobal.member.restrict && countlyGlobal.member.restrict.indexOf("#/") !== -1) {
             return;
         }
         if (_.isEmpty(countlyGlobal.apps)) {
             this.renderWhenReady(this.manageAppsView);
+        }
+        else if (type === "mobile" || type === "web" || type === "desktop") {
+            this.renderWhenReady(app.HomeView);
         }
         else if (typeof this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== "undefined") {
             this.renderWhenReady(this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]);
@@ -3502,6 +3506,16 @@ var AppRouter = Backbone.Router.extend({
      */
     addAppManagementView: function(plugin, title, View) {
         this.appManagementViews[plugin] = {title: title, view: View};
+    },
+    /**
+     * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
+     * @memberof app
+     * @param {string} plugin - plugin name
+     * @param {string} title  - plugin title
+     * @param {Array} inputs - plugin inputs
+     */
+    addAppManagementInput: function(plugin, title, inputs) {
+        this.appManagementViews[plugin] = {title: title, inputs: inputs};
     },
     /**
     * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here

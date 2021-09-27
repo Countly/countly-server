@@ -42,32 +42,12 @@
 .technology-analytics-wrapper .version-graph-title div:nth-child(2) {
     text-align:right;
 }
-
 .technology-analytics-wrapper .version-graph-block .version-graph-title{
     margin:0px;
     padding-bottom:4px;
 }
 .technology-analytics-wrapper .version-graph-title .bu-column {
     padding:0px;
-}
-
-.technology-analytics-wrapper h4 {
-    font-family: Inter;
-    font-style: normal;
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 24px;
-    color:#333C48;
-}
-
-.technology-analytics-wrapper h5 {
-    font-family: Inter;
-    font-style: normal;
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 24px;
-    color: #333C48;
-    margin-bottom:20px;
 }
 
 .technology-analytics-wrapper .cly-vue-metric-card__wrapper .bu-is-flex-direction-column {
@@ -98,8 +78,10 @@
     flex-wrap: nowrap;
 }
 
+.technology-analytics-wrapper .metricCardsWrapper .__view {
+    width: auto !important;
+}
 .technology-analytics-wrapper .metricCardsWrapper .cly-vue-metric-card {
     border-top: 1px solid #ececec;
-    border-bottom: 1px solid #ececec;
     background-color: #fff;
 }

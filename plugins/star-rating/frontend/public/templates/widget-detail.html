@@ -66,13 +66,12 @@
     <cly-section>
       <cly-chart-bar class="ratings-wrapper__bar-chart bu-has-background-white" :option="barOptions"></cly-chart-bar>
     </cly-section>
-    <cly-section>
-      <cly-dynamic-tabs :comments="feedbackData.aaData" :ratings="cumulativeData" skin="secondary" v-model="dynamicTab" :tabs="tabs">
-        <template v-slot:tables="scope">
-            <span>{{scope.tab.title}}</span>
-        </template>
-      </cly-dynamic-tabs>
-    </cly-section>
+    <cly-dynamic-tabs :comments="feedbackData.aaData" :ratings="cumulativeData" skin="secondary" v-model="dynamicTab" :tabs="tabs">
+      <template v-slot:tables="scope">
+          <span>{{scope.tab.title}}</span>
+      </template>
+    </cly-dynamic-tabs>
+    
   </cly-main>
   <drawer @widget-edited="refresh()" :settings="drawerSettings" :controls="drawers.widget"></drawer>
 </div>

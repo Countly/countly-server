@@ -103,6 +103,8 @@
         return ref;
     };
 
+    var _internalRequestParams = ["page", "perPage", "sort", "searchQuery"];
+
     var _dataTableAdapters = {
         toLegacyRequest: function(requestParams, cols) {
             var convertedParams = {};
@@ -119,6 +121,11 @@
             if (requestParams.searchQuery) {
                 convertedParams.sSearch = requestParams.searchQuery;
             }
+            Object.keys(requestParams).forEach(function(paramKey) {
+                if (!_internalRequestParams.includes(paramKey)) {
+                    convertedParams[paramKey] = requestParams[paramKey];
+                }
+            });
             return convertedParams;
         },
         toStandardResponse: function(response, requestOptions) {
