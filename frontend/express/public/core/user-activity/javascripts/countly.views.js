@@ -2,6 +2,7 @@
 (function() {
     var UserActivityView = countlyVue.views.create({
         template: CV.T("/core/user-activity/templates/user-activity.html"),
+        mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             return {
                 barChartItemsLegends: {
@@ -79,9 +80,6 @@
             },
             formatPercentage: function(value) {
                 return CountlyHelpers.formatPercentage(value);
-            },
-            formatNumber: function(value) {
-                return countlyCommon.formatNumber(value);
             },
             addEmptyRowIfNotFound: function(rowsArray, index) {
                 if (!rowsArray[index]) {

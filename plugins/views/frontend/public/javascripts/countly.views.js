@@ -502,6 +502,7 @@
 
     var ViewsPerSessionView = countlyVue.views.create({
         template: CV.T("/views/templates/views-per-session.html"),
+        mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             return {
                 progressBarColor: "#017AFF"

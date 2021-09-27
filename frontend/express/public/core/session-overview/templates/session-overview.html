@@ -17,10 +17,19 @@
                     <el-table-column sortable="custom" prop="date" :label="i18n('common.date')">
                     </el-table-column>
                     <el-table-column sortable="custom" prop="totalSessions" :label="i18n('common.total-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.totalSessions)}}
+                        </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="newSessions" :label="i18n('common.new-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.newSessions)}}
+                        </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="uniqueSessions" :label="i18n('common.unique-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.uniqueSessions)}}
+                        </template>
                     </el-table-column>
                 </template>
             </cly-datatable-n>

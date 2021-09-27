@@ -1,6 +1,7 @@
 /* global countlyVue,CV,countlySessionDurations,countlyCommon*/
 var SessionDurationsView = countlyVue.views.create({
     template: CV.T("/core/session-durations/templates/session-durations.html"),
+    mixins: [countlyVue.mixins.commonFormatters],
     data: function() {
         return {
             progressBarColor: "#017AFF"

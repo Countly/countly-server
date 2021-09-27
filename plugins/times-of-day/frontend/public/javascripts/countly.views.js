@@ -5,6 +5,7 @@ var MAX_SYMBOL_VALUE = 50;
 
 var TimesOfDayView = countlyVue.views.create({
     template: CV.T('/times-of-day/templates/times-of-day.html'),
+    mixins: [countlyVue.mixins.commonFormatters],
     data: function() {
         return {
         };
@@ -100,10 +101,7 @@ var TimesOfDayView = countlyVue.views.create({
         },
         refresh: function() {
             this.$store.dispatch('countlyTimesOfDay/fetchAll', false);
-        },
-        formatNumber: function(value) {
-            return countlyCommon.formatNumber(value);
-        },
+        }
     },
     mounted: function() {
         this.$store.dispatch('countlyTimesOfDay/fetchAll', true);

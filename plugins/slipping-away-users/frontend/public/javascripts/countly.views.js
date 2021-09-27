@@ -5,6 +5,7 @@
 
     var SlippingAwayUsersView = countlyVue.views.create({
         template: CV.T("/slipping-away-users/templates/slipping-away-users.html"),
+        mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             return {
                 progressBarColor: "#F96300",
@@ -65,9 +66,6 @@
             },
             refresh: function() {
                 this.$store.dispatch("countlySlippingAwayUsers/fetchAll", false);
-            },
-            formatNumber: function(value) {
-                return countlyCommon.formatNumber(value);
             },
         },
         mounted: function() {

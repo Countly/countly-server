@@ -16,6 +16,9 @@
                     <el-table-column sortable="custom" prop="viewsBuckets" :label="i18n('views-per-session.table-views-buckets')">
                     </el-table-column>
                     <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.number-of-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.numberOfSessions)}}
+                        </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="percentage" :label="i18n('common.percent')">
                         <template slot-scope="scope">
