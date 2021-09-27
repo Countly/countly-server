@@ -20,7 +20,10 @@
                     this.$store.dispatch('countlySlippingAwayUsers/onSetFilters', value);
                     this.$store.dispatch("countlySlippingAwayUsers/fetchAll", true);
                     if (value.query) {
-                        app.navigate("#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/slipping-away-users/" + JSON.stringify(value.query));
+                        app.navigate("#/analytics/loyalty/slipping-away-users/" + JSON.stringify(value.query));
+                    }
+                    else {
+                        app.navigate("#/analytics/loyalty/slipping-away-users/");
                     }
                 }
             },
