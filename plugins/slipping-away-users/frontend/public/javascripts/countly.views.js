@@ -19,8 +19,9 @@
                 set: function(value) {
                     this.$store.dispatch('countlySlippingAwayUsers/onSetFilters', value);
                     this.$store.dispatch("countlySlippingAwayUsers/fetchAll", true);
-                    //TODO: when cly-qb-bar component supports filters without having to build them, set the url parameters to filter value
-                    // app.navigate("#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/slipping-away-users/" + JSON.stringify(value));
+                    if (value.query) {
+                        app.navigate("#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/slipping-away-users/" + JSON.stringify(value.query));
+                    }
                 }
             },
             slippingAwayUsersOptions: function() {
