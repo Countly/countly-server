@@ -186,12 +186,6 @@ $bg-color: #24292e;
     &__main-menu {
         overflow: auto;
         height: calc(100% - 82px);
-
-        ul {
-            li {
-                padding: 2px 14px 2px 14px;
-            }
-        }
     }
 
     &__app-image {

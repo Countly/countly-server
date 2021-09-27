@@ -4,19 +4,17 @@
 
     $(document).ready(function() {
         var AppSelector = countlyVue.views.create({
-            template: CV.T('/javascripts/countly/vue/templates/sidebar/AppSelector.html'),
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/app-selector.html'),
             data: function() {
                 return {
-                    centerDialogVisible: true,
-                    app_selector__dialog_box: "cly-vue-sidebar__app-selector__dialog_box"
+                    centerDialogVisible: true
                 };
             },
             computed: {
                 activeApp: {
                     get: function() {
                         var app = this.$store.getters["countlyCommon/getActiveApp"];
-                        var tempApp = Object.assign({}, app);
-                        return tempApp._id;
+                        return app && app._id;
                     },
                     set: function(activeApp) {
                         this.onChange(activeApp);
@@ -204,6 +202,7 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
+                    app.navigate(item.url, true);
                 },
                 sortBy: function(arrayToSort, sortList) {
                     if (!sortList.length) {
