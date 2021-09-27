@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, countlyGlobal, countlySession, Promise */
+/*global countlyVue,CV,countlyCommon,countlyGlobal,countlySession,Promise */
 (function(countlyUserActivity) {
 
     countlyUserActivity.helpers = {
@@ -31,7 +31,7 @@
                 var userActivitySerie = userActivityDto[userActivityKey];
                 userActivitySerie.forEach(function(serieItem) {
                     if (serieItem._id && !countlyUserActivity.helpers.isBucketAdded(nonEmptybuckets, serieItem._id)) {
-                        nonEmptybuckets.push(serieItem._id);
+                        nonEmptybuckets.push(countlyCommon.decodeHtml(serieItem._id));
                     }
                 });
             });
