@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, countlyGlobal, countlySession, CountlyHelpers, Promise */
+/*global countlyVue, CV, countlyCommon, countlyGlobal, countlySession, Promise */
 (function(countlyUserActivity) {
 
     countlyUserActivity.helpers = {
@@ -70,15 +70,18 @@
 
         fetchUserActivity: function(filters) {
             var self = this;
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                api_key: countlyGlobal.member.api_key,
+            };
+            if (filters) {
+                data.query = JSON.stringify(filters);
+            }
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + '/app_users/loyalty',
-                    data: {
-                        app_id: countlyCommon.ACTIVE_APP_ID,
-                        api_key: countlyGlobal.member.api_key,
-                        query: JSON.stringify(CountlyHelpers.buildFilters(filters))
-                    },
+                    data: data,
                     dataType: "json",
                 }, {disableAutoCatch: true}).then(function(response) {
                     var nonEmptyBuckets = countlyUserActivity.helpers.findNonEmptyBuckets(response);
@@ -104,7 +107,7 @@
         var userActivityActions = {
             fetchAll: function(context, useLoader) {
                 context.dispatch('onFetchInit', {useLoader: useLoader});
-                countlyUserActivity.service.fetchUserActivity(context.state.userActivityFilters)
+                countlyUserActivity.service.fetchUserActivity(context.state.userActivityFilters.query)
                     .then(function(response) {
                         context.commit('setUserActivity', response.model);
                         context.commit('setNonEmptyBuckets', response.nonEmptyBuckets);

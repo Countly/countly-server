@@ -25,8 +25,12 @@
                 set: function(value) {
                     this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', value);
                     this.$store.dispatch('countlyUserActivity/fetchAll', true);
-                    //TODO: when cly-qb-bar component supports filters without having to build them, set the url parameters to filter value
-                    // app.navigate("#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/slipping-away-users/" + JSON.stringify(value));
+                    if (value.query) {
+                        app.navigate("#/analytics/loyalty/user-activity/" + JSON.stringify(value.query));
+                    }
+                    else {
+                        app.navigate("#/analytics/loyalty/user-activity/");
+                    }
                 }
             },
             isLoading: function() {

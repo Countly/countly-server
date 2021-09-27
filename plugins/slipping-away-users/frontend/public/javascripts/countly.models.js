@@ -1,4 +1,4 @@
-/*global countlyCommon,countlyVue,CV,CountlyHelpers,Promise*/
+/*global countlyCommon,countlyVue,CV,Promise*/
 (function(countlySlippingAwayUsers) {
 
     countlySlippingAwayUsers.service = {
@@ -18,15 +18,19 @@
         },
         fetchSlippingAwayUsers: function(filters) {
             var self = this;
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                method: 'slipping',
+                query: JSON.stringify(filters)
+            };
+            if (filters) {
+                data.query = JSON.stringify(filters);
+            }
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_URL + "/o/slipping",
-                    data: {
-                        app_id: countlyCommon.ACTIVE_APP_ID,
-                        method: 'slipping',
-                        query: JSON.stringify(CountlyHelpers.buildFilters(filters))
-                    }
+                    data: data
                 }, {disableAutoCatch: true})
                     .then(function(response) {
                         resolve(self.mapDtoToModel(response));
@@ -49,7 +53,7 @@
         var slippingAwayUsersActions = {
             fetchAll: function(context, useLoader) {
                 context.dispatch('onFetchInit', {useLoader: useLoader});
-                countlySlippingAwayUsers.service.fetchSlippingAwayUsers(context.state.filters)
+                countlySlippingAwayUsers.service.fetchSlippingAwayUsers(context.state.filters.query)
                     .then(function(response) {
                         context.commit('setSlippingAwayUsers', response);
                         context.dispatch('onFetchSuccess', {useLoader: useLoader});

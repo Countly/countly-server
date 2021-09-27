@@ -1,4 +1,4 @@
-/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,CountlyHelpers,countlyCommon*/
+/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,countlyCommon*/
 (function() {
 
     var FEATURE_NAME = "slipping_away_users";
@@ -60,11 +60,11 @@
         methods: {
             onUserListClick: function(timeStamp) {
                 var data = {
-                    "lac": {"$lt": timeStamp}
+                    lac: {"$lt": timeStamp}
                 };
                 var currentFilters = this.$store.state.countlySlippingAwayUsers.filters;
                 if (currentFilters.query) {
-                    Object.assign(data, CountlyHelpers.buildFilters(currentFilters));
+                    Object.assign(data, currentFilters.query);
                 }
                 window.location.hash = '/users/query/' + JSON.stringify(data);
             },

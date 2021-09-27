@@ -6,7 +6,7 @@
         </template>
     </cly-header>
     <cly-main>
-        <cly-qb-bar class="bu-mb-5" v-model="userActivityFilters" queryStore="user-activity" format="mongo" style="margin-bottom:32px"></cly-qb-bar>
+        <cly-qb-bar class="bu-mb-5" v-model="userActivityFilters" queryStore="user-activity" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}"></cly-qb-bar>
         <cly-section>
             <cly-chart-bar :option="userActivityOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
         </cly-section>
