@@ -159,10 +159,10 @@
                             state.allApps[additionalApps._id] = additionalApps;
                         }
                     },
-                    removeFromAllApps: function(state, appToRemove_id) {
-                        var appObj = state.allApps[appToRemove_id];
+                    removeFromAllApps: function(state, appToRemoveId) {
+                        var appObj = state.allApps[appToRemoveId];
                         if (appObj) {
-                            delete state.allApps[appToRemove_id];
+                            delete state.allApps[appToRemoveId];
                         }
                     },
                     deleteAllApps: function(state) {
@@ -184,14 +184,14 @@
                     addToAllApps: function(context, additionalApps) {
                         context.commit("addToAllApps", additionalApps);
                     },
-                    removeFromAllApps: function(context, appToRemove_id) {
-                        if (Array.isArray(appToRemove_id)) {
-                            appToRemove_id.forEach(function(app) {
+                    removeFromAllApps: function(context, appToRemoveId) {
+                        if (Array.isArray(appToRemoveId)) {
+                            appToRemoveId.forEach(function(app) {
                                 context.commit("removeFromAllApps", app);
                             });
                         }
                         else {
-                            context.commit("removeFromAllApps", appToRemove_id);
+                            context.commit("removeFromAllApps", appToRemoveId);
                         }
                     },
                     deleteAllApps: function(context) {
