@@ -20,7 +20,7 @@
     <div class="cly-vue-sidebar__main-menu">
         <div v-for="(cat, idx) in categories" :data-category="cat.name">
             <ul>
-                <li v-for="(menu, idx) in categorizedMenus[cat.name]">
+                <li v-for="(menu, idx) in categorizedMenus[cat.name]" class="bu-px-3 bu-my-1">
                     <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
                         <el-collapse v-model="selectedAnalyticsMenu" accordion>
                             <el-collapse-item :title="i18nM(menu.title)" :name="menu.name"
@@ -28,11 +28,10 @@
                                 <ul>
                                     <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
                                         <div :class="['cly-vue-sidebar__submenu-items',
+                                                     'bu-pl-5', 'bu-my-1',
                                                     {'cly-vue-sidebar__submenu-items--selected': selectedMenuItem.name === submenu.name}]"
                                             @click="onMenuItemClick(submenu)">
-                                            <a :href="submenu.url">
-                                                <div class="has-ellipsis">{{i18nM(submenu.title)}}</div>
-                                            </a>
+                                            <div class="has-ellipsis">{{i18nM(submenu.title)}}</div>
                                         </div>
                                     </li>
                                 </ul>
@@ -42,9 +41,7 @@
                     <div v-else :class="['cly-vue-sidebar__menu-items',
                                 {'cly-vue-sidebar__menu-items--selected': selectedMenuItem.name === menu.name}]"
                         @click="onMenuItemClick(menu)">
-                        <a :href="menu.url">
-                            <div class="has-ellipsis">{{i18nM(menu.title)}}</div>
-                        </a>
+                        <div class="has-ellipsis">{{i18nM(menu.title)}}</div>
                     </div>
                 </li>
             </ul>
