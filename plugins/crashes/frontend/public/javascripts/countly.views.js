@@ -976,7 +976,7 @@
             },
             calculateAllData: function() {
 
-                var data = this.$store.getters["countlyCrashes/overview/dashboardData"];
+                var data = this.$store.getters["countlyCrashes/overview/dashboardData"] || {};
                 var blocks = [];
 
                 var getUs = [{"name": CV.i18n('crashes.total-crashes'), "info": "", "prop": "cr", "r": true}, {"name": CV.i18n('crashes.unique'), "info": "", "prop": "cru", "r": true}, {"name": CV.i18n('crashes.total-per-session'), "info": "", "prop": "cr-session", "r": true}, {"name": CV.i18n('crashes.free-users'), "info": "", "prop": "crau", "p": true}, {"name": CV.i18n('crashes.free-sessions'), "info": "", "prop": "crses", "p": true}];
