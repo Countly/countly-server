@@ -3546,7 +3546,6 @@
     }
 }
 
-.cly-text-button,
 .cly-icon-button {
     color: map.get(c.$colors, "action-blue");
     cursor: pointer;
@@ -3567,6 +3566,30 @@
         opacity: 0.7;
     }
 }
+
+
+.cly-text-button
+{
+    color: map.get(c.$colors, "action-blue")!important;
+    cursor: pointer;
+    display: inline-block;
+    white-space: nowrap;
+    -webkit-appearance: none;
+    text-align: center;
+    box-sizing: border-box;
+    outline: none;
+    font-size: 13px;
+    font-weight: 500;
+    &--gray {
+        color: map.get(c.$colors, "text-secondary");
+    }
+    &--disabled {
+        cursor: default;
+        color: map.get(c.$colors, "text-secondary");
+        opacity: 0.7;
+    }
+}
+
 
 .is-scroll-shadow{
     &-at-middle::before,

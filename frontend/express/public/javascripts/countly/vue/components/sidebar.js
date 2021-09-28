@@ -442,7 +442,8 @@
                         },
                         {
                             name: "management",
-                            icon: "ion-wrench"
+                            icon: "ion-wrench",
+                            tooltip: "Management"
                         }
                     ];
 
@@ -461,12 +462,14 @@
                         {
                             name: "clipboard",
                             icon: "ion-clipboard",
-                            noSelect: true
+                            noSelect: true,
+                            tooltip: "Help Center"
                         },
                         {
                             name: "notifications",
                             icon: "ion-android-notifications",
-                            noSelect: true
+                            noSelect: true,
+                            tooltip: "Assistant"
                         },
                         {
                             name: "user",
