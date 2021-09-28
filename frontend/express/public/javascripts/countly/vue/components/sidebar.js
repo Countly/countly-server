@@ -336,6 +336,7 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
+                    app.navigate(item.url, true);
                 },
                 checkCurrentManagementTab: function(currLink) {
                     var menu = this.menu;
