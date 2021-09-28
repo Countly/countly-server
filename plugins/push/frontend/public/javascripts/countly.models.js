@@ -229,17 +229,17 @@
         convertDateTimeToMS: function(datetime) {
             var result = 0;
             if (datetime.days) {
-                result += moment.duration(parseInt(datetime.days), 'd').asMilliseconds();
+                result += moment.duration(parseInt(datetime.days, 10), 'd').asMilliseconds();
             }
             if (datetime.hours) {
-                result += moment.duration(parseInt(datetime.hours), 'h').asMilliseconds();
+                result += moment.duration(parseInt(datetime.hours, 10), 'h').asMilliseconds();
             }
             return result;
         },
         convertMSToDaysAndHours: function(dateTimeInMs) {
-            var days = parseInt(dateTimeInMs / DAY_TO_MS_RATIO);
+            var days = parseInt(dateTimeInMs / DAY_TO_MS_RATIO, 10);
             var remainingTime = (dateTimeInMs % DAY_TO_MS_RATIO);
-            var hours = parseInt(remainingTime / HOUR_TO_MS_RATIO);
+            var hours = parseInt(remainingTime / HOUR_TO_MS_RATIO, 10);
             return {
                 days: days,
                 hours: hours
@@ -589,7 +589,7 @@
                 if (pushNotificationType === TypeEnum.TRANSACTIONAL) {
                     return this.mapDtoToTransactionalModel(dto);
                 }
-                throw new Error('Unknown push notification type, ', pushNotificationType);
+                throw new Error('Unknown push notification type, ' + pushNotificationType);
             },
             mapMediaMetadata: function(metadataDto) {
                 var typeAndFileExtension = metadataDto['content-type'].split('/');
@@ -652,11 +652,12 @@
                 var element = document.createElement('div');
                 element.innerHTML = this.replaceUserProperties(localizedMessage, container);
                 var substitutedUserPropertyRegexp = new RegExp(USER_PROPERTY_SUBSTITUE_CHAR, 'g');
-                var match = null;
+                var match = substitutedUserPropertyRegexp.exec(element.textContent);
                 var userPropertyIndexCounter = 0;
-                while ((match = substitutedUserPropertyRegexp.exec(element.textContent)) !== null) {
+                while (match) {
                     indices.push(match.index - userPropertyIndexCounter);
                     userPropertyIndexCounter += 1;
+                    match = substitutedUserPropertyRegexp.exec(element.textContent);
                 }
                 return indices;
             },
@@ -833,7 +834,7 @@
                     dto.autoDelay = countlyPushNotification.helper.convertDateTimeToMS(deliveryDateTime);
                 }
                 if (pushNotificationModel.automatic.capping) {
-                    dto.autoCapMessages = parseInt(pushNotificationModel.automatic.maximumMessagesPerUser);
+                    dto.autoCapMessages = parseInt(pushNotificationModel.automatic.maximumMessagesPerUser, 10);
                     var cappingDateTime = {
                         days: pushNotificationModel.automatic.minimumTimeBetweenMessages.days,
                         hours: pushNotificationModel.automatic.minimumTimeBetweenMessages.hours
@@ -1006,7 +1007,7 @@
                         if (countlyPushNotification.helper.hasNoUsersToSendPushNotification(response)) {
                             reject(new Error('No users were found from selected configuration'));
                         }
-                        if (response.error) {
+                        else if (response.error) {
                             reject(new Error(response.error));
                         }
                         else {
@@ -1264,7 +1265,7 @@
             state.periods = countlyPushNotification.helper.getInitialPeriodsStateByType(state.selectedPushNotificationType);
         },
         setPushNotifications: function(state, value) {
-            state = Object.assign(state, value);
+            Object.assign(state, value);
         },
         setStatusFilter: function(state, value) {
             state.statusFilter = value;
