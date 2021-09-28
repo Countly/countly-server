@@ -254,7 +254,7 @@ var CountriesHomeWidget = countlyVue.views.create({
             buttonLink: buttonLink,
             chooseProperties: this.calculateProperties(),
             countriesData: this.calculateCountriesData(),
-			selectedProperty:"t"
+            selectedProperty: "t"
 
         };
     },
