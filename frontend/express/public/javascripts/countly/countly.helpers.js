@@ -2583,6 +2583,7 @@
             _period = null,
             _name = (metric.name) ? metric.name : metric,
             _estOverrideMetric = (metric.estOverrideMetric) ? metric.estOverrideMetric : "";
+			_promises = {};
 
         //Public Methods
         /**
@@ -2596,12 +2597,22 @@
         * }
         */
         countlyMetric.initialize = function(processed) {
-            if (_initialized && _period === countlyCommon.getPeriodForAjax() && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
+			
+			var periodToFetch = countlyCommon.getPeriodForAjax();
+
+			var key = countlyCommon.ACTIVE_APP_ID+"-"+_name+"-"+periodToFetch;
+			var key_refresh = countlyCommon.ACTIVE_APP_ID+"-"+_name+"-refresh";
+			if(_promises[key]){
+				return _promises[key]; //we are currently running request for that. So return that.
+			}
+			else if(_promises[key_refresh]){
+				return _promises[key_refresh];
+			}
+            if (_initialized && _period === periodToFetch && _activeAppKey === countlyCommon.ACTIVE_APP_KEY) {
                 return this.refresh();
             }
-
-            _period = countlyCommon.getPeriodForAjax();
-
+			_period = countlyCommon.getPeriodForAjax();
+            
             if (!countlyCommon.DEBUG) {
                 _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
                 _initialized = true;
@@ -2625,22 +2636,29 @@
                     });
                 }
                 else {
-                    return $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_PARTS.data.r,
-                        data: {
-                            "app_id": countlyCommon.ACTIVE_APP_ID,
-                            "method": _name,
-                            "period": _period
-                        },
-                        success: function(json) {
-                            _Db = json;
-                            setMeta();
-                            if (countlyMetric.callback) {
-                                countlyMetric.callback(false, json);
-                            }
-                        }
-                    });
+
+					_promises[key] = $.ajax({
+						type: "GET",
+						url: countlyCommon.API_PARTS.data.r,
+						data: {
+							"app_id": countlyCommon.ACTIVE_APP_ID,
+							"method": _name,
+							"period": _period
+						},
+						success: function(json) {
+							_Db = json;
+							setMeta();
+							if (countlyMetric.callback) {
+								countlyMetric.callback(false, json);
+							}
+							delete _promises[key];
+						},
+						error: function() {
+							delete _promises[key];
+						}
+					});
+						
+					return _promises[key];
                 }
             }
             else {
@@ -2675,7 +2693,11 @@
                     }
                 }
                 else {
-                    return $.ajax({
+					var key = countlyCommon.ACTIVE_APP_ID+"-"+_name+"-refresh";
+					if(_promises[key]){
+						return _promises[key]; //we are currently running request for that. So return that.
+					}
+                    _promises[key] =  $.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r,
                         data: {
@@ -2689,8 +2711,14 @@
                             if (countlyMetric.callback) {
                                 countlyMetric.callback(true, json);
                             }
-                        }
+							delete _promises[key];
+                        },
+						error: function() {
+							delete _promises[key];
+						}
                     });
+					
+					return _promises[key];
                 }
             }
             else {
