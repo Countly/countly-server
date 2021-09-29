@@ -24,14 +24,20 @@
                 return total;
             }, 0);
         },
+        decodeHTML: function(value) {
+            var textArea = document.createElement('textarea');
+            textArea.innerHTML = value;
+            return textArea.value;
+        },
 
         findNonEmptyBuckets: function(userActivityDto) {
+            var self = this;
             var nonEmptybuckets = [];
             Object.keys(userActivityDto).forEach(function(userActivityKey) {
                 var userActivitySerie = userActivityDto[userActivityKey];
                 userActivitySerie.forEach(function(serieItem) {
                     if (serieItem._id && !countlyUserActivity.helpers.isBucketAdded(nonEmptybuckets, serieItem._id)) {
-                        nonEmptybuckets.push(countlyCommon.decodeHtml(serieItem._id));
+                        nonEmptybuckets.push(self.decodeHTML(serieItem._id));
                     }
                 });
             });
