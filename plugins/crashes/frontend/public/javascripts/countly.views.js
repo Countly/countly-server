@@ -333,6 +333,7 @@
                 formatDate: function(row, col, cell) {
                     return moment(cell * 1000).format("lll");
                 },
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyCrashes", "crashgroups"),
                 crashgroupsFilterProperties: filterProperties,
                 crashgroupsFilterRules: [
                     new countlyQueryBuilder.RowRule({
@@ -400,7 +401,10 @@
         computed: {
             crashgroupsFilter: {
                 set: function(newValue) {
-                    return this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue);
+                    return Promise.all([
+                        this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue),
+                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(newValue.query)})
+                    ]);
                 },
                 get: function() {
                     return this.$store.getters["countlyCrashes/overview/crashgroupsFilter"];
@@ -456,14 +460,14 @@
             },
             statistics: function() {
                 return this.$store.getters["countlyCrashes/overview/statistics"];
-            },
-            crashgroupRows: function() {
-                return this.$store.getters["countlyCrashes/overview/crashgroupRows"];
             }
         },
         methods: {
             refresh: function() {
-                return this.$store.dispatch("countlyCrashes/overview/refresh");
+                return Promise.all([
+                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(this.crashgroupsFilter)}),
+                    this.$store.dispatch("countlyCrashes/overview/refresh")
+                ]);
             },
             handleRowClick: function(row) {
                 window.location.href = window.location.href + "/" + row._id;

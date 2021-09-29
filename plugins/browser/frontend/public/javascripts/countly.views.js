@@ -33,7 +33,7 @@ var AppBrowserView = countlyVue.views.create({
                     keepShow: false
                 }
             },
-            description: CV.i18n('browser.description'),
+            description: CV.i18n('browser.page-desc'),
             dynamicTab: "browser-table",
             browserTabs: [
                 {
