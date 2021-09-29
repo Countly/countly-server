@@ -76,12 +76,14 @@
             return obj;
         },
         filterSelectedApps: function(tableStateMap, selectedApps) {
+            var maxItems = 0;
             if (_.isEmpty(tableStateMap)) {
                 return selectedApps;
 
             }
             return selectedApps.filter(function(item) {
-                if (tableStateMap[item]) {
+                if (tableStateMap[item] && maxItems < 12) {
+                    maxItems++;
                     return item;
                 }
             });
