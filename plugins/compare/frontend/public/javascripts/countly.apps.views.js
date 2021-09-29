@@ -159,7 +159,7 @@
         });
     };
     if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route("/compare/apps", "compare-apps", function() {
+        app.route("/compare", "compare-apps", function() {
             var view = getMainView();
             view.params = {app_id: countlyCommon.ACTIVE_APP_ID};
             this.renderWhenReady(view);

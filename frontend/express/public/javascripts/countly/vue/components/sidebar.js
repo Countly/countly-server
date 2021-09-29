@@ -29,6 +29,10 @@
                 }
             },
             methods: {
+                compare: function() {
+                    app.navigate("#/compare", true);
+                    this.$emit("close");
+                },
                 onChange: function(id) {
                     var selectedApp = this.allApps.find(function(a) {
                         return a._id === id;
