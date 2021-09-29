@@ -20,7 +20,7 @@
     "app"
   ],
   "dependencies": {
-    "parse-domain": "3.0.3"
+    "parse-domain": "4.1.0"
   },
   "private": true
 }
