@@ -34,8 +34,8 @@
     <cly-section>
     <div class="cly-vue-compare-apps__graph-section">
       <div class="cly-vue-compare-apps__graph-section__dropdown">
-      <span class="cly-vue-compare-apps__graph-section--text" >{{i18n('apps.compare.metric')}}</span>
-      <el-select v-model="selectedGraph">
+      <span class="text-big bu-pr-2" >{{i18n('compare.results.by')}}</span>
+      <el-select :arrow="false" :adaptiveLength="true" v-model="selectedGraph">
         <el-option v-for="item in availableMetrics" :key="item" :value="item">
         </el-option>
       </el-select>
