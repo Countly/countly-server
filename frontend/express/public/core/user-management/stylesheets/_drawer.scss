@@ -1,5 +1,9 @@
 .user-management-drawer-content {
 
+  #user-drawer-dropzone {
+    background-color: #F8FAFD;
+  }
+
   &__under-input-text {
     text-decoration: underline;
     cursor: pointer;
