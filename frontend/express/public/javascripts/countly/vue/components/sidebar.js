@@ -380,7 +380,7 @@
             },
             data: function() {
                 return {
-                    selectedOptionLocal: null
+                    selectedMenuOptionLocal: null
                 };
             },
             computed: {
@@ -496,19 +496,19 @@
 
                     return member;
                 },
-                selectedOption: function() {
+                selectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
-                    if (!this.selectedOptionLocal) {
+                    if (!this.selectedMenuOptionLocal) {
                         return selected.menu;
                     }
 
-                    return this.selectedOptionLocal;
+                    return this.selectedMenuOptionLocal;
                 }
             },
             methods: {
                 onClick: function(option) {
                     if (!option.noSelect) {
-                        this.selectedOptionLocal = option.name;
+                        this.selectedMenuOptionLocal = option.name;
                     }
                 }
             }
