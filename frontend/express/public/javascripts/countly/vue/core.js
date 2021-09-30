@@ -202,7 +202,10 @@
             countlySidebar: {
                 namespaced: true,
                 state: {
-                    selectedMenuItem: {}
+                    selectedMenuItem: {
+                        menu: null,
+                        item: {}
+                    }
                 },
                 getters: {
                     getSelectedMenuItem: function(state) {
@@ -211,7 +214,11 @@
                 },
                 mutations: {
                     setSelectedMenuItem: function(state, payload) {
-                        state.selectedMenuItem = payload;
+                        state.selectedMenuItem.menu = payload.menu;
+                        state.selectedMenuItem.item = payload.item;
+                    },
+                    setSelectedMenu: function(state, payload) {
+                        state.selectedMenuItem.menu = payload;
                     }
                 },
                 actions: {

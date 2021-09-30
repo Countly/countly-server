@@ -54,7 +54,7 @@ $bg-color: #24292e;
         opacity: .57;
     }
 
-    &__options {
+    &__menu-options {
         width: 48px;
         height: 100%;
         overflow: auto;
@@ -65,7 +65,7 @@ $bg-color: #24292e;
         }
     }
 
-    &__option {
+    &__menu-option {
         width: 48px;
         height: 24px;
         margin-top: 25px;
@@ -78,19 +78,19 @@ $bg-color: #24292e;
         }
     }
 
-    &__option_app {
+    &__menu-option-app {
         background-color: map.get(c.$colors, "primary-green");
         border-radius: 4px;
         height: 24px;
         width: 24px;
     }
 
-    &__option_divider {
+    &__menu-option-divider {
         width: 24px;
         border: 1px solid map.get(c.$colors, "warm-gray-70");
     }
 
-    &__option-toggle {
+    &__menu-option-toggle {
         height: 48px;
         background-color: $bg-color;
         border-top-left-radius: 50%;

@@ -112,8 +112,6 @@
             },
             data: function() {
                 return {
-                    selectMode: "single-list",
-                    selectedAppLocal: null,
                     selectedAnalyticsMenu: null,
                     appSelector: false
                 };
@@ -229,6 +227,12 @@
                     var part1 = "";
                     var part2 = "";
                     var menu;
+
+                    if (!Object.keys(menus).length || !Object.keys(submenus).length) {
+                        // eslint-disable-next-line no-console
+                        console.log("Something is terribly wrong, please contact Prikshit Tekta asap and don't clear the logs please! ", currLink, menus, submenus);
+                    }
+
                     for (var k in menus) {
                         for (var i = 0; i < menus[k].length; i++) {
                             menu = menus[k][i];
@@ -283,15 +287,7 @@
                         }
                     }
 
-
-                    if (foundMenu) {
-                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
-                    }
-                    else {
-                        // eslint-disable-next-line no-console
-                        console.log("Analytics menu not found. ", currLink, menus, submenus);
-                    }
-
+                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
                 },
                 toggleAppSelection: function() {
                     this.appSelector = !this.appSelector;
@@ -341,28 +337,23 @@
                 checkCurrentManagementTab: function(currLink) {
                     var menu = this.menu;
 
-                    var currMenu = menu.filter(function(m) {
+                    var currMenu = menu.find(function(m) {
                         return m.url === currLink;
                     });
 
-                    if (!currMenu.length) {
+                    if (!currMenu) {
                         if (currLink.split("/").length > 2) {
                             var part1 = "/" + currLink.split("/")[1];
                             var part2 = part1 + "/" + currLink.split("/")[2];
-                            currMenu = menu.filter(function(m) {
+                            currMenu = menu.find(function(m) {
                                 return (m.url === "#" + part1 || m.url === "#" + part2);
                             });
                         }
                     }
 
-                    if (currMenu.length) {
-                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu[0] });
+                    if (currMenu) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu });
                     }
-                    else {
-                        // eslint-disable-next-line no-console
-                        console.log("Management menu not found. ", currLink, menu);
-                    }
-
                 }
             },
             mounted: function() {
@@ -378,8 +369,8 @@
             template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar.html'),
             mixins: [
                 countlyVue.container.dataMixin({
-                    "externalMainOptions": "/sidebar/options/main",
-                    "externalOtherOptions": "/sidebar/options/other"
+                    "externalMainMenuOptions": "/sidebar/menu/main",
+                    "externalOtherMenuOptions": "/sidebar/menu/other"
                 })
             ],
             components: {
@@ -394,23 +385,23 @@
             },
             computed: {
                 components: function() {
-                    var options = [];
+                    var menuOptions = [];
 
-                    var externalMainOptions = this.externalMainOptions;
-                    var externalOtherOptions = this.externalOtherOptions;
+                    var externalMainMenuOptions = this.externalMainMenuOptions;
+                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
 
-                    if (externalMainOptions && externalMainOptions.length) {
-                        options = options.concat(externalMainOptions);
+                    if (externalMainMenuOptions && externalMainMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalMainMenuOptions);
                     }
 
-                    if (externalOtherOptions && externalOtherOptions.length) {
-                        options = options.concat(externalOtherOptions);
+                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalOtherMenuOptions);
                     }
 
-                    return options;
+                    return menuOptions;
                 },
-                mainOptions: function() {
-                    var options = [
+                mainMenuOptions: function() {
+                    var menuOptions = [
                         {
                             name: "app",
                             noSelect: true
@@ -434,18 +425,18 @@
                         }
                     ];
 
-                    var externalMainOptions = this.externalMainOptions;
+                    var externalMainMenuOptions = this.externalMainMenuOptions;
 
-                    if (externalMainOptions && externalMainOptions.length) {
-                        for (var i = 0; i < externalMainOptions.length; i++) {
-                            options.splice(2, 0, externalMainOptions[i]);
+                    if (externalMainMenuOptions && externalMainMenuOptions.length) {
+                        for (var i = 0; i < externalMainMenuOptions.length; i++) {
+                            menuOptions.splice(2, 0, externalMainMenuOptions[i]);
                         }
                     }
 
-                    return options;
+                    return menuOptions;
                 },
-                otherOptions: function() {
-                    var options = [
+                otherMenuOptions: function() {
+                    var menuOptions = [
                         {
                             name: "clipboard",
                             icon: "ion-clipboard",
@@ -471,15 +462,15 @@
                         }
                     ];
 
-                    var externalOtherOptions = this.externalOtherOptions;
+                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
 
-                    if (externalOtherOptions && externalOtherOptions.length) {
-                        for (var i = 0; i < externalOtherOptions.length; i++) {
-                            options.splice(3, 0, externalOtherOptions[i]);
+                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
+                        for (var i = 0; i < externalOtherMenuOptions.length; i++) {
+                            menuOptions.splice(3, 0, externalOtherMenuOptions[i]);
                         }
                     }
 
-                    return options;
+                    return menuOptions;
                 },
                 member: function() {
                     //We should fetch the user from vuex
