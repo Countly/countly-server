@@ -5,9 +5,9 @@
       <template v-slot="scope">
         <el-table-column fixed="left" type="selection" :reserve-selection="true">
         </el-table-column>
-        <el-table-column min-width="120" fixed sortable="true" prop="name" :label="i18n('apps.compare.table.name')">
+        <el-table-column min-width="240" fixed sortable="true" prop="name" :label="i18n('apps.compare.table.name')">
           <template v-slot="rowScope">
-            <div>
+            <div class="has-ellipsis">
               {{rowScope.row.name}}
             </div>
           </template>
