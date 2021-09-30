@@ -253,7 +253,8 @@ var CountriesHomeWidget = countlyVue.views.create({
             buttonText: buttonText,
             buttonLink: buttonLink,
             chooseProperties: this.calculateProperties(),
-            countriesData: this.calculateCountriesData()
+            countriesData: this.calculateCountriesData(),
+            selectedProperty: "t"
 
         };
     },
@@ -303,22 +304,12 @@ var CountriesHomeWidget = countlyVue.views.create({
             var geoChart = {};
             var data = this.$store.state.countlyCountry.data || {};
             var table = data.table || [];
-            var selectedProperty = this.$store.state.countlyCountry.selectedProperty || "t";
+            var selectedProperty = this.selectedProperty || "t";
             for (var k = 0; k < table.length; k++) {
                 geoChart[table[k].country] = {"value": table[k][selectedProperty]};
             }
             return geoChart;
         },
-    },
-    computed: {
-        selectedProperty: {
-            set: function(value) {
-                this.$store.dispatch('countlyCountry/onSetSelectedProperty', value);
-            },
-            get: function() {
-                return this.$store.state.countlyCountry.selectedProperty;
-            }
-        }
     }
 });
 
