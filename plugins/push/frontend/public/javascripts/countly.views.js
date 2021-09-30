@@ -1,5 +1,8 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment,Promise*/
+
 (function() {
+
+    var featureName = 'push';
 
     var AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = [
         {label: CV.i18n("push-notification.status-scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
@@ -1128,192 +1131,155 @@
         this.renderWhenReady(pushNotificationDetailsViewWrapper);
     });
 
-    //countly.views application management settings
-    var featureName = 'push';
+    //countly.views application level management settings
+    var initialAppLevelConfig = {
+        rate: "",
+        period: ""
+    };
+    initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.IOS] = {
+        _id: "",
+        keyId: "",
+        keyFile: "",
+        teamId: "",
+        bundleId: "",
+        authType: countlyPushNotification.service.IOSAuthConfigTypeEnum.P8,
+        passphrase: ""
+    };
+    initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.ANDROID] = {
+        _id: "",
+        firebaseKey: "",
+        type: "fcm"
+    };
+    initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.HUAWEI] = {
+        _id: "",
+        appId: "",
+        appSecret: ""
+    };
 
-    app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyManagementView.extend({
-        initialize: function() {
-            this.plugin = 'push';
-            this.templatePath = '/push/templates/push.html';
-            this.resetTemplateData();
-        },
-
-        resetTemplateData: function() {
-            var c = this.config();
-            if (c.i && c.i._id) {
-                this.templateData = {
-                    i: {
-                        _id: c.i._id,
-                        type: c.i.type,
-                        key: c.i.key,
-                        team: c.i.team,
-                        bundle: c.i.bundle,
-                        help: c.i.type === 'apn_universal' && c.i._id ? '<i class="fa fa-check-circle"></i>' + jQuery.i18n.map['mgmt-plugins.push.uploaded.p12'] : c.i.type === 'apn_token' ? '<i class="fa fa-check-circle"></i>' + jQuery.i18n.map['mgmt-plugins.push.uploaded.p8'] : ''
-                    // help: '<a href="' + countlyCommon.API_URL + '/i/pushes/download/' + c.i._id + '?api_key=' + countlyGlobal.member.api_key + '">' + jQuery.i18n.map['mgmt-plugins.push.uploaded'] + '</a>. ' + (c.i.type === 'apn_universal' ? (jQuery.i18n.map['mgmt-plugins.push.uploaded.bundle'] + ' ' + c.i.bundle) : '')
-                    }
-                };
-            }
-            else {
-                this.templateData = {
-                    i: {
-                        type: 'apn_token',
-                        key: '',
-                        team: '',
-                        bundle: '',
-                    }
-                };
-            }
-            var t = c.a && c.a && c.a.key ? jQuery.i18n.map['mgmt-plugins.push.detected'] + ' ' + (c.a.key.length > 50 ? 'FCM' : 'GCM') : '';
-            this.templateData.a = {
-                _id: c.a && c.a._id || '',
-                key: c.a && c.a && c.a.key || '',
-                help: c.a && c.a && c.a.key && c.a.key.length > 50 ? t : '',
-                ehelp: c.a && c.a && c.a.key && c.a.key.length < 50 ? t : ''
-            };
-            this.templateData.h = {
-                _id: c.h && c.h._id || '',
-                key: c.h && c.h && c.h.key || '',
-                secret: c.h && c.h && c.h.secret || ''
-            };
-            this.templateData.rate = {
-                rate: c.rate && c.rate.rate || '',
-                period: c.rate && c.rate.period || ''
+    var keyFileReader = new FileReader();
+    var PushNotificationAppLevelConfigView = countlyVue.views.create({
+        template: CV.T("/push/templates/push-notification-app-level-config.html"),
+        data: function() {
+            return {
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                IOSAuthConfigTypeEnum: countlyPushNotification.service.IOSAuthConfigTypeEnum,
+                iosAuthConfigType: countlyPushNotification.service.IOSAuthConfigTypeEnum.P8,
+                iosAuthConfigTypeOptions: countlyPushNotification.service.iosAuthConfigTypeOptions,
+                viewModel: JSON.parse(JSON.stringify(initialAppLevelConfig)),
+                modelUnderEdit: {
+                    rate: "",
+                    period: ""
+                }
             };
         },
-
-        onChange: function(name, value) {
-            if (name === 'i.type') {
-                this.resetTemplateData();
-                countlyCommon.dot(this.templateData, name, value);
-                this.render();
-            }
-            else if (name === 'a.key' && value) {
-                this.templateData.a.type = value.length > 100 ? 'fcm' : 'gcm';
-                this.el.find('input[name="a.type"]').val(this.templateData.a.type);
-            }
-            else if (name === 'i.pass' && !value) {
-                delete this.templateData.i.pass;
-            }
-        },
-
-        isSaveAvailable: function() {
-            var td = JSON.parse(JSON.stringify(this.templateData)),
-                std = JSON.parse(this.savedTemplateData);
-
-            if (td.i) {
-                delete td.i.pass;
-            }
-
-            if (std.i) {
-                delete std.i.pass;
-            }
-
-            return JSON.stringify(td) !== JSON.stringify(std);
-        },
-
-        validate: function() {
-            var i = this.config().i || {},
-                //a = this.config().a || {},
-                t = this.templateData;
-
-            if (t.i.type) {
-                if (t.i.file && t.i.file.length) {
-                    if (t.i.type === 'apn_token') {
-                        if (!t.i.key) {
-                            return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
-                        }
-                        if (!t.i.team) {
-                            return jQuery.i18n.map['mgmt-plugins.push.error.noteam'];
-                        }
-                        if (!t.i.bundle) {
-                            return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
-                        }
-                    }
-                }
-                else {
-                    if (t.i.type === 'apn_token') {
-                        if ((t.i.key || '') !== (i.key || '') || (t.i.team || '') !== (i.team || '') || (t.i.bundle || '') !== (i.bundle || '')) {
-                            return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
-                        }
-                    }
-                }
-            }
-
-            if (!t.h.key && t.h.secret) {
-                return jQuery.i18n.map['mgmt-plugins.push.error.h.key'];
-            }
-            if (t.h.key && !t.h.secret) {
-                return jQuery.i18n.map['mgmt-plugins.push.error.h.secret'];
-            }
-            if (t.h.key && (parseInt(t.h.key) + '') !== t.h.key) {
-                return jQuery.i18n.map['mgmt-plugins.push.error.h.keynum'];
-            }
-        },
-
-        loadFile: function() {
-            var data = JSON.parse(JSON.stringify(this.templateData));
-
-            if (data.i.file) {
-                if (data.i.file.indexOf('.p8') === data.i.file.length - 3) {
-                    data.i.fileType = 'p8';
-                }
-                else if (data.i.file.indexOf('.p12') === data.i.file.length - 4) {
-                    data.i.fileType = 'p12';
-                }
-                else {
-                    return $.Deferred().reject('File type not supported');
-                }
-
-                var d = new $.Deferred(),
-                    reader = new window.FileReader();
-
-                reader.addEventListener('load', function() {
-                    data.i.file = reader.result;
-                    d.resolve({push: data});
-                });
-                reader.addEventListener('error', d.reject.bind(d));
-                reader.readAsDataURL(this.el.find('input[name="i.file"]')[0].files[0]);
-
-                return d.promise();
-            }
-            else {
-                return $.when({push: data});
-            }
-        },
-
-        prepare: function() {
-        // var text = jQuery.i18n.map["plugins.confirm"];
-        // var msg = { title: jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info: jQuery.i18n.map["plugins.hold-on"], sticky: true };
-        // CountlyHelpers.confirm(text, "popStyleGreen popStyleGreenWide", function (result) {
-        //     if (!result) {
-        //         return true;
+        //NOTE: selected app state from app level plugin config must be stored in the global store instead of keeping it locally.
+        // computed: {
+        //     selectedApp: function() {
+        //         return this.$store.state.countlyCommon.applications.config.selectedApp;
         //     }
-        //     CountlyHelpers.notify(msg);
-        //     app.activeView.togglePlugin(plugins);
-        // },[jQuery.i18n.map["common.no-dont-continue"],jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]],{title:jQuery.i18n.map["plugins-apply-changes-to-plugins"],image:"apply-changes-to-plugins"});
-            return this.loadFile().then(function(data) {
-                delete data.push.i.help;
-                delete data.push.a.help;
-
-                if (!data.push.i.file && !data.push.i._id) {
-                    data.push.i = null;
+        // },
+        // watcher: {
+        //     selectedApp: function(newValue) {
+        //         var dto = countlyGlobal.apps[newValue].plugins.push;
+        //         if (dto) {
+        //             var model = countlyPushNotification.service.mapper.incoming.mapApplevelConfigDtoToModel(newValue);
+        //             this.viewModel = JSON.parse(JSON.stringify(model));
+        //             this.modelUnderEdit = JSON.parse(JSON.stringify(model));
+        //         }
+        //         else {
+        //             this.viewModel = JSON.parse(JSON.stringify(initialAppLevelConfig));
+        //             this.modelUnderEdit = JSON.parse(JSON.stringify(model));
+        //         }
+        //     }
+        // },
+        methods: {
+            onIOSAuthTypeChange: function(value) {
+                this.iosAuthConfigType = value;
+                this.$refs.keyFileUploader.clearFiles();
+                this.resetModelPlatform(this.PlatformEnum.IOS);
+                this.resetViewModelPlatform(this.PlatformEnum.IOS);
+            },
+            setKeyFile: function(dataUrlFile) {
+                this.initializeModelPlatformIfNotFound(this.PlatformEnum.IOS);
+                this.modelUnderEdit[this.PlatformEnum.IOS].keyFile = dataUrlFile;
+            },
+            onKeyFileChange: function(file) {
+                keyFileReader.readAsDataURL(file.raw);
+            },
+            setModelIOSPlatformAuthType: function() {
+                this.modelUnderEdit[this.PlatformEnum.IOS].authType = this.iosAuthConfigType;
+            },
+            resetViewModelPlatform: function(platform) {
+                this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                if (platform === this.PlatformEnum.IOS) {
+                    this.setModelIOSPlatformAuthType(platform);
                 }
-                else if (data.push.i.file) {
-                    delete data.push.i._id;
+            },
+            resetModelPlatform: function(platform) {
+                this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                if (platform === this.PlatformEnum.IOS) {
+                    this.setModelIOSPlatformAuthType(platform);
                 }
-
-                if (!data.push.a.key) {
-                    data.push.a = null;
+            },
+            initializeModelPlatformIfNotFound: function(platform) {
+                if (!this.modelUnderEdit[platform]) {
+                    this.resetModelPlatform(platform);
                 }
-
-                if (!data.push.h.key || !data.push.h.secret) {
-                    data.push.h = null;
+            },
+            updateViewModelOnInput: function(property, value, platform) {
+                if (platform) {
+                    this.viewModel[platform][property] = value;
                 }
+                else {
+                    this.viewModel[property] = value;
+                }
+            },
+            updateModelOnInput: function(property, value, platform) {
+                if (platform) {
+                    this.initializeModelPlatformIfNotFound(platform);
+                    this.modelUnderEdit[platform][property] = value;
+                }
+                else {
+                    this.modelUnderEdit[property] = value;
+                }
+            },
+            onInput: function(property, value, platform) {
+                this.updateViewModelOnInput(property, value, platform);
+                this.updateModelOnInput(property, value, platform);
+                this.dispatchAppLevelConfigChangeEvent();
+            },
+            addKeyFileReaderLoadListener: function(callback) {
+                keyFileReader.addEventListener('load', callback);
+            },
+            removeKeyFileReaderLoadListener: function() {
+                keyFileReader.removeEventListener('load');
+            },
+            onKeyFileReady: function() {
+                this.setKeyFile(keyFileReader.result);
+                this.dispatchAppLevelConfigChangeEvent();
+            },
+            dispatchAppLevelConfigChangeEvent: function() {
+                var dto = countlyPushNotification.mapper.outgoing.mapApplevelConfigModelToDto(this.modelUnderEdit);
+                this.$emit('change', 'push', dto);
+            },
+            getSelectedApp: function() {
 
-                return data;
-            });
+            },
+        },
+        mounted: function() {
+            this.addKeyFileReaderLoadListener(this.onKeyFileReady);
+        },
+        destroyed: function() {
+            this.removeKeyFileReaderLoadListener();
         }
-    }));
+    });
+
+    countlyVue.container.registerData("/app/settings", {
+        _id: "push",
+        inputs: {},
+        title: CV.i18n('push-notification.title'),
+        component: PushNotificationAppLevelConfigView
+    });
 
     app.addPageScript('/drill#', function() {
         if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {

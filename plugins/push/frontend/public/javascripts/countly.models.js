@@ -25,7 +25,8 @@
     var PlatformEnum = Object.freeze({
         ANDROID: "android",
         ALL: "all",
-        IOS: "ios"
+        IOS: "ios",
+        HUAWEI: "huawei"
     });
     var StatusEnum = Object.freeze({
         ALL: "all",
@@ -89,6 +90,11 @@
         DELAYED: 'delayed'
     });
 
+    var IOSAuthConfigTypeEnum = Object.freeze({
+        P8: 'p8',
+        P12: 'p12'
+    });
+
     var audienceSelectionOptions = {};
     audienceSelectionOptions[AudienceSelectionEnum.NOW] = {label: "Now", value: AudienceSelectionEnum.NOW};
     audienceSelectionOptions[AudienceSelectionEnum.BEFORE] = {label: "Right before sending the message", value: AudienceSelectionEnum.BEFORE};
@@ -121,6 +127,10 @@
     var platformOptions = {};
     platformOptions[PlatformEnum.ANDROID] = {label: "Android", value: PlatformEnum.ANDROID};
     platformOptions[PlatformEnum.IOS] = {label: 'IOS', value: PlatformEnum.IOS};
+
+    var iosAuthConfigTypeOptions = {};
+    iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: "Key file (P8)", value: IOSAuthConfigTypeEnum.P8};
+    iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P12] = {label: "Sandbox + Production certificate (P12)", value: IOSAuthConfigTypeEnum.P12};
 
     var StatusFinderHelper = {
         STATUS_SHIFT_OPERATOR_ENUM: {
@@ -881,6 +891,58 @@
                 }
                 throw Error('Unknown push notification type');
             },
+            mapIOSAppLevelConfigModelToDto: function(model) {
+                if (model[PlatformEnum.IOS]) {
+                    var result = {
+                        _id: model[PlatformEnum.IOS]._id,
+                        type: model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P8 ? 'apn_token' : 'apn_universal',
+                        key: model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P8 ? model[PlatformEnum.IOS].keyId : 'team',
+                        bundle: model[PlatformEnum.IOS].bundleId || "",
+                        data: model[PlatformEnum.IOS].keyFile,
+                        fileType: model[PlatformEnum.IOS].authType
+                    };
+                    if (model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P12) {
+                        result.pass = model[PlatformEnum.IOS].passphrase;
+                    }
+                    if (model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P8) {
+                        result.team = model[PlatformEnum.IOS].teamId;
+                    }
+                    return result;
+                }
+                return null;
+            },
+            mapAndroidAppLevelConfigModelToDto: function(model) {
+                if (model[PlatformEnum.ANDROID]) {
+                    return {
+                        _id: model[PlatformEnum.ANDROID]._id,
+                        key: model[PlatformEnum.ANDROID].firebaseKey,
+                        type: model[PlatformEnum.ANDROID].type
+                    };
+                }
+                return null;
+            },
+            mapHuaweiAppLevelConfigModelToDto: function(model) {
+                if (model[PlatformEnum.HUAWEI]) {
+                    return {
+                        _id: model[PlatformEnum.HUAWEI]._id,
+                        key: model[PlatformEnum.HUAWEI].appId,
+                        secret: model[PlatformEnum.HUAWEI].appSecret
+                    };
+                }
+                return null;
+            },
+            mapApplevelConfigModelToDto: function(model) {
+                var dto = {
+                    rate: {
+                        rate: model.rate,
+                        period: model.period
+                    }
+                };
+                dto.i = this.mapIOSAppLevelConfigModelToDto(model);
+                dto.a = this.mapAndroidAppLevelConfigModelToDto(model);
+                dto.h = this.mapHuaweiAppLevelConfigModelToDto(model);
+                return dto;
+            }
         }
     };
 
@@ -903,6 +965,7 @@
         DeliveryMethodEnum: DeliveryMethodEnum,
         DeliveryDateCalculationEnum: DeliveryDateCalculationEnum,
         TriggerNotMetEnum: TriggerNotMetEnum,
+        IOSAuthConfigTypeEnum: IOSAuthConfigTypeEnum,
         platformOptions: platformOptions,
         startDateOptions: startDateOptions,
         audienceSelectionOptions: audienceSelectionOptions,
@@ -911,6 +974,7 @@
         triggerNotMetOptions: triggerNotMetOptions,
         deliveryDateCalculationOptions: deliveryDateCalculationOptions,
         deliveryMethodOptions: deliveryMethodOptions,
+        iosAuthConfigTypeOptions: iosAuthConfigTypeOptions,
         getTypeUrlParameter: function(type) {
             if (type === this.TypeEnum.AUTOMATIC) {
                 return {auto: true, tx: false};

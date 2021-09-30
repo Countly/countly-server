@@ -1,0 +1,57 @@
+<div id="push-notification-app-level-config">
+    <div>iOS Settings </div>
+    <cly-inline-form-field label="Authentication type">
+        <el-select  :value="iosAuthConfigType" @change="onIOSAuthTypeChange">
+            <el-option :key="iosAuthType.value" :value="iosAuthType.value" :label="iosAuthType.label" v-for="iosAuthType in iosAuthConfigTypeOptions"></el-option>
+        </el-select>
+    </cly-inline-form-field>
+        <cly-inline-form-field :label="iosAuthConfigType === IOSAuthConfigTypeEnum.P8 ? 'Key file (P8)' : 'Sandbox + Production certificate (P12)'">
+            <el-upload 
+                ref="keyFileUploader"
+                action=""
+                :on-change="onKeyFileChange"
+                :auto-upload="false"
+                :show-file-list="true"
+                :limit="1"
+                accept="p8, p12">
+                <el-button size="small" type="text" class="bu-p-0">Choose File</el-button>
+            </el-upload>
+        </cly-inline-form-field>
+    <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P8"> 
+        <cly-inline-form-field label="Key ID">
+            <el-input :value="viewModel[PlatformEnum.IOS].keyId" @input="onInput('keyId', $event, PlatformEnum.IOS)"></el-input>
+        </cly-inline-form-field>
+        <cly-inline-form-field label="Team ID">
+            <el-input :value="viewModel[PlatformEnum.IOS].teamId" @input="onInput('teamId', $event, PlatformEnum.IOS)"></el-input>
+        </cly-inline-form-field>
+        <cly-inline-form-field label="Bundle ID">
+            <el-input :value="viewModel[PlatformEnum.IOS].bundleId" @input="onInput('bundleId',$event,PlatformEnum.IOS)"></el-input>
+        </cly-inline-form-field>
+    </template>
+    <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P12">
+        <cly-inline-form-field label="Passphrase">
+            <el-input :value="viewModel[PlatformEnum.IOS].passphrase" @input="onInput('passphrase',$event,PlatformEnum.IOS)"></el-input>
+        </cly-inline-form-field>
+    </template>
+
+    <div> Android (Google FM) </div>
+    <cly-inline-form-field label="Firebase key">
+        <el-input :value="viewModel[PlatformEnum.ANDROID].firebaseKey" @input="onInput('firebaseKey',$event,PlatformEnum.ANDROID)"></el-input>
+    </cly-inline-form-field>
+
+    <div> Android (Huawei Push Kit) </div>
+    <cly-inline-form-field label="Huawei App ID" rules="numeric">
+        <el-input :value="viewModel[PlatformEnum.HUAWEI].appId" @input="onInput('appId',$event,PlatformEnum.HUAWEI)"></el-input>
+    </cly-inline-form-field>
+    <cly-inline-form-field label="App Secret">
+        <el-input :value="viewModel[PlatformEnum.HUAWEI].appSecret" @input="onInput('appSecret',$event,PlatformEnum.HUAWEI)"></el-input>
+    </cly-inline-form-field>
+
+    <div> Rate limit </div>
+    <cly-inline-form-field label="Maximum number of notifications scheduled per period" rules="numeric">
+        <el-input :value="viewModel.rate" @input="onInput('rate',$event)"></el-input>
+    </cly-inline-form-field>
+    <cly-inline-form-field label="Period duration (seconds)" rules="numeric">
+        <el-input :value="viewModel.period" @input="onInput('period',$event)"></el-input>
+    </cly-inline-form-field>
+</div>
