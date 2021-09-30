@@ -301,8 +301,8 @@
                         if (res) {
                             context.commit("setAllEventsCompareData", res);
                             context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
-                            context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, context.state.selectedEvents));
-                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents, context.state.groupData, context.state.allEventsData.map));
+                            context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, context.state.selectedEvents)));
+                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, context.state.selectedEvents), context.state.groupData, context.state.allEventsData.map));
                         }
                     });
             },
