@@ -128,21 +128,22 @@ var countlyView = Backbone.View.extend({
     * @instance
     */
     render: function() { //backbone.js view render function
-        var currLink = Backbone.history.fragment;
+        // var currLink = Backbone.history.fragment;
 
-        // Reset any active views and dropdowns
-        $("#main-views-container").find(".main-view").removeClass("active");
-        $("#top-bar").find(".dropdown.active").removeClass("active");
+        // // Reset any active views and dropdowns
+        // $("#main-views-container").find(".main-view").removeClass("active");
+        // $("#top-bar").find(".dropdown.active").removeClass("active");
 
-        // Activate the main view and dropdown based on the active view
-        if (/^\/custom/.test(currLink) === true) {
-            $("#dashboards-main-view").addClass("active");
-            $("#dashboard-selection").addClass("active");
-        }
-        else {
-            $("#analytics-main-view").addClass("active");
-            $("#app-navigation").addClass("active");
-        }
+        // // Activate the main view and dropdown based on the active view
+        // if (/^\/custom/.test(currLink) === true) {
+        //     $("#dashboards-main-view").addClass("active");
+        //     $("#dashboard-selection").addClass("active");
+        // }
+        // else {
+        //     $("#analytics-main-view").addClass("active");
+        //     $("#app-navigation").addClass("active");
+        // }
+
         $("#content-top").html("");
         this.el.html('');
 
