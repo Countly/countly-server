@@ -50,14 +50,19 @@
         } 
     }
 
-    .cly-vue-metric-card {
-        width: fit-content !important;
-    }
-
+	
+	&__metric-cards-wrapper {
+		.cly-vue-metric-card {
+			border-top: 1px solid #ececec;
+		}
+		height: 117px;
+	}
     &__browser-versions-wrapper {
         .__view {
             width:auto !important;
         }
+		height: 300px;
+		
     }
 
     &__version-graph-title {
