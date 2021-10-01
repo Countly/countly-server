@@ -287,7 +287,18 @@
                         }
                     }
 
-                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
+                    var setMenuItem = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    //Check if we have a selected menu item already
+                    //If its management, that means the url is not in the analytics menu
+                    //The value of currMenu in that case should be empty
+                    //Although analytics menu should be mounted first but just incase it doesn't,
+                    //We should check if the menu is already set or not. If its set then the only case
+                    //Could be that its a management menu
+
+                    if (!setMenuItem || (setMenuItem.menu !== "management")) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
+                    }
                 },
                 toggleAppSelection: function() {
                     this.appSelector = !this.appSelector;
