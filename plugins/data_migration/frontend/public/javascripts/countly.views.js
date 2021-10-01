@@ -888,7 +888,7 @@ if (countlyAuth.validateRead(app.DataMigrationView.featureName)) {
     $(document).ready(function() {
         //Adding as menu item : Managment>Data migration. Before help toggle button.
         if (countlyAuth.validateRead(app.DataMigrationView.featureName)) {
-            app.addMenu("management", {code: "data-migration", url: "#/manage/data-migration", text: "data-migration.page-title", icon: '<div class="logo-icon fa fa-arrows-alt-h"></div>', priority: 90});
+            app.addMenu("management", {code: "data-migration", url: "#/manage/data-migration", text: "data-migration.page-title", icon: '<div class="logo-icon fa fa-arrows-alt-h"></div>', priority: 130});
         }
         var curapp = countlyCommon.ACTIVE_APP_ID;
         if (curapp && countlyGlobal.apps[curapp] && countlyGlobal.apps[curapp].redirect_url && countlyGlobal.apps[curapp].redirect_url !== "") {

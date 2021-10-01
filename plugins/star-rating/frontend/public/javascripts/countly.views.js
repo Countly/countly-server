@@ -900,10 +900,6 @@ app.addPageScript("/drill#", function() {
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(FEATURE_NAME)) {
-        if (!$("#feedback-menu").length) {
-            app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
-        }
-
         app.addSubMenu("feedback", {
             code: "star-rating",
             url: "#/feedback/ratings",

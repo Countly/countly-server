@@ -1028,10 +1028,6 @@
 })();
 
 jQuery(document).ready(function() {
-    if (!jQuery("#crashes-menu").length) {
-        app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-    }
-
     app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
 
     if (app.configurationsView) {
