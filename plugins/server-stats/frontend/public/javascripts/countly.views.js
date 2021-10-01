@@ -185,5 +185,5 @@ app.route("/manage/data-points", '', function() {
 });
 
 $(document).ready(function() {
-    app.addMenu("management", {code: "data-point", url: "#/manage/data-points", text: "server-stats.data-points", icon: '<div class="logo-icon ion-ios-analytics"></div>', priority: 80});
+    app.addMenu("management", {code: "data-point", url: "#/manage/data-points", text: "server-stats.data-points", icon: '<div class="logo-icon ion-ios-analytics"></div>', priority: 20});
 });

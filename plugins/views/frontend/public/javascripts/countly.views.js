@@ -991,7 +991,7 @@
             }
         });
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
+            app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 25});
         }
 
         //check if configuration view exists

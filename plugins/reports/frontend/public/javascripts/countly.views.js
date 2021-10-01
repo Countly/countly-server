@@ -1038,7 +1038,7 @@ if (countlyAuth.validateRead(app.reportingView.featureName)) {
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.reportingView.featureName)) {
-        app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+        app.addMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
         if (app.configurationsView) {
             app.configurationsView.registerLabel("reports", "reports.title");
             app.configurationsView.registerLabel(
