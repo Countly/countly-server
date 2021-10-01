@@ -1294,8 +1294,6 @@
     $(document).ready(function() {
         if (countlyAuth.validateRead('push')) {
             app.addMenuForType("mobile", "reach", {code: "push", url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
-            //TODO-LA: when geolocations is finished, remove the submenu and instead keep the menu entry only
-            app.addSubMenu("push", {code: "push", url: "#/messaging", text: "push-notification.title", priority: 20});
         }
 
 
