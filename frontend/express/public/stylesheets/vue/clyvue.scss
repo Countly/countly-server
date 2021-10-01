@@ -1155,6 +1155,7 @@
     } 
 
     .cly-vue-metric-card {
+        min-width: 270px;
         &__wrapper {
             min-height: 56px;
         }

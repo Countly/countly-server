@@ -521,7 +521,7 @@
                 for (var user in usersObj) {
                     self.users.push(usersObj[user]);
                 }
-                self.features = countlyUserManagement.getFeatures();
+                self.features = countlyUserManagement.getFeatures().sort();
             });
         }
     });
