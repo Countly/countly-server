@@ -1416,9 +1416,9 @@ var AppRouter = Backbone.Router.extend({
             if (countlyAuth.validateRead('events')) {
                 self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
             }
-            if (countlyAuth.validateUpdate('events') || countlyAuth.validateDelete('events')) {
-                self.addSubMenu("events", {code: "manage-events", url: "#/analytics/manage-events", text: "sidebar.events.blueprint", priority: 100});
-            }
+            // if (countlyAuth.validateUpdate('events') || countlyAuth.validateDelete('events')) {
+            //     self.addSubMenu("events", {code: "manage-events", url: "#/analytics/manage-events", text: "sidebar.events.blueprint", priority: 100});
+            // }
             self.addMenu("utilities", {
                 code: "management",
                 text: "sidebar.utilities",
