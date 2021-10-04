@@ -49,7 +49,7 @@ var versionInfo = require('./version.info'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
-    // url = require('url'),
+    url = require('url'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     languages = require('../../frontend/express/locale.conf'),
     render = require('../../api/utils/render.js'),
@@ -57,7 +57,8 @@ var versionInfo = require('./version.info'),
     membersUtility = require("./libs/members.js"),
     argon2 = require('argon2'),
     countlyCommon = require('../../api/lib/countly.common.js'),
-    timezones = require('../../api/utils/timezones.js').getTimeZones;
+    timezones = require('../../api/utils/timezones.js').getTimeZones,
+    { validateCreate } = require('../../api/utils/rights.js');
 
 console.log("Starting Countly", "version", pack.version);
 
@@ -79,6 +80,25 @@ else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
     COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v" + COUNTLY_VERSION;
     COUNTLY_TYPE_CE = false;
     COUNTLY_TRACK_TYPE = "Enterprise";
+}
+
+/**
+* Create params object for validation
+* @param {obj} obj - express request object
+* @returns {object} params object
+**/
+function paramsGenerator(obj) {
+    var params = {
+        req: obj.req,
+        res: obj.res,
+        qstring: obj.req.query,
+        fullPath: url.parse(obj.req.url, true).pathname
+    };
+
+    params.qstring.auth_token = obj.req.session.auth_token;
+    params.qstring.app_id = obj.req.body.app_id;
+
+    return params;
 }
 
 if (!countlyConfig.cookie) {
@@ -1028,30 +1048,45 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                             });
                         }
                         else {
+                            var writableAppIds = member.permission._.a;
                             var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
-                            var preparedAppIds = [];
+                            var preparedReadableIds = [];
+                            var preparedWritableIds = [];
+
                             for (let i = 0; i < readableAppIds.length; i++) {
                                 if (readableAppIds[i] !== 'undefined' && (member.permission.r[readableAppIds[i]].all || Object.keys(member.permission.r[readableAppIds[i]].allowed).length > 0)) {
-                                    preparedAppIds.push(countlyDb.ObjectID(readableAppIds[i]));
+                                    preparedReadableIds.push(countlyDb.ObjectID(readableAppIds[i]));
                                 }
                             }
 
-                            countlyDb.collection('apps').find({ _id: { '$in': preparedAppIds } }).toArray(function(err4, readableApps) {
-                                userOfApps = readableApps;
+                            for (let i = 0; i < writableAppIds.length; i++) {
+                                preparedWritableIds.push(countlyDb.ObjectID(writableAppIds[i]));
+                            }
 
-                                for (let i = 0; i < readableApps.length; i++) {
-                                    if (readableApps[i].apn) {
-                                        readableApps[i].apn.forEach(a => a._id = '' + a._id);
-                                    }
-                                    if (readableApps[i].gcm) {
-                                        readableApps[i].gcm.forEach(a => a._id = '' + a._id);
-                                    }
-                                    countlyGlobalApps[readableApps[i]._id] = readableApps[i];
-                                    countlyGlobalApps[readableApps[i]._id]._id = "" + readableApps[i]._id;
-                                    countlyGlobalApps[readableApps[i]._id].type = countlyGlobalApps[readableApps[i]._id].type || "mobile";
-                                }
+                            countlyDb.collection('apps').find({ _id: { '$in': preparedReadableIds } }).toArray(function(err4, readableApps) {
+                                countlyDb.collection('apps').find({ _id: { '$in': preparedWritableIds } }).toArray(function(err5, writableApps) {
+                                    adminOfApps = writableApps;
+                                    userOfApps = readableApps.concat(writableApps);
 
-                                renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                    for (let i = 0; i < userOfApps.length; i++) {
+                                        if (userOfApps[i].apn) {
+                                            userOfApps[i].apn.forEach(a => a._id = '' + a._id);
+                                        }
+                                        if (userOfApps[i].gcm) {
+                                            userOfApps[i].gcm.forEach(a => a._id = '' + a._id);
+                                        }
+                                        countlyGlobalApps[userOfApps[i]._id] = userOfApps[i];
+                                        countlyGlobalApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
+                                        countlyGlobalApps[userOfApps[i]._id].type = countlyGlobalApps[userOfApps[i]._id].type || "mobile";
+
+                                        if (adminOfApps.indexOf(userOfApps[i]) !== -1) {
+                                            countlyGlobalAdminApps[userOfApps[i]._id] = userOfApps[i];
+                                            countlyGlobalAdminApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
+                                            countlyGlobalAdminApps[userOfApps[i]._id].type = userOfApps[i].type || "mobile";
+                                        }
+                                    }
+                                    renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                });
                             });
                         }
                     }
@@ -1361,87 +1396,88 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.post(countlyConfig.path + '/apps/icon', function(req, res, next) {
-        if (!req.session.uid) {
-            res.end();
-            return false;
-        }
+        var params = paramsGenerator({req, res});
+        validateCreate(params, 'global_upload', function() {
+            if (!req.session.uid) {
+                res.end();
+                return false;
+            }
 
-        if (!req.files.app_image || !req.body.app_image_id) {
-            res.end();
-            return true;
-        }
+            if (!req.files.app_image || !req.body.app_image_id) {
+                res.end();
+                return true;
+            }
 
-        req.body.app_image_id = common.sanitizeFilename(req.body.app_image_id);
+            req.body.app_image_id = common.sanitizeFilename(req.body.app_image_id);
 
-        var tmp_path = req.files.app_image.path,
-            target_path = __dirname + '/public/appimages/' + req.body.app_image_id + ".png",
-            type = req.files.app_image.type;
+            var tmp_path = req.files.app_image.path,
+                target_path = __dirname + '/public/appimages/' + req.body.app_image_id + ".png",
+                type = req.files.app_image.type;
 
-        if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
-            fs.unlink(tmp_path, function() {});
-            res.send(false);
-            return true;
-        }
-        plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
-        try {
-            jimp.read(tmp_path, function(err, icon) {
-                if (err) {
-                    console.log(err, err.stack);
-                }
-                icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                    countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
-                        fs.unlink(tmp_path, function() {});
-                        res.send("appimages/" + req.body.app_image_id + ".png");
-                    });
-                }); // save
-            });
-        }
-        catch (e) {
-            console.log(e.stack);
-        }
+            if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+                fs.unlink(tmp_path, function() {});
+                res.send(false);
+                return true;
+            }
+            plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
+            try {
+                jimp.read(tmp_path, function(err, icon) {
+                    if (err) {
+                        console.log(err, err.stack);
+                    }
+                    icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
+                        countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
+                            fs.unlink(tmp_path, function() {});
+                            res.send("appimages/" + req.body.app_image_id + ".png");
+                        });
+                    }); // save
+                });
+            }
+            catch (e) {
+                console.log(e.stack);
+            }
+        });
     });
 
     app.post(countlyConfig.path + '/member/icon', function(req, res, next) {
-        if (!req.files.member_image || !req.body.member_image_id) {
-            res.end();
-            return true;
-        }
 
-        if (!req.session.uid || req.session.uid !== req.body.member_image_id) {
-            res.end();
-            return false;
-        }
+        var params = paramsGenerator({req, res});
+        validateCreate(params, 'global_upload', function() {
+            if (!req.files.member_image || !req.body.member_image_id) {
+                res.end();
+                return true;
+            }
 
-        req.body.member_image_id = common.sanitizeFilename(req.body.member_image_id);
+            req.body.member_image_id = common.sanitizeFilename(req.body.member_image_id);
+            var tmp_path = req.files.member_image.path,
+                target_path = __dirname + '/public/memberimages/' + req.body.member_image_id + ".png",
+                type = req.files.member_image.type;
 
-        var tmp_path = req.files.member_image.path,
-            target_path = __dirname + '/public/memberimages/' + req.body.member_image_id + ".png",
-            type = req.files.member_image.type;
-
-        if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
-            fs.unlink(tmp_path, function() {});
-            res.send(false);
-            return true;
-        }
-        plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
-        try {
-            jimp.read(tmp_path, function(err, icon) {
-                if (err) {
-                    console.log(err, err.stack);
-                }
-                icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                    countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
-                        fs.unlink(tmp_path, function() {});
-                        countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.session.uid + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
-                            res.send("memberimages/" + req.body.member_image_id + ".png");
+            if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+                fs.unlink(tmp_path, function() {});
+                res.send(false);
+                return true;
+            }
+            plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
+            try {
+                jimp.read(tmp_path, function(err, icon) {
+                    if (err) {
+                        console.log(err, err.stack);
+                    }
+                    icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
+                        countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
+                            fs.unlink(tmp_path, function() {});
+                            countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.session.uid + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
+                                res.send("memberimages/" + req.body.member_image_id + ".png");
+                            });
                         });
-                    });
-                }); // save
-            });
-        }
-        catch (e) {
-            console.log(e.stack);
-        }
+                    }); // save
+                });
+            }
+            catch (e) {
+                console.log(e.stack);
+            }
+        });
     });
 
     app.post(countlyConfig.path + '/user/settings', function(req, res/*, next*/) {

@@ -88,8 +88,8 @@
             success: function(json) {
                 callback(json);
             },
-            error: function(/*xhr, status, error*/) {
-                // TODO: handle error
+            error: function(err) {
+                callback(err.responseJSON.result);
             }
         });
     };
@@ -109,8 +109,8 @@
             success: function(json) {
                 callback(json);
             },
-            error: function(/*xhr, status, error*/) {
-                // TODO: handle error
+            error: function(err) {
+                callback(err.responseJSON.result);
             }
         });
     };
@@ -126,8 +126,8 @@
             success: function(json) {
                 callback(json);
             },
-            error: function(/*xhr, status, error*/) {
-                // TODO: handle error
+            error: function(err) {
+                callback(err.responseJSON.result);
             }
         });
     };
