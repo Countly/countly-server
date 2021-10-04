@@ -1,4 +1,4 @@
-/*global countlyAuth, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment, sdks, countlyPlugins, countlySession, countlyLocation, countlyCity, countlyDevice, countlyCarrier, countlyDeviceDetails, countlyAppVersion, countlyEvent, _ */
+/*global countlyAuth, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment, sdks, countlyPlugins, countlySession, countlyLocation, countlyCity, countlyDevice, countlyCarrier, countlyDeviceDetails, countlyAppVersion, countlyEvent, _ , countlyAppManagement*/
 (function() {
     var FEATURE_NAME = "global_applications";
 
@@ -12,12 +12,13 @@
                 set: function(value) {
                     this.newApp = false;
                     this.selectedApp = value;
+                    this.$store.dispatch('countlyAppManagement/onAppSelect', value);
                     this.uploadData.app_image_id = countlyGlobal.apps[this.selectedApp]._id + "";
                     this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png")';
                     this.unpatch();
                     app.navigate("#/manage/apps/" + value);
                 }
-            }
+            },
         },
         data: function() {
             var countries = [];
@@ -73,6 +74,7 @@
                 sdks: [],
                 server: "",
                 changes: {},
+                changeKeys: [],
                 app_icon: {'background-image': 'url("appimages/' + app_id + '.png?' + Date.now() + '")', "background-repeat": "no-repeat", "background-size": "auto 100px"},
                 appDetails: false,
                 uploadData: {
@@ -510,8 +512,36 @@
             getLabelName: function(id) {
                 return app.configurationsView.getInputLabel(id);
             },
-            onChange: function(key, value) {
-                var parts = key.split(".");
+            isChangeKeyFound: function(key) {
+                return this.changeKeys.some(function(changedKey) {
+                    return changedKey === key;
+                });
+            },
+            addChangeKeyIfNotFound: function(key) {
+                var self = this;
+                if (!this.isChangeKeyFound(key)) {
+                    self.changeKeys.push(key);
+                }
+            },
+            updateChangeByLevel: function(value, parts, change, currentLevel) {
+                if (!currentLevel) {
+                    currentLevel = 0;
+                }
+                if (!change) {
+                    change = this.changes;
+                }
+                if (!change[parts[currentLevel]]) {
+                    change[parts[currentLevel]] = {};
+                }
+                if (currentLevel === (parts.length - 1)) {
+                    change[parts[currentLevel]] = value;
+                    return;
+                }
+                var nextChange = change[parts[currentLevel]];
+                var nextLevel = currentLevel + 1;
+                this.updateChangeByLevel(value, parts, nextChange, nextLevel);
+            },
+            updateAppSettings: function(key, value, parts) {
                 if (!this.appSettings[parts[0]]) {
                     this.appSettings[parts[0]] = {title: this.getLabelName(parts[0]), inputs: {}};
                 }
@@ -522,11 +552,30 @@
                     this.appSettings[parts[0]].inputs[key] = {};
                 }
                 this.appSettings[parts[0]].inputs[key].value = value;
-                this.changes[key] = value;
+            },
+            /**
+             * Adds user changes made to a specific app plugin using the dot formatted key to assign the value
+             * @param {String} key dot formatted string indicating what plugin property has changed, e.g. push.i.file
+             *  indicates that file property found in i property of push object has changed
+             * @param {String} value key edited value 
+             * @param {Boolean} isInitializationCall used by plugins with nested properties to initialize/prepare plugin 
+             * config object while not counting it as state change.
+             */
+            onChange: function(key, value, isInitializationCall) {
+                var parts = key.split(".");
+                this.updateAppSettings(key, value, parts);
+                this.updateChangeByLevel(value, parts);
+                if (!isInitializationCall) {
+                    this.addChangeKeyIfNotFound(key);
+                }
                 this.appSettings = Object.assign({}, this.appSettings);
             },
-            unpatch: function() {
+            resetChanges: function() {
                 this.changes = {};
+                this.changeKeys = [];
+            },
+            unpatch: function() {
+                this.resetChanges();
                 var pluginsData = countlyPlugins.getConfigsData();
                 if (!countlyGlobal.apps[this.selectedApp].plugins) {
                     countlyGlobal.apps[this.selectedApp].plugins = {};
@@ -590,7 +639,7 @@
                         for (var key in self.changes) {
                             countlyGlobal.apps[self.selectedApp].plugins[key] = self.changes[key];
                         }
-                        self.changes = {};
+                        self.resetChanges();
                     },
                     error: function(resp, status, error) {
                         try {
@@ -607,13 +656,21 @@
                     }
                 });
             }
+        },
+        mounted: function() {
+            var appId = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
+            this.$store.dispatch('countlyAppManagement/onAppSelect', appId);
         }
     });
+
+    var appManagementVuex = [{
+        clyModel: countlyAppManagement
+    }];
 
     var getMainView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: ManageAppsView,
-            vuex: [] //empty array if none
+            vuex: appManagementVuex
         });
     };
 

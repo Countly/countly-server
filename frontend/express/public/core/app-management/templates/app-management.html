@@ -242,6 +242,6 @@
                 </el-card>
             </div>
         </div>
-        <cly-diff-helper :diff="Object.keys(changes)" @discard="unpatch" @save="saveSettings"></cly-diff-helper>
+        <cly-diff-helper :diff="changeKeys" @discard="unpatch" @save="saveSettings"></cly-diff-helper>
     </cly-main>
 </div>
