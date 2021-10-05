@@ -75,6 +75,10 @@
                 };
             },
             methods: {
+                changeLanguage: function(code) {
+                    console.log(code)
+                },
+
                 logout: function() {
                     this.$store.dispatch("countlyCommon/removeActiveApp");
                     store.remove('countly_date');
