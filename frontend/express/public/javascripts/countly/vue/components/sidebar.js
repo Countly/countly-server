@@ -1,7 +1,5 @@
 /* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone*/
 
-//var languages = require('../../../../../locale.conf');
-
 (function(countlyVue, $) {
 
     $(document).ready(function() {
