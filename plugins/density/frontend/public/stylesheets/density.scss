@@ -49,19 +49,16 @@
             text-align:right;
         } 
     }
-	
-	&__metric-cards-wrapper {
-	    .cly-vue-metric-card {
-		    border-top: 1px solid #ececec;
-	    }
-	    height: 117px;
-	}
-	
-	&__density-versions-wrapper {
-	    height: 300px;
-	}
-	
-	
+
+    &__density-versions-wrapper {
+        .__view {
+            width:auto !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+    }
+
 
     &__version-graph-title {
         font-family: Inter;

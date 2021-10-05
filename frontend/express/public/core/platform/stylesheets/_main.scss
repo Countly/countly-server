@@ -74,6 +74,12 @@
     padding-bottom: 20px;
 }
 
+.technology-analytics-wrapper .platformVersionsWrapper .__view {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .technology-analytics-wrapper .metricCardsWrapper .bu-columns {
     flex-wrap: nowrap;
 }
