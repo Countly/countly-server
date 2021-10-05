@@ -33,7 +33,7 @@ var AppDensityView = countlyVue.views.create({
                     keepShow: false
                 }
             },
-            description: CV.i18n('density.plugin-description'),
+            description: CV.i18n('density.page-desc'),
             dynamicTab: "density-table",
             densityTabs: [
                 {
