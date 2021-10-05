@@ -100,6 +100,8 @@ var pluginOb = {},
                 console.log('Parse crash JSON failed');
                 return false;
             }
+        }
+        if (typeof params.qstring.crash === "object" && params.qstring.crash) {
             if (!params.qstring.crash._os) {
                 params.qstring.crash._os = data.os;
             }
