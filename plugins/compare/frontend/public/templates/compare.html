@@ -1,53 +1,47 @@
-{{#if back-link}}
-<a class="back back-link" href="{{back-link.href}}"><span data-localize="">{{back-link.text}}</span></a>
-{{else}}
-<a class="back back-link" href="#/" ><span data-localize="compare.events.back-dashboard"></span></a>
-{{/if}}
-
-<div class="widget compare-view views-widget">
-    <div class="widget-header">
-        <div class="left">
-            <div class="title">{{page-title}}</div>
-        </div>
-        {{> date-selector }}
+<div v-bind:class="[componentId]">
+  <div class="cly-vue-compare-events__header bu-is-flex">
+    <h2> {{i18n('events.compare.title')}} 
+    </h2>
+    <cly-tooltip-icon class="cly-vue-compare-events__header--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
+  </div>
+  <cly-main>
+    <div class="bu-mb-4 cly-vue-compare-events">
+    <el-select
+      style="width:620px"
+      v-model="value"
+      multiple
+      filterable
+      allow-create
+      default-first-option
+      :multiple-limit=maxLimit
+      placeholder="Select maximum 20 events to compare">
+      <el-option
+      v-for="item in allEventsList"
+      :key="item.value"
+      :label="item.label"
+      :value="item.value">
+      </el-option>
+    </el-select>
+    <el-button :disabled="value.length===0" @click="compareEvents" class="cly-vue-compare-events__button" size="small" >{{i18n('events.compare')}}
+    </el-button>
     </div>
-    <div class="alternative-selection">
-        <div style="display: inline-block; box-sizing: border-box; width: 100%; padding-right: 85px;">
-            <div id="alternative-selector" class="cly-multi-select" data-max="{{max-alternatives}}" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text">{{multi-select-text}}</div>
-                        </div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width:100%;">
-                </div>
-            </div>
-        </div>
-        <div style="position: absolute; top:50%; right:15px; margin-top: -18px;">
-            <div id="compare-button" class="icon-button green disabled" data-localize="compare.button"></div>
-        </div>
+    <div class="bu-pt-4 bu-mb-4">
+    <cly-date-picker class="cly-vue-events-all-date-picker" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker>
     </div>
-    <div class="widget-content" style="border:none;">
-        <div id="big-numbers-container" class="dashboard">
-            {{#each metrics}}
-            <div class="big-numbers top cly-grid-{{../metrics.length}} help-zone-vs" data-help-localize="help.{{this.help}}">
-                <div class="inner">
-                    <div class="select" id="{{this.id}}">
-                        <div class="title">{{this.title}}</div>
-                    </div>
-                </div>
-            </div>
-            {{/each}}
-        </div>
+    <cly-section>
+    <div class="cly-vue-compare-events__graph-section">
+      <div class="cly-vue-compare-events__graph-section__dropdown">
+      <span class="cly-vue-compare-events__graph-section--text" >{{i18n('events.compare.metric')}}</span>
+      <el-select v-model="selectedGraph">
+        <el-option v-for="item in availableMetrics" :key="item" :value="item">
+        </el-option>
+      </el-select>
+      </div>
+      <cly-chart-time :option="lineChartData" :legend="lineLegend"></cly-chart-time>
     </div>
-    <div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
-        <div id="empty-graph">
-            <i class="material-icons">show_chart</i>
-        </div>
-        <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
-    </div>
-</div>
-<table id="dataTableOne" class="d-table views-table compare-view help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+    </cly-section>
+    <cly-section>
+    <detail-tables></detail-tables>
+    </cly-section>
+  </cly-main>
+  </div>

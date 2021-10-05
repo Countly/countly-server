@@ -213,6 +213,7 @@ taskmanager.createTask = function(options, callback) {
     update.manually_create = options.manually_create || false;
     update.subtask_key = options.subtask_key || "";
     update.taskgroup = options.taskgroup || false;
+    update.linked_to = options.linked_to;
     if (options.subtask && options.subtask !== "") {
         update.subtask = options.subtask;
         var updateSub = {$set: {}};

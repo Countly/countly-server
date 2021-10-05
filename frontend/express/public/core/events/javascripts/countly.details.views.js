@@ -1,7 +1,7 @@
-/* global countlyVue, countlyAllEvents, countlyCompareEvents, countlyCommon, countlyAuth, CV,app*/
+/* global countlyVue, countlyAllEvents, countlyCommon, CV,app*/
 (function() {
-    var FEATURE_NAME = "compare";
-    var EventsTable = countlyVue.views.BaseView.extend({
+    var EventsTable = countlyVue.views.create({
+        template: CV.T("/core/events/templates/eventsTable.html"),
         mixins: [countlyVue.mixins.i18n],
         data: function() {
             return {
@@ -17,182 +17,61 @@
             },
             selectedSegment: function() {
                 return this.$store.getters["countlyAllEvents/currentActiveSegmentation"];
+            },
+            labels: function() {
+                return this.$store.getters["countlyAllEvents/labels"];
             }
         },
         methods: {
             isColumnAllowed: function(column) {
                 var events = this.$store.getters["countlyAllEvents/allEventsProcessed"];
+                if (column === 'count') {
+                    if (events && events.tableColumns && events.tableColumns.indexOf(this.labels.count) !== -1) {
+                        return true;
+                    }
+                    return false;
+                }
+                else if (column === 'sum') {
+                    if (events && events.tableColumns && events.tableColumns.indexOf(this.labels.sum) !== -1) {
+                        return true;
+                    }
+                    return false;
+                }
+                else if (column === 'dur') {
+                    if (events && events.tableColumns && events.tableColumns.indexOf(this.labels.dur) !== -1) {
+                        return true;
+                    }
+                    return false;
+                }
                 if (events && events.tableColumns && events.tableColumns.indexOf(column) !== -1) {
                     return true;
                 }
                 return false;
             }
         },
-        template: '#tables-events'
     });
 
-    var CompareEventsTable = countlyVue.views.BaseView.extend({
-        mixins: [countlyVue.mixins.i18n],
+    var EventsView = countlyVue.views.create({
+        template: CV.T("/core/events/templates/eventTabs.html"),
+        mixins: [
+            countlyVue.container.tabsMixin({
+                "eventsTabs": "/analytics/events"
+            })
+        ],
         data: function() {
             return {
-                scoreTableExportSettings: {
-                    title: "CompareEvents",
-                    timeDependent: true,
-                }
+                selectedTab: (this.$route.params && this.$route.params.tab) || "detail"
             };
-        },
-        updated: function() {
-            this.$refs.compareEvents.$refs.elTable.clearSelection();
-            var self = this;
-            this.$store.getters["countlyCompareEvents/tableRows"]
-                .map(function(row) {
-                    if (row.checked) {
-                        self.$refs.compareEvents.$refs.elTable.toggleRowSelection(row, true);
-                    }
-                    else {
-                        self.$refs.compareEvents.$refs.elTable.toggleRowSelection(row, false);
-                    }
-                });
         },
         computed: {
-            eventsTableRows: function() {
-                return this.$store.getters["countlyCompareEvents/tableRows"];
-            },
-        },
-        methods: {
-            handleCurrentChange: function(selection) {
-                var selectedEvents = [];
-                selection.forEach(function(item) {
-                    selectedEvents.push(item.name);
-                });
-                this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
-                this.$store.dispatch('countlyCompareEvents/fetchLegendData', selectedEvents);
-            },
-            handleAllChange: function(selection) {
-                var selectedEvents = [];
-                selection.forEach(function(item) {
-                    selectedEvents.push(item.name);
-                });
-                this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
-                this.$store.dispatch('countlyCompareEvents/fetchLegendData', selectedEvents);
+            tabs: function() {
+                return this.eventsTabs;
             }
-        },
-        template: '#compare-events-table'
-    });
-
-    var EventsPages = countlyVue.views.BaseView.extend({
-        template: "#events-pages",
-        data: function() {
-            return {
-                dynamicTab: (this.$route.params && this.$route.params.tab) || "allEvents",
-                tabs: [
-                    {
-                        title: "Event Stats",
-                        name: "allEvents",
-                        component: AllEventsView,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/key/" + localStorage.getItem("eventKey")
-                    },
-                    {
-                        title: "Compare Events",
-                        name: "compareEvents",
-                        component: CompareEvents,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events/compare"
-                    }
-                ],
-            };
         }
     });
 
-    var CompareEvents = countlyVue.views.BaseView.extend({
-        template: "#compare-events",
-        components: {
-            "detail-tables": CompareEventsTable,
-        },
-        methods: {
-            compareEvents: function() {
-                this.$store.dispatch('countlyCompareEvents/fetchSelectedEvents', this.value);
-                this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData');
-            }
-        },
-        computed: {
-            allEvents: function() {
-                return this.$store.getters["countlyCompareEvents/allEvents"].list;
-            },
-            lineChartData: function() {
-                return this.$store.getters["countlyCompareEvents/lineChartData"];
-            },
-            lineLegend: function() {
-                return this.$store.getters["countlyCompareEvents/lineLegend"];
-            },
-            selectedDatePeriod: {
-                get: function() {
-                    return this.$store.getters["countlyCompareEvents/selectedDatePeriod"];
-                },
-                set: function(period) {
-                    this.$store.dispatch('countlyCompareEvents/fetchSelectedDatePeriod', period);
-                    countlyCommon.setPeriod(period);
-                    this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData', this.value);
-                }
-            },
-            selectedGraph: {
-                get: function() {
-                    var self = this;
-                    if (self.selectedMetric === "Sum") {
-                        return this.i18n("events.compare.results.by.sum");
-                    }
-                    else if (self.selectedMetric === "Duration") {
-                        return this.i18n("events.compare.results.by.duration");
-                    }
-                    return this.i18n("events.compare.results.by.count");
-                },
-                set: function(selectedItem) {
-                    var self = this;
-                    if (selectedItem === this.i18n("events.compare.results.by.sum")) {
-                        self.selectedMetric = "Sum";
-                        this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "s");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData');
-                    }
-                    else if (selectedItem === this.i18n("events.compare.results.by.duration")) {
-                        self.selectedMetric = "Duration";
-                        this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "dur");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData');
-                    }
-                    else {
-                        self.selectedMetric = "Count";
-                        this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "c");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData');
-                    }
-                }
-            },
-        },
-        data: function() {
-            return {
-                value: "",
-                maxLimit: 20,
-                availableMetrics: [
-                    this.i18n("events.compare.results.by.count"),
-                    this.i18n("events.compare.results.by.sum"),
-                    this.i18n("events.compare.results.by.duration")
-                ],
-                selectedMetric: "Count"
-            };
-        },
-        beforeCreate: function() {
-            countlyCommon.setPeriod("30days");
-            this.$store.dispatch('countlyCompareEvents/fetchAllEventsData');
-        }
-
-    });
-
-    var EventsWrapper = countlyVue.views.BaseView.extend({
-        template: "#events-wrapper",
-        components: {
-            "events-pages": EventsPages,
-        }
-    });
-
-    var AllEventsView = countlyVue.views.BaseView.extend({
-        template: "#all-events",
+    var AllEventsView = countlyVue.views.create({
+        template: CV.T("/core/events/templates/allEvents.html"),
         components: {
             "detail-tables": EventsTable,
         },
@@ -205,7 +84,6 @@
                     this.$store.dispatch('countlyAllEvents/fetchSelectedDatePeriod', value);
                     countlyCommon.setPeriod(value);
                     this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
-                    this.$store.dispatch('countlyAllEvents/fetchAllEventsGroupData');
                 }
             },
             selectedEventFromSearchBar: {
@@ -236,13 +114,30 @@
                 return this.$store.getters["countlyAllEvents/hasSegments"];
             },
             availableSegments: function() {
+                var availableSegments = this.$store.getters["countlyAllEvents/availableSegments"];
+                if (availableSegments) {
+                    return availableSegments.map(function(item) {
+                        if (item === "segment") {
+                            return {
+                                "label": CV.i18n("events.all.any.segmentation"),
+                                "value": item
+                            };
+                        }
+                        else {
+                            return {
+                                "label": item,
+                                "value": item
+                            };
+                        }
+                    });
+                }
                 return this.$store.getters["countlyAllEvents/availableSegments"];
             },
             selectedEventName: function() {
-                return this.$store.getters["countlyAllEvents/selectedEventName"];
+                return this.$store.getters["countlyAllEvents/allEventsProcessed"].eventName;
             },
-            isGroup: function() {
-                return this.$store.getters["countlyAllEvents/isGroup"];
+            groupData: function() {
+                return this.$store.getters["countlyAllEvents/groupData"];
             },
             selectedEventDescription: function() {
                 return this.$store.getters["countlyAllEvents/description"];
@@ -262,98 +157,81 @@
             lineLegend: function() {
                 return this.$store.getters["countlyAllEvents/legendData"];
             },
-            allEvents: function() {
-                var list = this.$store.getters["countlyAllEvents/allEvents"].list;
-                if (list) {
-                    return list.map(function(item) {
-                        return {
-                            "label": item,
-                            "value": item
-                        };
-                    });
-                }
-                return list;
-            },
             searchPlaceholder: function() {
-                var list = this.$store.getters["countlyAllEvents/allEvents"].list;
+                var list = this.$store.getters["countlyAllEvents/allEventsList"];
                 if (list) {
                     return this.i18n("events.all.search.placeholder", list.length);
                 }
                 return this.i18n("events.all.search.placeholder");
+            },
+            allEvents: function() {
+                return this.$store.getters["countlyAllEvents/allEventsList"];
+            },
+            eventDescription: function() {
+                return this.$store.getters["countlyAllEvents/allEventsProcessed"].eventDescription;
+            },
+            labels: function() {
+                return this.$store.getters["countlyAllEvents/allEventsProcessed"].chartDP;
+            },
+            limitAlerts: function() {
+                return this.$store.getters["countlyAllEvents/limitAlerts"];
             }
 
         },
         data: function() {
-            return {
-                description: CV.i18n('events.all.title.new')
-            };
+            return {description: CV.i18n('events.all.title.new') };
         },
         beforeCreate: function() {
-            countlyCommon.setPeriod("30days");
-            if (this.$route.params) {
-                this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', this.$route.params.eventKey);
+            var currEvent = (this.$route.params && this.$route.params.eventKey) || localStorage.getItem("eventKey");
+            if (currEvent) {
+                this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', currEvent);
             }
             this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
-            this.$store.dispatch('countlyAllEvents/fetchAllEventsGroupData');
+        },
+        methods: {
+            refresh: function() {
+                this.$store.dispatch("countlyAllEvents/fetchRefreshAllEventsData");
+            }
         }
     });
-
-    var getCompareEventsView = function() {
-        var compareEventsVuex = [{
-            clyModel: countlyCompareEvents
-        }];
-
-        return new countlyVue.views.BackboneWrapper({
-            component: EventsWrapper,
-            vuex: compareEventsVuex,
-            templates: [
-                "/core/events/templates/allEvents.html",
-                "/core/events/templates/compareEvents.html"
-            ]
-        });
-    };
-
     var getAllEventsView = function() {
-        var allEventsVuex = [{
-            clyModel: countlyAllEvents
-        }];
-
+        var tabsVuex = countlyVue.container.tabsVuex(["/analytics/events"]);
         return new countlyVue.views.BackboneWrapper({
-            component: EventsWrapper,
-            vuex: allEventsVuex,
-            templates: [
-                "/core/events/templates/allEvents.html",
-                "/core/events/templates/compareEvents.html"
-            ]
+            component: EventsView,
+            vuex: tabsVuex
         });
     };
-
-    app.route("/analytics/events/key/:eventKey", "all-events", function(eventKey) {
-        var params = {
-            eventKey: eventKey && eventKey !== "undefined" ? eventKey : undefined
-        };
-        var EventAllView = getAllEventsView();
-        AllEventsView.params = params;
-        this.renderWhenReady(EventAllView);
+    app.route("/analytics/events", "events", function() {
+        var eventsViewWrapper = getAllEventsView();
+        this.renderWhenReady(eventsViewWrapper);
     });
 
-    app.route("/analytics/events", "all-events", function() {
+    app.route("/analytics/events/*tab", "events-tab", function(tab) {
+        var eventsViewWrapper = getAllEventsView();
+
         var params = {
-            eventKey: undefined
+            tab: tab,
         };
-        var EventsAllView = getAllEventsView();
-        AllEventsView.params = params;
-        this.renderWhenReady(EventsAllView);
+        eventsViewWrapper.params = params;
+        this.renderWhenReady(eventsViewWrapper);
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route("/analytics/events/compare", "compare-events", function() {
-            var params = {
-                tab: "compareEvents"
-            };
-            var compareEventsView = getCompareEventsView();
-            compareEventsView.params = params;
-            this.renderWhenReady(compareEventsView);
-        });
-    }
+    countlyVue.container.registerTab("/analytics/events", {
+        priority: 1,
+        name: "detail",
+        title: "Event Stats",
+        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/events",
+        component: AllEventsView,
+        vuex: [{
+            clyModel: countlyAllEvents
+        }],
+    });
+    app.route("/analytics/events/key/:eventKey", "events", function(eventKey) {
+        var params = {
+            eventKey: eventKey
+        };
+        var eventsViewWrapper = getAllEventsView();
+        eventsViewWrapper.params = params;
+        this.renderWhenReady(eventsViewWrapper);
+    });
 })();

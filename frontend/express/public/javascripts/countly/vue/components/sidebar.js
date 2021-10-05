@@ -1,8 +1,52 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone*/
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store*/
 
 (function(countlyVue, $) {
 
     $(document).ready(function() {
+        var AppSelector = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/app-selector.html'),
+            data: function() {
+                return {
+                    centerDialogVisible: true
+                };
+            },
+            computed: {
+                activeApp: {
+                    get: function() {
+                        var app = this.$store.getters["countlyCommon/getActiveApp"];
+                        return app && app._id;
+                    },
+                    set: function(activeApp) {
+                        this.onChange(activeApp);
+                    }
+                }
+            },
+            props: {
+                allApps: {
+                    type: Array
+                }
+            },
+            methods: {
+                onChange: function(id) {
+                    var selectedApp = this.allApps.find(function(a) {
+                        return a._id === id;
+                    });
+
+                    var appKey = selectedApp.key;
+                    var appName = selectedApp.name;
+                    var appId = selectedApp._id;
+                    if (app.activeAppKey !== appKey) {
+                        app.activeAppName = appName;
+                        app.activeAppKey = appKey;
+                        app.switchApp(appId);
+                    }
+                    this.handleClose();
+                },
+                handleClose: function() {
+                    this.$emit("close");
+                }
+            }
+        });
 
         var UsersMenu = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/users-menu.html'),
@@ -29,6 +73,28 @@
                         isBoolean: typeof countlyGlobal.usermenu.featureRequestLink === "boolean" && countlyGlobal.usermenu.featureRequestLink
                     }
                 };
+            },
+            methods: {
+                logout: function() {
+                    this.$store.dispatch("countlyCommon/removeActiveApp");
+                    store.remove('countly_date');
+                    store.remove('countly_location_city');
+                    this.logoutRequest();
+                },
+                logoutRequest: function() {
+                    var logoutForm = document.createElement("form");
+                    logoutForm.action = countlyGlobal.path + '/logout';
+                    logoutForm.method = "post";
+                    logoutForm.style.display = "none";
+                    logoutForm.type = "submit";
+                    var logoutForm_csrf = document.createElement("input");
+                    logoutForm_csrf.name = '_csrf';
+                    logoutForm_csrf.value = countlyGlobal.csrf_token;
+                    logoutForm.appendChild(logoutForm_csrf);
+                    document.body.appendChild(logoutForm);
+                    logoutForm.submit();
+                    document.body.removeChild(logoutForm);
+                }
             }
         });
 
@@ -41,50 +107,34 @@
                     "submenus": "/sidebar/analytics/submenu"
                 })
             ],
+            components: {
+                "app-selector": AppSelector
+            },
             data: function() {
-                var apps = _.sortBy(countlyGlobal.apps, function(app) {
-                    return (app.name + "").toLowerCase();
-                });
-                if (countlyGlobal.member.appSortList) {
-                    apps = this.sortBy(apps, countlyGlobal.member.appSortList);
-                }
-
-                apps = apps.map(function(a) {
-                    a.label = a.name;
-                    a.value = a._id;
-
-                    return a;
-                });
-
                 return {
-                    allApps: apps,
-                    selectMode: "single-list",
-                    selectedAppLocal: null,
-                    selectedAnalyticsMenuLocal: null
+                    selectedAnalyticsMenu: null,
+                    appSelector: false
                 };
             },
             computed: {
-                selectedApp: {
-                    get: function() {
-                        var activeApp = this.$store.getters["countlyCommon/getActiveApp"];
-
-                        if (!this.selectedAppLocal) {
-                            if (!activeApp) {
-                                // eslint-disable-next-line no-undef
-                                // console.log("sidebar:: active app not set");
-                            }
-
-                            this.selectedAppLocal = activeApp && activeApp._id;
-                        }
-
-                        return this.selectedAppLocal;
-                    },
-                    set: function(id) {
-                        this.selectedAppLocal = id;
+                allApps: function() {
+                    var storedApp = this.$store.getters["countlyCommon/getAllApps"];
+                    var apps = _.sortBy(storedApp, function(app) {
+                        return (app.name + "").toLowerCase();
+                    });
+                    if (countlyGlobal.member.appSortList) {
+                        apps = this.sortBy(apps, countlyGlobal.member.appSortList);
                     }
+                    apps = apps.map(function(a) {
+                        a.label = a.name;
+                        a.value = a._id;
+                        return a;
+                        //a.image = countlyGlobal.path + "appimages/" + active._id + ".png"
+                    });
+                    return apps;
                 },
                 activeApp: function() {
-                    var selectedAppId = this.selectedApp;
+                    var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"] && this.$store.getters["countlyCommon/getActiveApp"]._id;
                     var active = this.allApps.find(function(a) {
                         return a._id === selectedAppId;
                     });
@@ -92,7 +142,6 @@
                     if (active) {
                         active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
                     }
-
                     return active || {};
                 },
                 categorizedMenus: function() {
@@ -125,46 +174,20 @@
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
                     if (selected.menu === "analytics") {
+                        this.selectedAnalyticsMenu = selected.item && selected.item.parent_code;
                         return selected.item;
                     }
 
                     return {};
-                },
-                selectedAnalyticsMenu: {
-                    get: function() {
-                        var selectedAnalyticsMenu = this.selectedMenuItem;
-
-                        if (!this.selectedAnalyticsMenuLocal) {
-                            return selectedAnalyticsMenu.parent_code;
-                        }
-
-                        return this.selectedAnalyticsMenuLocal;
-                    },
-                    set: function(m) {
-                        this.selectedAnalyticsMenuLocal = m;
-                    }
                 }
             },
             methods: {
-                onChange: function(id) {
-                    var selectedApp = this.allApps.find(function(a) {
-                        return a._id === id;
-                    });
-
-                    var appKey = selectedApp.key;
-                    var appName = selectedApp.name;
-                    var appId = selectedApp._id;
-                    if (app.activeAppKey !== appKey) {
-                        app.activeAppName = appName;
-                        app.activeAppKey = appKey;
-                        app.switchApp(appId);
-                    }
-                },
                 suffixIconClass: function(dropdown) {
                     return (dropdown.visible ? 'arrow-up is-reverse' : 'arrow-up');
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
+                    app.navigate(item.url, true);
                 },
                 sortBy: function(arrayToSort, sortList) {
                     if (!sortList.length) {
@@ -204,6 +227,12 @@
                     var part1 = "";
                     var part2 = "";
                     var menu;
+
+                    if (!Object.keys(menus).length || !Object.keys(submenus).length) {
+                        // eslint-disable-next-line no-console
+                        console.log("Something is terribly wrong, please contact Prikshit Tekta asap and don't clear the logs please! ", currLink, menus, submenus);
+                    }
+
                     for (var k in menus) {
                         for (var i = 0; i < menus[k].length; i++) {
                             menu = menus[k][i];
@@ -258,15 +287,21 @@
                         }
                     }
 
+                    var setMenuItem = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
-                    if (foundMenu) {
+                    //Check if we have a selected menu item already
+                    //If its management, that means the url is not in the analytics menu
+                    //The value of currMenu in that case should be empty
+                    //Although analytics menu should be mounted first but just incase it doesn't,
+                    //We should check if the menu is already set or not. If its set then the only case
+                    //Could be that its a management menu
+
+                    if (!setMenuItem || (setMenuItem.menu !== "management")) {
                         this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
                     }
-                    else {
-                        // eslint-disable-next-line no-console
-                        console.log("Analytics menu not found. ", currLink, menus, submenus);
-                    }
-
+                },
+                toggleAppSelection: function() {
+                    this.appSelector = !this.appSelector;
                 }
             },
             mounted: function() {
@@ -308,32 +343,28 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
+                    app.navigate(item.url, true);
                 },
                 checkCurrentManagementTab: function(currLink) {
                     var menu = this.menu;
 
-                    var currMenu = menu.filter(function(m) {
+                    var currMenu = menu.find(function(m) {
                         return m.url === currLink;
                     });
 
-                    if (!currMenu.length) {
+                    if (!currMenu) {
                         if (currLink.split("/").length > 2) {
                             var part1 = "/" + currLink.split("/")[1];
                             var part2 = part1 + "/" + currLink.split("/")[2];
-                            currMenu = menu.filter(function(m) {
+                            currMenu = menu.find(function(m) {
                                 return (m.url === "#" + part1 || m.url === "#" + part2);
                             });
                         }
                     }
 
-                    if (currMenu.length) {
-                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu[0] });
+                    if (currMenu) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu });
                     }
-                    else {
-                        // eslint-disable-next-line no-console
-                        console.log("Management menu not found. ", currLink, menu);
-                    }
-
                 }
             },
             mounted: function() {
@@ -349,8 +380,8 @@
             template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar.html'),
             mixins: [
                 countlyVue.container.dataMixin({
-                    "externalMainOptions": "/sidebar/options/main",
-                    "externalOtherOptions": "/sidebar/options/other"
+                    "externalMainMenuOptions": "/sidebar/menu/main",
+                    "externalOtherMenuOptions": "/sidebar/menu/other"
                 })
             ],
             components: {
@@ -360,7 +391,7 @@
             },
             data: function() {
                 return {
-                    selectedOptionLocal: null
+                    selectedMenuOptionLocal: null
                 };
             },
             computed: {
@@ -374,31 +405,31 @@
                 },
 
                 components: function() {
-                    var options = [];
+                    var menuOptions = [];
 
-                    var externalMainOptions = this.externalMainOptions;
-                    var externalOtherOptions = this.externalOtherOptions;
+                    var externalMainMenuOptions = this.externalMainMenuOptions;
+                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
 
-                    if (externalMainOptions && externalMainOptions.length) {
-                        options = options.concat(externalMainOptions);
+                    if (externalMainMenuOptions && externalMainMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalMainMenuOptions);
                     }
 
-                    if (externalOtherOptions && externalOtherOptions.length) {
-                        options = options.concat(externalOtherOptions);
+                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalOtherMenuOptions);
                     }
 
-                    return options;
+                    return menuOptions;
                 },
-                mainOptions: function() {
-                    var options = [
+                mainMenuOptions: function() {
+                    var menuOptions = [
                         {
                             name: "app",
                             noSelect: true
                         },
-                        {
-                            name: "search",
-                            icon: "ion-ios-search-strong"
-                        },
+                        // {
+                        //     name: "search",
+                        //     icon: "ion-ios-search-strong"
+                        // },
                         {
                             name: "analytics",
                             icon: "ion-stats-bars"
@@ -409,31 +440,34 @@
                         },
                         {
                             name: "management",
-                            icon: "ion-wrench"
+                            icon: "ion-wrench",
+                            tooltip: "Management"
                         }
                     ];
 
-                    var externalMainOptions = this.externalMainOptions;
+                    var externalMainMenuOptions = this.externalMainMenuOptions;
 
-                    if (externalMainOptions && externalMainOptions.length) {
-                        for (var i = 0; i < externalMainOptions.length; i++) {
-                            options.splice(3, 0, externalMainOptions[i]);
+                    if (externalMainMenuOptions && externalMainMenuOptions.length) {
+                        for (var i = 0; i < externalMainMenuOptions.length; i++) {
+                            menuOptions.splice(2, 0, externalMainMenuOptions[i]);
                         }
                     }
 
-                    return options;
+                    return menuOptions;
                 },
-                otherOptions: function() {
-                    var options = [
+                otherMenuOptions: function() {
+                    var menuOptions = [
                         {
                             name: "clipboard",
                             icon: "ion-clipboard",
-                            noSelect: true
+                            noSelect: true,
+                            tooltip: "Help Center"
                         },
                         {
                             name: "notifications",
                             icon: "ion-android-notifications",
-                            noSelect: true
+                            noSelect: true,
+                            tooltip: "Assistant"
                         },
                         {
                             name: "user",
@@ -454,15 +488,15 @@
                         }
                     ];
 
-                    var externalOtherOptions = this.externalOtherOptions;
+                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
 
-                    if (externalOtherOptions && externalOtherOptions.length) {
-                        for (var i = 0; i < externalOtherOptions.length; i++) {
-                            options.splice(3, 0, externalOtherOptions[i]);
+                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
+                        for (var i = 0; i < externalOtherMenuOptions.length; i++) {
+                            menuOptions.splice(3, 0, externalOtherMenuOptions[i]);
                         }
                     }
 
-                    return options;
+                    return menuOptions;
                 },
                 member: function() {
                     //We should fetch the user from vuex
@@ -488,19 +522,19 @@
 
                     return member;
                 },
-                selectedOption: function() {
+                selectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
-                    if (!this.selectedOptionLocal) {
+                    if (!this.selectedMenuOptionLocal) {
                         return selected.menu;
                     }
 
-                    return this.selectedOptionLocal;
+                    return this.selectedMenuOptionLocal;
                 }
             },
             methods: {
                 onClick: function(option) {
                     if (!option.noSelect) {
-                        this.selectedOptionLocal = option.name;
+                        this.selectedMenuOptionLocal = option.name;
                     }
                 }
             }

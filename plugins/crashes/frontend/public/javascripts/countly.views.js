@@ -1,5 +1,5 @@
 /* eslint-disable no-unreachable */
-/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, Promise, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList */
+/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, Promise, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV */
 
 (function() {
     var groupId, crashId;
@@ -333,6 +333,7 @@
                 formatDate: function(row, col, cell) {
                     return moment(cell * 1000).format("lll");
                 },
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyCrashes", "crashgroups"),
                 crashgroupsFilterProperties: filterProperties,
                 crashgroupsFilterRules: [
                     new countlyQueryBuilder.RowRule({
@@ -400,7 +401,10 @@
         computed: {
             crashgroupsFilter: {
                 set: function(newValue) {
-                    return this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue);
+                    return Promise.all([
+                        this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", newValue),
+                        this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(newValue.query)})
+                    ]);
                 },
                 get: function() {
                     return this.$store.getters["countlyCrashes/overview/crashgroupsFilter"];
@@ -456,14 +460,14 @@
             },
             statistics: function() {
                 return this.$store.getters["countlyCrashes/overview/statistics"];
-            },
-            crashgroupRows: function() {
-                return this.$store.getters["countlyCrashes/overview/crashgroupRows"];
             }
         },
         methods: {
             refresh: function() {
-                return this.$store.dispatch("countlyCrashes/overview/refresh");
+                return Promise.all([
+                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(this.crashgroupsFilter)}),
+                    this.$store.dispatch("countlyCrashes/overview/refresh")
+                ]);
             },
             handleRowClick: function(row) {
                 window.location.href = window.location.href + "/" + row._id;
@@ -945,12 +949,95 @@
         crashId = crash;
         this.renderWhenReady(getBinaryImagesView());
     });
+
+    var CrashesDashboardWidget = countlyVue.views.create({
+        template: CV.T("/crashes/templates/crashesHomeWidget.html"),
+        data: function() {
+            return {
+                crashesItems: []
+            };
+        },
+        mounted: function() {
+            var self = this;
+            this.$store.dispatch("countlyCrashes/overview/refresh").then(function() {
+                self.calculateAllData();
+            });
+        },
+        beforeCreate: function() {
+            this.module = countlyCrashes.getVuexModule();
+            CV.vuex.registerGlobally(this.module);
+        },
+        beforeDestroy: function() {
+            CV.vuex.unregister(this.module.name);
+            this.module = null;
+        },
+        methods: {
+            refresh: function() {
+                var self = this;
+                this.$store.dispatch("countlyCrashes/overview/refresh").then(function() {
+                    self.calculateAllData();
+                });
+            },
+            calculateAllData: function() {
+
+                var data = this.$store.getters["countlyCrashes/overview/dashboardData"] || {};
+                var blocks = [];
+
+                var getUs = [{"name": CV.i18n('crashes.total-crashes'), "info": "", "prop": "cr", "r": true}, {"name": CV.i18n('crashes.unique'), "info": "", "prop": "cru", "r": true}, {"name": CV.i18n('crashes.total-per-session'), "info": "", "prop": "cr-session", "r": true}, {"name": CV.i18n('crashes.free-users'), "info": "", "prop": "crau", "p": true}, {"name": CV.i18n('crashes.free-sessions'), "info": "", "prop": "crses", "p": true}];
+
+
+                for (var k = 0; k < getUs.length; k++) {
+                    data[getUs[k].prop] = data[getUs[k].prop] || {};
+                    var value = data[getUs[k].prop].total;
+                    if (!getUs[k].p) {
+                        value = countlyCommon.formatNumber(data[getUs[k].prop].total || 0);
+                    }
+
+                    blocks.push({
+                        "name": getUs[k].name,
+                        "reverse": getUs[k].r,
+                        "value": value,
+                        "info": getUs[k].info,
+                        "trend": data[getUs[k].prop].trend,
+                        "change": data[getUs[k].prop].change
+                    });
+                }
+
+                this.crashesItems = blocks;
+            }
+        },
+        computed: {
+
+        }
+    });
+
+
+
+    countlyVue.container.registerData("/home/widgets", {
+        _id: "crashes-dashboard-widget",
+        label: CV.i18n('crashes.app-performance'),
+        description: CV.i18n('crashes.plugin-description'),
+        enabled: {"default": true}, //object. For each type set if by default enabled
+        available: {"default": true}, //object. default - for all app types. For other as specified.
+        placeBeforeDatePicker: false,
+        order: 9,
+        linkTo: {"label": CV.i18n('crashes.go-to-crashes'), "href": "#/crashes"},
+        component: CrashesDashboardWidget
+    });
+
 })();
 
 jQuery(document).ready(function() {
-    if (!jQuery("#crashes-menu").length) {
-        app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
-    }
-
     app.addSubMenu("crashes", {code: "crash", url: "#/crashes", text: "sidebar.dashboard", priority: 10});
+
+    if (app.configurationsView) {
+        app.configurationsView.registerInput("crashes.grouping_strategy", {
+            input: "el-select",
+            attrs: {},
+            list: [
+                {value: 'error_and_file', label: CV.i18n("crashes.grouping_strategy.error_and_file")},
+                {value: 'stacktrace', label: CV.i18n("crashes.grouping_strategy.stacktrace")}
+            ]
+        });
+    }
 });

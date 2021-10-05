@@ -6,8 +6,25 @@
 @use "./typography-variables" as t;
 @use "./colors" as c;
 
-button {
-    font-family: t.$font-family !important;
+* {
+    outline:none;
+}
+html {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    margin:0;
+    padding:0;
+    overflow:auto;
+    background-color:#F9F9F9;
+    user-select:text;
+    font-family: t.$font-family, Ubuntu,Helvetica,sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 h1 {
@@ -62,4 +79,17 @@ h6 {
     margin: 0;
     padding: 0;
     color: map.get(c.$colors, "cool-gray-100");
+}
+
+textarea,
+input,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button  {
+    font-family: t.$font-family !important;
 }

@@ -1,0 +1,7 @@
+<div class="user-loyalty-wrapper" v-bind:class="[componentId]">
+    <cly-dynamic-tabs v-model="selectedTab" :tabs="tabs">
+        <template v-slot:overview="scope">
+            <span>{{scope.tab.title}}</span>
+        </template>
+    </cly-dynamic-tabs>
+</div>

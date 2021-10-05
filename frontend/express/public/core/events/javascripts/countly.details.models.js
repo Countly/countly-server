@@ -5,6 +5,7 @@
         getLineChartData: function(context, eventData) {
             var chartData = eventData.chartData;
             var graphData = [[], [], []];
+            var labels = context.state.labels;
             for (var i = 0; i < chartData.length; i++) {
                 graphData[0].push(chartData[i].c ? chartData[i].c : 0);
                 graphData[1].push(chartData[i].s ? chartData[i].s : 0);
@@ -12,19 +13,19 @@
             }
             var series = [];
             var countObj = {
-                name: eventData.chartDP[0].label,
+                name: labels.count,
                 data: graphData[0],
                 color: "#017AFF"
             };
             series.push(countObj);
             var sumObj = {
-                name: eventData.chartDP[1].label,
+                name: labels.sum,
                 data: graphData[1],
                 color: "#F96300"
             };
             series.push(sumObj);
             var durObj = {
-                name: eventData.chartDP[2].label,
+                name: labels.dur,
                 data: graphData[2],
                 color: "#FF9382"
             };
@@ -37,7 +38,8 @@
         getTableRows: function(context) {
             var eventData = context.state.allEventsProcessed;
             var tableRows = eventData.chartData.slice();
-            if (eventData.tableColumns.indexOf("Sum") !== -1 && eventData.tableColumns.indexOf("Duration") !== -1) {
+            var labels = context.state.labels;
+            if (eventData.tableColumns.indexOf(labels.sum) !== -1 && eventData.tableColumns.indexOf(labels.dur) !== -1) {
                 tableRows.forEach(function(row) {
                     row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : countlyCommon.formatNumber(row.s / row.c);
                     row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : countlyCommon.formatNumber(row.dur / row.c);
@@ -48,7 +50,7 @@
                 eventData.tableColumns.push("AvgSum");
                 eventData.tableColumns.push("AvgDur");
             }
-            else if (eventData.tableColumns.indexOf("Sum") !== -1) {
+            else if (eventData.tableColumns.indexOf(labels.sum) !== -1) {
                 tableRows.forEach(function(row) {
                     row.avgSum = (parseInt(row.c) === 0 || parseInt(row.s) === 0) ? 0 : countlyCommon.formatNumber(row.s / row.c);
                     row.c = countlyCommon.formatNumber(row.c);
@@ -57,7 +59,7 @@
                 });
                 eventData.tableColumns.push("AvgSum");
             }
-            else if (eventData.tableColumns.indexOf("Duration") !== -1) {
+            else if (eventData.tableColumns.indexOf(labels.dur) !== -1) {
                 tableRows.forEach(function(row) {
                     row.avgDur = (parseInt(row.c) === 0 || parseInt(row.dur) === 0) ? 0 : countlyCommon.formatNumber(row.dur / row.c);
                     row.c = countlyCommon.formatNumber(row.c);
@@ -85,6 +87,7 @@
             var obCount = {};
             var obSum = {};
             var obDuration = {};
+            var labels = context.state.labels;
             for (var i = 0; i < eventData.chartData.length; i++) {
                 arrCount.push(eventData.chartData[i].c);
                 arrSum.push(eventData.chartData[i].s);
@@ -92,16 +95,16 @@
                 arrDuration.push(eventData.chartData[i].dur);
                 xAxisData.push(eventData.chartData[i].curr_segment);
             }
-            obCount.name = "Count";
+            obCount.name = labels.count;
             obCount.data = arrCount;
             obCount.color = "#017AFF";
             xAxis.data = xAxisData;
             series.push(obCount);
-            obSum.name = "Sum";
+            obSum.name = labels.sum;
             obSum.data = arrSum;
             obSum.color = "#F96300";
             series.push(obSum);
-            obDuration.name = "Duration";
+            obDuration.name = labels.dur;
             obDuration.data = arrDuration;
             obDuration.color = "#FF9382";
             series.push(obDuration);
@@ -142,11 +145,12 @@
         getEventsData: function(context, res) {
             var eventData = { chartData: {}, chartDP: { dp: [], ticks: [] } };
             var allEvents = context.state.allEventsData;
+            var groupData = context.state.groupData.displayMap;
             var eventMap = allEvents.map;
             var mapKey = context.state.selectedEventName.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
-            var countString = (allEvents[mapKey] && allEvents[mapKey].count) ? allEvents[mapKey].count : (eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"];
-            var sumString = (allEvents[mapKey] && allEvents[mapKey].sum) ? allEvents[mapKey].sum : (eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"];
-            var durString = (allEvents[mapKey] && allEvents[mapKey].dur) ? allEvents[mapKey].dur : (eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
+            var countString = (mapKey.startsWith('[CLY]_group') && groupData.c) ? groupData.c : (eventMap && eventMap[mapKey] && eventMap[mapKey].count) ? eventMap[mapKey].count : jQuery.i18n.map["events.table.count"];
+            var sumString = (mapKey.startsWith('[CLY]_group') && groupData.s) ? groupData.s : (eventMap && eventMap[mapKey] && eventMap[mapKey].sum) ? eventMap[mapKey].sum : jQuery.i18n.map["events.table.sum"];
+            var durString = (mapKey.startsWith('[CLY]_group') && groupData.d) ? groupData.d : (eventMap && eventMap[mapKey] && eventMap[mapKey].dur) ? eventMap[mapKey].dur : jQuery.i18n.map["events.table.dur"];
 
             if (context.state.currentActiveSegmentation !== "segment" && context.state.hasSegments) {
                 var segments = res.meta[context.state.currentActiveSegmentation].slice();
@@ -179,14 +183,7 @@
                     segmentsDur = [];
                 }
 
-                if (allEvents[context.state.selectedEventName]) {
-                    eventData.eventName = allEvents[context.state.selectedEventName].label;
-                    eventData.is_event_group = true;
-                }
-                else {
-                    eventData.eventName = countlyAllEvents.helpers.getEventLongName(context.state.selectedEventName);
-                    eventData.is_event_group = false;
-                }
+                eventData.eventName = countlyAllEvents.helpers.getEventLongName(context.state.selectedEventName, eventMap);
 
                 if (mapKey && eventMap && eventMap[mapKey]) {
                     eventData.eventDescription = eventMap[mapKey].description || "";
@@ -221,14 +218,7 @@
 
                 eventData = countlyCommon.extractChartData(res, countlyAllEvents.helpers.clearEventsObject, chartData, dataProps);
 
-                if (allEvents[context.state.selectedEventName]) {
-                    eventData.eventName = allEvents[context.state.selectedEventName].label;
-                    eventData.is_event_group = true;
-                }
-                else {
-                    eventData.eventName = countlyAllEvents.helpers.getEventLongName(context.state.selectedEventName);
-                    eventData.is_event_group = false;
-                }
+                eventData.eventName = countlyAllEvents.helpers.getEventLongName(context.state.selectedEventName, eventMap);
 
                 if (mapKey && eventMap && eventMap[mapKey]) {
                     eventData.eventDescription = eventMap[mapKey].description || "";
@@ -313,27 +303,27 @@
             var lineLegend = {};
             var legendData = [];
             var eventsOverview = context.state.selectedEventsOverview;
-            var labels = context.state.allEventsProcessed.chartDP;
+            var labels = context.state.labels;
             var count = {};
-            count.name = labels[0] ? labels[0].label : CV.i18n("events.overview.count");
+            count.name = labels.count;
             count.value = eventsOverview.count.total;
             count.trend = eventsOverview.count.trend === "u" ? "up" : "down";
             count.percentage = eventsOverview.count.change;
-            count.tooltip = labels[0] ? labels[0].label : CV.i18n("events.overview.count");
+            count.tooltip = labels.count;
             legendData.push(count);
             var sum = {};
-            sum.name = labels[1] ? labels[1].label : CV.i18n("events.overview.sum");
+            sum.name = labels.sum;
             sum.value = eventsOverview.sum.total;
             sum.trend = eventsOverview.sum.trend === "u" ? "up" : "down";
             sum.percentage = eventsOverview.sum.change;
-            sum.tooltip = labels[1] ? labels[1].label : CV.i18n("events.overview.sum");
+            sum.tooltip = labels.sum;
             legendData.push(sum);
             var dur = {};
-            dur.name = labels[2] ? labels[2].label : CV.i18n("events.overview.duration");
+            dur.name = labels.dur;
             dur.value = eventsOverview.dur.total;
             dur.trend = eventsOverview.dur.trend === "u" ? "up" : "down";
             dur.percentage = eventsOverview.dur.change;
-            dur.tooltip = labels[2] ? labels[2].label : CV.i18n("events.overview.duration");
+            dur.tooltip = labels.dur;
             legendData.push(dur);
             lineLegend.show = true;
             lineLegend.type = "primary";
@@ -342,6 +332,119 @@
         },
         getSelectedEventsOverview: function(context, res) {
             return res[context.state.selectedEventName].data;
+        },
+        getAllEventsList: function(eventsList, groupList) {
+            var map = eventsList.map || {};
+            var allEvents = [];
+            if (eventsList) {
+                eventsList.list.forEach(function(item) {
+                    if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
+                        var obj = {
+                            "label": map[item] && map[item].name ? map[item].name : item,
+                            "value": item,
+                            "custom": {
+                                "value": undefined
+                            }
+                        };
+                        allEvents.push(obj);
+                    }
+                });
+            }
+            if (groupList) {
+                groupList.forEach(function(item) {
+                    if (item.status) {
+                        var obj = {
+                            "label": item.name,
+                            "value": item._id,
+                            "custom": {
+                                "value": "GROUP"
+                            }
+                        };
+                        allEvents.push(obj);
+                    }
+                });
+            }
+            return allEvents;
+        },
+        getGroupData: function(groupData, selectedEventName) {
+            var description = undefined;
+            var name = "";
+            var isGroup = false;
+            var displayMap = {};
+            if (selectedEventName.startsWith('[CLY]_group')) {
+                groupData.every(function(item) {
+                    if (item._id === selectedEventName) {
+                        description = item.description;
+                        name = item.name;
+                        isGroup = true;
+                        displayMap = Object.assign({}, item.display_map);
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            return {
+                "description": description,
+                "name": name,
+                "isGroup": isGroup,
+                "displayMap": displayMap
+            };
+        },
+        getLabels: function(allEventsData, groupData, selectedEventName) {
+            if (groupData.isGroup) {
+                return {
+                    count: groupData.displayMap.c ? groupData.displayMap.c : CV.i18n("events.overview.count"),
+                    sum: groupData.displayMap.s ? groupData.displayMap.s : CV.i18n("events.overview.sum"),
+                    dur: groupData.displayMap.d ? groupData.displayMap.d : CV.i18n("events.overview.duration")
+                };
+            }
+            return {
+                count: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].count : CV.i18n("events.overview.count"),
+                sum: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].sum : CV.i18n("events.overview.sum"),
+                dur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration")
+            };
+
+        },
+        getLimitAlerts: function(context) {
+            var limitAlert = [];
+            var allEventsList = context.state.allEventsList;
+            var limits = context.state.allEventsData.limits;
+            var eventLimit = {};
+            var eventSegmentationLimit = {};
+            var eventSegmentationLimitValue = {};
+            var availableSegments = context.state.availableSegments.length - 1;
+            var meta = context.state.selectedEventsData.meta;
+            var eventsLength = allEventsList.filter(function(item) {
+                return item.custom.value !== "GROUP";
+            }).length;
+            if (eventsLength >= limits.event_limit) {
+                eventLimit.message = CV.i18n("events.max-event-key-limit", limits.event_limit);
+                eventLimit.show = true;
+                limitAlert.push(eventLimit);
+            }
+            if (!context.state.selectedEventName.startsWith('[CLY]_group')) {
+                if (availableSegments >= limits.event_segmentation_limit) {
+                    eventSegmentationLimit.message = CV.i18n("events.max-segmentation-limit", limits.event_segmentation_limit, context.state.allEventsProcessed.eventName);
+                    eventSegmentationLimit.show = true;
+                    limitAlert.push(eventSegmentationLimit);
+                }
+                context.state.availableSegments.forEach(function(s) {
+                    if (s !== "segment" && meta[s] && meta[s].length >= limits.event_segmentation_value_limit) {
+                        eventSegmentationLimitValue = {};
+                        eventSegmentationLimitValue.message = CV.i18n("events.max-unique-value-limit", limits.event_segmentation_value_limit, s);
+                        eventSegmentationLimitValue.show = true;
+                        limitAlert.push(eventSegmentationLimitValue);
+                    }
+                });
+            }
+            return limitAlert;
+        },
+        extendMeta: function(prevState, selectedEventsData) {
+            for (var metaObj in selectedEventsData.meta) {
+                if (prevState.meta[metaObj] && selectedEventsData.meta[metaObj] && prevState.meta[metaObj].length !== selectedEventsData.meta[metaObj].length) {
+                    selectedEventsData.meta[metaObj] = countlyCommon.union(prevState.meta[metaObj], selectedEventsData.meta[metaObj]);
+                }
+            }
         }
     };
 
@@ -400,6 +503,20 @@
                 },
                 dataType: "json",
             });
+        },
+        fetchRefreshSelectedEventsData: function(context) {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "events",
+                    "event": context.state.selectedEventName,
+                    "segmentation": context.state.currentActiveSegmentation === "segment" ? "" : context.state.currentActiveSegmentation,
+                    "action": "refresh"
+                },
+                dataType: "json",
+            });
         }
     };
 
@@ -407,12 +524,11 @@
         var getInitialState = function() {
             return {
                 allEventsData: {},
-                allEventsGroupsData: [],
+                allEventsGroupData: [],
                 selectedEventsData: {},
-                selectedDatePeriod: "30days",
+                selectedDatePeriod: countlyCommon.getPeriod(),
                 selectedEventName: undefined,
-                isGroup: false,
-                description: "",
+                groupData: {},
                 currentActiveSegmentation: "segment",
                 hasSegments: false,
                 availableSegments: [],
@@ -421,7 +537,10 @@
                 lineChartData: {},
                 legendData: {},
                 tableRows: [],
-                selectedEventsOverview: {}
+                selectedEventsOverview: {},
+                allEventsList: [],
+                labels: [],
+                limitAlerts: []
             };
         };
 
@@ -435,18 +554,28 @@
                                 localStorage.setItem("eventKey", res.list[0]);
                                 context.commit('setSelectedEventName', res.list[0]);
                             }
-                            countlyAllEvents.service.fetchSelectedEventsData(context)
-                                .then(function(response) {
-                                    if (response) {
-                                        context.commit("setSelectedEventsData", response);
-                                        context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);
-                                        context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
+                            countlyAllEvents.service.fetchAllEventsGroupData(context)
+                                .then(function(result) {
+                                    if (result) {
+                                        context.commit("setAllEventsGroupData", result);
+                                        context.commit("setAllEventsList", countlyAllEvents.helpers.getAllEventsList(res, result));
+                                        context.commit("setGroupData", countlyAllEvents.helpers.getGroupData(result, context.state.selectedEventName));
+                                        context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
+                                        countlyAllEvents.service.fetchSelectedEventsData(context)
+                                            .then(function(response) {
+                                                if (response) {
+                                                    context.commit("setSelectedEventsData", response);
+                                                    context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);
+                                                    context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
+                                                    context.commit("setLimitAlerts", countlyAllEvents.helpers.getLimitAlerts(context) || []);
 
-                                        countlyAllEvents.service.fetchSelectedEventsOverview(context)
-                                            .then(function(resp) {
-                                                if (resp) {
-                                                    context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
-                                                    context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context)
+                                                        .then(function(resp) {
+                                                            if (resp) {
+                                                                context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
+                                                                context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                            }
+                                                        });
                                                 }
                                             });
                                     }
@@ -484,13 +613,56 @@
             },
             fetchHasSegments: function(context, hasSegments) {
                 context.commit('setHasSegments', hasSegments);
-            }
+            },
+            fetchRefreshAllEventsData: function(context) {
+                return countlyAllEvents.service.fetchAllEventsData(context)
+                    .then(function(res) {
+                        if (res) {
+                            context.commit("setAllEventsData", res);
+                            if (!context.state.selectedEventName) {
+                                localStorage.setItem("eventKey", res.list[0]);
+                                context.commit('setSelectedEventName', res.list[0]);
+                            }
+                            countlyAllEvents.service.fetchAllEventsGroupData(context)
+                                .then(function(result) {
+                                    if (result) {
+                                        context.commit("setAllEventsGroupData", result);
+                                        context.commit("setAllEventsList", countlyAllEvents.helpers.getAllEventsList(res, result));
+                                        context.commit("setGroupData", countlyAllEvents.helpers.getGroupData(result, context.state.selectedEventName));
+                                        context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
+                                        countlyAllEvents.service.fetchRefreshSelectedEventsData(context)
+                                            .then(function(response) {
+                                                if (response) {
+                                                    var prevState = Object.assign({}, context.state.selectedEventsData);
+                                                    countlyCommon.extendDbObj(context.state.selectedEventsData, response);
+                                                    countlyAllEvents.helpers.extendMeta(prevState, context.state.selectedEventsData);
+                                                    context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, context.state.selectedEventsData) || []);
+                                                    context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
+                                                    context.commit("setLimitAlerts", countlyAllEvents.helpers.getLimitAlerts(context) || []);
+
+                                                    countlyAllEvents.service.fetchSelectedEventsOverview(context)
+                                                        .then(function(resp) {
+                                                            if (resp) {
+                                                                context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
+                                                                context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                            }
+                                                        });
+                                                }
+                                            });
+                                    }
+                                });
+                        }
+                    });
+            },
 
         };
 
         var allEventsMutations = {
             setAllEventsData: function(state, value) {
                 state.allEventsData = value;
+            },
+            setAllEventsList: function(state, value) {
+                state.allEventsList = value;
             },
             setAllEventsGroupData: function(state, value) {
                 state.allEventsGroupData = value;
@@ -504,11 +676,8 @@
             setSelectedEventName: function(state, value) {
                 state.selectedEventName = value;
             },
-            setIsGroup: function(state, value) {
-                state.isGroup = value;
-            },
-            setDescription: function(state, value) {
-                state.description = value;
+            setGroupData: function(state, value) {
+                state.groupData = value;
             },
             setCurrentActiveSegmentation: function(state, value) {
                 state.currentActiveSegmentation = value;
@@ -537,10 +706,19 @@
             setSelectedEventsOverview: function(state, value) {
                 state.selectedEventsOverview = value;
             },
+            setLabels: function(state, value) {
+                state.labels = value;
+            },
+            setLimitAlerts: function(state, value) {
+                state.limitAlerts = value;
+            }
         };
         var allEventsGetters = {
             allEvents: function(_state) {
                 return _state.allEventsData;
+            },
+            allEventsList: function(_state) {
+                return _state.allEventsList;
             },
             allEventsGroup: function(_state) {
                 return _state.allEventsGroupData;
@@ -554,11 +732,8 @@
             selectedEventName: function(_state) {
                 return _state.selectedEventName;
             },
-            isGroup: function(_state) {
-                return _state.isGroup;
-            },
-            description: function(_state) {
-                return _state.description;
+            groupData: function(_state) {
+                return _state.groupData;
             },
             currentActiveSegmentation: function(_state) {
                 return _state.currentActiveSegmentation;
@@ -586,6 +761,12 @@
             },
             selectedEventsOverview: function(_state) {
                 return _state.selectedEventsOverview;
+            },
+            labels: function(_state) {
+                return _state.labels;
+            },
+            limitAlerts: function(_state) {
+                return _state.limitAlerts;
             }
         };
         return countlyVue.vuex.Module("countlyAllEvents", {

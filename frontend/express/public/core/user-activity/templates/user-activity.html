@@ -1,118 +1,79 @@
-<script type="text/x-template" id="user-activity">
-    <div v-bind:class="[componentId]">
-        <cly-header>
-            <template v-slot:header-left>
-                <h2> {{i18n('user-activity.title')}} 
-                </h2>
-                <span class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="description">
-                </span>
-            </template>
-        </cly-header>
-        <cly-main>
-            <user-activity-filter> </user-activity-filter>
-            <user-activity-bar-chart> </user-activity-bar-chart>
-            <user-activity-table> </user-activity-table>
-        </cly-main>
-    </div>
-</script>
-
-<!-- NOTE-LA: <user-activityfilter> is a temporary created component until query filter with modal becomes available-->
-<script type="text/x-template" id="user-activity-filter">
-    <cly-section style="min-height:150px">
-        <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered" style="padding-top:1%">
-            <div class="bu-column bu-is-12-tablet bu-is-9-desktop bu-is-7-widescreen bu-is-6-fullhd">
-                <cly-qb-segmentation
-                    :allow-breakdown="false"
-                    v-model="userActivityFilters"
-                >
-                </cly-qb-segmentation>
-            </div>
-        </div>
-        <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered" style="padding-bottom:1%">
-            <div class="bu-column bu-is-12-tablet bu-is-9-desktop bu-is-7-widescreen bu-is-6-fullhd">
-                <div class="bu-columns">
-                    <div class="bu-column bu-is-1">
-                        <el-button type="info" plain>Cancel</el-button>
-                    </div>
-                    <div class="bu-column bu-is-1">
-                        <el-button type="success" @click="onApplyFilter">Apply filter</el-button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </cly-section>
-</script>
-
-<script type="text/x-template" id="user-activity-bar-chart">
-    <cly-section>
-        <cly-chart-bar :option="userActivityOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
-    </cly-section>
-</script>
-
-<script type="text/x-template" id="user-activity-table">
-    <cly-section>
-        <cly-datatable-n  :rows="userActivityRows" :resizable="true" v-loading="isLoading">
-            <template v-slot="scope">
-                <el-table-column sortable="custom" prop="bucket" :label="i18n('user-activity.table-session-count')">
-                    <template slot-scope="scope">
-                        <div class="bu-columns bu-is-gapless">
-                            <div class="bu-column bu-is-2">
-                                <span>{{scope.row.bucket}}</span>
-                            </div>
-                        </div>
-                    </template>
-                </el-table-column>
-                <el-table-column sortable="custom" prop="all" :label="i18n('user-activity.table-all-users')">
-                    <template slot-scope="scope">
-                        <div class="bu-level-left">
-                            <div class="bu-level-item first-user-activity-table-data-item">
-                                <span>{{scope.row.all}}</span>
-                            </div>
-                            <div class="bu-level-item user-activity-table-data-item-divider">
-                                <span>|</span>
-                            </div>
-                            <div class="bu-level-item user-activity-table-data-item">
-                                <span>{{formatPercentage(scope.row.all/seriesTotal.all)}} %</span>
-                            </div>
-                            <cly-progress-bar :percentage="formatPercentage(scope.row.all/seriesTotal.all)" :color="progressBarColor"> </cly-progress-bar>
-                        </div>
-                    </template>
-                </el-table-column>
-                <el-table-column sortable="custom" prop="thirtyDays" :label="i18n('user-activity.table-thirty-days')">
-                    <template slot-scope="scope">
-                        <div class="bu-level-left">
-                            <div class="bu-level-item first-user-activity-table-data-item">
-                                <span>{{scope.row.thirtyDays}}</span>
-                            </div>
-                            <div class="bu-level-item user-activity-table-data-item-divider">
-                                <span>|</span>
-                            </div>
-                            <div class="bu-level-item user-activity-table-data-item">
-                                <span>{{formatPercentage(scope.row.thirtyDays/seriesTotal.thirtyDays)}} %</span>
-                            </div>
-                            <cly-progress-bar :percentage="formatPercentage(scope.row.thirtyDays/seriesTotal.thirtyDays)" :color="progressBarColor"> </cly-progress-bar>
-                        </div>
-                    </template>
-                </el-table-column>
-                <el-table-column sortable="custom" prop="sevenDays" :label="i18n('user-activity.table-seven-days')">
-                    <template slot-scope="scope">
-                            <div class="bu-column">
-                                <div class="bu-level-left">
-                                    <div class="bu-level-item first-user-activity-table-data-item">
-                                        <span>{{scope.row.sevenDays}}</span>
-                                    </div>
-                                    <div class="bu-level-item user-activity-table-data-item-divider">
-                                        <span>|</span>
-                                    </div>
-                                    <div class="bu-level-item  user-activity-table-data-item">
-                                        <span>{{formatPercentage(scope.row.sevenDays/seriesTotal.sevenDays)}} %</span>
-                                    </div>
-                                    <cly-progress-bar :percentage="formatPercentage(scope.row.sevenDays/seriesTotal.sevenDays)" :color="progressBarColor"> </cly-progress-bar>
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('user-activity.title')}} </h2>
+            <cly-tooltip-icon :tooltip="i18n('user-activity.description')" icon="ion ion-help-circled" class="bu-ml-4"> </cly-tooltip-icon>
+        </template>
+    </cly-header>
+    <cly-main>
+        <cly-qb-bar class="bu-my-5" v-model="userActivityFilters" queryStore="user-activity" format="mongo"></cly-qb-bar>
+        <cly-section>
+            <cly-chart-bar :option="userActivityOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
+        </cly-section>
+        <cly-section>
+            <cly-datatable-n  :rows="userActivityRows" :resizable="true" v-loading="isLoading">
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" prop="bucket" :label="i18n('user-activity.table-session-count')">
+                        <template slot-scope="scope">
+                            <div class="bu-columns bu-is-gapless">
+                                <div class="bu-column bu-is-2">
+                                    <span>{{scope.row.bucket}}</span>
                                 </div>
                             </div>
-                    </template>
-                </el-table-column>
-            </template>
-        </cly-datatable-n>
-    </cly-section>
-</script>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="all" :label="i18n('user-activity.table-all-users')">
+                        <template slot-scope="scope">
+                            <div class="bu-level-left">
+                                <div class="bu-level-item first-user-activity-table-data-item">
+                                    <span>{{scope.row.all}}</span>
+                                </div>
+                                <div class="bu-level-item user-activity-table-data-item-divider">
+                                    <span>|</span>
+                                </div>
+                                <div class="bu-level-item user-activity-table-data-item">
+                                    <span>{{formatPercentage(scope.row.all/seriesTotal.all)}} %</span>
+                                </div>
+                                <cly-progress-bar :percentage="formatPercentage(scope.row.all/seriesTotal.all)" :color="progressBarColor"> </cly-progress-bar>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="thirtyDays" :label="i18n('user-activity.table-thirty-days')">
+                        <template slot-scope="scope">
+                            <div class="bu-level-left">
+                                <div class="bu-level-item first-user-activity-table-data-item">
+                                    <span>{{scope.row.thirtyDays}}</span>
+                                </div>
+                                <div class="bu-level-item user-activity-table-data-item-divider">
+                                    <span>|</span>
+                                </div>
+                                <div class="bu-level-item user-activity-table-data-item">
+                                    <span>{{formatPercentage(scope.row.thirtyDays/seriesTotal.thirtyDays)}} %</span>
+                                </div>
+                                <cly-progress-bar :percentage="formatPercentage(scope.row.thirtyDays/seriesTotal.thirtyDays)" :color="progressBarColor"> </cly-progress-bar>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="sevenDays" :label="i18n('user-activity.table-seven-days')">
+                        <template slot-scope="scope">
+                                <div class="bu-column">
+                                    <div class="bu-level-left">
+                                        <div class="bu-level-item first-user-activity-table-data-item">
+                                            <span>{{scope.row.sevenDays}}</span>
+                                        </div>
+                                        <div class="bu-level-item user-activity-table-data-item-divider">
+                                            <span>|</span>
+                                        </div>
+                                        <div class="bu-level-item  user-activity-table-data-item">
+                                            <span>{{formatPercentage(scope.row.sevenDays/seriesTotal.sevenDays)}} %</span>
+                                        </div>
+                                        <cly-progress-bar :percentage="formatPercentage(scope.row.sevenDays/seriesTotal.sevenDays)" :color="progressBarColor"> </cly-progress-bar>
+                                    </div>
+                                </div>
+                        </template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>        
+    </cly-main>
+</div>

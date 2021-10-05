@@ -103,6 +103,8 @@
         return ref;
     };
 
+    var _internalRequestParams = ["page", "perPage", "sort", "searchQuery"];
+
     var _dataTableAdapters = {
         toLegacyRequest: function(requestParams, cols) {
             var convertedParams = {};
@@ -119,6 +121,11 @@
             if (requestParams.searchQuery) {
                 convertedParams.sSearch = requestParams.searchQuery;
             }
+            Object.keys(requestParams).forEach(function(paramKey) {
+                if (!_internalRequestParams.includes(paramKey)) {
+                    convertedParams[paramKey] = requestParams[paramKey];
+                }
+            });
             return convertedParams;
         },
         toStandardResponse: function(response, requestOptions) {
@@ -287,7 +294,7 @@
         };
 
         actions[_capitalized("pasteAndFetch", resourceName)] = function(context, remoteParams) {
-            context.commit(_capitalized("set", paramsKey), Object.assign({}, remoteParams, {ready: true}));
+            context.commit(_capitalized("set", paramsKey), Object.assign({}, context.state[paramsField], remoteParams, {ready: true}));
             return context.dispatch(_capitalized("fetch", resourceName), { _silent: false });
         };
 
@@ -485,14 +492,17 @@
             };
         };
         var countlyFetchActions = {
-            onFetchInit: function(context) {
+            onFetchInit: function(context, payload) {
                 context.commit('setFetchInit');
+                context.dispatch('setIsLoadingIfNecessary', {useLoader: payload.useLoader, value: true });
             },
-            onFetchError: function(context, error) {
-                context.commit('setFetchError', error);
+            onFetchError: function(context, payload) {
+                context.commit('setFetchError', payload.error);
+                context.dispatch('setIsLoadingIfNecessary', {useLoader: payload.useLoader, value: false });
             },
-            onFetchSuccess: function(context) {
+            onFetchSuccess: function(context, payload) {
                 context.commit('setFetchSuccess');
+                context.dispatch('setIsLoadingIfNecessary', {useLoader: payload.useLoader, value: false });
             },
             setIsLoadingIfNecessary: function(context, payload) {
                 if (payload.useLoader) {

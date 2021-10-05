@@ -1,12 +1,15 @@
-/*global app, countlyAuth, countlySlippingAwayUsers, countlyVue, $, CV, CountlyHelpers */
-//TODO-LA: Use query builder component with modal when it becomes available
-
+/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,CountlyHelpers,countlyCommon*/
 (function() {
 
     var FEATURE_NAME = "slipping_away_users";
 
-    var SlippingAwayUsersFilter = countlyVue.views.BaseView.extend({
-        template: "#slipping-away-users-filter",
+    var SlippingAwayUsersView = countlyVue.views.create({
+        template: CV.T("/slipping-away-users/templates/slipping-away-users.html"),
+        data: function() {
+            return {
+                progressBarColor: "#F96300",
+            };
+        },
         computed: {
             slippingAwayUsersFilters: {
                 get: function() {
@@ -14,22 +17,9 @@
                 },
                 set: function(value) {
                     this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', value);
+                    this.$store.dispatch("countlySlippingAwayUsers/fetchAll", true);
                 }
             },
-        },
-        methods: {
-            onApplyFilter: function() {
-                this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
-            },
-        }
-    });
-
-    var SlippingAwayUsersBarChart = countlyVue.views.BaseView.extend({
-        template: "#slipping-away-users-bar-chart",
-        data: function() {
-            return {};
-        },
-        computed: {
             slippingAwayUsers: function() {
                 return this.$store.state.countlySlippingAwayUsers.slippingAwayUsers;
             },
@@ -64,24 +54,7 @@
                 return awayUsersCount;
             },
             isLoading: function() {
-                return this.$store.state.countlySlippingAwayUsers.isLoading;
-            }
-        }
-    });
-
-    var SlippingAwayUsersTable = countlyVue.views.BaseView.extend({
-        template: "#slipping-away-users-table",
-        data: function() {
-            return {
-                progressBarColor: "#F96300",
-            };
-        },
-        computed: {
-            slippingAwayUsers: function() {
-                return this.$store.state.countlySlippingAwayUsers.slippingAwayUsers;
-            },
-            isLoading: function() {
-                return this.$store.state.countlySlippingAwayUsers.isLoading;
+                return this.$store.getters['countlySlippingAwayUsers/isLoading'];
             }
         },
         methods: {
@@ -94,69 +67,41 @@
                     Object.assign(data, CountlyHelpers.buildFilters(currentFilters));
                 }
                 window.location.hash = '/users/query/' + JSON.stringify(data);
-            }
-        }
-    });
-
-    var SlippingAwayUsersView = countlyVue.views.BaseView.extend({
-        template: "#slipping-away-users",
-        components: {
-            "slipping-away-users-filter": SlippingAwayUsersFilter,
-            "slipping-away-users-bar-chart": SlippingAwayUsersBarChart,
-            "slipping-away-users-table": SlippingAwayUsersTable
-        },
-        data: function() {
-            return {
-                description: CV.i18n("slipping-away-users.description"),
-            };
-        },
-        methods: {
+            },
             refresh: function() {
-                this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
-            }
+                this.$store.dispatch("countlySlippingAwayUsers/fetchAll", false);
+            },
         },
         mounted: function() {
-            if (this.$route.params) {
-                this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', {query: this.$route.params });
+            if (this.$route.params && this.$route.params.query) {
+                this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', {query: this.$route.params.query });
             }
-            this.$store.dispatch("countlySlippingAwayUsers/fetchAll");
+            this.$store.dispatch("countlySlippingAwayUsers/fetchAll", true);
         }
-    });
-
-    var vuex = [{
-        clyModel: countlySlippingAwayUsers
-    }];
-
-    var slippingAwayUsersView = new countlyVue.views.BackboneWrapper({
-        component: SlippingAwayUsersView,
-        vuex: vuex,
-        templates: [
-            "/slipping-away-users/templates/slipping-away-users.html",
-            "/drill/templates/query.builder.v2.html"
-        ]
     });
 
     if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route("/analytics/slipping-away", 'slipping-away', function() {
-            this.renderWhenReady(slippingAwayUsersView);
-        });
-        app.route("/analytics/slipping-away/*query", "slipping-away", function(query) {
-            var queryUrlParameter = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : undefined;
-            slippingAwayUsersView.params = queryUrlParameter;
-            this.renderWhenReady(slippingAwayUsersView);
+        countlyVue.container.registerTab("/analytics/loyalty", {
+            priority: 2,
+            name: "slipping-away-users",
+            title: CV.i18n('slipping-away-users.title'),
+            route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/loyalty/slipping-away-users",
+            component: SlippingAwayUsersView,
+            vuex: [{
+                clyModel: countlySlippingAwayUsers
+            }]
         });
     }
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("users", {code: "slipping-away", url: "#/analytics/slipping-away", text: "slipping-away-users.title", priority: 30});
             if (app.configurationsView) {
-                app.configurationsView.registerLabel("slipping-away-users", "slipping.config-title");
-                app.configurationsView.registerLabel("slipping-away-users.p1", "slipping.config-first");
-                app.configurationsView.registerLabel("slipping-away-users.p2", "slipping.config-second");
-                app.configurationsView.registerLabel("slipping-away-users.p3", "slipping.config-third");
-                app.configurationsView.registerLabel("slipping-away-users.p4", "slipping.config-fourth");
-                app.configurationsView.registerLabel("slipping-away-users.p5", "slipping.config-fifth");
+                app.configurationsView.registerLabel("slipping-away-users", "slipping-away-users.config-title");
+                app.configurationsView.registerLabel("slipping-away-users.p1", "slipping-away-users.config-first-threshold");
+                app.configurationsView.registerLabel("slipping-away-users.p2", "slipping-away-users.config-second-threshold");
+                app.configurationsView.registerLabel("slipping-away-users.p3", "slipping-away-users.config-third-threshold");
+                app.configurationsView.registerLabel("slipping-away-users.p4", "slipping-away-users.config-fourth-threshold");
+                app.configurationsView.registerLabel("slipping-away-users.p5", "slipping-away-users.config-fifth-threshold");
             }
         }
     });

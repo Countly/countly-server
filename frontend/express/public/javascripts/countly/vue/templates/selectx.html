@@ -1,5 +1,5 @@
 <cly-dropdown
-    class="cly-vue-select-x""
+    class="cly-vue-select-x"
     ref="dropdown"
     :width="width"
     :placeholder="placeholder"
@@ -16,16 +16,22 @@
                 :size="size"
                 :disabled="disabled"
                 :adaptive-length="adaptiveLength"
+                :min-width="minInputWidth"
+                :max-width="maxInputWidth"
                 :focused="dropdown.focused"
                 :opened="dropdown.visible"
                 :placeholder="placeholder"
+                :arrow="arrow"
                 :selected-options="selectedOptions">
             </cly-input-dropdown-trigger>
         </slot>
     </template>
     <div class="cly-vue-select-x__pop" :class="popClasses">
         <div class="cly-vue-select-x__header">
-            <div class="cly-vue-select-x__title" v-if="title">{{title}}</div>
+			<div class="bu-level">
+				<div class="cly-vue-select-x__title" v-if="title">{{title}}</div>
+				<div class='bu-level-right text-small color-cool-gray-50' v-if="showSelectedCount">{{selectedCountText}}</div>
+			</div>
             <div class="cly-vue-select-x__header-slot" v-if="!!$scopedSlots.header">
                 <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>
             </div>
@@ -82,7 +88,7 @@
         <div class="cly-vue-select-x__footer" v-if="!autoCommit">
             <div class="cly-vue-select-x__commit-section">
                 <el-button @click="doDiscard" size="small">{{ i18n("common.cancel") }}</el-button>
-                <el-button @click="doCommit" type="primary" size="small">{{ i18n("common.confirm") }}</el-button>
+                <el-button @click="doCommit" :disabled="disabled || !isItemCountValid" type="success" size="small">{{ i18n("common.confirm") }}</el-button>
             </div>
         </div>
     </div>

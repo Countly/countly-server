@@ -15,6 +15,7 @@
   }
 
   &__ratings-popup {
+    padding-top: 30px;
     width: 450px;
     height: 515px;
     border-radius: 13px;
@@ -232,4 +233,33 @@
   &__filter-selector {
     width: 270px;
   }
+}
+
+.rating-color {
+  width: 17px;
+  display: inline-block;
+  height: 10px;
+  border-radius: 10px;
+  margin-right: 16px;
+  margin-left: 8px;
+}
+
+.rating-color-0 {
+  background-color: #D23F00;
+}
+
+.rating-color-1 {
+  background-color: #F96300;
+}
+
+.rating-color-2 {
+  background-color: #F5C900;
+}
+
+.rating-color-3 {
+  background-color: #AABB5D;
+}
+
+.rating-color-4 {
+  background-color: #10A14A;
 }

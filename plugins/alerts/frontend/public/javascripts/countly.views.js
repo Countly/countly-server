@@ -817,6 +817,6 @@ if (countlyAuth.validateRead(app.alertsView.featureName)) {
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.alertsView.featureName)) {
-        app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
+        app.addMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
     }
 });

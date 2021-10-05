@@ -1,12 +1,10 @@
-/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser*/
+/* global CountlyHelpers, jQuery, $,countlyTotalUsers,countlyCommon,countlyVue,countlyDeviceList,countlyOsMapping,countlyDeviceDetails,countlyBrowser, countlyGlobal, countlyDensity*/
 (function(countlyDevicesAndTypes) {
 
     CountlyHelpers.createMetricModel(window.countlyDevicesAndTypes, {name: "device_details", estOverrideMetric: "platforms"}, jQuery);
     countlyDevicesAndTypes.os_mapping = countlyOsMapping; //./frontend/express/public/javascripts/countly/countly.device.osmapping.js
 
     //CountlyDeviceList - ./frontend/express/public/javascripts/countly/countly.device.list.js
-
-
     countlyDevicesAndTypes.getCleanVersion = function(version) {
         for (var i in countlyDevicesAndTypes.os_mapping) {
             version = version.replace(new RegExp("^" + countlyDevicesAndTypes.os_mapping[i].short, "g"), "");
@@ -122,11 +120,29 @@
         fetchBrowser: function() {
             return $.when(countlyBrowser.initialize(), countlyTotalUsers.initialize("browser"));
         },
+        fetchDensity: function() {
+            return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize());
+        },
         fetchDevices: function() {
             return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("devices"),
                 countlyTotalUsers.initialize("platforms"),
                 countlyTotalUsers.initialize("platform_versions"),
                 countlyTotalUsers.initialize("resolutions"));
+        },
+        fetchHomeDashboardData: function() {
+            //app type is mobile
+
+            var appType = "";
+            if (countlyGlobal && countlyGlobal.apps && countlyCommon.ACTIVE_APP_ID && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]) {
+                appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+            }
+
+            if (appType === "web") {
+                return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices")), countlyBrowser.initialize(), countlyTotalUsers.initialize("browser");
+            }
+            else {
+                return $.when(countlyDevice.initialize(), countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("devices"), countlyTotalUsers.initialize("app_versions"), countlyTotalUsers.initialize("device_type"));
+            }
         },
         fetchDeviceTypes: function() {
             return $.when(countlyDevicesAndTypes.initialize(), countlyTotalUsers.initialize("device_type"));
@@ -212,6 +228,130 @@
 
             return chartData;
         },
+        calculateDensity: function() {
+            var chartData = [];
+            var calculatedchartData = [];
+            var segmentedDataTotalSession, segmentedDataTotalUsers, segmentedDataNewUsers;
+
+            // calculate chartData
+            var segmentedData = countlyDensity.getOSSegmentedData(countlyCommon.ACTIVE_APP_ID).os;
+            for (var i = 0; i < segmentedData.length; i++) {
+                segmentedDataTotalSession = 0;
+                segmentedDataTotalUsers = 0;
+                segmentedDataNewUsers = 0;
+                for (var j = 0; j < countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData.length; j++) {
+                    segmentedDataTotalSession += parseInt(countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData[j].t);
+                    segmentedDataTotalUsers += parseInt(countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData[j].u);
+                    segmentedDataNewUsers += parseInt(countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData[j].n);
+                }
+                calculatedchartData.push({density: segmentedData[i].name, t: segmentedDataTotalSession, u: segmentedDataTotalUsers, n: segmentedDataNewUsers});
+            }
+            chartData.chartData = calculatedchartData;
+
+            // calculate totals
+            var totals = {"u": 0, "t": 0, "n": 0};
+            for (var k = 0; k < chartData.chartData.length; k++) {
+                totals.u += chartData.chartData[k].u || 0;
+                totals.t += chartData.chartData[k].t || 0;
+                totals.n += chartData.chartData[k].n || 0;
+            }
+            chartData.totals = totals;
+
+            // calculate versions
+            var stacked_version = [];
+            for (var t = 0; t < chartData.chartData.length; t++) {
+                var tmpDensityVersion = countlyDensity.getOSSegmentedData(chartData.chartData[t].density).chartData;
+                stacked_version.push({"label": chartData.chartData[t].density, "u": chartData.chartData[t].u, "t": chartData.chartData[t].t, "n": chartData.chartData[t].n, "data": tmpDensityVersion});
+            }
+            chartData.versions = stacked_version;
+
+            return chartData;
+        },
+        calculateHomeTotals: function() {
+
+            var tops = {};
+            var loadTotalsFor = [
+                {"model": countlyDevice, "label": "devices", "func": countlyDevicesAndTypes.helpers.getDeviceFullName},
+                {
+                    "model": countlyBrowser,
+                    "label": "browser",
+                    "func": function(rangeArr) {
+                        return rangeArr;
+                    }
+                },
+                {
+                    "model": countlyDevicesAndTypes,
+                    "label": "os",
+                    "func": function(rangeArr) {
+                        if (countlyDevicesAndTypes.os_mapping[rangeArr.toLowerCase()]) {
+                            return countlyDevicesAndTypes.os_mapping[rangeArr.toLowerCase()].name;
+                        }
+                        return rangeArr;
+                    }
+                },
+                {
+                    "model": countlyDevicesAndTypes,
+                    "label": "app_versions",
+                    "func": function(rangeArr) {
+                        return rangeArr.replace(/:/g, ".");
+                    }
+                },
+                {
+                    "model": countlyDevicesAndTypes,
+                    "label": "device_type",
+                    "func": function(rangeArr) {
+                        return rangeArr;
+                    }
+                }
+            ];
+            //countlyDevicesAndTypes.helpers.loadTableFromModel(countlyDevicesAndTypes, metric, options.func)
+
+
+            var property = "t";
+            for (var pp = 0; pp < loadTotalsFor.length; pp++) {
+
+                var tableData = countlyDevicesAndTypes.helpers.loadTableFromModel(loadTotalsFor[pp].model, loadTotalsFor[pp].label, loadTotalsFor[pp].func);
+                tableData = tableData || {};
+                tableData = tableData.chartData || [];
+
+                var totals = 0;
+                var topN = [];
+
+
+                for (var k = 0; k < tableData.length; k++) {
+                    totals += tableData[k][property];
+                    if (topN.length < 5) {
+                        topN.push(tableData[k]);
+                        topN = topN.sort(function(a, b) {
+                            return a[property] - b[property];
+                        });
+                    }
+                    else {
+                        if (topN[2][property] < tableData[k][property]) {
+                            topN[2] = tableData[k];
+                            topN = topN.sort(function(a, b) {
+                                return a[property] - b[property];
+                            });
+                        }
+                    }
+                }
+                for (var z = 0; z < topN.length; z++) {
+                    topN[z] = {"name": topN[z][loadTotalsFor[pp].label], "percent": Math.round((topN[z][property] || 0) * 1000 / (totals || 1)) / 10, "value": topN[z][property]};
+                }
+                tops[loadTotalsFor[pp].label] = topN;
+            }
+
+            for (var key in tops) {
+                for (var z1 = 0; z1 < tops[key].length; z1++) {
+                    tops[key][z1].bar = [{
+                        percentage: tops[key][z1].percent,
+                        color: "#017AFF"
+                    }
+                    ];
+                }
+            }
+            return tops;
+        },
         calculateDevices: function() {
             var metric = "devices";
             var tableData = countlyDevicesAndTypes.helpers.loadTableFromModel(countlyDevice, "devices", countlyDevicesAndTypes.helpers.getDeviceFullName);
@@ -294,8 +434,10 @@
                 appVersion: {"chart": {}, "table": []},
                 appPlatform: {"chart": {}, "table": []},
                 appBrowser: {"chart": {}, "table": []},
+                appDensity: {"chart": {}, "table": []},
                 deviceTypes: {"pie": {"newUsers": [], "totalSessions": []}, "chart": {}, "totals": {}, "table": []},
                 appDevices: {"pie": {"newUsers": [], "totalSessions": []}, "totals": {}, "table": []},
+                dashboardTotals: [],
                 minNonEmptyBucketsLength: 0,
                 nonEmptyBuckets: [],
                 isLoading: false,
@@ -304,7 +446,8 @@
                 selectedDatePeriod: "day",
                 selectedProperty: "t",
                 selectedPlatform: "",
-                selectedBrowser: ""
+                selectedBrowser: "",
+                selectedDensity: ""
             };
         };
 
@@ -354,6 +497,16 @@
                     context.dispatch('onFetchError', error);
                 });
             },
+            fetchDensity: function(context) {
+                context.dispatch('onFetchInit');
+                countlyDevicesAndTypes.service.fetchDensity().then(function() {
+                    var densities = countlyDevicesAndTypes.service.calculateDensity();
+                    context.commit('setAppDensity', densities);
+                    context.dispatch('onFetchSuccess');
+                }).catch(function(error) {
+                    context.dispatch('onFetchError', error);
+                });
+            },
             fetchDeviceTypes: function(context) {
                 context.dispatch('onFetchInit');
                 countlyDevicesAndTypes.service.fetchDeviceTypes().then(function() {
@@ -372,6 +525,13 @@
                     context.dispatch('onFetchSuccess');
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
+                });
+            },
+            fetchHomeDashboard: function(context) {
+                return countlyDevicesAndTypes.service.fetchHomeDashboardData().then(function() {
+                    var totals = countlyDevicesAndTypes.service.calculateHomeTotals();
+                    return context.commit('setDashboardTotals', totals);
+
                 });
             },
             onFetchInit: function(context) {
@@ -394,6 +554,9 @@
             },
             onSetSelectedBrowser: function(context, value) {
                 context.commit('setSelectedBrowser', value);
+            },
+            onSetSelectedDensity: function(context, value) {
+                context.commit('setSelectedDensity', value);
             }
         };
 
@@ -401,6 +564,9 @@
             setResolution: function(state, value) {
                 state.appResolution = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appResolution);
+            },
+            setDashboardTotals: function(state, value) {
+                state.dashboardTotals = value;
             },
             setDeviceTypes: function(state, value) {
                 state.deviceTypes = value;
@@ -418,6 +584,10 @@
                 state.appBrowser = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appBrowser);
             },
+            setAppDensity: function(state, value) {
+                state.appDensity = value;
+                countlyDevicesAndTypes.helpers.setEmptyDefault(state.appDensity);
+            },
             setAppDevices: function(state, value) {
                 state.appDevices = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appDevices);
@@ -430,6 +600,9 @@
             },
             setSelectedBrowser: function(state, value) {
                 state.selectedBrowser = value;
+            },
+            setSelectedDensity: function(state, value) {
+                state.selectedDensity = value;
             },
             setSelectedDatePeriod: function(state, value) {
                 state.selectedDatePeriod = value;

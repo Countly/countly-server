@@ -1,7 +1,7 @@
 <cly-datatable-n
     :rows="widgets">
       <template v-slot="scope">
-          <el-table-column width="120px" sortable="true" prop="status" :label="'Status'">
+          <el-table-column width="120px" type="switch" sortable="true" prop="status" :label="i18n('feedback.status')">
               <template v-slot="rowScope">
                 <el-switch :value="rowScope.row.status"
                   @input="scope.patch(rowScope.row, { status: !rowScope.row.status})"
@@ -9,43 +9,42 @@
                 </el-switch>
               </template>
           </el-table-column>
-          <el-table-column min-width="150px" :label="'Ratings Widget Name'">
+          <el-table-column min-width="150px" :label="i18n('feedback.ratings-widget-name')">
             <template v-slot="rowScope">
-                <div class="text-small bu-has-text-weight-bold">
+                <div class="text-medium">
                   {{rowScope.row.popup_header_text}}
                 </div>
-                <div class="text-small">
-                  Widget ID {{rowScope.row._id}}
+                <div>
+                  <span style="color:#A7AEB8" class="text-small bu-has-text-weight-semibold"> {{ i18n('feedback.widget-id') }} </span>
+                  <span style="color:#A7AEB8" class="text-small">{{rowScope.row._id}}</span>
                 </div>
             </template>
           </el-table-column>
-          <el-table-column prop="targeting" :label="'Targeting'">
+          <el-table-column prop="targeting" :label="i18n('feedback.targeting')">
             <template v-slot="rowScope">
               <cly-cohort-targeting :targeting="rowScope.row.targeting">
               </cly-cohort-targeting>
             </template>
           </el-table-column>
-          <el-table-column sortable="true" prop="rating_score" :label="'Rating Score'">
+          <el-table-column sortable="true" prop="rating_score" :label="i18n('feedback.rating-score')">
             <template v-slot="rowScope">
                 <span class="bu-is-size-4">
                   {{ rowScope.row.ratingScore }}
                 </span>
             </template>
           </el-table-column>
-          <el-table-column sortable="true" prop="responses" :label="'Responses'">
+          <el-table-column sortable="true" prop="responses" :label="i18n('feedback.responses')">
             <template v-slot="rowScope">
               <span class="text-medium">
                 {{ rowScope.row.ratingsCount }}
               </span>
             </template>
           </el-table-column>
-          <el-table-column>
-            <template width="50px" :label="'Detail'" v-slot="rowScope">
-              <span class="text-medium">
-                <cly-more-options class="bu-ml-2" size="small" @command="handleCommand($event, rowScope.row._id)">
-                  <el-dropdown-item command="show-detail">Show Detail</el-dropdown-item>
+          <el-table-column type="options">
+            <template :label="i18n('feedback.detail')" v-slot="rowScope">
+                <cly-more-options v-if="rowScope.row.hover" class="bu-ml-2" size="small" @command="handleCommand($event, rowScope.row._id)">
+                  <el-dropdown-item command="show-detail"> {{ i18n('feedback.show-detail') }}</el-dropdown-item>
                 </cly-more-options>
-              </span>
             </template>
           </el-table-column>
         </template>

@@ -28,7 +28,8 @@
         "targeting",
         "ratings_texts",
         "rating_symbol",
-        "status"
+        "status",
+        "logo"
     ];
 
     var widgetJSONProperties = [

@@ -22,7 +22,7 @@
         },
         computed: {
             iconClass: function() {
-                return (this.opened ? 'arrow-up is-reverse' : 'arrow-up');
+                return (this.opened ? 'ion-arrow-up-b is-reverse' : 'ion-arrow-up-b');
             },
             description: function() {
                 if (Array.isArray(this.selectedOptions)) {
@@ -40,6 +40,16 @@
                     return "el-pseudo-input";
                 }
                 return "el-input";
+            },
+            classes: function() {
+                var classes = {
+                    'is-focus': this.focused,
+                    'is-disabled': this.disabled,
+                    'is-adaptive': this.adaptiveLength,
+                    'is-arrow': this.arrow
+                };
+
+                return classes;
             }
         },
         methods: {
@@ -50,13 +60,13 @@
         template: '<component\
                         :is="componentName"\
                         ref="elInput"\
-                        :class="{ \'is-focus\': focused, \'is-disabled\': disabled, \'is-adaptive\': adaptiveLength }"\
+                        :class="classes"\
                         v-bind="$attrs"\
                         readonly="readonly" \
                         v-model="description"\
                         :placeholder="placeholder">\
-                        <template slot="suffix">\
-                            <i v-if="arrow" class="el-select__caret el-input__icon" :class="[\'el-icon-\' + iconClass]"></i>\
+                        <template slot="suffix" v-if="arrow">\
+                            <i class="el-select__caret" :class="[iconClass]"></i>\
                         </template>\
                     </component>'
     }));
@@ -317,12 +327,13 @@
                         <template v-slot:trigger="dropdown">\
                             <slot name="trigger">\
                                 <cly-input-dropdown-trigger\
-                                ref="trigger"\
-                                :disabled="false"\
-                                :adaptive-length="false"\
-                                :focused="dropdown.focused"\
-                                :opened="dropdown.visible"\
-                                :placeholder="dropdownLabel"\>\
+                                    ref="trigger"\
+                                    :disabled="false"\
+                                    :adaptive-length="adaptiveLength"\
+                                    :focused="dropdown.focused"\
+                                    :opened="dropdown.visible"\
+                                    :arrow="arrow"\
+                                    :placeholder="dropdownLabel">\
                                 </cly-input-dropdown-trigger>\
                             </slot>\
                         </template>\
@@ -366,6 +377,8 @@
             cancelLabel: {type: String, default: CV.i18n("events.general.cancel")},
             confirmLabel: {type: String, default: CV.i18n("events.general.confirm")},
             resetLabel: {type: String, default: "Reset Filters"},
+            adaptiveLength: {type: Boolean, default: true},
+            arrow: {type: Boolean, default: false},
             value: {
                 type: Object,
                 default: function() {
@@ -441,11 +454,13 @@
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
-        template: '<cly-dropdown ref="dropdown" v-on="$listeners">\
+        template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :placement="placement" :disabled="disabled" v-on="$listeners">\
                         <template v-slot:trigger>\
-                            <el-button :size="size" :icon="icon" :type="type">\
-                            <span v-if="text">{{text}}</span>\
-                            </el-button>\
+                            <slot name="trigger">\
+                                <el-button :size="size" :icon="icon" :type="type">\
+                                <span v-if="text">{{text}}</span>\
+                                </el-button>\
+                            </slot>\
                         </template>\
                         <template v-slot>\
                             <slot>\
@@ -468,16 +483,29 @@
             type: {
                 type: String,
                 default: 'default'
-            }
+            },
+            disabled: {
+                type: Boolean,
+                default: false
+            },
+            placement: {
+                type: String,
+                default: 'bottom-end'
+            },
         },
         mounted: function() {
             this.$on('menu-item-click', this.handleMenuItemClick);
         },
         methods: {
             handleMenuItemClick: function(command, instance) {
-                this.$emit('command', command, instance);
-                this.$refs.dropdown.handleClose();
+                if (!this.disabled) {
+                    this.$emit('command', command, instance);
+                    this.$refs.dropdown.handleClose();
+                }
             }
+        },
+        beforeDestroy: function() {
+            this.$off();
         }
     }));
 

@@ -4,9 +4,11 @@ var exported = {},
     crypto = require('crypto'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
-    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+    { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
+    countlyFs = require('../../../api/utils/countlyFs.js');
 var fetch = require('../../../api/parts/data/fetch.js');
 var ejs = require("ejs"),
+    fs = require('fs'),
     path = require('path'),
     reportUtils = require('../../reports/api/utils.js');
 
@@ -84,6 +86,10 @@ const widgetProperties = {
     status: {
         required: true,
         type: "Boolean"
+    },
+    logo: {
+        required: false,
+        type: "String"
     }
 };
 
@@ -141,7 +147,83 @@ const widgetPropertyPreprocessors = {
     }
 };
 
+/**
+* Function to ensure we hav directory to upload files to
+* @param {function} callback - callback
+**/
+function create_upload_dir(callback) {
+    var dir = path.resolve(__dirname, './../images');
+    fs.mkdir(dir, function(err) {
+        if (err) {
+            if (err.code === 'EEXIST') {
+                callback(true);
+            }
+            else {
+                callback(false);
+            }
+        }
+        else {
+            callback(true);
+        }
+    });
+}
+
+/**
+* Used for file upload
+* @param {object} myfile - file object(if empty - returns)
+* @param {string} id - unique identifier
+* @param {function} callback = callback function
+**/
+function uploadFile(myfile, id, callback) {
+    if (!myfile) {
+        callback(true);
+        return;
+    }
+    var tmp_path = myfile.path;
+    var type = myfile.type;
+    myfile.name = myfile.name || "png";
+    if (type !== "image/png" && type !== "image/gif" && type !== "image/jpeg") {
+        fs.unlink(tmp_path, function() { });
+        callback("Invalid image format. Must be png or jpeg");
+        return;
+    }
+
+    var ext = myfile.name.split(".");
+    ext = ext[ext.length - 1];
+
+    create_upload_dir(function() {
+        fs.readFile(tmp_path, (err, data) => {
+            if (err) {
+                callback("Failed to upload image");
+                return;
+            }
+            //convert file to data
+            if (data) {
+                try {
+                    var pp = path.resolve(__dirname, './../frontend/public/images/star-rating/' + id + "." + ext);
+                    countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + ext, writeMode: "overwrite" }, function(err3) {
+                        if (err3) {
+                            callback("Failed to upload image");
+                        }
+                        else {
+                            fs.unlink(tmp_path, function() { });
+                            callback(true, id + "." + ext);
+                        }
+                    });
+                }
+                catch (SyntaxError) {
+                    callback("Failed to upload image");
+                }
+            }
+            else {
+                callback("Failed to upload image");
+            }
+        });
+    });
+}
+
 (function() {
+
 
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -346,6 +428,19 @@ const widgetPropertyPreprocessors = {
             return false;
         }
     };
+
+    plugins.register("/i/feedback/logo", function(ob) {
+        var params = ob.params;
+        uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
+            if (good) {
+                common.returnMessage(params, 200, filename);
+            }
+            else {
+                common.returnMessage(params, 400, good);
+            }
+        });
+        return true;
+    });
 
     plugins.register("/i/feedback/show-popup", increaseWidgetShowCount);
     plugins.register("/i/feedback/input", nonChecksumHandler);

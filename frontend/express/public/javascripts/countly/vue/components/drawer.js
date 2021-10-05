@@ -17,7 +17,7 @@
                 isOpened: {type: Boolean, required: true},
                 name: {type: String, required: true},
                 title: {type: String, required: true},
-                saveButtonLabel: {type: String, required: true, default: ""},
+                saveButtonLabel: {type: String, required: false, default: ""},
                 cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
                 hasCancelButton: {type: Boolean, required: false, default: true},

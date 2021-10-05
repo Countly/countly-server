@@ -21,7 +21,7 @@
     "mocha": "^9.0.0",
     "nyc": "^15.0.0",
     "should": "13.2.3",
-    "supertest": "6.1.5"
+    "supertest": "6.1.6"
   },
   "scripts": {
     "test": "grunt --verbose"
@@ -43,6 +43,7 @@
     "countly-sdk-nodejs": "*",
     "countly-sdk-web": "*",
     "csurf": "1.11.0",
+    "csvtojson": "2.0.10",
     "docdash": "1.2.0",
     "ejs": "3.1.6",
     "errorhandler": "1.5.1",
@@ -74,7 +75,7 @@
     "mongodb": "3.6.10",
     "nginx-conf": "1.5.0",
     "node-xlsx-stream": "^0.1.8",
-    "nodemailer": "6.6.3",
+    "nodemailer": "6.6.5",
     "nodemailer-sendmail-transport": "1.0.2",
     "nodemailer-smtp-pool": "2.8.3",
     "nodemailer-smtp-transport": "2.7.4",
@@ -83,9 +84,9 @@
     "properties-parser": "0.3.1",
     "puppeteer": "^5.5.0",
     "request": "2.88.2",
-    "underscore": "1.13.1",
     "sass": "^1.32.8",
     "uglify-js": "3.10.4",
+    "underscore": "1.13.1",
     "yamljs": "0.3.0"
   },
   "jshintConfig": {

@@ -1,13 +1,25 @@
 <div v-bind:class="[componentId]" class="ratings-tab-view">
-	<cly-header :title="i18n('feedback.ratings')">
+	<cly-header>
+      <template v-slot:header-left>
+        <h2>{{ i18n('feedback.ratings') }} </h2>
+        &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+      </template>
 			<template v-slot:header-right></template>
 	</cly-header>
   <cly-main>
     <div class="bu-level bu-mb-5">
       <div class="bu-level-left">
         <div class="bu-level-item">
-          Results for
-          <cly-multi-select class="bu-ml-3 ratings-tab-view__filter-selector" @change="refresh" @updated="prepareVersions" v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
+          {{ i18n('feedback.results-for') }}
+          <cly-multi-select class="bu-ml-3 ratings-tab-view__filter-selector" @change="filterUpdated()" @updated="prepareVersions" v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
+          <!--
+          <el-select class="bu-ml-3" placement="bottom-start" :placeholder="'All Ratings, Versions and Widgets'">
+            <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
+            <el-option key="1" :label="i18n('management-users.global-admin')" value="global_admin"></el-option>
+            <el-option key="2" :label="i18n('management-users.admin')" value="admin"></el-option>
+            <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
+          </el-select>
+          -->
         </div>
       </div>
       <div class="bu-level-right">
@@ -16,16 +28,20 @@
         </div>
       </div>
     </div>
-    <cly-metric-cards class="ratings-wrapper__cards bu-has-background-white bu-my-5">
-      <cly-metric-card :number="count">
-        Total Ratings
-      </cly-metric-card>
-      <cly-metric-card :number="avg">
-        Average Rating Score
-      </cly-metric-card>
-    </cly-metric-cards>
-    <cly-chart-bar class="ratings-wrapper__bar-chart bu-has-background-white bu-my-5" :option="barOptions"></cly-chart-bar>
-    <cly-dynamic-tabs :comments="feedbackData.aaData" :ratings="cumulativeData" class="bu-my-5" skin="secondary" v-model="dynamicTab" :tabs="tabs">
+    <cly-section>
+      <cly-metric-cards class="ratings-wrapper__cards bu-has-background-white">
+        <cly-metric-card :number="count">
+          {{ i18n('feedback.total-ratings') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+        </cly-metric-card>
+        <cly-metric-card :number="avg">
+          {{ i18n('feedback.average-ratings-score') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+        </cly-metric-card>
+      </cly-metric-cards>
+    </cly-section>
+    <cly-section>
+      <cly-chart-bar class="ratings-wrapper__bar-chart bu-has-background-white" :option="barOptions"></cly-chart-bar>
+    </cly-section>
+    <cly-dynamic-tabs :comments="feedbackData.aaData" :ratings="cumulativeData" skin="secondary" v-model="dynamicTab" :tabs="tabs">
       <template v-slot:tables="scope">
           <span>{{scope.tab.title}}</span>
       </template>

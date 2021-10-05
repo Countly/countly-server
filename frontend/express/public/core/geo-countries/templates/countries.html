@@ -17,7 +17,7 @@
     </cly-header>
     <cly-main >
 		<cly-date-picker-g class="geo-date-picker-container" ref="datePicker"></cly-date-picker-g>
-		<cly-section class="geo-analytics-data">
+		<cly-section class="geo-analytics-data geo-countries-section">
 			<div class="bu-columns bu-is-gapless">
 				<div style="width:256px;">
 					<cly-radio-block v-bind:items="chooseProperties" v-model="selectedProperty"></cly-radio-block>
@@ -47,8 +47,8 @@
 						<template slot-scope="scope">
 								<div class="bu-level-left">
 									<div class="bu-level-item slipping-away-users-table-data-item">
-										<div :class='scope.row.flag' :style='scope.row.styling'></div>
-										<span>{{scope.row.countryTranslated}}</span>
+										<img :src='scope.row.flag' />
+										<span class="bu-pl-4">{{scope.row.countryTranslated}}</span>
 									</div>
 								</div>
 							</template>

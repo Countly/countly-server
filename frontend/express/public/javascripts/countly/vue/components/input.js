@@ -75,6 +75,7 @@
         props: {
             options: {type: Array},
             bordered: {type: Boolean, default: true},
+            margin: {type: Boolean, default: true},
             skin: {
                 type: String,
                 default: "default",
@@ -134,7 +135,8 @@
                 var classes = {
                     "is-focus": this.focused,
                     "cly-vue-listbox--bordered": this.bordered,
-                    "cly-vue-listbox--disabled": this.disabled
+                    "cly-vue-listbox--disabled": this.disabled,
+                    "cly-vue-listbox--has-margin": this.margin && !(this.skin === "jumbo")
                 };
                 classes["cly-vue-listbox--has-" + this.skin + "-skin"] = true;
                 return classes;
@@ -210,23 +212,25 @@
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <div\
                                 tabindex="0"\
-                                class="text-medium"\
+                                class="text-medium font-weight-bold"\
                                 :class="{\'selected\': value === option.value, \'hover\': hovered === option.value, \'cly-vue-listbox__item\': !option.group, \'cly-vue-listbox__group\': option.group}"\
-                                :key="option.value"\
+                                :key="\'i\' + idx + \'.\' + option.value"\
                                 @focus="!option.group && handleItemHover(option)"\
                                 @mouseenter="!option.group && handleItemHover(option)"\
                                 @keyup.enter="!option.group && handleItemClick(option)"\
                                 @click.stop="!option.group && handleItemClick(option)"\
-                                v-for="option in searchedOptions">\
+                                v-for="(option, idx) in searchedOptions">\
                                 <div class="cly-vue-listbox__item-content">\
                                     <div class="bu-level">\
                                         <div class="bu-level-left">\
-                                            <div class="cly-vue-listbox__item-prefix">\
+                                            <div v-if="!!$scopedSlots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-2">\
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
-                                            <div class="cly-vue-listbox__item-label bu-ml-2">{{option.label}}</div>\
+                                            <slot name="option-label" v-bind="option">\
+                                                <div class="cly-vue-listbox__item-label">{{option.label}}</div>\
+                                            </slot>\
                                         </div>\
-                                        <div class="bu-level-right">\
+                                        <div class="bu-level-right" v-if="!!$scopedSlots[\'option-suffix\']">\
                                             <slot class="cly-vue-listbox__item-suffix" name="option-suffix" v-bind="option"></slot>\
                                         </div>\
                                     </div>\
@@ -288,6 +292,10 @@
                 return wrapped.map(function(item) {
                     return item.opt;
                 });
+            },
+            commitValue: function(val) {
+                this.$emit("input", val);
+                this.$emit("change", val);
             }
         },
         computed: {
@@ -312,12 +320,10 @@
                         var sorted = wrapped.map(function(item) {
                             return item.value;
                         });
-                        this.$emit("input", sorted);
-                        this.$emit("change", sorted);
+                        this.commitValue(sorted);
                     }
                     else {
-                        this.$emit("input", newVal);
-                        this.$emit("change", newVal);
+                        this.commitValue(newVal);
                     }
                 }
             },
@@ -503,6 +509,18 @@
             width: { type: [Number, Object], default: 400},
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
+            minInputWidth: {
+                type: Number,
+                default: -1,
+                required: false
+            },
+            maxInputWidth: {
+                type: Number,
+                default: -1,
+                required: false
+            },
+            showSelectedCount: {type: Boolean, default: false},
+            arrow: {type: Boolean, default: true},
             singleOptionSettings: {
                 type: Object,
                 default: function() {
@@ -515,6 +533,16 @@
             },
             popClass: {
                 type: String,
+                required: false
+            },
+            minItems: {
+                type: Number,
+                default: 0,
+                required: false
+            },
+            maxItems: {
+                type: Number,
+                default: Number.MAX_SAFE_INTEGER,
                 required: false
             }
         },
@@ -557,7 +585,7 @@
                     return this.value;
                 },
                 set: function(newVal) {
-                    if (this.autoCommit) {
+                    if (this.autoCommit && this.isItemCountValid) {
                         this.$emit("input", newVal);
                         this.$emit("change", newVal);
                     }
@@ -565,6 +593,20 @@
                         this.uncommittedValue = newVal;
                     }
                 }
+            },
+            selectedCountText: function() {
+                if (this.uncommittedValue) {
+                    return CV.i18n('export.export-columns-selected-count', this.uncommittedValue.length, (this.options ? this.options.length : 0));
+                }
+                else {
+                    return CV.i18n('export.export-columns-selected-count', (this.value ? this.value.length : 0), (this.options ? this.options.length : 0));
+                }
+            },
+            isItemCountValid: function() {
+                if (this.mode === "single-list" || this.autoCommit) {
+                    return true;
+                }
+                return Array.isArray(this.innerValue) && this.innerValue.length >= this.minItems && this.innerValue.length <= this.maxItems;
             }
         },
         mounted: function() {
@@ -604,6 +646,9 @@
                 }
             },
             doCommit: function() {
+                if (!this.isItemCountValid) {
+                    return;
+                }
                 if (this.uncommittedValue) {
                     this.$emit("input", this.uncommittedValue);
                     this.$emit("change", this.uncommittedValue);
@@ -710,7 +755,8 @@
                 }
             },
             skin: { default: "main", type: String},
-            disabled: {type: Boolean, default: false}
+            disabled: {type: Boolean, default: false},
+            radioDirection: { default: "vertical", type: String}
         },
         computed: {
             topClasses: function() {
@@ -725,6 +771,30 @@
                     classes.push("disabled");
                 }
                 return classes;
+            },
+            wrapperClasses: function() {
+                var classes = "radio-wrapper";
+                if (this.radioDirection === "horizontal") {
+                    classes = "radio-wrapper radio-wrapper-horizontal bu-columns bu-m-0";
+                }
+                return classes;
+            },
+            buttonClasses: function() {
+
+                var classes = "";
+                if (this.radioDirection === "horizontal") {
+                    classes = " bu-column bu-p-0";
+                }
+                return classes;
+            },
+            buttonStyles: function() {
+
+                var classes = "";
+                var itemCn = this.items.length;
+                if (this.radioDirection === "horizontal") {
+                    classes = "width: " + 100 / itemCn + "%;";
+                }
+                return classes;
             }
         },
         methods: {
@@ -735,10 +805,10 @@
             }
         },
         template: '<div class="cly-vue-radio-block" v-bind:class="topClasses">\n' +
-                             '<div class="radio-wrapper">\n' +
-                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i" :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex">\n' +
-                                    '<div class="bu-is-flex"><div class="box"></div></div>\n' +
-                                    '<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between"><div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="el-icon-info" style="margin-left:10px" v-tooltip.top-center="item.description"></span></div>\n' +
+                             '<div :class="wrapperClasses">\n' +
+                                '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i"  :class="buttonClasses" :styles="buttonStyles" >\n' +
+                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex"><div class="bu-is-flex"><div class="box"></div></div>\n' +
+                                    '<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between"><div><span class="text-medium">{{item.label}}</span><span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span></div>\n' +
                                     '<div class="bu-is-flex bu-is-align-items-baseline number">' +
 										'<h2>{{item.number}}</h2>' +
 										'<div v-if="item.trend == \'u\'" class="trend-up">\n' +
@@ -747,7 +817,7 @@
 										'<div v-if="item.trend == \'d\'" class="trend-down">\n' +
 											'<i class="fas fa-arrow-down"></i><span>{{item.trendValue}}</span>\n' +
 										'</div>\n' +
-									'</div></div>\n' +
+									'</div></div></div>\n' +
                                 '</div>\n' +
                             '</div>\n' +
                         '</div>'

@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app*/
+/* global countlyVue,CV,countlyCommon, $, countlySession,countlyTotalUsers,app, jQuery*/
 var UserAnalyticsOverview = countlyVue.views.create({
     template: CV.T("/core/user-analytics-overview/templates/overview.html"),
     data: function() {
@@ -33,6 +33,9 @@ var UserAnalyticsOverview = countlyVue.views.create({
             var userDP = countlySession.getUserDP();
             for (var k = 0; k < userDP.chartData.length; k++) {
                 userDP.chartData[k].dateVal = k; //because we get them all always sorted by date
+                userDP.chartData[k].fu = countlyCommon.formatNumber(userDP.chartData[k].u || 0);
+                userDP.chartData[k].fr = countlyCommon.formatNumber(userDP.chartData[k].returning || 0);
+                userDP.chartData[k].fn = countlyCommon.formatNumber(userDP.chartData[k].n || 0);
             }
             return userDP.chartData;
         },
@@ -45,9 +48,9 @@ var UserAnalyticsOverview = countlyVue.views.create({
                 }
             }
             else {
-                series.push({"name": CV.i18n('common.total-users'), data: []});
-                series.push({"name": CV.i18n('common.new-users'), data: []});
-                series.push({"name": CV.i18n('common.returning-users'), data: []});
+                series.push({"name": CV.i18n('common.table.total-users'), data: []});
+                series.push({"name": CV.i18n('common.table.new-users'), data: []});
+                series.push({"name": CV.i18n('common.table.returning-users'), data: []});
             }
 
             return {series: series};
@@ -72,22 +75,22 @@ var UserAnalyticsOverview = countlyVue.views.create({
 
             legend.data = [
                 {
-                    "name": CV.i18n("common.table.total-users"),
-                    "value": sessionData.usage["total-users"].total,
+                    "name": jQuery.i18n.map["common.table.total-users"],
+                    "value": countlyCommon.formatNumber(sessionData.usage["total-users"].total),
                     "trend": (sessionData.usage["total-users"].trend === "d" ? "down" : "up"),
                     "tooltip": CV.i18n("common.table.total-users-desc"),
                     "percentage": sessionData.usage["total-users"].change
                 },
                 {
-                    "name": CV.i18n("common.table.new-users"),
-                    "value": sessionData.usage["new-users"].total,
+                    "name": jQuery.i18n.map["common.table.new-users"],
+                    "value": countlyCommon.formatNumber(sessionData.usage["new-users"].total),
                     "trend": (sessionData.usage["new-users"].trend === "d" ? "down" : "up"),
                     "tooltip": CV.i18n("common.table.new-users-desc"),
                     "percentage": sessionData.usage["new-users"].change
                 },
                 {
-                    "name": CV.i18n("common.table.returning-users"),
-                    "value": sessionData.usage["returning-users"].total,
+                    "name": jQuery.i18n.map["common.table.returning-users"],
+                    "value": countlyCommon.formatNumber(sessionData.usage["returning-users"].total),
                     "trend": (sessionData.usage["returning-users"].trend === "d" ? "down" : "up"),
                     "tooltip": CV.i18n("common.table.returning-users-desc"),
                     "percentage": sessionData.usage["returning-users"].change

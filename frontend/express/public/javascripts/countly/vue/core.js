@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store */
 
 (function(countlyVue, $) {
 
@@ -29,7 +29,33 @@
     };
 
     var _i18n = function() {
-        return jQuery.i18n.prop.apply(null, arguments);
+        var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        if (!appType || appType === "mobile") {
+            return jQuery.i18n.prop.apply(null, arguments);
+        }
+        else {
+            var key = arguments[0];
+            if (!jQuery.i18n.map[appType + "." + key]) {
+                // Key miss
+                return jQuery.i18n.prop.apply(null, arguments);
+            }
+            else {
+                // Key hit
+                var argsCopy = Array.prototype.slice.call(arguments);
+                argsCopy[0] = appType + "." + key;
+                return jQuery.i18n.prop.apply(null, argsCopy);
+            }
+        }
+    };
+
+    var _i18nM = function(key) {
+        var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        if (!appType || appType === "mobile") {
+            return jQuery.i18n.map[key];
+        }
+        else {
+            return jQuery.i18n.map[appType + "." + key] || jQuery.i18n.map[key];
+        }
     };
 
     var _$ = {
@@ -51,9 +77,7 @@
     var i18nMixin = {
         methods: {
             i18n: _i18n,
-            i18nM: function(key) {
-                return jQuery.i18n.map[key];
-            }
+            i18nM: _i18nM
         }
     };
 
@@ -95,7 +119,8 @@
                 state: {
                     period: countlyCommon.getPeriod(),
                     periodLabel: countlyCommon.getDateRangeForCalendar(),
-                    activeApp: null
+                    activeApp: null,
+                    allApps: countlyGlobal.apps
                 },
                 getters: {
                     period: function(state) {
@@ -106,6 +131,9 @@
                     },
                     getActiveApp: function(state) {
                         return state.activeApp;
+                    },
+                    getAllApps: function(state) {
+                        return state.allApps;
                     }
                 },
                 mutations: {
@@ -115,8 +143,30 @@
                     setPeriodLabel: function(state, periodLabel) {
                         state.periodLabel = periodLabel;
                     },
-                    setActiveApp: function(state, activeApp) {
-                        state.activeApp = activeApp;
+                    setActiveApp: function(state, id) {
+                        var appObj = state.allApps[id];
+                        if (appObj) {
+                            state.activeApp = Object.freeze(JSON.parse(JSON.stringify(appObj)));
+                        }
+                    },
+                    addToAllApps: function(state, additionalApps) {
+                        if (Array.isArray(additionalApps)) {
+                            additionalApps.forEach(function(app) {
+                                state.allApps[app._id] = app;
+                            });
+                        }
+                        else {
+                            state.allApps[additionalApps._id] = additionalApps;
+                        }
+                    },
+                    removeFromAllApps: function(state, appToRemoveId) {
+                        var appObj = state.allApps[appToRemoveId];
+                        if (appObj) {
+                            delete state.allApps[appToRemoveId];
+                        }
+                    },
+                    deleteAllApps: function(state) {
+                        state.allApps = null;
                     }
                 },
                 actions: {
@@ -125,10 +175,27 @@
                         context.commit("setPeriodLabel", obj.label);
                     },
                     updateActiveApp: function(context, id) {
-                        var appObj = countlyGlobal.apps[id];
-                        if (appObj) {
-                            context.commit("setActiveApp", Object.freeze(JSON.parse(JSON.stringify(appObj))));
+                        context.commit("setActiveApp", id);
+                    },
+                    removeActiveApp: function(context) {
+                        context.commit("setActiveApp", null);
+                        store.remove('countly_active_app');
+                    },
+                    addToAllApps: function(context, additionalApps) {
+                        context.commit("addToAllApps", additionalApps);
+                    },
+                    removeFromAllApps: function(context, appToRemoveId) {
+                        if (Array.isArray(appToRemoveId)) {
+                            appToRemoveId.forEach(function(app) {
+                                context.commit("removeFromAllApps", app);
+                            });
                         }
+                        else {
+                            context.commit("removeFromAllApps", appToRemoveId);
+                        }
+                    },
+                    deleteAllApps: function(context) {
+                        context.commit("deleteAllApps");
                     }
                 }
             },
@@ -490,6 +557,7 @@
 
     var rootElements = {
         i18n: _i18n,
+        i18nM: _i18nM,
         $: _$,
         mixins: _mixins,
         views: _views,

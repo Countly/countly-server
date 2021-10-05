@@ -1,54 +1,63 @@
 <div class="manage-users-table">
   <cly-datatable-n
-    :rows="rows">
-      <template v-slot="scope">
-          <el-table-column sortable="true" prop="full_name" :label="i18n('management-users.user')">
-              <template v-slot="rowScope">
-                  <span class="text-medium">
-                    {{rowScope.row.full_name}}
-                  </span>
-              </template>
-          </el-table-column>
-          <el-table-column sortable="true" prop="username" :label="i18n('management-users.username')">
-            <template v-slot="rowScope">
-                <span class="text-medium">
-                  {{rowScope.row.username}}
-                </span>
-            </template>
-          </el-table-column>
-          <el-table-column sortable="true" prop="role" :label="i18n('management-users.role')">
-            <template v-slot="rowScope">
-                <span class="text-medium">
-                  {{ rowScope.row.global_admin ? 'Global Admin' : 'User' }}
-                </span>
-            </template>
-          </el-table-column>
-          <el-table-column sortable="true" prop="email" :label="i18n('management-users.email')">
-            <template v-slot="rowScope">
-                <span class="text-medium">
-                  {{ rowScope.row.email }}
-                </span>
-            </template>
-          </el-table-column>
-          <el-table-column sortable="true" prop="created_at" :label="i18n('management-users.created')">
-            <template v-slot="rowScope">
-                <span class="text-medium" v-html="formatTimeAgo(rowScope.row.created_at)"></span>
-            </template>
-          </el-table-column>
-          <el-table-column sortable="true" prop="last_login" :label="i18n('management-users.last_login')">
-            <template v-slot="rowScope">
-                <span class="text-medium" v-html="rowScope.row.last_login === 0 ? 'Not logged in yet' : formatTimeAgo(rowScope.row.last_login)">
-                </span>
-            </template>
-          </el-table-column>
-          <el-table-column>
-            <template v-slot="rowScope">
-              <cly-more-options size="small" @command="handleCommand($event, rowScope.row._id)">
-                <el-dropdown-item command="delete-user">Delete user</el-dropdown-item>
-                <el-dropdown-item command="edit-user">Edit user</el-dropdown-item>
-              </cly-more-options>
-            </template>
-          </el-table-column>
+    :rows="filteredRows">
+      <template v-slot:header-left="selectScope">
+        <el-select placement="bottom-start" v-model="tableFilter" :placeholder="i18n('management-users.all-roles')">
+          <el-option key="0" :label="i18n('management-users.all-roles')" :value="null"></el-option>
+          <el-option key="1" :label="i18n('management-users.global-admin')" value="global_admin"></el-option>
+          <el-option key="2" :label="i18n('management-users.admin')" value="admin"></el-option>
+          <el-option key="3" :label="i18n('management-users.user')" value="user"></el-option>
+        </el-select>
       </template>
+      <template>
+        <el-table-column prop="full_name" :label="i18n('management-users.user')">
+            <template v-slot="rowScope">
+                <span class="text-medium">
+                  {{rowScope.row.full_name}}
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="username" :label="i18n('management-users.username')">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                {{rowScope.row.username}}
+              </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="role" :label="i18n('management-users.role')">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                {{ rowScope.row.global_admin ? i18n('management-users.global-admin') : ((rowScope.row.permission._.a.length > 0) ? i18n('management-users.admin') : i18n('management-users.user')) }}
+              </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="email" :label="i18n('management-users.email')">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                {{ rowScope.row.email }}
+              </span>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="true" prop="created_at" :label="i18n('management-users.created')">
+          <template v-slot="rowScope">
+              <span class="text-medium" v-html="formatTimeAgo(rowScope.row.created_at)"></span>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="true" prop="last_login" :label="i18n('management-users.last_login')">
+          <template v-slot="rowScope">
+              <span class="text-medium" v-html="rowScope.row.last_login === 0 ? i18n('management-users.not-logged-in-yet') : formatTimeAgo(rowScope.row.last_login)">
+              </span>
+          </template>
+        </el-table-column>
+        <el-table-column type="options">
+          <template v-slot="rowScope">
+            <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, rowScope.row._id)">
+              <el-dropdown-item command="edit-user">{{ i18n('management-users.edit-user') }}</el-dropdown-item>
+              <el-dropdown-item v-if="showLogs" command="show-logs">{{ i18n('management-users.view-user-logs') }}</el-dropdown-item>
+              <el-dropdown-item command="delete-user">{{ i18n('management-users.delete-user') }}</el-dropdown-item>
+            </cly-more-options>
+          </template>
+        </el-table-column>
+      </template> 
   </cly-datatable-n>
 </div>

@@ -704,7 +704,7 @@
                         </div>\
                         <el-button @click="onZoomTrigger" v-if="zoomStatus === \'reset\'"\
                             size="small"\
-                            icon="cly-icon cly-icon-zoom">\
+                            icon="cly-icon-btn cly-icon-zoom">\
                         </el-button>\
                         <el-button @click="onZoomCancel" v-if="zoomStatus === \'triggered\'" size="small">\
                             Cancel Zoom\
@@ -882,7 +882,7 @@
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
                                 @click="onClick(item, index)">\
                                 <div class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
                                 <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                             </div>\
                         </vue-scroll>\
@@ -910,7 +910,7 @@
                             @click="onClick(item, index)">\
                             <div class="cly-vue-chart-legend__first-row">\
                                 <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__p-title">{{item.name}}</div>\
+                                <div class="cly-vue-chart-legend__p-title">{{item.label || item.name}}</div>\
                                 <div class="cly-vue-chart-legend__p-tooltip" v-if="item.tooltip">\
                                     <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
                                 </div>\
@@ -1407,12 +1407,6 @@
                     </div>'
     }));
 
-    Vue.component("cly-chart-geo", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-chart">\
-                        Deprecated. Please use cly-worldmap.\
-                    </div>'
-    }));
-
     Vue.component("cly-worldmap", countlyVue.components.create({
         components: {
             'l-map': Vue2Leaflet.LMap,
@@ -1865,6 +1859,7 @@
                     self.geojsonDetail = json;
                     self.country = country;
                     self.regionsToLatLng = {};
+                    json.features = json.features || {};
                     json.features.forEach(function(f) {
                         self.regionsToLatLng[f.properties.iso_3166_2] = {
                             lat: f.properties.lat || 0,

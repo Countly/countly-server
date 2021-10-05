@@ -244,6 +244,9 @@ const processRequest = (params) => {
                 case 'deleteOwnAccount':
                     validateDelete(params, 'global_users', countlyApi.mgmt.users.deleteOwnAccount);
                     break;
+                case 'updateHomeSettings':
+                    validateUpdate(params, 'global_users', countlyApi.mgmt.users.updateHomeSettings);
+                    break;
                 case 'ack':
                     validateUserForWriteAPI(countlyApi.mgmt.users.ackNotification, params);
                     break;
@@ -2058,17 +2061,15 @@ const processRequest = (params) => {
                             console.log('Parse events array failed', params.qstring.events, params.req.url, params.req.body);
                         }
                         if (params.qstring.overview) {
-                            // TODO: handle here, what permission should be required for here?
-                            countlyApi.data.fetch.fetchDataEventsOverview(params);
+                            validateRead(params, 'core', countlyApi.data.fetch.fetchDataEventsOverview);
                         }
                         else {
-                            // TODO: handle here what permission should be required for here?
                             validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventData);
                         }
                     }
                     else {
                         if (params.qstring.event && params.qstring.event.startsWith('[CLY]_group_')) {
-                            validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventGroups, params.qstring.method);
+                            validateRead(params, 'core', countlyApi.data.fetch.fetchMergedEventGroups);
                         }
                         else {
                             params.truncateEventValuesList = true;

@@ -8,7 +8,6 @@
 
 //Element Table overrides
 .el-table {
-    color: c.$table-text-color;
 
     th {
         padding: 9px 0px;
@@ -17,9 +16,7 @@
         font-size: t.$text-sm-size;
         font-style: normal;
         font-weight: 500;
-        background-color: c.$table-th-bgcolor;
         border-bottom-width: 2px;
-        color: map.get(c.$colors, "cool-gray-100");
 
         .cell {
             line-height: 16px;
@@ -37,18 +34,26 @@
         }
 
         &.is-leaf {
-            border-bottom: 2px solid #EEF2F5;
-            border-top: 1px solid #EEF2F5;
+            border-bottom-width: 2px;
         }
     }
 
     td {
-        padding: 12px 0px;
+        padding: 14px 0px;
         font-style: normal;
         font-weight: normal;
         font-size: t.$text-md-size;
         box-sizing: border-box;
-        border-bottom: 1px solid #EEF2F5;
+
+        .cell {
+            line-height: 20px;
+        }
+    }
+
+    &.el-table--has-options td {
+        .cell {
+            line-height: 23px;
+        }
     }
 
     th:first-child .cell,
@@ -93,29 +98,10 @@
         vertical-align: middle;
     }
 
-    &.--enable-row-hover .el-table__body tr:hover>td {
-        background-color: #F9FBFC;
-    }
-
-    &--boder::after, &--group::after, &::before {
-        background-color: #EEF2F5;
-    }
-}
-
-.cly-vue-eldatatable__is-clickable {
-    .el-table {
-        cursor: pointer;
-
-        td:first-child {
-            color: #32659D;
-        }
-
-        &.el-table--enable-row-hover {
-            .el-table__body tr:hover>td:first-child {
-                color: #1A75DA;
-                text-decoration: underline;
-            }
-        }
+    .cell > .el-checkbox,
+    .cell > .el-switch,
+    .cell > .el-radio {
+        overflow: unset;
     }
 }
 
@@ -167,7 +153,7 @@
     }
 }
 
-.el-select .el-input.is-adaptive .el-input__inner {
+.el-select .el-input.is-arrow .el-input__inner {
     padding-right: 30px;
 }
 

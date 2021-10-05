@@ -1,5 +1,14 @@
 .user-management-drawer-content {
 
+  #user-drawer-dropzone {
+    background-color: #F8FAFD;
+  }
+
+  &__under-input-text {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
   &__top-section {
     display: flex;
     flex-direction: row;
@@ -13,17 +22,14 @@
     justify-content: space-between;
   }
 
-  &__inputs-area {
-    //width: calc(100% - 310px);
-
-    &__input-wrapper {
-      margin-top: 10px;
-    }
+  &__input-wrapper {
+    margin-top: 10px;
   }
-
+  
   &__label {
     display: flex;
     justify-content: space-between;
+    flex-direction: column;
 
     &--pl-10 {
       padding-left: 10px;
@@ -49,6 +55,7 @@
     font-size: 12px;
     line-height: 16px;
     color: #81868D;
+    padding-bottom: 5px;
   }
 
   &__help-menu-icon {
@@ -108,9 +115,8 @@
   }
 
   &__drawer-sub-section {
-    border: 1px solid #E2E4E8;
     border-radius: 6px;
-    background-color: white;
+    background-color: #F8FAFD;
     margin-top: 10px;
     margin-bottom: 24px;
     padding: 10px 0px;
@@ -235,15 +241,19 @@
   }
 
   &__add-permission-set {
-    background-color: #F6F6F6;
+    background-color: #E1EFFF;
     border-radius: 4px;
     cursor: pointer;
     padding: 9.5px 12px;
     font-weight: 500;
     font-size: 13px;
     line-height: 13px;
-    color: #333C48;
+    color: #0166D6;
     width: fit-content;
+  }
+
+  &__group-selector {
+    width: 100%;
   }
 
   .check-label {

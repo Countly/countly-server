@@ -23,6 +23,8 @@ $colors: (
     "cool-gray-40": #A7AEB8,
     "cool-gray-30": #CFD6E4,
     "cool-gray-20": #E2E4E8,
+    "cool-gray-10": #F8FAFD,
+    "cool-gray-05": #FBFDFE,
 
     "charts-blue": #017AFF,
     "charts-turquoise": #39C0C8,
@@ -54,7 +56,10 @@ $colors: (
     "blue-10": #E6F0FB,
 
     "sky-blue-100": #3F9AFF,
-    "sky-blue-10": #E1EFFF,
+
+    "shadow-blue-100": #9cbce0,
+
+    "light-blue-100": #E1EFFF,
 
     "teal": #00C3CA,
 
@@ -65,18 +70,18 @@ $colors: (
     "green-80": #12AF51,
     "green-10": #EBFAEE,
 
-    "primary": #017AFF,
+    "primary": #0166D6,
     "primary-green": #12AF51,
     "success": #67C23A,
-    "warning": #E6A23C,
-    "danger": #F56C6C,
+    "warning": #E49700,
+    "danger": #D23F00,
     "info": #909399,
 
     "text-secondary": #81868D,
     "text-custom-1-active": #333C48,
-    "text-placeholder": #969FAD,
+    "text-placeholder": #81868D,
     "text-primary": #303133,
-    "text-regular": #03060C,
+    "text-regular": #333C48,
     "text-custom-1-passive": #858A91,
 
     "action-blue": #0166D6
@@ -86,6 +91,7 @@ $colors: (
 $table-th-bgcolor: #F5F8F9;
 $table-text-color: #333C48;
 $table-footer-text-color: #808A9D;
+$table-border-color: #EEF2F5;
 
 //Text colors
 $border-color-light: #EBEBEF !default;
