@@ -409,7 +409,76 @@
                         return countlyCommon.BROWSER_LANG_SHORT;
                     },
                     set: function(newValue) {
-                        console.log(newValue)
+                        console.log(newValue);
+
+                        var langCode = newValue,
+                        langCodeUpper = newValue.toUpperCase();
+                        console.log(langCodeUpper);
+    
+                    store.set("countly_lang", langCode);
+                    $(".reveal-language-menu").text(langCodeUpper);
+    
+    
+                    countlyCommon.BROWSER_LANG_SHORT = langCode;
+                    countlyCommon.BROWSER_LANG = langCode;
+    
+    
+                    $("body").removeClass(function(index, className) {
+                        return (className.match(/(^|\s)lang-\S*/g) || []).join(' ');
+                    }).addClass("lang-" + langCode);
+    
+    
+                    try {
+                        moment.locale(countlyCommon.BROWSER_LANG_SHORT);
+                    }
+                    catch (e) {
+                        moment.locale("en");
+                    }
+    
+    
+                    countlyCommon.getMonths(true);
+    
+    
+                    $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+                    $("#date-from").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+    
+    
+                    $.ajax({
+                        type: "POST",
+                        url: countlyGlobal.path + "/user/settings/lang",
+                        data: {
+                            "username": countlyGlobal.member.username,
+                            "lang": countlyCommon.BROWSER_LANG_SHORT,
+                            _csrf: countlyGlobal.csrf_token
+                        },
+                        success: function() { }
+                    });
+    
+    
+                    jQuery.i18n.properties({
+                        name: window.production ? 'localization/min/locale' : ["localization/dashboard/dashboard", "localization/help/help", "localization/mail/mail"].concat(countlyGlobal.plugins.map(function(plugin) {
+                            return plugin + "/localization/" + plugin;
+                        })),
+                        cache: true,
+                        language: countlyCommon.BROWSER_LANG_SHORT,
+                        countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
+                        path: countlyGlobal.cdn,
+                        mode: 'map',
+                        callback: function() {
+                            for (var key in jQuery.i18n.map) {
+                                if (countlyGlobal.company) {
+                                    jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                                }
+                                jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
+                            }
+    
+    
+                            self.origLang = JSON.stringify(jQuery.i18n.map);
+                            $.when(countlyLocation.changeLanguage()).then(function() {
+                                self.activeView.render();
+                            });
+                        }
+                    });
                     }
                 },
 
