@@ -76,7 +76,7 @@
             },
             methods: {
                 changeLanguage: function(code) {
-                    console.log(code)
+                    
                 },
 
                 logout: function() {
@@ -404,8 +404,13 @@
                       return countlyGlobal.languages;
                 },
 
-                selLang: function() {
-                    return countlyCommon.BROWSER_LANG_SHORT;
+                selLang: {
+                    get: function() {
+                        return countlyCommon.BROWSER_LANG_SHORT;
+                    },
+                    set: function(newValue) {
+                        console.log(newValue)
+                    }
                 },
 
                 components: function() {

@@ -11,7 +11,7 @@
             <li v-for="item in otherMenuOptions" :key="item.name" @click="onClick(item)" v-tooltip.top-center="item.tooltip" :class="[{'cly-vue-sidebar__menu-option-toggle': item.name === 'toggle'}, 'cly-vue-sidebar__menu-option bu-is-flex bu-is-justify-content-center bu-is-align-items-center']">
                 <users-menu v-if="item.name === 'user'" :item="item"></users-menu>
                 <el-select v-else-if="item.name === 'language'" v-model="selLang" :adaptive-length="true" :borderless="true" :arrow="false">
-                    <el-option v-for="lang in allLanguages" :key="lang.code" :value="lang.code" :label="lang.code" v-on:click="changeLanguage(lang.code)"></el-option>
+                    <el-option v-for="lang in allLanguages" :key="lang.code" :value="lang.code" :label="lang.code"></el-option>
                 </el-select>
                 <i v-else :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
             </li>
