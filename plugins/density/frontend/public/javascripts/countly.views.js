@@ -182,7 +182,7 @@ var AppDensityView = countlyVue.views.create({
                     "percent": percent,
                     "percentText": percent + " % " + CV.i18n('common.of-total'),
                     "info": CV.i18n('common.info'),
-                    "color": k > 3 ? this.graphColors[k%4] : this.graphColors[k]
+                    "color": k > 3 ? this.graphColors[k % 4] : this.graphColors[k]
                 });
             }
             return display;
@@ -202,7 +202,7 @@ var AppDensityView = countlyVue.views.create({
                         "percent": percent,
                         "bar": [{
                             percentage: percent,
-                            color: z > 3 ? this.graphColors[z%4] : this.graphColors[z]
+                            color: z > 3 ? this.graphColors[z % 4] : this.graphColors[z]
                         }
                         ]
                     });
