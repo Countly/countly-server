@@ -9,7 +9,8 @@ var AppPlatformView = countlyVue.views.create({
                     initialScrollX: false,
                 },
                 rail: {
-                    gutterOfSide: "0px"
+                    gutterOfSide: "1px",
+                    gutterOfEnds: "15px"
                 },
                 bar: {
                     background: "#A7AEB8",
