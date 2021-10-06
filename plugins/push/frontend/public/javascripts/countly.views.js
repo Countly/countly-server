@@ -1144,6 +1144,7 @@
         bundleId: "",
         authType: countlyPushNotification.service.IOSAuthConfigTypeEnum.P8,
         passphrase: "",
+        hasUploadedKeyFile: false
     };
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.ANDROID] = {
         _id: "",
@@ -1168,6 +1169,7 @@
                 viewModel: JSON.parse(JSON.stringify(initialAppLevelConfig)),
                 modelUnderEdit: Object.assign({}, { rate: "", period: ""}),
                 shouldSendInitializedDto: false,
+                uploadedIOSKeyFilename: ''
             };
         },
         computed: {
@@ -1196,6 +1198,7 @@
             onIOSAuthTypeChange: function(value) {
                 this.iosAuthConfigType = value;
                 this.$refs.keyFileUploader.clearFiles();
+                this.uploadedIOSKeyFilename = '';
                 var appPluginConfigDto = countlyGlobal.apps[this.selectedAppId].plugins;
                 var pushNotificationAppConfigDto = appPluginConfigDto && appPluginConfigDto.push;
                 var model = countlyPushNotification.mapper.incoming.mapAppLevelConfig(pushNotificationAppConfigDto);
@@ -1215,6 +1218,7 @@
                 this.modelUnderEdit[this.PlatformEnum.IOS].keyFile = dataUrlFile;
             },
             onKeyFileChange: function(file) {
+                this.uploadedIOSKeyFilename = file.name;
                 keyFileReader.readAsDataURL(file.raw);
             },
             resetIOSViewModelPlatform: function() {

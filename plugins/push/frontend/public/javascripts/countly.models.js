@@ -681,6 +681,7 @@
                         authType: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? IOSAuthConfigTypeEnum.P12 : IOSAuthConfigTypeEnum.P8,
                         passphrase: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? dto[PlatformDtoEnum.IOS].pass : '',
                         teamId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].team : '',
+                        hasUploadedKeyFile: hasIOSConfig
                     };
                 }
                 return null;
@@ -981,9 +982,10 @@
                         key: model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P8 ? model[PlatformEnum.IOS].keyId : 'team',
                         bundle: model[PlatformEnum.IOS].bundleId || "",
                         file: model[PlatformEnum.IOS].keyFile,
-                        fileType: model[PlatformEnum.IOS].authType
-
                     };
+                    if (model.hasUploadedKeyFile) {
+                        result.fileType = model[PlatformEnum.IOS].authType;
+                    }
                     if (model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P12) {
                         result.pass = model[PlatformEnum.IOS].passphrase;
                     }

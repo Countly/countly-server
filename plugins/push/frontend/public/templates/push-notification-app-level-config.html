@@ -6,16 +6,21 @@
         </el-select>
     </cly-inline-form-field>
         <cly-inline-form-field :label="iosAuthConfigType === IOSAuthConfigTypeEnum.P8 ? 'Key file (P8)' : 'Sandbox + Production certificate (P12)'">
-            <el-upload 
-                ref="keyFileUploader"
-                action=""
-                :on-change="onKeyFileChange"
-                :auto-upload="false"
-                :show-file-list="true"
-                :limit="1"
-                accept="p8, p12">
-                <el-button size="small" type="text" class="bu-p-0">Choose File</el-button>
-            </el-upload>
+            <div class="bu-is-flex bu-is-flex-direction-column">
+                <div class="bu-is-flex">
+                    <el-upload 
+                        ref="keyFileUploader"
+                        action=""
+                        :on-change="onKeyFileChange"
+                        :auto-upload="false"
+                        :show-file-list="false"
+                        accept="p8, p12">
+                            <el-button size="small" type="text" class="bu-p-0">Choose File</el-button>
+                    </el-upload>
+                    <div class="bu-ml-5">{{uploadedIOSKeyFilename}}</div>
+                </div>
+                <div v-if="viewModel[PlatformEnum.IOS].hasUploadedKeyFile"> Key file ({{viewModel[PlatformEnum.IOS].authType}}) is already uploaded </div>
+            </div>
         </cly-inline-form-field>
     <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P8"> 
         <cly-inline-form-field label="Key ID">
