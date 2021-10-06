@@ -50,7 +50,12 @@ var AppPlatformView = countlyVue.views.create({
                                 return this.appPlatform.chartData;
                             },
                             isLoading: function() {
-                                return this.$store.state.countlyDevicesAndTypes.isLoading;
+                                return this.$store.state.countlyDevicesAndTypes.platformLoading;
+                            }
+                        },
+                        methods: {
+                            numberFormatter: function(row, col, value) {
+                                return countlyCommon.formatNumber(value, 0);
                             }
                         }
                     })
@@ -84,6 +89,7 @@ var AppPlatformView = countlyVue.views.create({
                                 }
                                 for (var k = 0; k < platforms.length; k++) {
                                     if (platforms[k].label === this.selectedPlatform) {
+
                                         return platforms[k].data || [];
                                     }
                                 }
@@ -101,6 +107,11 @@ var AppPlatformView = countlyVue.views.create({
                                     this.$store.dispatch('countlyDevicesAndTypes/onSetSelectedPlatform', this.selectedPlatform);
                                 }
                                 return display;
+                            }
+                        },
+                        methods: {
+                            numberFormatter: function(row, col, value) {
+                                return countlyCommon.formatNumber(value, 0);
                             }
                         }
                     })

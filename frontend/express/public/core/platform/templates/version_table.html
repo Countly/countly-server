@@ -1,10 +1,10 @@
 <cly-section>
-	<cly-datatable-n  :rows="appPlatformVersionRows" :resizable="true" v-loading="isLoading">
+	<cly-datatable-n  :rows="appPlatformVersionRows" :resizable="true">
 		<template v-slot="scope">
 			<el-table-column sortable="custom" prop="os_versions" :label="i18n('platforms.title')"></el-table-column>
-			<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')"></el-table-column>
-			<el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')"></el-table-column>
-			<el-table-column sortable="custom" prop="n" :label="i18n('common.table.new-users')"></el-table-column>
+			<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
+			<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
+			<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
 		</template>
 		<template v-slot:header-left>
 			<el-select v-model="selectedPlatform" >
