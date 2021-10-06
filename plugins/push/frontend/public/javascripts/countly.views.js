@@ -1131,7 +1131,7 @@
         this.renderWhenReady(pushNotificationDetailsViewWrapper);
     });
 
-    //countly.views application level management settings
+    //Push plugin application level configuration view
     var initialAppLevelConfig = {
         rate: "",
         period: ""
@@ -1143,7 +1143,7 @@
         teamId: "",
         bundleId: "",
         authType: countlyPushNotification.service.IOSAuthConfigTypeEnum.P8,
-        passphrase: ""
+        passphrase: "",
     };
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.ANDROID] = {
         _id: "",
@@ -1166,38 +1166,49 @@
                 iosAuthConfigType: countlyPushNotification.service.IOSAuthConfigTypeEnum.P8,
                 iosAuthConfigTypeOptions: countlyPushNotification.service.iosAuthConfigTypeOptions,
                 viewModel: JSON.parse(JSON.stringify(initialAppLevelConfig)),
-                modelUnderEdit: {
-                    rate: "",
-                    period: ""
-                }
+                modelUnderEdit: Object.assign({}, { rate: "", period: ""}),
+                shouldSendInitializedDto: false,
             };
         },
-        //NOTE: selected app state from app level plugin config must be stored in the global store instead of keeping it locally.
-        // computed: {
-        //     selectedApp: function() {
-        //         return this.$store.state.countlyCommon.applications.config.selectedApp;
-        //     }
-        // },
-        // watcher: {
-        //     selectedApp: function(newValue) {
-        //         var dto = countlyGlobal.apps[newValue].plugins.push;
-        //         if (dto) {
-        //             var model = countlyPushNotification.service.mapper.incoming.mapApplevelConfigDtoToModel(newValue);
-        //             this.viewModel = JSON.parse(JSON.stringify(model));
-        //             this.modelUnderEdit = JSON.parse(JSON.stringify(model));
-        //         }
-        //         else {
-        //             this.viewModel = JSON.parse(JSON.stringify(initialAppLevelConfig));
-        //             this.modelUnderEdit = JSON.parse(JSON.stringify(model));
-        //         }
-        //     }
-        // },
+        computed: {
+            selectedAppId: function() {
+                return this.$store.state.countlyAppManagement.selectedAppId;
+            },
+        },
+        watch: {
+            selectedAppId: function() {
+                this.resetConfig();
+                this.reconcilate();
+            }
+        },
         methods: {
+            setModel: function(newModel) {
+                Object.assign(this.modelUnderEdit, newModel);
+            },
+            setViewModel: function(newViewModel) {
+                this.viewModel = JSON.parse(JSON.stringify(newViewModel));
+            },
+            resetConfig: function() {
+                this.setViewModel(initialAppLevelConfig);
+                this.setModel({rate: "", period: ""});
+                this.$refs.keyFileUploader.clearFiles();
+            },
             onIOSAuthTypeChange: function(value) {
                 this.iosAuthConfigType = value;
                 this.$refs.keyFileUploader.clearFiles();
-                this.resetModelPlatform(this.PlatformEnum.IOS);
-                this.resetViewModelPlatform(this.PlatformEnum.IOS);
+                var appPluginConfigDto = countlyGlobal.apps[this.selectedAppId].plugins;
+                var pushNotificationAppConfigDto = appPluginConfigDto && appPluginConfigDto.push;
+                var model = countlyPushNotification.mapper.incoming.mapAppLevelConfig(pushNotificationAppConfigDto);
+                if (model && model[this.PlatformEnum.IOS] && model[this.PlatformEnum.IOS].authType === value) {
+                    this.setModel(model);
+                    this.reconcilateViewModel(model);
+                }
+                else {
+                    this.resetIOSModelPlatform();
+                    this.resetIOSViewModelPlatform();
+                    this.shouldSendInitializedDto = true;
+                    this.dispatchAppLevelConfigChangeEvent('authType', this.PlatformEnum.IOS);
+                }
             },
             setKeyFile: function(dataUrlFile) {
                 this.initializeModelPlatformIfNotFound(this.PlatformEnum.IOS);
@@ -1206,71 +1217,98 @@
             onKeyFileChange: function(file) {
                 keyFileReader.readAsDataURL(file.raw);
             },
-            setModelIOSPlatformAuthType: function() {
-                this.modelUnderEdit[this.PlatformEnum.IOS].authType = this.iosAuthConfigType;
-            },
-            resetViewModelPlatform: function(platform) {
+            resetIOSViewModelPlatform: function() {
+                var platform = this.PlatformEnum.IOS;
                 this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
-                if (platform === this.PlatformEnum.IOS) {
-                    this.setModelIOSPlatformAuthType(platform);
-                }
+                this.viewModel[platform].authType = this.iosAuthConfigType;
             },
-            resetModelPlatform: function(platform) {
-                this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
-                if (platform === this.PlatformEnum.IOS) {
-                    this.setModelIOSPlatformAuthType(platform);
-                }
+            resetIOSModelPlatform: function() {
+                var platform = this.PlatformEnum.IOS;
+                this.modelUnderEdit[this.PlatformEnum.IOS] = Object.assign({}, initialAppLevelConfig[platform]);
+                this.modelUnderEdit[platform].authType = this.iosAuthConfigType;
             },
             initializeModelPlatformIfNotFound: function(platform) {
                 if (!this.modelUnderEdit[platform]) {
-                    this.resetModelPlatform(platform);
+                    this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                }
+                if (platform === this.PlatformEnum.IOS) {
+                    this.modelUnderEdit[platform].authType = this.iosAuthConfigType;
                 }
             },
-            updateViewModelOnInput: function(property, value, platform) {
+            dispatchInitialDtoIfNotSend: function(dto) {
+                if (this.shouldSendInitializedDto) {
+                    this.$emit('change', 'push', dto, true);
+                    this.shouldSendInitializedDto = false;
+                }
+            },
+            dispatchAppLevelConfigChangeEvent: function(property, platform) {
+                var dto = countlyPushNotification.mapper.outgoing.mapAppLevelConfig(this.modelUnderEdit);
+                this.dispatchInitialDtoIfNotSend(dto);
+                var propertyDto = countlyPushNotification.mapper.outgoing.mapAppLevelConfigModelProperty(property);
                 if (platform) {
-                    this.viewModel[platform][property] = value;
+                    var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
+                    this.$emit('change', 'push' + '.' + platformDto + '.' + propertyDto, dto[platformDto][propertyDto]);
                 }
                 else {
-                    this.viewModel[property] = value;
+                    this.$emit('change', 'push.' + 'rate.' + propertyDto, dto.rate[propertyDto]);
                 }
             },
-            updateModelOnInput: function(property, value, platform) {
+            updateAllModelsOnInput: function(property, value, platform) {
                 if (platform) {
-                    this.initializeModelPlatformIfNotFound(platform);
+                    this.viewModel[platform][property] = value;
                     this.modelUnderEdit[platform][property] = value;
                 }
                 else {
+                    this.viewModel[property] = value;
                     this.modelUnderEdit[property] = value;
                 }
             },
             onInput: function(property, value, platform) {
-                this.updateViewModelOnInput(property, value, platform);
-                this.updateModelOnInput(property, value, platform);
-                this.dispatchAppLevelConfigChangeEvent();
+                if (platform) {
+                    this.initializeModelPlatformIfNotFound(platform);
+                }
+                this.updateAllModelsOnInput(property, value, platform);
+                this.dispatchAppLevelConfigChangeEvent(property, platform);
             },
             addKeyFileReaderLoadListener: function(callback) {
                 keyFileReader.addEventListener('load', callback);
             },
-            removeKeyFileReaderLoadListener: function() {
-                keyFileReader.removeEventListener('load');
+            removeKeyFileReaderLoadListener: function(callback) {
+                keyFileReader.removeEventListener('load', callback);
             },
             onKeyFileReady: function() {
                 this.setKeyFile(keyFileReader.result);
-                this.dispatchAppLevelConfigChangeEvent();
+                this.dispatchAppLevelConfigChangeEvent('keyFile', this.PlatformEnum.IOS);
             },
-            dispatchAppLevelConfigChangeEvent: function() {
-                var dto = countlyPushNotification.mapper.outgoing.mapApplevelConfigModelToDto(this.modelUnderEdit);
-                this.$emit('change', 'push', dto);
+            reconcilateViewModel: function(newModel) {
+                var self = this;
+                Object.keys(this.PlatformEnum).forEach(function(platformKey) {
+                    var platform = self.PlatformEnum[platformKey];
+                    self.viewModel[platform] = newModel[platform] || Object.assign({}, initialAppLevelConfig[platform]);
+                });
+                this.viewModel.period = newModel.period;
+                this.viewModel.rate = newModel.rate;
             },
-            getSelectedApp: function() {
-
+            reconcilate: function() {
+                var appPluginConfigDto = countlyGlobal.apps[this.selectedAppId].plugins;
+                var pushNotificationAppConfigDto = appPluginConfigDto && appPluginConfigDto.push;
+                if (pushNotificationAppConfigDto) {
+                    var model = countlyPushNotification.mapper.incoming.mapAppLevelConfig(pushNotificationAppConfigDto);
+                    this.reconcilateViewModel(model);
+                    this.setModel(model);
+                    if (model[this.PlatformEnum.IOS]) {
+                        this.iosAuthConfigType = model[this.PlatformEnum.IOS].authType;
+                    }
+                    this.shouldSendInitializedDto = true;
+                }
             },
         },
         mounted: function() {
             this.addKeyFileReaderLoadListener(this.onKeyFileReady);
+            this.reconcilate();
         },
         destroyed: function() {
-            this.removeKeyFileReaderLoadListener();
+            this.removeKeyFileReaderLoadListener(this.onKeyFileReady);
         }
     });
 

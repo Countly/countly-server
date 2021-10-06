@@ -132,6 +132,27 @@
     iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: "Key file (P8)", value: IOSAuthConfigTypeEnum.P8};
     iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P12] = {label: "Sandbox + Production certificate (P12)", value: IOSAuthConfigTypeEnum.P12};
 
+    var AppLevelConfigPropertyModelMap = {
+        rate: 'rate',
+        period: 'period',
+        keyId: 'key',
+        keyFile: 'file',
+        authType: 'type',
+        teamId: 'team',
+        bundleId: 'bundle',
+        passphrase: 'pass',
+        firebaseKey: 'key',
+        type: 'type',
+        appId: 'key',
+        appSecret: 'secret'
+    };
+
+    var PlatformDtoEnum = Object.freeze({
+        ANDROID: 'a',
+        IOS: 'i',
+        HUAWEI: 'h'
+    });
+
     var StatusFinderHelper = {
         STATUS_SHIFT_OPERATOR_ENUM: {
             NotCreated: 0,			// 0
@@ -357,7 +378,7 @@
                     return {value: status, label: status};
                 }
             },
-            mapSeriesDtoToModel: function(dto, type) {
+            mapSeries: function(dto, type) {
                 if (type === TypeEnum.ONE_TIME) {
                     return {
                         monthly: [{data: dto.actions.monthly.data || [], label: actionsPerformedLabel}, {data: dto.sent.monthly.data || [], label: messagesSentLabel}],
@@ -388,16 +409,16 @@
             },
             mapPlatforms: function(dto) {
                 return dto.reduce(function(allPlatformItems, currentPlatformItem) {
-                    if (currentPlatformItem === 'i') {
+                    if (currentPlatformItem === PlatformDtoEnum.IOS) {
                         allPlatformItems.push({label: CV.i18n("push-notification.platform-filter-ios"), value: PlatformEnum.IOS});
                     }
-                    if (currentPlatformItem === 'a') {
+                    if (currentPlatformItem === PlatformDtoEnum.ANDROID) {
                         allPlatformItems.push({label: CV.i18n("push-notification.platform-filter-android"), value: PlatformEnum.ANDROID});
                     }
                     return allPlatformItems;
                 }, []);
             },
-            mapRowsDtoToModel: function(dto) {
+            mapRows: function(dto) {
                 var self = this;
                 var rowsModel = [];
                 dto.aaData.forEach(function(pushNotificationDtoItem, index) {
@@ -509,8 +530,8 @@
             },
             mapMainDtoToModel: function(allPushNotificationsDto, dashboardDto, type) {
                 return {
-                    rows: this.mapRowsDtoToModel(allPushNotificationsDto),
-                    series: this.mapSeriesDtoToModel(dashboardDto, type),
+                    rows: this.mapRows(allPushNotificationsDto),
+                    series: this.mapSeries(dashboardDto, type),
                     periods: this.mapPeriods(dashboardDto, type),
                     totalAppUsers: dashboardDto.users,
                     enabledUsers: this.mapEnabledUsers(dashboardDto),
@@ -646,6 +667,64 @@
                     };
                 });
             },
+            hasAppLevelPlatformConfig: function(dto, platform) {
+                return dto[platform] && dto[platform]._id && dto[platform]._id !== 'demo';
+            },
+            mapIOSAppLevelConfig: function(dto) {
+                var hasIOSConfig = this.hasAppLevelPlatformConfig(dto, PlatformDtoEnum.IOS);
+                if (hasIOSConfig) {
+                    return {
+                        _id: dto[PlatformDtoEnum.IOS]._id || '',
+                        keyId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].fileType : '',
+                        keyFile: '',
+                        bundleId: dto[PlatformDtoEnum.IOS].bundle,
+                        authType: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? IOSAuthConfigTypeEnum.P12 : IOSAuthConfigTypeEnum.P8,
+                        passphrase: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? dto[PlatformDtoEnum.IOS].pass : '',
+                        teamId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].team : '',
+                    };
+                }
+                return null;
+
+            },
+            mapAndroidAppLevelConfig: function(dto) {
+                if (this.hasAppLevelPlatformConfig(dto, PlatformDtoEnum.ANDROID)) {
+                    return {
+                        _id: dto[PlatformDtoEnum.ANDROID]._id || '',
+                        firebaseKey: dto[PlatformDtoEnum.ANDROID].key,
+                        type: dto[PlatformDtoEnum.ANDROID].type
+                    };
+                }
+                return null;
+            },
+            mapHuaweiAppLevelConfig: function(dto) {
+                if (this.hasAppLevelPlatformConfig(dto, PlatformDtoEnum.HUAWEI)) {
+                    return {
+                        _id: dto[PlatformDtoEnum.HUAWEI]._id || '',
+                        appId: dto[PlatformDtoEnum.HUAWEI].appId,
+                        appSecret: dto[PlatformDtoEnum.HUAWEI].secret
+                    };
+                }
+                return null;
+            },
+            mapAppLevelConfig: function(dto) {
+                if (!dto) {
+                    var emptyModel = {};
+                    emptyModel[PlatformEnum.IOS] = null;
+                    emptyModel[PlatformEnum.ANDROID] = null;
+                    emptyModel[PlatformEnum.HUAWEI] = null;
+                    emptyModel.rate = '';
+                    emptyModel.period = '';
+                    return emptyModel;
+                }
+                var model = {
+                    rate: dto.rate && dto.rate.rate || '',
+                    period: dto.rate && dto.rate.period || ''
+                };
+                model[PlatformEnum.IOS] = this.mapIOSAppLevelConfig(dto);
+                model[PlatformEnum.ANDROID] = this.mapAndroidAppLevelConfig(dto);
+                model[PlatformEnum.HUAWEI] = this.mapHuaweiAppLevelConfig(dto);
+                return model;
+            },
         },
         outgoing: {
             replaceUserProperties: function(localizedMessage, container) {
@@ -700,17 +779,21 @@
                 }
                 return {tx: false, auto: false};
             },
+            mapPlatformItem: function(platform) {
+                if (platform === PlatformEnum.IOS) {
+                    return PlatformDtoEnum.IOS;
+                }
+                if (platform === PlatformEnum.ANDROID) {
+                    return PlatformDtoEnum.ANDROID;
+                }
+                if (platform === PlatformEnum.HUAWEI) {
+                    return PlatformDtoEnum.HUAWEI;
+                }
+            },
             mapPlatforms: function(model) {
+                var self = this;
                 return model.map(function(platform) {
-                    if (platform === PlatformEnum.IOS) {
-                        return 'i';
-                    }
-                    if (platform === PlatformEnum.ANDROID) {
-                        return 'a';
-                    }
-                    if (platform === PlatformEnum.ALL) {
-                        return ['i', 'a'];
-                    }
+                    return self.mapPlatformItem(platform);
                 });
             },
             mapLocalizations: function(localizations, totalAppUsers) {
@@ -723,8 +806,7 @@
                     };
                 });
             },
-
-            mapUserPropertiesToDto: function(localizedMessage, container) {
+            mapUserProperties: function(localizedMessage, container) {
                 var userPropertyDto = {};
                 if (this.hasUserProperties(localizedMessage, container)) {
                     var indices = this.getUserPropertiesIndices(localizedMessage, container);
@@ -738,7 +820,7 @@
                 }
                 return userPropertyDto;
             },
-            mapButtonsModelToDto: function(localizationKey, localizedMessage) {
+            mapButtons: function(localizationKey, localizedMessage) {
                 var result = {};
                 localizedMessage.buttons.forEach(function(localizedButton, index) {
                     if (localizedButton.label) {
@@ -756,9 +838,9 @@
                 Object.keys(pushNotificationModel.message).forEach(function(localizationKey) {
                     messagePerLocale[localizationKey] = self.getMessageText(pushNotificationModel.message[localizationKey], 'content');
                     messagePerLocale[localizationKey + '|t'] = self.getMessageText(pushNotificationModel.message[localizationKey], 'title');
-                    messagePerLocale[localizationKey + '|p'] = self.mapUserPropertiesToDto(pushNotificationModel.message[localizationKey], 'content');
-                    messagePerLocale[localizationKey + '|tp'] = self.mapUserPropertiesToDto(pushNotificationModel.message[localizationKey], 'title');
-                    Object.assign(messagePerLocale, self.mapButtonsModelToDto(localizationKey, pushNotificationModel.message[localizationKey]));
+                    messagePerLocale[localizationKey + '|p'] = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'content');
+                    messagePerLocale[localizationKey + '|tp'] = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'title');
+                    Object.assign(messagePerLocale, self.mapButtons(localizationKey, pushNotificationModel.message[localizationKey]));
                 });
                 return messagePerLocale;
             },
@@ -891,15 +973,16 @@
                 }
                 throw Error('Unknown push notification type');
             },
-            mapIOSAppLevelConfigModelToDto: function(model) {
+            mapIOSAppLevelConfig: function(model) {
                 if (model[PlatformEnum.IOS]) {
                     var result = {
-                        _id: model[PlatformEnum.IOS]._id,
+                        _id: model[PlatformEnum.IOS]._id || "",
                         type: model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P8 ? 'apn_token' : 'apn_universal',
                         key: model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P8 ? model[PlatformEnum.IOS].keyId : 'team',
                         bundle: model[PlatformEnum.IOS].bundleId || "",
-                        data: model[PlatformEnum.IOS].keyFile,
+                        file: model[PlatformEnum.IOS].keyFile,
                         fileType: model[PlatformEnum.IOS].authType
+
                     };
                     if (model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P12) {
                         result.pass = model[PlatformEnum.IOS].passphrase;
@@ -911,37 +994,40 @@
                 }
                 return null;
             },
-            mapAndroidAppLevelConfigModelToDto: function(model) {
+            mapAndroidAppLevelConfig: function(model) {
                 if (model[PlatformEnum.ANDROID]) {
                     return {
-                        _id: model[PlatformEnum.ANDROID]._id,
+                        _id: model[PlatformEnum.ANDROID]._id || "",
                         key: model[PlatformEnum.ANDROID].firebaseKey,
                         type: model[PlatformEnum.ANDROID].type
                     };
                 }
                 return null;
             },
-            mapHuaweiAppLevelConfigModelToDto: function(model) {
+            mapHuaweiAppLevelConfig: function(model) {
                 if (model[PlatformEnum.HUAWEI]) {
                     return {
-                        _id: model[PlatformEnum.HUAWEI]._id,
+                        _id: model[PlatformEnum.HUAWEI]._id || "",
                         key: model[PlatformEnum.HUAWEI].appId,
                         secret: model[PlatformEnum.HUAWEI].appSecret
                     };
                 }
                 return null;
             },
-            mapApplevelConfigModelToDto: function(model) {
+            mapAppLevelConfig: function(model) {
                 var dto = {
                     rate: {
                         rate: model.rate,
                         period: model.period
                     }
                 };
-                dto.i = this.mapIOSAppLevelConfigModelToDto(model);
-                dto.a = this.mapAndroidAppLevelConfigModelToDto(model);
-                dto.h = this.mapHuaweiAppLevelConfigModelToDto(model);
+                dto[PlatformDtoEnum.IOS] = this.mapIOSAppLevelConfig(model);
+                dto[PlatformDtoEnum.ANDROID] = this.mapAndroidAppLevelConfig(model);
+                dto[PlatformDtoEnum.HUAWEI] = this.mapHuaweiAppLevelConfig(model);
                 return dto;
+            },
+            mapAppLevelConfigModelProperty: function(property) {
+                return AppLevelConfigPropertyModelMap[property];
             }
         }
     };
