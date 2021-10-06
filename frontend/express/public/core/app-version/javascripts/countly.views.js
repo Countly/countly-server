@@ -17,6 +17,9 @@ var AppVersionView = countlyVue.views.create({
         refresh: function() {
             this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion');
         },
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
+        }
     },
     computed: {
         appVersion: function() {

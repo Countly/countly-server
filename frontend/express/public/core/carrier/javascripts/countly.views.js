@@ -12,6 +12,9 @@ var AppCarrierView = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.$store.dispatch('countlyAppCarrier/fetchAll');
+        },
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
         }
     },
     computed: {

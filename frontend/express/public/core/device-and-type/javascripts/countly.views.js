@@ -7,6 +7,9 @@ var DevicesTabView = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.$store.dispatch('countlyDevicesAndTypes/fetchDevices');
+        },
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
         }
     },
     computed: {
@@ -15,7 +18,6 @@ var DevicesTabView = countlyVue.views.create({
         },
         appDevicesRows: function() {
             return this.data.table || [];
-
         },
         topData: function() {
             var tops = this.data.tops || {};
@@ -102,6 +104,9 @@ var TypesTabView = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes');
+        },
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
         }
     },
     computed: {
@@ -110,7 +115,6 @@ var TypesTabView = countlyVue.views.create({
         },
         deviceTypesRows: function() {
             return this.data.table || [];
-
         },
         pieOptionsNew: function() {
             var self = this;
@@ -179,14 +183,14 @@ var AllTabs = countlyVue.views.create({
             dynamicTab: "devices-tab",
             localTabs: [
                 {
-                    title: CV.i18n('device_type.types'),
-                    name: "types-tab",
-                    component: TypesTabView
-                },
-                {
                     title: CV.i18n('device_type.devices'),
                     name: "devices-tab",
                     component: DevicesTabView
+                },
+                {
+                    title: CV.i18n('device_type.types'),
+                    name: "types-tab",
+                    component: TypesTabView
                 }
             ]
         };
