@@ -1144,7 +1144,8 @@
         bundleId: "",
         authType: countlyPushNotification.service.IOSAuthConfigTypeEnum.P8,
         passphrase: "",
-        hasUploadedKeyFile: false
+        hasKeyFile: false,
+        hasUploadedKeyFile: false,
     };
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.ANDROID] = {
         _id: "",
@@ -1207,6 +1208,7 @@
             setKeyFile: function(dataUrlFile) {
                 this.initializeModelPlatformIfNotFound(this.PlatformEnum.IOS);
                 this.modelUnderEdit[this.PlatformEnum.IOS].keyFile = dataUrlFile;
+                this.modelUnderEdit[this.PlatformEnum.IOS].hasUploadedKeyFile = true;
             },
             onKeyFileChange: function(file) {
                 this.uploadedIOSKeyFilename = file.name;
@@ -1225,9 +1227,10 @@
             initializeModelPlatformIfNotFound: function(platform) {
                 if (!this.modelUnderEdit[platform]) {
                     this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
-                }
-                if (platform === this.PlatformEnum.IOS) {
-                    this.modelUnderEdit[platform].authType = this.iosAuthConfigType;
+                    this.shouldSendInitializedDto = true;
+                    if (platform === this.PlatformEnum.IOS) {
+                        this.modelUnderEdit[platform].authType = this.iosAuthConfigType;
+                    }
                 }
             },
             dispatchInitialDtoIfNotSend: function(dto) {
@@ -1271,6 +1274,7 @@
             },
             onSelectApp: function(appId) {
                 this.selectedAppId = appId;
+                this.iosAuthConfigType = countlyPushNotification.service.IOSAuthConfigTypeEnum.P8;
                 this.resetConfig();
                 this.reconcilate();
             },

@@ -681,7 +681,8 @@
                         authType: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? IOSAuthConfigTypeEnum.P12 : IOSAuthConfigTypeEnum.P8,
                         passphrase: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? dto[PlatformDtoEnum.IOS].pass : '',
                         teamId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].team : '',
-                        hasUploadedKeyFile: hasIOSConfig
+                        hasKeyFile: hasIOSConfig,
+                        hasUploadedKeyFile: false
                     };
                 }
                 return null;
@@ -975,22 +976,23 @@
                 throw Error('Unknown push notification type');
             },
             mapIOSAppLevelConfig: function(model) {
-                if (model[PlatformEnum.IOS]) {
+                var iosConfigModel = model[PlatformEnum.IOS];
+                if (iosConfigModel) {
                     var result = {
-                        _id: model[PlatformEnum.IOS]._id || "",
-                        type: model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P8 ? 'apn_token' : 'apn_universal',
-                        key: model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P8 ? model[PlatformEnum.IOS].keyId : 'team',
-                        bundle: model[PlatformEnum.IOS].bundleId || "",
-                        file: model[PlatformEnum.IOS].keyFile,
+                        _id: iosConfigModel._id || "",
+                        type: iosConfigModel.authType === IOSAuthConfigTypeEnum.P8 ? 'apn_token' : 'apn_universal',
+                        key: iosConfigModel.authType === IOSAuthConfigTypeEnum.P8 ? iosConfigModel.keyId : 'team',
+                        bundle: iosConfigModel.bundleId || "",
+                        fileType: iosConfigModel.authType
                     };
-                    if (model.hasUploadedKeyFile) {
-                        result.fileType = model[PlatformEnum.IOS].authType;
+                    if (iosConfigModel.hasUploadedKeyFile) {
+                        result.file = iosConfigModel.keyFile;
                     }
-                    if (model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P12) {
-                        result.pass = model[PlatformEnum.IOS].passphrase;
+                    if (iosConfigModel.authType === IOSAuthConfigTypeEnum.P12) {
+                        result.pass = iosConfigModel.passphrase;
                     }
-                    if (model[PlatformEnum.IOS].authType === IOSAuthConfigTypeEnum.P8) {
-                        result.team = model[PlatformEnum.IOS].teamId;
+                    if (iosConfigModel.authType === IOSAuthConfigTypeEnum.P8) {
+                        result.team = iosConfigModel.teamId;
                     }
                     return result;
                 }

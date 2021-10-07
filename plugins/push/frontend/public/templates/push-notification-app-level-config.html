@@ -19,7 +19,7 @@
                     </el-upload>
                     <div class="bu-ml-5">{{uploadedIOSKeyFilename}}</div>
                 </div>
-                <div v-if="viewModel[PlatformEnum.IOS].hasUploadedKeyFile"> Key file ({{viewModel[PlatformEnum.IOS].authType}}) is already uploaded </div>
+                <div v-if="viewModel[PlatformEnum.IOS].hasKeyFile"> Key file ({{viewModel[PlatformEnum.IOS].authType}}) is already uploaded </div>
             </div>
         </cly-inline-form-field>
     <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P8"> 
