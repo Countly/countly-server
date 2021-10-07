@@ -1,8 +1,9 @@
-/*global countlyAuth, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment, sdks, countlyPlugins, countlySession, countlyLocation, countlyCity, countlyDevice, countlyCarrier, countlyDeviceDetails, countlyAppVersion, countlyEvent, _ , countlyAppManagement*/
+/*global countlyAuth, ELEMENT, app, countlyGlobal, CV, countlyVue, countlyCommon, CountlyHelpers, jQuery, $, Backbone, moment, sdks, countlyPlugins, countlySession, countlyLocation, countlyCity, countlyDevice, countlyCarrier, countlyDeviceDetails, countlyAppVersion, countlyEvent, _ ,*/
 (function() {
     var FEATURE_NAME = "global_applications";
 
     var ManageAppsView = countlyVue.views.create({
+        mixins: [ELEMENT.utils.Emitter],
         template: CV.T('/core/app-management/templates/app-management.html'),
         computed: {
             selectedSearchBar: {
@@ -12,7 +13,7 @@
                 set: function(value) {
                     this.newApp = false;
                     this.selectedApp = value;
-                    this.$store.dispatch('countlyAppManagement/onAppSelect', value);
+                    this.broadcast('AppSettingsContainerObservable', 'selectedApp', value);
                     this.uploadData.app_image_id = countlyGlobal.apps[this.selectedApp]._id + "";
                     this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png")';
                     this.unpatch();
@@ -616,6 +617,10 @@
                 }
                 this.loadComponents();
             },
+            onDiscard: function() {
+                this.broadcast('AppSettingsContainerObservable', 'discard');
+                this.unpatch();
+            },
             saveSettings: function() {
                 var self = this;
                 $.ajax({
@@ -659,18 +664,14 @@
         },
         mounted: function() {
             var appId = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
-            this.$store.dispatch('countlyAppManagement/onAppSelect', appId);
+            this.broadcast('AppSettingsContainerObservable', 'selectedApp', appId);
         }
     });
-
-    var appManagementVuex = [{
-        clyModel: countlyAppManagement
-    }];
 
     var getMainView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: ManageAppsView,
-            vuex: appManagementVuex
+            vuex: []
         });
     };
 
