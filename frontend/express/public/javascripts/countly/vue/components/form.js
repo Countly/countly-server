@@ -290,10 +290,18 @@
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({
         props: {
-            label: String
+            label: String,
+            optional: {
+                type: Boolean,
+                default: false
+            }
         },
+        mixins: [countlyVue.mixins.i18n],
         template: '<div class="cly-vue-form-field cly-vue-form-step__section">\
-                        <div class="text-small text-heading">{{label}}</div>\
+                        <div class="bu-is-flex bu-is-justify-content-space-between">\
+                            <div class="text-small text-heading">{{label}}</div>\
+                            <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
+                        </div>\
                         <validation-provider v-bind="$attrs" v-on="$listeners" v-slot="validation">\
                             <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}">\
                                 <slot v-bind="validation"/>\
