@@ -1159,6 +1159,7 @@
 
     var keyFileReader = new FileReader();
     var PushNotificationAppLevelConfigView = countlyVue.views.create({
+        componentName: "AppSettingsContainerObservable",
         template: CV.T("/push/templates/push-notification-app-level-config.html"),
         data: function() {
             return {
@@ -1169,19 +1170,9 @@
                 viewModel: JSON.parse(JSON.stringify(initialAppLevelConfig)),
                 modelUnderEdit: Object.assign({}, { rate: "", period: ""}),
                 shouldSendInitializedDto: false,
-                uploadedIOSKeyFilename: ''
+                uploadedIOSKeyFilename: '',
+                selectedAppId: this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID
             };
-        },
-        computed: {
-            selectedAppId: function() {
-                return this.$store.state.countlyAppManagement.selectedAppId;
-            },
-        },
-        watch: {
-            selectedAppId: function() {
-                this.resetConfig();
-                this.reconcilate();
-            }
         },
         methods: {
             setModel: function(newModel) {
@@ -1274,6 +1265,21 @@
                 this.updateAllModelsOnInput(property, value, platform);
                 this.dispatchAppLevelConfigChangeEvent(property, platform);
             },
+            onDiscard: function() {
+                this.resetConfig();
+                this.reconcilate();
+            },
+            onSelectApp: function(appId) {
+                this.selectedAppId = appId;
+                this.resetConfig();
+                this.reconcilate();
+            },
+            addSelectedAppEventListener: function(callback) {
+                this.$on('selectedApp', callback);
+            },
+            addDiscardEventListener: function(callback) {
+                this.$on('discard', callback);
+            },
             addKeyFileReaderLoadListener: function(callback) {
                 keyFileReader.addEventListener('load', callback);
             },
@@ -1309,6 +1315,8 @@
         },
         mounted: function() {
             this.addKeyFileReaderLoadListener(this.onKeyFileReady);
+            this.addDiscardEventListener(this.onDiscard);
+            this.addSelectedAppEventListener(this.onSelectApp);
             this.reconcilate();
         },
         destroyed: function() {
