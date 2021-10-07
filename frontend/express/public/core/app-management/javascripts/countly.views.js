@@ -623,40 +623,44 @@
             },
             saveSettings: function() {
                 var self = this;
-                $.ajax({
-                    type: "POST",
-                    url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
-                    data: {
-                        app_id: self.selectedApp,
-                        args: JSON.stringify(self.changes)
-                    },
-                    dataType: "json",
-                    success: function(result) {
-                        if (result.result === 'Nothing changed') {
-                            CountlyHelpers.notify({type: 'warning', message: jQuery.i18n.map['management-applications.plugins.saved.nothing']});
-                        }
-                        else {
-                            CountlyHelpers.notify({title: jQuery.i18n.map['management-applications.plugins.saved.title'], message: jQuery.i18n.map['management-applications.plugins.saved']});
-                        }
-                        if (!countlyGlobal.apps[self.selectedApp].plugins) {
-                            countlyGlobal.apps[self.selectedApp].plugins = {};
-                        }
-                        for (var key in self.changes) {
-                            countlyGlobal.apps[self.selectedApp].plugins[key] = self.changes[key];
-                        }
-                        self.resetChanges();
-                    },
-                    error: function(resp, status, error) {
-                        try {
-                            resp = JSON.parse(resp.responseText);
-                        }
-                        catch (ignored) {
-                            //ignored excep
-                        }
-                        CountlyHelpers.notify({
-                            title: jQuery.i18n.map["configs.not-saved"],
-                            message: error || resp.result || jQuery.i18n.map['management-applications.plugins.error.server'],
-                            type: "error"
+                this.$refs.configObserver.validate().then(function(isValid) {
+                    if (isValid) {
+                        $.ajax({
+                            type: "POST",
+                            url: countlyCommon.API_PARTS.apps.w + '/update/plugins',
+                            data: {
+                                app_id: self.selectedApp,
+                                args: JSON.stringify(self.changes)
+                            },
+                            dataType: "json",
+                            success: function(result) {
+                                if (result.result === 'Nothing changed') {
+                                    CountlyHelpers.notify({type: 'warning', message: jQuery.i18n.map['management-applications.plugins.saved.nothing']});
+                                }
+                                else {
+                                    CountlyHelpers.notify({title: jQuery.i18n.map['management-applications.plugins.saved.title'], message: jQuery.i18n.map['management-applications.plugins.saved']});
+                                }
+                                if (!countlyGlobal.apps[self.selectedApp].plugins) {
+                                    countlyGlobal.apps[self.selectedApp].plugins = {};
+                                }
+                                for (var key in self.changes) {
+                                    countlyGlobal.apps[self.selectedApp].plugins[key] = self.changes[key];
+                                }
+                                self.resetChanges();
+                            },
+                            error: function(resp, status, error) {
+                                try {
+                                    resp = JSON.parse(resp.responseText);
+                                }
+                                catch (ignored) {
+                                    //ignored excep
+                                }
+                                CountlyHelpers.notify({
+                                    title: jQuery.i18n.map["configs.not-saved"],
+                                    message: error || resp.result || jQuery.i18n.map['management-applications.plugins.error.server'],
+                                    type: "error"
+                                });
+                            }
                         });
                     }
                 });
