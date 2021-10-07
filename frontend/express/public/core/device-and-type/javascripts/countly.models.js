@@ -73,6 +73,8 @@
                 { "name": "u" },
                 { "name": "n" }
             ], metric);
+
+            tableData.chartData = countlyCommon.mergeMetricsByName(tableData.chartData, metric);
             return tableData;
         },
         setEmptyDefault: function(object) {
