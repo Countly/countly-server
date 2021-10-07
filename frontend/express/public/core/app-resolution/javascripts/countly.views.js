@@ -12,6 +12,9 @@ var AppResolutionView = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.$store.dispatch('countlyDevicesAndTypes/fetchResolution');
+        },
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
         }
     },
     computed: {
