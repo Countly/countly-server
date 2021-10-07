@@ -2585,6 +2585,10 @@
             _estOverrideMetric = (metric.estOverrideMetric) ? metric.estOverrideMetric : "";
         var _promises = {};
 
+
+        countlyMetric.getCurrentLoadState = function() {
+            return {"init": _initialized, "period": _period};
+        };
         //Public Methods
         /**
         * Initialize metric model to fetch initial data from server

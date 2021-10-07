@@ -55,6 +55,18 @@ var Drawer = countlyVue.views.create({
                 submitted.logo = this.logoFile;
             }
 
+            var finalizedTargeting = null;
+
+            var exported = this.$refs.ratingsSegmentation.export();
+            if (!((exported.behaviorSegmentation.length === 0) && (Object.keys(exported.propertySegmentation.query).length === 0))) {
+                finalizedTargeting = Object.assign({}, {
+                    user_segmentation: JSON.stringify(exported.propertySegmentation),
+                    steps: JSON.stringify(exported.behaviorSegmentation)
+                });
+            }
+
+            submitted.targeting = finalizedTargeting;
+
             if (this.settings.isEditMode) {
                 starRatingPlugin.editFeedbackWidget(submitted, function() {
                     self.$emit('widgets-refresh');
@@ -114,6 +126,7 @@ var WidgetsTable = countlyVue.views.create({
                     ratingScore = (this.rows[i].ratingsSum / this.rows[i].ratingsCount).toFixed(1);
                 }
                 this.rows[i].ratingScore = ratingScore;
+                this.rows[i] = this.parseTargeting(this.rows[i]);
             }
             return this.rows;
         }
@@ -125,6 +138,11 @@ var WidgetsTable = countlyVue.views.create({
                 window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
                 break;
             }
+        },
+        parseTargeting: function(widget) {
+            widget.targeting.steps = JSON.parse(widget.targeting.steps);
+            widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            return widget;
         }
     }
 });
@@ -383,8 +401,8 @@ var WidgetsTab = countlyVue.views.create({
                     'Very Satisfied'
                 ],
                 targeting: {
-                    user_segmentation: { query: {} },
-                    steps: []
+                    user_segmentation: null,
+                    steps: null
                 },
                 trigger_button_text: 'Feedback',
                 trigger_bg_color: '#123456',
@@ -629,6 +647,8 @@ var WidgetDetail = countlyVue.views.create({
             });
         },
         editWidget: function() {
+            this.widget.targeting.user_segmentation = JSON.parse(this.widget.targeting.user_segmentation);
+            this.widget.targeting.steps = JSON.parse(this.widget.targeting.steps);
             this.openDrawer('widget', this.widget);
         },
         handleCommand: function(command) {
@@ -674,6 +694,7 @@ var WidgetDetail = countlyVue.views.create({
             starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
                 self.widget = widget;
                 self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
+                self.widget = self.parseTargeting(widget);
             });
             // set widget filter as current one
             this.activeFilter.widget = this.widget._id;
@@ -697,6 +718,11 @@ var WidgetDetail = countlyVue.views.create({
                     self.versionOptions.push({ label: self.platform_version[newValue.platform][i], value: self.platform_version[newValue.platform][i] });
                 }
             }
+        },
+        parseTargeting: function(widget) {
+            widget.targeting.steps = JSON.parse(widget.targeting.steps);
+            widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            return widget;
         }
     },
     computed: {
@@ -900,10 +926,6 @@ app.addPageScript("/drill#", function() {
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(FEATURE_NAME)) {
-        if (!$("#feedback-menu").length) {
-            app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
-        }
-
         app.addSubMenu("feedback", {
             code: "star-rating",
             url: "#/feedback/ratings",

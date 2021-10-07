@@ -112,9 +112,28 @@
         width: 100%;
         margin-right: 0;
         height: unset;
+        background-color: white;
     }
-    .el-radio.is-autosized.is-bordered + .el-radio.is-autosized.is-bordered {
+    &.is-autosized.is-bordered + &.is-autosized.is-bordered {
         margin-left: 10px;
+    }
+    &.is-autosized-vstack {
+        padding: 12px;
+        display: flex;
+        width: 100%;
+        margin-right: 0;
+        height: unset;
+        background-color: white;
+        .el-radio__label {
+            justify-content: space-between;
+            display: flex;
+            width: 100%;
+            align-items: baseline;
+        }
+    }
+    &.is-autosized-vstack.is-bordered + &.is-autosized-vstack.is-bordered {
+        margin-left: 0;
+        margin-top: 7px;
     }
 }
 

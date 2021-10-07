@@ -682,7 +682,7 @@ app.addAppManagementSwitchCallback(function() {
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.populatorView.featureName)) {
-        app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.title", priority: 70, classes: "populator-menu"});
+        app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.title", priority: 30, classes: "populator-menu"});
     }
     //listen for UI app change
     app.addAppSwitchCallback(function(appId) {

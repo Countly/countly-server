@@ -6,6 +6,27 @@
 @use "./typography-variables" as t;
 @use "./colors" as c;
 
+* {
+    outline:none;
+}
+html {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    margin:0;
+    padding:0;
+    overflow:auto;
+    background-color:#F9F9F9;
+    user-select:text;
+    font-family: t.$font-family, Ubuntu,Helvetica,sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
 h1 {
     font-size: t.$heading-1-size;
     line-height: t.$heading-1-line-height;

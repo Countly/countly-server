@@ -25,10 +25,10 @@
 				</el-select>
 			</div>
 		</div>
-		<div class="bg-white bu-mb-4 technology-analytics-wrapper-browser__metric-cards-wrapper">
+		<div class="bu-mb-4 technology-analytics-wrapper-browser__metric-cards-wrapper">
 		<vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
 			<cly-metric-cards class="bu-is-flex-wrap-nowrap">
-                <cly-metric-card :is-percentage="true" :columnWidth=3  :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in browserItems">
+                <cly-metric-card :is-percentage="true" class="bg-white" :columnWidth=3  :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in browserItems">
                     {{item.name}}
 					<template v-slot:number>{{item.value}}</template> 
 					<template v-slot:description>

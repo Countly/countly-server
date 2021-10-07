@@ -159,180 +159,21 @@
 	<% } %>
 </head>
 <body>
-	<div id="top-bar" style="display:none">
-		<div class="logo-container">
-			<div id="hide-sidebar-button"></div>
-			<!--
-			Community Edition license doesn't include the right to remove Countly branding.
-			If you wish to implement your own branding (e.g. your own logo, colors, etc.), you must license Countly Enterprise Edition.
-			-->
-			<a href="#/"><div class="logo"></div></a>
-		</div>
-		<div class="left-menu">
-			<div id="app-navigation" class="dropdown bordered large">
-				<div class="selected">
-					<div id="active-app-icon" style="<% if (defaultApp){ %> background-image:url('<%- cdn %>appimages/<%= defaultApp._id %>.png'); <% } %>"></div>
-					<div id="active-app-name" title="<% if (defaultApp){ %><%= defaultApp.name %><% } %>"><% if (defaultApp){ %><%= defaultApp.name %><% } %></div>
-				</div>
-				<div class="empty-state">Apps</div>
-				<div class="menu">
-					<div class="search nav-search">
-						<input type="text" autofocus readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}">
-					</div>
-					<div class="list"></div>
-				</div>
-			</div>
-		</div>
-		<div class="right-menu">
-			<div class="dropdown icon manage-long-tasks-menu-dropdown">
-				<div id="manage-long-tasks-icon" class="empty-state unread">
-                    <i class="fa fa-clock"></i>
-					<div class="orange-side-notification-banner-wrapper">
-						<div class="orange-side-notification-banner" data-localize="taskmanager.query-added-long"></div>
-					</div>
-                </div>
-				<div class="menu right manage-long-tasks-menu" style="width:400px;">
-                    <div class="menu-category-title">
-						<p data-localize="sidebar.long-running-queries"></p>
-						<a class="see-all"  href="#/manage/tasks#report-automatically"><span data-localize="common.see-all"></span>&rarr;</a>
-					</div>
-					<div class="tasks-wrapper">
-						<div class="tasks scrollable"></div>
-						</div>
-				</div>
-			</div>
-            <div class="dropdown icon">
-				<div class="empty-state">
-                    <i class="fa fa-cog"></i>
-                </div>
-				<div class="menu right manage-menu">
-                    <div class="menu-category-title" data-localize="sidebar.management"></div>
-					<div id="manage-menu" class="list"></div>
-				</div>
-			</div>
-			<div class="dropdown icon">
-				<div class="empty-state">
-					<i class="ion-person"></i>
-				</div>
-				<div class="menu right" style="width: 200px;">
-					<div class="list">
-						<span class="item_info">
-							<div class="user_name">
-								<div>
-									<%= member.full_name %>
-								</div>
-								<div>
-									<%= member.email %>
-								</div>
-								<div class="member_image">
-								</div>
-							</div>
-							<div class="api_key">
-								<div data-localize="sidebar.api_key">
-								</div>
-                                <div id="user_api_key_item">
-                                    <input value="<%= member.api_key %>" readonly=true type="text"/>
-								</div>
-							</div>
-						</span>
-                        <div id="user-menu">
-                            <a class="item" href='#/manage/user-settings' data-priority="10">
-                                <i class="ion-gear-a icon"></i>
-                                <div data-localize="plugins.user-configs"></div>
-                            </a>
-                            <a href="#/manage/token_manager" class="item" data-priority="11">
-                                <i class="ion-key icon"></i>
-                                <div data-localize="token_manager.page-title"></div>
-                            </a>
-
-                            <% if (typeof helpCenterLink === "string") { %>
-                            <a class="item" href="<%= helpCenterLink %>" target="_blank" data-priority="19">
-                                <i class="ion-help-buoy icon"></i>
-                                <div data-localize="common.help-center"></div>
-                            </a>
-                            <% } %>
-                            <% if (typeof helpCenterLink === "boolean" && helpCenterLink) { %>
-                            <a class="item" href="https://support.count.ly" target="_blank" data-priority="19">
-                                <i class="ion-help-buoy icon"></i>
-                                <div data-localize="common.help-center"></div>
-                            </a>
-                            <% } %>
-
-                            <% if (typeof documentationLink === "string") { %>
-                            <a class="item" href="<%= documentationLink %>" target="_blank" data-priority="20">
-                                <i class="ion-android-document icon"></i>
-                                <div data-localize="common.documentation"></div>
-                            </a>
-                            <% } %>
-                            <% if (typeof documentationLink === "boolean" && documentationLink) { %>
-                            <a class="item" href="https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base" target="_blank" data-priority="20">
-                                <i class="ion-android-document icon"></i>
-                                <div data-localize="common.documentation"></div>
-                            </a>
-                            <% } %>
-
-                            <% if(typeof feedbackLink === "string") { %>
-                            <a target="_new" href="<%= feedbackLink %>" class="item" data-priority="30">
-                                <i class="ion-ios-star icon"></i>
-                                <div data-localize="common.provide-feedback"></div>
-                            </a>
-                            <% } %>
-
-                            <% if (typeof featureRequestLink === "string") { %>
-                            <a class="item" href="<%= featureRequestLink %>" target="_blank" data-priority="40">
-                                <i class="ion-android-textsms icon"></i>
-                                <div data-localize="common.feature-request"></div>
-                            </a>
-                            <% } %>
-                            <% if (typeof featureRequestLink === "boolean" && featureRequestLink) { %>
-                            <a class="item" href="https://support.count.ly/hc/en-us/community/topics/360001464272-Feature-Requests" target="_blank" data-priority="40">
-                                <i class="ion-android-textsms icon"></i>
-                                <div data-localize="common.feature-request"></div>
-                            </a>
-                            <% } %>
-
-                            <a id="user-logout" class="item" href="#" data-priority="1000000000">
-                                <i class="ion-android-exit icon"></i>
-                                <div data-localize="sidebar.logout"></div>
-                            </a>
-                        </div>
-					</div>
-				</div>
-			</div>
-			<div class="dropdown icon">
-				<div class="empty-state reveal-language-menu">EN</div>
-				<div class="menu right" style="width: 150px;">
-					<div id="language-menu" class="list">
-						<% for(var i=0, l=languages.length; i<l; i++) {%>
-    						<a data-language-code="<%=languages[i].code%>" class="item"><%=languages[i].name%></a>
-  						<% } %>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div style="clear: both"></div>
-	</div>
-
-	<div id="main-views-container">
-		<div id="dashboards-main-view" class="main-view">
-			<div id="custom-dashboard"></div>
-		</div>
-		<div id="analytics-main-view" class="main-view bu-columns bu-is-gapless">
-			<div id="sidebar" class="bu-column">
-				<div id="new-install-overlay"></div>
-				<div id="sidebar-menu">
-                    <div id="default-type" class="sidebar-menu" style="display: none;"></div>
-                </div>
-				<div id="version-info"><%= countlyTypeName %></div>
-			</div>
-			<div id="cly-vue-sidebar" class="bu-column">
-                <div id="sidebar-x"></div>
+	<div id="main-views-container" class="bu-columns bu-is-gapless">
+        <div id="cly-vue-sidebar" class="bu-column">
+            <div id="sidebar-x"></div>
+        </div>
+        <div class="bu-column main-view">
+            <div id="dashboards-main-view">
+			    <div id="custom-dashboard"></div>
             </div>
-			<div id="content-container" class="bu-column content-container">
-				<div id="content-top"></div>
-				<div id="content"></div>
-			</div>
-		</div>
+            <div id="analytics-main-view">
+                <div id="content-container">
+                    <div id="content-top"></div>
+                    <div id="content"></div>
+                </div>
+            </div>
+        </div>
 	</div>
 
 	<div id="overlay"></div>
@@ -2276,7 +2117,6 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/drawer.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/vis.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/helpers.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/sidebar.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/progress.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/directives/scroll-shadow.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/legacy.js?<%= countlyVersion %>"></script>
@@ -2318,6 +2158,8 @@
 				<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>
 			<% } %>
 		<% } %>
+
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/sidebar.js?<%= countlyVersion %>"></script>
 	<% } %>
 
     <% if (themeFiles && themeFiles.js) { %>

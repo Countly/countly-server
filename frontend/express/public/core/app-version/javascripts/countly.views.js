@@ -17,6 +17,9 @@ var AppVersionView = countlyVue.views.create({
         refresh: function() {
             this.$store.dispatch('countlyDevicesAndTypes/fetchAppVersion');
         },
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
+        }
     },
     computed: {
         appVersion: function() {
@@ -54,7 +57,7 @@ var AppVersionView = countlyVue.views.create({
 countlyVue.container.registerTab("/analytics/technology", {
     priority: 4,
     name: "versions",
-    title: "App versions",
+    title: CV.i18n('app-versions.title'),
     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/versions",
     component: AppVersionView
 });

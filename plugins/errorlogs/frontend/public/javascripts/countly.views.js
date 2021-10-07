@@ -79,7 +79,7 @@
 
 
         $(document).ready(function() {
-            app.addMenu("management", {code: "errorlogs", url: "#/manage/errorlogs", text: "errorlogs.title", icon: '<div class="logo-icon fa fa-server"></div>', priority: 60});
+            app.addMenu("management", {code: "errorlogs", url: "#/manage/errorlogs", text: "errorlogs.title", icon: '<div class="logo-icon fa fa-server"></div>', priority: 110});
         });
     }
 })();

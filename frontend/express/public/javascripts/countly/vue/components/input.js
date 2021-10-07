@@ -832,4 +832,75 @@
         }
     }));
 
+    var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+
+    Vue.component('cly-select-email', countlyVue.components.BaseComponent.extend({
+        template: '<el-select\
+                        v-on="$listeners"\
+                        v-bind="$attrs"\
+                        :remote-method="tryParsingEmail"\
+                        :placeholder="placeholder"\
+                        :no-data-text="invalidEmailText"\
+                        :value="value"\
+                        @input="handleInput"\
+                        remote\
+                        multiple\
+                        filterable\
+                        class="cly-vue-select-email"\
+                        autocomplete="off">\
+                        <el-option\
+                            v-for="item in options"\
+                            :key="item.value"\
+                            :label="item.label"\
+                            :value="item.value">\
+                        </el-option>\
+                    </el-select>',
+        props: {
+            value: {
+                type: Array
+            },
+            placeholder: {
+                type: String,
+                default: CV.i18n('common.enter-email-addresses'),
+                required: false
+            }
+        },
+        data: function() {
+            return {
+                options: [],
+                invalidEmailText: ''
+            };
+        },
+        mounted: function() {
+            this.resetOptions('');
+        },
+        methods: {
+            handleInput: function(value) {
+                this.$emit("input", value);
+            },
+            resetOptions: function(input) {
+                this.options = [];
+                this.invalidEmailText = CV.i18n('common.invalid-email-address', input);
+            },
+            tryParsingEmail: function(input) {
+                if (!input) {
+                    this.resetOptions(input);
+                }
+                else if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                    this.options = [{value: input, label: input}];
+                }
+                else {
+                    var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                    if (match) {
+                        // Current implementation ignores name field
+                        this.options = [{value: match[2], label: match[2]}];
+                    }
+                    else {
+                        this.resetOptions(input);
+                    }
+                }
+            }
+        }
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));

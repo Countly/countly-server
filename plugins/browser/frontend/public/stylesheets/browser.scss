@@ -57,6 +57,9 @@
     &__browser-versions-wrapper {
         .__view {
             width:auto !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
     }
 

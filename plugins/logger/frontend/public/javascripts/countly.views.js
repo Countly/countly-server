@@ -185,7 +185,7 @@
             this.renderWhenReady(this.logger);
         });
 
-        app.addSubMenu("management", { code: "logger", url: "#/manage/logger", text: "logger.title", priority: 60 });
+        app.addSubMenu("management", { code: "logger", url: "#/manage/logger", text: "logger.title", priority: 50 });
         if (app.configurationsView) {
             app.configurationsView.registerLabel("logger.state", "logger.state");
             app.configurationsView.registerInput("logger.state", {
