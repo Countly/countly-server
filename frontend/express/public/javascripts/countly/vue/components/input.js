@@ -846,7 +846,7 @@
                         remote\
                         multiple\
                         filterable\
-                        style="width: 100%"\
+                        class="cly-vue-select-email"\
                         autocomplete="off">\
                         <el-option\
                             v-for="item in options"\
@@ -871,27 +871,34 @@
                 invalidEmailText: ''
             };
         },
+        mounted: function() {
+            this.resetOptions('');
+        },
         methods: {
             handleInput: function(value) {
                 this.$emit("input", value);
             },
-            tryParsingEmail: function(input) {
-                if (!input) {
-                    this.options = [];
-                    this.invalidEmailText = CV.i18n('common.invalid-email-address', input);
-                    return;
-                }
-                if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
-                    this.options = [{value: input, label: input}];
-                    return;
-                }
-                var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-                if (match) {
-                    this.options = [{value: match[2], label: match[2]}]; // currently ignores the name
-                    return;
-                }
+            resetOptions: function(input) {
                 this.options = [];
                 this.invalidEmailText = CV.i18n('common.invalid-email-address', input);
+            },
+            tryParsingEmail: function(input) {
+                if (!input) {
+                    this.resetOptions(input);
+                }
+                else if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                    this.options = [{value: input, label: input}];
+                }
+                else {
+                    var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                    if (match) {
+                        // Current implementation ignores name field
+                        this.options = [{value: match[2], label: match[2]}];
+                    }
+                    else {
+                        this.resetOptions(input);
+                    }
+                }
             }
         }
     }));
