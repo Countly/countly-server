@@ -839,11 +839,14 @@
                         v-on="$listeners"\
                         v-bind="$attrs"\
                         :remote-method="tryParsingEmail"\
+                        :placeholder="placeholder"\
+                        :no-data-text="invalidEmailText"\
                         :value="value"\
                         @input="handleInput"\
                         remote\
                         multiple\
                         filterable\
+                        style="width: 100%"\
                         autocomplete="off">\
                         <el-option\
                             v-for="item in options"\
@@ -855,11 +858,17 @@
         props: {
             value: {
                 type: Array
+            },
+            placeholder: {
+                type: String,
+                default: CV.i18n('common.enter-email-addresses'),
+                required: false
             }
         },
         data: function() {
             return {
-                options: []
+                options: [],
+                invalidEmailText: ''
             };
         },
         methods: {
@@ -869,18 +878,20 @@
             tryParsingEmail: function(input) {
                 if (!input) {
                     this.options = [];
+                    this.invalidEmailText = CV.i18n('common.invalid-email-address', input);
                     return;
                 }
                 if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
                     this.options = [{value: input, label: input}];
                     return;
                 }
-                /*eslint-disable */
                 var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-                /*eslint-enable */
                 if (match) {
                     this.options = [{value: match[2], label: match[2]}]; // currently ignores the name
+                    return;
                 }
+                this.options = [];
+                this.invalidEmailText = CV.i18n('common.invalid-email-address', input);
             }
         }
     }));
