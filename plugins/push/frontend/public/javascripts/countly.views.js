@@ -1172,8 +1172,18 @@
                 modelUnderEdit: Object.assign({}, { rate: "", period: ""}),
                 shouldSendInitializedDto: false,
                 uploadedIOSKeyFilename: '',
-                selectedAppId: this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID
+                selectedAppId: this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID,
+                isHuaweiConfigTouched: false,
+                isIOSConfigTouched: false,
             };
+        },
+        computed: {
+            isHuaweiConfigRequired: function() {
+                return this.isHuaweiConfigTouched;
+            },
+            isIOSConfigRequired: function() {
+                return this.isIOSConfigTouched;
+            },
         },
         methods: {
             setModel: function(newModel) {
@@ -1186,11 +1196,14 @@
                 this.setViewModel(initialAppLevelConfig);
                 this.setModel({rate: "", period: ""});
                 this.$refs.keyFileUploader.clearFiles();
+                this.isHuaweiConfigTouched = false;
+                this.isIOSConfigTouched = false;
             },
             onIOSAuthTypeChange: function(value) {
                 this.iosAuthConfigType = value;
                 this.$refs.keyFileUploader.clearFiles();
                 this.uploadedIOSKeyFilename = '';
+                this.isIOSConfigTouched = true;
                 var appPluginConfigDto = countlyGlobal.apps[this.selectedAppId].plugins;
                 var pushNotificationAppConfigDto = appPluginConfigDto && appPluginConfigDto.push;
                 var model = countlyPushNotification.mapper.incoming.mapAppLevelConfig(pushNotificationAppConfigDto);
@@ -1209,6 +1222,7 @@
                 this.initializeModelPlatformIfNotFound(this.PlatformEnum.IOS);
                 this.modelUnderEdit[this.PlatformEnum.IOS].keyFile = dataUrlFile;
                 this.modelUnderEdit[this.PlatformEnum.IOS].hasUploadedKeyFile = true;
+                this.isIOSConfigTouched = true;
             },
             onKeyFileChange: function(file) {
                 this.uploadedIOSKeyFilename = file.name;
@@ -1261,9 +1275,18 @@
                     this.modelUnderEdit[property] = value;
                 }
             },
+            setIsConfigTouchedByPlatform: function(platform) {
+                if (platform === this.PlatformEnum.IOS) {
+                    this.isIOSConfigTouched = true;
+                }
+                if (platform === this.PlatformEnum.HUAWEI) {
+                    this.isHuaweiConfigTouched = true;
+                }
+            },
             onInput: function(property, value, platform) {
                 if (platform) {
                     this.initializeModelPlatformIfNotFound(platform);
+                    this.setIsConfigTouchedByPlatform(platform);
                 }
                 this.updateAllModelsOnInput(property, value, platform);
                 this.dispatchAppLevelConfigChangeEvent(property, platform);

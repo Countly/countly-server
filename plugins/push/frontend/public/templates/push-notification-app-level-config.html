@@ -8,33 +8,33 @@
         <cly-inline-form-field :label="iosAuthConfigType === IOSAuthConfigTypeEnum.P8 ? 'Key file (P8)' : 'Sandbox + Production certificate (P12)'">
             <div class="bu-is-flex bu-is-flex-direction-column">
                 <div class="bu-is-flex">
-                    <el-upload 
-                        ref="keyFileUploader"
-                        action=""
-                        :on-change="onKeyFileChange"
-                        :auto-upload="false"
-                        :show-file-list="false"
-                        accept="p8, p12">
-                            <el-button size="small" type="text" class="bu-p-0">Choose File</el-button>
-                    </el-upload>
+                        <el-upload 
+                            ref="keyFileUploader"
+                            action=""
+                            :on-change="onKeyFileChange"
+                            :auto-upload="false"
+                            :show-file-list="false"
+                            accept="p8, p12">
+                                <el-button size="small" type="text" class="bu-p-0">Choose File</el-button>
+                        </el-upload>
                     <div class="bu-ml-5">{{uploadedIOSKeyFilename}}</div>
                 </div>
                 <div v-if="viewModel[PlatformEnum.IOS].hasKeyFile"> Key file ({{viewModel[PlatformEnum.IOS].authType}}) is already uploaded </div>
             </div>
         </cly-inline-form-field>
     <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P8"> 
-        <cly-inline-form-field label="Key ID">
+        <cly-inline-form-field label="Key ID" :rules="{required:isIOSConfigRequired}">
             <el-input :value="viewModel[PlatformEnum.IOS].keyId" @input="onInput('keyId', $event, PlatformEnum.IOS)"></el-input>
         </cly-inline-form-field>
-        <cly-inline-form-field label="Team ID">
+        <cly-inline-form-field label="Team ID" :rules="{required:isIOSConfigRequired}">
             <el-input :value="viewModel[PlatformEnum.IOS].teamId" @input="onInput('teamId', $event, PlatformEnum.IOS)"></el-input>
         </cly-inline-form-field>
-        <cly-inline-form-field label="Bundle ID">
+        <cly-inline-form-field label="Bundle ID" :rules="{required:isIOSConfigRequired}">
             <el-input :value="viewModel[PlatformEnum.IOS].bundleId" @input="onInput('bundleId',$event,PlatformEnum.IOS)"></el-input>
         </cly-inline-form-field>
     </template>
     <template v-if="iosAuthConfigType === IOSAuthConfigTypeEnum.P12">
-        <cly-inline-form-field label="Passphrase">
+        <cly-inline-form-field label="Passphrase" :rules="{required:isIOSConfigRequired}">
             <el-input :value="viewModel[PlatformEnum.IOS].passphrase" @input="onInput('passphrase',$event,PlatformEnum.IOS)"></el-input>
         </cly-inline-form-field>
     </template>
@@ -45,10 +45,10 @@
     </cly-inline-form-field>
 
     <div> Android (Huawei Push Kit) </div>
-    <cly-inline-form-field label="Huawei App ID" rules="numeric">
+    <cly-inline-form-field label="Huawei App ID" :rules="{required:isHuaweiConfigRequired}">
         <el-input :value="viewModel[PlatformEnum.HUAWEI].appId" @input="onInput('appId',$event,PlatformEnum.HUAWEI)"></el-input>
     </cly-inline-form-field>
-    <cly-inline-form-field label="App Secret">
+    <cly-inline-form-field label="App Secret" :rules="{required:isHuaweiConfigRequired, numeric: true}">
         <el-input :value="viewModel[PlatformEnum.HUAWEI].appSecret" @input="onInput('appSecret',$event,PlatformEnum.HUAWEI)"></el-input>
     </cly-inline-form-field>
 
