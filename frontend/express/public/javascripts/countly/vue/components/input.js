@@ -832,4 +832,57 @@
         }
     }));
 
+    var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+
+    Vue.component('cly-select-email', countlyVue.components.BaseComponent.extend({
+        template: '<el-select\
+                        v-on="$listeners"\
+                        v-bind="$attrs"\
+                        :remote-method="tryParsingEmail"\
+                        :value="value"\
+                        @input="handleInput"\
+                        remote\
+                        multiple\
+                        filterable\
+                        autocomplete="off">\
+                        <el-option\
+                            v-for="item in options"\
+                            :key="item.value"\
+                            :label="item.label"\
+                            :value="item.value">\
+                        </el-option>\
+                    </el-select>',
+        props: {
+            value: {
+                type: Array
+            }
+        },
+        data: function() {
+            return {
+                options: []
+            };
+        },
+        methods: {
+            handleInput: function(value) {
+                this.$emit("input", value);
+            },
+            tryParsingEmail: function(input) {
+                if (!input) {
+                    this.options = [];
+                    return;
+                }
+                if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                    this.options = [{value: input, label: input}];
+                    return;
+                }
+                /*eslint-disable */
+                var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                /*eslint-enable */
+                if (match) {
+                    this.options = [{value: match[2], label: match[2]}]; // currently ignores the name
+                }
+            }
+        }
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));
