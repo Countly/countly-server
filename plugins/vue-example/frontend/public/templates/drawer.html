@@ -60,7 +60,7 @@
                 </cly-form-field>
             </cly-form-group>
             <cly-form-group label="Visibility" filled>
-                <cly-form-field name="Visible">
+                <cly-form-field>
                     <el-radio 
                         class="is-autosized-vstack"
                         v-model="formScope.editedObject.visibility" 
@@ -76,7 +76,11 @@
                         </div>
                     </el-radio>
                 </cly-form-field>
-                <cly-form-field name="Active">
+                <cly-form-field optional label="Some email addresses" v-if="formScope.editedObject.visibility === 'private'">
+                    <cly-select-email v-model="formScope.editedObject.sharedEmailEdit">
+                    </cly-select-email>
+                </cly-form-field>
+                <cly-form-field>
                     <el-checkbox v-model="formScope.editedObject.status" label="Set as active"></el-checkbox>
                 </cly-form-field>
             </cly-form-group>

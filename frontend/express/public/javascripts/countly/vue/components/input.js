@@ -907,6 +907,15 @@
         props: {
             value: {
                 type: Array
+            },
+            skin: {
+                type: String,
+                default: 'jumbo-lines'
+            }
+        },
+        computed: {
+            rootClasses: function() {
+                return ["cly-vue-draggable--" + this.skin];
             }
         },
         methods: {
@@ -919,7 +928,7 @@
                 this.handleInput(copy);
             }
         },
-        template: '<div class="cly-vue-draggable cly-vue-draggable--jumbo-lines">\
+        template: '<div class="cly-vue-draggable" :class="rootClasses">\
                         <draggable\
                             handle=".drag-icon"\
                             :value="value"\
