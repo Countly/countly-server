@@ -105,6 +105,9 @@ $bg-color: #24292e;
         height: 100%;
         overflow: hidden;
     }
+    &__menu-items {
+        margin-bottom: 16px;
+    }
 
     &__menu-items,
     &__submenu-items,
@@ -126,6 +129,7 @@ $bg-color: #24292e;
 
         &:hover {
             background-color: map.get(c.$colors, "warm-gray-80");
+            color: map.get(c.$colors, "white");
             border-radius: 4px;
         }
 
@@ -142,8 +146,9 @@ $bg-color: #24292e;
     }
 
     &__el-collapse--selected .el-collapse-item__header {
-        background-color: map.get(c.$colors, "warm-gray-80");
         border-radius: 4px;
+        background-color: #383a3f;
+        color: map.get(c.$colors, "white");
     }
 
     .el-collapse-item__content {
@@ -155,6 +160,7 @@ $bg-color: #24292e;
         border-bottom: 1px solid map.get(c.$colors, "warm-gray-70");
         background-color: $bg-color;
         box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
+        padding-bottom: 16px;
     }
 
     &__header {
@@ -294,10 +300,6 @@ $bg-color: #24292e;
         width: 50px;
         border-radius: 25px;
         text-align: center;
-
-        &:hover {
-            box-shadow: 0px 0px 12px map.get(c.$colors, "primary-green");
-        }
     }
 
     &__user-initials {
@@ -312,3 +314,20 @@ $bg-color: #24292e;
         position: relative;
     }
 }
+.tooltip {
+    display: block !important;
+    z-index: 10000;
+  }
+  
+  .tooltip .tooltip-inner {
+    background: white;
+    color: black;
+  }
+  .tooltip .tooltip-arrow {
+    display: none;
+  }
+  
+  .tooltip[x-placement^="right"] {
+    margin-left: 0px;
+  }
+  
