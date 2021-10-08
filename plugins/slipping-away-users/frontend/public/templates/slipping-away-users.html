@@ -23,7 +23,7 @@
                     <el-table-column sortable="custom" prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
                         <template slot-scope="scope">
                             <div class="bu-level-left">
-                                <div class="bu-level-item slipping-away-users-table-data-item">
+                                <div class="bu-level-item slipping-away-users-table__data-item">
                                     <span>{{scope.row.percentage}} %</span>
                                 </div>
                                 <cly-progress-bar  :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
@@ -33,7 +33,7 @@
                     <el-table-column prop="timeStamp" align="center">
                         <template slot-scope="scope">
                             <div class="bu-level-right">
-                                <el-link type="primary" @click="onUserListClick(scope.row.timeStamp)" :underline="false"> {{i18n('slipping-away-users.table-user-list')}}<span class="el-icon-right"></span></el-link>
+                                <el-link type="primary" @click="onUserListClick(scope.row.timeStamp)" :underline="false" class="slipping-away-users-table__link">{{i18n('slipping-away-users.table-user-list')}} <span class="el-icon-right"></span></el-link>
                             </div>
                         </template>
                     </el-table-column>
