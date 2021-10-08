@@ -13,7 +13,8 @@
                 description: '',
                 status: false,
                 selectedProps: [],
-                visibility: 'private'
+                visibility: 'private',
+                sortableItems: []
             };
             return _.extend(original, fields);
         }

@@ -31,7 +31,33 @@
                 <el-input type="textarea" v-model="formScope.editedObject.description" placeholder="A brief description (optional)"></el-input>
             </cly-form-field>
         </cly-form-step>
-        <cly-form-step id="step3" name="Final Step">
+        <cly-form-step id="step3" name="Third Step">
+            <div class="cly-vue-drawer-step__section">
+                <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered">
+                    <div class="bu-column bu-is-10">
+                        <el-input v-model="itemToBeAdded"></el-input>
+                    </div>
+                    <div class="bu-column bu-is-2">
+                        <el-button size="small" type="default" @click="formScope.editedObject.sortableItems.push(itemToBeAdded)">Add</el-button>
+                    </div>
+                </div>
+            </div>
+            <cly-form-field :label="i18n('cohorts.detail.drawer.added-items')" rules="required|arrmin:2">
+                <div class="cly-vue-draggable cly-vue-draggable--jumbo-lines">
+                    <draggable
+                        handle=".drag-icon" 
+                        v-model="formScope.editedObject.sortableItems">
+                        <div class="cly-vue-draggable-item bu-p-3 bu-mb-1" :key="idx" v-for="(item, idx) in formScope.editedObject.sortableItems">
+                            <img class="drag-icon" src="images/drill/drag-icon.svg">
+                            <div class="text-medium">{{ idx }}</div>
+                            <div class="text-medium">{{ item }}</div>
+                            <a @click="formScope.editedObject.sortableItems.splice(idx, 1)" class="ion-backspace"></a>
+                        </div>
+                    </draggable>
+                </div>
+            </cly-form-field>
+        </cly-form-step>
+        <cly-form-step id="step4" name="Final Step">
             <cly-form-group label="Allowed Props" filled>
                 <cly-form-field name="selectedProps" rules="required|arrmin:2">
                     <el-checkbox-group v-model="formScope.editedObject.selectedProps">
