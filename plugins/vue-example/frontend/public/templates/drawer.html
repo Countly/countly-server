@@ -17,14 +17,14 @@
             <cly-form-field name="name" label="Name" rules="required">
                 <el-input v-model="formScope.editedObject.name" placeholder="Some required value"></el-input>
             </cly-form-field>
-            <cly-form-group label="Fields" filled>
+            <cly-form-field-group label="Fields" highlight>
                 <cly-form-field name="field1" label="Field 1" rules="required">
                     <el-input v-model="formScope.editedObject.field1" placeholder="Some required value"></el-input>
                 </cly-form-field>
                 <cly-form-field name="field2" label="Field 2" optional>
                     <el-input v-model="formScope.editedObject.field2" placeholder="Some optional value"></el-input>
                 </cly-form-field>
-            </cly-form-group>
+            </cly-form-field-group>
         </cly-form-step>
         <cly-form-step id="step2" name="Second Step">
             <cly-form-field name="description" label="Description" optional>
@@ -42,7 +42,7 @@
                     </div>
                 </div>
             </div>
-            <cly-form-field :label="i18n('cohorts.detail.drawer.added-items')" rules="required|arrmin:2">
+            <cly-form-field :label="i18n('cohorts.detail.drawer.added-items')">
                 <cly-sortable-items v-model="formScope.editedObject.sortableItems">
                     <template v-slot="scope">
                         <div class="text-medium">{{ scope.idx }}</div>
@@ -52,14 +52,14 @@
             </cly-form-field>
         </cly-form-step>
         <cly-form-step id="step4" name="Final Step">
-            <cly-form-group label="Allowed Props" filled>
+            <cly-form-field-group label="Allowed Props">
                 <cly-form-field name="selectedProps" rules="required|arrmin:2">
                     <el-checkbox-group v-model="formScope.editedObject.selectedProps">
                         <el-checkbox-button v-for="item in constants.availableProps" :label="item.value" :key="item.value">{{item.label}}</el-checkbox-button>
                     </el-checkbox-group>                    
                 </cly-form-field>
-            </cly-form-group>
-            <cly-form-group label="Visibility" filled>
+            </cly-form-field-group>
+            <cly-form-field-group label="Visibility" highlight>
                 <cly-form-field>
                     <el-radio 
                         class="is-autosized-vstack"
@@ -83,7 +83,7 @@
                 <cly-form-field>
                     <el-checkbox v-model="formScope.editedObject.status" label="Set as active"></el-checkbox>
                 </cly-form-field>
-            </cly-form-group>
+            </cly-form-field-group>
         </cly-form-step>
     </template>
 </cly-drawer>

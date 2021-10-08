@@ -14,7 +14,7 @@
                 status: false,
                 selectedProps: [],
                 visibility: 'private',
-                sortableItems: [],
+                sortableItems: ["Test #0", "Test #1"],
                 sharedEmailEdit: []
             };
             return _.extend(original, fields);

@@ -287,17 +287,27 @@
                 '</div>'
     }));
 
-    Vue.component("cly-form-group", countlyBaseComponent.extend({
+    Vue.component("cly-form-field-group", countlyBaseComponent.extend({
         props: {
             label: String,
-            filled: {
+            highlight: {
                 type: Boolean,
                 default: false
             }
         },
-        template: "<div>\
-                        <div v-if=\"label\" class=\"bu-mb-4 text-large text-heading\">{{ label }}</div>\
-                        <div class=\"cly-vue-form-step__section-group\" :class=\"{\'cly-vue-form-step__section-group--filled\': filled}\">\
+        computed: {
+            groupingClasses: function() {
+                if (this.highlight) {
+                    return [
+                        "cly-vue-form-step__section-group",
+                        "cly-vue-form-step__section-group--filled"
+                    ];
+                }
+            }
+        },
+        template: "<div class='cly-vue-form-step__auto-group'>\
+                        <h4 v-if=\"label\">{{ label }}</h4>\
+                        <div :class='groupingClasses'>\
                             <slot></slot>\
                         </div>\
                     </div>"
