@@ -647,8 +647,7 @@ var WidgetDetail = countlyVue.views.create({
             });
         },
         editWidget: function() {
-            this.widget.targeting.user_segmentation = JSON.parse(this.widget.targeting.user_segmentation);
-            this.widget.targeting.steps = JSON.parse(this.widget.targeting.steps);
+            this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.steps);
             this.openDrawer('widget', this.widget);
         },
         handleCommand: function(command) {
