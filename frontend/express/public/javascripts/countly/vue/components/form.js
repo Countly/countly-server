@@ -320,6 +320,18 @@
             optional: {
                 type: Boolean,
                 default: false
+            },
+            disableFormWrapping: {
+                type: Boolean,
+                default: false
+            },
+        },
+        computed: {
+            wrapperElement: function() {
+                if (this.disableFormWrapping) {
+                    return "div";
+                }
+                return "form";
             }
         },
         mixins: [countlyVue.mixins.i18n],
@@ -328,11 +340,13 @@
                             <div class="text-small text-heading">{{label}}</div>\
                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
                         </div>\
-                        <validation-provider v-bind="$attrs" v-on="$listeners" v-slot="validation">\
-                            <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}">\
-                                <slot v-bind="validation"/>\
-                            </div>\
-                        </validation-provider>\
+                        <component :is="wrapperElement">\
+                            <validation-provider v-bind="$attrs" v-on="$listeners" v-slot="validation">\
+                                <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}">\
+                                    <slot v-bind="validation"/>\
+                                </div>\
+                            </validation-provider>\
+                        </component>\
                   </div>'
     }));
 
