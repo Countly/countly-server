@@ -7,6 +7,9 @@ var DevicesTabView = countlyVue.views.create({
     methods: {
         refresh: function() {
             this.$store.dispatch('countlyDevicesAndTypes/fetchDevices');
+        },
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
         }
     },
     computed: {
@@ -15,7 +18,6 @@ var DevicesTabView = countlyVue.views.create({
         },
         appDevicesRows: function() {
             return this.data.table || [];
-
         },
         topData: function() {
             var tops = this.data.tops || {};
@@ -45,8 +47,17 @@ var DevicesTabView = countlyVue.views.create({
                         name: CV.i18n('common.table.new-users'),
                         data: self.data.pie.newUsers,
                         label: {
-                            formatter: function() {
-                                return CV.i18n('common.table.new-users') + countlyCommon.getShortNumber(self.data.totals.newUsers || 0);
+                            formatter: "{a|" + CV.i18n('common.table.new-users') + "}\n" + (countlyCommon.getShortNumber(self.data.totals.newUsers) || 0),
+                            fontWeight: 500,
+                            fontSize: 16,
+                            fontFamily: "Inter",
+                            lineHeight: 24,
+                            rich: {
+                                a: {
+                                    fontWeight: "normal",
+                                    fontSize: 14,
+                                    lineHeight: 16
+                                }
                             }
                         },
                     }
@@ -61,8 +72,17 @@ var DevicesTabView = countlyVue.views.create({
                         name: CV.i18n('common.table.total-sessions'),
                         data: self.data.pie.totalSessions,
                         label: {
-                            formatter: function() {
-                                return CV.i18n('common.table.total-sessions') + countlyCommon.getShortNumber(self.data.totals.totalSessions);
+                            formatter: "{a|" + CV.i18n('common.table.total-sessions') + "}\n" + (countlyCommon.getShortNumber(self.data.totals.totalSessions) || 0),
+                            fontWeight: 500,
+                            fontSize: 16,
+                            fontFamily: "Inter",
+                            lineHeight: 24,
+                            rich: {
+                                a: {
+                                    fontWeight: "normal",
+                                    fontSize: 14,
+                                    lineHeight: 16
+                                }
                             }
                         },
                     }
@@ -76,6 +96,84 @@ var DevicesTabView = countlyVue.views.create({
 });
 
 
+var TypesTabView = countlyVue.views.create({
+    template: CV.T("/core/device-and-type/templates/types-tab.html"),
+    mounted: function() {
+        this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes');
+    },
+    methods: {
+        refresh: function() {
+            this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes');
+        },
+        numberFormatter: function(row, col, value) {
+            return countlyCommon.formatNumber(value, 0);
+        }
+    },
+    computed: {
+        data: function() {
+            return this.$store.state.countlyDevicesAndTypes.deviceTypes;
+        },
+        deviceTypesRows: function() {
+            return this.data.table || [];
+        },
+        pieOptionsNew: function() {
+            var self = this;
+            self.data.totals = self.data.totals || {};
+            return {
+                series: [
+                    {
+                        name: CV.i18n('common.table.new-users'),
+                        data: self.data.pie.newUsers,
+                        label: {
+                            formatter: "{a|" + CV.i18n('common.table.new-users') + "}\n" + (countlyCommon.getShortNumber(self.data.totals.newUsers) || 0),
+                            fontWeight: 500,
+                            fontSize: 16,
+                            fontFamily: "Inter",
+                            lineHeight: 24,
+                            rich: {
+                                a: {
+                                    fontWeight: "normal",
+                                    fontSize: 14,
+                                    lineHeight: 16
+                                }
+                            }
+                        }
+                    }
+                ]
+            };
+        },
+        pieOptionsTotal: function() {
+            var self = this;
+            self.data.totals = self.data.totals || {};
+            return {
+                series: [
+                    {
+                        name: CV.i18n('common.table.total-sessions'),
+                        data: self.data.pie.totalSessions,
+                        label: {
+                            formatter: "{a|" + CV.i18n('common.table.total-sessions') + "}\n" + (countlyCommon.getShortNumber(self.data.totals.totalSessions) || 0),
+                            fontWeight: 500,
+                            fontSize: 16,
+                            fontFamily: "Inter",
+                            lineHeight: 24,
+                            rich: {
+                                a: {
+                                    fontWeight: "normal",
+                                    fontSize: 14,
+                                    lineHeight: 16
+                                }
+                            }
+                        }
+                    }
+                ]
+            };
+        },
+        isLoading: function() {
+            return this.$store.state.countlyDevicesAndTypes.isLoading;
+        }
+    }
+});
+
 var AllTabs = countlyVue.views.create({
     template: CV.T('/core/device-and-type/templates/devices-and-types.html'),
     data: function() {
@@ -85,70 +183,14 @@ var AllTabs = countlyVue.views.create({
             dynamicTab: "devices-tab",
             localTabs: [
                 {
-                    title: CV.i18n('devices.title'),
+                    title: CV.i18n('device_type.devices'),
                     name: "devices-tab",
                     component: DevicesTabView
                 },
                 {
-                    title: CV.i18n('device_type.title'),
+                    title: CV.i18n('device_type.types'),
                     name: "types-tab",
-                    component: countlyVue.views.create({
-                        template: CV.T("/core/device-and-type/templates/types-tab.html"),
-                        mounted: function() {
-                            this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes');
-                        },
-                        methods: {
-                            refresh: function() {
-                                this.$store.dispatch('countlyDevicesAndTypes/fetchDeviceTypes');
-                            }
-                        },
-                        computed: {
-                            data: function() {
-                                return this.$store.state.countlyDevicesAndTypes.deviceTypes;
-                            },
-                            deviceTypesRows: function() {
-                                return this.data.table || [];
-
-                            },
-                            pieOptionsNew: function() {
-                                var self = this;
-                                return {
-                                    series: [
-                                        {
-                                            name: CV.i18n('common.table.new-users'),
-                                            data: self.data.pie.newUsers,
-                                            label: {
-                                                formatter: function() {
-                                                    return CV.i18n('common.table.new-users') + " " + countlyCommon.getShortNumber(self.data.totals.newUsers || 0);
-                                                }
-                                            },
-                                            center: ["25%", "50%"] //Center should be passed as option
-                                        }
-                                    ]
-                                };
-                            },
-                            pieOptionsTotal: function() {
-                                var self = this;
-                                return {
-                                    series: [
-                                        {
-                                            name: CV.i18n('common.table.total-sessions'),
-                                            data: self.data.pie.totalSessions,
-                                            label: {
-                                                formatter: function() {
-                                                    return CV.i18n('common.table.total-sessions') + " " + countlyCommon.getShortNumber(self.data.totals.totalSessions);
-                                                }
-                                            },
-                                            center: ["25%", "50%"] //Center should be passed as option
-                                        }
-                                    ]
-                                };
-                            },
-                            isLoading: function() {
-                                return this.$store.state.countlyDevicesAndTypes.isLoading;
-                            }
-                        }
-                    })
+                    component: TypesTabView
                 }
             ]
         };
@@ -222,7 +264,7 @@ countlyVue.container.registerTab("/analytics/technology", {
     priority: 2,
     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/technology/devices-and-types",
     name: "devices-and-types",
-    title: "Devices and types",
+    title: CV.i18n('devices.devices-and-types.title'),
     component: AllTabs,
     vuex: [{
         clyModel: countlyDevicesAndTypes

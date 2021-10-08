@@ -1,3 +1,14 @@
+## Version 20.11.2.10
+
+Improvements:
+- [api] SDK pre hook for modifying request properties
+
+Enterprise Improvements:
+- [cohorts] broken cohort reference causes cohort drawer to fail
+- [drill] store cache as stringified version
+- [ldap] include group alias for matching with countly groups
+
+
 ## Version 20.11.2.8
 
 **Fixes**

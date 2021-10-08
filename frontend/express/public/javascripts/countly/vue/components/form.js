@@ -287,18 +287,73 @@
                 '</div>'
     }));
 
+    Vue.component("cly-form-field-group", countlyBaseComponent.extend({
+        props: {
+            label: String,
+            highlight: {
+                type: Boolean,
+                default: false
+            }
+        },
+        computed: {
+            groupingClasses: function() {
+                if (this.highlight) {
+                    return [
+                        "cly-vue-form-step__section-group",
+                        "cly-vue-form-step__section-group--filled"
+                    ];
+                }
+                return "";
+            },
+            labelClasses: function() {
+                if (this.highlight) {
+                    return "bu-mb-4";
+                }
+                return "";
+            }
+        },
+        template: "<div class='cly-vue-form-step__auto-group'>\
+                        <h4 :class=\"labelClasses\" v-if=\"label\">{{ label }}</h4>\
+                        <div :class='groupingClasses'>\
+                            <slot></slot>\
+                        </div>\
+                    </div>"
+    }));
+
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({
         props: {
-            label: String
+            label: String,
+            optional: {
+                type: Boolean,
+                default: false
+            },
+            disableFormWrapping: {
+                type: Boolean,
+                default: false
+            },
         },
+        computed: {
+            wrapperElement: function() {
+                if (this.disableFormWrapping) {
+                    return "div";
+                }
+                return "form";
+            }
+        },
+        mixins: [countlyVue.mixins.i18n],
         template: '<div class="cly-vue-form-field cly-vue-form-step__section">\
-                        <div class="text-small text-heading">{{label}}</div>\
-                        <validation-provider v-bind="$attrs" v-on="$listeners" v-slot="validation">\
-                            <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}">\
-                                <slot v-bind="validation"/>\
-                            </div>\
-                        </validation-provider>\
+                        <div class="bu-is-flex bu-is-justify-content-space-between">\
+                            <div class="text-small text-heading">{{label}}</div>\
+                            <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
+                        </div>\
+                        <component :is="wrapperElement">\
+                            <validation-provider v-bind="$attrs" v-on="$listeners" v-slot="validation">\
+                                <div class="cly-vue-form-field__inner el-form-item" :class="{\'is-error\': validation.errors.length > 0}">\
+                                    <slot v-bind="validation"/>\
+                                </div>\
+                            </validation-provider>\
+                        </component>\
                   </div>'
     }));
 

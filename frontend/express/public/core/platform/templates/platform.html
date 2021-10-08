@@ -18,7 +18,7 @@
 		<div class="bu-columns bu-is-gapless bu-mt-2">
 			<h4>{{i18n('platforms.platforms-for')}}</h4>
 			<div class ="selector_wrapper">
-				<el-select v-model="selectedProperty">
+				<el-select v-model="selectedProperty"  :arrow="false" :adaptiveLength="true">
                     <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
                 </el-select>
 			</div>
@@ -36,17 +36,17 @@
 				</cly-metric-cards>	
 		</vue-scroll>
 		</div>
-		<h5> {{i18n('platforms.version-distribution')}} </h5>
+		<h5 class="bu-pb-4"> {{i18n('platforms.version-distribution')}} </h5>
 		<div class="platformVersionsWrapper">
 			<vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 				<div class="bu-columns bu-is-gapless">
 					<div class="bu-column bu-is-3 " :key="idx" v-for="(item, idx) in platformVersions">
-						<div class="emptyVersions bu-p-3" v-if="item.itemCn === 0">
+						<div class="emptyVersions bu-p-4" v-if="item.itemCn === 0">
 							<div>{{i18n('common.table.no-data')}}</div>
 						</div>
-						<div class="allPlatformVersions bu-p-3" v-else>
+						<div class="allPlatformVersions bu-pt-4 bu-pb-4 bu-pr-1 bu-pl-4" v-else>
 							<vue-scroll :ops="scrollOptions">
-								<div :key="idx2" v-for="(item2, idx2) in item.data" >
+								<div :key="idx2" v-for="(item2, idx2) in item.data"  class="bu-pr-2">
 									<div class="version-graph-block bu-p-3">
 										<div class="bu-columns version-graph-title">
 											<div class="bu-column bu-p-0">{{item2.name}}</div>

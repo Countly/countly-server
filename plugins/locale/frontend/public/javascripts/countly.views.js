@@ -74,7 +74,7 @@ var LanguageView = countlyVue.views.create({
 });
 
 countlyVue.container.registerTab("/analytics/geo", {
-    priority: 5,
+    priority: 10,
     name: "languages",
     title: CV.i18n('sidebar.analytics.languages'),
     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/analytics/geo/languages",

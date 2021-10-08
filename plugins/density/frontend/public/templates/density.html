@@ -25,10 +25,10 @@
 				</el-select>
 			</div>
 		</div>
-		<div class="bu-mb-4 bg-white technology-density-wrapper__metric-cards-wrapper">
+		<div class="bg-white bu-mb-4 technology-density-wrapper__metric-cards-wrapper">
 		<vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
 			<cly-metric-cards class="bu-is-flex-wrap-nowrap">
-                <cly-metric-card :is-percentage="true" :columnWidth=3  :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in densityItems">
+                <cly-metric-card class="bu-mr-2" v-bind:style="[densityItems.length > 4 ? {'width': 'fit-content'} : {}]" :is-percentage="true" :columnWidth=3  :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in densityItems">
                     {{item.name}}
 					<template v-slot:number>{{item.value}}</template>
 					<template v-slot:description>
@@ -50,9 +50,9 @@
 							<vue-scroll :ops="scrollOptions">
 								<div :key="idx2" v-for="(item2, idx2) in item.data" >
 									<div class="technology-density-wrapper__version-graph-block bu-p-3">
-										<div class="technology-density-wrapper__bu-columns version-graph-title">
-											<div class="bu-column">{{item2.name}}</div>
-											<div class="bu-column">{{item2.value}} | {{item2.percent}} % </div>
+										<div class="bu-columns technology-density-wrapper__bu-columns version-graph-title">
+											<div class="bu-column bu-p-0">{{item2.name}}</div>
+											<div class="bu-column bu-p-0">{{item2.value}} | {{item2.percent}} % </div>
 										</div>
 										<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
 									</div>

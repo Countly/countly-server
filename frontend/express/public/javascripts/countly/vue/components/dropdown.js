@@ -283,7 +283,6 @@
             value: {
                 immediate: true,
                 handler: function(newVal) {
-
                     this.internalValue = Object.assign({}, newVal);
                 }
             },
@@ -345,8 +344,8 @@
                                         <el-button class="cly-multi-select__reset" @click="reset" type="text">{{resetLabel}}</el-button>\
                                     </div>\
                                     <table v-for="field in fields" :key="field.key">\
-                                        <tr class="cly-multi-select__field">{{field.label}}</tr>\
-                                        <tr v-if="\'items\' in field">\
+                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field">{{field.label}}</tr>\
+                                        <tr v-if="\'items\' in field && showThis(field.key)">\
                                             <el-select class="cly-multi-select__field-dropdown" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]">\
                                                 <el-option v-for="item in field.items" :key="item.value" :value="item.value" :label="item.label"></el-option>\
                                             </el-select>\
@@ -378,6 +377,19 @@
             confirmLabel: {type: String, default: CV.i18n("events.general.confirm")},
             resetLabel: {type: String, default: "Reset Filters"},
             adaptiveLength: {type: Boolean, default: true},
+            emptyValue: {
+                type: String,
+                default: function() {
+                    return "all";
+                }
+            },
+            dependantFields: {
+                type: Boolean,
+                default: function() {
+                    return false;
+                },
+                required: false
+            },
             arrow: {type: Boolean, default: false},
             value: {
                 type: Object,
@@ -396,16 +408,41 @@
         computed: {
             optionLabel: function() {
                 return function(field, option) {
-                    return (field.items || field.options || []).find(function(item) {
+                    var opt = (field.items || field.options || []).find(function(item) {
                         return item.value === option;
-                    }).label;
+                    });
+                    if (opt) {
+                        return opt.label;
+                    }
+                    else {
+                        var opts = field.items || field.options || [];
+                        if (opts.length > 0) {
+                            this.unsavedValue[field.key] = opts[0].key;
+                            return opts[0].label;
+                        }
+                        else {
+                            return "";
+                        }
+                    }
                 };
             },
             dropdownLabel: function() {
                 var self = this;
-                return this.fields.map(function(field) {
-                    return self.optionLabel(field, self.value[field.key]);
-                }).join(", ");
+                var forLabel = [];
+                if (this.dependantFields) { //do not add values from next one if previous is not chosen.
+                    for (var k in this.fields) {
+                        forLabel.push(self.optionLabel(this.fields[k], self.value[this.fields[k].key]));
+                        if (self.value[this.fields[k].key] === this.emptyValue) {
+                            break;
+                        }
+                    }
+                    return forLabel.join(", ");
+                }
+                else {
+                    return this.fields.map(function(field) {
+                        return self.optionLabel(field, self.value[field.key]);
+                    }).join(", ");
+                }
             }
         },
         data: function() {
@@ -437,6 +474,21 @@
                 this.$emit("input", this.unsavedValue);
                 this.$emit("change", this.unsavedValue);
                 this.close();
+            },
+            showThis: function(key) {
+                if (this.dependantFields) {
+                    for (var z in this.fields) {
+                        if (this.fields[z].key === key) {
+                            return true;
+                        }
+                        if (this.unsavedValue[this.fields[z].key] === this.emptyValue) { //we have unfilled one before
+                            return false;
+                        }
+                    }
+                }
+                else {
+                    return true;
+                }
             },
             reset: function() {
                 var self = this;

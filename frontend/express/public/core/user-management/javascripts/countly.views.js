@@ -187,6 +187,11 @@
                 }
 
                 if (conflictSetIndex !== -1) {
+                    var conflictedAppId = this.$refs.userDrawer.editedObject.permission._.u[conflictSetIndex][conflictIndex];
+                    var types = ["c", "r", "u", "d"];
+                    for (var index in types) {
+                        delete this.$refs.userDrawer.editedObject.permission[types[index]][conflictedAppId];
+                    }
                     this.$set(this.$refs.userDrawer.editedObject.permission, this.$refs.userDrawer.editedObject.permission._.u[conflictSetIndex].splice(conflictIndex, 1));
                 }
             },
@@ -197,6 +202,7 @@
                 var conflictIndex = -1;
                 var conflictSetIndex = -1;
                 var adminConflictIndex = -1;
+                var types = ["c", "r", "u", "d"];
 
                 // check conflict with admin apps
                 for (var i = 0; i < appsInThisSet.length; i++) {
@@ -229,6 +235,15 @@
                 }
                 else if (conflictIndex !== -1) {
                     this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u[conflictSetIndex].splice(conflictIndex, 1));
+                }
+
+                for (var app in countlyGlobal.apps) {
+                    var appId = countlyGlobal.apps[app]._id;
+                    if (userApps.indexOf(appId) === -1 && adminApps.indexOf(appId)) {
+                        for (var typeIndex in types) {
+                            delete this.$refs.userDrawer.editedObject.permission[types[typeIndex]][appId];
+                        }
+                    }
                 }
             },
             addPermissionSet: function() {
@@ -521,7 +536,7 @@
                 for (var user in usersObj) {
                     self.users.push(usersObj[user]);
                 }
-                self.features = countlyUserManagement.getFeatures();
+                self.features = countlyUserManagement.getFeatures().sort();
             });
         }
     });

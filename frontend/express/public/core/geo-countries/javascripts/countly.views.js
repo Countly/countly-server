@@ -365,7 +365,6 @@ app.route("/analytics/geo/countries/*region", "analytics-geo", function(region) 
     this.renderWhenReady(ViewWrapper);
 });
 
-
 countlyVue.container.registerTab("/analytics/geo", {
     priority: 1,
     name: "countries",

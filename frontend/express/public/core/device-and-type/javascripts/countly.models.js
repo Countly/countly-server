@@ -73,6 +73,8 @@
                 { "name": "u" },
                 { "name": "n" }
             ], metric);
+
+            tableData.chartData = countlyCommon.mergeMetricsByName(tableData.chartData, metric);
             return tableData;
         },
         setEmptyDefault: function(object) {
@@ -423,6 +425,15 @@
             }
             return {"table": tableData, "chart": chart, "pie": graphs, totals: totals};
         },
+        validateStates: function(data) {
+            for (var p = 0; p < data.length; p++) {
+
+                if (!data[p].init || !data[p].period || data[p].period !== countlyCommon.getPeriodForAjax()) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
     };
 
@@ -447,7 +458,8 @@
                 selectedProperty: "t",
                 selectedPlatform: "",
                 selectedBrowser: "",
-                selectedDensity: ""
+                selectedDensity: "",
+                plaformLoading: false
             };
         };
 
@@ -478,11 +490,13 @@
                 });
             },
             fetchPlatform: function(context) {
-                context.dispatch('onFetchInit');
+                if (countlyDevicesAndTypes.service.validateStates([countlyDevicesAndTypes.getCurrentLoadState()])) {
+                    context.dispatch('onFetchInit', "platform");
+                }
                 countlyDevicesAndTypes.service.fetchPlatform().then(function() {
                     var platforms = countlyDevicesAndTypes.service.calculatePlatform();
                     context.commit('setAppPlatform', platforms);
-                    context.dispatch('onFetchSuccess');
+                    context.dispatch('onFetchSuccess', "platform");
                 }).catch(function(error) {
                     context.dispatch('onFetchError', error);
                 });
@@ -534,14 +548,14 @@
 
                 });
             },
-            onFetchInit: function(context) {
-                context.commit('setFetchInit');
+            onFetchInit: function(context, part) {
+                context.commit('setFetchInit', part);
             },
             onFetchError: function(context, error) {
                 context.commit('setFetchError', error);
             },
-            onFetchSuccess: function(context) {
-                context.commit('setFetchSuccess');
+            onFetchSuccess: function(context, part) {
+                context.commit('setFetchSuccess', part);
             },
             onSetSelectedDatePeriod: function(context, period) {
                 context.commit('setSelectedDatePeriod', period);
@@ -579,6 +593,7 @@
             setAppPlatform: function(state, value) {
                 state.appPlatform = value;
                 countlyDevicesAndTypes.helpers.setEmptyDefault(state.appPlatform);
+                state.platformLoading = false;
             },
             setAppBrowser: function(state, value) {
                 state.appBrowser = value;
@@ -609,20 +624,33 @@
                 countlyCommon.setPeriod(value);
 
             },
-            setFetchInit: function(state) {
-                state.isLoading = true;
+            setFetchInit: function(state, part) {
+                if (part) {
+                    if (part === "platform") {
+                        state.plaformLoading = true;
+                    }
+                }
+                else {
+                    state.isLoading = true;
+                }
                 state.hasError = false;
                 state.error = null;
+
             },
             setFetchError: function(state, error) {
                 state.isLoading = false;
                 state.hasError = true;
                 state.error = error;
             },
-            setFetchSuccess: function(state) {
+            setFetchSuccess: function(state, part) {
                 state.isLoading = false;
                 state.hasError = false;
                 state.error = null;
+                if (part) {
+                    if (part === "platform") {
+                        state.plaformLoading = false;
+                    }
+                }
             }
         };
         return countlyVue.vuex.Module("countlyDevicesAndTypes", {

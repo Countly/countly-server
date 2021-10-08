@@ -26,9 +26,9 @@
 .cly-vue-theme-clydef {
 
     background-color:#FCFCFC;
-    #content-container { 
-        padding:59px 0 35px 0;
-    }
+    // #content-container { 
+    //     padding:59px 0 35px 0;
+    // }
 
     #top-bar {
         z-index: 1997;
@@ -1155,6 +1155,7 @@
     } 
 
     .cly-vue-metric-card {
+        min-width: 270px;
         &__wrapper {
             min-height: 56px;
         }
@@ -1243,6 +1244,12 @@
             }
             &__section {
                 padding: 12px 0;
+                + .cly-vue-drawer-step__section-group {
+                    margin-top: 12px;
+                }
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
+                }
             }
             &__section-group {
                 padding: 12px 24px;
@@ -1452,6 +1459,13 @@
         }
     }
 
+    //
+    .cly-vue-select-email{
+        width: 100%;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+
     //dialog
 
     .cly-vue-dialog {
@@ -1515,6 +1529,12 @@
             }
             &__section {
                 padding: 12px 0;
+                + .cly-vue-form-step__section-group {
+                    margin-top: 12px;
+                }
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
+                }
             }
             &__section-group {
                 padding: 12px 24px;
@@ -1529,6 +1549,11 @@
                 }
                 .cly-vue-form-step__section {
                     padding: 8px 0;
+                }
+            }
+            &__auto-group {
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
                 }
             }
         }
