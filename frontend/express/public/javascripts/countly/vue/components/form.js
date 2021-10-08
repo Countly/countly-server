@@ -287,7 +287,7 @@
                 '</div>'
     }));
 
-    Vue.component("cly-form-group", {
+    Vue.component("cly-form-group", countlyBaseComponent.extend({
         props: {
             label: String,
             filled: {
@@ -301,7 +301,7 @@
                             <slot></slot>\
                         </div>\
                     </div>"
-    });
+    }));
 
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({

@@ -43,18 +43,12 @@
                 </div>
             </div>
             <cly-form-field :label="i18n('cohorts.detail.drawer.added-items')" rules="required|arrmin:2">
-                <div class="cly-vue-draggable cly-vue-draggable--jumbo-lines">
-                    <draggable
-                        handle=".drag-icon" 
-                        v-model="formScope.editedObject.sortableItems">
-                        <div class="cly-vue-draggable-item bu-p-3 bu-mb-1" :key="idx" v-for="(item, idx) in formScope.editedObject.sortableItems">
-                            <img class="drag-icon" src="images/drill/drag-icon.svg">
-                            <div class="text-medium">{{ idx }}</div>
-                            <div class="text-medium">{{ item }}</div>
-                            <a @click="formScope.editedObject.sortableItems.splice(idx, 1)" class="ion-backspace"></a>
-                        </div>
-                    </draggable>
-                </div>
+                <cly-sortable-items v-model="formScope.editedObject.sortableItems">
+                    <template v-slot="scope">
+                        <div class="text-medium">{{ scope.idx }}</div>
+                        <div class="text-medium">{{ scope.item }}</div>
+                    </template>
+                </cly-sortable-items>
             </cly-form-field>
         </cly-form-step>
         <cly-form-step id="step4" name="Final Step">
