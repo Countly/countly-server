@@ -1523,6 +1523,9 @@
             }
             &__section {
                 padding: 12px 0;
+                + .cly-vue-form-step__section-group {
+                    margin-top: 12px;
+                }
             }
             &__section-group {
                 padding: 12px 24px;

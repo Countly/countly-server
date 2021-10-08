@@ -287,6 +287,22 @@
                 '</div>'
     }));
 
+    Vue.component("cly-form-group", {
+        props: {
+            label: String,
+            filled: {
+                type: Boolean,
+                default: false
+            }
+        },
+        template: "<div>\
+                        <div v-if=\"label\" class=\"bu-mb-4 text-large text-heading\">{{ label }}</div>\
+                        <div class=\"cly-vue-form-step__section-group\" :class=\"{\'cly-vue-form-step__section-group--filled\': filled}\">\
+                            <slot></slot>\
+                        </div>\
+                    </div>"
+    });
+
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({
         props: {
