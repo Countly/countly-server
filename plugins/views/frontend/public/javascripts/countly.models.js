@@ -109,7 +109,14 @@
                 rows[k].editedDisplay = rows[k].display;
             }
             return rows;
-        }
+        },
+		onError:function(context,error){
+			if(error){
+				if(error.status !== 0)//not on canceled ones
+					app.activeView.onError(err);
+				}
+			}
+		}
     });
 
     var viewsTableResource = countlyVue.vuex.ServerDataTable("viewsMainTable", {
@@ -137,6 +144,13 @@
                 data: data
             };
         },
+		onError:function(context,error){
+			if(error){
+				if(error.status !== 0)//not on canceled ones
+					app.activeView.onError(err);
+				}
+			}
+		},
         onReady: function(context, rows) {
             var selected = context.rootState.countlyViews.selectedViews || [];
             var addSelected = 0;
@@ -146,6 +160,7 @@
             }
             for (var k = 0; k < rows.length; k++) {
                 rows[k].view = rows[k].display || rows[k].view || rows[k]._id;
+				rows[k].u = rows[k].uvalue || rows[k].u || 0;
 
                 if (rows[k].t > 0) {
                     rows[k].dCalc = countlyCommon.timeString((rows[k].d / rows[k].t) / 60);
@@ -160,13 +175,8 @@
                     rows[k].dCalc = 0;
                     rows[k].scrCalc = 0;
                 }
-                rows[k].u = countlyCommon.formatNumber(rows[k].uvalue || rows[k].u || 0);
-                rows[k].t = countlyCommon.formatNumber(rows[k].t || 0);
-                rows[k].s = countlyCommon.formatNumber(rows[k].s || 0);
-                rows[k].b = countlyCommon.formatNumber(rows[k].b || 0);
-                rows[k].e = countlyCommon.formatNumber(rows[k].e || 0);
+   
                 rows[k].br = rows[k].br + " %";
-                rows[k].uvc = countlyCommon.formatNumber(rows[k].uvc || 0);
                 //FOR ACTION MAPS
                 rows[k].actionLink = "unknown";
                 rows[k].useDropdown = true;
@@ -271,15 +281,35 @@
                     },
                     { name: metric}
                 ];
+				if(metric === "br"){
+					dataProps = [];
+					
+					dataProps.push({"name":"s"});
+					dataProps.push({"name":"ps", func: function(dataObj2){return dataObj2["s"];}, period:"previous"});
+					dataProps.push({"name":"b"});
+					dataProps.push({"name":"pb", func: function(dataObj2){return dataObj2["b"];}, period:"previous"});
+					
+					chartData.push({ data: [], label: name, color: '#DDDDDD', mode: "ghost" });
+					chartData.push({ data: [], label: name, color: '#333933' });
+				}
 
             var calculated = countlyCommon.extractChartData(dbObj, countlyViews.clearObject, chartData, dataProps, segmentVal);
 
             var data = [];
             var takefrom = calculated.chartDP[1].data;
-            for (var k = 0; k < takefrom.length; k++) {
+			if(metric=== "br"){
+				takefrom = calculated.chartDP[3].data;
+				for (var k = 0; k < takefrom.length; k++) {
+					
+					data.push((Math.floor(takefrom[k][1]*100/(calculated.chartDP[1].data[k][1]) || 1)));
+				}
+			}
+			else {
+				for (var k = 0; k < takefrom.length; k++) {
 
-                data.push(takefrom[k][1]);
-            }
+					data.push(takefrom[k][1]);
+				}
+			}
             return {"data": data};
         }
 
