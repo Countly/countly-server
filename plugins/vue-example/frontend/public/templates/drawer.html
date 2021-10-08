@@ -7,9 +7,9 @@
     v-bind="$props.controls">
     <template v-slot:sidecars="formScope">
         <cly-content id="mainSidecar" role="sidecar" :always-active="true">
-            <pre>
-                {{formScope.editedObject}}
-            </pre>
+            <div class="bu-is-flex bu-is-justify-content-center bu-m-6">
+                <pre class="bg-cool-gray-20 bu-p-5" style="border-radius: 16px;">{{formScope.editedObject}}</pre>
+            </div>
         </cly-content>
     </template>
     <template v-slot:default="formScope">
