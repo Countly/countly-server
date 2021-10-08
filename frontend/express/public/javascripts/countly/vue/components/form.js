@@ -303,10 +303,17 @@
                         "cly-vue-form-step__section-group--filled"
                     ];
                 }
+                return "";
+            },
+            labelClasses: function() {
+                if (this.highlight) {
+                    return "bu-mb-4";
+                }
+                return "";
             }
         },
         template: "<div class='cly-vue-form-step__auto-group'>\
-                        <h4 v-if=\"label\">{{ label }}</h4>\
+                        <h4 :class=\"labelClasses\" v-if=\"label\">{{ label }}</h4>\
                         <div :class='groupingClasses'>\
                             <slot></slot>\
                         </div>\
