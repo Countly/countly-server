@@ -647,7 +647,7 @@ var WidgetDetail = countlyVue.views.create({
             });
         },
         editWidget: function() {
-            this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.steps);
+            this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
             this.openDrawer('widget', this.widget);
         },
         handleCommand: function(command) {
@@ -719,8 +719,12 @@ var WidgetDetail = countlyVue.views.create({
             }
         },
         parseTargeting: function(widget) {
-            widget.targeting.steps = JSON.parse(widget.targeting.steps);
-            widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            if (typeof widget.targeting.steps === "string") {
+                widget.targeting.steps = JSON.parse(widget.targeting.steps);
+            }
+            if (typeof widget.targeting.user_segmentation === "string") {
+                widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            }
             return widget;
         }
     },
