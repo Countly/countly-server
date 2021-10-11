@@ -2,7 +2,7 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('session-durations.title')}} </h2>
-            <cly-tooltip-icon :tooltip="i18n('session-durations.description')" icon="ion ion-help-circled" class="bu-ml-4"> </cly-tooltip-icon>
+            <cly-tooltip-icon :tooltip="i18n('session-durations.description')" icon="ion ion-help-circled" style="margin-left:10px"> </cly-tooltip-icon>
         </template>
     </cly-header>
     <cly-main>
@@ -16,6 +16,9 @@
                     <el-table-column sortable="custom" prop="duration" :label="i18n('common.session-duration')">
                     </el-table-column>
                     <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.number-of-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.numberOfSessions)}}
+                        </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="percentage" :label="i18n('common.percent')">
                         <template slot-scope="scope">
