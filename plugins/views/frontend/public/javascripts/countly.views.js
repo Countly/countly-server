@@ -95,7 +95,6 @@
                     });
                 }
             }
-
         }
     });
 
@@ -401,7 +400,7 @@
                 return apiQueryData;
             },
             numberFormatter: function(row, col, value) {
-			  return countlyCommon.formatNumber(value, 0);
+                return countlyCommon.formatNumber(value, 0);
             }
         },
         computed: {

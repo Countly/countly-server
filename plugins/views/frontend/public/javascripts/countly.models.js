@@ -110,13 +110,13 @@
             }
             return rows;
         },
-		onError:function(context,error){
-			if(error){
-				if(error.status !== 0)//not on canceled ones
-					app.activeView.onError(err);
-				}
-			}
-		}
+        onError: function(context, error) {
+            if (error) {
+                if (error.status !== 0) { //not on canceled ones
+                    app.activeView.onError(error);
+                }
+            }
+        }
     });
 
     var viewsTableResource = countlyVue.vuex.ServerDataTable("viewsMainTable", {
@@ -144,13 +144,13 @@
                 data: data
             };
         },
-		onError:function(context,error){
-			if(error){
-				if(error.status !== 0)//not on canceled ones
-					app.activeView.onError(err);
-				}
-			}
-		},
+        onError: function(context, error) {
+            if (error) {
+                if (error.status !== 0) { //not on canceled ones
+                    app.activeView.onError(error);
+                }
+            }
+        },
         onReady: function(context, rows) {
             var selected = context.rootState.countlyViews.selectedViews || [];
             var addSelected = 0;
@@ -160,7 +160,7 @@
             }
             for (var k = 0; k < rows.length; k++) {
                 rows[k].view = rows[k].display || rows[k].view || rows[k]._id;
-				rows[k].u = rows[k].uvalue || rows[k].u || 0;
+                rows[k].u = rows[k].uvalue || rows[k].u || 0;
 
                 if (rows[k].t > 0) {
                     rows[k].dCalc = countlyCommon.timeString((rows[k].d / rows[k].t) / 60);
@@ -175,7 +175,7 @@
                     rows[k].dCalc = 0;
                     rows[k].scrCalc = 0;
                 }
-   
+
                 rows[k].br = rows[k].br + " %";
                 //FOR ACTION MAPS
                 rows[k].actionLink = "unknown";
@@ -281,35 +281,46 @@
                     },
                     { name: metric}
                 ];
-				if(metric === "br"){
-					dataProps = [];
-					
-					dataProps.push({"name":"s"});
-					dataProps.push({"name":"ps", func: function(dataObj2){return dataObj2["s"];}, period:"previous"});
-					dataProps.push({"name":"b"});
-					dataProps.push({"name":"pb", func: function(dataObj2){return dataObj2["b"];}, period:"previous"});
-					
-					chartData.push({ data: [], label: name, color: '#DDDDDD', mode: "ghost" });
-					chartData.push({ data: [], label: name, color: '#333933' });
-				}
+            if (metric === "br") {
+                dataProps = [];
+
+                dataProps.push({"name": "s"});
+                dataProps.push({
+                    "name": "ps",
+                    func: function(dataObj2) {
+                        return dataObj2.s;
+                    },
+                    period: "previous"
+                });
+                dataProps.push({"name": "b"});
+                dataProps.push({
+                    "name": "pb",
+                    func: function(dataObj2) {
+                        return dataObj2.b;
+                    },
+                    period: "previous"
+                });
+
+                chartData.push({ data: [], label: name, color: '#DDDDDD', mode: "ghost" });
+                chartData.push({ data: [], label: name, color: '#333933' });
+            }
 
             var calculated = countlyCommon.extractChartData(dbObj, countlyViews.clearObject, chartData, dataProps, segmentVal);
 
             var data = [];
             var takefrom = calculated.chartDP[1].data;
-			if(metric=== "br"){
-				takefrom = calculated.chartDP[3].data;
-				for (var k = 0; k < takefrom.length; k++) {
-					
-					data.push((Math.floor(takefrom[k][1]*100/(calculated.chartDP[1].data[k][1]) || 1)));
-				}
-			}
-			else {
-				for (var k = 0; k < takefrom.length; k++) {
+            if (metric === "br") {
+                takefrom = calculated.chartDP[3].data;
+                for (var k = 0; k < takefrom.length; k++) {
 
-					data.push(takefrom[k][1]);
-				}
-			}
+                    data.push((Math.floor(takefrom[k][1] * 100 / (calculated.chartDP[1].data[k][1]) || 1)));
+                }
+            }
+            else {
+                for (var kz = 0; kz < takefrom.length; kz++) {
+                    data.push(takefrom[kz][1]);
+                }
+            }
             return {"data": data};
         }
 
