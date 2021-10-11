@@ -1,3 +1,30 @@
+## Version 20.11.2.12
+
+Fixes:
+- [prelogin] do not use double params in templates
+- [scripts] epel repo installing only for centos 7 
+
+Enterprise Improvements:
+- [active_directory] azure ad latest client & fixing group pagination
+- [active_directory] default group
+- [active_directory] use proper intersection for restrict
+- [attribution] fix mobile manual attribution check
+- [attribution] option to pass query data to end url
+- [dashboards] format duration on drill widgets
+- [dashboards] sharing with groups
+- [surveys] show popup in center for android and ios
+
+## Version 20.11.2.10
+
+Improvements:
+- [api] SDK pre hook for modifying request properties
+
+Enterprise Improvements:
+- [cohorts] broken cohort reference causes cohort drawer to fail
+- [drill] store cache as stringified version
+- [ldap] include group alias for matching with countly groups
+
+
 ## Version 20.11.2.8
 
 **Fixes**

@@ -5061,18 +5061,6 @@ window.EventsBlueprintView = countlyView.extend({
             content: $.i18n.map["events.blueprint-event-groups-properties-tooltip"]
         });
     },
-    rightButtonsEvents: function() {
-        var self = this;
-        self.dtable.find("tbody tr").hover(function() {
-            $(this).find(".edit-box").css({"visibility": "visible"});
-            //$(this).find(".cly-list-options").addClass('cly-list-options-row');
-            $(this).find(".edit-event").css({"visibility": "visible"});
-        }, function() {
-            $(this).find("td .edit-box").css({"visibility": "hidden"});
-            //$(this).find(".cly-list-options").removeClass('cly-list-options-row');
-            $(this).find(".edit-event").css({"visibility": "hidden"});
-        });
-    },
     rightButttonsEventGroups: function() {
         var self = this;
         $('.event-groups-table').find("tbody tr").hover(function() {
@@ -5571,7 +5559,7 @@ window.EventsBlueprintView = countlyView.extend({
                     }
                 }
             });
-            self.rightButtonsEvents();
+
             self.rightButttonsEventGroups();
 
             self.initEventGroupDrawer();
@@ -5817,7 +5805,6 @@ window.EventsBlueprintView = countlyView.extend({
                 $(nRow).css("height", "72px");
             }
         }));
-        self.rightButtonsEvents();
     },
     refresh: function(eventChanged) {
         var self = this;
@@ -5889,7 +5876,6 @@ window.EventsBlueprintView = countlyView.extend({
                 }
                 $("#events-apply-order").trigger("eventSettingsTableUpdated");
                 $("#event-groups-apply-order").css('display', 'none');
-                self.rightButtonsEvents();
             });
         }
     }
