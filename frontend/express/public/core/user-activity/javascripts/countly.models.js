@@ -7,7 +7,6 @@
                 return item === element;
             });
         },
-
         getNonNumericSeriePropertyName: function(name) {
             if (name === '7days') {
                 return 'sevenDays';
@@ -17,19 +16,15 @@
             }
             return name;
         },
-
         getSerieTotal: function(serie) {
             return serie.reduce(function(total, currentItem) {
                 total += currentItem.count;
                 return total;
             }, 0);
         },
-        decodeHTML: function(value) {
-            var textArea = document.createElement('textarea');
-            textArea.innerHTML = value;
-            return textArea.value;
+        replaceAllSpecialChars: function(value) {
+            return value.replace(/&amp;/g, '&').replace(/&lt;/, '<').replace(/&gt;/, '>').replace(/&equals;/, '=');
         },
-
         findNonEmptyBuckets: function(userActivityDto) {
             var self = this;
             var nonEmptybuckets = [];
@@ -37,7 +32,7 @@
                 var userActivitySerie = userActivityDto[userActivityKey];
                 userActivitySerie.forEach(function(serieItem) {
                     if (serieItem._id && !countlyUserActivity.helpers.isBucketAdded(nonEmptybuckets, serieItem._id)) {
-                        nonEmptybuckets.push(self.decodeHTML(serieItem._id));
+                        nonEmptybuckets.push(self.replaceAllSpecialChars(serieItem._id));
                     }
                 });
             });
