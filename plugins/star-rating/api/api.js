@@ -104,8 +104,11 @@ const widgetPropertyPreprocessors = {
             }
             else {
                 return {
-                    query: {},
-                    steps: []
+                    user_segmentation: JSON.stringify({
+                        query: "",
+                        queryText: ""
+                    }),
+                    steps: JSON.stringify([])
                 };
             }
         }
