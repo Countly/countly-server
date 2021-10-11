@@ -284,7 +284,7 @@
             if (metric === "br") {
                 dataProps = [];
 
-                dataProps.push({"name": "s"});
+               
                 dataProps.push({
                     "name": "ps",
                     func: function(dataObj2) {
@@ -292,7 +292,8 @@
                     },
                     period: "previous"
                 });
-                dataProps.push({"name": "b"});
+				dataProps.push({"name": "s"});
+                
                 dataProps.push({
                     "name": "pb",
                     func: function(dataObj2) {
@@ -300,6 +301,7 @@
                     },
                     period: "previous"
                 });
+				dataProps.push({"name": "b"});
 
                 chartData.push({ data: [], label: name, color: '#DDDDDD', mode: "ghost" });
                 chartData.push({ data: [], label: name, color: '#333933' });
@@ -313,12 +315,12 @@
                 takefrom = calculated.chartDP[3].data;
                 for (var k = 0; k < takefrom.length; k++) {
 
-                    data.push((Math.floor(takefrom[k][1] * 100 / (calculated.chartDP[1].data[k][1]) || 1)));
+                    data.push(Math.floor(takefrom[k][1] * 100 / (calculated.chartDP[1].data[k][1] || 1)));
                 }
             }
             else {
                 for (var kz = 0; kz < takefrom.length; kz++) {
-                    data.push(takefrom[kz][1]);
+					data.push(takefrom[kz][1]);
                 }
             }
             return {"data": data};
