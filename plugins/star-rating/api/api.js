@@ -2,6 +2,9 @@ var exported = {},
     requestProcessor = require('../../../api/utils/requestProcessor'),
     common = require('../../../api/utils/common.js'),
     crypto = require('crypto'),
+    log = common.log('star-rating:api'),
+    // this line is meaning Ratings plugin has Enterprise Edition dependency
+    cohorts = require('../../cohorts/api/parts/cohorts'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
@@ -250,18 +253,41 @@ function uploadFile(myfile, id, callback) {
             return false;
         }
         var widget = validatedArgs.obj;
-        widget.type = "rating";
+        var type = "rating";
+        widget.type = type;
         widget.created_at = Date.now();
         widget.timesShown = 0;
         widget.ratingsCount = 0;
         widget.ratingsSum = 0;
-        //widget.created_by = obParams.member._id;
+        //widget.created_by = common.db.ObjectID(obParams.member._id);
 
         validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
-                    common.returnMessage(ob.params, 201, "Successfully created " + result.insertedIds[0]);
-                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
+                    if (widget.targeting) {
+                        widget.targeting.app_id = params.app_id + "";//has to be string
+                        createCohort(params, type, result.insertedIds[0], widget.targeting, function(cohortId) { //create cohort using this 
+                            if (cohortId) {
+                                //update widget record to have this cohortId
+                                common.db.collection("feedback_widgets").findAndModify({ "_id": result.insertedIds[0] }, {}, { $set: { "cohortID": cohortId } }, function(err1 /*, widget*/) {
+                                    if (err1) {
+                                        log.e(err1);
+                                    }
+                                    else {
+                                        common.returnMessage(params, 201, "Successfully created " + result.insertedIds[0]);
+                                        plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
+                                    }
+                                });
+                            }
+                            else {
+                                common.returnMessage(params, 400, { "error": "Failed to set cohort", "widgetId": result.insertedIds[0] });
+                            }
+                        });
+                    }
+                    else {
+                        common.returnMessage(params, 201, "Successfully created " + result.insertedIds[0]);
+                        plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_created", data: widget});
+                    }
                     return true;
                 }
                 else {
@@ -285,6 +311,9 @@ function uploadFile(myfile, id, callback) {
                         "_id": common.db.ObjectID(widgetId)
                     }, function(removeWidgetErr) {
                         if (!removeWidgetErr) {
+                            if (widget.cohortID) {
+                                deleteCohort(widget.cohortID, widget.app_id + "");
+                            }
                             // remove widget and related data
                             if (withData) {
                                 removeWidgetData(widgetId, app, function(removeError) {
@@ -324,6 +353,7 @@ function uploadFile(myfile, id, callback) {
         var obParams = ob.params;
         validateUpdate(obParams, FEATURE_NAME, function(params) {
             let widgetId;
+            var type = "rating";
 
             try {
                 widgetId = common.db.ObjectID(params.qstring.widget_id);
@@ -344,10 +374,54 @@ function uploadFile(myfile, id, callback) {
             }
             var changes = validatedArgs.obj;
 
-            common.db.collection("feedback_widgets").findAndModify({"_id": widgetId}, {}, {$set: changes}, function(err, widget) {
+            common.db.collection("feedback_widgets").findAndModify({"_id": widgetId }, {}, {$set: changes}, function(err, widget) {
                 if (!err && widget) {
-                    common.returnMessage(params, 200, 'Success');
-                    plugins.dispatch("/systemlogs", {params: params, action: "feedback_widget_edited", data: {before: widget, update: changes}});
+                    widget = widget.value;
+                    if ((widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting)) {
+                        if (widget.cohortID) {
+                            if (changes.targeting) { //we are not setting to empty one
+                                //changes.targeting.app_id = widget.app_id + "";
+                                changes.targeting.steps = JSON.parse(changes.targeting.steps);
+                                changes.targeting.user_segmentation = JSON.parse(changes.targeting.user_segmentation);
+                                common.db.collection('cohorts').findAndModify({ _id: widget.cohortID }, {}, { $set: changes.targeting }, { new: true }, function(err2, res) {
+                                    if (err2 || !res || !res.value) {
+                                        common.returnMessage(params, 400, "widget updated. Error to update cohort");
+                                    }
+                                    else {
+                                        common.returnMessage(params, 200, "Success");
+                                        plugins.dispatch("/systemlogs", { params: params, action: "cohort_edited", data: { update: changes.targeting } });
+                                        cohorts.calculateSteps(params, common, res.value, function() { });
+                                    }
+                                });
+                            }
+                            else { //we have to delete that cohort
+                                deleteCohort(widget.cohortID, widget.app_id + "");
+                                common.db.collection("feedback_widgets").findAndModify({"_id": widgetId}, {}, {$unset: {"cohortID": ""}}, function(err4/*, widget*/) { //updating record to do not contain cohortID. 
+                                    if (err4) {
+                                        log.e(err4);
+                                    }
+                                    common.returnMessage(params, 200, "Success");
+                                });
+                            }
+                        }
+                        else {
+                            changes.targeting.app_id = params.app_id + "";//has to be string
+                            createCohort(params, type, widgetId, changes.targeting, function(cohortId) { //create cohort using this 
+                                if (cohortId) {
+                                    //update widget record to have this cohortId
+                                    common.db.collection("feedback_widgets").findAndModify({ "_id": widgetId }, {}, { $set: { "cohortID": cohortId } }, function(/*err, widget*/) {
+                                        common.returnMessage(params, 200, "Success");
+                                    });
+                                }
+                                else {
+                                    common.returnMessage(params, 400, "widget updated. Error to create cohort");
+                                }
+                            });
+                        }
+                    }
+                    else {
+                        common.returnMessage(params, 200, "Success");
+                    }
                     return true;
                 }
                 else if (err) {
@@ -1137,5 +1211,57 @@ function uploadFile(myfile, id, callback) {
             ob.reportAPICallback(err, null);
         }
     });
+
+    /**
+    * Create Cohort with passed arguments
+    * @param {object} params - params
+    * @param {string} type - type
+    * @param {object} id - id
+    * @param {object} newAtt - newAtt
+    * @param {string} callback - callback
+    **/
+    function createCohort(params, type, id, newAtt, callback) {
+        newAtt.cohort_name = "[CLY]_" + type + id;
+
+        if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
+            newAtt.user_segmentation.query = "{}";
+            newAtt.user_segmentation.queryText = "{}";
+        }
+
+        var cohortId = common.crypto.createHash('md5').update(newAtt.steps + newAtt.app_id + Date.now() + newAtt.cohort_name).digest('hex');
+
+        cohorts.createCohort(common, params, {
+            _id: cohortId,
+            app_id: newAtt.app_id,
+            name: newAtt.cohort_name,
+            type: "auto",
+            steps: JSON.parse(newAtt.steps),
+            user_segmentation: JSON.parse(newAtt.user_segmentation)
+        }, function(cohortResult) {
+            cohorts.calculateSteps(params, common, cohortResult, function() {
+                return callback(cohortResult._id);
+            });
+        });
+    }
+
+    /**
+     * Remove cohort
+     * @param {*} cohortId - cohort id
+     * @param {*} appId - app id
+     */
+    function deleteCohort(cohortId, appId) {
+        common.db.collection('cohorts').findOne({ "_id": cohortId}, function(er, cohort) {
+            if (cohort) {
+                plugins.dispatch("/cohort/delete", { "_id": cohortId, "app_id": appId + "", ack: 0 }, function() {
+                    common.db.collection('cohorts').remove({ "_id": cohortId }, function() {
+                        common.db.collection('cohortdata').remove({ '_id': { $regex: cohortId + ".*" } }, function() { });
+                        common.db.collection('app_users' + appId).update({}, { $unset: { ["chr." + cohortId]: "" } }, { multi: true }, function() { });
+                    });
+
+                    // plugins.dispatch("/systemlogs", {params: params, action: "cohort_deleted", data: cohort});
+                });
+            }
+        });
+    }
 }(exported));
 module.exports = exported;
