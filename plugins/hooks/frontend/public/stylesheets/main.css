@@ -1,0 +1,185 @@
+#hooks-widget-drawer.open {
+    width: 800px;
+}
+
+#hooks-widget-drawer .description {display:inline; float: left; margin-left: 0px; margin-top: -10px;}
+#hooks-widget-drawer .description .container {
+    display: block;
+    position: relative;
+    margin-right: 20px;
+    margin-bottom: 12px;
+    line-height: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #636363;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#hooks-widget-drawer .description .container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+#hooks-widget-drawer .description .container input + .fa-square:before {
+    color: #32B630 !important; 
+    font-size: 13px;
+    font-weight: 400;
+}
+#hooks-widget-drawer .description .container input:checked + .fa-square:before {
+    content: "\f14a";
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+#hooks-widget-drawer.cly-drawer .panel .panel-heading {
+    padding: 8px 10px !important;
+}
+
+#hooks-widget-drawer.cly-drawer .hook-trigger-view {
+    padding: 10px 0px;
+}
+#hooks-widget-drawer .add-effect-button {
+    background-color: #2EB52B;
+    color: #fff;
+    display: block;
+    margin: 5px 0px;
+}
+
+#hooks-widget-drawer .delete-effect-button:hover {
+    cursor: pointer;
+    color: #615a5a;
+}
+
+#hooks-widget-drawer .trigger-intro {
+    color: #636363;
+    margin-top: -10px;
+    padding: 13px 14px;
+    border-radius: 5px;
+    border: 1px solid #e4b27e;
+    line-height: 20px;
+    font-size: 12px;
+}
+#hooks-widget-drawer .trigger-intro .trigger-intro-content {
+    margin-top:7px;
+}
+
+#hooks-widget-drawer .hook-effect-item {
+    margin: 10px 0px;
+    padding-bottom: 10px;
+}
+
+#hooks-widget-drawer .hook-effect-item .hook-effect-view {
+    margin: 10px 0px; 
+}
+
+#hooks-view .options-item {position: relative;}
+#hooks-view .options-item .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s;float:right; }
+#hooks-view .options-item .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
+#hooks-view .options-item .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
+#hooks-view .options-item:hover .edit { display: block; }
+#hooks-view .options-item .edit-menu {
+    top: 30px;
+    right: 5px;
+    display: none;
+    z-index: 10;
+    position:absolute;
+    font-size: 13px;
+    white-space: nowrap;
+    background-color: #fff;
+    border-radius: 2px;
+    width: 106px;
+    padding:10px 0 10px 0;
+    border: 1px solid #d0d0d0;
+}
+#hooks-table .options-item .edit-menu .item {
+    cursor: pointer;
+    padding: 8px 20px;
+    font-size: 24px;
+    white-space: nowrap;
+    cursor:pointer; font-size: 13px; white-space: nowrap; color:#474747; }
+#hooks-table .options-item .edit-menu .item:hover { background-color: #f3f3f3; }
+
+#hooks-table .options-item .edit-menu:before {
+    border: 4px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #FFF;
+    right: 7px;
+    top: -8px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+}
+
+#hooks-table .options-item .edit-menu:after {
+    border: 5px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #d0d0d0;
+    right: 6px;
+    top: -10px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+}
+
+#hooks-table .options-item .edit-menu .fa {
+    margin-right: 7px;
+}
+#hooks-table .table-effect-node {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-left: solid 1px #cecece;
+    line-height: 24px;
+    position: relative;
+}
+
+#hooks-table tr:hover .table-effect-node:last-child:before {
+    background-color: #f1f1f1 !important;
+}
+#hooks-table tr:nth-child(odd) .table-effect-node:last-child:before {
+    padding: 0;
+    margin: 0;
+    content: "";
+    width: 1px;
+    height: 12px;
+    background-color: #fff;
+    position: absolute;
+    left: -1px;
+    bottom: -1px;
+}
+#hooks-table tr:nth-child(even) .table-effect-node:last-child:before {
+    padding: 0;
+    margin: 0;
+    content: "";
+    width: 1px;
+    height: 12px;
+    background-color:#F9F9F9;
+    position: absolute;
+    left: -1px;
+    bottom: -1px;
+}
+#hooks-table .table-effect-node .line-dot {
+    width: 6px;
+    height: 1px;
+    background-color: #cecece;
+}
+
+#hooks-table .table-effect-node .dot {
+  width: 5px;
+  height: 5px;
+  background-color: #aaaaaa;
+  border-radius: 2.5px;
+  margin-right: 6px;
+}
+#hooks-table_wrapper {
+    margin: 0px 0px !important;
+}
