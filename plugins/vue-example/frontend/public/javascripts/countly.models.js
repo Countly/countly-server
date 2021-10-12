@@ -13,7 +13,9 @@
                 description: '',
                 status: false,
                 selectedProps: [],
-                visibility: 'private'
+                visibility: 'private',
+                sortableItems: ["Test #0", "Test #1"],
+                sharedEmailEdit: []
             };
             return _.extend(original, fields);
         }

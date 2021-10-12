@@ -545,6 +545,7 @@
             return {
                 title: '',
                 saveButtonLabel: '',
+                itemToBeAdded: '',
                 constants: {
                     "visibilityOptions": [
                         {label: "Global", value: "global", description: "Can be seen by everyone."},
@@ -555,7 +556,7 @@
                         {label: "Type 2", value: 2},
                         {label: "Type 3", value: 3}
                     ]
-                }
+                },
             };
         },
         props: {
