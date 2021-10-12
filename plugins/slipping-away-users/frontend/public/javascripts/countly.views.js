@@ -1,10 +1,11 @@
-/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,CountlyHelpers,countlyCommon*/
+/*global app,countlyAuth,countlySlippingAwayUsers,countlyVue,$,CV,countlyCommon*/
 (function() {
 
     var FEATURE_NAME = "slipping_away_users";
 
     var SlippingAwayUsersView = countlyVue.views.create({
         template: CV.T("/slipping-away-users/templates/slipping-away-users.html"),
+        mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             return {
                 progressBarColor: "#F96300",
@@ -13,45 +14,44 @@
         computed: {
             slippingAwayUsersFilters: {
                 get: function() {
-                    return this.$store.state.countlySlippingAwayUsers.slippingAwayUsersFilters;
+                    return this.$store.state.countlySlippingAwayUsers.filters;
                 },
                 set: function(value) {
-                    this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', value);
+                    this.$store.dispatch('countlySlippingAwayUsers/onSetFilters', value);
                     this.$store.dispatch("countlySlippingAwayUsers/fetchAll", true);
+                    if (value.query) {
+                        app.navigate("#/analytics/loyalty/slipping-away-users/" + JSON.stringify(value.query));
+                    }
+                    else {
+                        app.navigate("#/analytics/loyalty/slipping-away-users/");
+                    }
                 }
-            },
-            slippingAwayUsers: function() {
-                return this.$store.state.countlySlippingAwayUsers.slippingAwayUsers;
             },
             slippingAwayUsersOptions: function() {
                 return {
-                    toolbox: {
-                        feature: {
-                            saveAsImage: { show: true }
+                    xAxis: {
+                        data: this.xAxisSlippingAwayUsersPeriods,
+                        axisLabel: {
+                            color: "#333C48"
                         }
                     },
-                    xAxis: {
-                        data: this.xAxisSlippingAwayUsersPeriods
-                    },
                     series: [{
-                        data: this.yAxisSlippingAwayUsersCount,
+                        data: this.$store.state.countlySlippingAwayUsers.series,
                         name: CV.i18n('slipping-away-users.barchart-description'),
+                        color: this.progressBarColor
+
                     }]
                 };
             },
+            slippingAwayUsersRows: function() {
+                return this.$store.state.countlySlippingAwayUsers.rows;
+            },
             xAxisSlippingAwayUsersPeriods: function() {
                 var periods = [];
-                this.slippingAwayUsers.forEach(function(element) {
-                    periods.push(element.period);
+                this.slippingAwayUsersRows.forEach(function(element) {
+                    periods.push(CV.i18n('slipping-away-users.serie-item', element.period));
                 });
                 return periods;
-            },
-            yAxisSlippingAwayUsersCount: function() {
-                var awayUsersCount = [];
-                this.slippingAwayUsers.forEach(function(item) {
-                    awayUsersCount.push(item.count);
-                });
-                return awayUsersCount;
             },
             isLoading: function() {
                 return this.$store.getters['countlySlippingAwayUsers/isLoading'];
@@ -60,11 +60,11 @@
         methods: {
             onUserListClick: function(timeStamp) {
                 var data = {
-                    "lac": {"$lt": timeStamp}
+                    lac: {"$lt": timeStamp}
                 };
-                var currentFilters = this.$store.state.countlySlippingAwayUsers.slippingAwayUsersFilters;
+                var currentFilters = this.$store.state.countlySlippingAwayUsers.filters;
                 if (currentFilters.query) {
-                    Object.assign(data, CountlyHelpers.buildFilters(currentFilters));
+                    Object.assign(data, currentFilters.query);
                 }
                 window.location.hash = '/users/query/' + JSON.stringify(data);
             },
@@ -74,7 +74,7 @@
         },
         mounted: function() {
             if (this.$route.params && this.$route.params.query) {
-                this.$store.dispatch('countlySlippingAwayUsers/onSetSlippingAwayUsersFilters', {query: this.$route.params.query });
+                this.$store.dispatch('countlySlippingAwayUsers/onSetFilters', {query: this.$route.params.query });
             }
             this.$store.dispatch("countlySlippingAwayUsers/fetchAll", true);
         }

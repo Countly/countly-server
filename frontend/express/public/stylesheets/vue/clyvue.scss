@@ -1244,6 +1244,12 @@
             }
             &__section {
                 padding: 12px 0;
+                + .cly-vue-drawer-step__section-group {
+                    margin-top: 12px;
+                }
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
+                }
             }
             &__section-group {
                 padding: 12px 24px;
@@ -1523,6 +1529,12 @@
             }
             &__section {
                 padding: 12px 0;
+                + .cly-vue-form-step__section-group {
+                    margin-top: 12px;
+                }
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
+                }
             }
             &__section-group {
                 padding: 12px 24px;
@@ -1537,6 +1549,11 @@
                 }
                 .cly-vue-form-step__section {
                     padding: 8px 0;
+                }
+            }
+            &__auto-group {
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
                 }
             }
         }

@@ -1,6 +1,7 @@
 /* global countlyVue,CV,countlySessionOverview,app,countlyCommon, $, countlyAnalyticsAPI, countlySession,countlyTotalUsers*/
 var SessionOverviewView = countlyVue.views.create({
     template: CV.T("/core/session-overview/templates/session-overview.html"),
+    mixins: [countlyVue.mixins.commonFormatters],
     data: function() {
         return {};
     },
