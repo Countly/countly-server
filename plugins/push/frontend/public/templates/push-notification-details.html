@@ -8,6 +8,10 @@
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>
             </template>
             <template v-slot:header-right>
+                <template v-if="pushNotification.status.value === StatusEnum.NOT_APPROVED && hasApproverPermission">
+                    <el-button @click="onReject" class="bu-mr-2"> <i class="ion-close-circled" ></i> Reject </el-button>
+                    <el-button @click="onApprove" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> Approve </el-button>
+                </template>
                 <cly-more-options size="small" @command="handleUserEvents($event, pushNotification.id)">
                     <el-dropdown-item :command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
                     <el-dropdown-item :command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>

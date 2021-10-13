@@ -156,7 +156,6 @@
                 cohortOptions: [],
                 locationOptions: [],
                 eventOptions: [],
-                saveButtonLabel: "Submit",
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 TargetingEnum: countlyPushNotification.service.TargetingEnum,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
@@ -211,6 +210,15 @@
             }
         },
         computed: {
+            saveButtonLabel: function() {
+                if (!countlyPushNotification.service.isPushNotificationApproverPluginEnabled()) {
+                    return "Save";
+                }
+                if (countlyPushNotification.service.hasApproverBypassPermission()) {
+                    return "Save";
+                }
+                return "Send for approval";
+            },
             title: function() {
                 if (this.type === countlyPushNotification.service.TypeEnum.ONE_TIME) {
                     return "Create One-Time Push Notification";
@@ -685,7 +693,6 @@
                 countlyPushNotification.service.fetchMediaMetadata(url).then(function(mediaMetadata) {
                     self.setMediaMetadata(platform, mediaMetadata);
                 }).catch(function() {
-                    //NOTE: log the error;
                     self.setMediaMetadata(platform, {});
                 });
             },
@@ -699,7 +706,6 @@
                         self.setCohortOptions(cohorts);
                     }).catch(function() {
                         self.setCohortOptions([]);
-                        //NOTE: log the error
                     });
             },
             setLocationOptions: function(locations) {
@@ -712,7 +718,6 @@
                         self.setLocationOptions(locations);
                     }).catch(function() {
                         self.setLocationOptions([]);
-                        //NOTE: log the error
                     });
             },
             setEventOptions: function(events) {
@@ -725,7 +730,6 @@
                         self.setEventOptions(events);
                     }).catch(function() {
                         self.setEventOptions([]);
-                        //NOTE: log the error;
                     });
             },
             getUserProperties: function() {
@@ -978,6 +982,7 @@
         template: "#push-notification-details",
         data: function() {
             return {
+                StatusEnum: countlyPushNotification.service.StatusEnum,
                 selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
                 platformFilters: platformFilterOptions,
                 selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
@@ -1046,9 +1051,28 @@
             },
             localizations: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+            },
+            hasApproverPermission: function() {
+                return countlyPushNotification.service.hasApproverPermission();
             }
         },
         methods: {
+            onApprove: function() {
+                var self = this;
+                countlyPushNotification.service.approve(this.pushNotification.id)
+                    .then(function() {
+                        self.$store.dispatch('countlyPushNotification/details/fetchById', self.pushNotification.id);
+                    }).catch(function(error) {
+                        CountlyHelpers.notify({
+                            title: "Push notification approver error",
+                            message: error.message,
+                            type: "error"
+                        });
+                    });
+            },
+            onReject: function() {
+                //TODO-LA:Implement reject message when it is supported from the API
+            },
             // eslint-disable-next-line no-unused-vars
             handleUserEvents: function(event, pushNotificationId) {
             },
