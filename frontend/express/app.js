@@ -139,10 +139,11 @@ plugins.setConfigs("security", {
     password_expiration: 0,
     password_rotation: 3,
     password_autocomplete: true,
+    robotstxt:"User-agent: *\nDisallow: /",
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
-    dashboard_rate_limit_requests: 500
+    dashboard_rate_limit_requests: 500  
 });
 
 process.on('uncaughtException', (err) => {
