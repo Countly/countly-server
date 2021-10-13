@@ -755,6 +755,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         });
     });
 
+    app.get(countlyConfig.path + '/robots.txt', function(req, res) {
+        res.send(plugins.getConfig("security").robotstxt);
+    });
+
     app.get(countlyConfig.path + '/configs', function(req, res) {
         membersUtility.recheckConfigs(countlyConfigOrig, countlyConfig);
         res.send("Success");
