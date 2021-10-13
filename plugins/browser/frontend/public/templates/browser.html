@@ -16,29 +16,32 @@
 		  </template>
     </cly-header>
     <cly-main>
-		<cly-date-picker-g class="technology-analytics-wrapper-browser__date-picker"></cly-date-picker-g>
+		<cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
 		<div class="bu-columns bu-is-gapless">
 			<h4>{{i18n('browser.browser-for')}}</h4>
 			<div class ="selector_wrapper">
-				<el-select v-model="selectedProperty">
+				<el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
 					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
 				</el-select>
 			</div>
 		</div>
-		<div class="bu-mb-4 technology-analytics-wrapper-browser__metric-cards-wrapper">
+		<div class="bu-pb-4 technology-analytics-wrapper-browser__metric-cards-wrapper">
 		<vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
 			<cly-metric-cards class="bu-is-flex-wrap-nowrap">
-                <cly-metric-card :is-percentage="true" class="bg-white" :columnWidth=3  :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in browserItems">
+                <cly-metric-card :is-percentage="true" :columnWidth=3  :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in browserItems">
                     {{item.name}}
 					<template v-slot:number>{{item.value}}</template> 
 					<template v-slot:description>
                       <span class="text-medium">{{item.percentText}}</span> 
                     </template>
                 </cly-metric-card>
+				<div v-if="browserItems.length < 4" class="technology-analytics-wrapper-browser__empty-card">
+					<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+				</div>
             </cly-metric-cards>
 		</vue-scroll>
 		</div>
-		<h5> {{i18n('browser.version-distribution')}} </h5>
+		<h5 class="bu-pb-4"> {{i18n('browser.version-distribution')}} </h5>
 		<div class="technology-analytics-wrapper-browser__browser-versions-wrapper">
 			<vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 				<div class="bu-columns bu-is-gapless">
@@ -59,6 +62,9 @@
 								</div>
 							</vue-scroll>
 						</div>
+					</div>
+					<div v-if="browserVersions.length < 4" class="technology-analytics-wrapper-browser__versions-empty-card">
+						<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 					</div>
 				</div>
 			</vue-scroll>

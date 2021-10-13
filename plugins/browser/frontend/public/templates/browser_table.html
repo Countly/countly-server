@@ -1,5 +1,5 @@
 <cly-section>
-	<cly-datatable-n  :rows="appBrowserRows" :resizable="true" v-loading="isLoading">
+	<cly-datatable-n  :rows="appBrowserRows" :resizable="true">
 		<template v-slot="scope">
 			<el-table-column sortable="custom" prop="browser" :label="i18n('browser.table.browser')"></el-table-column>
 			<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')"></el-table-column>
