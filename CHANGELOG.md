@@ -1,3 +1,13 @@
+## Version 20.11.2.13
+
+Fixes:
+- [frontend] fixes for making server side tables to be exported as local
+- [web] fix case for enhancing crash data for JSON POST request
+
+Enterprise fixes:
+- [drill] export tables locally
+- [users] use indexed lac property for Last Seen on
+
 ## Version 20.11.2.12
 
 Fixes:
