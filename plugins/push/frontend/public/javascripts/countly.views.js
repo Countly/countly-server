@@ -783,6 +783,7 @@
                 TypeEnum: countlyPushNotification.service.TypeEnum,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 UserEventEnum: countlyPushNotification.service.UserEventEnum,
+                StatusEnum: countlyPushNotification.service.StatusEnum,
                 optionalTableColumns: [
                     {
                         value: "content",
@@ -872,6 +873,19 @@
             formatPercentage: function(value, decimalPlaces) {
                 return CountlyHelpers.formatPercentage(value, decimalPlaces);
             },
+            onApprove: function(id) {
+                var self = this;
+                countlyPushNotification.service.approve(id)
+                    .then(function() {
+                        self.$store.dispatch('countlyPushNotification/main/fetchAll', false);
+                    }).catch(function(error) {
+                        CountlyHelpers.notify({
+                            title: "Push notification approver error",
+                            message: error.message,
+                            type: "error"
+                        });
+                    });
+            },
             handleUserEvents: function(event, pushNotificationId) {
                 if (event === this.UserEventEnum.DUPLICATE) {
                     this.$store.dispatch('countlyPushNotification/main/onDuplicate', pushNotificationId);
@@ -879,7 +893,10 @@
                 else if (event === this.UserEventEnum.RESEND) {
                     this.$store.dispatch('countlyPushNotification/main/onResend', pushNotificationId);
                 }
-                else {
+                else if (event === this.UserEventEnum.APPROVE) {
+                    this.onApprove(pushNotificationId);
+                }
+                else if (event === this.UserEventEnum.DELETE) {
                     this.$store.dispatch('countlyPushNotification/main/onDelete', pushNotificationId);
                 }
             },
@@ -897,6 +914,13 @@
             // eslint-disable-next-line no-unused-vars
             shouldShowDeleteUserEvent: function(status) {
                 return true;
+            },
+            shouldShowApproveUserEvent: function(status) {
+                console.log(status);
+                return status === this.StatusEnum.NOT_APPROVED;
+            },
+            shouldShowRejectUserEvent: function(status) {
+                return status === this.StatusEnum.NOT_APPROVED;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
