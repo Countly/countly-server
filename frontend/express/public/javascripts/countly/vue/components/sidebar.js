@@ -346,7 +346,7 @@
                             return;
                         }
                         this.checkCurrentManagementTab(currLink);
-                        return null
+                        return null;
 
                     }
 
