@@ -66,9 +66,9 @@ var Drawer = countlyVue.views.create({
                     });
                 }
 
-                submitted.targeting = finalizedTargeting;    
+                submitted.targeting = finalizedTargeting;
             }
-            
+
             if (this.settings.isEditMode) {
                 starRatingPlugin.editFeedbackWidget(submitted, function() {
                     self.$emit('widgets-refresh');
@@ -123,7 +123,7 @@ var WidgetsTable = countlyVue.views.create({
     data: function() {
         return {
             cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
-        }
+        };
     },
     computed: {
         widgets: function() {

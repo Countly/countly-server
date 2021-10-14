@@ -14,9 +14,10 @@ var ejs = require("ejs"),
     reportUtils = require('../../reports/api/utils.js');
 
 var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
+var cohorts;
 
 if (cohortsEnabled) {
-    var cohorts = require('../../cohorts/api/parts/cohorts');
+    cohorts = require('../../cohorts/api/parts/cohorts');
 }
 
 const FEATURE_NAME = 'star_rating';
@@ -357,7 +358,7 @@ function uploadFile(myfile, id, callback) {
         validateUpdate(obParams, FEATURE_NAME, function(params) {
             let widgetId;
             var type = "rating";
-            
+
             try {
                 widgetId = common.db.ObjectID(params.qstring.widget_id);
             }
@@ -1215,59 +1216,56 @@ function uploadFile(myfile, id, callback) {
         }
     });
 
-    if (cohortsEnabled) {
-        /**
-        * Create Cohort with passed arguments
-        * @param {object} params - params
-        * @param {string} type - type
-        * @param {object} id - id
-        * @param {object} newAtt - newAtt
-        * @param {string} callback - callback
-        **/
-        function createCohort(params, type, id, newAtt, callback) {
-            newAtt.cohort_name = "[CLY]_" + type + id;
+    /**
+    * Create Cohort with passed arguments
+    * @param {object} params - params
+    * @param {string} type - type
+    * @param {object} id - id
+    * @param {object} newAtt - newAtt
+    * @param {string} callback - callback
+    **/
+    function createCohort(params, type, id, newAtt, callback) {
+        newAtt.cohort_name = "[CLY]_" + type + id;
 
-            if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
-                newAtt.user_segmentation.query = "{}";
-                newAtt.user_segmentation.queryText = "{}";
-            }
-
-            var cohortId = common.crypto.createHash('md5').update(newAtt.steps + newAtt.app_id + Date.now() + newAtt.cohort_name).digest('hex');
-
-            cohorts.createCohort(common, params, {
-                _id: cohortId,
-                app_id: newAtt.app_id,
-                name: newAtt.cohort_name,
-                type: "auto",
-                steps: JSON.parse(newAtt.steps),
-                user_segmentation: JSON.parse(newAtt.user_segmentation)
-            }, function(cohortResult) {
-                cohorts.calculateSteps(params, common, cohortResult, function() {
-                    return callback(cohortResult._id);
-                });
-            });
+        if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
+            newAtt.user_segmentation.query = "{}";
+            newAtt.user_segmentation.queryText = "{}";
         }
 
-        /**
-         * Remove cohort
-         * @param {*} cohortId 
-         * @param {*} appId 
-         */
-        function deleteCohort(cohortId, appId) {
-            common.db.collection('cohorts').findOne({ "_id": cohortId}, function(er, cohort) {
-                if (cohort) {
-                    plugins.dispatch("/cohort/delete", { "_id": cohortId, "app_id": appId + "", ack: 0 }, function() {
-                        common.db.collection('cohorts').remove({ "_id": cohortId }, function() {
-                            common.db.collection('cohortdata').remove({ '_id': { $regex: cohortId + ".*" } }, function() { });
-                            common.db.collection('app_users' + appId).update({}, { $unset: { ["chr." + cohortId]: "" } }, { multi: true }, function() { });
-                        });
+        var cohortId = common.crypto.createHash('md5').update(newAtt.steps + newAtt.app_id + Date.now() + newAtt.cohort_name).digest('hex');
 
-                        // plugins.dispatch("/systemlogs", {params: params, action: "cohort_deleted", data: cohort});
-                    });
-                }
+        cohorts.createCohort(common, params, {
+            _id: cohortId,
+            app_id: newAtt.app_id,
+            name: newAtt.cohort_name,
+            type: "auto",
+            steps: JSON.parse(newAtt.steps),
+            user_segmentation: JSON.parse(newAtt.user_segmentation)
+        }, function(cohortResult) {
+            cohorts.calculateSteps(params, common, cohortResult, function() {
+                return callback(cohortResult._id);
             });
-        };
+        });
     }
-    
+
+    /**
+     * Remove cohort
+     * @param {*} cohortId - cohort id
+     * @param {*} appId - app id
+     */
+    function deleteCohort(cohortId, appId) {
+        common.db.collection('cohorts').findOne({ "_id": cohortId}, function(er, cohort) {
+            if (cohort) {
+                plugins.dispatch("/cohort/delete", { "_id": cohortId, "app_id": appId + "", ack: 0 }, function() {
+                    common.db.collection('cohorts').remove({ "_id": cohortId }, function() {
+                        common.db.collection('cohortdata').remove({ '_id': { $regex: cohortId + ".*" } }, function() { });
+                        common.db.collection('app_users' + appId).update({}, { $unset: { ["chr." + cohortId]: "" } }, { multi: true }, function() { });
+                    });
+
+                    // plugins.dispatch("/systemlogs", {params: params, action: "cohort_deleted", data: cohort});
+                });
+            }
+        });
+    }
 }(exported));
 module.exports = exported;
