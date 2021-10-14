@@ -172,8 +172,16 @@
                 },
                 selectedMenuItem: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                    if (!selected) {
+                        var currLink = Backbone.history.fragment;
+                        if (/^\/custom/.test(currLink) === true) {
+                            return;
+                        }
+                        this.checkCurrentAnalyticsTab(currLink);
+                        return null;
+                    }
 
-                    if (selected.menu === "analytics") {
+                    if (selected && selected.menu === "analytics") {
                         this.selectedAnalyticsMenu = selected.item && selected.item.parent_code;
                         return selected.item;
                     }
@@ -332,8 +340,17 @@
                 },
                 selectedMenuItem: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+                    if (!selected) {
+                        var currLink = Backbone.history.fragment;
+                        if (/^\/custom/.test(currLink) === true) {
+                            return;
+                        }
+                        this.checkCurrentManagementTab(currLink);
+                        return null
 
-                    if (selected.menu === "management") {
+                    }
+
+                    if (selected && selected.menu === "management") {
                         return selected.item;
                     }
 
@@ -361,7 +378,6 @@
                             });
                         }
                     }
-
                     if (currMenu) {
                         this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu });
                     }
@@ -509,7 +525,7 @@
                 },
                 selectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
-                    if (!this.selectedMenuOptionLocal) {
+                    if (!this.selectedMenuOptionLocal && selected) {
                         return selected.menu;
                     }
 
@@ -525,7 +541,7 @@
             }
         });
 
-        new Vue({
+        countlyVue.sideBarComponent = new Vue({
             el: $('#sidebar-x').get(0),
             store: countlyVue.vuex.getGlobalStore(),
             components: {

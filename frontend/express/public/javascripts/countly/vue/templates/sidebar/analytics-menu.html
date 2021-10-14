@@ -22,14 +22,14 @@
             <ul class="bu-mb-5">
                 <li v-for="(menu, idx) in categorizedMenus[cat.name]" class="bu-px-3 bu-my-1">
                     <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
-                        <el-collapse v-model="selectedAnalyticsMenu" accordion :class="[{'cly-vue-sidebar__el-collapse--selected': selectedMenuItem.parent_code === menu.name}]">
-                            <el-collapse-item :title="i18nM(menu.title)" :name="menu.name"
+                        <el-collapse v-model="selectedAnalyticsMenu" accordion :class="[{'cly-vue-sidebar__el-collapse--selected':  (selectedMenuItem && (selectedMenuItem.parent_code === menu.name))}]">
+                            <el-collapse-item :title="i18nM(menu.title)" v-if = "menu" :name="menu.name"
                                 :icon="{position: 'right', direction: 'down'}">
                                 <ul>
                                     <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]" class="bu-is-clickable">
-                                        <div :class="['cly-vue-sidebar__submenu-items',
+                                        <div v-if="submenu" :class="['cly-vue-sidebar__submenu-items',
                                                      'bu-pl-5', 'bu-my-2',
-                                                    {'cly-vue-sidebar__submenu-items--selected': selectedMenuItem.name === submenu.name}]"
+                                                    {'cly-vue-sidebar__submenu-items--selected': (selectedMenuItem && (selectedMenuItem.name === submenu.name))}]"
                                             @click="onMenuItemClick(submenu)">
                                             <div class="has-ellipsis">{{i18nM(submenu.title)}}</div>
                                         </div>
@@ -39,7 +39,7 @@
                         </el-collapse>
                     </div>
                     <div v-else :class="['cly-vue-sidebar__menu-items',
-                                {'cly-vue-sidebar__menu-items--selected': selectedMenuItem.name === menu.name}]"
+                                {'cly-vue-sidebar__menu-items--selected': (selectedMenuItem && (selectedMenuItem.name === menu.name))}]"
                         @click="onMenuItemClick(menu)">
                         <div class="has-ellipsis bu-is-clickable">{{i18nM(menu.title)}}</div>
                     </div>
