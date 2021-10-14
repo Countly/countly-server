@@ -250,10 +250,10 @@
 			<cly-form-step id="step3" v-slot="stepSlot" :name="i18n('feedback.devices-targeting')">
 				<div class="cly-vue-drawer-step__section">
 					<div class="cly-vue-drawer-step__section">
-            <div class="text-big text-heading">
+            <div v-if="cohortsEnabled" class="text-big text-heading">
               {{ i18n('feedback.segmentation') }}
             </div>
-            <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered">
+            <div v-if="cohortsEnabled" class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered">
               <div class="bu-column bu-is-12">
                 <cly-cohort-segmentation
                   ref="ratingsSegmentation"

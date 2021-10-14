@@ -3,8 +3,6 @@ var exported = {},
     common = require('../../../api/utils/common.js'),
     crypto = require('crypto'),
     log = common.log('star-rating:api'),
-    // this line is meaning Ratings plugin has Enterprise Edition dependency
-    cohorts = require('../../cohorts/api/parts/cohorts'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
@@ -14,6 +12,12 @@ var ejs = require("ejs"),
     fs = require('fs'),
     path = require('path'),
     reportUtils = require('../../reports/api/utils.js');
+
+var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
+
+if (cohortsEnabled) {
+    var cohorts = require('../../cohorts/api/parts/cohorts');
+}
 
 const FEATURE_NAME = 'star_rating';
 
@@ -230,7 +234,6 @@ function uploadFile(myfile, id, callback) {
 
 (function() {
 
-
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
@@ -264,7 +267,7 @@ function uploadFile(myfile, id, callback) {
         validateCreate(obParams, FEATURE_NAME, function(params) {
             common.db.collection("feedback_widgets").insert(widget, function(err, result) {
                 if (!err) {
-                    if (widget.targeting) {
+                    if (cohortsEnabled && widget.targeting) {
                         widget.targeting.app_id = params.app_id + "";//has to be string
                         createCohort(params, type, result.insertedIds[0], widget.targeting, function(cohortId) { //create cohort using this 
                             if (cohortId) {
@@ -311,7 +314,7 @@ function uploadFile(myfile, id, callback) {
                         "_id": common.db.ObjectID(widgetId)
                     }, function(removeWidgetErr) {
                         if (!removeWidgetErr) {
-                            if (widget.cohortID) {
+                            if (cohortsEnabled && widget.cohortID) {
                                 deleteCohort(widget.cohortID, widget.app_id + "");
                             }
                             // remove widget and related data
@@ -354,7 +357,7 @@ function uploadFile(myfile, id, callback) {
         validateUpdate(obParams, FEATURE_NAME, function(params) {
             let widgetId;
             var type = "rating";
-
+            
             try {
                 widgetId = common.db.ObjectID(params.qstring.widget_id);
             }
@@ -377,7 +380,7 @@ function uploadFile(myfile, id, callback) {
             common.db.collection("feedback_widgets").findAndModify({"_id": widgetId }, {}, {$set: changes}, function(err, widget) {
                 if (!err && widget) {
                     widget = widget.value;
-                    if ((widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting)) {
+                    if (cohortsEnabled && (widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting)) {
                         if (widget.cohortID) {
                             if (changes.targeting) { //we are not setting to empty one
                                 //changes.targeting.app_id = widget.app_id + "";
@@ -1212,56 +1215,59 @@ function uploadFile(myfile, id, callback) {
         }
     });
 
-    /**
-    * Create Cohort with passed arguments
-    * @param {object} params - params
-    * @param {string} type - type
-    * @param {object} id - id
-    * @param {object} newAtt - newAtt
-    * @param {string} callback - callback
-    **/
-    function createCohort(params, type, id, newAtt, callback) {
-        newAtt.cohort_name = "[CLY]_" + type + id;
+    if (cohortsEnabled) {
+        /**
+        * Create Cohort with passed arguments
+        * @param {object} params - params
+        * @param {string} type - type
+        * @param {object} id - id
+        * @param {object} newAtt - newAtt
+        * @param {string} callback - callback
+        **/
+        function createCohort(params, type, id, newAtt, callback) {
+            newAtt.cohort_name = "[CLY]_" + type + id;
 
-        if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
-            newAtt.user_segmentation.query = "{}";
-            newAtt.user_segmentation.queryText = "{}";
+            if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
+                newAtt.user_segmentation.query = "{}";
+                newAtt.user_segmentation.queryText = "{}";
+            }
+
+            var cohortId = common.crypto.createHash('md5').update(newAtt.steps + newAtt.app_id + Date.now() + newAtt.cohort_name).digest('hex');
+
+            cohorts.createCohort(common, params, {
+                _id: cohortId,
+                app_id: newAtt.app_id,
+                name: newAtt.cohort_name,
+                type: "auto",
+                steps: JSON.parse(newAtt.steps),
+                user_segmentation: JSON.parse(newAtt.user_segmentation)
+            }, function(cohortResult) {
+                cohorts.calculateSteps(params, common, cohortResult, function() {
+                    return callback(cohortResult._id);
+                });
+            });
         }
 
-        var cohortId = common.crypto.createHash('md5').update(newAtt.steps + newAtt.app_id + Date.now() + newAtt.cohort_name).digest('hex');
+        /**
+         * Remove cohort
+         * @param {*} cohortId 
+         * @param {*} appId 
+         */
+        function deleteCohort(cohortId, appId) {
+            common.db.collection('cohorts').findOne({ "_id": cohortId}, function(er, cohort) {
+                if (cohort) {
+                    plugins.dispatch("/cohort/delete", { "_id": cohortId, "app_id": appId + "", ack: 0 }, function() {
+                        common.db.collection('cohorts').remove({ "_id": cohortId }, function() {
+                            common.db.collection('cohortdata').remove({ '_id': { $regex: cohortId + ".*" } }, function() { });
+                            common.db.collection('app_users' + appId).update({}, { $unset: { ["chr." + cohortId]: "" } }, { multi: true }, function() { });
+                        });
 
-        cohorts.createCohort(common, params, {
-            _id: cohortId,
-            app_id: newAtt.app_id,
-            name: newAtt.cohort_name,
-            type: "auto",
-            steps: JSON.parse(newAtt.steps),
-            user_segmentation: JSON.parse(newAtt.user_segmentation)
-        }, function(cohortResult) {
-            cohorts.calculateSteps(params, common, cohortResult, function() {
-                return callback(cohortResult._id);
-            });
-        });
-    }
-
-    /**
-     * Remove cohort
-     * @param {*} cohortId - cohort id
-     * @param {*} appId - app id
-     */
-    function deleteCohort(cohortId, appId) {
-        common.db.collection('cohorts').findOne({ "_id": cohortId}, function(er, cohort) {
-            if (cohort) {
-                plugins.dispatch("/cohort/delete", { "_id": cohortId, "app_id": appId + "", ack: 0 }, function() {
-                    common.db.collection('cohorts').remove({ "_id": cohortId }, function() {
-                        common.db.collection('cohortdata').remove({ '_id': { $regex: cohortId + ".*" } }, function() { });
-                        common.db.collection('app_users' + appId).update({}, { $unset: { ["chr." + cohortId]: "" } }, { multi: true }, function() { });
+                        // plugins.dispatch("/systemlogs", {params: params, action: "cohort_deleted", data: cohort});
                     });
-
-                    // plugins.dispatch("/systemlogs", {params: params, action: "cohort_deleted", data: cohort});
-                });
-            }
-        });
+                }
+            });
+        };
     }
+    
 }(exported));
 module.exports = exported;
