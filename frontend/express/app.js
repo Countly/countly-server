@@ -756,6 +756,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.get(countlyConfig.path + '/robots.txt', function(req, res) {
+        res.contentType('text/plain');
         res.send(plugins.getConfig("security").robotstxt);
     });
 
