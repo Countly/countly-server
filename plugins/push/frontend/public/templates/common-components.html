@@ -187,7 +187,7 @@
 <script type="text/x-template" id="message-editor-with-emoji-picker">
     <div class="cly-vue-push-notification-emoji-wrapper">
         <validation-provider ref="defaultLocalizationValidationProvider" v-slot="validation" :rules="isRequired?'required':null"> </validation-provider>
-        <div :class="['el-input',hasValidationErrors?'is-error':null]" style="display:block;">
+        <div :class="['el-input',hasValidationErrors?'is-error':null]" style="display:block;" @click="onClick">
             <component is="div" class="el-input__inner" v-bind:id="id" contenteditable="true" ref="element" @input="onInput($event.target.innerHTML)"></component>
         </div>
         <emoji-picker @emoji="appendEmoji" :search="search">

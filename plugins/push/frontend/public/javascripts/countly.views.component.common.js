@@ -497,6 +497,7 @@
                 defaultLabelValue: "Select property",
                 defaultLabelPreview: "Select property|",
                 defaultLocalizationValidationErrors: [],
+                selectionRange: null,
             };
         },
         computed: {
@@ -516,15 +517,6 @@
             }
         },
         methods: {
-            setCursorAtEnd: function() {
-                var selection = window.getSelection();
-                var textRange = document.createRange();
-                selection.removeAllRanges();
-                textRange.selectNodeContents(this.$refs.element);
-                textRange.collapse(false);
-                selection.addRange(textRange);
-                this.$refs.element.focus();
-            },
             onUserPropertyClick: function(id, container, element) {
                 var elementBound = element.getBoundingClientRect();
                 var leftCoordinate = elementBound.left + (elementBound.width / 2);
@@ -536,6 +528,59 @@
                     self.onUserPropertyClick(id, name, event.target);
                 };
             },
+            isEmpty: function() {
+                return this.$refs.element.childNodes.length === 0;
+            },
+            isSelected: function() {
+                return window.getSelection().containsNode(this.$refs.element, true);
+            },
+            insertNodeAtRange: function(node, range) {
+                var selection = window.getSelection();
+                range.insertNode(node);
+                range.setStartAfter(node);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            },
+            insertNodeWhenSelected: function(node) {
+                var selection = window.getSelection();
+                var range = this.selectionRange || selection.getRangeAt(0);
+                range.insertNode(node);
+                range.setStartAfter(node);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            },
+            insertNodeWhenNotSelected: function(node) {
+                var selection = window.getSelection();
+                var range = document.createRange();
+                range.selectNodeContents(this.$refs.element);
+                if (!this.isEmpty()) {
+                    range.setStartAfter(this.$refs.element.lastChild, 0);
+                }
+                range.insertNode(node);
+                range.setStartAfter(node);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            },
+            insertNodeAtCaretPosition: function(node) {
+                if (this.isSelected()) {
+                    this.insertNodeWhenSelected(node);
+                }
+                else {
+                    this.insertNodeWhenNotSelected(node);
+                }
+            },
+            insertEmojiAtCaretPosition: function(node) {
+                if (this.selectionRange) {
+                    this.insertNodeWhenSelected(node);
+                }
+                else {
+                    this.insertNodeWhenNotSelected(node);
+                }
+            },
+            saveSelectionRange: function() {
+                var sel = window.getSelection();
+                this.selectionRange = sel.getRangeAt(0);
+            },
             addEmptyUserProperty: function(id, container) {
                 var newElement = document.createElement("span");
                 newElement.setAttribute("id", "id-" + id);
@@ -546,14 +591,18 @@
                 newElement.setAttribute("data-user-property-fallback", "");
                 newElement.innerText = this.defaultLabelPreview;
                 newElement.onclick = this.getOnUserPropertyClickEventListener(id, container);
-                this.$refs.element.appendChild(newElement);
+                this.insertNodeAtCaretPosition(newElement);
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.onUserPropertyClick(id, container, newElement);
+                this.saveSelectionRange();
             },
             removeUserProperty: function(id) {
-                this.$refs.element.querySelector("#id-" + id).remove();
-                this.$emit('change', this.$refs.element.innerHTML);
-                this.validate();
+                var userProperty = this.$refs.element.querySelector("#id-" + id);
+                if (userProperty) {
+                    userProperty.remove();
+                    this.$emit('change', this.$refs.element.innerHTML);
+                    this.validate();
+                }
             },
             getHTMLContent: function() {
                 return this.$refs.element.innerHTML;
@@ -590,10 +639,10 @@
                 this.addEventListeners(ids, container);
             },
             appendEmoji: function(emoji) {
-                this.$refs.element.appendChild(document.createTextNode(emoji));
-                this.setCursorAtEnd();
+                this.insertEmojiAtCaretPosition(document.createTextNode(emoji));
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.validate();
+                this.saveSelectionRange();
             },
             validate: function(value) {
                 var self = this;
@@ -615,6 +664,10 @@
             onInput: function(newValue) {
                 this.$emit('change', newValue);
                 this.validate(newValue);
+                this.saveSelectionRange();
+            },
+            onClick: function() {
+                this.saveSelectionRange();
             },
         },
         mounted: function() {
