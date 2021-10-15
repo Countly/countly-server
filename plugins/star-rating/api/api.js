@@ -14,10 +14,9 @@ var ejs = require("ejs"),
     reportUtils = require('../../reports/api/utils.js');
 
 var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
-var cohorts;
 
 if (cohortsEnabled) {
-    cohorts = require('../../cohorts/api/parts/cohorts');
+    var cohorts = require('../../cohorts/api/parts/cohorts');
 }
 
 const FEATURE_NAME = 'star_rating';
@@ -238,6 +237,54 @@ function uploadFile(myfile, id, callback) {
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
+
+    // Api call to get all ratings widgets
+    plugins.register("/o/sdk", function(ob) {
+        var params = ob.params;
+
+        if (params.qstring.method !== "feedback" || (params.qstring.method === "feedback" && params.qstring.type !== "rating")) {
+            return false;
+        }
+ 
+        return new Promise(function(resolve/*, reject*/) {
+            params.qstring.app_id = params.app_id;
+            params.app_user = params.app_user || {};
+            var user = JSON.parse(JSON.stringify(params.app_user));
+
+            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating" }, { _id: 1, cohortID: 1 }).toArray(function(err, widgets) {
+                if (err) {
+                    log.e(err);
+                }
+                if (widgets && widgets.length > 0) {
+                    //filter out based on cohorts
+                    if (cohortsEnabled) {
+                        widgets = widgets.filter(function(widget) {
+                            if (widget.cohortID) {
+                                if (user && user.chr && user.chr[widget.cohortID] && user.chr[widget.cohortID].in === 'true') {
+                                    delete widget.cohortID; //no need to return more data than needed
+                                    return true;
+                                }
+                                else {
+                                    delete widget.cohortID; //no need to return more data than needed
+                                    return false;
+                                }
+                            }
+                            else {
+                                return true;
+                            }
+                        });
+                    }
+                    common.returnMessage(params, 200, widgets);
+                    return resolve(true);
+                }
+                else {
+                    common.returnMessage(params, 200, []);
+                    return resolve(true);
+                }
+            });
+        });
+    });
+
     /**
      *    register internalEvent
      */
@@ -358,7 +405,7 @@ function uploadFile(myfile, id, callback) {
         validateUpdate(obParams, FEATURE_NAME, function(params) {
             let widgetId;
             var type = "rating";
-
+            
             try {
                 widgetId = common.db.ObjectID(params.qstring.widget_id);
             }
@@ -1216,56 +1263,59 @@ function uploadFile(myfile, id, callback) {
         }
     });
 
-    /**
-    * Create Cohort with passed arguments
-    * @param {object} params - params
-    * @param {string} type - type
-    * @param {object} id - id
-    * @param {object} newAtt - newAtt
-    * @param {string} callback - callback
-    **/
-    function createCohort(params, type, id, newAtt, callback) {
-        newAtt.cohort_name = "[CLY]_" + type + id;
+    if (cohortsEnabled) {
+        /**
+        * Create Cohort with passed arguments
+        * @param {object} params - params
+        * @param {string} type - type
+        * @param {object} id - id
+        * @param {object} newAtt - newAtt
+        * @param {string} callback - callback
+        **/
+        function createCohort(params, type, id, newAtt, callback) {
+            newAtt.cohort_name = "[CLY]_" + type + id;
 
-        if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
-            newAtt.user_segmentation.query = "{}";
-            newAtt.user_segmentation.queryText = "{}";
+            if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
+                newAtt.user_segmentation.query = "{}";
+                newAtt.user_segmentation.queryText = "{}";
+            }
+
+            var cohortId = common.crypto.createHash('md5').update(newAtt.steps + newAtt.app_id + Date.now() + newAtt.cohort_name).digest('hex');
+
+            cohorts.createCohort(common, params, {
+                _id: cohortId,
+                app_id: newAtt.app_id,
+                name: newAtt.cohort_name,
+                type: "auto",
+                steps: JSON.parse(newAtt.steps),
+                user_segmentation: JSON.parse(newAtt.user_segmentation)
+            }, function(cohortResult) {
+                cohorts.calculateSteps(params, common, cohortResult, function() {
+                    return callback(cohortResult._id);
+                });
+            });
         }
 
-        var cohortId = common.crypto.createHash('md5').update(newAtt.steps + newAtt.app_id + Date.now() + newAtt.cohort_name).digest('hex');
+        /**
+         * Remove cohort
+         * @param {*} cohortId 
+         * @param {*} appId 
+         */
+        function deleteCohort(cohortId, appId) {
+            common.db.collection('cohorts').findOne({ "_id": cohortId}, function(er, cohort) {
+                if (cohort) {
+                    plugins.dispatch("/cohort/delete", { "_id": cohortId, "app_id": appId + "", ack: 0 }, function() {
+                        common.db.collection('cohorts').remove({ "_id": cohortId }, function() {
+                            common.db.collection('cohortdata').remove({ '_id': { $regex: cohortId + ".*" } }, function() { });
+                            common.db.collection('app_users' + appId).update({}, { $unset: { ["chr." + cohortId]: "" } }, { multi: true }, function() { });
+                        });
 
-        cohorts.createCohort(common, params, {
-            _id: cohortId,
-            app_id: newAtt.app_id,
-            name: newAtt.cohort_name,
-            type: "auto",
-            steps: JSON.parse(newAtt.steps),
-            user_segmentation: JSON.parse(newAtt.user_segmentation)
-        }, function(cohortResult) {
-            cohorts.calculateSteps(params, common, cohortResult, function() {
-                return callback(cohortResult._id);
-            });
-        });
-    }
-
-    /**
-     * Remove cohort
-     * @param {*} cohortId - cohort id
-     * @param {*} appId - app id
-     */
-    function deleteCohort(cohortId, appId) {
-        common.db.collection('cohorts').findOne({ "_id": cohortId}, function(er, cohort) {
-            if (cohort) {
-                plugins.dispatch("/cohort/delete", { "_id": cohortId, "app_id": appId + "", ack: 0 }, function() {
-                    common.db.collection('cohorts').remove({ "_id": cohortId }, function() {
-                        common.db.collection('cohortdata').remove({ '_id': { $regex: cohortId + ".*" } }, function() { });
-                        common.db.collection('app_users' + appId).update({}, { $unset: { ["chr." + cohortId]: "" } }, { multi: true }, function() { });
+                        // plugins.dispatch("/systemlogs", {params: params, action: "cohort_deleted", data: cohort});
                     });
-
-                    // plugins.dispatch("/systemlogs", {params: params, action: "cohort_deleted", data: cohort});
-                });
-            }
-        });
+                }
+            });
+        };
     }
+    
 }(exported));
 module.exports = exported;
