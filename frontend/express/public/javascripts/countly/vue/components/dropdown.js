@@ -184,6 +184,9 @@
                     return;
                 }
                 this.visible = !this.visible;
+                if (!this.visible) {
+                    this.$emit("hide", true);
+                }
             },
             updateDropdown: function() {
                 var self = this;

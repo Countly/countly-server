@@ -64,6 +64,7 @@ var countlyView = Backbone.View.extend({
             for (var data in this._myRequests[url]) {
                 //4 means done, less still in progress
                 if (parseInt(this._myRequests[url][data].readyState) !== 4) {
+                    this._myRequests[url][data].abort_reason = "app_remove_reqs";
                     this._myRequests[url][data].abort();
                 }
             }
@@ -650,6 +651,7 @@ var AppRouter = Backbone.Router.extend({
             for (var data in this._myRequests[url]) {
                 //4 means done, less still in progress
                 if (parseInt(this._myRequests[url][data].readyState) !== 4) {
+                    this._myRequests[url][data].abort_reason = "view_change";
                     this._myRequests[url][data].abort();
                 }
             }
@@ -4312,6 +4314,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 
         if (originalOptions.data && originalOptions.data.preventRequestAbort && originalOptions.data.preventRequestAbort === true) {
             if (app._myRequests[myurl] && app._myRequests[myurl][mydata]) {
+                jqXHR.abort_reason = "duplicate";
                 jqXHR.abort(); //we already have same working request
             }
             else {
@@ -4339,6 +4342,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         else {
             if (app.activeView) {
                 if (app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata]) {
+                    jqXHR.abort_reason = "duplicate";
                     jqXHR.abort(); //we already have same working request
                 }
                 else {
