@@ -705,7 +705,7 @@ var WidgetDetail = countlyVue.views.create({
             starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
                 self.widget = widget;
                 self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
-                if (this.cohortsEnabled) {
+                if (self.cohortsEnabled) {
                     self.widget = self.parseTargeting(widget);
                 }
             });
