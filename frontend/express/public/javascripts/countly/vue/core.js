@@ -65,8 +65,10 @@
                 $.ajax(request).done(resolve).fail(reject);
             });
             if (!options.disableAutoCatch) {
-                return ajaxP.catch(function(err) {
-                    app.activeView.onError(err);
+                return ajaxP.catch(function(jqXHR) {
+                    if (jqXHR.abort_reason === "duplicate" || (jqXHR.statusText !== "abort" && jqXHR.statusText !== "canceled")) {
+                        app.activeView.onError(jqXHR);
+                    }
                 });
             }
             return ajaxP;

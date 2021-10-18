@@ -95,7 +95,6 @@
                     });
                 }
             }
-
         }
     });
 
@@ -113,13 +112,13 @@
             var series = {"series": []};
             var dynamicCols = [{
                 value: "u",
-                width: "140",
+                width: "180",
                 label: CV.i18n('common.table.total-users'),
                 default: true
             },
             {
                 value: "n",
-                width: "130",
+                width: "180",
                 label: CV.i18n('common.table.new-users'),
                 default: true
             },
@@ -356,13 +355,14 @@
                     for (var k = 0; k < data2.length; k++) {
                         if (data2[k].name !== data2[k]._id) {
                             good_ones.push(data2[k]._id);
+                            have_names = true;
                         }
                     }
                     if (have_names && good_ones.length !== data2.length) { //If we have loaded names - we can clear out the ones without name. (It means not existing, deleted views)
                         var persistData = {};
                         persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = good_ones;
                         countlyCommon.setPersistentSettings(persistData);
-                        this.$store.dispatch('countlyViews/onSetSelectedViews', good_ones);
+                        self.$store.dispatch('countlyViews/onSetSelectedViews', good_ones);
                     }
                     self.lineOptions = {series: data2};
                 });
@@ -398,6 +398,9 @@
                     "url": "/o/export/requestQuery"
                 };
                 return apiQueryData;
+            },
+            numberFormatter: function(row, col, value) {
+                return countlyCommon.formatNumber(value, 0);
             }
         },
         computed: {
@@ -432,6 +435,7 @@
                     {"value": "s", "name": CV.i18n('views.starts')},
                     {"value": "e", "name": CV.i18n('views.exits')},
                     {"value": "b", "name": CV.i18n('views.bounces')},
+                    {"value": "br", "name": CV.i18n('views.br')},
                     {"value": "scr", "name": CV.i18n('views.scrolling-avg')},
                     {"value": "uvc", "name": CV.i18n('views.uvc')},
                 ];
@@ -449,7 +453,7 @@
             },
             chooseSegment: function() {
                 var segments = this.$store.state.countlyViews.segments || {};
-                var listed = [{"value": "all", "label": jQuery.i18n.map["common.all"]}];
+                var listed = [{"value": "all", "label": jQuery.i18n.map["views.all-segments"]}];
                 for (var key in segments) {
                     listed.push({"value": key, "label": key});
                 }
@@ -463,7 +467,7 @@
                 if (this.$refs && this.$refs.selectSegmentValue && this.$refs.selectSegmentValue.unsavedValue && this.$refs.selectSegmentValue.unsavedValue.segment) {
                     key = this.$refs.selectSegmentValue.unsavedValue.segment;
                 }
-                var listed = [{"value": "all", "label": jQuery.i18n.map["common.all"]}];
+                var listed = [{"value": "all", "label": CV.i18n('common.all')}];
 
                 if (!key) {
                     return listed;
