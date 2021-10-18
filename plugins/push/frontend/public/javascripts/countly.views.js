@@ -916,7 +916,6 @@
                 return true;
             },
             shouldShowApproveUserEvent: function(status) {
-                console.log(status);
                 return status === this.StatusEnum.NOT_APPROVED;
             },
             shouldShowRejectUserEvent: function(status) {
