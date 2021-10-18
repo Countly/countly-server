@@ -1,5 +1,5 @@
 <cly-section>
-	<cly-datatable-n :rows="versionDetail" :resizable="true" v-loading="isLoading">
+	<cly-datatable-n :rows="versionDetail" :resizable="true">
 		<template v-slot="scope">
 			<el-table-column sortable="custom" prop="density" :label="i18n('density.table-version')"></el-table-column>
 			<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')"></el-table-column>

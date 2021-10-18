@@ -50,6 +50,15 @@
         } 
     }
 
+    &__density-versions-wrapper {
+        .__view {
+            width:auto !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+    }
+
 
     &__version-graph-title {
         font-family: Inter;

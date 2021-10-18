@@ -65,12 +65,37 @@
 }
 
 .technology-analytics-wrapper .metricCardsWrapper {
-    height: 117px;
-    padding-bottom: 20px;
+    height: 115px;
+}
+
+.technology-analytics-wrapper .metricCardsWrapper .emptyCard{
+    min-height: 107px;
+    border-left:1px solid #ececec;
+	width: 100%;
+	position:relative;
+	background-color: #ffffff;
+	border-top:1px solid #ececec;
+	border-bottom:1px solid #ececec;
+}
+.technology-analytics-wrapper .emptyCard div {
+	position: absolute;
+    top: 50%;
+    text-align: center;
+	width: 100%;
+}
+
+.technology-analytics-wrapper .platformVersionsWrapper .emptyCard{
+    min-height: 250px;
+    border-left:1px solid #ececec;
+	width: 100%;
+	position:relative;
+	background-color: #ffffff;
+	border-top:1px solid #ececec;
+	border-bottom:1px solid #ececec;
 }
 
 .technology-analytics-wrapper .platformVersionsWrapper {
-    height: 300px;
+    height: 309px;
     padding-bottom: 20px;
 }
 
@@ -81,7 +106,13 @@
 .technology-analytics-wrapper .metricCardsWrapper .__view {
     width: auto !important;
 }
+.technology-analytics-wrapper .metricCardsWrapper .cly-vue-metric-cards {
+		border-bottom: none;
+}
+
 .technology-analytics-wrapper .metricCardsWrapper .cly-vue-metric-card {
-    border-top: 1px solid #ececec;
     background-color: #fff;
+	border-top:1px solid #ececec;
+	border-bottom:1px solid #ececec;
+
 }

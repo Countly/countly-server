@@ -509,8 +509,8 @@ app.webDashboardView = new WebDashboardView();
 
 $(document).ready(function() {
     if (countlyAuth.validateRead('core')) {
-        app.addSubMenuForType("web", "analytics", {code: "analytics-technology", url: "#/analytics/technology", text: "sidebar.analytics.technology", priority: 40});
-        app.addSubMenuForType("web", "analytics", {code: "analytics-geo", url: "#/analytics/geo", text: "sidebar.analytics.geo", priority: 30});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-technology", url: "#/analytics/technology", text: "sidebar.analytics.technology", priority: 30});
+        app.addSubMenuForType("web", "analytics", {code: "analytics-geo", url: "#/analytics/geo", text: "sidebar.analytics.geo", priority: 40});
         app.addSubMenuForType("web", "analytics", {code: "analytics-sessions", url: "#/analytics/sessions", text: "sidebar.analytics.session", priority: 20});
         app.addSubMenuForType("web", "analytics", {code: "analytics-users", url: "#/analytics/users", text: "sidebar.analytics.users", priority: 10});
         app.addSubMenuForType("web", "analytics", {code: "analytics-loyalty", url: "#/analytics/loyalty", text: "sidebar.analytics.user-loyalty", priority: 15});

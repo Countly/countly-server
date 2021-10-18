@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, countlyGlobal, countlySession, CountlyHelpers, Promise */
+/*global countlyVue,CV,countlyCommon,countlyGlobal,countlySession,Promise */
 (function(countlyUserActivity) {
 
     countlyUserActivity.helpers = {
@@ -7,7 +7,6 @@
                 return item === element;
             });
         },
-
         getNonNumericSeriePropertyName: function(name) {
             if (name === '7days') {
                 return 'sevenDays';
@@ -17,21 +16,23 @@
             }
             return name;
         },
-
         getSerieTotal: function(serie) {
             return serie.reduce(function(total, currentItem) {
                 total += currentItem.count;
                 return total;
             }, 0);
         },
-
+        replaceAllSpecialChars: function(value) {
+            return value.replace(/&amp;/g, '&').replace(/&lt;/, '<').replace(/&gt;/, '>').replace(/&equals;/, '=');
+        },
         findNonEmptyBuckets: function(userActivityDto) {
+            var self = this;
             var nonEmptybuckets = [];
             Object.keys(userActivityDto).forEach(function(userActivityKey) {
                 var userActivitySerie = userActivityDto[userActivityKey];
                 userActivitySerie.forEach(function(serieItem) {
                     if (serieItem._id && !countlyUserActivity.helpers.isBucketAdded(nonEmptybuckets, serieItem._id)) {
-                        nonEmptybuckets.push(serieItem._id);
+                        nonEmptybuckets.push(self.replaceAllSpecialChars(serieItem._id));
                     }
                 });
             });
@@ -70,17 +71,20 @@
 
         fetchUserActivity: function(filters) {
             var self = this;
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                api_key: countlyGlobal.member.api_key,
+            };
+            if (filters) {
+                data.query = JSON.stringify(filters);
+            }
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + '/app_users/loyalty',
-                    data: {
-                        app_id: countlyCommon.ACTIVE_APP_ID,
-                        api_key: countlyGlobal.member.api_key,
-                        query: JSON.stringify(CountlyHelpers.buildFilters(filters))
-                    },
+                    data: data,
                     dataType: "json",
-                }).then(function(response) {
+                }, {disableAutoCatch: true}).then(function(response) {
                     var nonEmptyBuckets = countlyUserActivity.helpers.findNonEmptyBuckets(response);
                     resolve({model: self.mapUserActivityDtoToModel(response, nonEmptyBuckets), nonEmptyBuckets: nonEmptyBuckets});
                 }).catch(function(error) {
@@ -104,7 +108,7 @@
         var userActivityActions = {
             fetchAll: function(context, useLoader) {
                 context.dispatch('onFetchInit', {useLoader: useLoader});
-                countlyUserActivity.service.fetchUserActivity(context.state.userActivityFilters)
+                countlyUserActivity.service.fetchUserActivity(context.state.userActivityFilters.query)
                     .then(function(response) {
                         context.commit('setUserActivity', response.model);
                         context.commit('setNonEmptyBuckets', response.nonEmptyBuckets);

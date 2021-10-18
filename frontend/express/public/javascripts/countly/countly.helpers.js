@@ -2585,6 +2585,10 @@
             _estOverrideMetric = (metric.estOverrideMetric) ? metric.estOverrideMetric : "";
         var _promises = {};
 
+
+        countlyMetric.getCurrentLoadState = function() {
+            return {"init": _initialized, "period": _period};
+        };
         //Public Methods
         /**
         * Initialize metric model to fetch initial data from server
@@ -3434,19 +3438,6 @@
         el = el ? $(el) : $("#content .widget");
 
         $(breadcrumbsEl).prependTo(el);
-    };
-
-    //TODO: move buildFilters inside query builder component
-    CountlyHelpers.buildFilters = function(filters) {
-        var newQuery = {};
-        if (filters.query) {
-            Object.keys(filters.query).forEach(function(queryItem) {
-                var propertyValue = filters.query[queryItem];
-                var propertyNameWithoutUp = queryItem.split('.')[1];
-                newQuery[propertyNameWithoutUp] = propertyValue;
-            });
-        }
-        return newQuery;
     };
 
     /**

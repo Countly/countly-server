@@ -294,7 +294,7 @@
         };
 
         actions[_capitalized("pasteAndFetch", resourceName)] = function(context, remoteParams) {
-            context.commit(_capitalized("set", paramsKey), Object.assign({}, remoteParams, {ready: true}));
+            context.commit(_capitalized("set", paramsKey), Object.assign({}, context.state[paramsField], remoteParams, {ready: true}));
             return context.dispatch(_capitalized("fetch", resourceName), { _silent: false });
         };
 
