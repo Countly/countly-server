@@ -175,7 +175,7 @@
                     if (selected && selected.menu === "analytics") {
                         this.selectedAnalyticsMenu = selected.item && selected.item.parent_code;
                         return selected.item;
-                    } 
+                    }
                     else {
                         this.checkCurrentAnalyticsTab();
                         return {};
