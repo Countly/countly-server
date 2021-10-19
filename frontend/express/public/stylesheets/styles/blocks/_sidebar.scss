@@ -62,9 +62,6 @@ $bg-color: #24292e;
 
     &__app-name {
         font-size: 14px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
     &__app-name-type {
         width: 120px;
@@ -132,9 +129,6 @@ $bg-color: #24292e;
         box-sizing: border-box;
         height: 100%;
         overflow: hidden;
-    }
-    &__menu-items {
-        margin-bottom: 16px;
     }
 
     &__menu-items,

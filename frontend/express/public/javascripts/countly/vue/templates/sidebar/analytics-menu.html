@@ -5,7 +5,7 @@
                 <div class="cly-vue-sidebar__app-image" :style="{backgroundImage: 'url(' + activeApp.image + ')'}">
                 </div>
                 <div class="cly-vue-sidebar__app-name-type bu-is-flex bu-is-flex-direction-column bu-ml-2">
-                    <span class="cly-vue-sidebar__app-name">{{activeApp.name}}</span>
+                    <span class="cly-vue-sidebar__app-name has-ellipsis>{{activeApp.name}}</span>
                     <span class="text-smaller color-white cly-vue-sidebar__app-type bu-is-capitalized">
                         {{activeApp.type}}</span>
                 </div>
@@ -44,7 +44,7 @@
                             </el-collapse>
                         </div>
                         <div v-else
-                            :class="['cly-vue-sidebar__menu-items',
+                            :class="['cly-vue-sidebar__menu-items bu-mb-3',
                                 {'cly-vue-sidebar__menu-items--selected': (selectedMenuItem && (selectedMenuItem.name === menu.name))}]"
                             @click="onMenuItemClick(menu)">
                             <div class="has-ellipsis bu-is-clickable">{{i18nM(menu.title)}}</div>
