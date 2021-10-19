@@ -23,11 +23,11 @@
                 <li v-for="(menu, idx) in categorizedMenus[cat.name]" class="bu-px-3 bu-my-1">
                     <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
                         <el-collapse v-model="selectedAnalyticsMenu" accordion :class="[{'cly-vue-sidebar__el-collapse--selected':  (selectedMenuItem && (selectedMenuItem.parent_code === menu.name))}]">
-                            <el-collapse-item :title="i18nM(menu.title)" v-if = "menu" :name="menu.name"
+                            <el-collapse-item :title="i18nM(menu.title)" :name="menu.name"
                                 :icon="{position: 'right', direction: 'down'}">
                                 <ul>
                                     <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]" class="bu-is-clickable">
-                                        <div v-if="submenu" :class="['cly-vue-sidebar__submenu-items',
+                                        <div :class="['cly-vue-sidebar__submenu-items',
                                                      'bu-pl-5', 'bu-my-2',
                                                     {'cly-vue-sidebar__submenu-items--selected': (selectedMenuItem && (selectedMenuItem.name === submenu.name))}]"
                                             @click="onMenuItemClick(submenu)">

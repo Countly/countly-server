@@ -18,6 +18,12 @@ $bg-color: #24292e;
 .cly-vue-sidebar {
     width: 100%;
     height: 100%;
+    .cly-vue-listbox__item-label {
+        width: 350px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
     ul {
         list-style: none;
@@ -40,6 +46,12 @@ $bg-color: #24292e;
 
     &__app-name {
         font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    &__app-name-type {
+        width: 120px;
     }
 
     &__app-selector {
@@ -147,7 +159,7 @@ $bg-color: #24292e;
 
     &__el-collapse--selected .el-collapse-item__header {
         border-radius: 4px;
-        background-color: #383a3f;
+        background-color:map.get(c.$colors, "warm-gray-80");
         color: map.get(c.$colors, "white");
     }
 
@@ -197,6 +209,18 @@ $bg-color: #24292e;
     &__main-menu {
         overflow: auto;
         height: calc(100% - 82px);
+        ::-webkit-scrollbar-track {
+	       -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	        background-color: #F5F5F5;
+        }
+        ::-webkit-scrollbar {
+	        width: 6px;
+	        background-color: #F5F5F5;
+        }
+
+        ::-webkit-scrollbar-thumb {
+	        background-color: #000000;
+        }
     }
 
     &__app-image {

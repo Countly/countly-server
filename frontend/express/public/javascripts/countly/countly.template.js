@@ -1272,7 +1272,7 @@ var AppRouter = Backbone.Router.extend({
             var selectedMenuItem = countlyVue.sideBarComponent.$store.getters["countlySidebar/getSelectedMenuItem"];
             var currLink = "#" + Backbone.history.fragment;
             if (selectedMenuItem.item.url !== currLink) {
-                countlyVue.sideBarComponent.$store.dispatch("countlySidebar/updateSelectedMenuItem", null);
+                countlyVue.sideBarComponent.$store.dispatch("countlySidebar/updateSelectedMenuItem", {});
             }
         }
     },
