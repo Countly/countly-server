@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,moment,Promise*/
 
 (function() {
 
@@ -121,6 +121,12 @@
         },
     };
 
+    var InitialEnabledUsers = {
+        ios: 0,
+        android: 0,
+    };
+
+
     var InitialPushNotificationDrawerSettingsState = {
         ios: {
             isSubtitleEnabled: false,
@@ -156,6 +162,8 @@
                 cohortOptions: [],
                 locationOptions: [],
                 eventOptions: [],
+                enabledUsers: JSON.parse(JSON.stringify(InitialEnabledUsers)),
+                totalAppUsers: 0,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 TargetingEnum: countlyPushNotification.service.TargetingEnum,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
@@ -251,18 +259,18 @@
             selectedLocalizationMessage: function() {
                 return this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter];
             },
-            enabledUsers: function() {
+            totalEnabledUsers: function() {
                 var self = this;
                 var total = 0;
                 if (this.pushNotificationUnderEdit.platforms.some(function(selectedPlatform) {
                     return selectedPlatform === self.PlatformEnum.ANDROID;
                 })) {
-                    total += this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.ANDROID];
+                    total += this.enabledUsers[this.PlatformEnum.ANDROID];
                 }
                 if (this.pushNotificationUnderEdit.platforms.some(function(selectedPlatform) {
                     return selectedPlatform === self.PlatformEnum.IOS;
                 })) {
-                    total += this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.IOS];
+                    total += this.enabledUsers[this.PlatformEnum.IOS];
                 }
                 return total;
             },
@@ -425,7 +433,7 @@
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
                 var options = {};
-                options.totalAppUsers = this.$store.state.countlyPushNotification.main.totalAppUsers;
+                options.totalAppUsers = this.totalAppUsers;
                 options.localizations = this.localizationOptions;
                 countlyPushNotification.service.save(model, options).then(function() {
                     done();
@@ -732,6 +740,25 @@
                         self.setEventOptions([]);
                     });
             },
+            setTotalAppUsers: function(totalAppUsers) {
+                this.totalAppUsers = totalAppUsers;
+            },
+            setEnabledUsers: function(enabledUsers) {
+                this.enabledUsers = enabledUsers;
+            },
+            fetchNumberOfUsers: function() {
+                var self = this;
+                countlyPushNotification.service.fetchAll()
+                    .then(function(response) {
+                        self.setTotalAppUsers(response.totalAppUsers);
+                        self.setEnabledUsers(response.enabledUsers);
+                    })
+                    .catch(function() {
+                        self.setTotalAppUsers(0);
+                        self.setEnabledUsers(JSON.parse(JSON.stringify(InitialEnabledUsers)));
+                        //TODO: log error;
+                    });
+            },
             getUserProperties: function() {
                 return countlySegmentation.getFilters().map(function(userFilter) {
                     return {label: userFilter.name, value: userFilter.id};
@@ -747,6 +774,7 @@
             this.fetchCohorts();
             this.fetchLocations();
             this.fetchAllEvents();
+            this.fetchNumberOfUsers();
             this.getUserProperties();
         },
         components: {
@@ -1573,7 +1601,7 @@
 
     //countly.view global management settings
     $(document).ready(function() {
-        if (countlyAuth.validateRead('push')) {
+        if (countlyAuth.validateRead(featureName)) {
             app.addMenuForType("mobile", "reach", {code: "push", url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
         }
 
