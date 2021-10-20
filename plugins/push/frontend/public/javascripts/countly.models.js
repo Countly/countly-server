@@ -978,7 +978,7 @@
                 dto.autoCohorts = [];
                 dto.autoEvents = [];
                 if (pushNotificationModel.automatic.capping) {
-                    dto.autoCapMessages = parseInt(pushNotificationModel.automatic.maximumMessagesPerUser);
+                    dto.autoCapMessages = parseInt(pushNotificationModel.automatic.maximumMessagesPerUser, 10);
                     var cappingDateTime = {
                         days: pushNotificationModel.automatic.minimumTimeBetweenMessages.days,
                         hours: pushNotificationModel.automatic.minimumTimeBetweenMessages.hours
