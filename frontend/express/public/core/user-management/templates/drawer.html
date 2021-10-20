@@ -108,6 +108,7 @@
               </div>
               <div class="user-management-drawer-content__section-content user-management-drawer-content__role-section">
                 <el-checkbox v-model="drawerScope.editedObject.global_admin">{{ i18n('management-users.global-administrator') }}</el-checkbox>
+                <component v-for="roleInput in rolesInput" :is="roleInput.component" :user="drawerScope.editedObject" @role-change="onRoleChange" key="roleInput.key"></component>
               </div>
             </div>
             <div v-if="!drawerScope.editedObject.global_admin && !group._id" class="user-management-drawer-content__drawer-sub-title">

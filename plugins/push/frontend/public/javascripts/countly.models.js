@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlyCommon,Promise,moment,_,countlyGlobalLang,CountlyHelpers,countlyEventsOverview*/
+/*global countlyVue,CV,countlyCommon,Promise,moment,_,countlyGlobalLang,CountlyHelpers,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.messages-sent-serie-name');
@@ -42,7 +42,9 @@
     var UserEventEnum = Object.freeze({
         RESEND: 'resend',
         DUPLICATE: 'duplicate',
-        DELETE: 'delete'
+        DELETE: 'delete',
+        REJECT: 'reject',
+        APPROVE: 'approve'
     });
     var MediaTypeEnum = Object.freeze({
         IMAGE: 'image',
@@ -183,6 +185,12 @@
         isDone: function(status) {
             return (status & this.STATUS_SHIFT_OPERATOR_ENUM.Done) > 0;
         },
+        isNotApproved: function(dto) {
+            if (countlyPushNotification.service.isPushNotificationApproverPluginEnabled()) {
+                return dto.creator && !dto.approver && !(dto.result.status & 8);
+            }
+            return false;
+        }
     };
 
     countlyPushNotification.helper = {
@@ -345,7 +353,10 @@
                 }
                 return TypeEnum.ONE_TIME;
             },
-            mapStatus: function(status, error) {
+            mapStatus: function(dto) {
+                var status = dto.result.status;
+                var error = dto.result.error;
+
                 if (StatusFinderHelper.isSending(status)) {
                     if (error) {
                         return {value: 'sending-errors', label: CV.i18n('push-notification.status-sending-errors')};
@@ -367,6 +378,9 @@
                 }
                 else if (StatusFinderHelper.isScheduled(status)) {
                     return {value: StatusEnum.SCHEDULED, label: CV.i18n('push-notification.status-scheduled')};
+                }
+                else if (StatusFinderHelper.isNotApproved(dto)) {
+                    return {value: StatusEnum.NOT_APPROVED, label: CV.i18n('push-notification.status-not-approved')};
                 }
                 else if (StatusFinderHelper.isCreated(status)) {
                     return {value: 'created', label: CV.i18n('push-notification.status-created')};
@@ -425,7 +439,7 @@
                     rowsModel[index] = {
                         _id: pushNotificationDtoItem._id,
                         name: pushNotificationDtoItem.messagePerLocale["default|t"] || "-",
-                        status: self.mapStatus(pushNotificationDtoItem.result.status, pushNotificationDtoItem.result.error),
+                        status: self.mapStatus(pushNotificationDtoItem),
                         createdDateTime: {
                             date: moment(pushNotificationDtoItem.created).format("MMMM Do YYYY"),
                             time: moment(pushNotificationDtoItem.created).format("h:mm:ss a")
@@ -541,7 +555,7 @@
                 var localizations = this.mapLocalizations(dto);
                 return {
                     id: dto._id,
-                    status: this.mapStatus(dto.result.status, dto.result.error),
+                    status: this.mapStatus(dto),
                     createdDateTime: {
                         date: moment(dto.created).valueOf(),
                         time: moment(dto.created).format("H:mm")
@@ -1065,6 +1079,15 @@
         deliveryDateCalculationOptions: deliveryDateCalculationOptions,
         deliveryMethodOptions: deliveryMethodOptions,
         iosAuthConfigTypeOptions: iosAuthConfigTypeOptions,
+        isPushNotificationApproverPluginEnabled: function() {
+            return Boolean(window.countlyPushNotificationApprover);
+        },
+        hasApproverBypassPermission: function() {
+            return this.isPushNotificationApproverPluginEnabled && countlyGlobal.member.approver_bypass;
+        },
+        hasApproverPermission: function() {
+            return this.isPushNotificationApproverPluginEnabled && countlyGlobal.member.approver;
+        },
         getTypeUrlParameter: function(type) {
             if (type === this.TypeEnum.AUTOMATIC) {
                 return {auto: true, tx: false};
@@ -1270,6 +1293,12 @@
                         reject(error);
                     });
             });
+        },
+        approve: function(messageId) {
+            if (!this.isPushNotificationApproverPluginEnabled()) {
+                throw new Error('Push approver plugin is not enabled');
+            }
+            return countlyPushNotificationApprover.service.approve(messageId);
         }
     };
 
@@ -1290,7 +1319,8 @@
                 actioned: {},
                 cohorts: [],
                 locations: [],
-                events: []
+                events: [],
+                status: {}
             },
             platformFilter: PlatformEnum.ALL,
             localFilter: "default"
