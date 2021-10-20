@@ -362,9 +362,17 @@
             label: String,
             help: String,
         },
+        computed: {
+            hasRequiredRule: function() {
+                if (Array.isArray(this.$attrs.rules)) {
+                    return this.$attrs.rules.indexOf('required') !== -1;
+                }
+                return Object.keys(this.$attrs.rules).indexOf('required') !== -1;
+            }
+        },
         template: '<div class="cly-vue-form-field cly-vue-form-step__section bu-columns bu-is-vcentered bu-px-1 bu-mx-1">\
                         <div class="bu-column bu-is-4 bu-p-0">\
-                            <p class="bu-has-text-weight-medium">{{label}} <span v-if="$attrs.rules && $attrs.rules.indexOf(\'required\') !== -1">*</span></p>\
+                            <p class="bu-has-text-weight-medium">{{label}} <span v-if="$attrs.rules && hasRequiredRule">*</span></p>\
                             <p v-if="help" v-html="help"></p>\
                         </div>\
                         <div class="bu-column bu-is-8 bu-has-text-left bu-p-0">\
