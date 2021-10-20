@@ -1979,6 +1979,16 @@ https://github.com/itsiprikshit/custom-bulma
 }
 
 .bu-card-header-icon {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background: none;
+    border: none;
+    color: currentColor;
+    font-family: inherit;
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
     align-items: center;
     cursor: pointer;
     display: flex;
@@ -2093,7 +2103,7 @@ https://github.com/itsiprikshit/custom-bulma
     -moz-appearance: none;
     -webkit-appearance: none;
     border: none;
-    border-radius: 290486px;
+    border-radius: 9999px;
     display: block;
     height: 1rem;
     overflow: hidden;
@@ -2174,52 +2184,52 @@ https://github.com/itsiprikshit/custom-bulma
     background-image: linear-gradient(to right, #00d1b2 30%, #ededed 30%);
 }
 .bu-progress.bu-is-link::-webkit-progress-value {
-    background-color: #3273dc;
+    background-color: #485fc7;
 }
 .bu-progress.bu-is-link::-moz-progress-bar {
-    background-color: #3273dc;
+    background-color: #485fc7;
 }
 .bu-progress.bu-is-link::-ms-fill {
-    background-color: #3273dc;
+    background-color: #485fc7;
 }
 .bu-progress.bu-is-link:indeterminate {
-    background-image: linear-gradient(to right, #3273dc 30%, #ededed 30%);
+    background-image: linear-gradient(to right, #485fc7 30%, #ededed 30%);
 }
 .bu-progress.bu-is-info::-webkit-progress-value {
-    background-color: #3298dc;
+    background-color: #3e8ed0;
 }
 .bu-progress.bu-is-info::-moz-progress-bar {
-    background-color: #3298dc;
+    background-color: #3e8ed0;
 }
 .bu-progress.bu-is-info::-ms-fill {
-    background-color: #3298dc;
+    background-color: #3e8ed0;
 }
 .bu-progress.bu-is-info:indeterminate {
-    background-image: linear-gradient(to right, #3298dc 30%, #ededed 30%);
+    background-image: linear-gradient(to right, #3e8ed0 30%, #ededed 30%);
 }
 .bu-progress.bu-is-success::-webkit-progress-value {
-    background-color: #48c774;
+    background-color: #48c78e;
 }
 .bu-progress.bu-is-success::-moz-progress-bar {
-    background-color: #48c774;
+    background-color: #48c78e;
 }
 .bu-progress.bu-is-success::-ms-fill {
-    background-color: #48c774;
+    background-color: #48c78e;
 }
 .bu-progress.bu-is-success:indeterminate {
-    background-image: linear-gradient(to right, #48c774 30%, #ededed 30%);
+    background-image: linear-gradient(to right, #48c78e 30%, #ededed 30%);
 }
 .bu-progress.bu-is-warning::-webkit-progress-value {
-    background-color: #ffdd57;
+    background-color: #ffe08a;
 }
 .bu-progress.bu-is-warning::-moz-progress-bar {
-    background-color: #ffdd57;
+    background-color: #ffe08a;
 }
 .bu-progress.bu-is-warning::-ms-fill {
-    background-color: #ffdd57;
+    background-color: #ffe08a;
 }
 .bu-progress.bu-is-warning:indeterminate {
-    background-image: linear-gradient(to right, #ffdd57 30%, #ededed 30%);
+    background-image: linear-gradient(to right, #ffe08a 30%, #ededed 30%);
 }
 .bu-progress.bu-is-danger::-webkit-progress-value {
     background-color: #f14668;
@@ -2282,7 +2292,7 @@ https://github.com/itsiprikshit/custom-bulma
     width: 100%;
 }
 .bu-image img.bu-is-rounded {
-    border-radius: 290486px;
+    border-radius: 9999px;
 }
 .bu-image.bu-is-fullwidth {
     width: 100%;
@@ -2531,36 +2541,36 @@ https://github.com/itsiprikshit/custom-bulma
     color: #00947e;
 }
 .bu-tag:not(body).bu-is-link {
-    background-color: #3273dc;
+    background-color: #485fc7;
     color: #fff;
 }
 .bu-tag:not(body).bu-is-link.bu-is-light {
-    background-color: #eef3fc;
-    color: #2160c4;
+    background-color: #eff1fa;
+    color: #3850b7;
 }
 .bu-tag:not(body).bu-is-info {
-    background-color: #3298dc;
+    background-color: #3e8ed0;
     color: #fff;
 }
 .bu-tag:not(body).bu-is-info.bu-is-light {
-    background-color: #eef6fc;
-    color: #1d72aa;
+    background-color: #eff5fb;
+    color: #296fa8;
 }
 .bu-tag:not(body).bu-is-success {
-    background-color: #48c774;
+    background-color: #48c78e;
     color: #fff;
 }
 .bu-tag:not(body).bu-is-success.bu-is-light {
-    background-color: #effaf3;
-    color: #257942;
+    background-color: #effaf5;
+    color: #257953;
 }
 .bu-tag:not(body).bu-is-warning {
-    background-color: #ffdd57;
+    background-color: #ffe08a;
     color: rgba(0, 0, 0, 0.7);
 }
 .bu-tag:not(body).bu-is-warning.bu-is-light {
-    background-color: #fffbeb;
-    color: #947600;
+    background-color: #fffaeb;
+    color: #946c00;
 }
 .bu-tag:not(body).bu-is-danger {
     background-color: #f14668;
@@ -2624,7 +2634,7 @@ https://github.com/itsiprikshit/custom-bulma
     background-color: #dbdbdb;
 }
 .bu-tag:not(body).bu-is-rounded {
-    border-radius: 290486px;
+    border-radius: 9999px;
 }
 
 a.bu-tag:hover {
@@ -2724,159 +2734,159 @@ a.bu-has-text-primary-dark:focus {
 }
 
 .bu-has-text-link {
-    color: #3273dc !important;
+    color: #485fc7 !important;
 }
 
 a.bu-has-text-link:hover,
 a.bu-has-text-link:focus {
-    color: #205bbc !important;
+    color: #3449a8 !important;
 }
 
 .bu-has-background-link {
-    background-color: #3273dc !important;
+    background-color: #485fc7 !important;
 }
 
 .bu-has-text-link-light {
-    color: #eef3fc !important;
+    color: #eff1fa !important;
 }
 
 a.bu-has-text-link-light:hover,
 a.bu-has-text-link-light:focus {
-    color: #c2d5f5 !important;
+    color: #c8cfee !important;
 }
 
 .bu-has-background-link-light {
-    background-color: #eef3fc !important;
+    background-color: #eff1fa !important;
 }
 
 .bu-has-text-link-dark {
-    color: #2160c4 !important;
+    color: #3850b7 !important;
 }
 
 a.bu-has-text-link-dark:hover,
 a.bu-has-text-link-dark:focus {
-    color: #3b79de !important;
+    color: #576dcb !important;
 }
 
 .bu-has-background-link-dark {
-    background-color: #2160c4 !important;
+    background-color: #3850b7 !important;
 }
 
 .bu-has-text-info {
-    color: #3298dc !important;
+    color: #3e8ed0 !important;
 }
 
 a.bu-has-text-info:hover,
 a.bu-has-text-info:focus {
-    color: #207dbc !important;
+    color: #2b74b1 !important;
 }
 
 .bu-has-background-info {
-    background-color: #3298dc !important;
+    background-color: #3e8ed0 !important;
 }
 
 .bu-has-text-info-light {
-    color: #eef6fc !important;
+    color: #eff5fb !important;
 }
 
 a.bu-has-text-info-light:hover,
 a.bu-has-text-info-light:focus {
-    color: #c2e0f5 !important;
+    color: #c6ddf1 !important;
 }
 
 .bu-has-background-info-light {
-    background-color: #eef6fc !important;
+    background-color: #eff5fb !important;
 }
 
 .bu-has-text-info-dark {
-    color: #1d72aa !important;
+    color: #296fa8 !important;
 }
 
 a.bu-has-text-info-dark:hover,
 a.bu-has-text-info-dark:focus {
-    color: #248fd6 !important;
+    color: #368ace !important;
 }
 
 .bu-has-background-info-dark {
-    background-color: #1d72aa !important;
+    background-color: #296fa8 !important;
 }
 
 .bu-has-text-success {
-    color: #48c774 !important;
+    color: #48c78e !important;
 }
 
 a.bu-has-text-success:hover,
 a.bu-has-text-success:focus {
-    color: #34a85c !important;
+    color: #34a873 !important;
 }
 
 .bu-has-background-success {
-    background-color: #48c774 !important;
+    background-color: #48c78e !important;
 }
 
 .bu-has-text-success-light {
-    color: #effaf3 !important;
+    color: #effaf5 !important;
 }
 
 a.bu-has-text-success-light:hover,
 a.bu-has-text-success-light:focus {
-    color: #c8eed6 !important;
+    color: #c8eedd !important;
 }
 
 .bu-has-background-success-light {
-    background-color: #effaf3 !important;
+    background-color: #effaf5 !important;
 }
 
 .bu-has-text-success-dark {
-    color: #257942 !important;
+    color: #257953 !important;
 }
 
 a.bu-has-text-success-dark:hover,
 a.bu-has-text-success-dark:focus {
-    color: #31a058 !important;
+    color: #31a06e !important;
 }
 
 .bu-has-background-success-dark {
-    background-color: #257942 !important;
+    background-color: #257953 !important;
 }
 
 .bu-has-text-warning {
-    color: #ffdd57 !important;
+    color: #ffe08a !important;
 }
 
 a.bu-has-text-warning:hover,
 a.bu-has-text-warning:focus {
-    color: #ffd324 !important;
+    color: #ffd257 !important;
 }
 
 .bu-has-background-warning {
-    background-color: #ffdd57 !important;
+    background-color: #ffe08a !important;
 }
 
 .bu-has-text-warning-light {
-    color: #fffbeb !important;
+    color: #fffaeb !important;
 }
 
 a.bu-has-text-warning-light:hover,
 a.bu-has-text-warning-light:focus {
-    color: #fff1b8 !important;
+    color: #ffecb8 !important;
 }
 
 .bu-has-background-warning-light {
-    background-color: #fffbeb !important;
+    background-color: #fffaeb !important;
 }
 
 .bu-has-text-warning-dark {
-    color: #947600 !important;
+    color: #946c00 !important;
 }
 
 a.bu-has-text-warning-dark:hover,
 a.bu-has-text-warning-dark:focus {
-    color: #c79f00 !important;
+    color: #c79200 !important;
 }
 
 .bu-has-background-warning-dark {
-    background-color: #947600 !important;
+    background-color: #946c00 !important;
 }
 
 .bu-has-text-danger {
@@ -3459,6 +3469,36 @@ a.bu-has-text-danger-dark:focus {
     margin-bottom: 3rem !important;
 }
 
+.bu-m-auto {
+    margin: auto !important;
+}
+
+.bu-mt-auto {
+    margin-top: auto !important;
+}
+
+.bu-mr-auto {
+    margin-right: auto !important;
+}
+
+.bu-mb-auto {
+    margin-bottom: auto !important;
+}
+
+.bu-ml-auto {
+    margin-left: auto !important;
+}
+
+.bu-mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.bu-my-auto {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+}
+
 .bu-p-0 {
     padding: 0 !important;
 }
@@ -3667,6 +3707,36 @@ a.bu-has-text-danger-dark:focus {
 .bu-py-6 {
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
+}
+
+.bu-p-auto {
+    padding: auto !important;
+}
+
+.bu-pt-auto {
+    padding-top: auto !important;
+}
+
+.bu-pr-auto {
+    padding-right: auto !important;
+}
+
+.bu-pb-auto {
+    padding-bottom: auto !important;
+}
+
+.bu-pl-auto {
+    padding-left: auto !important;
+}
+
+.bu-px-auto {
+    padding-left: auto !important;
+    padding-right: auto !important;
+}
+
+.bu-py-auto {
+    padding-top: auto !important;
+    padding-bottom: auto !important;
 }
 
 .bu-is-size-1 {
@@ -4087,6 +4157,10 @@ a.bu-has-text-danger-dark:focus {
 
 .bu-is-italic {
     font-style: italic !important;
+}
+
+.bu-is-underlined {
+    text-decoration: underline !important;
 }
 
 .bu-has-text-weight-light {
