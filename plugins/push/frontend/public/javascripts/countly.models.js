@@ -743,6 +743,17 @@
             },
         },
         outgoing: {
+            getUserPropertiesIds: function(localizedMessage, container) {
+                var userPropertyIds = [];
+                var htmlElement = document.createElement('div');
+                htmlElement.innerHTML = localizedMessage[container];
+                for (var index = 0; index < htmlElement.children.length; index++) {
+                    var idAtribute = htmlElement.children[index].getAttributeNode('id').value;
+                    var idNumber = idAtribute.split('-')[1];
+                    userPropertyIds.push(idNumber);
+                }
+                return userPropertyIds;
+            },
             replaceUserProperties: function(localizedMessage, container) {
                 var element = document.createElement('div');
                 element.innerHTML = localizedMessage[container];
@@ -826,7 +837,8 @@
                 var userPropertyDto = {};
                 if (this.hasUserProperties(localizedMessage, container)) {
                     var indices = this.getUserPropertiesIndices(localizedMessage, container);
-                    Object.keys(localizedMessage.properties[container]).forEach(function(userPropertyId, index) {
+                    var userPropertyIds = this.getUserPropertiesIds(localizedMessage, container);
+                    userPropertyIds.forEach(function(userPropertyId, index) {
                         userPropertyDto[indices[index]] = {
                             f: localizedMessage.properties[container][userPropertyId].fallback,
                             c: localizedMessage.properties[container][userPropertyId].isUppercase,
