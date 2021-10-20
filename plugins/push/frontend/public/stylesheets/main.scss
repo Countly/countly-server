@@ -349,12 +349,15 @@
         flex-basis: 25%;
         position: relative;
     }
+
     &__border-right {
         border-right:1px solid $borderBackgroundColor;
     }
+
     &__border-top {
         border-top:1px solid $borderBackgroundColor;
     }
+
     &__item-legend {
         position: absolute;
         width:100%;
@@ -363,6 +366,7 @@
         border-bottom: 1px solid $borderBackgroundColor;
         border-top:1px solid $borderBackgroundColor;
     }
+
     &__item-legend-percentage {
         font-weight: 500;
         font-size: 24px;
