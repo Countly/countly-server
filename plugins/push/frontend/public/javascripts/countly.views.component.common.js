@@ -1,4 +1,4 @@
-/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment*/
+/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
         props: {
@@ -152,7 +152,7 @@
     countlyPushNotificationComponent.ReviewSectionRow = countlyVue.views.create({
         props: {
             value: {
-                type: String,
+                type: String | Number,
                 default: ""
             },
             label: {
@@ -325,11 +325,6 @@
                 type: Object,
                 required: true,
             },
-            isHTML: {
-                type: Boolean,
-                required: false,
-                default: false,
-            }
         },
         computed: {
             isAndroidPlatformSelected: function() {
@@ -489,6 +484,11 @@
                 type: String,
                 required: false,
                 default: ""
+            },
+            isRequired: {
+                type: Boolean,
+                required: false,
+                default: false
             }
         },
         data: function() {
@@ -516,9 +516,6 @@
             }
         },
         methods: {
-            appendZeroWidthSpace: function() {
-                this.$refs.element.appendChild(document.createTextNode('\u200B'));
-            },
             setCursorAtEnd: function() {
                 var selection = window.getSelection();
                 var textRange = document.createRange();
@@ -550,7 +547,6 @@
                 newElement.innerText = this.defaultLabelPreview;
                 newElement.onclick = this.getOnUserPropertyClickEventListener(id, container);
                 this.$refs.element.appendChild(newElement);
-                this.appendZeroWidthSpace();
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.onUserPropertyClick(id, container, newElement);
             },
@@ -601,14 +597,20 @@
             },
             validate: function(value) {
                 var self = this;
-                if (!value) {
-                    value = this.$refs.element.innerHTML;
-                }
-                if (this.isDefaultLocalizationActive) {
-                    this.$refs.defaultLocalizationValidationProvider.validate(value).then(function(result) {
-                        self.defaultLocalizationValidationErrors = result.errors;
-                    });
-                }
+                return new Promise(function(resolve) {
+                    if (!value) {
+                        value = self.$refs.element.innerHTML;
+                    }
+                    if (self.isDefaultLocalizationActive) {
+                        self.$refs.defaultLocalizationValidationProvider.validate(value).then(function(result) {
+                            self.defaultLocalizationValidationErrors = result.errors;
+                            resolve(result.valid);
+                        });
+                    }
+                    else {
+                        return resolve(true);
+                    }
+                });
             },
             onInput: function(newValue) {
                 this.$emit('change', newValue);
@@ -625,8 +627,6 @@
                     element.dispatchEvent(event);
                 });
             }
-            //TODO-LA: trigger validation when user tries to go to next step instead of when component is mounted
-            this.validate();
         },
         beforeDestroy: function() {
             //TODO-LA: remove all user properties elements' event listeners
@@ -636,18 +636,50 @@
         },
     });
 
+    countlyPushNotification.DetailsTabRow = countlyVue.views.create({
+        template: '#details-tab-row',
+        props: {
+            value: {
+                type: String | Number,
+                default: ""
+            },
+            label: {
+                type: String,
+                default: ""
+            },
+        },
+        computed: {
+            hasDefaultSlot: function() {
+                return Boolean(this.$slots.default);
+            }
+        },
+    });
+
     countlyPushNotificationComponent.DetailsMessageTab = countlyVue.views.create({
         template: '#details-message-tab',
         data: function() {
             return {
-                selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
-                localizationFilters: countlyPushNotification.service.getLocalizationFilterOptions()
+                selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
             };
         },
         computed: {
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message;
+                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
+            },
+            localizations: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+            },
+            previewMessageTitle: function() {
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.title);
+            },
+            previewMessageContent: function() {
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.content);
             }
+        },
+        components: {
+            'user-property-preview': countlyPushNotificationComponent.UserPropertyPreview,
+            'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview,
+            'details-tab-row': countlyPushNotification.DetailsTabRow
         }
     });
 
@@ -655,18 +687,36 @@
         template: '#details-targeting-tab',
         data: function() {
             return {
-                DAY_TO_MS_RATIO: 86400 * 1000
+                DAY_TO_MS_RATIO: 86400 * 1000,
+                TypeEnum: countlyPushNotification.service.TypeEnum,
+                TargetingEnum: countlyPushNotification.service.TargetingEnum,
+                TriggerEnum: countlyPushNotification.service.TriggerEnum,
+                startDateOptions: countlyPushNotification.service.startDateOptions,
+                targetingOptions: countlyPushNotification.service.targetingOptions,
+                audienceSelectionOptions: countlyPushNotification.service.audienceSelectionOptions,
+                triggerOptions: countlyPushNotification.service.triggerOptions,
+                triggerNotMetOptions: countlyPushNotification.service.triggerNotMetOptions,
+                deliveryDateCalculationOptions: countlyPushNotification.service.deliveryDateCalculationOptions,
+                deliveryMethodOptions: countlyPushNotification.service.deliveryMethodOptions,
             };
         },
         computed: {
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
-            }
+            },
+            previewCohorts: function() {
+                return this.pushNotification.cohorts.map(function(cohortItem) {
+                    return cohortItem.name;
+                });
+            },
         },
         methods: {
             convertDaysInMsToDays: function(daysInMs) {
                 return daysInMs / this.DAY_TO_MS_RATIO;
             }
+        },
+        components: {
+            'details-tab-row': countlyPushNotification.DetailsTabRow
         }
     });
 

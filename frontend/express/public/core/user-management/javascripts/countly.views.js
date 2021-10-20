@@ -91,9 +91,7 @@
         },
         mixins: [
             // call groups plugin input mixin for drawer
-            countlyVue.container.dataMixin({
-                "groupsInput": "groups/input"
-            })
+            countlyVue.container.dataMixin({"groupsInput": "groups/input", "rolesInput": "user/roles"}),
         ],
         data: function() {
             return {
@@ -117,7 +115,8 @@
                 },
                 uploadCompleted: false,
                 fileAdded: false,
-                group: {}
+                group: {},
+                roles: {}
             };
         },
         methods: {
@@ -279,6 +278,12 @@
                     break;
                 }
             },
+            addRolesToUserUnderEdit: function(userUnderEdit) {
+                var self = this;
+                Object.keys(this.roles).forEach(function(roleName) {
+                    userUnderEdit[roleName] = self.roles[roleName].value;
+                });
+            },
             // drawer event handlers
             onClose: function() {},
             onSubmit: function(submitted, done) {
@@ -300,6 +305,7 @@
                 }
 
                 var self = this;
+                this.addRolesToUserUnderEdit(submitted);
                 if (this.settings.editMode) {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.editUser(this.user._id, submitted, function(res) {
@@ -469,6 +475,9 @@
             },
             onGroupChange: function(groupVal) {
                 this.group = groupVal;
+            },
+            onRoleChange: function(role) {
+                this.roles[role.name] = role;
             }
         },
         created: function() {

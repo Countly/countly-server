@@ -86,6 +86,16 @@
             diff: {
                 type: Array
             },
+            disabled: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
+            emitSaveWhenDisabled: {
+                type: Boolean,
+                required: false,
+                defualt: false
+            }
         },
         computed: {
             hasDiff: function() {
@@ -97,7 +107,9 @@
         },
         methods: {
             save: function() {
-                this.$emit("save");
+                if (this.emitSaveWhenDisabled) {
+                    this.$emit("save");
+                }
             },
             discard: function() {
                 this.$emit("discard");
@@ -111,7 +123,7 @@
                       '</div>\n' +
                       '<div class="buttons">\n' +
                           '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
-                         '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" @click="save"></cly-button>\n' +
+                         '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" :disabled="disabled" @click="save"></cly-button>\n' +
                       '</div>\n' +
                     '</slot>\n' +
                   '</div>'

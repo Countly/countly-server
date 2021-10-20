@@ -1,5 +1,8 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyManagementView,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment,countlyEventsOverview*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,countlyUserdata,components,Backbone,moment,Promise*/
+
 (function() {
+
+    var featureName = 'push';
 
     var AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = [
         {label: CV.i18n("push-notification.status-scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
@@ -17,11 +20,10 @@
         {label: CV.i18n("push-notification.status-not-approved"), value: countlyPushNotification.service.StatusEnum.NOT_APPROVED},
     ]);
 
-    var statusFilterOptions = {
-        oneTime: ONE_TIME_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS,
-        automatic: AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS,
-        transactional: TRANSACTIONAL_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS
-    };
+    var statusFilterOptions = {};
+    statusFilterOptions[countlyPushNotification.service.TypeEnum.ONE_TIME] = ONE_TIME_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
+    statusFilterOptions[countlyPushNotification.service.TypeEnum.AUTOMATIC] = AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
+    statusFilterOptions[countlyPushNotification.service.TypeEnum.TRANSACTIONAL] = TRANSACTIONAL_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS;
 
     var platformFilterOptions = [
         {label: CV.i18n("push-notification.platform-filter-all"), value: countlyPushNotification.service.PlatformEnum.ALL},
@@ -36,111 +38,79 @@
     var automaticPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
     var transactionalPeriodFilterOptions = [{label: CV.i18n("push-notification.time-chart-period-daily"), value: countlyPushNotification.service.PeriodEnum.DAILY}];
 
-    var TargetingEnum = {
-        ALL: 'all',
-        SEGMENTED: "segmented"
-    };
-    var WhenToDetermineEnum = {
-        NOW: 'now',
-        BEFORE: "before"
-    };
-    var DeliveryEnum = {
-        NOW: 'now',
-        LATER: 'later',
-        DELAYED: 'delayed',
-    };
-    var TimeZoneEnum = {
-        SAME: 'same',
-        DEVICE: 'device'
-    };
-    var PastScheduleEnum = {
-        SKIP: 'skip',
-        NEXT_DAY: 'nextDay'
-    };
-    var MessageTypeEnum = {
-        SILENT: 'silent',
-        CONTENT: 'content'
-    };
-    var TriggerEnum = {
-        COHORT_ENTRY: 'cohortEntry',
-        COHORT_EXIT: 'cohortExit',
-        EVENT: 'event'
-    };
-    var AutomaticDeliveryDateEnum = {
-        EVENT_SERVER_DATE: 'eventServerDate',
-        EVENT_DEVICE_DATE: 'eventDeviceDate'
-    };
-    var AutomaticWhenConditionNotMetEnum = {
-        SEND_ANYWAY: 'sendAnyway',
-        CANCEL_ON_EXIT: 'cancelOnExit'
-    };
     var messageTypeFilterOptions = [
-        {label: "Content message", value: MessageTypeEnum.CONTENT},
-        {label: "Silent message", value: MessageTypeEnum.SILENT}
+        {label: "Content message", value: countlyPushNotification.service.MessageTypeEnum.CONTENT},
+        {label: "Silent message", value: countlyPushNotification.service.MessageTypeEnum.SILENT}
     ];
 
     var InitialEditedPushNotification = {
+        _id: null,
         activePlatformSettings: [],
         multipleLocalizations: false,
         name: "",
         platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
-        targeting: TargetingEnum.ALL,
-        whenToDetermine: WhenToDetermineEnum.BEFORE,
+        targeting: countlyPushNotification.service.TargetingEnum.ALL,
+        audienceSelection: countlyPushNotification.service.AudienceSelectionEnum.BEFORE,
         message: {
             default: {
                 title: "",
                 content: "",
-                localizationLabel: "Default",
+                localizationLabel: countlyPushNotification.service.DEFAULT_LOCALIZATION_LABEL,
                 buttons: [],
                 properties: {
                     title: {},
                     content: {}
                 }
             },
-            settings: {
-                ios: {
-                    subtitle: "",
-                    mediaURL: "",
-                    soundFileName: "",
-                    badgeNumber: "",
-                    onClickURL: "",
-                    json: null,
-                    userData: []
-                },
-                android: {
-                    mediaURL: "",
-                    soundFileName: "",
-                    badgeNumber: "",
-                    icon: "",
-                    onClickURL: "",
-                    json: null,
-                    userData: []
-                },
-                all: {
-                    mediaURL: ""
-                }
-            },
-            type: MessageTypeEnum.CONTENT
         },
-        localizations: ["default"],
+        settings: {
+            ios: {
+                subtitle: "",
+                mediaURL: "",
+                soundFileName: "",
+                badgeNumber: "",
+                onClickURL: "",
+                json: null,
+                userData: []
+            },
+            android: {
+                mediaURL: "",
+                soundFileName: "",
+                badgeNumber: "",
+                icon: "",
+                onClickURL: "",
+                json: null,
+                userData: []
+            },
+            all: {
+                mediaURL: ""
+            }
+        },
+        messageType: countlyPushNotification.service.MessageTypeEnum.CONTENT,
+        localizations: [countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE],
         cohorts: [],
         locations: [],
         delivery: {
-            type: DeliveryEnum.NOW,
+            type: countlyPushNotification.service.SendEnum.NOW,
             startDate: moment().valueOf(),
             endDate: moment().valueOf(),
-            method: DeliveryEnum.NOW
+            isEndDateSet: false
         },
-        timeZone: TimeZoneEnum.SAME,
-        pastSchedule: PastScheduleEnum.SKIP,
+        timezone: countlyPushNotification.service.TimezoneEnum.SAME,
+        pastSchedule: countlyPushNotification.service.PastScheduleEnum.SKIP,
         expiration: {
             days: 7,
             hours: 0
         },
         automatic: {
-            trigger: TriggerEnum.COHORT_ENTRY,
-            deliveryDate: AutomaticDeliveryDateEnum.EVENT_SERVER_DATE,
-            whenNotMet: AutomaticWhenConditionNotMetEnum.SEND_ANYWAY,
+            deliveryMethod: countlyPushNotification.service.DeliveryMethodEnum.IMMEDIATELY,
+            delayed: {
+                days: 0,
+                hours: 0
+            },
+            deliveryDateCalculation: countlyPushNotification.service.DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
+            trigger: countlyPushNotification.service.TriggerEnum.COHORT_ENTRY,
+            triggerNotMet: countlyPushNotification.service.TriggerNotMetEnum.SEND_ANYWAY,
             events: [],
             capping: false,
             maximumMessagesPerUser: 1,
@@ -148,10 +118,6 @@
                 days: 0,
                 hours: 0
             },
-            delayed: {
-                days: 0,
-                hours: 0
-            }
         },
     };
 
@@ -184,28 +150,37 @@
         mixins: [countlyVue.mixins.i18n],
         data: function() {
             return {
-                loading: false,
-                localizationOptions: [{label: "Default", value: "default"}, {label: "English", value: "en"}, {label: "German", value: "ge"}],
+                isLoading: false,
+                localizationOptions: [],
                 userPropertiesOptions: [],
+                cohortOptions: [],
+                locationOptions: [],
                 eventOptions: [],
-                saveButtonLabel: "Submit",
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
-                TargetingEnum: TargetingEnum,
+                TargetingEnum: countlyPushNotification.service.TargetingEnum,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
-                WhenToDetermineEnum: WhenToDetermineEnum,
-                DeliveryEnum: DeliveryEnum,
-                TimeZoneEnum: TimeZoneEnum,
-                PastScheduleEnum: PastScheduleEnum,
-                TriggerEnum: TriggerEnum,
-                AutomaticDeliveryDateEnum: AutomaticDeliveryDateEnum,
-                AutomaticWhenConditionNotMetEnum: AutomaticWhenConditionNotMetEnum,
+                MessageTypeEnum: countlyPushNotification.service.MessageTypeEnum,
+                AudienceSelectionEnum: countlyPushNotification.service.AudienceSelectionEnum,
+                SendEnum: countlyPushNotification.service.SendEnum,
+                DeliveryMethodEnum: countlyPushNotification.service.DeliveryMethodEnum,
+                TimezoneEnum: countlyPushNotification.service.TimezoneEnum,
+                PastScheduleEnum: countlyPushNotification.service.PastScheduleEnum,
+                TriggerEnum: countlyPushNotification.service.TriggerEnum,
+                DeliveryDateCalculationEnum: countlyPushNotification.service.DeliveryDateCalculationEnum,
+                TriggerNotMetEnum: countlyPushNotification.service.TriggerNotMetEnum,
                 MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
                 messageTypeFilterOptions: messageTypeFilterOptions,
-                activeLocalization: "default",
-                selectedLocalizationFilter: "default",
+                startDateOptions: countlyPushNotification.service.startDateOptions,
+                targetingOptions: countlyPushNotification.service.targetingOptions,
+                audienceSelectionOptions: countlyPushNotification.service.audienceSelectionOptions,
+                triggerOptions: countlyPushNotification.service.triggerOptions,
+                triggerNotMetOptions: countlyPushNotification.service.triggerNotMetOptions,
+                deliveryDateCalculationOptions: countlyPushNotification.service.deliveryDateCalculationOptions,
+                deliveryMethodOptions: countlyPushNotification.service.deliveryMethodOptions,
+                activeLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
+                selectedLocalizationFilter: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 isConfirmed: false,
                 expandedPlatformSettings: [],
-                isEndDateEnabled: false,
                 settings: JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState)),
                 userPropertiesIdCounter: 0,
                 selectedUserPropertyId: null,
@@ -221,7 +196,8 @@
                     ios: null,
                     android: null
                 },
-                pushNotificationUnderEdit: JSON.parse(JSON.stringify(InitialEditedPushNotification))
+                pushNotificationUnderEdit: JSON.parse(JSON.stringify(InitialEditedPushNotification)),
+                currentNumberOfUsers: 0,
             };
         },
         props: {
@@ -234,6 +210,15 @@
             }
         },
         computed: {
+            saveButtonLabel: function() {
+                if (!countlyPushNotification.service.isPushNotificationApproverPluginEnabled()) {
+                    return "Save";
+                }
+                if (countlyPushNotification.service.hasApproverBypassPermission()) {
+                    return "Save";
+                }
+                return "Send for approval";
+            },
             title: function() {
                 if (this.type === countlyPushNotification.service.TypeEnum.ONE_TIME) {
                     return "Create One-Time Push Notification";
@@ -252,7 +237,7 @@
                 return "+Add Second button";
             },
             isDefaultLocalizationActive: function() {
-                return this.activeLocalization === 'default';
+                return this.activeLocalization === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
             },
             isAddButtonDisabled: function() {
                 return this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.length === 2;
@@ -260,27 +245,29 @@
             selectedLocalizationFilterOptions: function() {
                 var self = this;
                 return this.pushNotificationUnderEdit.localizations.map(function(selectedLocalization) {
-                    return {label: self.pushNotificationUnderEdit.message[selectedLocalization].localizationLabel, value: selectedLocalization};
+                    return {label: self.pushNotificationUnderEdit.message[selectedLocalization].label, value: selectedLocalization};
                 });
             },
             selectedLocalizationMessage: function() {
                 return this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter];
             },
             enabledUsers: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.enabledUsers;
+                var self = this;
+                var total = 0;
+                if (this.pushNotificationUnderEdit.platforms.some(function(selectedPlatform) {
+                    return selectedPlatform === self.PlatformEnum.ANDROID;
+                })) {
+                    total += this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.ANDROID];
+                }
+                if (this.pushNotificationUnderEdit.platforms.some(function(selectedPlatform) {
+                    return selectedPlatform === self.PlatformEnum.IOS;
+                })) {
+                    total += this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.IOS];
+                }
+                return total;
             },
             selectedMessageLocale: function() {
                 return this.pushNotificationUnderEdit.message[this.activeLocalization];
-            },
-            cohortOptions: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.cohorts.map(function(cohort) {
-                    return {label: cohort.name.replace(/&quot;/g, '\\"'), value: cohort._id};
-                });
-            },
-            locationOptions: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.locations.map(function(location) {
-                    return {label: location.title, value: location._id};
-                });
             },
             areCohortsAndLocationsRequired: function() {
                 return !this.pushNotificationUnderEdit.cohorts.length && !this.pushNotificationUnderEdit.locations.length;
@@ -289,7 +276,7 @@
                 return !this.pushNotificationUnderEdit.automatic.events.length && !this.pushNotificationUnderEdit.locations.length;
             },
             areLocationsRequired: function() {
-                if (this.pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT) {
+                if (this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
                     return this.areEventsAndLocationsRequired;
                 }
                 else {
@@ -299,13 +286,13 @@
             previewMessageMedia: function() {
                 var result = {};
                 if (this.mediaMetadata[this.PlatformEnum.ANDROID]) {
-                    result[this.PlatformEnum.ANDROID] = {url: this.pushNotificationUnderEdit.message.settings.android.mediaURL, type: this.MediaTypeEnum.IMAGE};
+                    result[this.PlatformEnum.ANDROID] = {url: this.pushNotificationUnderEdit.settings.android.mediaURL, type: this.MediaTypeEnum.IMAGE};
                 }
                 if (this.mediaMetadata[this.PlatformEnum.IOS]) {
-                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.message.settings.ios.mediaURL, type: this.mediaMetadata.ios.type };
+                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.settings.ios.mediaURL, type: this.mediaMetadata.ios.type };
                 }
                 if (this.mediaMetadata[this.PlatformEnum.ALL]) {
-                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.message.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE };
+                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE };
                 }
                 return result;
             },
@@ -320,9 +307,36 @@
             },
             shouldDisplayAndroidSettings: function() {
                 return this.shouldDisplayPlatformSettings(this.PlatformEnum.ANDROID);
+            },
+            previewPlatforms: function() {
+                return this.pushNotificationUnderEdit.platforms.map(function(selectedPlatform) {
+                    return countlyPushNotification.service.platformOptions[selectedPlatform].label;
+                });
+            },
+            previewCohorts: function() {
+                var self = this;
+                var selectedCohorts = this.cohortOptions.filter(function(cohort) {
+                    return self.pushNotificationUnderEdit.cohorts.some(function(selectedCohortId) {
+                        return cohort._id === selectedCohortId;
+                    });
+                });
+                return selectedCohorts.map(function(cohort) {
+                    return cohort.name.replace(/&quot;/g, '\\"');
+                });
+            },
+            previewLocations: function() {
+                var self = this;
+                return this.locationOptions.filter(function(location) {
+                    return self.pushNotificationUnderEdit.locations.some(function(selectedLocationId) {
+                        return location._id === selectedLocationId;
+                    });
+                });
             }
         },
         methods: {
+            formatDateTime: function(dateTime, format) {
+                return countlyPushNotification.helper.formatDateTime(dateTime, format);
+            },
             setUserPropertiesOptions: function(userPropertiesOptionsDto) {
                 this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
                     if (userPropertyOptionDto.id) {
@@ -339,14 +353,103 @@
                     });
                 }
             },
-            onSaveDraft: function() {},
-            onSubmit: function() {},
+            isDeliveryNextStepFromInfoStep: function(nextStep, currentStep) {
+                return nextStep === 1 && currentStep === 0;
+            },
+            isReviewNextStepFromContentStep: function(nextStep, currentStep) {
+                return nextStep === 3 && currentStep === 2;
+            },
+            isContentNextStepFromInfoStep: function(nextStep, currentStep) {
+                return nextStep === 2 && currentStep === 0;
+            },
+            onStepClick: function(nextStep, currentStep) {
+                if (this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep)) {
+                    return this.prepareMessage();
+                }
+                if (this.isReviewNextStepFromContentStep(nextStep, currentStep)) {
+                    return this.$refs.content.validate();
+                }
+                return Promise.resolve(true);
+            },
+            setId: function(id) {
+                this.pushNotificationUnderEdit._id = id;
+            },
+            setCurrentNumberOfUsers: function(value) {
+                this.currentNumberOfUsers = value;
+            },
+            setLocalizationOptions: function(localizations) {
+                this.localizationOptions = localizations;
+            },
+            setIsLoading: function(value) {
+                this.isLoading = value;
+            },
+            dispatchUnknownErrorNotification: function() {
+                CountlyHelpers.notify({
+                    title: "Unknown error occurred",
+                    message: "Please try again later.",
+                    type: "error"
+                });
+            },
+            prepareMessage: function() {
+                var self = this;
+                this.setIsLoading(true);
+                return new Promise(function(resolve) {
+                    var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
+                    preparePushNotificationModel.type = self.type;
+                    countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
+                        self.setLocalizationOptions(response.localizations);
+                        self.setId(response._id);
+                        self.setCurrentNumberOfUsers(response.total);
+                        resolve(true);
+                    }).catch(function(error) {
+                        self.setLocalizationOptions([]);
+                        if (countlyPushNotification.helper.isNoUsersFoundError(error)) {
+                            CountlyHelpers.notify({
+                                title: "No users were found with selected configuration",
+                                message: "Selected cohort and location target options resulted in zero users found. Please try a different configuration.",
+                                type: "warning"
+                            });
+                        }
+                        else {
+                            this.dispatchUnknownErrorNotification();
+                        }
+                        //TODO:log error
+                        resolve(false);
+                    }).finally(function() {
+                        self.setIsLoading(false);
+                    });
+                });
+            },
+            onSubmit: function(_, done) {
+                var self = this;
+                var model = Object.assign({}, this.pushNotificationUnderEdit);
+                model.type = this.type;
+                var options = {};
+                options.totalAppUsers = this.$store.state.countlyPushNotification.main.totalAppUsers;
+                options.localizations = this.localizationOptions;
+                countlyPushNotification.service.save(model, options).then(function() {
+                    done();
+                    self.$store.dispatch("countlyPushNotification/main/fetchAll", true);
+                }).catch(function(error) {
+                    if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
+                        CountlyHelpers.notify({
+                            title: "No Push credentials",
+                            message: "There were no push credentials found for selected platform/s.",
+                            type: "error"
+                        });
+                    }
+                    else {
+                        this.dispatchUnknownErrorNotification();
+                    }
+                    //TODO:log error
+                    done(true);
+                });
+            },
             resetState: function() {
-                this.activeLocalization = "default",
-                this.selectedLocalizationFilter = "default",
+                this.activeLocalization = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
+                this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 this.isConfirmed = false,
                 this.expandedPlatformSettings = [],
-                this.isEndDateEnabled = false;
                 this.selectedUserPropertyContainer = "title";
                 this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
                 this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(InitialEditedPushNotification));
@@ -369,9 +472,34 @@
                 });
                 this.pushNotificationUnderEdit.message[this.activeLocalization].buttons = filteredButtons;
             },
+            removeAllNonDefaultSelectedLocalizations: function() {
+                this.pushNotificationUnderEdit.localizations = this.pushNotificationUnderEdit.localizations.filter(function(selectedLocalization) {
+                    return selectedLocalization === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+                });
+            },
+            deleteAllNonDefaultLocalizationMessages: function() {
+                var self = this;
+                Object.keys(this.pushNotificationUnderEdit.message).forEach(function(key) {
+                    if (key && key !== countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE) {
+                        self.$delete(self.pushNotificationUnderEdit.message, key);
+                    }
+                });
+            },
+            onMultipleLocalizationChange: function(isChecked) {
+                this.pushNotificationUnderEdit.multipleLocalizations = isChecked;
+                if (!isChecked) {
+                    this.setActiveLocalization(countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE);
+                    this.resetMessageInHTMLToActiveLocalization();
+                    this.deleteAllNonDefaultLocalizationMessages();
+                    this.removeAllNonDefaultSelectedLocalizations();
+                }
+            },
+            isDefaultLocalization: function(value) {
+                return value === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+            },
             isLocalizationSelected: function(value) {
-                return this.pushNotificationUnderEdit.localizations.filter(function(activeLocalization) {
-                    return value === activeLocalization;
+                return this.pushNotificationUnderEdit.localizations.filter(function(selectedLocalization) {
+                    return value === selectedLocalization;
                 }).length > 0;
             },
             addEmptyLocalizationMessageIfNotFound: function(localization) {
@@ -424,7 +552,7 @@
                 }
                 else {
                     this.removeLocalization(localization.value);
-                    this.setActiveLocalization("default");
+                    this.setActiveLocalization(countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE);
                     this.resetMessageInHTMLToActiveLocalization();
                 }
             },
@@ -435,12 +563,12 @@
             },
             onSendToTestUsers: function() {},
             onSettingChange: function(platform, property, value) {
-                this.pushNotificationUnderEdit.message.settings[platform][property] = value;
+                this.pushNotificationUnderEdit.settings[platform][property] = value;
             },
             onSettingToggle: function(platform, property, value) {
                 this.settings[platform][property] = value;
                 if (!value) {
-                    this.pushNotificationUnderEdit.message.settings[platform][property] = "";
+                    this.pushNotificationUnderEdit.settings[platform][property] = "";
                 }
             },
             onTitleChange: function(value) {
@@ -522,20 +650,20 @@
                 }
             },
             resetAllMediaURLIfNecessary: function() {
-                if (this.pushNotificationUnderEdit.message.settings.android.mediaURL && this.pushNotificationUnderEdit.message.settings.ios.mediaURL) {
-                    this.pushNotificationUnderEdit.message.settings.all.mediaURL = "";
+                if (this.pushNotificationUnderEdit.settings.android.mediaURL && this.pushNotificationUnderEdit.settings.ios.mediaURL) {
+                    this.pushNotificationUnderEdit.settings.all.mediaURL = "";
                 }
             },
             onAllMediaURLInput: function(value) {
                 var self = this;
-                this.pushNotificationUnderEdit.message.settings.all.mediaURL = value;
+                this.pushNotificationUnderEdit.settings.all.mediaURL = value;
                 this.$refs.allMediaURLValidationProvider.validate(value).then(function(result) {
                     self.afterMediaURLValidate(self.PlatformEnum.ALL, result.valid);
                 });
             },
             onAndroidMediaURLInput: function(value) {
                 var self = this;
-                this.pushNotificationUnderEdit.message.settings.android.mediaURL = value;
+                this.pushNotificationUnderEdit.settings.android.mediaURL = value;
                 this.$refs.androidMediaURLValidationProvider.validate(value).then(function(result) {
                     self.afterMediaURLValidate(self.PlatformEnum.ANDROID, result.valid);
                 });
@@ -543,7 +671,7 @@
             },
             onIOSMediaURLInput: function(value) {
                 var self = this;
-                this.pushNotificationUnderEdit.message.settings.ios.mediaURL = value;
+                this.pushNotificationUnderEdit.settings.ios.mediaURL = value;
                 this.$refs.iosMediaURLValidationProvider.validate(value).then(function(result) {
                     self.afterMediaURLValidate(self.PlatformEnum.IOS, result.valid);
                 });
@@ -551,7 +679,7 @@
             },
             afterMediaURLValidate: function(platform, isValid) {
                 if (isValid) {
-                    this.fetchMediaMetadata(platform, this.pushNotificationUnderEdit.message.settings[platform].mediaURL);
+                    this.fetchMediaMetadata(platform, this.pushNotificationUnderEdit.settings[platform].mediaURL);
                 }
                 else {
                     this.mediaMetadata[platform] = null;
@@ -568,13 +696,40 @@
                     self.setMediaMetadata(platform, {});
                 });
             },
+            setCohortOptions: function(cohorts) {
+                this.cohortOptions = cohorts;
+            },
+            fetchCohorts: function() {
+                var self = this;
+                countlyPushNotification.service.fetchCohorts()
+                    .then(function(cohorts) {
+                        self.setCohortOptions(cohorts);
+                    }).catch(function() {
+                        self.setCohortOptions([]);
+                    });
+            },
+            setLocationOptions: function(locations) {
+                this.locationOptions = locations;
+            },
+            fetchLocations: function() {
+                var self = this;
+                countlyPushNotification.service.fetchLocations()
+                    .then(function(locations) {
+                        self.setLocationOptions(locations);
+                    }).catch(function() {
+                        self.setLocationOptions([]);
+                    });
+            },
+            setEventOptions: function(events) {
+                this.eventOptions = events;
+            },
             fetchAllEvents: function() {
                 var self = this;
-                countlyEventsOverview.service.fetchAllEvents()
+                countlyPushNotification.service.fetchEvents()
                     .then(function(events) {
-                        self.eventOptions = events.list.map(function(event) {
-                            return {label: event, value: event};
-                        });
+                        self.setEventOptions(events);
+                    }).catch(function() {
+                        self.setEventOptions([]);
                     });
             },
             getUserProperties: function() {
@@ -587,11 +742,10 @@
                     return selectedPlatform === platform;
                 }).length > 0;
             },
-            prepareMessage: function() {
-                //TODO-LA: get message localizations and prepare notification meta-data
-            },
         },
         mounted: function() {
+            this.fetchCohorts();
+            this.fetchLocations();
             this.fetchAllEvents();
             this.getUserProperties();
         },
@@ -627,7 +781,9 @@
                 transactionalPeriodFilters: transactionalPeriodFilterOptions,
                 selectedTransactionalPeriodFilter: countlyPushNotification.service.PeriodEnum.DAILY,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 UserEventEnum: countlyPushNotification.service.UserEventEnum,
+                StatusEnum: countlyPushNotification.service.StatusEnum,
                 optionalTableColumns: [
                     {
                         value: "content",
@@ -644,16 +800,13 @@
         },
         computed: {
             selectedPushNotificationType: function() {
-                return this.$store.state.countlyPushNotification.selectedPushNotificationType;
-            },
-            pushNotifications: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications;
+                return this.$store.state.countlyPushNotification.main.selectedPushNotificationType;
             },
             isLoading: function() {
-                return this.$store.state.countlyPushNotification.isLoading;
+                return this.$store.getters['countlyPushNotification/main/isLoading'];
             },
             pushNotificationRows: function() {
-                return this.pushNotifications.rows;
+                return this.$store.state.countlyPushNotification.main.rows;
             },
             pushNotificationOptions: function() {
                 var series = this.yAxisPushNotificationSeries;
@@ -665,16 +818,16 @@
                 };
             },
             totalAppUsers: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.totalAppUsers;
+                return this.$store.state.countlyPushNotification.main.totalAppUsers;
             },
             enabledUsers: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.enabledUsers;
+                return this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.ALL];
             },
             xAxisPushNotificationPeriods: function() {
-                return this.$store.state.countlyPushNotification.pushNotifications.periods[this.selectedPeriodFilter];
+                return this.$store.state.countlyPushNotification.main.periods[this.selectedPeriodFilter];
             },
             yAxisPushNotificationSeries: function() {
-                return this.pushNotifications.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
+                return this.$store.state.countlyPushNotification.main.series[this.selectedPeriodFilter].map(function(pushNotificationSerie) {
                     return {
                         data: pushNotificationSerie.data,
                         name: pushNotificationSerie.label
@@ -683,21 +836,19 @@
             },
             selectedStatusFilter: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.statusFilter;
+                    return this.$store.state.countlyPushNotification.main.statusFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/onSetStatusFilter", value);
-                //TODO-LA: filter table by status
-                // this.$store.dispatch("countlyPushNotification/fetchByType");
+                    this.$store.dispatch("countlyPushNotification/main/onSetStatusFilter", value);
                 }
             },
             selectedPlatformFilter: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.platformFilter;
+                    return this.$store.state.countlyPushNotification.main.platformFilter;
                 },
                 set: function(value) {
-                    this.$store.dispatch("countlyPushNotification/onSetPlatformFilter", value);
-                    this.$store.dispatch("countlyPushNotification/fetchAll");
+                    this.$store.dispatch("countlyPushNotification/main/onSetPlatformFilter", value);
+                    this.$store.dispatch("countlyPushNotification/main/fetchAll", true);
                 }
             },
             selectedPlatformFilterLabel: function() {
@@ -717,20 +868,36 @@
         },
         methods: {
             refresh: function() {
-                this.$store.dispatch('countlyPushNotification/fetchAll');
+                this.$store.dispatch('countlyPushNotification/main/fetchAll', false);
             },
             formatPercentage: function(value, decimalPlaces) {
                 return CountlyHelpers.formatPercentage(value, decimalPlaces);
             },
+            onApprove: function(id) {
+                var self = this;
+                countlyPushNotification.service.approve(id)
+                    .then(function() {
+                        self.$store.dispatch('countlyPushNotification/main/fetchAll', false);
+                    }).catch(function(error) {
+                        CountlyHelpers.notify({
+                            title: "Push notification approver error",
+                            message: error.message,
+                            type: "error"
+                        });
+                    });
+            },
             handleUserEvents: function(event, pushNotificationId) {
                 if (event === this.UserEventEnum.DUPLICATE) {
-                    this.$store.dispatch('countlyPushNotification/onDuplicatePushNotification', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/main/onDuplicate', pushNotificationId);
                 }
                 else if (event === this.UserEventEnum.RESEND) {
-                    this.$store.dispatch('countlyPushNotification/onResendPushNotification', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/main/onResend', pushNotificationId);
                 }
-                else {
-                    this.$store.dispatch('countlyPushNotification/onDeletePushNotification', pushNotificationId);
+                else if (event === this.UserEventEnum.APPROVE) {
+                    this.onApprove(pushNotificationId);
+                }
+                else if (event === this.UserEventEnum.DELETE) {
+                    this.$store.dispatch('countlyPushNotification/main/onDelete', pushNotificationId);
                 }
             },
             //TODO-LA: use status action specifications when ready
@@ -747,6 +914,12 @@
             // eslint-disable-next-line no-unused-vars
             shouldShowDeleteUserEvent: function(status) {
                 return true;
+            },
+            shouldShowApproveUserEvent: function(status) {
+                return status === this.StatusEnum.NOT_APPROVED;
+            },
+            shouldShowRejectUserEvent: function(status) {
+                return status === this.StatusEnum.NOT_APPROVED;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
@@ -772,7 +945,7 @@
             }
         },
         mounted: function() {
-            this.$store.dispatch('countlyPushNotification/fetchAll');
+            this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
         }
     });
 
@@ -791,11 +964,11 @@
         computed: {
             selectedPushNotificationTab: {
                 get: function() {
-                    return this.$store.state.countlyPushNotification.selectedPushNotificationType;
+                    return this.$store.state.countlyPushNotification.main.selectedPushNotificationType;
                 },
                 set: function(value) {
-                    this.$store.dispatch('countlyPushNotification/onSetPushNotificationType', value);
-                    this.$store.dispatch('countlyPushNotification/fetchAll');
+                    this.$store.dispatch('countlyPushNotification/main/onSetPushNotificationType', value);
+                    this.$store.dispatch('countlyPushNotification/main/fetchAll');
                 }
             }
         },
@@ -832,10 +1005,10 @@
         template: "#push-notification-details",
         data: function() {
             return {
+                StatusEnum: countlyPushNotification.service.StatusEnum,
                 selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
                 platformFilters: platformFilterOptions,
-                selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
-                localizationFilters: countlyPushNotification.service.getLocalizationFilterOptions(),
+                selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
                 currentSummaryTab: "message",
                 UserEventEnum: countlyPushNotification.service.UserEventEnum,
@@ -855,7 +1028,22 @@
                         name: "errors",
                         component: countlyPushNotificationComponent.DetailsErrorsTab
                     }
-                ]
+                ],
+                usersTargetedOptionsXAxis: {
+                    type: "category",
+                    data: [0],
+                    show: false
+                },
+                usersTargetedOptionsYAxis: {
+                    type: "value",
+                    max: 100,
+                    show: false,
+                },
+                barWidth: 150,
+                barGrid: {
+                    right: "80%",
+                    left: 0,
+                }
             };
         },
         computed: {
@@ -863,31 +1051,53 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message;
+                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
             },
-            usersTargetedOptions: function() {
+            pushNotificationChartBars: function() {
                 return {
-                    xAxis: {
-                        type: "category",
-                        data: [0, 1, 2, 3],
-                        show: false
-                    },
-                    yAxis: {
-                        type: "value",
-                        max: 100,
-                    },
-                    series: [
-                        {data: [ this.findTargetedUsers(), this.findSentPushNotifications(), this.findClickedPushNotifications(), this.findFailedPushNotifications()], showBackground: true, tooltip: {show: false}},
-                        {data: [0, 0, 0, 0], tooltip: {show: false}},
-                        {data: [0, 0, 0, 0], tooltip: {show: false}},
-                        {data: [0, 0, 0, 0], tooltip: {show: false}}
-                    ]
+                    targetedUsers: this.getDetailsBaseChartOptions(this.findTargetedUsers()),
+                    sentPushNotifications: this.getDetailsBaseChartOptions(this.findSentPushNotifications()),
+                    clickedPushNotifications: this.getDetailsBaseChartOptions(this.findClickedPushNotifications()),
+                    failedPushNotifications: this.getDetailsBaseChartOptions(this.findFailedPushNotifications())
                 };
             },
+            chartBarLegend: function() {
+                return {
+                    show: false
+                };
+            },
+            totalAppUsers: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.total;
+            },
+            isLoading: function() {
+                return this.$store.getters['countlyPushNotification/details/isLoading'];
+            },
+            localizations: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+            },
+            hasApproverPermission: function() {
+                return countlyPushNotification.service.hasApproverPermission();
+            }
         },
         methods: {
+            onApprove: function() {
+                var self = this;
+                countlyPushNotification.service.approve(this.pushNotification.id)
+                    .then(function() {
+                        self.$store.dispatch('countlyPushNotification/details/fetchById', self.pushNotification.id);
+                    }).catch(function(error) {
+                        CountlyHelpers.notify({
+                            title: "Push notification approver error",
+                            message: error.message,
+                            type: "error"
+                        });
+                    });
+            },
+            onReject: function() {
+                //TODO-LA:Implement reject message when it is supported from the API
+            },
             // eslint-disable-next-line no-unused-vars
-            handleUserEvents: function(event, id) {
+            handleUserEvents: function(event, pushNotificationId) {
             },
             getStatusBackgroundColor: function() {
                 if (this.pushNotification.status) {
@@ -914,9 +1124,23 @@
             formatDateAgoText: function(date) {
                 return countlyCommon.formatTimeAgoText(date).text;
             },
+            getDetailsBaseChartOptions: function(seriesData) {
+                return {
+                    xAxis: this.usersTargetedOptionsXAxis,
+                    yAxis: this.usersTargetedOptionsYAxis,
+                    series: [{data: [seriesData]}, this.getRemainingStackBar(seriesData)],
+                    tooltip: {show: false},
+                    stack: 'total',
+                    grid: this.barGrid,
+                    barWidth: this.barWidth
+                };
+            },
+            getRemainingStackBar: function(value) {
+                return {data: [100 - value], itemStyle: {color: "#E2E4E8"}, silent: true};
+            },
             findTargetedUsers: function() {
                 //TODO-LA: find how to calculate the targeted users;
-                return CountlyHelpers.formatPercentage(100);
+                return CountlyHelpers.formatPercentage(1);
             },
             findSentPushNotifications: function() {
                 return CountlyHelpers.formatPercentage(this.pushNotification.sent / this.pushNotification.total);
@@ -954,192 +1178,232 @@
         this.renderWhenReady(pushNotificationDetailsViewWrapper);
     });
 
-    //countly.views application management settings
-    var featureName = 'push';
+    //Push plugin application level configuration view
+    var initialAppLevelConfig = {
+        rate: "",
+        period: ""
+    };
+    initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.IOS] = {
+        _id: "",
+        keyId: "",
+        keyFile: "",
+        teamId: "",
+        bundleId: "",
+        authType: countlyPushNotification.service.IOSAuthConfigTypeEnum.P8,
+        passphrase: "",
+        hasKeyFile: false,
+        hasUploadedKeyFile: false,
+    };
+    initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.ANDROID] = {
+        _id: "",
+        firebaseKey: "",
+        type: "fcm"
+    };
+    initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.HUAWEI] = {
+        _id: "",
+        appId: "",
+        appSecret: ""
+    };
 
-    app.addAppManagementView('push', jQuery.i18n.map['push.plugin-title'], countlyManagementView.extend({
-        initialize: function() {
-            this.plugin = 'push';
-            this.templatePath = '/push/templates/push.html';
-            this.resetTemplateData();
-        },
-
-        resetTemplateData: function() {
-            var c = this.config();
-            if (c.i && c.i._id) {
-                this.templateData = {
-                    i: {
-                        _id: c.i._id,
-                        type: c.i.type,
-                        key: c.i.key,
-                        team: c.i.team,
-                        bundle: c.i.bundle,
-                        help: c.i.type === 'apn_universal' && c.i._id ? '<i class="fa fa-check-circle"></i>' + jQuery.i18n.map['mgmt-plugins.push.uploaded.p12'] : c.i.type === 'apn_token' ? '<i class="fa fa-check-circle"></i>' + jQuery.i18n.map['mgmt-plugins.push.uploaded.p8'] : ''
-                    // help: '<a href="' + countlyCommon.API_URL + '/i/pushes/download/' + c.i._id + '?api_key=' + countlyGlobal.member.api_key + '">' + jQuery.i18n.map['mgmt-plugins.push.uploaded'] + '</a>. ' + (c.i.type === 'apn_universal' ? (jQuery.i18n.map['mgmt-plugins.push.uploaded.bundle'] + ' ' + c.i.bundle) : '')
-                    }
-                };
-            }
-            else {
-                this.templateData = {
-                    i: {
-                        type: 'apn_token',
-                        key: '',
-                        team: '',
-                        bundle: '',
-                    }
-                };
-            }
-            var t = c.a && c.a && c.a.key ? jQuery.i18n.map['mgmt-plugins.push.detected'] + ' ' + (c.a.key.length > 50 ? 'FCM' : 'GCM') : '';
-            this.templateData.a = {
-                _id: c.a && c.a._id || '',
-                key: c.a && c.a && c.a.key || '',
-                help: c.a && c.a && c.a.key && c.a.key.length > 50 ? t : '',
-                ehelp: c.a && c.a && c.a.key && c.a.key.length < 50 ? t : ''
-            };
-            this.templateData.h = {
-                _id: c.h && c.h._id || '',
-                key: c.h && c.h && c.h.key || '',
-                secret: c.h && c.h && c.h.secret || ''
-            };
-            this.templateData.rate = {
-                rate: c.rate && c.rate.rate || '',
-                period: c.rate && c.rate.period || ''
+    var keyFileReader = new FileReader();
+    var PushNotificationAppLevelConfigView = countlyVue.views.create({
+        componentName: "AppSettingsContainerObservable",
+        template: CV.T("/push/templates/push-notification-app-level-config.html"),
+        data: function() {
+            return {
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                IOSAuthConfigTypeEnum: countlyPushNotification.service.IOSAuthConfigTypeEnum,
+                iosAuthConfigType: countlyPushNotification.service.IOSAuthConfigTypeEnum.P8,
+                iosAuthConfigTypeOptions: countlyPushNotification.service.iosAuthConfigTypeOptions,
+                viewModel: JSON.parse(JSON.stringify(initialAppLevelConfig)),
+                modelUnderEdit: Object.assign({}, { rate: "", period: ""}),
+                shouldSendInitializedDto: false,
+                uploadedIOSKeyFilename: '',
+                selectedAppId: this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID,
+                isHuaweiConfigTouched: false,
+                isIOSConfigTouched: false,
             };
         },
-
-        onChange: function(name, value) {
-            if (name === 'i.type') {
-                this.resetTemplateData();
-                countlyCommon.dot(this.templateData, name, value);
-                this.render();
-            }
-            else if (name === 'a.key' && value) {
-                this.templateData.a.type = value.length > 100 ? 'fcm' : 'gcm';
-                this.el.find('input[name="a.type"]').val(this.templateData.a.type);
-            }
-            else if (name === 'i.pass' && !value) {
-                delete this.templateData.i.pass;
-            }
+        computed: {
+            isHuaweiConfigRequired: function() {
+                return this.isHuaweiConfigTouched;
+            },
+            isIOSConfigRequired: function() {
+                return this.isIOSConfigTouched;
+            },
         },
-
-        isSaveAvailable: function() {
-            var td = JSON.parse(JSON.stringify(this.templateData)),
-                std = JSON.parse(this.savedTemplateData);
-
-            if (td.i) {
-                delete td.i.pass;
-            }
-
-            if (std.i) {
-                delete std.i.pass;
-            }
-
-            return JSON.stringify(td) !== JSON.stringify(std);
-        },
-
-        validate: function() {
-            var i = this.config().i || {},
-                //a = this.config().a || {},
-                t = this.templateData;
-
-            if (t.i.type) {
-                if (t.i.file && t.i.file.length) {
-                    if (t.i.type === 'apn_token') {
-                        if (!t.i.key) {
-                            return jQuery.i18n.map['mgmt-plugins.push.error.nokey'];
-                        }
-                        if (!t.i.team) {
-                            return jQuery.i18n.map['mgmt-plugins.push.error.noteam'];
-                        }
-                        if (!t.i.bundle) {
-                            return jQuery.i18n.map['mgmt-plugins.push.error.nobundle'];
-                        }
-                    }
+        methods: {
+            setModel: function(newModel) {
+                Object.assign(this.modelUnderEdit, newModel);
+            },
+            setViewModel: function(newViewModel) {
+                this.viewModel = JSON.parse(JSON.stringify(newViewModel));
+            },
+            resetConfig: function() {
+                this.setViewModel(initialAppLevelConfig);
+                this.setModel({rate: "", period: ""});
+                this.$refs.keyFileUploader.clearFiles();
+                this.isHuaweiConfigTouched = false;
+                this.isIOSConfigTouched = false;
+            },
+            onIOSAuthTypeChange: function(value) {
+                this.iosAuthConfigType = value;
+                this.$refs.keyFileUploader.clearFiles();
+                this.uploadedIOSKeyFilename = '';
+                this.isIOSConfigTouched = true;
+                var appPluginConfigDto = countlyGlobal.apps[this.selectedAppId].plugins;
+                var pushNotificationAppConfigDto = appPluginConfigDto && appPluginConfigDto.push;
+                var model = countlyPushNotification.mapper.incoming.mapAppLevelConfig(pushNotificationAppConfigDto);
+                if (model && model[this.PlatformEnum.IOS] && model[this.PlatformEnum.IOS].authType === value) {
+                    this.setModel(model);
+                    this.reconcilateViewModel(model);
                 }
                 else {
-                    if (t.i.type === 'apn_token') {
-                        if ((t.i.key || '') !== (i.key || '') || (t.i.team || '') !== (i.team || '') || (t.i.bundle || '') !== (i.bundle || '')) {
-                            return jQuery.i18n.map['mgmt-plugins.push.error.nofile'];
-                        }
+                    this.resetIOSModelPlatform();
+                    this.resetIOSViewModelPlatform();
+                    this.shouldSendInitializedDto = true;
+                    this.dispatchAppLevelConfigChangeEvent('authType', this.PlatformEnum.IOS);
+                }
+            },
+            setKeyFile: function(dataUrlFile) {
+                this.initializeModelPlatformIfNotFound(this.PlatformEnum.IOS);
+                this.modelUnderEdit[this.PlatformEnum.IOS].keyFile = dataUrlFile;
+                this.modelUnderEdit[this.PlatformEnum.IOS].hasUploadedKeyFile = true;
+                this.isIOSConfigTouched = true;
+            },
+            onKeyFileChange: function(file) {
+                this.uploadedIOSKeyFilename = file.name;
+                keyFileReader.readAsDataURL(file.raw);
+            },
+            resetIOSViewModelPlatform: function() {
+                var platform = this.PlatformEnum.IOS;
+                this.viewModel[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                this.viewModel[platform].authType = this.iosAuthConfigType;
+            },
+            resetIOSModelPlatform: function() {
+                var platform = this.PlatformEnum.IOS;
+                this.modelUnderEdit[this.PlatformEnum.IOS] = Object.assign({}, initialAppLevelConfig[platform]);
+                this.modelUnderEdit[platform].authType = this.iosAuthConfigType;
+            },
+            initializeModelPlatformIfNotFound: function(platform) {
+                if (!this.modelUnderEdit[platform]) {
+                    this.modelUnderEdit[platform] = Object.assign({}, initialAppLevelConfig[platform]);
+                    this.shouldSendInitializedDto = true;
+                    if (platform === this.PlatformEnum.IOS) {
+                        this.modelUnderEdit[platform].authType = this.iosAuthConfigType;
                     }
                 }
-            }
-
-            if (!t.h.key && t.h.secret) {
-                return jQuery.i18n.map['mgmt-plugins.push.error.h.key'];
-            }
-            if (t.h.key && !t.h.secret) {
-                return jQuery.i18n.map['mgmt-plugins.push.error.h.secret'];
-            }
-            if (t.h.key && (parseInt(t.h.key) + '') !== t.h.key) {
-                return jQuery.i18n.map['mgmt-plugins.push.error.h.keynum'];
-            }
-        },
-
-        loadFile: function() {
-            var data = JSON.parse(JSON.stringify(this.templateData));
-
-            if (data.i.file) {
-                if (data.i.file.indexOf('.p8') === data.i.file.length - 3) {
-                    data.i.fileType = 'p8';
+            },
+            dispatchInitialDtoIfNotSend: function(dto) {
+                if (this.shouldSendInitializedDto) {
+                    this.$emit('change', 'push', dto, true);
+                    this.shouldSendInitializedDto = false;
                 }
-                else if (data.i.file.indexOf('.p12') === data.i.file.length - 4) {
-                    data.i.fileType = 'p12';
+            },
+            dispatchAppLevelConfigChangeEvent: function(property, platform) {
+                var dto = countlyPushNotification.mapper.outgoing.mapAppLevelConfig(this.modelUnderEdit);
+                this.dispatchInitialDtoIfNotSend(dto);
+                var propertyDto = countlyPushNotification.mapper.outgoing.mapAppLevelConfigModelProperty(property);
+                if (platform) {
+                    var platformDto = countlyPushNotification.mapper.outgoing.mapPlatformItem(platform);
+                    this.$emit('change', 'push' + '.' + platformDto + '.' + propertyDto, dto[platformDto][propertyDto]);
                 }
                 else {
-                    return $.Deferred().reject('File type not supported');
+                    this.$emit('change', 'push.' + 'rate.' + propertyDto, dto.rate[propertyDto]);
                 }
-
-                var d = new $.Deferred(),
-                    reader = new window.FileReader();
-
-                reader.addEventListener('load', function() {
-                    data.i.file = reader.result;
-                    d.resolve({push: data});
+            },
+            updateAllModelsOnInput: function(property, value, platform) {
+                if (platform) {
+                    this.viewModel[platform][property] = value;
+                    this.modelUnderEdit[platform][property] = value;
+                }
+                else {
+                    this.viewModel[property] = value;
+                    this.modelUnderEdit[property] = value;
+                }
+            },
+            setIsConfigTouchedByPlatform: function(platform) {
+                if (platform === this.PlatformEnum.IOS) {
+                    this.isIOSConfigTouched = true;
+                }
+                if (platform === this.PlatformEnum.HUAWEI) {
+                    this.isHuaweiConfigTouched = true;
+                }
+            },
+            onInput: function(property, value, platform) {
+                if (platform) {
+                    this.initializeModelPlatformIfNotFound(platform);
+                    this.setIsConfigTouchedByPlatform(platform);
+                }
+                this.updateAllModelsOnInput(property, value, platform);
+                this.dispatchAppLevelConfigChangeEvent(property, platform);
+            },
+            onDiscard: function() {
+                this.resetConfig();
+                this.reconcilate();
+            },
+            onSelectApp: function(appId) {
+                this.selectedAppId = appId;
+                this.iosAuthConfigType = countlyPushNotification.service.IOSAuthConfigTypeEnum.P8;
+                this.resetConfig();
+                this.reconcilate();
+            },
+            addSelectedAppEventListener: function(callback) {
+                this.$on('selectedApp', callback);
+            },
+            addDiscardEventListener: function(callback) {
+                this.$on('discard', callback);
+            },
+            addKeyFileReaderLoadListener: function(callback) {
+                keyFileReader.addEventListener('load', callback);
+            },
+            removeKeyFileReaderLoadListener: function(callback) {
+                keyFileReader.removeEventListener('load', callback);
+            },
+            onKeyFileReady: function() {
+                this.setKeyFile(keyFileReader.result);
+                this.dispatchAppLevelConfigChangeEvent('keyFile', this.PlatformEnum.IOS);
+            },
+            reconcilateViewModel: function(newModel) {
+                var self = this;
+                Object.keys(this.PlatformEnum).forEach(function(platformKey) {
+                    var platform = self.PlatformEnum[platformKey];
+                    self.viewModel[platform] = newModel[platform] || Object.assign({}, initialAppLevelConfig[platform]);
                 });
-                reader.addEventListener('error', d.reject.bind(d));
-                reader.readAsDataURL(this.el.find('input[name="i.file"]')[0].files[0]);
-
-                return d.promise();
-            }
-            else {
-                return $.when({push: data});
-            }
+                this.viewModel.period = newModel.period;
+                this.viewModel.rate = newModel.rate;
+            },
+            reconcilate: function() {
+                var appPluginConfigDto = countlyGlobal.apps[this.selectedAppId].plugins;
+                var pushNotificationAppConfigDto = appPluginConfigDto && appPluginConfigDto.push;
+                if (pushNotificationAppConfigDto) {
+                    var model = countlyPushNotification.mapper.incoming.mapAppLevelConfig(pushNotificationAppConfigDto);
+                    this.reconcilateViewModel(model);
+                    this.setModel(model);
+                    if (model[this.PlatformEnum.IOS]) {
+                        this.iosAuthConfigType = model[this.PlatformEnum.IOS].authType;
+                    }
+                    this.shouldSendInitializedDto = true;
+                }
+            },
         },
-
-        prepare: function() {
-        // var text = jQuery.i18n.map["plugins.confirm"];
-        // var msg = { title: jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info: jQuery.i18n.map["plugins.hold-on"], sticky: true };
-        // CountlyHelpers.confirm(text, "popStyleGreen popStyleGreenWide", function (result) {
-        //     if (!result) {
-        //         return true;
-        //     }
-        //     CountlyHelpers.notify(msg);
-        //     app.activeView.togglePlugin(plugins);
-        // },[jQuery.i18n.map["common.no-dont-continue"],jQuery.i18n.map["plugins.yes-i-want-to-apply-changes"]],{title:jQuery.i18n.map["plugins-apply-changes-to-plugins"],image:"apply-changes-to-plugins"});
-            return this.loadFile().then(function(data) {
-                delete data.push.i.help;
-                delete data.push.a.help;
-
-                if (!data.push.i.file && !data.push.i._id) {
-                    data.push.i = null;
-                }
-                else if (data.push.i.file) {
-                    delete data.push.i._id;
-                }
-
-                if (!data.push.a.key) {
-                    data.push.a = null;
-                }
-
-                if (!data.push.h.key || !data.push.h.secret) {
-                    data.push.h = null;
-                }
-
-                return data;
-            });
+        mounted: function() {
+            this.addKeyFileReaderLoadListener(this.onKeyFileReady);
+            this.addDiscardEventListener(this.onDiscard);
+            this.addSelectedAppEventListener(this.onSelectApp);
+            this.reconcilate();
+        },
+        destroyed: function() {
+            this.removeKeyFileReaderLoadListener(this.onKeyFileReady);
         }
-    }));
+    });
+
+    countlyVue.container.registerData("/app/settings", {
+        _id: "push",
+        inputs: {},
+        title: CV.i18n('push-notification.title'),
+        component: PushNotificationAppLevelConfigView
+    });
 
     // app.addPageScript('/drill#', function() {
     //     if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
