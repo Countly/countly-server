@@ -86,6 +86,7 @@
                 mediaURL: ""
             }
         },
+        queryBuilder: null,
         messageType: countlyPushNotification.service.MessageTypeEnum.CONTENT,
         localizations: [countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE],
         cohorts: [],
@@ -215,6 +216,10 @@
             },
             controls: {
                 type: Object
+            },
+            queryBuilder: {
+                type: Object,
+                default: null,
             }
         },
         computed: {
@@ -404,6 +409,9 @@
                 return new Promise(function(resolve) {
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
+                    if (self.queryBuilder) {
+                        preparePushNotificationModel.queryBuilder = self.queryBuilder;
+                    }
                     countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
                         self.setId(response._id);
@@ -435,6 +443,9 @@
                 var options = {};
                 options.totalAppUsers = this.totalAppUsers;
                 options.localizations = this.localizationOptions;
+                if (this.queryBuilder) {
+                    model.queryBuilder = this.queryBuilder;
+                }
                 countlyPushNotification.service.save(model, options).then(function() {
                     done();
                     self.$store.dispatch("countlyPushNotification/main/fetchAll", true);

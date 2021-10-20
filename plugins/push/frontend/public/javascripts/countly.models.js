@@ -883,6 +883,9 @@
                 if (pushNotificationModel.delivery.type === SendEnum.LATER) {
                     resultDto.date = new Date(pushNotificationModel.delivery.startDate);
                 }
+                if (pushNotificationModel.queryBuilder && pushNotificationModel.type === TypeEnum.ONE_TIME) {
+                    resultDto.userConditions = pushNotificationModel.queryBuilder;
+                }
                 return resultDto;
             },
             mapModelToOneTimeDto: function(pushNotificationModel, options) {
