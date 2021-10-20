@@ -1141,154 +1141,171 @@
         }
     }));
 
-    app.addPageScript('/drill#', function() {
-        if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
-            return;
-        }
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
-            if (countlyAuth.validateCreate(featureName)) {
-                var content =
-            '<div class="item" id="action-create-message">' +
-                '<div class="item-icon">' +
-                    '<span class="logo ion-chatbox-working"></span>' +
-                '</div>' +
-                '<div class="content">' +
-                    '<div class="title" data-localize="pu.send-message"></div>' +
-                    '<div class="subtitle" data-localize="pu.send-message-desc"></div>' +
-                '</div>' +
-            '</div>';
+    // app.addPageScript('/drill#', function() {
+    //     if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
+    //         return;
+    //     }
+    //     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
+    //         if (countlyAuth.validateCreate(featureName)) {
+    //             var content =
+    //         '<div class="item" id="action-create-message">' +
+    //             '<div class="item-icon">' +
+    //                 '<span class="logo ion-chatbox-working"></span>' +
+    //             '</div>' +
+    //             '<div class="content">' +
+    //                 '<div class="title" data-localize="pu.send-message"></div>' +
+    //                 '<div class="subtitle" data-localize="pu.send-message-desc"></div>' +
+    //             '</div>' +
+    //         '</div>';
 
-                $('#actions-popup').append(content);
-                app.localize();
-                $('#action-create-message').off('click').on('click', function() {
-                    var message = {
-                        apps: [countlyCommon.ACTIVE_APP_ID],
-                        drillConditions: countlySegmentation.getRequestData()
-                    };
+    //             $('#actions-popup').append(content);
+    //             app.localize();
+    //             $('#action-create-message').off('click').on('click', function() {
+    //                 var message = {
+    //                     apps: [countlyCommon.ACTIVE_APP_ID],
+    //                     drillConditions: countlySegmentation.getRequestData()
+    //                 };
 
-                    // for (var k in filterData.dbFilter) {
-                    //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filterData.dbFilter[k];
-                    // }
+    //                 // for (var k in filterData.dbFilter) {
+    //                 //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filterData.dbFilter[k];
+    //                 // }
 
-                    components.push.popup.show(message);
-                    app.recordEvent({
-                        "key": "drill-action",
-                        "count": 1,
-                        "segmentation": {action: "push"}
-                    });
-                });
-                $('#bookmark-view').on('click', '.bookmark-action.send', function() {
-                    var filter = $(this).data('query');
+    //                 components.push.popup.show(message);
+    //                 app.recordEvent({
+    //                     "key": "drill-action",
+    //                     "count": 1,
+    //                     "segmentation": {action: "push"}
+    //                 });
+    //             });
+    //             $('#bookmark-view').on('click', '.bookmark-action.send', function() {
+    //                 var filter = $(this).data('query');
 
-                    var message = {
-                        apps: [countlyCommon.ACTIVE_APP_ID],
-                        drillConditions: filter
-                    };
+    //                 var message = {
+    //                     apps: [countlyCommon.ACTIVE_APP_ID],
+    //                     drillConditions: filter
+    //                 };
 
-                    // for (var k in filter) {
-                    //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filter[k];
-                    // }
+    //                 // for (var k in filter) {
+    //                 //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filter[k];
+    //                 // }
 
-                    components.push.popup.show(message);
-                });
-            }
-            else {
-                $('#drill-actions').remove('.btn-create-message');
-            }
-        }
-    });
+    //                 components.push.popup.show(message);
+    //             });
+    //         }
+    //         else {
+    //             $('#drill-actions').remove('.btn-create-message');
+    //         }
+    //     }
+    // });
     /**
 * Modify user profile views with push additions
 **/
-    function modifyUserDetailsForPush() {
-        if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
-            return;
+    // function modifyUserDetailsForPush() {
+    //     if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
+    //         return;
+    //     }
+    //     if (Backbone.history.fragment.indexOf('manage/') === -1 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
+    //     //check if it is profile view
+    //         if (app.activeView.updateEngagement) {
+    //             var userDetails = countlyUserdata.getUserdetails();
+
+    //             var tokens = [], platforms = [], test = false, prod = false;
+    //             tokens = Object.keys(userDetails).filter(function(k) {
+    //                 return k.indexOf('tk') === 0;
+    //             }).map(function(k) {
+    //                 return k.substr(2);
+    //             });
+    //             if (userDetails.tkid || userDetails.tkia || userDetails.tkip) {
+    //                 platforms.push('i');
+    //             }
+    //             if (userDetails.tkat || userDetails.tkap) {
+    //                 platforms.push('a');
+    //             }
+
+    //             test = !!userDetails.tkid || !!userDetails.tkia || !!userDetails.tkat;
+    //             prod = !!userDetails.tkip || !!userDetails.tkap;
+
+    //             if (tokens.length && countlyAuth.validateCreate('push')) {
+    //                 if (!$('.btn-create-message').length) {
+    //                     $('#user-profile-detail-buttons .cly-button-menu').append('<div class="item btn-create-message" >' + jQuery.i18n.map['push.create'] + '</div>');
+    //                     app.activeView.resetExportSubmenu();
+    //                 }
+    //                 $('.btn-create-message').show().off('click').on('click', function() {
+    //                     if (platforms.length) {
+    //                         components.push.popup.show({
+    //                             platforms: platforms,
+    //                             apps: [countlyCommon.ACTIVE_APP_ID],
+    //                             test: test && !prod,
+    //                             userConditions: {did: {$in: [app.userdetailsView.user_did]}}
+    //                         });
+    //                     }
+    //                     else {
+    //                         CountlyHelpers.alert(jQuery.i18n.map['push.no-user-token'], 'red');
+    //                     }
+    //                 });
+    //                 if (!$('#userdata-info > tbody > tr:last-child table .user-property-push').length) {
+    //                     $('<tr class="user-property-push"><td class="text-left"><span>' + components.t('userdata.push') + '</span></td><td class="text-right"></td></tr>').appendTo($('#userdata-info > tbody > tr:last-child table tbody'));
+    //                 }
+    //                 $('#userdata-info > tbody > tr:last-child table .user-property-push td.text-right').html(tokens.map(function(t) {
+    //                     return components.t('pu.tk.' + t);
+    //                 }).join('<br />'));
+    //             }
+    //             else {
+    //                 $('#userdata-info > tbody > tr:last-child table .user-property-push').remove();
+    //                 $('.btn-create-message').remove();
+    //                 app.activeView.resetExportSubmenu();
+    //             }
+    //         }
+    //         else {
+    //         //list view
+    //             if (countlyAuth.validateCreate('push')) {
+    //                 if (!$('.btn-create-message').length) {
+    //                     $('.widget-header').append($('<a class="icon-button green btn-header right btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+
+    //                 }
+    //                 $('.btn-create-message').off('click').on('click', function() {
+    //                     var q = app.userdataView.getExportQuery().query, filterData = {};
+    //                     if (q) {
+    //                         try {
+    //                             filterData = JSON.parse(q);
+    //                         }
+    //                         catch (ignored) {
+    //                         //ignoring error
+    //                         }
+    //                     }
+
+    //                     components.push.popup.show({
+    //                         apps: [countlyCommon.ACTIVE_APP_ID],
+    //                         userConditions: filterData
+    //                     });
+    //                 });
+    //             }
+    //             else {
+    //                 $('.btn-create-message').remove();
+    //             }
+    //         }
+    //     }
+    // }
+
+    // app.addRefreshScript('/users#', modifyUserDetailsForPush);
+    // app.addPageScript('/users#', modifyUserDetailsForPush);
+
+
+    countlyVue.container.registerMixin("/users/external/mixins", countlyVue.mixins.hasDrawers("pushNotificationDrawer"));
+    countlyVue.container.registerTemplate("/users/external/templates", "/push/templates/common-components.html");
+    countlyVue.container.registerData("/users/external/events", {
+        label: "Create new message",
+        command: "CREATE_PUSH_NOTIFICATION",
+        click: function() {
+            this.openDrawer("pushNotificationDrawer");
         }
-        if (Backbone.history.fragment.indexOf('manage/') === -1 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
-        //check if it is profile view
-            if (app.activeView.updateEngagement) {
-                var userDetails = countlyUserdata.getUserdetails();
-
-                var tokens = [], platforms = [], test = false, prod = false;
-                tokens = Object.keys(userDetails).filter(function(k) {
-                    return k.indexOf('tk') === 0;
-                }).map(function(k) {
-                    return k.substr(2);
-                });
-                if (userDetails.tkid || userDetails.tkia || userDetails.tkip) {
-                    platforms.push('i');
-                }
-                if (userDetails.tkat || userDetails.tkap) {
-                    platforms.push('a');
-                }
-
-                test = !!userDetails.tkid || !!userDetails.tkia || !!userDetails.tkat;
-                prod = !!userDetails.tkip || !!userDetails.tkap;
-
-                if (tokens.length && countlyAuth.validateCreate('push')) {
-                    if (!$('.btn-create-message').length) {
-                        $('#user-profile-detail-buttons .cly-button-menu').append('<div class="item btn-create-message" >' + jQuery.i18n.map['push.create'] + '</div>');
-                        app.activeView.resetExportSubmenu();
-                    }
-                    $('.btn-create-message').show().off('click').on('click', function() {
-                        if (platforms.length) {
-                            components.push.popup.show({
-                                platforms: platforms,
-                                apps: [countlyCommon.ACTIVE_APP_ID],
-                                test: test && !prod,
-                                userConditions: {did: {$in: [app.userdetailsView.user_did]}}
-                            });
-                        }
-                        else {
-                            CountlyHelpers.alert(jQuery.i18n.map['push.no-user-token'], 'red');
-                        }
-                    });
-                    if (!$('#userdata-info > tbody > tr:last-child table .user-property-push').length) {
-                        $('<tr class="user-property-push"><td class="text-left"><span>' + components.t('userdata.push') + '</span></td><td class="text-right"></td></tr>').appendTo($('#userdata-info > tbody > tr:last-child table tbody'));
-                    }
-                    $('#userdata-info > tbody > tr:last-child table .user-property-push td.text-right').html(tokens.map(function(t) {
-                        return components.t('pu.tk.' + t);
-                    }).join('<br />'));
-                }
-                else {
-                    $('#userdata-info > tbody > tr:last-child table .user-property-push').remove();
-                    $('.btn-create-message').remove();
-                    app.activeView.resetExportSubmenu();
-                }
-            }
-            else {
-            //list view
-                if (countlyAuth.validateCreate('push')) {
-                    if (!$('.btn-create-message').length) {
-                        $('.widget-header').append($('<a class="icon-button green btn-header right btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
-
-                    }
-                    $('.btn-create-message').off('click').on('click', function() {
-                        var q = app.userdataView.getExportQuery().query, filterData = {};
-                        if (q) {
-                            try {
-                                filterData = JSON.parse(q);
-                            }
-                            catch (ignored) {
-                            //ignoring error
-                            }
-                        }
-
-                        components.push.popup.show({
-                            apps: [countlyCommon.ACTIVE_APP_ID],
-                            userConditions: filterData
-                        });
-                    });
-                }
-                else {
-                    $('.btn-create-message').remove();
-                }
-            }
-        }
-    }
-
-    app.addRefreshScript('/users#', modifyUserDetailsForPush);
-    app.addPageScript('/users#', modifyUserDetailsForPush);
+    });
+    countlyVue.container.registerData("/users/external/drawers", {
+        id: "pushNotificationDrawer",
+        name: "pushNotificationDrawer",
+        component: PushNotificationDrawer,
+        type: countlyPushNotification.service.TypeEnum.ONE_TIME,
+    });
 
     //countly.view global management settings
     $(document).ready(function() {
@@ -1327,13 +1344,5 @@
             });
         }
 
-        $('body').off('click', '.routename-messagingDashboardView > .tab-buttons > div').on('click', '.routename-messagingDashboardView > .tab-buttons > div', function() {
-            if ($(this).next().length === 1) {
-                $('.widget-content').addClass('hide-zoom');
-            }
-            else {
-                $('.widget-content').removeClass('hide-zoom');
-            }
-        });
     });
 }());
