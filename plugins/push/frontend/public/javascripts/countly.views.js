@@ -1590,25 +1590,67 @@
     //     }
     // }
 
-    // app.addRefreshScript('/users#', modifyUserDetailsForPush);
-    // app.addPageScript('/users#', modifyUserDetailsForPush);
 
+    /**
+     * 
+     * @returns {Object} container data with create new message event handler
+     */
+    function getCreateNewMessageEventContainerData() {
+        return {
+            label: "Create new message",
+            command: "CREATE_PUSH_NOTIFICATION",
+            click: function() {
+                this.openDrawer("pushNotificationDrawer");
+            }
+        };
+    }
+    /**
+     * 
+     * @returns {Object} container data with push notification drawer
+     */
+    function getDrawerContainerData() {
+        return {
+            id: "pushNotificationDrawer",
+            name: "pushNotificationDrawer",
+            component: PushNotificationDrawer,
+            type: countlyPushNotification.service.TypeEnum.ONE_TIME,
+        };
+    }
+    /**
+     * addDrawerToDrillmainView - adds push notification drawer to drill main view.
+     */
+    function addDrawerToDrillMainView() {
+        countlyVue.container.registerMixin("/drill/external/mixins", countlyVue.mixins.hasDrawers("pushNotificationDrawer"));
+        countlyVue.container.registerTemplate("/drill/external/templates", "/push/templates/common-components.html");
+        countlyVue.container.registerData("/drill/external/events", getCreateNewMessageEventContainerData());
+        countlyVue.container.registerData("/drill/external/drawers", getDrawerContainerData());
+    }
 
-    countlyVue.container.registerMixin("/users/external/mixins", countlyVue.mixins.hasDrawers("pushNotificationDrawer"));
-    countlyVue.container.registerTemplate("/users/external/templates", "/push/templates/common-components.html");
-    countlyVue.container.registerData("/users/external/events", {
-        label: "Create new message",
-        command: "CREATE_PUSH_NOTIFICATION",
-        click: function() {
-            this.openDrawer("pushNotificationDrawer");
+    /**
+     * addDrawerToUserProfilesMainView - adds push notification drawer to user profiles main view.
+     */
+    function addDrawerToUserProfilesMainView() {
+        countlyVue.container.registerMixin("/users/external/mixins", countlyVue.mixins.hasDrawers("pushNotificationDrawer"));
+        countlyVue.container.registerTemplate("/users/external/templates", "/push/templates/common-components.html");
+        countlyVue.container.registerData("/users/external/events", getCreateNewMessageEventContainerData());
+        countlyVue.container.registerData("/users/external/drawers", getDrawerContainerData());
+    }
+
+    /**
+     * adds external drawers to drill and user profiles views when active application is active, user has push notification create permissions and is not restricted to push notifications page
+     */
+    function addExternalDrawers() {
+        if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
+            return;
         }
-    });
-    countlyVue.container.registerData("/users/external/drawers", {
-        id: "pushNotificationDrawer",
-        name: "pushNotificationDrawer",
-        component: PushNotificationDrawer,
-        type: countlyPushNotification.service.TypeEnum.ONE_TIME,
-    });
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
+            addDrawerToDrillMainView();
+            addDrawerToUserProfilesMainView();
+        }
+    }
+
+    addExternalDrawers();
+
 
     //countly.view global management settings
     $(document).ready(function() {
