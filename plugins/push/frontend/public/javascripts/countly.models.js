@@ -293,6 +293,17 @@
             }
             return moment(dateTime).format(format);
         },
+        unwrapUserProperties: function(queryFilter) {
+            var result = {};
+            Object.keys(queryFilter).forEach(function(filterKey) {
+                var splittedKey = filterKey.split('.');
+                if (splittedKey.length === 2) {
+                    var keyWithoutPrefix = splittedKey[1];
+                    result[keyWithoutPrefix] = queryFilter[filterKey];
+                }
+            });
+            return result;
+        }
     };
 
     countlyPushNotification.mapper = {
@@ -883,8 +894,8 @@
                 if (pushNotificationModel.delivery.type === SendEnum.LATER) {
                     resultDto.date = new Date(pushNotificationModel.delivery.startDate);
                 }
-                if (pushNotificationModel.queryBuilder && pushNotificationModel.type === TypeEnum.ONE_TIME) {
-                    resultDto.userConditions = pushNotificationModel.queryBuilder;
+                if (pushNotificationModel.queryFilter && pushNotificationModel.type === TypeEnum.ONE_TIME) {
+                    resultDto.userConditions = pushNotificationModel.queryFilter;
                 }
                 return resultDto;
             },

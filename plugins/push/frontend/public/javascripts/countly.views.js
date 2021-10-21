@@ -86,7 +86,7 @@
                 mediaURL: ""
             }
         },
-        queryBuilder: null,
+        queryFilter: null,
         messageType: countlyPushNotification.service.MessageTypeEnum.CONTENT,
         localizations: [countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE],
         cohorts: [],
@@ -217,9 +217,14 @@
             controls: {
                 type: Object
             },
-            queryBuilder: {
+            queryFilter: {
                 type: Object,
                 default: null,
+            },
+            wrappedUserProperties: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         computed: {
@@ -403,15 +408,24 @@
                     type: "error"
                 });
             },
+            getQueryFilter: function() {
+                if (this.wrappedUserProperties) {
+                    return countlyPushNotification.helper.unwrapUserProperties(this.queryFilter);
+                }
+                return this.queryFilter;
+            },
+            addQueryFilterIfFound: function(model) {
+                if (this.queryFilter) {
+                    model.queryFilter = this.getQueryFilter();
+                }
+            },
             prepareMessage: function() {
                 var self = this;
                 this.setIsLoading(true);
                 return new Promise(function(resolve) {
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
-                    if (self.queryBuilder) {
-                        preparePushNotificationModel.queryBuilder = self.queryBuilder;
-                    }
+                    self.addQueryFilterIfFound(preparePushNotificationModel);
                     countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
                         self.setId(response._id);
@@ -443,9 +457,7 @@
                 var options = {};
                 options.totalAppUsers = this.totalAppUsers;
                 options.localizations = this.localizationOptions;
-                if (this.queryBuilder) {
-                    model.queryBuilder = this.queryBuilder;
-                }
+                this.addQueryFilterIfFound(model);
                 countlyPushNotification.service.save(model, options).then(function() {
                     done();
                     self.$store.dispatch("countlyPushNotification/main/fetchAll", true);
