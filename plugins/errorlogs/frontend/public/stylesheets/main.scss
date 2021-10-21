@@ -1,3 +1,5 @@
-#errorlogs-dropdown-cly-section-id {
-    margin-bottom: -1px ;
+.routename-errorlogs {
+    &__dropdown-frame {
+        border-bottom: 1px solid #ececec;
+    }
 }

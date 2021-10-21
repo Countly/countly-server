@@ -5,15 +5,17 @@
         </template>
     </cly-header>
     <cly-main>
-        <cly-section id="errorlogs-dropdown-cly-section-id">
-            <el-select v-model="selectLog" v-on:change="changeLog" class="bu-m-3">
-                <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in logList"></el-option>
-            </el-select>
-        </cly-section>
         <cly-section>
+            <div class="routename-errorlogs__dropdown-frame">
+                <el-select v-model="selectLog" v-on:change="changeLog" class="bu-m-3">
+                    <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in logList">
+                    </el-option>
+                </el-select>
+            </div>
             <div class="bu-p-5">
                 <el-link v-on:click="clear" class="bu-is-underlined bu-is-pulled-right bu-ml-4">
-                    {{i18n('errorlogs.clear')}}</el-link>
+                    {{i18n('errorlogs.clear')}}
+                </el-link>
                 <a :href="downloadLink" target="_blank">
                     <el-link class="bu-is-underlined bu-is-pulled-right">{{i18n('errorlogs.download')}}</el-link>
                 </a>
