@@ -1,0 +1,115 @@
+    <cly-drawer
+		@submit="onSubmit"
+		@close="onClose"
+		@copy="onCopy"
+		:title="title"
+		:saveButtonLabel="saveButtonLabel"
+		v-bind="$props.controls">
+        <template v-slot:default="drawerScope">
+            <cly-form-step id="step1" :name="i18n('hooks.step1')">
+                <div class="cly-vue-drawer-step__section">
+                    <div class="text-small text-heading">
+                        {{i18n('hooks.name')}}
+					</div>
+                    <validation-provider name="name" rules="required" v-slot="v">
+						<el-input
+							v-model="drawerScope.editedObject.name"
+							:class="{'is-error': v.errors.length > 0}"
+							:placeholder="i18n('hooks.messages.name.placeholder')">
+						</el-input>
+					</validation-provider>
+                </div>
+                <div class="cly-vue-drawer-step__section">
+                    <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                        <div class="text-small text-heading">
+                            {{i18n('hooks.description')}}
+                        </div>
+                        <div class="cly-vue-hook-drawer__help-text">
+                            {{i18n('hooks.optional')}}
+                        </div>
+                    </div>
+                    <el-input v-model="drawerScope.editedObject.description" :placeholder="i18n('hooks.description-placeholder')"></el-input>
+                </div>
+
+                <div class="cly-vue-drawer-step__section">
+                    <div class="text-small text-heading">
+                        {{i18n('hooks.source-application')}} 
+					</div>
+                    <validation-provider name="name" rules="required" v-slot="v">
+                        <cly-select-x
+                           :placeholder="i18n('hooks.select-application')"
+                           mode="single-list"
+                           v-model="drawerScope.editedObject.apps[index]"
+                           v-for="(app, index) in drawerScope.editedObject.apps"
+                           :key="index"
+                           :class="{'is-error': v.errors.length > 0, 'cly-vue-hook-drawer__is-full-line':true}"
+                           :options="appsSelectorOption">
+                        </cly-select-x>
+                    </validation-provider>
+                </div>
+
+                <pre v-if="0">
+                {{drawerScope.editedObject}}
+                </pre>
+            </cly-form-step>
+
+            <cly-form-step id="step2" :name="i18n('hooks.step2')">
+                <div class="text-big text-heading cly-vue-hook-drawer__no-margin">
+                    {{i18n('hooks.trigger')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                </div>
+                <div class="cly-vue-drawer-hook_description">
+                    {{i18n('hooks.trigger-intro')}} 
+                </div>
+
+                <hook-trigger 
+                    :hookData.sync="drawerScope.editedObject" 
+                    v-model="drawerScope.editedObject.trigger" ref="trigger"
+                 />
+                 <pre v-if="0">
+                    {{drawerScope.editedObject}}
+                 </pre>
+                </div>
+            </cly-form-step>
+
+            <cly-form-step id="step3" :name="i18n('hooks.step3')">
+                <div class="text-big text-heading cly-vue-hook-drawer__no-margin">
+                   {{i18n('hooks.effects')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                </div>
+                <div class="cly-vue-drawer-hook_description" style="margin-bottom:32px;">
+                    {{i18n('hooks.effects-intro')}} 
+                </div>
+                    <hook-effect 
+                        @removeEffect="removeEffect" 
+                        v-bind:index="index" 
+                        v-for="(effect, index) in drawerScope.editedObject.effects" 
+                        :key="index" 
+                        v-model="drawerScope.editedObject.effects[index]"/>
+                </div>
+                <el-button @click="addEffect" class="1">{{i18n('hooks.add-effect')}}</el-button>
+
+
+                <div>
+                    <div class="cly-vue-hook-drawer-action-card">
+                        <div style="display:flex">
+                            <div class="is-action-card-title" style="flex-grow: 1;">
+                                <div class="text-medium text-heading cly-vue-hook-drawer__no-margin">
+                                    {{i18n('hooks.test-hook')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                                </div>
+                                <div class="cly-vue-drawer-hook_description">
+                                    {{i18n('hooks.test-hook-intro')}} 
+                                </div>
+                            </div>
+                            <div class="is-action-card-title-right"><el-button @click="" class="1">{{i18n('hooks.test-hook-button')}}</el-button></div>
+                        </div>
+                    </div>
+                </div>
+
+                <pre v-if="0">
+                    {{drawerScope.editedObject}}
+                </pre>
+
+            </cly-form-step>
+        </template>
+    </cly-drawer>
+
+

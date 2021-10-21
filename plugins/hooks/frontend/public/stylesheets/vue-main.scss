@@ -1,0 +1,182 @@
+.hooks-button-group {
+    color: #020202;
+    background-color: #fff;
+    border-color: #bdb3b3;
+}
+
+.cly-vue-hook-drawer {
+     &__help-text {
+        font-family: Inter;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        color: #81868D;
+      }
+      
+      &__is-hidden {
+        visibility: hidden;
+      }
+      &__is-full-line {
+          width: 100%;
+      }
+
+      &__no-margin {
+          margin-bottom: 0px !important;
+      }
+}
+
+.cly-vue-drawer-hook_description {
+    font-size: 13px;
+    line-height: 16px;
+    color: #81868D;
+    margin-bottom: 14px;
+}
+.cly-vue-drawer-hook_section_margin {
+    margin-top: 32px;
+}
+
+.cly-vue-hook-drawer-action-card {
+    background: #FCFCFC;
+    border: 1px solid #E2E4E8;
+    box-sizing: border-box;
+    border-radius: 6px;
+    padding: 22px 16px;
+    margin: 24px 0px;
+    .is-action-card-title {
+          font-family: Inter;
+          font-style: normal;
+          font-weight: 500;
+          font-size: 12px;
+          line-height: 15px;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          color: #333C48;
+          margin: 2px 0px 12px 0px;
+      }
+      .is-action-card-title-right {
+          font-family: Inter;
+          font-style: normal;
+          font-weight: 500;
+          font-size: 13px;
+          line-height: 13px;
+          text-align: right;
+          color: #D23F00;
+          margin: 2px 0px 12px 0px;
+      }
+      .is-action-card-title-right:hover {
+          cursor: pointer;
+      }
+
+      .is-hook-effect-option {
+          padding: 17px !important;
+          background-color: #fff;
+      }
+}
+
+.cly-vue-hook-table {
+    .el-table_1_column_5  .cell {
+        float: right;
+    }
+    .is-name-col {
+        font-size: 14px;
+        line-height: 20px;
+        color: #333C48;
+        word-break: break-word;
+    }
+    .is-desc-col {
+        font-size: 12px;
+        line-height: 16px;
+        color: #A7AEB8;
+        margin-top: 6px;
+    }
+    .is-trigger-col-tag {
+        background: #FCF5E5;
+        border-radius: 4px;
+        color: #CDAD7A;
+        font-weight: bold;
+        font-size: 10px;
+        line-height: 12px;
+        letter-spacing: 0.5px;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        padding: 4px;
+        width: fit-content;
+    }
+    .is-effect-col {
+        display: flex;
+        margin-top: 18px;
+
+        .is-effect-col-arrow {
+            margin-right: 7.75px;
+        }
+    }
+
+    .is-trigger-effect-desc {
+        font-size: 14px;
+        line-height: 20px;
+        color: #333C48;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .is-created-by-col {
+        font-size: 14px;
+        line-height: 20px;
+        color: #333C48;
+    }
+    .is-created-by-desc-col {
+        font-size: 12px;
+        line-height: 16px;
+        color: #A7AEB8;
+    }
+    .is-last-col {
+        display: flex;
+        flex-direction: row;
+        .flex-grow {
+            flex-grow: 1;
+        }
+        .is-option-button {
+            display: none;
+            .el-select {
+                -webkit-box-shadow: unset;
+                box-shadow: unset;
+                border-radius: unset;
+            }
+            
+        }
+    }
+    tr:hover .is-option-button {
+        display: block;
+    }
+}
+
+.is-hook-table-option-dropdown {
+    background: #FFFFFF;
+    border: 1px solid #A7AEB8;
+    box-sizing: border-box;
+    border-radius: 4px;
+    .is-hook-table-option-item {
+        border-radius: 4px;
+        color: #333C48;
+        height:  29px;
+        line-height: 29px;
+        margin: 8px 6px;
+    }
+    .is-hook-table-option-item:hover {
+        background: #F6F6F6;
+        color: #0166D6;
+    }
+}
+
+.detail-info {
+    border: 1px solid #ECECEC;
+    box-sizing: border-box;
+    box-shadow: 0px 1px 0px #ECECEC;
+    border-radius: 4px;
+}
+
+.code-pre-line {
+    white-space: pre-line;
+}

@@ -1,0 +1,214 @@
+
+<script type="text/x-template" id="hooks-triggers">
+    <div>
+        <div class="text-medium text-heading cly-vue-drawer-hook_section_margin">
+          {{i18n('hooks.trigger-via')}} 
+        </div>
+        <cly-select-x
+           :placeholder="i18n('hooks.select-trigger')"
+           mode="single-list"
+           v-model="value.type"
+           :class="{'cly-vue-hook-drawer__is-full-line':true}"
+           :options="triggersOption">
+        </cly-select-x>
+        <div class="cly-vue-drawer-hook_section_margin">
+            <component
+                :is="value.type"
+                v-model="value.configuration"
+                :hookData="$attrs.hookData"
+                :app="$attrs.hookData.apps[0]"
+            />
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="hooks-APIEndpointTrigger">
+    <div>
+    <div class="cly-vue-drawer-step__section">
+        <div class="text-medium text-heading">
+           {{i18n('hooks.trigger-api-endpoint-uri')}} 
+	    </div>
+        <div class="cly-vue-drawer-hook_description">
+           {{i18n('hooks.api-trigger-intro')}} 
+        </div>
+
+        <el-input v-model="value.path" placeholder="URL-Path" disabled>
+            <template v-slot:append>
+                <span style='color:#0166D6;margin-left: 8px; cursor:pointer;' class='hook-trigger-url' @click="copyURL">{{i18n('hooks.copy-url')}}</span>
+                <textarea id='url-box' style='position:fixed; z-index:-1000;top:-100px;' v-model ="url"/>
+            </template>
+        </el-input>
+    </div>
+</script>
+
+
+
+<script type="text/x-template" id="hooks-IncomingDataTrigger">
+    <div>
+        <div class="cly-vue-drawer-step__section">
+            <div class="text-medium text-heading">
+              {{i18n("hooks.incoming-data")}}
+            </div>
+            <cly-select-x
+               :class="{'cly-vue-hook-drawer__is-full-line':true}"
+               placeholder="Select Trigger"
+               mode="single-list"
+               v-model="value.event[0]"
+               @change="eventChange"
+               :options="eventOptions">
+            </cly-select-x>
+            
+        </div>
+        <div class="cly-vue-hook-drawer-action-card">
+            <div class="text-medium text-heading">
+               {{i18n('hooks.filter-rule')}} 
+            </div>
+            <segmentation-filter
+                    v-bind:event-name="selectedEvent"
+                    v-bind:initial-query="query"
+                    v-bind:hidden-fields="hiddenFields"
+                    v-on:query_changed="queryChange"
+                    ref="filterSegments"
+                    />
+         </div>
+    </div>
+</script>
+
+<script type="text/x-template" id ="hooks-ScheduledTrigger"> 
+    <div>
+        <div class="cly-vue-drawer-step__section">
+                <div class="text-medium text-heading cly-vue-hook-drawer__no-margin">
+                 {{i18n('hooks.ScheduledTrigger')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                </div>
+                <div class="cly-vue-drawer-hook_description">
+                {{i18n('hooks.scheduled-trigger-intro')}}
+                </div>
+        </div>
+
+        <div class="cly-vue-drawer-step__section">
+                <div class="text-medium text-heading cly-vue-hook-drawer__no-margin">
+                 Frequency <span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                </div>
+                <div class="cly-vue-drawer-hook_description">
+                    Recurring hook trigger will be run on periods your select below. The time will base on your Countly Server time (mostly are UTC time). 
+                </div>
+                <cly-select-x
+                   placeholder="Select Period"
+                   mode="single-list"
+                   v-model="value.period1"
+                   :class="{'cly-vue-hook-drawer__is-full-line':true}"
+                   :options="period1Options">
+                </cly-select-x>
+
+        </div>
+
+        <div class="cly-vue-drawer-step__section" v-if="value.period1 === 'month'">
+                <div class="text-medium text-heading cly-vue-hook-drawer__no-margin">
+                 Day of the Month<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                </div>
+                <div class="cly-vue-drawer-hook_description">
+                 Choose the day of the month you want to be triggered every month
+                </div>
+                <cly-select-x
+                   placeholder="Select Period"
+                   mode="single-list"
+                   v-model="value.period2"
+                   :class="{'cly-vue-hook-drawer__is-full-line':true}"
+                   :options="periodDaysOptions">
+                </cly-select-x>
+        </div>
+
+        <div class="cly-vue-drawer-step__section" v-if="value.period1 === 'week'">
+                <div class="text-medium text-heading cly-vue-hook-drawer__no-margin">
+                 Day of the week<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                </div>
+                <div class="cly-vue-drawer-hook_description">
+                 Choose the day of the week you want to be triggered every week 
+                </div>
+                <cly-select-x
+                   placeholder="Select Period"
+                   mode="single-list"
+                   :class="{'cly-vue-hook-drawer__is-full-line':true}"
+                   v-model="value.period2"
+                   :options="periodWeekOptions">
+                </cly-select-x>
+        </div>
+
+        <div class="cly-vue-drawer-step__section" v-if="value.period1 !== null">
+                <div class="text-medium text-heading cly-vue-hook-drawer__no-margin">
+                 Time<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                </div>
+                <div class="cly-vue-drawer-hook_description">
+                    Hook will be triggered in chosen time
+                </div>
+                <cly-select-x
+                   placeholder="Select Time"
+                   mode="single-list"
+                   :class="{'cly-vue-hook-drawer__is-full-line':true}"
+                   v-model="value.period3"
+                   :options="periodHoursOptions">
+                </cly-select-x>
+        </div>
+        
+        <div class="cly-vue-drawer-step__section">
+                <div class="text-medium text-heading cly-vue-hook-drawer__no-margin">
+                 Timezone <span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                </div>
+                <div class="cly-vue-drawer-hook_description">
+                    Hook will be triggered in chosen timezone
+                </div>
+                <cly-select-x
+                   placeholder="Select Period"
+                   mode="single-list"
+                   v-model="value.timezone2"
+                   :class="{'cly-vue-hook-drawer__is-full-line':true}"
+                   :options="timezoneOptions">
+                </cly-select-x>
+
+        </div>
+        <span class="cly-vue-hook-drawer__is-hidden">{{cron}}</span>
+
+    </div>
+
+</script>
+
+<script type="text/x-template" id="hooks-InternalEventTrigger">
+    <div>
+        <div class="cly-vue-drawer-step__section">
+            <div class="text-medium text-heading">
+            Internal event
+            </div>
+            <cly-select-x
+               placeholder="Select an Internal Event"
+               mode="single-list"
+               v-model="value.eventType"
+               :options="internalEventOptions">
+            </cly-select-x>
+
+        </div>
+        <div class="cly-vue-drawer-step__section" v-if="value.eventType === '/cohort/enter' || value.eventType === '/cohort/exit'  ">
+            <div class="text-medium text-heading">
+                Cohort
+            </div>
+            <cly-select-x
+               placeholder="Select a Cohort"
+               mode="single-list"
+               v-model="value.cohortID"
+               :options="cohortOptions">
+            </cly-select-x>
+         </div>
+        <div class="cly-vue-drawer-step__section" v-if="value.eventType === '/hooks/trigger'">
+            <div class="text-medium text-heading">
+              Hook 
+            </div>
+            <cly-select-x
+               placeholder="Select a Hook"
+               mode="single-list"
+               v-model="value.hookID"
+               :options="hookOptions">
+            </cly-select-x>
+         </div>
+    </div>
+</script>
+
+
