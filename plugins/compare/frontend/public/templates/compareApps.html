@@ -29,14 +29,14 @@
     </el-button>
     </div>
     <div class="bu-pt-4 bu-mb-4">
-    <cly-date-picker class="cly-vue-apps-all-date-picker" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker>
+    <cly-date-picker-g class="cly-vue-apps-all-date-picker"></cly-date-picker-g>
     </div>
     <cly-section>
     <div class="cly-vue-compare-apps__graph-section">
       <div class="cly-vue-compare-apps__graph-section__dropdown">
       <span class="text-big bu-pr-2" >{{i18n('compare.results.by')}}</span>
       <el-select :arrow="false" :adaptiveLength="true" v-model="selectedGraph">
-        <el-option v-for="item in availableMetrics" :key="item" :value="item">
+        <el-option v-for="item in availableMetrics" :key="item.key" :value="item.key" :label="item.label">
         </el-option>
       </el-select>
       </div>

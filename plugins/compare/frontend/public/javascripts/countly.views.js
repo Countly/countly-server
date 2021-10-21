@@ -96,22 +96,22 @@
                 get: function() {
                     var self = this;
                     if (self.selectedMetric === "Sum") {
-                        return this.i18n("events.compare.results.by.sum");
+                        return this.i18n("compare.events.results.by.sum");
                     }
                     else if (self.selectedMetric === "Duration") {
-                        return this.i18n("events.compare.results.by.duration");
+                        return this.i18n("compare.events.results.by.duration");
                     }
-                    return this.i18n("events.compare.results.by.count");
+                    return this.i18n("compare.events.results.by.count");
                 },
                 set: function(selectedItem) {
                     var self = this;
                     var selectedEvents = this.$store.getters["countlyCompareEvents/selectedEvents"];
-                    if (selectedItem === this.i18n("events.compare.results.by.sum")) {
+                    if (selectedItem === "Sum") {
                         self.selectedMetric = "Sum";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "s");
                         this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                     }
-                    else if (selectedItem === this.i18n("events.compare.results.by.duration")) {
+                    else if (selectedItem === "Duration") {
                         self.selectedMetric = "Duration";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "dur");
                         this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
@@ -129,9 +129,9 @@
                 value: "",
                 maxLimit: 20,
                 availableMetrics: [
-                    this.i18n("events.compare.results.by.count"),
-                    this.i18n("events.compare.results.by.sum"),
-                    this.i18n("events.compare.results.by.duration")
+                    { key: "Count", label: this.i18n("compare.events.results.by.count")},
+                    { key: "Sum", label: this.i18n("compare.events.results.by.sum")},
+                    { key: "Duration", label: this.i18n("compare.events.results.by.duration")}
                 ],
                 selectedMetric: "Count"
             };

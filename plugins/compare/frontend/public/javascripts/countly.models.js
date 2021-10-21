@@ -95,7 +95,7 @@
                     data: data,
                 };
                 var prevObj = {
-                    name: CV.i18n("events.compare.previous.period"),
+                    name: CV.i18n("compare.events.previous.period"),
                     data: prevData,
                 };
                 series.push(obj, prevObj);
@@ -123,7 +123,7 @@
                 var obj = {};
                 var prevObj = {};
                 obj.name = selectedEvents[0].startsWith('[CLY]_group') ? groupData[selectedEvents[0]] : countlyCompareEvents.helpers.getEventLongName(selectedEvents[0], map);
-                prevObj.name = CV.i18n("events.compare.previous.period");
+                prevObj.name = CV.i18n("compare.events.previous.period");
                 legendData.push(obj, prevObj);
             }
             else {

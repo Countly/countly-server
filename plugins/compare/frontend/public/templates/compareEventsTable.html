@@ -5,28 +5,28 @@
       <template v-slot="scope">
         <el-table-column fixed="left" type="selection" :reserve-selection="true" width="55">
         </el-table-column>
-        <el-table-column sortable="true" prop="name" :label="i18n('events.compare.event')">
+        <el-table-column sortable="true" prop="name" :label="i18n('compare.events.event')">
           <template v-slot="rowScope">
             <div class="has-ellipsis">
               {{rowScope.row.name}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="c" :label="i18n('events.compare.count')">
+        <el-table-column sortable="true" prop="c" :label="i18n('compare.events.count')">
           <template v-slot="rowScope">
             <div>
               {{rowScope.row.c}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="s" :label="i18n('events.compare.sum')">
+        <el-table-column sortable="true" prop="s" :label="i18n('compare.events.sum')">
           <template v-slot="rowScope">
             <div>
               {{rowScope.row.s}}
             </div>
           </template>
         </el-table-column>
-        <el-table-column sortable="true" prop="dur" :label="i18n('events.compare.duration')">
+        <el-table-column sortable="true" prop="dur" :label="i18n('compare.events.duration')">
           <template v-slot="rowScope">
             <div>
               {{rowScope.row.dur}}

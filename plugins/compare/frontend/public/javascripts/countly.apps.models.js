@@ -109,7 +109,6 @@
             return {
                 allAppsCompareData: {},
                 selectedApps: [],
-                selectedDatePeriod: countlyCommon.getPeriod(),
                 selectedGraphMetric: "total-sessions",
                 lineChartData: {},
                 lineLegend: {},

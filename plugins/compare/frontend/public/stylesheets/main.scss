@@ -1,5 +1,6 @@
 @use "../../../../../frontend/express/public/stylesheets/styles/base/_typography-variables.scss" as t;
-
+@use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
+@use "sass:map";
 .cly-vue-compare-events {
     &__header {
         padding: 8px 24px 24px 24px;
@@ -16,8 +17,8 @@
         
     }
     &__button {
-        background-color: #12AF51;
-        color:#FFFFFF
+        background-color: map.get(c.$colors, "primary-green");
+        color: map.get(c.$colors, "white");
     }
     &__graph-section {
 		margin: 0px 24px 0px 24px;
@@ -52,8 +53,8 @@
         
     }
     &__button {
-        background-color: #12AF51;
-        color:#FFFFFF
+        background-color: map.get(c.$colors, "primary-green");
+        color: map.get(c.$colors, "white");
     }
     &__graph-section {
 		margin: 0px 24px 0px 24px;

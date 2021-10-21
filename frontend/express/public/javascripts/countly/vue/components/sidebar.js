@@ -4,24 +4,32 @@
 
     $(document).ready(function() {
         var AppSelector = countlyVue.views.create({
-            template: CV.T('/javascripts/countly/vue/templates/sidebar/AppSelector.html'),
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/app-selector.html'),
             data: function() {
                 return {
-                    centerDialogVisible: true,
-                    app_selector__dialog_box: "cly-vue-sidebar__app-selector__dialog_box"
+                    centerDialogVisible: true
                 };
             },
             computed: {
                 activeApp: {
                     get: function() {
                         var app = this.$store.getters["countlyCommon/getActiveApp"];
-                        var tempApp = Object.assign({}, app);
-                        return tempApp._id;
+                        return app && app._id;
                     },
                     set: function(activeApp) {
                         this.onChange(activeApp);
                     }
-                }
+                },
+                showCompare: function() {
+                    var cc = countlyVue.container.dataMixin({
+                        'compareComponent': '/apps/compare'
+                    });
+                    var component = cc.data();
+                    if (component && component.compareComponent && component.compareComponent.length > 0) {
+                        return component.compareComponent[0].enabled.default || false;
+                    }
+                    return false;
+                },
             },
             props: {
                 allApps: {
@@ -118,9 +126,7 @@
             },
             data: function() {
                 return {
-                    selectMode: "single-list",
-                    selectedAppLocal: null,
-                    selectedAnalyticsMenuLocal: null,
+                    selectedAnalyticsMenu: null,
                     appSelector: false
                 };
             },
@@ -142,7 +148,7 @@
                     return apps;
                 },
                 activeApp: function() {
-                    var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"]._id;
+                    var selectedAppId = this.$store.getters["countlyCommon/getActiveApp"] && this.$store.getters["countlyCommon/getActiveApp"]._id;
                     var active = this.allApps.find(function(a) {
                         return a._id === selectedAppId;
                     });
@@ -182,24 +188,11 @@
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
                     if (selected.menu === "analytics") {
+                        this.selectedAnalyticsMenu = selected.item && selected.item.parent_code;
                         return selected.item;
                     }
 
                     return {};
-                },
-                selectedAnalyticsMenu: {
-                    get: function() {
-                        var selectedAnalyticsMenu = this.selectedMenuItem;
-
-                        if (!this.selectedAnalyticsMenuLocal) {
-                            return selectedAnalyticsMenu.parent_code;
-                        }
-
-                        return this.selectedAnalyticsMenuLocal;
-                    },
-                    set: function(m) {
-                        this.selectedAnalyticsMenuLocal = m;
-                    }
                 }
             },
             methods: {
@@ -208,6 +201,7 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
+                    app.navigate(item.url, true);
                 },
                 sortBy: function(arrayToSort, sortList) {
                     if (!sortList.length) {
@@ -247,6 +241,12 @@
                     var part1 = "";
                     var part2 = "";
                     var menu;
+
+                    if (!Object.keys(menus).length || !Object.keys(submenus).length) {
+                        // eslint-disable-next-line no-console
+                        console.log("Something is terribly wrong, please contact Prikshit Tekta asap and don't clear the logs please! ", currLink, menus, submenus);
+                    }
+
                     for (var k in menus) {
                         for (var i = 0; i < menus[k].length; i++) {
                             menu = menus[k][i];
@@ -301,15 +301,18 @@
                         }
                     }
 
+                    var setMenuItem = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
-                    if (foundMenu) {
+                    //Check if we have a selected menu item already
+                    //If its management, that means the url is not in the analytics menu
+                    //The value of currMenu in that case should be empty
+                    //Although analytics menu should be mounted first but just incase it doesn't,
+                    //We should check if the menu is already set or not. If its set then the only case
+                    //Could be that its a management menu
+
+                    if (!setMenuItem || (setMenuItem.menu !== "management")) {
                         this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "analytics", item: currMenu });
                     }
-                    else {
-                        // eslint-disable-next-line no-console
-                        console.log("Analytics menu not found. ", currLink, menus, submenus);
-                    }
-
                 },
                 toggleAppSelection: function() {
                     this.appSelector = !this.appSelector;
@@ -354,32 +357,28 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
+                    app.navigate(item.url, true);
                 },
                 checkCurrentManagementTab: function(currLink) {
                     var menu = this.menu;
 
-                    var currMenu = menu.filter(function(m) {
+                    var currMenu = menu.find(function(m) {
                         return m.url === currLink;
                     });
 
-                    if (!currMenu.length) {
+                    if (!currMenu) {
                         if (currLink.split("/").length > 2) {
                             var part1 = "/" + currLink.split("/")[1];
                             var part2 = part1 + "/" + currLink.split("/")[2];
-                            currMenu = menu.filter(function(m) {
+                            currMenu = menu.find(function(m) {
                                 return (m.url === "#" + part1 || m.url === "#" + part2);
                             });
                         }
                     }
 
-                    if (currMenu.length) {
-                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu[0] });
+                    if (currMenu) {
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", { menu: "management", item: currMenu });
                     }
-                    else {
-                        // eslint-disable-next-line no-console
-                        console.log("Management menu not found. ", currLink, menu);
-                    }
-
                 }
             },
             mounted: function() {
@@ -395,8 +394,8 @@
             template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar.html'),
             mixins: [
                 countlyVue.container.dataMixin({
-                    "externalMainOptions": "/sidebar/options/main",
-                    "externalOtherOptions": "/sidebar/options/other"
+                    "externalMainMenuOptions": "/sidebar/menu/main",
+                    "externalOtherMenuOptions": "/sidebar/menu/other"
                 })
             ],
             components: {
@@ -406,28 +405,28 @@
             },
             data: function() {
                 return {
-                    selectedOptionLocal: null
+                    selectedMenuOptionLocal: null
                 };
             },
             computed: {
                 components: function() {
-                    var options = [];
+                    var menuOptions = [];
 
-                    var externalMainOptions = this.externalMainOptions;
-                    var externalOtherOptions = this.externalOtherOptions;
+                    var externalMainMenuOptions = this.externalMainMenuOptions;
+                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
 
-                    if (externalMainOptions && externalMainOptions.length) {
-                        options = options.concat(externalMainOptions);
+                    if (externalMainMenuOptions && externalMainMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalMainMenuOptions);
                     }
 
-                    if (externalOtherOptions && externalOtherOptions.length) {
-                        options = options.concat(externalOtherOptions);
+                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
+                        menuOptions = menuOptions.concat(externalOtherMenuOptions);
                     }
 
-                    return options;
+                    return menuOptions;
                 },
-                mainOptions: function() {
-                    var options = [
+                mainMenuOptions: function() {
+                    var menuOptions = [
                         {
                             name: "app",
                             noSelect: true
@@ -446,31 +445,34 @@
                         },
                         {
                             name: "management",
-                            icon: "ion-wrench"
+                            icon: "ion-wrench",
+                            tooltip: "Management"
                         }
                     ];
 
-                    var externalMainOptions = this.externalMainOptions;
+                    var externalMainMenuOptions = this.externalMainMenuOptions;
 
-                    if (externalMainOptions && externalMainOptions.length) {
-                        for (var i = 0; i < externalMainOptions.length; i++) {
-                            options.splice(2, 0, externalMainOptions[i]);
+                    if (externalMainMenuOptions && externalMainMenuOptions.length) {
+                        for (var i = 0; i < externalMainMenuOptions.length; i++) {
+                            menuOptions.splice(2, 0, externalMainMenuOptions[i]);
                         }
                     }
 
-                    return options;
+                    return menuOptions;
                 },
-                otherOptions: function() {
-                    var options = [
+                otherMenuOptions: function() {
+                    var menuOptions = [
                         {
                             name: "clipboard",
                             icon: "ion-clipboard",
-                            noSelect: true
+                            noSelect: true,
+                            tooltip: "Help Center"
                         },
                         {
                             name: "notifications",
                             icon: "ion-android-notifications",
-                            noSelect: true
+                            noSelect: true,
+                            tooltip: "Assistant"
                         },
                         {
                             name: "user",
@@ -485,15 +487,15 @@
                         }
                     ];
 
-                    var externalOtherOptions = this.externalOtherOptions;
+                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
 
-                    if (externalOtherOptions && externalOtherOptions.length) {
-                        for (var i = 0; i < externalOtherOptions.length; i++) {
-                            options.splice(3, 0, externalOtherOptions[i]);
+                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
+                        for (var i = 0; i < externalOtherMenuOptions.length; i++) {
+                            menuOptions.splice(3, 0, externalOtherMenuOptions[i]);
                         }
                     }
 
-                    return options;
+                    return menuOptions;
                 },
                 member: function() {
                     //We should fetch the user from vuex
@@ -519,19 +521,19 @@
 
                     return member;
                 },
-                selectedOption: function() {
+                selectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
-                    if (!this.selectedOptionLocal) {
+                    if (!this.selectedMenuOptionLocal) {
                         return selected.menu;
                     }
 
-                    return this.selectedOptionLocal;
+                    return this.selectedMenuOptionLocal;
                 }
             },
             methods: {
                 onClick: function(option) {
                     if (!option.noSelect) {
-                        this.selectedOptionLocal = option.name;
+                        this.selectedMenuOptionLocal = option.name;
                     }
                 }
             }
