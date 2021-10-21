@@ -12,8 +12,7 @@
                         fatality: "both"
                     },
                     rawData: {},
-                    filteredData: {},
-                    rawCrashgroups: {}
+                    filteredData: {}
                 };
             },
             getters: {},
@@ -312,10 +311,6 @@
             return statistics;
         };
 
-        _overviewSubmodule.getters.crashgroupRows = function(state) {
-            return state.rawCrashgroups.aaData;
-        };
-
         _overviewSubmodule.getters.appVersions = function(state) {
             return "crashes" in state.rawData ? Object.keys(state.rawData.crashes.app_version) : [];
         };
@@ -326,7 +321,6 @@
 
         _overviewSubmodule.actions.setCrashgroupsFilter = function(context, value) {
             context.state.crashgroupsFilter = value;
-            context.dispatch("refresh");
         };
 
         _overviewSubmodule.actions.setActiveFilter = function(context, value) {
@@ -388,27 +382,6 @@
                     if (!isFiltered) {
                         context.state.filteredData = json;
                     }
-                }
-            }));
-
-            var crashgroupsParams = {
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "period": countlyCommon.getPeriodForAjax(),
-                "method": "crashes",
-                "display_loader": false
-            };
-
-            if ("query" in context.state.crashgroupsFilter) {
-                crashgroupsParams.query = JSON.stringify(context.state.crashgroupsFilter.query);
-            }
-
-            ajaxPromises.push(countlyVue.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r,
-                data: crashgroupsParams,
-                dataType: "json",
-                success: function(json) {
-                    context.state.rawCrashgroups = json;
                 }
             }));
 
@@ -824,6 +797,22 @@
             });
         };
 
+        var crashgroupsResource = countlyVue.vuex.ServerDataTable("crashgroups", {
+            onRequest: function() {
+                return {
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    data: {
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "period": countlyCommon.getPeriodForAjax(),
+                        "method": "crashes",
+                        "display_loader": false
+                    }
+                };
+            }
+        });
+
+
         var _module = {
             state: undefined,
             getters: {},
@@ -832,7 +821,9 @@
             submodules: [
                 countlyVue.vuex.Module("overview", _overviewSubmodule),
                 countlyVue.vuex.Module("crashgroup", _crashgroupSubmodule),
-                countlyVue.vuex.Module("crash", _crashSubmodule)]
+                countlyVue.vuex.Module("crash", _crashSubmodule),
+                crashgroupsResource
+            ]
         };
 
         return countlyVue.vuex.Module("countlyCrashes", _module);

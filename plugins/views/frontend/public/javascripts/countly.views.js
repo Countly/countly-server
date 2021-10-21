@@ -7,7 +7,7 @@
         template: CV.T("/views/templates/manageViews.html"),
         data: function() {
             return {
-                description: CV.i18n('views.description'),
+                description: CV.i18n('views.title-desc'),
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyViews", "viewsEditTable"),
                 isDeleteButtonDisabled: true,
                 isUpdateButtonDisabled: true,
@@ -95,7 +95,6 @@
                     });
                 }
             }
-
         }
     });
 
@@ -113,13 +112,13 @@
             var series = {"series": []};
             var dynamicCols = [{
                 value: "u",
-                width: "140",
+                width: "180",
                 label: CV.i18n('common.table.total-users'),
                 default: true
             },
             {
                 value: "n",
-                width: "130",
+                width: "180",
                 label: CV.i18n('common.table.new-users'),
                 default: true
             },
@@ -356,13 +355,14 @@
                     for (var k = 0; k < data2.length; k++) {
                         if (data2[k].name !== data2[k]._id) {
                             good_ones.push(data2[k]._id);
+                            have_names = true;
                         }
                     }
                     if (have_names && good_ones.length !== data2.length) { //If we have loaded names - we can clear out the ones without name. (It means not existing, deleted views)
                         var persistData = {};
                         persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = good_ones;
                         countlyCommon.setPersistentSettings(persistData);
-                        this.$store.dispatch('countlyViews/onSetSelectedViews', good_ones);
+                        self.$store.dispatch('countlyViews/onSetSelectedViews', good_ones);
                     }
                     self.lineOptions = {series: data2};
                 });
@@ -398,6 +398,9 @@
                     "url": "/o/export/requestQuery"
                 };
                 return apiQueryData;
+            },
+            numberFormatter: function(row, col, value) {
+                return countlyCommon.formatNumber(value, 0);
             }
         },
         computed: {
@@ -432,6 +435,7 @@
                     {"value": "s", "name": CV.i18n('views.starts')},
                     {"value": "e", "name": CV.i18n('views.exits')},
                     {"value": "b", "name": CV.i18n('views.bounces')},
+                    {"value": "br", "name": CV.i18n('views.br')},
                     {"value": "scr", "name": CV.i18n('views.scrolling-avg')},
                     {"value": "uvc", "name": CV.i18n('views.uvc')},
                 ];
@@ -449,7 +453,7 @@
             },
             chooseSegment: function() {
                 var segments = this.$store.state.countlyViews.segments || {};
-                var listed = [{"value": "all", "label": jQuery.i18n.map["common.all"]}];
+                var listed = [{"value": "all", "label": jQuery.i18n.map["views.all-segments"]}];
                 for (var key in segments) {
                     listed.push({"value": key, "label": key});
                 }
@@ -463,7 +467,7 @@
                 if (this.$refs && this.$refs.selectSegmentValue && this.$refs.selectSegmentValue.unsavedValue && this.$refs.selectSegmentValue.unsavedValue.segment) {
                     key = this.$refs.selectSegmentValue.unsavedValue.segment;
                 }
-                var listed = [{"value": "all", "label": jQuery.i18n.map["common.all"]}];
+                var listed = [{"value": "all", "label": CV.i18n('common.all')}];
 
                 if (!key) {
                     return listed;
@@ -502,6 +506,7 @@
 
     var ViewsPerSessionView = countlyVue.views.create({
         template: CV.T("/views/templates/views-per-session.html"),
+        mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             return {
                 progressBarColor: "#017AFF"
@@ -520,7 +525,10 @@
             viewsPerSessionOptions: function() {
                 return {
                     xAxis: {
-                        data: this.xAxisViewsPerSessionBuckets
+                        data: this.xAxisViewsPerSessionBuckets,
+                        axisLabel: {
+                            color: "#333C48"
+                        }
                     },
                     series: this.yAxisViewsPerSessionCountSerie
                 };
@@ -550,6 +558,78 @@
         mounted: function() {
             this.$store.dispatch('countlyViewsPerSession/fetchAll', true);
         },
+    });
+
+    var ViewsHomeWidget = countlyVue.views.create({
+        template: CV.T("/views/templates/viewsHomeWidget.html"),
+        data: function() {
+            return {
+                dataBlocks: []
+            };
+        },
+        mounted: function() {
+            var self = this;
+            self.$store.dispatch('countlyViews/fetchTotals').then(function() {
+                self.dataBlocks = self.calculateAllData();
+            });
+        },
+        beforeCreate: function() {
+            this.module = countlyViews.getVuexModule();
+            CV.vuex.registerGlobally(this.module);
+        },
+        beforeDestroy: function() {
+            CV.vuex.unregister(this.module.name);
+            this.module = null;
+        },
+        methods: {
+            refresh: function() {
+                var self = this;
+                self.$store.dispatch('countlyViews/fetchTotals').then(function() {
+                    self.dataBlocks = self.calculateAllData();
+                });
+            },
+            calculateAllData: function() {
+                var totals = {};
+                if (this.$store && this.$store.state && this.$store.state.countlyViews) {
+                    totals = this.$store.state.countlyViews.totals || {};
+                }
+                totals.t = totals.t || 0;
+                totals.uvc = totals.uvc || 0;
+                totals.s = totals.s || 0;
+                totals.b = totals.b || 0;
+                if (totals.s) {
+                    totals.br = Math.round(totals.b / totals.s * 1000) / 10;
+                }
+                else {
+                    totals.br = 0;
+                }
+
+                return [
+                    {
+                        "name": CV.i18n('views.total_page_views.title'),
+                        "description": CV.i18n('views.total_page_views.desc'),
+                        "value": countlyCommon.formatNumber(totals.t),
+                        "percent": 0,
+                        isPercentage: false
+                    },
+                    {
+                        "name": CV.i18n('views.uvc'),
+                        "description": CV.i18n('views.unique_page_views.desc'),
+                        "value": countlyCommon.formatNumber(totals.uvc),
+                        "percent": 0,
+                        isPercentage: false
+                    },
+                    {
+                        "name": CV.i18n('views.br'),
+                        "description": CV.i18n('views.bounce_rate.desc'),
+                        "value": totals.br + " %",
+                        "percent": Math.min(totals.br, 100),
+                        isPercentage: true,
+                        "color": "#F96300"
+                    }
+                ];
+            }
+        }
     });
 
     if (countlyAuth.validateRead(FEATURE_NAME)) {
@@ -589,6 +669,21 @@
             this.viewsEditView.params = params;
             this.renderWhenReady(this.viewsEditView);
         });
+
+
+        countlyVue.container.registerData("/home/widgets", {
+            _id: "views-dashboard-widget",
+            label: CV.i18n('views.title'),
+            description: CV.i18n('views.title-desc'),
+            enabled: {"default": true}, //object. For each type set if by default enabled
+            available: {"default": true}, //object. default - for all app types. For other as specified.
+            placeBeforeDatePicker: false,
+            linkTo: {"label": CV.i18n('views.go-to-views'), "href": "#/analytics/views"},
+            width: 6,
+            order: 4,
+            component: ViewsHomeWidget
+        });
+
     }
 
     window.ActionMapView = countlyView.extend({
@@ -904,7 +999,7 @@
             }
         });
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 100});
+            app.addSubMenu("analytics", {code: "analytics-views", url: "#/analytics/views", text: "views.title", priority: 25});
         }
 
         //check if configuration view exists

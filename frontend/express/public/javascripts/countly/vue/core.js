@@ -29,7 +29,33 @@
     };
 
     var _i18n = function() {
-        return jQuery.i18n.prop.apply(null, arguments);
+        var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        if (!appType || appType === "mobile") {
+            return jQuery.i18n.prop.apply(null, arguments);
+        }
+        else {
+            var key = arguments[0];
+            if (!jQuery.i18n.map[appType + "." + key]) {
+                // Key miss
+                return jQuery.i18n.prop.apply(null, arguments);
+            }
+            else {
+                // Key hit
+                var argsCopy = Array.prototype.slice.call(arguments);
+                argsCopy[0] = appType + "." + key;
+                return jQuery.i18n.prop.apply(null, argsCopy);
+            }
+        }
+    };
+
+    var _i18nM = function(key) {
+        var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        if (!appType || appType === "mobile") {
+            return jQuery.i18n.map[key];
+        }
+        else {
+            return jQuery.i18n.map[appType + "." + key] || jQuery.i18n.map[key];
+        }
     };
 
     var _$ = {
@@ -39,8 +65,10 @@
                 $.ajax(request).done(resolve).fail(reject);
             });
             if (!options.disableAutoCatch) {
-                return ajaxP.catch(function(err) {
-                    app.activeView.onError(err);
+                return ajaxP.catch(function(jqXHR) {
+                    if (jqXHR.abort_reason === "duplicate" || (jqXHR.statusText !== "abort" && jqXHR.statusText !== "canceled")) {
+                        app.activeView.onError(jqXHR);
+                    }
                 });
             }
             return ajaxP;
@@ -51,9 +79,7 @@
     var i18nMixin = {
         methods: {
             i18n: _i18n,
-            i18nM: function(key) {
-                return jQuery.i18n.map[key];
-            }
+            i18nM: _i18nM
         }
     };
 
@@ -135,10 +161,10 @@
                             state.allApps[additionalApps._id] = additionalApps;
                         }
                     },
-                    removeFromAllApps: function(state, appToRemove) {
-                        var appObj = state.allApps[appToRemove.id];
+                    removeFromAllApps: function(state, appToRemoveId) {
+                        var appObj = state.allApps[appToRemoveId];
                         if (appObj) {
-                            delete state.allApps[appToRemove.id];
+                            delete state.allApps[appToRemoveId];
                         }
                     },
                     deleteAllApps: function(state) {
@@ -160,14 +186,14 @@
                     addToAllApps: function(context, additionalApps) {
                         context.commit("addToAllApps", additionalApps);
                     },
-                    removeFromAllApps: function(context, appToRemove) {
-                        if (Array.isArray(appToRemove)) {
-                            appToRemove.forEach(function(app) {
+                    removeFromAllApps: function(context, appToRemoveId) {
+                        if (Array.isArray(appToRemoveId)) {
+                            appToRemoveId.forEach(function(app) {
                                 context.commit("removeFromAllApps", app);
                             });
                         }
                         else {
-                            context.commit("removeFromAllApps", appToRemove);
+                            context.commit("removeFromAllApps", appToRemoveId);
                         }
                     },
                     deleteAllApps: function(context) {
@@ -533,6 +559,7 @@
 
     var rootElements = {
         i18n: _i18n,
+        i18nM: _i18nM,
         $: _$,
         mixins: _mixins,
         views: _views,

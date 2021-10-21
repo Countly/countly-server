@@ -1,0 +1,15 @@
+<div v-bind:class="[componentId]">
+	<cly-section>
+		<cly-metric-cards>
+				<cly-metric-card formatting="long" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in crashesItems">
+					{{item.name}}
+					<cly-tooltip-icon v-if="item.info" icon="ion-help-circled" :tooltip="item.info"></cly-tooltip-icon>
+					<template v-slot:number>{{item.value}}</template>
+					<span v-if="item.trend=='d' && item.reverse" slot="description" class="cly-trend-up"><i class="bu-pr-1 fas fa-arrow-circle-down"></i>{{item.change}}</span>
+					<span v-else-if="item.trend=='d'" slot="description" class="cly-trend-down"><i class="bu-pr-1 fas fa-arrow-circle-down"></i>{{item.change}}</span>
+					<span v-else-if="item.trend=='u' && item.reverse" slot="description" class="cly-trend-down"><i class="bu-pr-1 fas fa-arrow-circle-up"></i>{{item.change}}</span>
+					<span v-else slot="description" class="cly-trend-up"><i class="bu-pr-1 fas fa-arrow-circle-up"></i>{{item.change}}</span>
+				</cly-metric-card>
+		</cly-metric-cards>
+	</cly-section>
+</div>

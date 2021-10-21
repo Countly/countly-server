@@ -769,6 +769,6 @@ app.addPageScript("/users/#", function() {
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.consentManagementView.featureName)) {
-        app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 20});
+        app.addSubMenu("management", {code: "compliance", url: "#/manage/compliance", text: "compliance_hub.title", priority: 60});
     }
 });

@@ -434,31 +434,31 @@ const PUSH_CACHE_GROUP = 'P';
 
         switch (paths[3]) {
         case 'dashboard':
-            validateRead(params, FEATURE_NAME, push.dashboard, params);
+            validateRead(params, FEATURE_NAME, push.dashboard);
             break;
         case 'prepare':
-            validateUpdate(params, FEATURE_NAME, push.prepare, params);
+            validateUpdate(params, FEATURE_NAME, push.prepare);
             break;
         case 'create':
-            validateCreate(params, FEATURE_NAME, push.create, params);
+            validateCreate(params, FEATURE_NAME, push.create);
             break;
         case 'push':
-            validateCreate(params, FEATURE_NAME, push.push, params);
+            validateCreate(params, FEATURE_NAME, push.push);
             break;
         case 'pop':
-            validateCreate(params, FEATURE_NAME, push.pop, params);
+            validateCreate(params, FEATURE_NAME, push.pop);
             break;
         case 'message':
-            validateRead(params, FEATURE_NAME, push.message, params);
+            validateRead(params, FEATURE_NAME, push.message);
             break;
         case 'active':
-            validateUpdate(params, FEATURE_NAME, push.active, params);
+            validateUpdate(params, FEATURE_NAME, push.active);
             break;
         case 'delete':
-            validateDelete(params, FEATURE_NAME, push.delete, params);
+            validateDelete(params, FEATURE_NAME, push.delete);
             break;
         case 'mime':
-            validateRead(params, FEATURE_NAME, push.mimeInfo, params);
+            validateRead(params, FEATURE_NAME, push.mimeInfo);
             break;
         case 'huawei':
             push.huawei(params);

@@ -2,7 +2,7 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('session-overview.title')}} </h2>
-            <cly-tooltip-icon :tooltip="i18n('session-overview.description')" icon="ion ion-help-circled" class="bu-ml-4"> </cly-tooltip-icon>
+            <cly-tooltip-icon :tooltip="i18n('session-overview.description')" icon="ion ion-help-circled" style="margin-left:10px"> </cly-tooltip-icon>
         </span>
         </template>
     </cly-header>
@@ -17,10 +17,19 @@
                     <el-table-column sortable="custom" prop="date" :label="i18n('common.date')">
                     </el-table-column>
                     <el-table-column sortable="custom" prop="totalSessions" :label="i18n('common.total-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.totalSessions)}}
+                        </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="newSessions" :label="i18n('common.new-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.newSessions)}}
+                        </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="uniqueSessions" :label="i18n('common.unique-sessions')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.uniqueSessions)}}
+                        </template>
                     </el-table-column>
                 </template>
             </cly-datatable-n>

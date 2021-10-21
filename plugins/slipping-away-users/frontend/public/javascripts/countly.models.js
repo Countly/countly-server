@@ -1,32 +1,59 @@
-/*global countlyCommon,countlyVue,CV,CountlyHelpers*/
+/*global countlyCommon,countlyVue,CV,Promise*/
 (function(countlySlippingAwayUsers) {
 
     countlySlippingAwayUsers.service = {
+        mapSeries: function(dto) {
+            return dto.map(function(item) {
+                return item.count;
+            });
+        },
+        mapDtoToModel: function(dto) {
+            var slippingAwayUsersModel = {
+                series: [],
+                rows: []
+            };
+            slippingAwayUsersModel.series = this.mapSeries(dto);
+            slippingAwayUsersModel.rows = dto;
+            return slippingAwayUsersModel;
+        },
         fetchSlippingAwayUsers: function(filters) {
-            return CV.$.ajax({
-                type: "GET",
-                url: countlyCommon.API_URL + "/o/slipping",
-                data: {
-                    app_id: countlyCommon.ACTIVE_APP_ID,
-                    method: 'slipping',
-                    query: JSON.stringify(CountlyHelpers.buildFilters(filters))
-                }
-            }, {disableAutoCatch: true});
+            var self = this;
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                method: 'slipping',
+                query: JSON.stringify(filters)
+            };
+            if (filters) {
+                data.query = JSON.stringify(filters);
+            }
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_URL + "/o/slipping",
+                    data: data
+                }, {disableAutoCatch: true})
+                    .then(function(response) {
+                        resolve(self.mapDtoToModel(response));
+                    }).catch(function(error) {
+                        reject(error);
+                    });
+            });
         }
     };
 
     countlySlippingAwayUsers.getVuexModule = function() {
         var getInitialState = function() {
             return {
-                slippingAwayUsers: [],
-                slippingAwayUsersFilters: { query: {}, byVal: []},
+                rows: [],
+                series: [],
+                filters: { query: {}, byVal: []},
             };
         };
 
         var slippingAwayUsersActions = {
             fetchAll: function(context, useLoader) {
                 context.dispatch('onFetchInit', {useLoader: useLoader});
-                countlySlippingAwayUsers.service.fetchSlippingAwayUsers(context.state.slippingAwayUsersFilters)
+                countlySlippingAwayUsers.service.fetchSlippingAwayUsers(context.state.filters.query)
                     .then(function(response) {
                         context.commit('setSlippingAwayUsers', response);
                         context.dispatch('onFetchSuccess', {useLoader: useLoader});
@@ -34,17 +61,18 @@
                         context.dispatch('onFetchError', {error: error, useLoader: useLoader});
                     });
             },
-            onSetSlippingAwayUsersFilters: function(context, filters) {
-                context.commit('setSlippingAwayUsersFilters', filters);
+            onSetFilters: function(context, filters) {
+                context.commit('setFilters', filters);
             }
         };
 
         var slippingAwayUsersMutations = {
             setSlippingAwayUsers: function(state, value) {
-                state.slippingAwayUsers = value;
+                state.rows = value.rows;
+                state.series = value.series;
             },
-            setSlippingAwayUsersFilters: function(state, value) {
-                state.slippingAwayUsersFilters = value;
+            setFilters: function(state, value) {
+                state.filters = value;
             }
         };
 

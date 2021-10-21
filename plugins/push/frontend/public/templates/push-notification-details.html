@@ -2,13 +2,17 @@
     <div v-bind:class="[componentId]">
         <cly-header class="cly-vue-push-notification-details-header">
             <template v-slot:header-left>
-                <h2> {{pushNotification.message.name }} </h2>
+                <h2> {{pushNotification.name }} </h2>
             </template>
             <template v-slot:header-top>
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>
             </template>
             <template v-slot:header-right>
-                <cly-more-options size="small" @command="handleUserEvents($event, scope.row._id )">
+                <template v-if="pushNotification.status.value === StatusEnum.NOT_APPROVED && hasApproverPermission">
+                    <el-button @click="onReject" class="bu-mr-2"> <i class="ion-close-circled" ></i> Reject </el-button>
+                    <el-button @click="onApprove" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> Approve </el-button>
+                </template>
+                <cly-more-options size="small" @command="handleUserEvents($event, pushNotification.id)">
                     <el-dropdown-item :command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
                     <el-dropdown-item :command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
                     <el-dropdown-item :command="UserEventEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
@@ -54,24 +58,59 @@
                         </div>
                     </div>
                     <div class="bu-level-item">
-                        <el-select v-model="selectedLocalizationFilter">
-                            <el-option :key="item.value" :value="item.value" :label="item.label"
-                                v-for="item in localizationFilters"
-                            >
+                        <el-select v-model="selectedLocalization">
+                            <el-option v-for="item in localizations" :key="item.value" :value="item.value" :label="item.label">
                             </el-option>
                         </el-select>
                     </div>
                 </div>
             </div>
             <cly-section>
-                <div class="bu-columns">
-                    <div class="bu-column bu-is-12">
-                        <cly-chart-bar :option="usersTargetedOptions" :height="400" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
+                <div class="bu-is-flex cly-vue-push-notification-details-chart-bars">
+                    <div class="bu-is-flex bu-is-flex-direction-column cly-vue-push-notification-details-chart-bars__item cly-vue-push-notification-details-chart-bars__border-right">
+                        <cly-chart-bar :option="pushNotificationChartBars.targetedUsers" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
+                        <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
+                            <div class="bu-my-4 bu-ml-6"> 
+                                <div class="text-medium"> Users Targeted  <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
+                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{findTargetedUsers()}} % </div>
+                                <div class="text-medium"> {{totalAppUsers}} users  </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bu-is-flex bu-is-flex-direction-column cly-vue-push-notification-details-chart-bars__item cly-vue-push-notification-details-chart-bars__border-right"> 
+                        <cly-chart-bar :option="pushNotificationChartBars.sentPushNotifications" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
+                        <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
+                            <div class="bu-my-4 bu-ml-6"> 
+                                <div class="text-medium"> Sent Notifications  <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
+                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{findSentPushNotifications()}} % </div>
+                                <div class="text-medium"> {{totalAppUsers}} users  </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bu-is-flex bu-is-flex-direction-column cly-vue-push-notification-details-chart-bars__item cly-vue-push-notification-details-chart-bars__border-right"> 
+                        <cly-chart-bar :option="pushNotificationChartBars.clickedPushNotifications" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
+                        <div class="cly-vue-push-notification-details-chart-bars__item-legend cly-vue-push-notification-details-chart-bars__border-right"> 
+                            <div class="bu-my-4 bu-ml-6"> 
+                                <div class="text-medium"> Clicked Notifications <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
+                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{findClickedPushNotifications()}} % </div>
+                                <div class="text-medium"> {{totalAppUsers}} users </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bu-is-flex bu-is-flex-direction-column cly-vue-push-notification-details-chart-bars__item"> 
+                        <cly-chart-bar :option="pushNotificationChartBars.failedPushNotifications" :loading="isLoading" :legend="chartBarLegend" :showZoom=false :showToggle=false :showDownload=false ></cly-chart-bar>
+                        <div class="cly-vue-push-notification-details-chart-bars__item-legend"> 
+                            <div class="bu-my-4 bu-ml-6"> 
+                                <div class="text-medium"> Failed <cly-tooltip-icon :tooltip="i18n('push-notification.description')" icon="ion ion-help-circled" class="bu-ml-1"> </cly-tooltip-icon> </div>
+                                <div class="cly-vue-push-notification-details-chart-bars__item-legend-percentage"> {{findFailedPushNotifications()}} % </div>
+                                <div class="text-medium"> {{totalAppUsers}} users </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </cly-section>
             <div class="cly-vue-push-notification-details-summary">
-                <div class="bu-columns bu-is-mobile">
+                <div class="bu-columns">
                     <div class="bu-column bu-is-10">
                         <cly-header title="Message Summary" class="cly-vue-push-notification-details-summary__header">
                             <template v-slot:header-left>
@@ -84,7 +123,7 @@
                         </cly-header>
                     </div>
                     <div class="bu-column">
-                        <mobile-message-preview :title="message.name" :content="message.content" :platforms="pushNotification.platforms.map(function(platform){return platform.value})" :media="message.media" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
+                        <mobile-message-preview :title="message.title" :content="message.content" :platforms="pushNotification.platforms.map(function(platform){return platform.value})" :media="message.media" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
                     </div>
                 </div>
             </div>

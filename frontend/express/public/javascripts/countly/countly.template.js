@@ -64,6 +64,7 @@ var countlyView = Backbone.View.extend({
             for (var data in this._myRequests[url]) {
                 //4 means done, less still in progress
                 if (parseInt(this._myRequests[url][data].readyState) !== 4) {
+                    this._myRequests[url][data].abort_reason = "app_remove_reqs";
                     this._myRequests[url][data].abort();
                 }
             }
@@ -128,21 +129,22 @@ var countlyView = Backbone.View.extend({
     * @instance
     */
     render: function() { //backbone.js view render function
-        var currLink = Backbone.history.fragment;
+        // var currLink = Backbone.history.fragment;
 
-        // Reset any active views and dropdowns
-        $("#main-views-container").find(".main-view").removeClass("active");
-        $("#top-bar").find(".dropdown.active").removeClass("active");
+        // // Reset any active views and dropdowns
+        // $("#main-views-container").find(".main-view").removeClass("active");
+        // $("#top-bar").find(".dropdown.active").removeClass("active");
 
-        // Activate the main view and dropdown based on the active view
-        if (/^\/custom/.test(currLink) === true) {
-            $("#dashboards-main-view").addClass("active");
-            $("#dashboard-selection").addClass("active");
-        }
-        else {
-            $("#analytics-main-view").addClass("active");
-            $("#app-navigation").addClass("active");
-        }
+        // // Activate the main view and dropdown based on the active view
+        // if (/^\/custom/.test(currLink) === true) {
+        //     $("#dashboards-main-view").addClass("active");
+        //     $("#dashboard-selection").addClass("active");
+        // }
+        // else {
+        //     $("#analytics-main-view").addClass("active");
+        //     $("#app-navigation").addClass("active");
+        // }
+
         $("#content-top").html("");
         this.el.html('');
 
@@ -649,6 +651,7 @@ var AppRouter = Backbone.Router.extend({
             for (var data in this._myRequests[url]) {
                 //4 means done, less still in progress
                 if (parseInt(this._myRequests[url][data].readyState) !== 4) {
+                    this._myRequests[url][data].abort_reason = "view_change";
                     this._myRequests[url][data].abort();
                 }
             }
@@ -850,7 +853,7 @@ var AppRouter = Backbone.Router.extend({
         if (this._internalMenuCategories.indexOf(category) === -1) {
             throw "Wrong category for menu: " + category;
         }
-        if (!node.text || !node.code || !node.icon || typeof node.priority === "undefined") {
+        if (!node.text || !node.code || typeof node.priority === "undefined") {
             throw "Provide code, text, icon and priority properties for menu element";
         }
 
@@ -1167,11 +1170,15 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard: function() {
+        var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
         if (countlyGlobal.member.restrict && countlyGlobal.member.restrict.indexOf("#/") !== -1) {
             return;
         }
         if (_.isEmpty(countlyGlobal.apps)) {
             this.renderWhenReady(this.manageAppsView);
+        }
+        else if (type === "mobile" || type === "web" || type === "desktop") {
+            this.renderWhenReady(app.HomeView);
         }
         else if (typeof this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type] !== "undefined") {
             this.renderWhenReady(this.appTypes[countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type]);
@@ -1407,14 +1414,14 @@ var AppRouter = Backbone.Router.extend({
             self.addMenu("understand", {code: "overview", url: "#/", text: "sidebar.home", icon: '<div class="logo dashboard ion-speedometer"></div>', priority: 10});
             self.addMenu("understand", {code: "analytics", text: "sidebar.analytics", icon: '<div class="logo analytics ion-ios-pulse-strong"></div>', priority: 20});
             self.addMenu("understand", {code: "events", text: "sidebar.events", icon: '<div class="logo events"><i class="material-icons">bubble_chart</i></div>', priority: 40});
-            self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
+            // self.addMenu("understand", {code: "engagement", text: "sidebar.engagement", icon: '<div class="logo ion-happy-outline"></div>', priority: 30});
             self.addSubMenu("events", {code: "events-overview", url: "#/analytics/events/overview", text: "sidebar.events.overview", priority: 10});
             if (countlyAuth.validateRead('events')) {
                 self.addSubMenu("events", {code: "all-events", url: "#/analytics/events", text: "sidebar.events.all-events", priority: 20});
             }
-            if (countlyAuth.validateUpdate('events') || countlyAuth.validateDelete('events')) {
-                self.addSubMenu("events", {code: "manage-events", url: "#/analytics/manage-events", text: "sidebar.events.blueprint", priority: 100});
-            }
+            // if (countlyAuth.validateUpdate('events') || countlyAuth.validateDelete('events')) {
+            //     self.addSubMenu("events", {code: "manage-events", url: "#/analytics/manage-events", text: "sidebar.events.blueprint", priority: 100});
+            // }
             self.addMenu("utilities", {
                 code: "management",
                 text: "sidebar.utilities",
@@ -1430,21 +1437,34 @@ var AppRouter = Backbone.Router.extend({
                 self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
             }
 
+            //management is also a menu category which goes in default menu i.e. visible to all users
+
             var jobsIconSvg = '<svg width="20px" height="16px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><title>list-24px 2</title><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="list-24px-2" fill="#9f9f9f" fill-rule="nonzero"><g id="list-24px"><path d="M0,6 L2,6 L2,4 L0,4 L0,6 Z M0,10 L2,10 L2,8 L0,8 L0,10 Z M0,2 L2,2 L2,0 L0,0 L0,2 Z M3,6 L12,6 L12,4 L3,4 L3,6 Z M3,10 L12,10 L12,8 L3,8 L3,10 Z M3,0 L3,2 L12,2 L12,0 L3,0 Z" id="Shape"></path></g></g></g></svg>';
             if (countlyAuth.validateRead('global_applications')) {
-                self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 10});
+                self.addMenu("management", {code: "applications", url: "#/manage/apps", text: "sidebar.management.applications", icon: '<div class="logo-icon ion-ios-albums"></div>', priority: 80});
             }
             if (countlyAuth.validateRead('global_users')) {
-                self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 20});
+                self.addMenu("management", {code: "users", url: "#/manage/users", text: "sidebar.management.users", icon: '<div class="logo-icon fa fa-user-friends"></div>', priority: 70});
             }
             if (countlyAuth.validateRead('global_jobs')) {
-                self.addMenu("management", {code: "jobs", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 20});
+                self.addMenu("management", {code: "jobs", url: "#/manage/jobs", text: "sidebar.management.jobs", icon: '<div class="logo-icon">' + jobsIconSvg + '</div>', priority: 140});
             }
 
-            self.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});
+            // self.addMenu("management", {code: "help", text: "sidebar.management.help", icon: '<div class="logo-icon ion-help help"></div>', classes: "help-toggle", html: '<div class="on-off-switch" id="help-toggle"><input type="checkbox" class="on-off-switch-checkbox" id="help-toggle-cbox"><label class="on-off-switch-label" for="help-toggle-cbox"></label></div>', priority: 10000000});
 
-            self.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
-            self.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
+            // self.addMenu("explore", {code: "users", text: "sidebar.analytics.users", icon: '<div class="logo ion-person-stalker"></div>', priority: 10});
+            // self.addMenu("explore", {code: "behavior", text: "sidebar.behavior", icon: '<div class="logo ion-funnel"></div>', priority: 20});
+
+            if ((countlyGlobal.plugins.indexOf("surveys") > -1) ||
+                (countlyGlobal.plugins.indexOf("star-rating") > -1)) {
+                app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
+            }
+
+            if ((countlyGlobal.plugins.indexOf("crashes") > -1) ||
+                (countlyGlobal.plugins.indexOf("crash_symbolication") > -1)) {
+                app.addMenu("improve", {code: "crashes", text: "crashes.title", icon: '<div class="logo ion-alert-circled"></div>', priority: 10});
+            }
+
             Backbone.history.checkUrl();
 
             $('.list .item_info').on("click", function(e) {
@@ -3504,6 +3524,16 @@ var AppRouter = Backbone.Router.extend({
         this.appManagementViews[plugin] = {title: title, view: View};
     },
     /**
+     * Add a countlyManagementView-extending view which will be displayed in accordion tabs on Management->Applications screen
+     * @memberof app
+     * @param {string} plugin - plugin name
+     * @param {string} title  - plugin title
+     * @param {Array} inputs - plugin inputs
+     */
+    addAppManagementInput: function(plugin, title, inputs) {
+        this.appManagementViews[plugin] = {title: title, inputs: inputs};
+    },
+    /**
     * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here
     * @param {string} id - the same value on your input data-id attributes
     * @param {object} options - different callbacks for data modification
@@ -4284,6 +4314,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 
         if (originalOptions.data && originalOptions.data.preventRequestAbort && originalOptions.data.preventRequestAbort === true) {
             if (app._myRequests[myurl] && app._myRequests[myurl][mydata]) {
+                jqXHR.abort_reason = "duplicate";
                 jqXHR.abort(); //we already have same working request
             }
             else {
@@ -4311,6 +4342,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         else {
             if (app.activeView) {
                 if (app.activeView._myRequests[myurl] && app.activeView._myRequests[myurl][mydata]) {
+                    jqXHR.abort_reason = "duplicate";
                     jqXHR.abort(); //we already have same working request
                 }
                 else {

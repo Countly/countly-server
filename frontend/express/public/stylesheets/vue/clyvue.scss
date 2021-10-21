@@ -26,9 +26,9 @@
 .cly-vue-theme-clydef {
 
     background-color:#FCFCFC;
-    #content-container { 
-        padding:59px 0 35px 0;
-    }
+    // #content-container { 
+    //     padding:59px 0 35px 0;
+    // }
 
     #top-bar {
         z-index: 1997;
@@ -633,19 +633,22 @@
             }
         }
 
+        @mixin cell-hover() {
+            background: #FFFFFF;
+            border: 2px solid #0166D6;
+            color: map.get(c.$colors, "text-custom-1-active");
+        }
+
+
         &__table-wrap.is-start-focused {
             .el-date-table .start-date {
                 > div span {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
             .el-month-table .start-date {
                 > div a {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
         }
@@ -653,18 +656,26 @@
         &__table-wrap.is-end-focused {
             .el-date-table .end-date {
                 > div span {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
             .el-month-table .end-date {
                 > div a {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
+        }
+        &__table-wrap.is-point {
+            .el-date-table .available:not(.in-range) {
+                 > div:hover span {
+                    @include cell-hover()
+                }
+            }
+            .el-month-table td:not(.in-range) {
+                > div:hover a {
+                    @include cell-hover()
+               }
+           }
         }
     }
 
@@ -1144,6 +1155,7 @@
     } 
 
     .cly-vue-metric-card {
+        min-width: 270px;
         &__wrapper {
             min-height: 56px;
         }
@@ -1232,6 +1244,12 @@
             }
             &__section {
                 padding: 12px 0;
+                + .cly-vue-drawer-step__section-group {
+                    margin-top: 12px;
+                }
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
+                }
             }
             &__section-group {
                 padding: 12px 24px;
@@ -1441,6 +1459,13 @@
         }
     }
 
+    //
+    .cly-vue-select-email{
+        width: 100%;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+
     //dialog
 
     .cly-vue-dialog {
@@ -1504,6 +1529,12 @@
             }
             &__section {
                 padding: 12px 0;
+                + .cly-vue-form-step__section-group {
+                    margin-top: 12px;
+                }
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
+                }
             }
             &__section-group {
                 padding: 12px 24px;
@@ -1518,6 +1549,11 @@
                 }
                 .cly-vue-form-step__section {
                     padding: 8px 0;
+                }
+            }
+            &__auto-group {
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
                 }
             }
         }
@@ -3535,7 +3571,6 @@
     }
 }
 
-.cly-text-button,
 .cly-icon-button {
     color: map.get(c.$colors, "action-blue");
     cursor: pointer;
@@ -3556,6 +3591,30 @@
         opacity: 0.7;
     }
 }
+
+
+.cly-text-button
+{
+    color: map.get(c.$colors, "action-blue")!important;
+    cursor: pointer;
+    display: inline-block;
+    white-space: nowrap;
+    -webkit-appearance: none;
+    text-align: center;
+    box-sizing: border-box;
+    outline: none;
+    font-size: 13px;
+    font-weight: 500;
+    &--gray {
+        color: map.get(c.$colors, "text-secondary");
+    }
+    &--disabled {
+        cursor: default;
+        color: map.get(c.$colors, "text-secondary");
+        opacity: 0.7;
+    }
+}
+
 
 .is-scroll-shadow{
     &-at-middle::before,

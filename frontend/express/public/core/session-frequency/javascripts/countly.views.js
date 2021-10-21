@@ -1,6 +1,7 @@
 /* global countlyVue,CV,countlySessionFrequency,countlyCommon*/
 var SessionFrequencyView = countlyVue.views.create({
     template: CV.T("/core/session-frequency/templates/session-frequency.html"),
+    mixins: [countlyVue.mixins.commonFormatters],
     data: function() {
         return {
             progressBarColor: "#017AFF"
@@ -19,7 +20,10 @@ var SessionFrequencyView = countlyVue.views.create({
         sessionFrequencyOptions: function() {
             return {
                 xAxis: {
-                    data: this.xAxisSessionFrequency
+                    data: this.xAxisSessionFrequency,
+                    axisLabel: {
+                        color: "#333C48"
+                    }
                 },
                 series: this.yAxisSessionFrequencyCountSerie
             };

@@ -244,6 +244,9 @@ const processRequest = (params) => {
                 case 'deleteOwnAccount':
                     validateDelete(params, 'global_users', countlyApi.mgmt.users.deleteOwnAccount);
                     break;
+                case 'updateHomeSettings':
+                    validateUpdate(params, 'global_users', countlyApi.mgmt.users.updateHomeSettings);
+                    break;
                 case 'ack':
                     validateUserForWriteAPI(countlyApi.mgmt.users.ackNotification, params);
                     break;
@@ -1294,7 +1297,7 @@ const processRequest = (params) => {
                     break;
                 case 'permissions':
                     validateRead(params, 'core', function() {
-                        var features = ["core", "events", "global_configurations", "global_applications", "global_users", "global_jobs"];
+                        var features = ["core", "events", "global_configurations", "global_applications", "global_users", "global_jobs", "global_upload"];
                         plugins.dispatch("/permissions/features", {params: params, features: features}, function() {
                             common.returnOutput(params, features);
                         });

@@ -109,7 +109,7 @@
                     type: "GET",
                     url: countlyCommon.API_URL + "/o",
                     data: data
-                }, {disabledAutoCatch: true})
+                }, {disableAutoCatch: true})
                     .then(function(responseDto) {
                         resolve(self.mapTimesOfDayDtoToModel(responseDto));
                     }).catch(function(error) {

@@ -26,9 +26,9 @@
 							{{scope.row.date}}
 						</template>
 					</el-table-column>
-					<el-table-column sortable="custom" prop="u" :label="i18n('common.total-users')"></el-table-column>
-					<el-table-column sortable="custom" prop="n" :label="i18n('common.new-users')"></el-table-column>
-					<el-table-column sortable="custom" prop="returning" :label="i18n('common.returning-users')"></el-table-column>
+					<el-table-column sortable="custom" prop="u" :label="i18n('common.total-users')"><template slot-scope="scope">{{scope.row.fu}}</template></el-table-column>
+					<el-table-column sortable="custom" prop="n" :label="i18n('common.new-users')"><template slot-scope="scope">{{scope.row.fn}}</template></el-table-column>
+					<el-table-column sortable="custom" prop="returning" :label="i18n('common.returning-users')"><template slot-scope="scope">{{scope.row.fr}}</template></el-table-column>
 				</template>
 			</cly-datatable-n>
 		</cly-section>

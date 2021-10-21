@@ -91,12 +91,11 @@
         },
         mixins: [
             // call groups plugin input mixin for drawer
-            countlyVue.container.dataMixin({
-                "groupsInput": "groups/input"
-            })
+            countlyVue.container.dataMixin({"groupsInput": "groups/input", "rolesInput": "user/roles"}),
         ],
         data: function() {
             return {
+                changePasswordFlag: false,
                 apps: [],
                 permissionSets: [],
                 adminAppSelector: '',
@@ -116,7 +115,8 @@
                 },
                 uploadCompleted: false,
                 fileAdded: false,
-                group: {}
+                group: {},
+                roles: {}
             };
         },
         methods: {
@@ -186,6 +186,11 @@
                 }
 
                 if (conflictSetIndex !== -1) {
+                    var conflictedAppId = this.$refs.userDrawer.editedObject.permission._.u[conflictSetIndex][conflictIndex];
+                    var types = ["c", "r", "u", "d"];
+                    for (var index in types) {
+                        delete this.$refs.userDrawer.editedObject.permission[types[index]][conflictedAppId];
+                    }
                     this.$set(this.$refs.userDrawer.editedObject.permission, this.$refs.userDrawer.editedObject.permission._.u[conflictSetIndex].splice(conflictIndex, 1));
                 }
             },
@@ -196,6 +201,7 @@
                 var conflictIndex = -1;
                 var conflictSetIndex = -1;
                 var adminConflictIndex = -1;
+                var types = ["c", "r", "u", "d"];
 
                 // check conflict with admin apps
                 for (var i = 0; i < appsInThisSet.length; i++) {
@@ -228,6 +234,15 @@
                 }
                 else if (conflictIndex !== -1) {
                     this.$set(this.$refs.userDrawer.editedObject.permission._.u, this.$refs.userDrawer.editedObject.permission._.u[conflictSetIndex].splice(conflictIndex, 1));
+                }
+
+                for (var app in countlyGlobal.apps) {
+                    var appId = countlyGlobal.apps[app]._id;
+                    if (userApps.indexOf(appId) === -1 && adminApps.indexOf(appId)) {
+                        for (var typeIndex in types) {
+                            delete this.$refs.userDrawer.editedObject.permission[types[typeIndex]][appId];
+                        }
+                    }
                 }
             },
             addPermissionSet: function() {
@@ -263,6 +278,12 @@
                     break;
                 }
             },
+            addRolesToUserUnderEdit: function(userUnderEdit) {
+                var self = this;
+                Object.keys(this.roles).forEach(function(roleName) {
+                    userUnderEdit[roleName] = self.roles[roleName].value;
+                });
+            },
             // drawer event handlers
             onClose: function() {},
             onSubmit: function(submitted, done) {
@@ -284,10 +305,11 @@
                 }
 
                 var self = this;
+                this.addRolesToUserUnderEdit(submitted);
                 if (this.settings.editMode) {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.editUser(this.user._id, submitted, function(res) {
-                        if (!res.result) {
+                        if (res.result) {
                             if (typeof self.group._id !== "undefined") {
                                 groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
                                     .then(function() {});
@@ -319,7 +341,6 @@
                                     message: CV.i18n('management-users.updated-message'),
                                     type: 'success'
                                 });
-                                clearCheck();
                                 done();
                             }
                         }
@@ -335,7 +356,7 @@
                 else {
                     submitted.permission = countlyAuth.combinePermissionObject(submitted.permission._.u, this.permissionSets, submitted.permission);
                     countlyUserManagement.createUser(submitted, function(res) {
-                        if (!res.result) {
+                        if (res.full_name) {
                             if (typeof self.group._id !== "undefined") {
                                 groupsModel.saveUserGroup({ email: submitted.email, group_id: [self.group._id] })
                                     .then(function() {});
@@ -454,9 +475,12 @@
             },
             onGroupChange: function(groupVal) {
                 this.group = groupVal;
+            },
+            onRoleChange: function(role) {
+                this.roles[role.name] = role;
             }
         },
-        beforeCreated: function() {
+        created: function() {
             for (var app in countlyGlobal.apps) {
                 this.apps.push({value: countlyGlobal.apps[app]._id, label: countlyGlobal.apps[app].name });
             }
@@ -521,7 +545,7 @@
                 for (var user in usersObj) {
                     self.users.push(usersObj[user]);
                 }
-                self.features = countlyUserManagement.getFeatures();
+                self.features = countlyUserManagement.getFeatures().sort();
             });
         }
     });
