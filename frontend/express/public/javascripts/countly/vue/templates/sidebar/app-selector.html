@@ -3,7 +3,7 @@
     <span slot="title" class="dialog-title bu-level">
         <span class="bu-level-left text-big">Apps</span>
         <span class="bu-level-right">
-            <el-button v-if="showCompare" @click="compare" type="text">Compare apps <i class="ion-arrow-right-c"></i> </el-button>
+            <el-button v-if="showCompare" @click="compare" type="text"><span class="text-medium">Compare Apps <i class="ion-arrow-right-c"></i> </span></el-button>
         </span>
     </span>
     <cly-listbox height="624" :options="allApps" :searchable="true" :bordered="false" v-model="activeApp">
