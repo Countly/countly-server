@@ -2,4 +2,8 @@
     &__dropdown-frame {
         border-bottom: 1px solid #ececec;
     }
+    &__scroll-down {
+        height: 660px;
+        overflow-y: scroll;
+    }
 }
