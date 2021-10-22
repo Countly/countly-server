@@ -95,7 +95,7 @@
                     data: data,
                 };
                 var prevObj = {
-                    name: CV.i18n("events.compare.previous.period"),
+                    name: CV.i18n("compare.events.previous.period"),
                     data: prevData,
                 };
                 series.push(obj, prevObj);
@@ -123,7 +123,7 @@
                 var obj = {};
                 var prevObj = {};
                 obj.name = selectedEvents[0].startsWith('[CLY]_group') ? groupData[selectedEvents[0]] : countlyCompareEvents.helpers.getEventLongName(selectedEvents[0], map);
-                prevObj.name = CV.i18n("events.compare.previous.period");
+                prevObj.name = CV.i18n("compare.events.previous.period");
                 legendData.push(obj, prevObj);
             }
             else {
@@ -301,8 +301,8 @@
                         if (res) {
                             context.commit("setAllEventsCompareData", res);
                             context.commit("setTableRows", countlyCompareEvents.helpers.getTableRows(context));
-                            context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, context.state.selectedEvents));
-                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(context.state.selectedEvents, context.state.groupData, context.state.allEventsData.map));
+                            context.commit("setLineChartData", countlyCompareEvents.helpers.getLineChartData(context, countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, context.state.selectedEvents)));
+                            context.commit("setLineLegend", countlyCompareEvents.helpers.getLegendData(countlyCompareEvents.helpers.filterSelectedEvents(context.state.tableStateMap, context.state.selectedEvents), context.state.groupData, context.state.allEventsData.map));
                         }
                     });
             },

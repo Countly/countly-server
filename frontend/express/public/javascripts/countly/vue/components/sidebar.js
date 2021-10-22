@@ -19,7 +19,17 @@
                     set: function(activeApp) {
                         this.onChange(activeApp);
                     }
-                }
+                },
+                showCompare: function() {
+                    var cc = countlyVue.container.dataMixin({
+                        'compareComponent': '/apps/compare'
+                    });
+                    var component = cc.data();
+                    if (component && component.compareComponent && component.compareComponent.length > 0) {
+                        return component.compareComponent[0].enabled.default || false;
+                    }
+                    return false;
+                },
             },
             props: {
                 allApps: {
@@ -27,6 +37,10 @@
                 }
             },
             methods: {
+                compare: function() {
+                    app.navigate("#/compare", true);
+                    this.$emit("close");
+                },
                 onChange: function(id) {
                     var selectedApp = this.allApps.find(function(a) {
                         return a._id === id;

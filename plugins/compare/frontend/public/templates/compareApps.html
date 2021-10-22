@@ -1,11 +1,14 @@
 <div v-bind:class="[componentId]">
-  <div class="cly-vue-compare-events__header bu-is-flex">
-    <h2> {{i18n('compare.events.title')}} 
+  	<cly-header>
+	  <cly-back-link slot="header-top" :title="i18n('compare.back')"></cly-back-link>
+    	  <template v-slot:header-bottom>  
+    <h2> {{i18n('compare.apps.title')}} 
     </h2>
-    <cly-tooltip-icon class="cly-vue-compare-events__header--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
-  </div>
+    <cly-tooltip-icon class="cly-vue-compare-apps__header--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
+	</template> 
+  </cly-header>
   <cly-main>
-    <div class="bu-mb-4 cly-vue-compare-events">
+    <div class="bu-mb-4 cly-vue-compare-apps">
     <el-select
       style="width:620px"
       v-model="value"
@@ -14,23 +17,23 @@
       allow-create
       default-first-option
       :multiple-limit=maxLimit
-      placeholder="Select maximum 20 events to compare">
+      :placeholder=placeholder>
       <el-option
-      v-for="item in allEventsList"
+      v-for="item in allCompareAppsList"
       :key="item.value"
       :label="item.label"
       :value="item.value">
       </el-option>
     </el-select>
-    <el-button :disabled="value.length===0" @click="compareEvents" class="cly-vue-compare-events__button" size="small" >{{i18n('compare.events')}}
+    <el-button :disabled="value.length===0" @click="compareApps" class="cly-vue-compare-apps__button" size="small" >{{i18n('compare.button')}}
     </el-button>
     </div>
     <div class="bu-pt-4 bu-mb-4">
-    <cly-date-picker class="cly-vue-events-all-date-picker" v-model="selectedDatePeriod" timestampFormat="ms"></cly-date-picker>
+    <cly-date-picker-g class="cly-vue-apps-all-date-picker"></cly-date-picker-g>
     </div>
     <cly-section>
-    <div class="cly-vue-compare-events__graph-section">
-      <div class="cly-vue-compare-events__graph-section__dropdown">
+    <div class="cly-vue-compare-apps__graph-section">
+      <div class="cly-vue-compare-apps__graph-section__dropdown">
       <span class="text-big bu-pr-2" >{{i18n('compare.results.by')}}</span>
       <el-select :arrow="false" :adaptiveLength="true" v-model="selectedGraph">
         <el-option v-for="item in availableMetrics" :key="item.key" :value="item.key" :label="item.label">
