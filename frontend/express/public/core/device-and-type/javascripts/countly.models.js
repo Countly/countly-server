@@ -236,17 +236,18 @@
             var segmentedDataTotalSession, segmentedDataTotalUsers, segmentedDataNewUsers;
 
             // calculate chartData
-            var segmentedData = countlyDensity.getOSSegmentedData(countlyCommon.ACTIVE_APP_ID).os;
+            var segmentedData = countlyDeviceDetails.getPlatformData().chartData;
             for (var i = 0; i < segmentedData.length; i++) {
                 segmentedDataTotalSession = 0;
                 segmentedDataTotalUsers = 0;
                 segmentedDataNewUsers = 0;
-                for (var j = 0; j < countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData.length; j++) {
-                    segmentedDataTotalSession += parseInt(countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData[j].t);
-                    segmentedDataTotalUsers += parseInt(countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData[j].u);
-                    segmentedDataNewUsers += parseInt(countlyDensity.getOSSegmentedData(segmentedData[i].name).chartData[j].n);
+                var versionsSegmentedData = countlyDensity.getOSSegmentedData(segmentedData[i].os_).chartData;
+                for (var j = 0; j < versionsSegmentedData.length; j++) {
+                    segmentedDataTotalSession += versionsSegmentedData[j].t;
+                    segmentedDataTotalUsers += versionsSegmentedData[j].u;
+                    segmentedDataNewUsers += versionsSegmentedData[j].n;
                 }
-                calculatedchartData.push({density: segmentedData[i].name, t: segmentedDataTotalSession, u: segmentedDataTotalUsers, n: segmentedDataNewUsers});
+                calculatedchartData.push({density: segmentedData[i].os_, t: segmentedDataTotalSession, u: segmentedDataTotalUsers, n: segmentedDataNewUsers});
             }
             chartData.chartData = calculatedchartData;
 
