@@ -136,9 +136,6 @@
             setSelectedApps: function(context, apps) {
                 context.commit('setSelectedApps', apps);
             },
-            setSelectedDatePeriod: function(context, period) {
-                context.commit('setSelectedDatePeriod', period);
-            },
             setSelectedGraphMetric: function(context, metric) {
                 context.commit("setSelectedGraphMetric", metric);
             },
@@ -170,9 +167,6 @@
             setAllAppsCompareData: function(state, value) {
                 state.allAppsCompareData = value;
             },
-            setSelectedDatePeriod: function(state, value) {
-                state.selectedDatePeriod = value;
-            },
             setSelectedGraphMetric: function(state, value) {
                 state.selectedGraphMetric = value;
             },
@@ -195,9 +189,6 @@
             },
             allAppsCompareData: function(_state) {
                 return _state.allAppsCompareData;
-            },
-            selectedDatePeriod: function(_state) {
-                return _state.selectedDatePeriod;
             },
             selectedGraphMetric: function(_state) {
                 return _state.selectedGraphMetric;
