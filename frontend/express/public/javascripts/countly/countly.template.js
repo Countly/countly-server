@@ -1270,7 +1270,13 @@ var AppRouter = Backbone.Router.extend({
         }
 
         // Init sidebar based on the current url
-        self.sidebar.init();
+        if (countlyVue.sideBarComponent) {
+            var selectedMenuItem = countlyVue.sideBarComponent.$store.getters["countlySidebar/getSelectedMenuItem"];
+            var currLink = "#" + Backbone.history.fragment;
+            if (selectedMenuItem.item.url !== currLink) {
+                countlyVue.sideBarComponent.$store.dispatch("countlySidebar/updateSelectedMenuItem", {});
+            }
+        }
     },
     sidebar: {
         init: function() {
