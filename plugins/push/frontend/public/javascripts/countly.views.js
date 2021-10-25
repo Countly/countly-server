@@ -1456,152 +1456,134 @@
         component: PushNotificationAppLevelConfigView
     });
 
-    // app.addPageScript('/drill#', function() {
-    //     if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
-    //         return;
-    //     }
-    //     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
-    //         if (countlyAuth.validateCreate(featureName)) {
-    //             var content =
-    //         '<div class="item" id="action-create-message">' +
-    //             '<div class="item-icon">' +
-    //                 '<span class="logo ion-chatbox-working"></span>' +
-    //             '</div>' +
-    //             '<div class="content">' +
-    //                 '<div class="title" data-localize="pu.send-message"></div>' +
-    //                 '<div class="subtitle" data-localize="pu.send-message-desc"></div>' +
-    //             '</div>' +
-    //         '</div>';
+    //NOTE: modifyUserDetailsForPush adds the create new message action in user details page and sends the message to the actual user
+    //     /**
+    // * Modify user profile views with push additions
+    // **/
+    //     function modifyUserDetailsForPush() {
+    //         if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
+    //             return;
+    //         }
+    //         if (Backbone.history.fragment.indexOf('manage/') === -1 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
+    //         //check if it is profile view
+    //             if (app.activeView.updateEngagement) {
+    //                 var userDetails = countlyUserdata.getUserdetails();
 
-    //             $('#actions-popup').append(content);
-    //             app.localize();
-    //             $('#action-create-message').off('click').on('click', function() {
-    //                 var message = {
-    //                     apps: [countlyCommon.ACTIVE_APP_ID],
-    //                     drillConditions: countlySegmentation.getRequestData()
-    //                 };
-
-    //                 // for (var k in filterData.dbFilter) {
-    //                 //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filterData.dbFilter[k];
-    //                 // }
-
-    //                 components.push.popup.show(message);
-    //                 app.recordEvent({
-    //                     "key": "drill-action",
-    //                     "count": 1,
-    //                     "segmentation": {action: "push"}
+    //                 var tokens = [], platforms = [], test = false, prod = false;
+    //                 tokens = Object.keys(userDetails).filter(function(k) {
+    //                     return k.indexOf('tk') === 0;
+    //                 }).map(function(k) {
+    //                     return k.substr(2);
     //                 });
-    //             });
-    //             $('#bookmark-view').on('click', '.bookmark-action.send', function() {
-    //                 var filter = $(this).data('query');
+    //                 if (userDetails.tkid || userDetails.tkia || userDetails.tkip) {
+    //                     platforms.push('i');
+    //                 }
+    //                 if (userDetails.tkat || userDetails.tkap) {
+    //                     platforms.push('a');
+    //                 }
 
-    //                 var message = {
-    //                     apps: [countlyCommon.ACTIVE_APP_ID],
-    //                     drillConditions: filter
-    //                 };
+    //                 test = !!userDetails.tkid || !!userDetails.tkia || !!userDetails.tkat;
+    //                 prod = !!userDetails.tkip || !!userDetails.tkap;
 
-    //                 // for (var k in filter) {
-    //                 //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filter[k];
-    //                 // }
-
-    //                 components.push.popup.show(message);
-    //             });
-    //         }
-    //         else {
-    //             $('#drill-actions').remove('.btn-create-message');
-    //         }
-    //     }
-    // });
-    /**
-* Modify user profile views with push additions
-**/
-    // function modifyUserDetailsForPush() {
-    //     if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
-    //         return;
-    //     }
-    //     if (Backbone.history.fragment.indexOf('manage/') === -1 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
-    //     //check if it is profile view
-    //         if (app.activeView.updateEngagement) {
-    //             var userDetails = countlyUserdata.getUserdetails();
-
-    //             var tokens = [], platforms = [], test = false, prod = false;
-    //             tokens = Object.keys(userDetails).filter(function(k) {
-    //                 return k.indexOf('tk') === 0;
-    //             }).map(function(k) {
-    //                 return k.substr(2);
-    //             });
-    //             if (userDetails.tkid || userDetails.tkia || userDetails.tkip) {
-    //                 platforms.push('i');
-    //             }
-    //             if (userDetails.tkat || userDetails.tkap) {
-    //                 platforms.push('a');
-    //             }
-
-    //             test = !!userDetails.tkid || !!userDetails.tkia || !!userDetails.tkat;
-    //             prod = !!userDetails.tkip || !!userDetails.tkap;
-
-    //             if (tokens.length && countlyAuth.validateCreate('push')) {
-    //                 if (!$('.btn-create-message').length) {
-    //                     $('#user-profile-detail-buttons .cly-button-menu').append('<div class="item btn-create-message" >' + jQuery.i18n.map['push.create'] + '</div>');
+    //                 if (tokens.length && countlyAuth.validateCreate('push')) {
+    //                     if (!$('.btn-create-message').length) {
+    //                         $('#user-profile-detail-buttons .cly-button-menu').append('<div class="item btn-create-message" >' + jQuery.i18n.map['push.create'] + '</div>');
+    //                         app.activeView.resetExportSubmenu();
+    //                     }
+    //                     $('.btn-create-message').show().off('click').on('click', function() {
+    //                         if (platforms.length) {
+    //                             components.push.popup.show({
+    //                                 platforms: platforms,
+    //                                 apps: [countlyCommon.ACTIVE_APP_ID],
+    //                                 test: test && !prod,
+    //                                 userConditions: {did: {$in: [app.userdetailsView.user_did]}}
+    //                             });
+    //                         }
+    //                         else {
+    //                             CountlyHelpers.alert(jQuery.i18n.map['push.no-user-token'], 'red');
+    //                         }
+    //                     });
+    //                     if (!$('#userdata-info > tbody > tr:last-child table .user-property-push').length) {
+    //                         $('<tr class="user-property-push"><td class="text-left"><span>' + components.t('userdata.push') + '</span></td><td class="text-right"></td></tr>').appendTo($('#userdata-info > tbody > tr:last-child table tbody'));
+    //                     }
+    //                     $('#userdata-info > tbody > tr:last-child table .user-property-push td.text-right').html(tokens.map(function(t) {
+    //                         return components.t('pu.tk.' + t);
+    //                     }).join('<br />'));
+    //                 }
+    //                 else {
+    //                     $('#userdata-info > tbody > tr:last-child table .user-property-push').remove();
+    //                     $('.btn-create-message').remove();
     //                     app.activeView.resetExportSubmenu();
     //                 }
-    //                 $('.btn-create-message').show().off('click').on('click', function() {
-    //                     if (platforms.length) {
-    //                         components.push.popup.show({
-    //                             platforms: platforms,
-    //                             apps: [countlyCommon.ACTIVE_APP_ID],
-    //                             test: test && !prod,
-    //                             userConditions: {did: {$in: [app.userdetailsView.user_did]}}
-    //                         });
-    //                     }
-    //                     else {
-    //                         CountlyHelpers.alert(jQuery.i18n.map['push.no-user-token'], 'red');
-    //                     }
-    //                 });
-    //                 if (!$('#userdata-info > tbody > tr:last-child table .user-property-push').length) {
-    //                     $('<tr class="user-property-push"><td class="text-left"><span>' + components.t('userdata.push') + '</span></td><td class="text-right"></td></tr>').appendTo($('#userdata-info > tbody > tr:last-child table tbody'));
-    //                 }
-    //                 $('#userdata-info > tbody > tr:last-child table .user-property-push td.text-right').html(tokens.map(function(t) {
-    //                     return components.t('pu.tk.' + t);
-    //                 }).join('<br />'));
-    //             }
-    //             else {
-    //                 $('#userdata-info > tbody > tr:last-child table .user-property-push').remove();
-    //                 $('.btn-create-message').remove();
-    //                 app.activeView.resetExportSubmenu();
-    //             }
-    //         }
-    //         else {
-    //         //list view
-    //             if (countlyAuth.validateCreate('push')) {
-    //                 if (!$('.btn-create-message').length) {
-    //                     $('.widget-header').append($('<a class="icon-button green btn-header right btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
-
-    //                 }
-    //                 $('.btn-create-message').off('click').on('click', function() {
-    //                     var q = app.userdataView.getExportQuery().query, filterData = {};
-    //                     if (q) {
-    //                         try {
-    //                             filterData = JSON.parse(q);
-    //                         }
-    //                         catch (ignored) {
-    //                         //ignoring error
-    //                         }
-    //                     }
-
-    //                     components.push.popup.show({
-    //                         apps: [countlyCommon.ACTIVE_APP_ID],
-    //                         userConditions: filterData
-    //                     });
-    //                 });
-    //             }
-    //             else {
-    //                 $('.btn-create-message').remove();
     //             }
     //         }
     //     }
-    // }
 
+    var CreateMessageDropdownItemWrapper = countlyVue.views.create({
+        data: function() {
+            return {
+                command: "CREATE_PUSH_NOTIFICATION",
+                label: "Send message to users"
+            };
+        },
+        computed: {
+            activeAppType: function() {
+                return this.$store.state.countlyCommon.activeApp.type;
+            },
+            isDisabled: function() {
+                if (this.activeAppType !== 'mobile') {
+                    return true;
+                }
+                if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
+                    return true;
+                }
+                return false;
+            }
+        },
+        template: '<el-dropdown-item :disabled="isDisabled" :command="command">{{label}}</el-dropdown-item>',
+    });
+
+    var PushNotificationDrawerWrapper = countlyVue.views.create({
+        props: {
+            type: {
+                type: String,
+                default: countlyPushNotification.service.TypeEnum.ONE_TIME
+            },
+            controls: {
+                type: Object
+            },
+            queryFilter: {
+                type: Object,
+                default: null,
+            },
+            wrappedUserProperties: {
+                type: Boolean,
+                default: false,
+                required: false
+            }
+        },
+        data: function() {
+            return {};
+        },
+        computed: {
+            activeAppType: function() {
+                return this.$store.state.countlyCommon.activeApp.type;
+            },
+            shouldDisplay: function() {
+                if (this.activeAppType !== 'mobile') {
+                    return false;
+                }
+                if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
+                    return false;
+                }
+                return true;
+            }
+        },
+        components: {
+            'push-notification-drawer': PushNotificationDrawer
+        },
+        template: '<push-notification-drawer v-if="shouldDisplay" :queryFilter="queryFilter" :wrappedUserProperties="wrappedUserProperties" :controls="controls" :type="type"></push-notification-drawer>',
+    });
 
     /**
      * 
@@ -1609,8 +1591,10 @@
      */
     function getCreateNewMessageEventContainerData() {
         return {
-            label: "Create new message",
+            id: "createMessageDropdownItemWrapper",
+            name: "createMessageDropdownItemWrapper",
             command: "CREATE_PUSH_NOTIFICATION",
+            component: CreateMessageDropdownItemWrapper,
             click: function() {
                 this.openDrawer("pushNotificationDrawer");
             }
@@ -1624,7 +1608,7 @@
         return {
             id: "pushNotificationDrawer",
             name: "pushNotificationDrawer",
-            component: PushNotificationDrawer,
+            component: PushNotificationDrawerWrapper,
             type: countlyPushNotification.service.TypeEnum.ONE_TIME,
         };
     }
@@ -1648,20 +1632,8 @@
         countlyVue.container.registerData("/users/external/drawers", getDrawerContainerData());
     }
 
-    /**
-     * adds external drawers to drill and user profiles views when active application is active, user has push notification create permissions and is not restricted to push notifications page
-     */
-    function addExternalDrawers() {
-        if (Array.isArray(countlyGlobal.member.restrict) && countlyGlobal.member.restrict.indexOf('#/messaging') !== -1 || !countlyAuth.validateCreate(featureName)) {
-            return;
-        }
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === 'mobile') {
-            addDrawerToDrillMainView();
-            addDrawerToUserProfilesMainView();
-        }
-    }
-
-    addExternalDrawers();
+    addDrawerToDrillMainView();
+    addDrawerToUserProfilesMainView();
 
 
     //countly.view global management settings
@@ -1669,7 +1641,6 @@
         if (countlyAuth.validateRead(featureName)) {
             app.addMenuForType("mobile", "reach", {code: "push", url: "#/messaging", text: "push-notification.title", icon: '<div class="logo ion-chatbox-working"></div>', priority: 10});
         }
-
 
         if (app.configurationsView) {
             app.configurationsView.registerLabel("push", "push.plugin-title");
