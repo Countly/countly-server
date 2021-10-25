@@ -1,9 +1,9 @@
-<cly-dialog :visible.sync="centerDialogVisible" custom-class="cly-vue-sidebar__app-selector__dialog_box" :show-close="false" width="35%"
+<cly-dialog :visible.sync="centerDialogVisible" custom-class="cly-vue-sidebar__app-selector__dialog_box" :show-close="false" width="500px"
     :modal="false" center @closed="handleClose()">
     <span slot="title" class="dialog-title bu-level">
         <span class="bu-level-left text-big">Apps</span>
         <span class="bu-level-right">
-            <el-button type="text"><span class="text-medium">Compare Apps <i class="ion-arrow-right-c"></i> </span></el-button>
+            <el-button v-if="showCompare" @click="compare" type="text"><span class="text-medium">Compare Apps <i class="ion-arrow-right-c"></i> </span></el-button>
         </span>
     </span>
     <cly-listbox height="624" :options="allApps" :searchable="true" :bordered="false" v-model="activeApp">

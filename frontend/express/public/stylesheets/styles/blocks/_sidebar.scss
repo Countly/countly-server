@@ -16,8 +16,30 @@ $bg-color: #24292e;
 }
 
 .cly-vue-sidebar {
+    &__tooltip  {
+        display: block !important;
+        z-index: 10000;
+      .tooltip-inner {
+        background: white;
+        color: black;
+      }
+      .tooltip-arrow {
+        display: none;
+      }
+    }
+      
+    &__tooltip[x-placement^="right"] {
+        margin-left: 0px;
+      }
+      
     width: 100%;
     height: 100%;
+    .cly-vue-listbox__item-label {
+        width: 350px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
     ul {
         list-style: none;
@@ -40,6 +62,9 @@ $bg-color: #24292e;
 
     &__app-name {
         font-size: 14px;
+    }
+    &__app-name-type {
+        width: 120px;
     }
 
     &__app-selector {
@@ -126,6 +151,7 @@ $bg-color: #24292e;
 
         &:hover {
             background-color: map.get(c.$colors, "warm-gray-80");
+            color: map.get(c.$colors, "white");
             border-radius: 4px;
         }
 
@@ -142,8 +168,9 @@ $bg-color: #24292e;
     }
 
     &__el-collapse--selected .el-collapse-item__header {
-        background-color: map.get(c.$colors, "warm-gray-80");
         border-radius: 4px;
+        background-color:map.get(c.$colors, "warm-gray-80");
+        color: map.get(c.$colors, "white");
     }
 
     .el-collapse-item__content {
@@ -155,6 +182,7 @@ $bg-color: #24292e;
         border-bottom: 1px solid map.get(c.$colors, "warm-gray-70");
         background-color: $bg-color;
         box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
+        padding-bottom: 16px;
     }
 
     &__header {
@@ -294,10 +322,6 @@ $bg-color: #24292e;
         width: 50px;
         border-radius: 25px;
         text-align: center;
-
-        &:hover {
-            box-shadow: 0px 0px 12px map.get(c.$colors, "primary-green");
-        }
     }
 
     &__user-initials {
