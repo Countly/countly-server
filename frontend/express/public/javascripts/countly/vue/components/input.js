@@ -492,6 +492,9 @@
         watch: {
             hasAllOptionsTab: function() {
                 this.determineActiveTabId();
+            },
+            hasTabs: function() {
+                this.determineActiveTabId();
             }
         }
     };
