@@ -470,6 +470,10 @@
                 type: String,
                 required: true
             },
+            container: {
+                type: String,
+                required: true,
+            },
             type: {
                 type: String,
                 required: false,
@@ -489,7 +493,7 @@
                 type: Boolean,
                 required: false,
                 default: false
-            }
+            },
         },
         data: function() {
             return {
@@ -498,6 +502,7 @@
                 defaultLabelPreview: "Select property|",
                 defaultLocalizationValidationErrors: [],
                 selectionRange: null,
+                mutationObserver: null,
             };
         },
         computed: {
@@ -533,13 +538,6 @@
             },
             isSelected: function() {
                 return window.getSelection().containsNode(this.$refs.element, true);
-            },
-            insertNodeAtRange: function(node, range) {
-                var selection = window.getSelection();
-                range.insertNode(node);
-                range.setStartAfter(node);
-                selection.removeAllRanges();
-                selection.addRange(range);
             },
             insertNodeWhenSelected: function(node) {
                 var selection = window.getSelection();
@@ -669,6 +667,35 @@
             onClick: function() {
                 this.saveSelectionRange();
             },
+            onDelete: function(nodesList) {
+                var self = this;
+                nodesList.forEach(function(removedNode) {
+                    if (removedNode.id) {
+                        var idValue = removedNode.id.split('-')[1];
+                        self.$emit('delete', idValue, self.container);
+                    }
+                });
+            },
+            onMutation: function(mutationsList) {
+                var self = this;
+                mutationsList.forEach(function(mutation) {
+                    if (mutation.removedNodes.length) {
+                        self.onDelete(mutation.removedNodes);
+                    }
+                });
+            },
+            createMutationObserverIfNotFound: function(callback) {
+                if (!this.mutationObserver) {
+                    this.mutationObserver = new MutationObserver(callback);
+                }
+            },
+            startMutationObserver: function() {
+                var config = {childList: true};
+                this.mutationObserver.observe(this.$refs.element, config);
+            },
+            disconnectMutationObserver: function() {
+                this.mutationObserver.disconnect();
+            }
         },
         mounted: function() {
             var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
@@ -680,9 +707,12 @@
                     element.dispatchEvent(event);
                 });
             }
+            this.createMutationObserverIfNotFound(this.onMutation);
+            this.startMutationObserver();
         },
         beforeDestroy: function() {
             //TODO-LA: remove all user properties elements' event listeners
+            this.disconnectMutationObserver();
         },
         components: {
             'emoji-picker': countlyPushNotificationComponent.EmojiPicker
