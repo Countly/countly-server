@@ -30,7 +30,11 @@
 
     var _i18n = function() {
         var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
-        if (!appType || appType === "mobile") {
+        arguments = arguments || [];
+        if (arguments.length === 1) { //single arg. use map
+            return _i18nM(arguments[0]);
+        }
+        else if (!appType || appType === "mobile") {
             return jQuery.i18n.prop.apply(null, arguments);
         }
         else {
