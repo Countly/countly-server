@@ -712,6 +712,15 @@ var InternalEventTrigger = countlyVue.views.BaseView.extend({
                     {value: "/i/app_users/create", label: "/i/app_users/create"},
                     {value: "/i/app_users/update", label: "/i/app_users/update"},
                     {value: "/i/app_users/delete", label: "/i/app_users/delete"},
+                    {value: "/i/apps/create", label: "/i/apps/create"},
+                    {value: "/i/apps/update", label: "/i/apps/update"},
+                    {value: "/i/apps/delete", label: "/i/apps/delete"},
+                    {value: "/i/users/create", label: "/i/users/create"},
+                    {value: "/i/users/update", label: "/i/users/update"},
+                    {value: "/i/users/delete", label: "/i/users/delete"},
+                    {value: "/master", label: "/master"},
+                    {value: "/systemlogs", label: "/systemlogs"},
+                    // {value: "/crashes/new", label: "/crashes/new"},
                     {value: "/hooks/trigger", label: "/hooks/trigger"},
              ],
             cohortOptions: [],
@@ -1046,6 +1055,7 @@ app.hooksView2 = new countlyVue.views.BackboneWrapper({
         "/hooks/templates/vue-triggers.html",
         "/hooks/templates/vue-effects.html",
         "/drill/templates/drill.query.builder.html",
+        "/drill/templates/query.builder.v2.html",
     ]
 });
 
@@ -1137,6 +1147,7 @@ app.hooksDetailView = new countlyVue.views.BackboneWrapper({
         "/hooks/templates/vue-triggers.html",
         "/hooks/templates/vue-effects.html",
         "/drill/templates/drill.query.builder.html",
+        "/drill/templates/query.builder.v2.html",
         
     ]
 });

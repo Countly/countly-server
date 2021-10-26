@@ -42,6 +42,10 @@ class InternalEventTrigger {
         if (ob.is_mock === true) {
             return ob;
         }
+        if(eventType === '/master') {
+            this._rules = await common.db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray();
+            console.log(this._rules,"rrrmmm")
+        }
         this._rules.forEach((r) => {
             if (r.trigger.configuration.eventType === eventType) {
                 rule = r;
@@ -71,6 +75,7 @@ class InternalEventTrigger {
                                 this.pipeline({
                                     params: {cohort, user: u},
                                     rule: rule,
+                                    eventType,
                                 });
                             });
                         }
@@ -78,6 +83,52 @@ class InternalEventTrigger {
                 }
                 break;
             }
+            case "/i/users/create":
+            case "/i/users/update":
+            case "/i/users/delete":
+            case "/crashes/new":
+            case "/master":
+                utils.updateRuleTriggerTime(rule._id);
+                this.pipeline({
+                    params: {data:ob.data, eventType},
+                    rule: rule,
+                    eventType,
+                }); 
+                break;
+            case "/systemlogs":
+                utils.updateRuleTriggerTime(rule._id);
+                this.pipeline({
+                    params: {data:ob.data, action: ob.action},
+                    rule: rule,
+                    eventType,
+                });
+            case '/i/apps/create':
+            case '/i/apps/update':
+            case '/i/apps/delete':
+            case '/i/apps/reset': 
+                const {appId, data} = ob;
+                try {
+                    if (eventType === '/i/apps/create') {
+                        utils.updateRuleTriggerTime(rule._id);
+                        this.pipeline({
+                            params: {data, appId, eventType},
+                            rule: rule,
+                            eventType,
+                        }); 
+                    } else if (rule.apps[0] === appId + '') {
+                        utils.updateRuleTriggerTime(rule._id);
+                        this.pipeline({
+                            params: {data, appId, eventType},
+                            rule: rule,
+                            eventType,
+                        });
+                    }
+                }
+                catch (err) {
+                    console.log(err, "[InternalEventTrigger]");
+                } 
+                
+                break;
             case "/i/app_users/create":
             case "/i/app_users/update":
             case "/i/app_users/delete": {
@@ -97,9 +148,11 @@ class InternalEventTrigger {
                     if (eventType === '/i/app_users/delete') {
                         userData.user.uid = ob.uids;
                     }
+                    userData.eventType = eventType;
                     this.pipeline({
                         params: userData,
                         rule: rule,
+                        eventType,
                     });
                 }
                 break;
@@ -115,6 +168,7 @@ class InternalEventTrigger {
                     this.pipeline({
                         params: ob,
                         rule: rule,
+                        eventType,
                     });
                 }
                 break;
@@ -129,6 +183,7 @@ class InternalEventTrigger {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
                 this.process(ob, e);
+                console.log("mmmm",e)
             });
         });
     }

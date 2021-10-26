@@ -71,7 +71,6 @@ class IncomingDataTrigger {
     register() {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
-                console.log(e," hoook incoming!!!");
                 this.process(ob, e);
             });
         });
