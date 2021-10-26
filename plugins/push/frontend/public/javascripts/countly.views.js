@@ -534,13 +534,11 @@
             resetMessageInHTMLToActiveLocalization: function() {
                 this.$refs.title.reset(
                     this.pushNotificationUnderEdit.message[this.activeLocalization].title,
-                    Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.title),
-                    'title'
+                    Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.title)
                 );
                 this.$refs.content.reset(
                     this.pushNotificationUnderEdit.message[this.activeLocalization].content,
-                    Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.content),
-                    'content'
+                    Object.keys(this.pushNotificationUnderEdit.message[this.activeLocalization].properties.content)
                 );
             },
             onLocalizationChange: function(localization) {
@@ -590,7 +588,7 @@
                 this.isAddUserPropertyPopoverOpen = false;
             },
             addUserPropertyInHTML: function(id, container) {
-                this.$refs[container].addEmptyUserProperty(id, container);
+                this.$refs[container].addEmptyUserProperty(id);
             },
             removeUserPropertyInHTML: function(id, container) {
                 this.$refs[container].removeUserProperty(id);

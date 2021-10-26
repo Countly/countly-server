@@ -522,15 +522,15 @@
             }
         },
         methods: {
-            onUserPropertyClick: function(id, container, element) {
+            onUserPropertyClick: function(id, element) {
                 var elementBound = element.getBoundingClientRect();
                 var leftCoordinate = elementBound.left + (elementBound.width / 2);
-                this.$emit("click", id, container, {left: leftCoordinate, top: elementBound.top });
+                this.$emit("click", id, this.container, {left: leftCoordinate, top: elementBound.top });
             },
-            getOnUserPropertyClickEventListener: function(id, name) {
+            getOnUserPropertyClickEventListener: function(id) {
                 var self = this;
                 return function(event) {
-                    self.onUserPropertyClick(id, name, event.target);
+                    self.onUserPropertyClick(id, event.target);
                 };
             },
             isEmpty: function() {
@@ -579,7 +579,7 @@
                 var sel = window.getSelection();
                 this.selectionRange = sel.getRangeAt(0);
             },
-            addEmptyUserProperty: function(id, container) {
+            addEmptyUserProperty: function(id) {
                 var newElement = document.createElement("span");
                 newElement.setAttribute("id", "id-" + id);
                 newElement.setAttribute("contentEditable", false);
@@ -588,10 +588,10 @@
                 newElement.setAttribute("data-user-property-value", "");
                 newElement.setAttribute("data-user-property-fallback", "");
                 newElement.innerText = this.defaultLabelPreview;
-                newElement.onclick = this.getOnUserPropertyClickEventListener(id, container);
+                newElement.onclick = this.getOnUserPropertyClickEventListener(id);
                 this.insertNodeAtCaretPosition(newElement);
                 this.$emit('change', this.$refs.element.innerHTML);
-                this.onUserPropertyClick(id, container, newElement);
+                this.onUserPropertyClick(id, newElement);
                 this.saveSelectionRange();
             },
             removeUserProperty: function(id) {
@@ -626,15 +626,15 @@
                 element.innerText = previewValue;
                 this.$emit('change', this.$refs.element.innerHTML);
             },
-            addEventListeners: function(ids, container) {
+            addEventListeners: function(ids) {
                 var self = this;
                 ids.forEach(function(id) {
-                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id, container);
+                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id);
                 });
             },
-            reset: function(htmlContent, ids, container) {
+            reset: function(htmlContent, ids) {
                 this.$refs.element.innerHTML = htmlContent;
-                this.addEventListeners(ids, container);
+                this.addEventListeners(ids);
             },
             appendEmoji: function(emoji) {
                 this.insertEmojiAtCaretPosition(document.createTextNode(emoji));
