@@ -332,6 +332,11 @@
                 type: Boolean,
                 default: false
             },
+            inline: {
+                type: Boolean,
+                default: false,
+                required: false
+            }
         },
         computed: {
             wrapperElement: function() {
@@ -339,11 +344,17 @@
                     return "div";
                 }
                 return "form";
+            },
+            topClasses: function() {
+                if (this.inline) {
+                    return null;
+                }
+                return "cly-vue-form-step__section";
             }
         },
         mixins: [countlyVue.mixins.i18n],
-        template: '<div class="cly-vue-form-field cly-vue-form-step__section">\
-                        <div class="bu-is-flex bu-is-justify-content-space-between">\
+        template: '<div class="cly-vue-form-field" :class="topClasses">\
+                        <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || label || optional">\
                             <div class="text-small text-heading">{{label}}</div>\
                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
                         </div>\
