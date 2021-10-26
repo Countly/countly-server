@@ -16,7 +16,7 @@ $bg-color: #24292e;
 }
 
 .cly-vue-sidebar {
-    &__tooltip  {
+    .tooltip  {
         display: block !important;
         z-index: 10000;
       .tooltip-inner {
@@ -28,7 +28,7 @@ $bg-color: #24292e;
       }
     }
       
-    &__tooltip[x-placement^="right"] {
+    .tooltip[x-placement^="right"] {
         margin-left: 0px;
       }
       
