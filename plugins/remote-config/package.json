@@ -18,9 +18,7 @@
     "remote",
     "config"
   ],
-  "cly_dependencies": {
-    "drill": true
-  },
+  "cly_dependencies": {},
   "dependencies": {},
   "private": true
 }

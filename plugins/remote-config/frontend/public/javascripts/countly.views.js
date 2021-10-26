@@ -141,7 +141,7 @@ window.remoteConfigView = countlyView.extend({
     },
 
     initSegmentation: function(el) {
-        if (countlyGlobal.plugins.indexOf("drill") < 0) {
+        if (!this.drillEnabled) {
             return;
         }
 
@@ -384,11 +384,12 @@ window.remoteConfigView = countlyView.extend({
         var isAdminofApp = (countlyGlobal.member.global_admin || (adminApps.indexOf(countlyCommon.ACTIVE_APP_ID)) >= 0) ? true : false;
 
         self.isAdminofApp = isAdminofApp;
+        self.drillEnabled = countlyGlobal.plugins.indexOf("drill") > -1;
 
         this.templateData = {
             "page-title": jQuery.i18n.map["remote-config.plugin-title"],
             "is-admin": isAdminofApp,
-            "drill-enabled": countlyGlobal.plugins.indexOf("drill") > -1,
+            "drill-enabled": self.drillEnabled,
         };
 
         $(this.el).html(this.template(this.templateData));
@@ -426,12 +427,15 @@ window.remoteConfigView = countlyView.extend({
         });
 
         self.initParametersDrawer();
-        self.initConditionsDrawer();
         self.initParametersTabls();
-        self.initConditionsTable();
-        self.conditionModel = new CountlyHelpers.model();
-        if (typeof self.initDrill === "function") {
-            $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {});
+
+        if (self.drillEnabled) {
+            self.initConditionsDrawer();
+            self.initConditionsTable();
+            self.conditionModel = new CountlyHelpers.model();
+            if (typeof self.initDrill === "function") {
+                $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {});
+            }
         }
     },
 
@@ -817,24 +821,26 @@ window.remoteConfigView = countlyView.extend({
                     blockContainer.append(block);
 
                     var paramConditions = row.conditions;
-                    for (var i = 0; i < paramConditions.length; i++) {
-                        var condition = countlyRemoteConfig.getCondition(paramConditions[i].condition_id);
-                        block = $('<div class="value-box-container" style="visibility:hidden">' +
-                                    '   <div class="value-box condition-background-color alt' + condition.condition_color + '">' +
-                                    '       <div class="icon">' +
-                                    '           <i class="material-icons condition-text-color alt' + condition.condition_color + '"> call_split </i>' +
-                                    '       </div>' +
-                                    '       <div class="text condition-text-color alt' + condition.condition_color + '"></div>' +
-                                    '       <div class="value"><input class="input" type="text" disabled></div>' +
-                                    '   </div>' +
-                                    '</div>');
-                        block.find(".text").text(condition.condition_name);
-                        value = paramConditions[i].value;
-                        if (typeof (value) === 'object') {
-                            value = JSON.stringify(paramConditions[i].value);
+                    if (self.drillEnabled) {
+                        for (var i = 0; i < paramConditions.length; i++) {
+                            var condition = countlyRemoteConfig.getCondition(paramConditions[i].condition_id);
+                            block = $('<div class="value-box-container" style="visibility:hidden">' +
+                                        '   <div class="value-box condition-background-color alt' + condition.condition_color + '">' +
+                                        '       <div class="icon">' +
+                                        '           <i class="material-icons condition-text-color alt' + condition.condition_color + '"> call_split </i>' +
+                                        '       </div>' +
+                                        '       <div class="text condition-text-color alt' + condition.condition_color + '"></div>' +
+                                        '       <div class="value"><input class="input" type="text" disabled></div>' +
+                                        '   </div>' +
+                                        '</div>');
+                            block.find(".text").text(condition.condition_name);
+                            value = paramConditions[i].value;
+                            if (typeof (value) === 'object') {
+                                value = JSON.stringify(paramConditions[i].value);
+                            }
+                            block.find(".value input").attr("value", value);
+                            blockContainer.append(block);
                         }
-                        block.find(".value input").attr("value", value);
-                        blockContainer.append(block);
                     }
 
                     return blockContainer.html();
@@ -1537,10 +1543,14 @@ window.remoteConfigView = countlyView.extend({
             }
 
             var parameters = countlyRemoteConfig.returnParameters();
-            var conditions = countlyRemoteConfig.getConditions();
 
             CountlyHelpers.refreshTable(self.parametersTable, parameters);
-            CountlyHelpers.refreshTable(self.conditionsTable, conditions);
+
+            if (self.drillEnabled) {
+                var conditions = countlyRemoteConfig.getConditions();
+                CountlyHelpers.refreshTable(self.conditionsTable, conditions);
+            }
+
             if (cbk) {
                 return cbk();
             }

@@ -14,7 +14,7 @@ try {
     remoteConfig = require('./parts/rc');
 }
 catch (ex) {
-    log.d(ex);
+    log.e("Cannot find the remote config processing module. ", ex);
 }
 
 (function() {
@@ -117,7 +117,9 @@ catch (ex) {
                         }
                     };
 
-                    if (remoteConfig) {
+                    var drillAvailable = plugins.dispatch("/drill/preprocess_query", { query: {}});
+
+                    if (remoteConfig && drillAvailable) {
                         //The following block will only work if -
                         //The remote config condition processing module is available
                         //This module is only available in the enterprise version of the plugin
@@ -171,6 +173,7 @@ catch (ex) {
                         });
                     }
                     else {
+                        log.d("The remote config processing module or drill is not available. Both of them are only available to the EE users.");
                         output[parameter.parameter_key] = parameterValue;
                         return callback(null);
                     }
