@@ -684,6 +684,14 @@
                     }
                 });
             },
+            onPaste: function(event) {
+                event.preventDefault();
+                if (event.clipboardData) {
+                    var textContent = event.clipboardData.getData('text');
+                    this.insertNodeAtCaretPosition(document.createTextNode(textContent));
+                    this.onInput(this.$refs.element.innerHTML);
+                }
+            },
             createMutationObserverIfNotFound: function(callback) {
                 if (!this.mutationObserver) {
                     this.mutationObserver = new MutationObserver(callback);
@@ -695,6 +703,12 @@
             },
             disconnectMutationObserver: function() {
                 this.mutationObserver.disconnect();
+            },
+            addPasteEventListener: function(callback) {
+                this.$refs.element.addEventListener('paste', callback);
+            },
+            removePasteEventListener: function(callback) {
+                this.$refs.element.removeEventListener('paste', callback);
             }
         },
         mounted: function() {
@@ -709,10 +723,12 @@
             }
             this.createMutationObserverIfNotFound(this.onMutation);
             this.startMutationObserver();
+            this.addPasteEventListener(this.onPaste);
         },
         beforeDestroy: function() {
             //TODO-LA: remove all user properties elements' event listeners
             this.disconnectMutationObserver();
+            this.removePasteEventListener(this.onPaste);
         },
         components: {
             'emoji-picker': countlyPushNotificationComponent.EmojiPicker
