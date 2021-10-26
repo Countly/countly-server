@@ -1116,6 +1116,10 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     user.api_key = data.api_key || common.md5Hash(buffer.toString('hex') + Math.random());
     user.password = data.password || common.md5Hash(data.api_key);
 
+    // push approver permission
+    user.approver = !!data.approver;
+    user.approver_bypass = !!data.approver_bypass;
+
     const query = user.email
         ? {
             $or: [
