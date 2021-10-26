@@ -1,0 +1,29 @@
+<div class="grid-stack-item-content cly-widget">
+	<div class="title">
+		<div class="name">{{title}}</div>
+		<div class="period">{{period}}</div>
+	</div>
+    <div class="graph-container">
+        <div class="graph"></div>
+    </div>
+    <div class="apps">
+        {{#each apps}}
+        <div class="app">
+            <div class="icon {{#if this.color}}color{{/if}}" style="background-color:{{this.color}};  background-image: url('appimages/{{this.id}}.png');"></div>
+            <div class="name">{{this.name}}</div>
+            {{#if this.labels}}
+            <div class="labels">
+                {{#each this.labels}}
+                <div class="label">
+                    <span class="label-color" style="background-color: {{this.color}};"></span>
+                    {{#if this.label}}
+                    <span class="label-text">{{this.label}}</span>
+                    {{/if}}
+                </div>
+                {{/each}}
+            </div>
+            {{/if}}
+        </div>
+        {{/each}}
+    </div>
+</div>
