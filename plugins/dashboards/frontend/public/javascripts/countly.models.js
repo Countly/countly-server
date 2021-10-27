@@ -223,7 +223,7 @@
 
                     for (var i = 0; i < dashboard.widgets.length; i++) {
                         var widget = dashboard.widgets[i];
-                        var currWidget = _currDashWidgets.filter(function(w) {
+                        var currWidget = _currDashWidgets.filter(function(w) { //eslint-disable-line no-loop-func
                             return w.widget_id === widget._id;
                         });
 
