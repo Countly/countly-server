@@ -110,6 +110,13 @@
                             self.allUsers[meta.users[j]._id] = meta.users[j].full_name || meta.users[j].email;
                         }
                     }
+
+                    var finalObj = {};
+                    for (i = 0; i < self.sortProperties(self.allActions).length; i++) {
+                        finalObj[self.sortProperties(self.allActions)[i][0]] = self.sortProperties(self.allActions)[i][1];
+                    }
+                    self.allActions = finalObj;
+
                 });
         },
         methods: {
@@ -161,6 +168,22 @@
                     prop: ['aaData']
                 };
                 return apiQueryData;
+            },
+            sortProperties: function(obj) {
+
+                var sortable = [];
+                for (var key in obj) {
+                    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                        sortable.push([key, obj[key]]);
+                    }
+                }
+
+                sortable.sort(function(a, b) {
+                    var x = a[1].toLowerCase(),
+                        y = b[1].toLowerCase();
+                    return x < y ? -1 : x > y ? 1 : 0;
+                });
+                return sortable;
             }
         }
     });
