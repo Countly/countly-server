@@ -130,7 +130,21 @@
     }));
 
     Vue.component("cly-metric-cards", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-metric-cards bu-columns bu-is-gapless bu-is-mobile bu-is-multiline"><slot></slot></div>',
+        template: '<div :class="topClasses" class="cly-vue-metric-cards bu-columns bu-is-gapless bu-is-mobile bu-is-multiline"><slot></slot></div>',
+        props: {
+            fixedCols: {
+                type: Boolean,
+                default: false,
+                required: false
+            }
+        },
+        computed: {
+            topClasses: function() {
+                if (this.fixedCols) {
+                    return "cly-vue-metric-cards--has-fixed-cols";
+                }
+            }
+        }
     }));
 
     Vue.component("cly-metric-card", countlyBaseComponent.extend({
@@ -222,6 +236,16 @@
             },
             values: {
                 type: Array
+            },
+            columnWidth: {type: [Number, String], default: -1},
+            isVertical: {type: Boolean, default: false},
+        },
+        computed: {
+            topClasses: function() {
+                if (this.isVertical || this.columnWidth === -1) {
+                    return "";
+                }
+                return "bu-is-" + this.columnWidth;
             }
         }
     }));

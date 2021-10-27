@@ -1,5 +1,5 @@
-<div class="cly-vue-metric-breakdown bu-column bu-is-6">
-    <cly-section class="bu-pt-2 bu-pb-2">
+<div class="cly-vue-metric-breakdown bu-column" :class="topClasses">
+    <cly-section class="cly-vue-metric-breakdown__wrapper">
         <div class="bu-level-left bu-p-5">
             <span class="text-medium">{{name}}</span>
             <span v-if="description" class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip bu-ml-3" v-tooltip.top-center="description"></span>

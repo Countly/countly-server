@@ -1187,11 +1187,26 @@
     }
 
     .cly-vue-metric-cards {
-        .cly-vue-metric-breakdown:nth-child(odd)>.cly-vue-section {
-            padding-right: 8px;
+        &.cly-vue-metric-cards--has-fixed-cols {
+            .cly-vue-metric-breakdown {
+                &__wrapper {
+                    padding: 8px 0;
+                }
+                &:nth-child(odd) > .cly-vue-section {
+                    padding-right: 8px;
+                }
+                &:nth-child(even) > .cly-vue-section {
+                    padding-left: 8px;
+                }
+            }
         }
-        .cly-vue-metric-breakdown:nth-child(even)>.cly-vue-section {
-            padding-left: 8px;
+        &:not(.cly-vue-metric-cards--has-fixed-cols) {
+            .cly-vue-metric-breakdown {
+                min-width: 270px;
+                & + .cly-vue-metric-breakdown .cly-vue-metric-breakdown__wrapper {
+                    border-left: 1px solid map.get(c.$colors, "warm-gray-30");
+                }
+            }
         }
     }
 
