@@ -1151,6 +1151,13 @@
         }
     } 
 
+    .cly-vue-metric-cards {
+        &:not(:last-of-type) {
+            margin-bottom: 0!important;
+            border-bottom: 1px solid #ececec;
+        }
+    }
+
     .cly-vue-metric-card {
         min-width: 270px;
         &__wrapper {
@@ -1161,10 +1168,30 @@
         }
     }
 
+    .cly-vue-metric-breakdown {
+        &__numbers {
+            margin: 0px!important;
+            padding-bottom: 4px;
+            div:nth-child(2) {
+                text-align: right;
+            }
+            .bu-column {
+                padding: 0px;
+            }
+        }
+        &__value-row {
+            &:last-child {
+                margin-bottom: 12px;
+            }
+        }
+    }
+
     .cly-vue-metric-cards {
-        &:not(:last-of-type) {
-            margin-bottom: 0!important;
-            border-bottom: 1px solid #ececec;
+        .cly-vue-metric-breakdown:nth-child(odd)>.cly-vue-section {
+            padding-right: 8px;
+        }
+        .cly-vue-metric-breakdown:nth-child(even)>.cly-vue-section {
+            padding-left: 8px;
         }
     }
 
@@ -3244,31 +3271,6 @@
             .cly-vue-button {
                 padding: 8px 14px;
             }
-        }
-    }
-
-    .cly-vue-breakdown-tile {
-        &__wrapper {
-            height: 239px; 
-            border-right: 1px solid #DBDBDB; 
-            border-bottom: 1px solid #DBDBDB;
-           
-        }
-        &:nth-of-type(3n) {
-            .cly-vue-breakdown-tile__wrapper {
-                border-right: 0;
-            }
-        }
-        &__values-list {
-            height: 100%;
-            align-items: center;
-        }
-        &__item {
-            height: 33.3333333%;
-            padding: 15px 0px;
-        }
-        &__item-title {
-            padding: 5px 0px;
         }
     }
 
