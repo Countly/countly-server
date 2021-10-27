@@ -1187,7 +1187,7 @@
     }
 
     .cly-vue-metric-cards {
-        &.cly-vue-metric-cards--has-fixed-cols {
+        &.cly-vue-metric-cards--is-multiline {
             .cly-vue-metric-breakdown {
                 &__wrapper {
                     padding: 8px 0;
@@ -1200,7 +1200,7 @@
                 }
             }
         }
-        &:not(.cly-vue-metric-cards--has-fixed-cols) {
+        &:not(.cly-vue-metric-cards--is-multiline) {
             .cly-vue-metric-breakdown {
                 min-width: 270px;
                 & + .cly-vue-metric-breakdown .cly-vue-metric-breakdown__wrapper {
