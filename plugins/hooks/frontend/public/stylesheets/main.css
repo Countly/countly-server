@@ -77,7 +77,7 @@
     margin: 10px 0px; 
 }
 
-#hooks-view .options-item {position: relative;}
+#hooks-view .options-item {position: relative; text-align:left !important;}
 #hooks-view .options-item .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s;float:right; }
 #hooks-view .options-item .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
 #hooks-view .options-item .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
