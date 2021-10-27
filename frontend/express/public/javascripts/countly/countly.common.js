@@ -2619,6 +2619,9 @@
                     var allWeeks = [];
                     for (i = 0; i < days; i++) {
                         start.add(1, 'days');
+                        if (i === 0 && start.isoWeekday() === 7) {
+                            continue;
+                        }
                         allWeeks.push(start.isoWeek() + " " + start.isoWeekYear());
                     }
 
