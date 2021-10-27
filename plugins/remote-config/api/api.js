@@ -117,7 +117,7 @@ catch (ex) {
                         }
                     };
 
-                    var drillAvailable = plugins.dispatch("/drill/preprocess_query", { query: {}});
+                    var drillAvailable = plugins.isPluginEnabled('drill');
 
                     if (remoteConfig && drillAvailable) {
                         //The following block will only work if -
