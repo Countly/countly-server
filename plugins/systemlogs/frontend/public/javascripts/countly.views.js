@@ -123,7 +123,7 @@
             refresh: function(force) {
                 if (this.loaded || force) {
                     this.loaded = false;
-                    this.tableStore.dispatch("fetchSystemLogsTable");
+                    this.tableStore.dispatch("fetchSystemLogsTable", {_silent: !force});
                 }
             },
             dateChange: function() {
