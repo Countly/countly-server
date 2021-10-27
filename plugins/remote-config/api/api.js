@@ -166,7 +166,7 @@ plugins.setConfigs("remote-config", {
                         });
                     }
                     else {
-                        log.d("The remote config processing module or drill is not available. Both of them are only available to the EE users.");
+                        log.d("Condition processing is not available for you. Its only available to the EE users.");
                         output[parameter.parameter_key] = parameterValue;
                         return callback(null);
                     }
