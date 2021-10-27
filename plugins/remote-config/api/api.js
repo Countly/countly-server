@@ -2,20 +2,13 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js'),
     log = common.log('remote-config:api'),
+    remoteConfig = require('./parts/rc'),
     async = require('async');
 
 plugins.setConfigs("remote-config", {
     maximum_allowed_parameters: 2000,
     conditions_per_paramaeters: 20
 });
-
-var remoteConfig;
-try {
-    remoteConfig = require('./parts/rc');
-}
-catch (ex) {
-    log.e("Cannot find the remote config processing module. ", ex);
-}
 
 (function() {
     plugins.register("/o/sdk", function(ob) {
@@ -119,7 +112,7 @@ catch (ex) {
 
                     var drillAvailable = plugins.isPluginEnabled('drill');
 
-                    if (remoteConfig && drillAvailable) {
+                    if (drillAvailable) {
                         //The following block will only work if -
                         //The remote config condition processing module is available
                         //This module is only available in the enterprise version of the plugin
