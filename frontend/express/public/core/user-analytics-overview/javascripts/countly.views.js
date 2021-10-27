@@ -29,13 +29,24 @@ var UserAnalyticsOverview = countlyVue.views.create({
             this.tableData = this.calculateTableData();
             this.lineLegend = this.createLineLegend();
         },
+        formatExportFunction: function() {
+            var userDP = countlySession.getUserDP();
+            var table = [];
+            for (var k = 0; k < userDP.chartData.length; k++) {
+                var item = {};
+                item[CV.i18n('common.date')] = userDP.chartData[k].date;
+                item[CV.i18n('common.table.total-users')] = userDP.chartData[k].u;
+                item[CV.i18n('common.table.new-users')] = userDP.chartData[k].n;
+                item[CV.i18n('common.table.returning-users')] = userDP.chartData[k].returning;
+                table.push(item);
+            }
+            return table;
+
+        },
         calculateTableData: function() {
             var userDP = countlySession.getUserDP();
             for (var k = 0; k < userDP.chartData.length; k++) {
                 userDP.chartData[k].dateVal = k; //because we get them all always sorted by date
-                userDP.chartData[k].fu = countlyCommon.formatNumber(userDP.chartData[k].u || 0);
-                userDP.chartData[k].fr = countlyCommon.formatNumber(userDP.chartData[k].returning || 0);
-                userDP.chartData[k].fn = countlyCommon.formatNumber(userDP.chartData[k].n || 0);
             }
             return userDP.chartData;
         },
@@ -114,7 +125,8 @@ var UserAnalyticsOverview = countlyVue.views.create({
     mixins: [
         countlyVue.container.dataMixin({
             'externalLinks': '/analytics/users/links'
-        })
+        }),
+        countlyVue.mixins.commonFormatters
     ]
 });
 
