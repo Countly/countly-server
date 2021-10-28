@@ -96,11 +96,11 @@ class Hooks {
         //console.log("pro::", process.pid, ":::", this._queue.length);
         try {
             const chunk = this._queue.splice(0, 20);
-            await asyncLib.mapLimit(chunk, 2, async(item, callback) => {
+            await asyncLib.mapLimit(chunk, 1, async(item, callback) => {
                 //console.log(item, "chunk limit");
                 // trigger effects logic
                 if (this._effects[item.effect.type]) {
-                    this._effects[item.effect.type].run(item);
+                    await (this._effects[item.effect.type].run(item));
                 }
                 if (callback) {
                     callback();
