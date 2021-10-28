@@ -660,6 +660,22 @@
                         keepShow: false
                     }
                 },
+                breakdownScrollOps: {
+                    vuescroll: {},
+                    scrollPanel: {
+                        initialScrollX: false,
+                    },
+                    rail: {
+                        gutterOfSide: "1px",
+                        gutterOfEnds: "15px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: true
+                    }
+                },
                 metrics: [
                     {
                         name: "Metric #1 / Simple use",

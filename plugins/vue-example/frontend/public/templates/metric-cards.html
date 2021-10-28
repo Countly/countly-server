@@ -20,6 +20,7 @@
                         :values="item.values"
                         :description="item.description"
                         :column-width="3"
+                        :scroll-ops="breakdownScrollOps"
                         v-for="(item, idx) in metrics">
                     </cly-metric-breakdown>
                 </cly-metric-cards>
