@@ -1,0 +1,161 @@
+<div class="dbviewer-tab">
+    <cly-main>
+        <div class="bu-columns">
+            <div class="bu-column bu-is-one-third">
+                <div class="dbviewer-tab__sidebar bg-white">
+                    <div class="dbviewer-tab__app-selector-dropdown">
+                        <el-select v-model="appFilter">
+                            <el-option
+                                key="all"
+                                label="All apps"
+                                value="all">
+                            </el-option>
+                            <el-option
+                                v-for="app in apps"
+                                :key="app.value"
+                                :label="app.label"
+                                :value="app.label">
+                            </el-option>
+                        </el-select>
+                    </div>
+                    <cly-listbox
+                        class="dbviewer-tab__collections-list"
+                        skin="jumbo"
+                        v-model="selectedCollection"
+                        :searchable="true"
+                        :options="collections[tab].list"
+                    >
+                    </cly-listbox>
+                </div>
+            </div>
+            <div class="bu-column">
+                <div class="bu-level">
+                    <div class="bu-level-left">
+                        <div v-if="db" class="dbviewer-tab__content">
+                            <div class="bu-has-text-weight-normal bu-is-size-5">{{ collections[db].map[collection] }}</div>
+                        </div>
+                    </div>
+                    <div class="bu-level-right">
+                        <el-button @click="showFilterPopup()" icon="fas fa-filter"> Filter</el-button>
+                        <el-button class="bu-ml-2" icon="fas fa-download"></el-button>
+                        <cly-more-options class="bu-ml-2" @command="dbviewerActions($event)">
+                            <el-dropdown-item command="aggregation">{{ i18n('dbviewer.aggregate') }}</el-dropdown-item>
+                            <el-dropdown-item command="indexes">{{ i18n('dbviewer.indexes') }}</el-dropdown-item>
+                        </cly-more-options>
+                    </div>
+                </div>
+                <cly-section class="dbviewer-tab__result-table bu-mt-3">
+                    <cly-datatable-n 
+                        :rows="collectionData"
+                        :show-header="false"
+                        :hide-top="true"
+                    >
+                        <template v-slot="scope">
+                            <el-table-column fixed>
+                                <template v-slot="rowScope">
+                                    _id: {{ rowScope.row._id }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column fixed type="expand">
+                                <template v-slot="rowScope">
+                                    {{ rowScope.row }}
+                                </template>
+                            </el-table-column>
+                        </template>
+                    </cly-datatable-n>
+                </cly-section>
+            </div>
+        </div>
+        <cly-form-dialog title="Filter Query"
+            @submit="onExecuteFilter"
+            saveButtonLabel="Apply Filter"
+            v-bind="formDialogs.queryFilter">
+            <template v-slot="formDialogScope">
+                <div class="dbviewer-tab__popup-content">
+                    <div class="dbviewer-tab__filter-textarea">
+                        <label class="text-small">Filter Query</label>
+                        <el-input
+                            type="textarea"
+                            v-model="formDialogScope.editedObject.filter"
+                            placeholder="{}"
+                        >
+                    </el-input>
+                    </div>
+                    <div class="dbviewer-tab__projection">
+                        <el-checkbox 
+                            class="bu-mt-2"
+                            v-model="formDialogScope.editedObject.projectionEnabled">
+                                <span class="bu-has-text-weight-normal">Select fields to return</span>
+                        </el-checkbox>
+                        <div>
+                            <label
+                                for="dbviewer-tab__projection-selector"
+                                v-if="formDialogScope.editedObject.projectionEnabled"
+                                class="text-small bu-mt-2">
+                                Projection fields
+                            </label>
+                            <el-select
+                                :popper-append-to-body="false"
+                                multiple
+                                id="dbviewer-tab__projection-selector"
+                                class="bu-mt-1"
+                                :label="'Projection fields'"
+                                v-if="formDialogScope.editedObject.projectionEnabled"
+                                v-model="formDialogScope.editedObject.projection"
+                                placeholder="Projection fields"
+                            >
+                                <el-option 
+                                    v-for="item in projectionOptions"
+                                    :key="item"
+                                    :label="item"
+                                    :value="item"
+                                >
+                                </el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                    <div class="dbviewer-tab__sort">
+                        <el-checkbox
+                            class="bu-mt-2"
+                            v-model="formDialogScope.editedObject.sortEnabled">
+                            <span class="bu-has-text-weight-normal">Select fields to sort</span>
+                        </el-checkbox>
+                        <div>
+                            <label
+                                for="dbviewer-tab__sort-selector"
+                                v-if="formDialogScope.editedObject.sortEnabled"
+                                class="text-small bu-mt-2">
+                                Sort options
+                            </label>
+                            <div class="dbviewer-tab__sort-inputs">
+                                <el-select
+                                    id="dbviewer-tab__sort-selector"
+                                    class="bu-mt-1"
+                                    :popper-append-to-body="false"
+                                    :label="'Sort options'"
+                                    v-if="formDialogScope.editedObject.sortEnabled"
+                                    v-model="formDialogScope.editedObject.sort"
+                                    placeholder="Sort">
+                                    <el-option 
+                                        v-for="item in projectionOptions"
+                                        :key="item"
+                                        :label="item"
+                                        :value="item"
+                                    >
+                                    </el-option>
+                                </el-select>
+                                <el-switch
+                                    id="dbviewer-tab__sort-type-selector"
+                                    v-if="formDialogScope.editedObject.sortEnabled"
+                                    v-model="isDescentSort"
+                                    active-text="Descending"
+                                    inactive-text="Ascending">
+                                </el-switch>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </cly-form-dialog>
+    </cly-main>
+</div>
