@@ -4,23 +4,28 @@
             <span class="text-medium">{{name}}</span>
             <span v-if="description" class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip bu-ml-3" v-tooltip.top-center="description"></span>
         </div>
-        <div class="bu-pl-3 bu-pr-3 bu-pb-5">
-            <div :key="idx" v-for="(item, idx) in values" >
-                <div class="cly-vue-metric-breakdown__value-row bu-p-3">
-                    <div class="bu-columns cly-vue-metric-breakdown__numbers text-medium color-cool-gray-100">
-                        <div class="bu-column">
-                            <img v-if="item.icon" :src="item.icon"/>
-                            <span>{{item.name}}</span>
+        <div v-if="values.length === 0" class="bu-pl-3 bu-pr-3 bu-pb-5 cly-vue-metric-breakdown__empty">
+            <div>{{i18n('common.table.no-data')}}</div>
+        </div>
+        <div v-else class="bu-pl-3 bu-pr-3 bu-pb-5 cly-vue-metric-breakdown__rows">
+			<vue-scroll :ops="effectiveScrollOps">
+                <div :key="idx" v-for="(item, idx) in values">
+                    <div class="cly-vue-metric-breakdown__value-row bu-p-3">
+                        <div class="bu-columns cly-vue-metric-breakdown__numbers text-medium color-cool-gray-100">
+                            <div class="bu-column">
+                                <img v-if="item.icon" :src="item.icon"/>
+                                <span>{{item.name}}</span>
+                            </div>
+                            <div class="bu-column">
+                                <span v-if="item.description">{{item.description}} | </span>
+                                <span>{{item.percent}} % </span>
+                                <a v-if="item.link" :href="item.link">--></a>
+                            </div>
                         </div>
-                        <div class="bu-column">
-                            <span v-if="item.description">{{item.description}} | </span>
-                            <span>{{item.percent}} % </span>
-                            <a v-if="item.link" :href="item.link">--></a>
-                        </div>
+                        <cly-progress-bar :entities="getProgressBarEntities(item)" :height=8></cly-progress-bar>
                     </div>
-                    <cly-progress-bar :entities="[{color: '#017AFF', percentage: item.percent}]" :height=8></cly-progress-bar>
                 </div>
-            </div>
+            </vue-scroll>
         </div>
     </cly-section>
 </div>

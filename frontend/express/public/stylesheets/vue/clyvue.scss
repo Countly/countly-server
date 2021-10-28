@@ -1184,6 +1184,15 @@
                 margin-bottom: 12px;
             }
         }
+        &__rows {
+            height: 200px;
+        }
+        &__empty {
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     }
 
     .cly-vue-metric-cards {

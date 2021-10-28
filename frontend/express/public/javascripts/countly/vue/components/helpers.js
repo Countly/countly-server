@@ -230,15 +230,16 @@
                 default: '',
                 required: false
             },
-            type: {
-                default: 'multi',
-                type: String
-            },
             values: {
                 type: Array
             },
             columnWidth: {type: [Number, String], default: -1},
             isVertical: {type: Boolean, default: false},
+            scrollOps: {
+                type: Object,
+                default: null,
+                required: false
+            }
         },
         computed: {
             topClasses: function() {
@@ -246,7 +247,38 @@
                     return "";
                 }
                 return "bu-is-" + this.columnWidth;
+            },
+            effectiveScrollOps: function() {
+                if (this.scrollOps) {
+                    return this.scrollOps;
+                }
+                return this.defaultScrollOps;
             }
+        },
+        methods: {
+            getProgressBarEntities: function(item) {
+                return item.bar ? item.bar : [{color: '#017AFF', percentage: item.percent}];
+            }
+        },
+        data: function() {
+            return {
+                defaultScrollOps: {
+                    vuescroll: {},
+                    scrollPanel: {
+                        initialScrollX: false,
+                    },
+                    rail: {
+                        gutterOfSide: "1px",
+                        gutterOfEnds: "15px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: false
+                    }
+                }
+            };
         }
     }));
 
