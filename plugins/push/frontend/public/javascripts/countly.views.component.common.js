@@ -234,16 +234,16 @@
                 return "";
             },
             onSelect: function(value) {
-                this.$emit('select', this.id, this.container, value, this.findOptionLabelByValue(value));
+                this.$emit('select', {id: this.id, container: this.container, value: value, label: this.findOptionLabelByValue(value)});
             },
             onUppercase: function(value) {
-                this.$emit('check', this.id, this.container, value);
+                this.$emit('check', {id: this.id, container: this.container, value: value});
             },
             onFallback: function(value) {
-                this.$emit('input', this.id, this.container, value);
+                this.$emit('input', {id: this.id, container: this.container, value: value});
             },
             onRemove: function() {
-                this.$emit('remove', this.id, this.container);
+                this.$emit('remove', {id: this.id, container: this.container});
             },
             onClose: function() {
                 var self = this;
@@ -525,7 +525,7 @@
             onUserPropertyClick: function(id, element) {
                 var elementBound = element.getBoundingClientRect();
                 var leftCoordinate = elementBound.left + (elementBound.width / 2);
-                this.$emit("click", id, this.container, {left: leftCoordinate, top: elementBound.top });
+                this.$emit("click", {id: id, container: this.container, position: {left: leftCoordinate, top: elementBound.top }});
             },
             getOnUserPropertyClickEventListener: function(id) {
                 var self = this;
@@ -672,7 +672,7 @@
                 nodesList.forEach(function(removedNode) {
                     if (removedNode.id) {
                         var idValue = removedNode.id.split('-')[1];
-                        self.$emit('delete', idValue, self.container);
+                        self.$emit('delete', {id: idValue, container: self.container});
                     }
                 });
             },
