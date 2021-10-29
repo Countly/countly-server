@@ -129,85 +129,22 @@
                   '</div>'
     }));
 
-    Vue.component("cly-breakdown-tile", countlyBaseComponent.extend({
-        mixins: [
-            _mixins.i18n
-        ],
+    Vue.component("cly-metric-cards", countlyBaseComponent.extend({
+        template: '<div :class="topClasses" class="cly-vue-metric-cards bu-columns bu-is-gapless bu-is-mobile"><slot></slot></div>',
         props: {
-            name: {
-                type: String
-            },
-            type: {
-                default: 'multi',
-                type: String
-            },
-            values: {
-                type: Array
-            }
-        },
-        template: '<div class="cly-vue-breakdown-tile bu-column bu-is-4">\
-                        <div class="cly-vue-breakdown-tile__wrapper bu-p-5">\
-                            <h4 class="text-uppercase text-small font-weight-bold">{{name}}</h4>\
-                            <div class="cly-vue-breakdown-tile__values-list bu-columns bu-is-gapless bu-is-multiline bu-is-mobile" v-if="type === \'multi\'">\
-                                <div v-for="item in values" class="bu-column bu-is-12">\
-                                    <div class="cly-vue-breakdown-tile__item">\
-                                        <div class="bu-level bu-is-mobile cly-vue-breakdown-tile__item-title">\
-                                            <div class="bu-level-left">\
-                                                <div class="bu-level-item text-medium">\
-                                                    <img v-if="item.icon" :src="item.icon"/>{{item.name}}\
-                                                </div>\
-                                            </div>\
-                                            <div class="bu-level-right">\
-                                                <div class="bu-level-item text-medium">\
-                                                    <a :href="item.link">{{item.description}} ({{item.percent}}%)</a>\
-                                                </div>\
-                                            </div>\
-                                        </div>\
-                                        <div>\
-                                            <progress class="bu-progress bu-is-link" :value="item.percent" max="100">{{item.percent}}%</progress>\
-                                        </div>\
-                                    </div>\
-                                </div>\
-                            </div>\
-                        </div>\
-                    </div>'
-    }));
-
-    Vue.component("cly-tooltip-icon", countlyBaseComponent.extend({
-        props: {
-            icon: {
-                type: String,
-                default: 'ion ion-help-circled'
-            },
-            tooltip: {
-                type: String,
-                default: 'Tooltip here :)'
-            }
-        },
-        template: '<i v-bind:class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltip"></i>'
-    }));
-
-    Vue.component("cly-remover", countlyBaseComponent.extend({
-        props: {
-            disabled: {
+            multiline: {
                 type: Boolean,
-                default: false
+                default: false,
+                required: false
             }
         },
-        methods: {
-            remove: function() {
-                if (!this.disabled) {
-                    this.$emit("remove");
+        computed: {
+            topClasses: function() {
+                if (this.multiline) {
+                    return ["cly-vue-metric-cards--is-multiline", "bu-is-multiline"];
                 }
             }
-        },
-        template: '<div class="cly-vue-remover"\n' +
-                        'v-if="!disabled"\n' +
-                        '@click="remove">\n' +
-                        '<slot>\n' +
-                            '<i class="el-icon-delete"></i>\n' +
-                        '</slot>\n' +
-                    '</div>\n'
+        }
     }));
 
     Vue.component("cly-metric-card", countlyBaseComponent.extend({
@@ -279,8 +216,107 @@
                     </div>'
     }));
 
-    Vue.component("cly-metric-cards", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-metric-cards bu-columns bu-is-gapless bu-is-mobile bu-is-multiline"><slot></slot></div>',
+    Vue.component("cly-metric-breakdown", countlyVue.components.create({
+        template: countlyVue.T('/javascripts/countly/vue/templates/breakdown.html'),
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            name: {
+                type: String
+            },
+            description: {
+                type: String,
+                default: '',
+                required: false
+            },
+            values: {
+                type: Array
+            },
+            columnWidth: {type: [Number, String], default: -1},
+            isVertical: {type: Boolean, default: false},
+            scrollOps: {
+                type: Object,
+                default: null,
+                required: false
+            }
+        },
+        computed: {
+            topClasses: function() {
+                if (this.isVertical || this.columnWidth === -1) {
+                    return "";
+                }
+                return "bu-is-" + this.columnWidth;
+            },
+            effectiveScrollOps: function() {
+                if (this.scrollOps) {
+                    return this.scrollOps;
+                }
+                return this.defaultScrollOps;
+            }
+        },
+        methods: {
+            getProgressBarEntities: function(item) {
+                return item.bar ? item.bar : [{color: '#017AFF', percentage: item.percent}];
+            }
+        },
+        data: function() {
+            return {
+                defaultScrollOps: {
+                    vuescroll: {},
+                    scrollPanel: {
+                        initialScrollX: false,
+                    },
+                    rail: {
+                        gutterOfSide: "1px",
+                        gutterOfEnds: "15px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: false
+                    }
+                }
+            };
+        }
+    }));
+
+    Vue.component("cly-tooltip-icon", countlyBaseComponent.extend({
+        props: {
+            icon: {
+                type: String,
+                default: 'ion ion-help-circled'
+            },
+            tooltip: {
+                type: String,
+                default: 'Tooltip here :)'
+            }
+        },
+        template: '<i v-bind:class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltip"></i>'
+    }));
+
+    Vue.component("cly-remover", countlyBaseComponent.extend({
+        props: {
+            disabled: {
+                type: Boolean,
+                default: false
+            }
+        },
+        methods: {
+            remove: function() {
+                if (!this.disabled) {
+                    this.$emit("remove");
+                }
+            }
+        },
+        template: '<div class="cly-vue-remover"\n' +
+                        'v-if="!disabled"\n' +
+                        '@click="remove">\n' +
+                        '<slot>\n' +
+                            '<i class="el-icon-delete"></i>\n' +
+                        '</slot>\n' +
+                    '</div>\n'
     }));
 
     var popoverSizes = {

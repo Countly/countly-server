@@ -73,6 +73,21 @@
         this.dict[id].mixins.push(mixin);
     };
 
+    Container.prototype.registerTemplate = function(id, path) {
+        if (!Object.prototype.hasOwnProperty.call(this.dict, id)) {
+            this.dict[id] = {};
+        }
+        if (!Object.prototype.hasOwnProperty.call(this.dict[id], "templates")) {
+            this.dict[id].templates = [];
+        }
+        if (Array.isArray(path)) {
+            this.dict[id].templates = this.dict[id].templates.concat(path);
+        }
+        else {
+            this.dict[id].templates.push(path);
+        }
+    };
+
     Container.prototype.dataMixin = function(mapping) {
         var self = this;
         var mixin = {
@@ -109,6 +124,16 @@
         });
 
         return mixins;
+    };
+
+    Container.prototype.templates = function(ids) {
+        var self = this;
+        var templates = [];
+        ids.forEach(function(id) {
+            var template = self.dict[id] ? self.dict[id].templates : [];
+            templates = templates.concat(template);
+        });
+        return templates;
     };
 
     Container.prototype.tabsVuex = function(ids) {

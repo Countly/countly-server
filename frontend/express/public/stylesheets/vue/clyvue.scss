@@ -808,9 +808,6 @@
 						border: none;
                     }
                 }
-                &:first-child {
-					border-top:none;
-                }
 
                 .box {
                     border: 1px solid #A7AEB8;
@@ -1154,6 +1151,13 @@
         }
     } 
 
+    .cly-vue-metric-cards {
+        &:not(:last-of-type) {
+            margin-bottom: 0!important;
+            border-bottom: 1px solid #ececec;
+        }
+    }
+
     .cly-vue-metric-card {
         min-width: 270px;
         &__wrapper {
@@ -1164,10 +1168,69 @@
         }
     }
 
+    .cly-vue-metric-breakdown {
+        &__inner {
+            margin: 0px!important;
+            padding-bottom: 4px;
+            div:nth-child(2) {
+                text-align: right;
+            }
+            .bu-column {
+                padding: 0px;
+            }
+        }
+        &__value-row {
+            border-radius: 4px;
+            padding-bottom: 20px!important;
+            &:last-child {
+                margin-bottom: 4px;
+            }
+            &--is-clickable {
+                cursor: pointer;
+                &:hover {
+                    background-color: #F6F6F6;
+                    .cly-vue-metric-breakdown__numbers {
+                        color: #0166D6; 
+                    }
+                }
+            }
+        }
+        &__row-icon {
+            height: 12px;
+            width: 12px;
+        }
+        &__rows {
+            height: 200px;
+        }
+        &__empty {
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
     .cly-vue-metric-cards {
-        &:not(:last-of-type) {
-            margin-bottom: 0!important;
-            border-bottom: 1px solid #ececec;
+        &.cly-vue-metric-cards--is-multiline {
+            .cly-vue-metric-breakdown {
+                &__wrapper {
+                    padding: 8px 0;
+                }
+                &:nth-child(odd) > .cly-vue-section {
+                    padding-right: 8px;
+                }
+                &:nth-child(even) > .cly-vue-section {
+                    padding-left: 8px;
+                }
+            }
+        }
+        &:not(.cly-vue-metric-cards--is-multiline) {
+            .cly-vue-metric-breakdown {
+                min-width: 270px;
+                & + .cly-vue-metric-breakdown .cly-vue-metric-breakdown__wrapper {
+                    border-left: 1px solid map.get(c.$colors, "warm-gray-30");
+                }
+            }
         }
     }
 
@@ -3247,31 +3310,6 @@
             .cly-vue-button {
                 padding: 8px 14px;
             }
-        }
-    }
-
-    .cly-vue-breakdown-tile {
-        &__wrapper {
-            height: 239px; 
-            border-right: 1px solid #DBDBDB; 
-            border-bottom: 1px solid #DBDBDB;
-           
-        }
-        &:nth-of-type(3n) {
-            .cly-vue-breakdown-tile__wrapper {
-                border-right: 0;
-            }
-        }
-        &__values-list {
-            height: 100%;
-            align-items: center;
-        }
-        &__item {
-            height: 33.3333333%;
-            padding: 15px 0px;
-        }
-        &__item-title {
-            padding: 5px 0px;
         }
     }
 
