@@ -643,7 +643,203 @@
 
     var MetricCardsView = countlyVue.views.create({
         template: CV.T('/vue-example/templates/metric-cards.html'),
+        methods: {
+            handleCardsScroll: function() {
+                if (this.$refs && this.$refs.bottomSlider) {
+                    var pos1 = this.$refs.topSlider.getPosition();
+                    pos1 = pos1.scrollLeft;
+                    this.$refs.bottomSlider.scrollTo({x: pos1}, 0);
+                }
+            },
+            handleBottomScroll: function() {
+                if (this.$refs && this.$refs.topSlider) {
+                    var pos1 = this.$refs.bottomSlider.getPosition();
+                    pos1 = pos1.scrollLeft;
+                    this.$refs.topSlider.scrollTo({x: pos1}, 0);
+                }
+            }
+        },
         data: function() {
+            var graphColors = ["#017AFF", "#39C0C8", "#F5C900", "#6C47FF"];
+            var breakdownItems = [
+                {
+                    name: "Metric #1 / Simple use",
+                    description: "Hello!",
+                    values: [
+                        {
+                            name: "Value #1",
+                            percent: 50,
+                            description: "10 things"
+                        },
+                        {
+                            name: "Value #2",
+                            percent: 40
+                        },
+                        {
+                            name: "Value #3",
+                            percent: 10
+                        }
+                    ]
+                },
+                {
+                    name: "Metric #2 / Custom bars",
+                    values: [
+                        {
+                            name: "Value A",
+                            percent: 70,
+                            bar: [{color: '#017AFF', percentage: 70}]
+                        },
+                        {
+                            name: "Value B",
+                            percent: 10,
+                            bar: [{color: '#FF0000', percentage: 10}]
+                        },
+                        {
+                            name: "Value C",
+                            percent: 7,
+                            bar: [{color: '#00FF00', percentage: 7}]
+                        }
+                    ]
+                },
+                {
+                    name: "Metric #3 / Icons",
+                    values: [
+                        {
+                            name: "Value A",
+                            percent: 50,
+                            icon: "images/flags/us.png"
+                        },
+                        {
+                            name: "Value B",
+                            percent: 40,
+                            icon: "images/flags/de.png"
+                        },
+                        {
+                            name: "Value C",
+                            percent: 30,
+                            icon: "images/flags/jp.png"
+                        }
+                    ]
+                },
+                {
+                    name: "Metric #4 / Links",
+                    description: "Hello!",
+                    values: [
+                        {
+                            name: "Value #1",
+                            percent: 35,
+                            description: "10 things",
+                            link: "#/users"
+                        },
+                        {
+                            name: "Value #2",
+                            percent: 20,
+                            link: "#/users"
+                        },
+                        {
+                            name: "Value #3",
+                            percent: 10,
+                            link: "#/users"
+                        }
+                    ]
+                },
+                {
+                    name: "Metric #5 / Two items",
+                    values: [
+                        {
+                            name: "Value #1",
+                            percent: 50,
+                            description: "10 things"
+                        },
+                        {
+                            name: "Value #2",
+                            percent: 40
+                        }
+                    ]
+                },
+                {
+                    name: "Metric #6 / One item",
+                    values: [
+                        {
+                            name: "Value #1",
+                            percent: 50
+                        }
+                    ]
+                },
+                {
+                    name: "Metric #7 / No data",
+                    values: []
+                },
+                {
+                    name: "Metric #8 / Overflow",
+                    values: [
+                        {
+                            name: "Value #1",
+                            percent: 50,
+                            description: "10 things",
+                            link: "#/users"
+                        },
+                        {
+                            name: "Value #2",
+                            percent: 40
+                        },
+                        {
+                            name: "Value #3",
+                            percent: 10
+                        },
+                        {
+                            name: "Value #4",
+                            percent: 5
+                        },
+                        {
+                            name: "Value #5",
+                            percent: 0
+                        },
+                    ]
+                },
+            ];
+            var cardItems = [
+                {
+                    "name": "Card #1",
+                    "value": 100,
+                    "percent": 100,
+                    "percentText": 100 + " % " + CV.i18n('common.of-total'),
+                    "info": "some description",
+                    "color": graphColors[0]
+                },
+                {
+                    "name": "Card #2",
+                    "value": 80,
+                    "percent": 80,
+                    "percentText": 80 + " % " + CV.i18n('common.of-total'),
+                    "info": "some description",
+                    "color": graphColors[1]
+                },
+                {
+                    "name": "Card #3",
+                    "value": 60,
+                    "percent": 60,
+                    "percentText": 60 + " % " + CV.i18n('common.of-total'),
+                    "info": "some description",
+                    "color": graphColors[2]
+                },
+                {
+                    "name": "Card #4",
+                    "value": 40,
+                    "percent": 40,
+                    "percentText": 40 + " % " + CV.i18n('common.of-total'),
+                    "info": "some description",
+                    "color": graphColors[3]
+                },
+                {
+                    "name": "Card #5",
+                    "value": 20,
+                    "percent": 20,
+                    "percentText": 20 + " % " + CV.i18n('common.of-total'),
+                    "info": "some description",
+                    "color": graphColors[0]
+                }
+            ];
             return {
                 scrollCards: {
                     vuescroll: {},
@@ -676,143 +872,9 @@
                         keepShow: true
                     }
                 },
-                metrics: [
-                    {
-                        name: "Metric #1 / Simple use",
-                        description: "Hello!",
-                        values: [
-                            {
-                                name: "Value #1",
-                                percent: 50,
-                                description: "10 things"
-                            },
-                            {
-                                name: "Value #2",
-                                percent: 40
-                            },
-                            {
-                                name: "Value #3",
-                                percent: 10
-                            }
-                        ]
-                    },
-                    {
-                        name: "Metric #2 / Custom bars",
-                        values: [
-                            {
-                                name: "Value A",
-                                percent: 70,
-                                bar: [{color: '#017AFF', percentage: 70}]
-                            },
-                            {
-                                name: "Value B",
-                                percent: 10,
-                                bar: [{color: '#FF0000', percentage: 10}]
-                            },
-                            {
-                                name: "Value C",
-                                percent: 7,
-                                bar: [{color: '#00FF00', percentage: 7}]
-                            }
-                        ]
-                    },
-                    {
-                        name: "Metric #3 / Icons",
-                        values: [
-                            {
-                                name: "Value A",
-                                percent: 50,
-                                icon: "images/flags/us.png"
-                            },
-                            {
-                                name: "Value B",
-                                percent: 40,
-                                icon: "images/flags/de.png"
-                            },
-                            {
-                                name: "Value C",
-                                percent: 30,
-                                icon: "images/flags/jp.png"
-                            }
-                        ]
-                    },
-                    {
-                        name: "Metric #3 / Links",
-                        description: "Hello!",
-                        values: [
-                            {
-                                name: "Value #1",
-                                percent: 35,
-                                description: "10 things",
-                                link: "#/users"
-                            },
-                            {
-                                name: "Value #2",
-                                percent: 20,
-                                link: "#/users"
-                            },
-                            {
-                                name: "Value #3",
-                                percent: 10,
-                                link: "#/users"
-                            }
-                        ]
-                    },
-                    {
-                        name: "Metric #4 / Two items",
-                        values: [
-                            {
-                                name: "Value #1",
-                                percent: 50,
-                                description: "10 things"
-                            },
-                            {
-                                name: "Value #2",
-                                percent: 40
-                            }
-                        ]
-                    },
-                    {
-                        name: "Metric #5 / One item",
-                        values: [
-                            {
-                                name: "Value #1",
-                                percent: 50
-                            }
-                        ]
-                    },
-                    {
-                        name: "Metric #6 / No data",
-                        values: []
-                    },
-                    {
-                        name: "Metric #7 / Overflow",
-                        values: [
-                            {
-                                name: "Value #1",
-                                percent: 50,
-                                description: "10 things",
-                                link: "#/users"
-                            },
-                            {
-                                name: "Value #2",
-                                percent: 40
-                            },
-                            {
-                                name: "Value #3",
-                                percent: 10
-                            },
-                            {
-                                name: "Value #4",
-                                percent: 5
-                            },
-                            {
-                                name: "Value #5",
-                                percent: 0
-                            },
-                        ]
-                    },
-                ]
+                cardItems: cardItems,
+                breakdownItems: breakdownItems,
+                breakdownSyncItems: breakdownItems.slice(0, 5)
             };
         }
     });
