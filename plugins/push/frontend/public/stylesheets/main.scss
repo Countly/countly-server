@@ -91,6 +91,7 @@
         padding: 3px 8px 0;
         font-size: 10px;
         font-weight: bold;
+        word-break: break-all;
     }
 
     &__ios-content {
@@ -99,6 +100,7 @@
         -webkit-line-clamp: 4;
         -webkit-box-orient: vertical;
         display: -webkit-box;
+        overflow: hidden;
         background-color: white;
         border-radius: 0 0 6px 6px;
     }
@@ -181,6 +183,7 @@
         color: #2B2B2B;
         padding: 0 8px 3px;
         font-size: 11px;
+        word-break: break-all;
     }
 
     &__android-content {
@@ -308,6 +311,7 @@
 
     &__label {
         flex-basis: 20%;
+        min-width: 20%;
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
@@ -596,6 +600,7 @@
 .cly-vue-push-notification-review-section-row {
     &__label {
         flex-basis: 30%;
+        min-width: 30%;
         font-size: typography.$text-button-size;
         line-height: 13px;
         font-weight: typography.$font-weight-primary;
@@ -613,6 +618,7 @@
 
 .cly-vue-push-notification-message-editor-with-emoji-picker {
 
+
     &__user-property {
         padding: 1px 5px 2px;
         background: #ECECEC;
@@ -622,6 +628,20 @@
         &:hover {
             cursor: pointer;
         }
+    }
+
+    &__title {
+        word-break: break-all;
+        overflow-x: auto;
+        height:35px;
+        padding-right:32px;
+    }
+
+    &__content {
+        word-break: break-all;
+        overflow-x:auto;
+        height: 100px;
+        padding-right:32px;
     }
 }
 
@@ -676,7 +696,7 @@
 .emoji-invoker {
     position: absolute;
     top: 0.25rem;
-    right: 0.5rem;
+    right: 0.85rem;
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
@@ -706,6 +726,7 @@
     border-radius: 0.5rem;
     background: #fff;
     box-shadow: 1px 1px 8px #c7dbe6;
+    top: 28px !important;
 }
 
 .emoji-picker__search {

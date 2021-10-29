@@ -537,9 +537,11 @@
                                 </div>
                                 <message-editor-with-emoji-picker 
                                     ref="title"
+                                    container="title"
                                     id="input-element-title"
                                     :isDefaultLocalizationActive="isDefaultLocalizationActive"
                                     @change="onTitleChange"
+                                    @delete="onRemoveUserProperty"
                                     @click="onUserPropertyClick">
                                 </message-editor-with-emoji-picker>
                             </div>
@@ -555,11 +557,13 @@
                                 <message-editor-with-emoji-picker 
                                     ref="content"
                                     id="input-element-content"
+                                    container="content"
                                     :isRequired="true"
                                     type="textarea"
                                     :isDefaultLocalizationActive="isDefaultLocalizationActive"
                                     placeholder="Clear and shorter messages generally have more conversations..." 
                                     @change="onContentChange"
+                                    @delete="onRemoveUserProperty"
                                     @click="onUserPropertyClick">
                                 </message-editor-with-emoji-picker>
                             </div>
