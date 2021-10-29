@@ -234,16 +234,16 @@
                 return "";
             },
             onSelect: function(value) {
-                this.$emit('select', this.id, this.container, value, this.findOptionLabelByValue(value));
+                this.$emit('select', {id: this.id, container: this.container, value: value, label: this.findOptionLabelByValue(value)});
             },
             onUppercase: function(value) {
-                this.$emit('check', this.id, this.container, value);
+                this.$emit('check', {id: this.id, container: this.container, value: value});
             },
             onFallback: function(value) {
-                this.$emit('input', this.id, this.container, value);
+                this.$emit('input', {id: this.id, container: this.container, value: value});
             },
             onRemove: function() {
-                this.$emit('remove', this.id, this.container);
+                this.$emit('remove', {id: this.id, container: this.container});
             },
             onClose: function() {
                 var self = this;
@@ -470,6 +470,10 @@
                 type: String,
                 required: true
             },
+            container: {
+                type: String,
+                required: true,
+            },
             type: {
                 type: String,
                 required: false,
@@ -489,7 +493,7 @@
                 type: Boolean,
                 required: false,
                 default: false
-            }
+            },
         },
         data: function() {
             return {
@@ -498,6 +502,7 @@
                 defaultLabelPreview: "Select property|",
                 defaultLocalizationValidationErrors: [],
                 selectionRange: null,
+                mutationObserver: null,
             };
         },
         computed: {
@@ -517,15 +522,15 @@
             }
         },
         methods: {
-            onUserPropertyClick: function(id, container, element) {
+            onUserPropertyClick: function(id, element) {
                 var elementBound = element.getBoundingClientRect();
                 var leftCoordinate = elementBound.left + (elementBound.width / 2);
-                this.$emit("click", id, container, {left: leftCoordinate, top: elementBound.top });
+                this.$emit("click", {id: id, container: this.container, position: {left: leftCoordinate, top: elementBound.top }});
             },
-            getOnUserPropertyClickEventListener: function(id, name) {
+            getOnUserPropertyClickEventListener: function(id) {
                 var self = this;
                 return function(event) {
-                    self.onUserPropertyClick(id, name, event.target);
+                    self.onUserPropertyClick(id, event.target);
                 };
             },
             isEmpty: function() {
@@ -533,13 +538,6 @@
             },
             isSelected: function() {
                 return window.getSelection().containsNode(this.$refs.element, true);
-            },
-            insertNodeAtRange: function(node, range) {
-                var selection = window.getSelection();
-                range.insertNode(node);
-                range.setStartAfter(node);
-                selection.removeAllRanges();
-                selection.addRange(range);
             },
             insertNodeWhenSelected: function(node) {
                 var selection = window.getSelection();
@@ -581,7 +579,7 @@
                 var sel = window.getSelection();
                 this.selectionRange = sel.getRangeAt(0);
             },
-            addEmptyUserProperty: function(id, container) {
+            addEmptyUserProperty: function(id) {
                 var newElement = document.createElement("span");
                 newElement.setAttribute("id", "id-" + id);
                 newElement.setAttribute("contentEditable", false);
@@ -590,10 +588,10 @@
                 newElement.setAttribute("data-user-property-value", "");
                 newElement.setAttribute("data-user-property-fallback", "");
                 newElement.innerText = this.defaultLabelPreview;
-                newElement.onclick = this.getOnUserPropertyClickEventListener(id, container);
+                newElement.onclick = this.getOnUserPropertyClickEventListener(id);
                 this.insertNodeAtCaretPosition(newElement);
                 this.$emit('change', this.$refs.element.innerHTML);
-                this.onUserPropertyClick(id, container, newElement);
+                this.onUserPropertyClick(id, newElement);
                 this.saveSelectionRange();
             },
             removeUserProperty: function(id) {
@@ -628,15 +626,15 @@
                 element.innerText = previewValue;
                 this.$emit('change', this.$refs.element.innerHTML);
             },
-            addEventListeners: function(ids, container) {
+            addEventListeners: function(ids) {
                 var self = this;
                 ids.forEach(function(id) {
-                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id, container);
+                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id);
                 });
             },
-            reset: function(htmlContent, ids, container) {
+            reset: function(htmlContent, ids) {
                 this.$refs.element.innerHTML = htmlContent;
-                this.addEventListeners(ids, container);
+                this.addEventListeners(ids);
             },
             appendEmoji: function(emoji) {
                 this.insertEmojiAtCaretPosition(document.createTextNode(emoji));
@@ -669,6 +667,35 @@
             onClick: function() {
                 this.saveSelectionRange();
             },
+            onDelete: function(nodesList) {
+                var self = this;
+                nodesList.forEach(function(removedNode) {
+                    if (removedNode.id) {
+                        var idValue = removedNode.id.split('-')[1];
+                        self.$emit('delete', {id: idValue, container: self.container});
+                    }
+                });
+            },
+            onMutation: function(mutationsList) {
+                var self = this;
+                mutationsList.forEach(function(mutation) {
+                    if (mutation.removedNodes.length) {
+                        self.onDelete(mutation.removedNodes);
+                    }
+                });
+            },
+            createMutationObserverIfNotFound: function(callback) {
+                if (!this.mutationObserver) {
+                    this.mutationObserver = new MutationObserver(callback);
+                }
+            },
+            startMutationObserver: function() {
+                var config = {childList: true};
+                this.mutationObserver.observe(this.$refs.element, config);
+            },
+            disconnectMutationObserver: function() {
+                this.mutationObserver.disconnect();
+            }
         },
         mounted: function() {
             var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
@@ -680,9 +707,12 @@
                     element.dispatchEvent(event);
                 });
             }
+            this.createMutationObserverIfNotFound(this.onMutation);
+            this.startMutationObserver();
         },
         beforeDestroy: function() {
             //TODO-LA: remove all user properties elements' event listeners
+            this.disconnectMutationObserver();
         },
         components: {
             'emoji-picker': countlyPushNotificationComponent.EmojiPicker
