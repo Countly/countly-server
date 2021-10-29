@@ -2,7 +2,7 @@
     <cly-header title="Metric cards"></cly-header>
     <cly-main>
         <h5 class="bu-pb-4">Multiline orientation</h5>
-        <cly-metric-cards multiline>
+        <cly-metric-cards>
             <cly-metric-breakdown 
                 :name="item.name" 
                 :values="item.values" 
@@ -15,7 +15,7 @@
         <h5 class="bu-py-4">Horizontal orientation</h5>
         <div style="height: 305px;">
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
-                <cly-metric-cards>
+                <cly-metric-cards :multiline="false">
                     <cly-metric-breakdown 
                         :name="item.name" 
                         :values="item.values" 
@@ -31,7 +31,7 @@
         <h5 class="bu-py-4">Synced scroll</h5>
         <div style="height: 115px" class="bu-pb-5">
             <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
-                <cly-metric-cards>
+                <cly-metric-cards :multiline="false">
                     <cly-metric-card 
                         :is-percentage="true" 
                         :column-width=3 
@@ -50,7 +50,7 @@
         </div>
         <div style="height: 305px; padding-bottom: 20px;">
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
-                <cly-metric-cards>
+                <cly-metric-cards :multiline="false">
                     <cly-metric-breakdown 
                         :name="item.name" 
                         :values="item.values" 
