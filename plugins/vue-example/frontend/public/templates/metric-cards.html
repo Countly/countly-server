@@ -1,0 +1,30 @@
+<div>
+    <cly-header title="Metric cards"></cly-header>
+    <cly-main>
+        <h3>Multiline orientation</h3>
+        <cly-metric-cards multiline>
+            <cly-metric-breakdown
+                :name="item.name"
+                :values="item.values"
+                :description="item.description"
+                :column-width="6"
+                v-for="(item, idx) in metrics">
+            </cly-metric-breakdown>
+        </cly-metric-cards>
+        <h3>Horizontal orientation</h3>
+        <div style="height: 310px;padding-bottom: 20px;">
+            <vue-scroll :ops="scrollCards">
+                <cly-metric-cards>
+                    <cly-metric-breakdown
+                        :name="item.name"
+                        :values="item.values"
+                        :description="item.description"
+                        :column-width="3"
+                        :scroll-ops="breakdownScrollOps"
+                        v-for="(item, idx) in metrics">
+                    </cly-metric-breakdown>
+                </cly-metric-cards>
+            </vue-scroll>
+        </div>
+    </cly-main>
+</div>
