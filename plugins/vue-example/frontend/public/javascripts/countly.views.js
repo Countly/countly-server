@@ -737,16 +737,62 @@
                         ]
                     },
                     {
-                        name: "Metric #4 / No data",
-                        values: []
+                        name: "Metric #3 / Links",
+                        description: "Hello!",
+                        values: [
+                            {
+                                name: "Value #1",
+                                percent: 35,
+                                description: "10 things",
+                                link: "#/users"
+                            },
+                            {
+                                name: "Value #2",
+                                percent: 20,
+                                link: "#/users"
+                            },
+                            {
+                                name: "Value #3",
+                                percent: 10,
+                                link: "#/users"
+                            }
+                        ]
                     },
                     {
-                        name: "Metric #5 / Overflow",
+                        name: "Metric #4 / Two items",
                         values: [
                             {
                                 name: "Value #1",
                                 percent: 50,
                                 description: "10 things"
+                            },
+                            {
+                                name: "Value #2",
+                                percent: 40
+                            }
+                        ]
+                    },
+                    {
+                        name: "Metric #5 / One item",
+                        values: [
+                            {
+                                name: "Value #1",
+                                percent: 50
+                            }
+                        ]
+                    },
+                    {
+                        name: "Metric #6 / No data",
+                        values: []
+                    },
+                    {
+                        name: "Metric #7 / Overflow",
+                        values: [
+                            {
+                                name: "Value #1",
+                                percent: 50,
+                                description: "10 things",
+                                link: "#/users"
                             },
                             {
                                 name: "Value #2",

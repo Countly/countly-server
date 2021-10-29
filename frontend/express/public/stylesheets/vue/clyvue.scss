@@ -1169,7 +1169,7 @@
     }
 
     .cly-vue-metric-breakdown {
-        &__numbers {
+        &__inner {
             margin: 0px!important;
             padding-bottom: 4px;
             div:nth-child(2) {
@@ -1180,9 +1180,24 @@
             }
         }
         &__value-row {
+            border-radius: 4px;
+            padding-bottom: 20px!important;
             &:last-child {
-                margin-bottom: 12px;
+                margin-bottom: 4px;
             }
+            &--is-clickable {
+                cursor: pointer;
+                &:hover {
+                    background-color: #F6F6F6;
+                    .cly-vue-metric-breakdown__numbers {
+                        color: #0166D6; 
+                    }
+                }
+            }
+        }
+        &__row-icon {
+            height: 12px;
+            width: 12px;
         }
         &__rows {
             height: 200px;

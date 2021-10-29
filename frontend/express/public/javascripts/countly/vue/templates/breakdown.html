@@ -10,13 +10,13 @@
         <div v-else class="bu-pl-3 bu-pr-3 bu-pb-5 cly-vue-metric-breakdown__rows">
 			<vue-scroll :ops="effectiveScrollOps">
                 <div :key="idx" v-for="(item, idx) in values">
-                    <div class="cly-vue-metric-breakdown__value-row bu-p-3">
-                        <div class="bu-columns cly-vue-metric-breakdown__numbers text-medium color-cool-gray-100">
+                    <div :class="{'cly-vue-metric-breakdown__value-row--is-clickable': !!item.link}" class="cly-vue-metric-breakdown__value-row bu-p-3">
+                        <div class="bu-columns cly-vue-metric-breakdown__inner text-medium color-cool-gray-100">
                             <div class="bu-column">
-                                <img v-if="item.icon" :src="item.icon"/>
+                                <img class="cly-vue-metric-breakdown__row-icon" v-if="item.icon" :src="item.icon"/>
                                 <span>{{item.name}}</span>
                             </div>
-                            <div class="bu-column">
+                            <div class="bu-column cly-vue-metric-breakdown__numbers">
                                 <span v-if="item.description">{{item.description}} | </span>
                                 <span>{{item.percent}} % </span>
                                 <a v-if="item.link" :href="item.link">--></a>
