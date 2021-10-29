@@ -874,7 +874,8 @@
                 },
                 cardItems: cardItems,
                 breakdownItems: breakdownItems,
-                breakdownSyncItems: breakdownItems.slice(0, 5)
+                breakdownSyncItems: breakdownItems.slice(0, 5),
+                graphColors: graphColors
             };
         }
     });

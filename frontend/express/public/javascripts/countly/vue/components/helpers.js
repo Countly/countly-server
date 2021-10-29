@@ -235,6 +235,7 @@
             },
             columnWidth: {type: [Number, String], default: -1},
             isVertical: {type: Boolean, default: false},
+            color: {type: [String, Function, Array], default: '#017AFF'},
             scrollOps: {
                 type: Object,
                 default: null,
@@ -257,7 +258,7 @@
         },
         methods: {
             getProgressBarEntities: function(item) {
-                return item.bar ? item.bar : [{color: '#017AFF', percentage: item.percent}];
+                return item.bar ? item.bar : [{color: this.color, percentage: item.percent}];
             }
         },
         data: function() {

@@ -1154,13 +1154,15 @@
     .cly-vue-metric-cards {
         &:not(:last-of-type) {
             margin-bottom: 0!important;
-            border-bottom: 1px solid #ececec;
+            // border-bottom: 1px solid #ececec;
         }
     }
 
     .cly-vue-metric-card {
         min-width: 270px;
         background-color: #fff;
+        border-top: 1px solid #ececec;
+        border-bottom: 1px solid #ececec;
         &__wrapper {
             min-height: 56px;
         }
