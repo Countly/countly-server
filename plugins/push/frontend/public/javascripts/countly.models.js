@@ -660,7 +660,7 @@
             },
             hasAnyLocales: function(pushNotificationDto) {
                 if (pushNotificationDto.build) {
-                    return Object.keys(pushNotificationDto.build).some(function(localeKey) {
+                    return Object.keys(pushNotificationDto.build.count).some(function(localeKey) {
                         return Boolean(countlyGlobalLang.languages[localeKey]);
                     });
                 }
