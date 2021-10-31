@@ -744,7 +744,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
     }
 
     for (var arg in argProperties) {
-        var argState = true;
+        var argState = true,
+            parsed;
         if (argProperties[arg].required) {
             if (args[arg] === void 0) {
                 if (returnErrors) {
@@ -823,6 +824,36 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             returnObj.result = false;
                             argState = false;
                         }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'Date') {
+                    if (args[arg] === null && !argProperties[arg].required) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string' && !isNaN(new Date(args[arg]))) {
+                        parsed = new Date(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'number' && args[arg] > 1000000000000 && args[arg] < 2000000000000) { // it's bad and I know it!
+                        parsed = new Date(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'number' && args[arg] > 1000000000 && args[arg] < 2000000000) { // it's bad and I know it!
+                        parsed = new Date(args[arg] * 1000);
+                    }
+                    else if (args[arg] instanceof Date && !isNaN(new Date(args[arg]))) {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
                     }
                 }
                 else if (argProperties[arg].type === 'Array') {
@@ -846,6 +877,110 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                         else {
                             return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'ObjectID') {
+                    if (!(args[arg] instanceof common.db.ObjectID || (typeof args[arg] === 'string' && common.db.ObjectID.isValid(args[arg]))) && !(!argProperties[arg].required && args[arg] === null)) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'JSON') {
+                    if (typeof args[arg] === 'object') {
+                        parsed = args[arg];
+                    }
+                    else if (typeof args[arg] === 'string') {
+                        try {
+                            parsed = JSON.parse(args[arg]);
+                        }
+                        catch (e) {
+                            if (returnErrors) {
+                                returnObj.errors.push("Invalid JSON for " + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid JSON for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (typeof argProperties[arg].type === 'object' && !argProperties[arg].array) {
+                    if (typeof args[arg] !== 'object' && !(!argProperties[arg].required && args[arg] === null)) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+
+                    let subret = common.validateArgs(args[arg], argProperties[arg].type, returnErrors);
+                    if (returnErrors && !subret.result) {
+                        returnObj.errors.push(...subret.errors.map(e => `${arg}: ${e}`));
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else if (!returnErrors && !subret) {
+                        return false;
+                    }
+                }
+                else if ((typeof argProperties[arg].type === 'object' && argProperties[arg].array) || argProperties[arg].type.indexOf('[]') === argProperties[arg].type.length - 2) {
+                    if (!Array.isArray(args[arg])) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    else if (args[arg].length) {
+                        let type,
+                            scheme = {},
+                            ret;
+
+                        if (typeof argProperties[arg].type === 'object' && argProperties[arg].array) {
+                            type = argProperties[arg].type;
+                        }
+                        else {
+                            type = argProperties[arg].type.substr(0, argProperties[arg].type.length - 2);
+                        }
+
+                        args[arg].forEach((v, i) => {
+                            scheme[i] = { type, required: true };
+                        });
+
+                        ret = common.validateArgs(args[arg], scheme, true);
+                        if (!ret.result) {
+                            if (returnErrors) {
+                                returnObj.errors.push(...ret.errors.map(e => `${arg}: ${e}`));
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
                         }
                     }
                 }
@@ -951,11 +1086,41 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
+            if (argProperties[arg].in) {
+                let inn = typeof argProperties[arg].in === 'function' ? argProperties[arg].in() : argProperties[arg].in;
+
+                if ((Array.isArray(args[arg]) && args[arg].filter(x => inn.indexOf(x) === -1).length) ||
+                    (!Array.isArray(args[arg]) && inn.indexOf(args[arg]) === -1)) {
+                    if (returnErrors) {
+                        returnObj.errors.push("Value of " + arg + " is invalid");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
+            if (argProperties[arg].custom) {
+                let err = argProperties[arg].custom(args[arg]);
+                if (err) {
+                    if (returnErrors) {
+                        returnObj.errors.push(err);
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
             if (argState && returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
-                returnObj.obj[arg] = args[arg];
+                returnObj.obj[arg] = parsed || args[arg];
             }
             else if (!returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
-                returnObj[arg] = args[arg];
+                returnObj[arg] = parsed || args[arg];
             }
         }
     }
