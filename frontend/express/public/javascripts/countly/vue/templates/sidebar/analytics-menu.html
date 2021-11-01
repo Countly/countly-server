@@ -1,12 +1,13 @@
 <div class="cly-vue-sidebar__menu">
     <div class="cly-vue-sidebar__header">
-        <div class="cly-vue-sidebar__app-selector bu-level bu-p-3 cursor-pointer"
-            @click="toggleAppSelection()">
+        <div class="cly-vue-sidebar__app-selector bu-level bu-p-3 cursor-pointer" @click="toggleAppSelection()">
             <div class="bu-level-left">
-                <div class="cly-vue-sidebar__app-image" :style="{backgroundImage: 'url(' + activeApp.image + ')'}"></div>
+                <div class="cly-vue-sidebar__app-image" :style="{backgroundImage: 'url(' + activeApp.image + ')'}">
+                </div>
                 <div class="cly-vue-sidebar__app-name-type bu-is-flex bu-is-flex-direction-column bu-ml-2">
-                    <span class="cly-vue-sidebar__app-name">{{activeApp.name}}</span>
-                    <span class="text-smaller color-white cly-vue-sidebar__app-type bu-is-capitalized"> {{activeApp.type}}</span>
+                    <span class="cly-vue-sidebar__app-name has-ellipsis">{{activeApp.name}}</span>
+                    <span class="text-smaller color-white cly-vue-sidebar__app-type bu-is-capitalized">
+                        {{activeApp.type}}</span>
                 </div>
             </div>
             <span class="bu-level-right">
@@ -16,38 +17,41 @@
             </span>
         </div>
     </div>
-    <app-selector @close="toggleAppSelection()" v-if="appSelector && allApps && allApps.length && allApps.length > 1" :allApps="allApps"></app-selector>
+    <app-selector @close="toggleAppSelection()" v-if="appSelector && allApps && allApps.length && allApps.length > 1"
+        :allApps="allApps"></app-selector>
     <div class="cly-vue-sidebar__main-menu">
-        <div v-for="(cat, idx) in categories" :data-category="cat.name">
-            <ul>
-                <li v-for="(menu, idx) in categorizedMenus[cat.name]">
-                    <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
-                        <el-collapse v-model="selectedAnalyticsMenu" accordion>
-                            <el-collapse-item :title="i18nM(menu.title)" :name="menu.name"
-                                :icon="{position: 'right', direction: 'down'}">
-                                <ul>
-                                    <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]">
-                                        <div :class="['cly-vue-sidebar__submenu-items',
-                                                    {'cly-vue-sidebar__submenu-items--selected': selectedMenuItem.name === submenu.name}]"
-                                            @click="onMenuItemClick(submenu)">
-                                            <a :href="submenu.url">
+        <vue-scroll>
+            <div v-for="(cat, idx) in categories" class="bu-mb-4" :data-category="cat.name">
+                <ul class="bu-mb-5">
+                    <li v-for="(menu, idx) in categorizedMenus[cat.name]" class="bu-px-3 bu-my-3">
+                        <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length">
+                            <el-collapse v-model="selectedAnalyticsMenu" accordion
+                                :class="[{'cly-vue-sidebar__el-collapse--selected':  (selectedMenuItem && (selectedMenuItem.parent_code === menu.name))}]">
+                                <el-collapse-item :title="i18nM(menu.title)" :name="menu.name"
+                                    :icon="{position: 'right', direction: 'down'}">
+                                    <ul>
+                                        <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]"
+                                            class="bu-is-clickable">
+                                            <div :class="['cly-vue-sidebar__submenu-items',
+                                                     'bu-pl-5', 'bu-my-3',
+                                                    {'cly-vue-sidebar__submenu-items--selected': (selectedMenuItem && (selectedMenuItem.name === submenu.name))}]"
+                                                @click="onMenuItemClick(submenu)">
                                                 <div class="has-ellipsis">{{i18nM(submenu.title)}}</div>
-                                            </a>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </el-collapse-item>
-                        </el-collapse>
-                    </div>
-                    <div v-else :class="['cly-vue-sidebar__menu-items',
-                                {'cly-vue-sidebar__menu-items--selected': selectedMenuItem.name === menu.name}]"
-                        @click="onMenuItemClick(menu)">
-                        <a :href="menu.url">
-                            <div class="has-ellipsis">{{i18nM(menu.title)}}</div>
-                        </a>
-                    </div>
-                </li>
-            </ul>
-        </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </el-collapse-item>
+                            </el-collapse>
+                        </div>
+                        <div v-else
+                            :class="['cly-vue-sidebar__menu-items',
+                                {'cly-vue-sidebar__menu-items--selected': (selectedMenuItem && (selectedMenuItem.name === menu.name))}]"
+                            @click="onMenuItemClick(menu)">
+                            <div class="has-ellipsis bu-is-clickable">{{i18nM(menu.title)}}</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </vue-scroll>
     </div>
 </div>

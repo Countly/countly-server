@@ -54,7 +54,9 @@ gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
     yum -y install gcc-c++-4.8.5
 
-    yum -y --enablerepo=extras install epel-release
+    if [ -f "/etc/centos-release" ]; then
+        yum -y --enablerepo=extras install epel-release
+    fi
     yum install -y python-pip
     pip install meld3
     pip install supervisor --ignore-installed meld3

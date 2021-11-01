@@ -2,6 +2,7 @@
 (function() {
     var UserActivityView = countlyVue.views.create({
         template: CV.T("/core/user-activity/templates/user-activity.html"),
+        mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             return {
                 barChartItemsLegends: {
@@ -24,6 +25,12 @@
                 set: function(value) {
                     this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', value);
                     this.$store.dispatch('countlyUserActivity/fetchAll', true);
+                    if (value.query) {
+                        app.navigate("#/analytics/loyalty/user-activity/" + JSON.stringify(value.query));
+                    }
+                    else {
+                        app.navigate("#/analytics/loyalty/user-activity/");
+                    }
                 }
             },
             isLoading: function() {
@@ -48,7 +55,10 @@
             userActivityOptions: function() {
                 return {
                     xAxis: {
-                        data: this.xAxisUserActivitySessionBuckets
+                        data: this.xAxisUserActivitySessionBuckets,
+                        axisLabel: {
+                            color: "#333C48"
+                        }
                     },
                     series: this.yAxisUserActivityCountSeries
                 };

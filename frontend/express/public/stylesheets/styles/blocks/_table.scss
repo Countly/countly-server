@@ -9,6 +9,9 @@
 		.el-loading-spinner {
 			visibility: hidden;
 		}
+		.el-loading-mask {
+			display: none!important;
+		}
 	}
 
 	&__header {

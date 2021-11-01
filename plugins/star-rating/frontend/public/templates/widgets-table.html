@@ -20,7 +20,7 @@
                 </div>
             </template>
           </el-table-column>
-          <el-table-column prop="targeting" :label="i18n('feedback.targeting')">
+          <el-table-column v-if="cohortsEnabled" prop="targeting" :label="i18n('feedback.targeting')">
             <template v-slot="rowScope">
               <cly-cohort-targeting :targeting="rowScope.row.targeting">
               </cly-cohort-targeting>

@@ -7,7 +7,7 @@
             return {
                 selectLog: this.$route.params.log || "api",
                 downloadLink: countlyGlobal.path + "/o/errorlogs?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID + "&download=true&log=" + this.$route.params.log || "api",
-                logList: [{name: "api Log", value: "api"}],
+                logList: [{name: "Api Log", value: "api"}],
                 cachedLog: {}
             };
         },
@@ -79,7 +79,7 @@
 
 
         $(document).ready(function() {
-            app.addMenu("management", {code: "errorlogs", url: "#/manage/errorlogs", text: "errorlogs.title", icon: '<div class="logo-icon fa fa-server"></div>', priority: 60});
+            app.addMenu("management", {code: "errorlogs", url: "#/manage/errorlogs", text: "errorlogs.title", icon: '<div class="logo-icon fa fa-server"></div>', priority: 110});
         });
     }
 })();

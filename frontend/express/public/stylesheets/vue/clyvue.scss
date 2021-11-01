@@ -26,9 +26,9 @@
 .cly-vue-theme-clydef {
 
     background-color:#FCFCFC;
-    #content-container { 
-        padding:59px 0 35px 0;
-    }
+    // #content-container { 
+    //     padding:59px 0 35px 0;
+    // }
 
     #top-bar {
         z-index: 1997;
@@ -633,19 +633,22 @@
             }
         }
 
+        @mixin cell-hover() {
+            background: #FFFFFF;
+            border: 2px solid #0166D6;
+            color: map.get(c.$colors, "text-custom-1-active");
+        }
+
+
         &__table-wrap.is-start-focused {
             .el-date-table .start-date {
                 > div span {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
             .el-month-table .start-date {
                 > div a {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
         }
@@ -653,18 +656,26 @@
         &__table-wrap.is-end-focused {
             .el-date-table .end-date {
                 > div span {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
             .el-month-table .end-date {
                 > div a {
-                    background: #FFFFFF;
-                    border: 2px solid #0166D6;
-                    color: map.get(c.$colors, "text-custom-1-active");
+                    @include cell-hover()
                 }
             }
+        }
+        &__table-wrap.is-point {
+            .el-date-table .available:not(.in-range) {
+                 > div:hover span {
+                    @include cell-hover()
+                }
+            }
+            .el-month-table td:not(.in-range) {
+                > div:hover a {
+                    @include cell-hover()
+               }
+           }
         }
     }
 
@@ -796,9 +807,6 @@
                         background-color: #fff;
 						border: none;
                     }
-                }
-                &:first-child {
-					border-top:none;
                 }
 
                 .box {
@@ -1143,7 +1151,18 @@
         }
     } 
 
+    .cly-vue-metric-cards {
+        &:not(:last-of-type) {
+            margin-bottom: 0!important;
+            // border-bottom: 1px solid #ececec;
+        }
+    }
+
     .cly-vue-metric-card {
+        min-width: 270px;
+        background-color: #fff;
+        border-top: 1px solid #ececec;
+        border-bottom: 1px solid #ececec;
         &__wrapper {
             min-height: 56px;
         }
@@ -1152,10 +1171,69 @@
         }
     }
 
+    .cly-vue-metric-breakdown {
+        &__inner {
+            margin: 0px!important;
+            padding-bottom: 4px;
+            div:nth-child(2) {
+                text-align: right;
+            }
+            .bu-column {
+                padding: 0px;
+            }
+        }
+        &__value-row {
+            border-radius: 4px;
+            padding-bottom: 20px!important;
+            &:last-child {
+                margin-bottom: 4px;
+            }
+            &--is-clickable {
+                cursor: pointer;
+                &:hover {
+                    background-color: #F6F6F6;
+                    .cly-vue-metric-breakdown__numbers {
+                        color: #0166D6; 
+                    }
+                }
+            }
+        }
+        &__row-icon {
+            height: 12px;
+            width: 12px;
+        }
+        &__rows {
+            height: 200px;
+        }
+        &__empty {
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
     .cly-vue-metric-cards {
-        &:not(:last-of-type) {
-            margin-bottom: 0!important;
-            border-bottom: 1px solid #ececec;
+        &.cly-vue-metric-cards--is-multiline {
+            .cly-vue-metric-breakdown {
+                &__wrapper {
+                    padding: 8px 0;
+                }
+                &:nth-child(odd) > .cly-vue-section {
+                    padding-right: 8px;
+                }
+                &:nth-child(even) > .cly-vue-section {
+                    padding-left: 8px;
+                }
+            }
+        }
+        &:not(.cly-vue-metric-cards--is-multiline) {
+            .cly-vue-metric-breakdown {
+                min-width: 270px;
+                & + .cly-vue-metric-breakdown .cly-vue-metric-breakdown__wrapper {
+                    border-left: 1px solid map.get(c.$colors, "warm-gray-30");
+                }
+            }
         }
     }
 
@@ -1232,6 +1310,12 @@
             }
             &__section {
                 padding: 12px 0;
+                + .cly-vue-drawer-step__section-group {
+                    margin-top: 12px;
+                }
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
+                }
             }
             &__section-group {
                 padding: 12px 24px;
@@ -1441,6 +1525,13 @@
         }
     }
 
+    //
+    .cly-vue-select-email{
+        width: 100%;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+
     //dialog
 
     .cly-vue-dialog {
@@ -1504,6 +1595,12 @@
             }
             &__section {
                 padding: 12px 0;
+                + .cly-vue-form-step__section-group {
+                    margin-top: 12px;
+                }
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
+                }
             }
             &__section-group {
                 padding: 12px 24px;
@@ -1518,6 +1615,11 @@
                 }
                 .cly-vue-form-step__section {
                     padding: 8px 0;
+                }
+            }
+            &__auto-group {
+                + .cly-vue-form-step__auto-group {
+                    margin-top: 12px;
                 }
             }
         }
@@ -3214,31 +3316,6 @@
         }
     }
 
-    .cly-vue-breakdown-tile {
-        &__wrapper {
-            height: 239px; 
-            border-right: 1px solid #DBDBDB; 
-            border-bottom: 1px solid #DBDBDB;
-           
-        }
-        &:nth-of-type(3n) {
-            .cly-vue-breakdown-tile__wrapper {
-                border-right: 0;
-            }
-        }
-        &__values-list {
-            height: 100%;
-            align-items: center;
-        }
-        &__item {
-            height: 33.3333333%;
-            padding: 15px 0px;
-        }
-        &__item-title {
-            padding: 5px 0px;
-        }
-    }
-
     .cly-vue-empty-home {
         height: 430px;
         display: flex;
@@ -3535,7 +3612,6 @@
     }
 }
 
-.cly-text-button,
 .cly-icon-button {
     color: map.get(c.$colors, "action-blue");
     cursor: pointer;
@@ -3556,6 +3632,30 @@
         opacity: 0.7;
     }
 }
+
+
+.cly-text-button
+{
+    color: map.get(c.$colors, "action-blue")!important;
+    cursor: pointer;
+    display: inline-block;
+    white-space: nowrap;
+    -webkit-appearance: none;
+    text-align: center;
+    box-sizing: border-box;
+    outline: none;
+    font-size: 13px;
+    font-weight: 500;
+    &--gray {
+        color: map.get(c.$colors, "text-secondary");
+    }
+    &--disabled {
+        cursor: default;
+        color: map.get(c.$colors, "text-secondary");
+        opacity: 0.7;
+    }
+}
+
 
 .is-scroll-shadow{
     &-at-middle::before,

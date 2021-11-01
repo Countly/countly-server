@@ -1,6 +1,6 @@
 <div v-bind:class="[componentId]">
   <div class="cly-vue-compare-events__header bu-is-flex">
-    <h2> {{i18n('events.compare.title')}} 
+    <h2> {{i18n('compare.events.title')}} 
     </h2>
     <cly-tooltip-icon class="cly-vue-compare-events__header--tooltip" icon="ion-help-circled"></cly-tooltip-icon>
   </div>
@@ -22,7 +22,7 @@
       :value="item.value">
       </el-option>
     </el-select>
-    <el-button :disabled="value.length===0" @click="compareEvents" class="cly-vue-compare-events__button" size="small" >{{i18n('events.compare')}}
+    <el-button :disabled="value.length===0" @click="compareEvents" class="cly-vue-compare-events__button" size="small" >{{i18n('compare.events')}}
     </el-button>
     </div>
     <div class="bu-pt-4 bu-mb-4">
@@ -31,9 +31,9 @@
     <cly-section>
     <div class="cly-vue-compare-events__graph-section">
       <div class="cly-vue-compare-events__graph-section__dropdown">
-      <span class="cly-vue-compare-events__graph-section--text" >{{i18n('events.compare.metric')}}</span>
-      <el-select v-model="selectedGraph">
-        <el-option v-for="item in availableMetrics" :key="item" :value="item">
+      <span class="text-big bu-pr-2" >{{i18n('compare.results.by')}}</span>
+      <el-select :arrow="false" :adaptiveLength="true" v-model="selectedGraph">
+        <el-option v-for="item in availableMetrics" :key="item.key" :value="item.key" :label="item.label">
         </el-option>
       </el-select>
       </div>

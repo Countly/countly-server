@@ -1302,6 +1302,6 @@ if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
 }
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.dbviewerView.featureName)) {
-        app.addSubMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 50});
+        app.addMenu("management", {code: "db", url: "#/manage/db", text: "dbviewer.title", priority: 100});
     }
 });

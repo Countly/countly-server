@@ -30,7 +30,11 @@
 
     var _i18n = function() {
         var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
-        if (!appType || appType === "mobile") {
+        arguments = arguments || [];
+        if (arguments.length === 1) { //single arg. use map
+            return _i18nM(arguments[0]);
+        }
+        else if (!appType || appType === "mobile") {
             return jQuery.i18n.prop.apply(null, arguments);
         }
         else {
@@ -65,8 +69,10 @@
                 $.ajax(request).done(resolve).fail(reject);
             });
             if (!options.disableAutoCatch) {
-                return ajaxP.catch(function(err) {
-                    app.activeView.onError(err);
+                return ajaxP.catch(function(jqXHR) {
+                    if (jqXHR.abort_reason === "duplicate" || (jqXHR.statusText !== "abort" && jqXHR.statusText !== "canceled")) {
+                        app.activeView.onError(jqXHR);
+                    }
                 });
             }
             return ajaxP;
@@ -159,10 +165,10 @@
                             state.allApps[additionalApps._id] = additionalApps;
                         }
                     },
-                    removeFromAllApps: function(state, appToRemove) {
-                        var appObj = state.allApps[appToRemove.id];
+                    removeFromAllApps: function(state, appToRemoveId) {
+                        var appObj = state.allApps[appToRemoveId];
                         if (appObj) {
-                            delete state.allApps[appToRemove.id];
+                            delete state.allApps[appToRemoveId];
                         }
                     },
                     deleteAllApps: function(state) {
@@ -184,14 +190,14 @@
                     addToAllApps: function(context, additionalApps) {
                         context.commit("addToAllApps", additionalApps);
                     },
-                    removeFromAllApps: function(context, appToRemove) {
-                        if (Array.isArray(appToRemove)) {
-                            appToRemove.forEach(function(app) {
+                    removeFromAllApps: function(context, appToRemoveId) {
+                        if (Array.isArray(appToRemoveId)) {
+                            appToRemoveId.forEach(function(app) {
                                 context.commit("removeFromAllApps", app);
                             });
                         }
                         else {
-                            context.commit("removeFromAllApps", appToRemove);
+                            context.commit("removeFromAllApps", appToRemoveId);
                         }
                     },
                     deleteAllApps: function(context) {

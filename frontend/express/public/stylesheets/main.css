@@ -108,7 +108,7 @@ src: url('../fonts/Oswald-700/Oswald-700.eot?#iefix') format('embedded-opentype'
 * { outline:none; }
 html { height: 100%; }
 body { margin:0; padding:0; overflow:auto; background-color:#F9F9F9; user-select:text; font-family: Ubuntu,Helvetica,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-#content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:78px 16px 35px 16px !important; transition: margin-left 0.55s; will-change: margin-left; }
+/* #content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:78px 16px 35px 16px !important; transition: margin-left 0.55s; will-change: margin-left; } */
 #content-container #event-nav,
 #content-container #app-management-bar,
 #content-container #configs-title-bar { transition: left 0.55s, width 200ms; will-change: left; border-radius:2px; }
@@ -117,7 +117,7 @@ body { margin:0; padding:0; overflow:auto; background-color:#F9F9F9; user-select
 #content-container.cover-left #app-management-bar,
 #content-container.cover-left #configs-title-bar { left:18px; transition: left 0.55s, width 200ms; will-change: left; }
 
-#content {padding-bottom:15px; }
+/* #content {padding-bottom:15px; } */
 a { color:inherit; text-decoration:none; }
 a:visited { color:inherit; }
 a:hover { color:inherit; }
@@ -2070,7 +2070,6 @@ input.custom-styled-green-check:checked {border-color: #C2C2C2;}
 #notification-icon { position: relative; }
 #notification-icon.unread:after { content: " "; width: 4px; height: 4px; position: absolute; top: 0; right: 0; border-radius: 4px; background-color: #FF8700; }
 
-#main-views-container .main-view {  }
 #main-views-container .main-view.active { display: block; }
 #sidebar,
 #main-views-container #analytics-main-view.active #sidebar.hidden { transform:translate(-230px); opacity:0.8; transition: opacity 0.1s 0.2s, transform 0.55s; }

@@ -16,18 +16,18 @@
 		  </template>
     </cly-header>
     <cly-main>
-		<cly-date-picker-g class="technology-density-wrapper__date-picker"></cly-date-picker-g>
-		<div class="bu-columns bu-is-gapless">
+		<cly-date-picker-g class="bu-mb-5"></cly-date-picker-g>
+		<div class="bu-columns bu-is-gapless bu-mt-2">
 			<h4>{{i18n('density.densities-for')}}</h4>
 			<div class ="selector_wrapper">
-				<el-select v-model="selectedProperty">
+				<el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
 					<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
 				</el-select>
 			</div>
 		</div>
-		<div class="bu-mb-4 bg-white technology-density-wrapper__metric-cards-wrapper">
+		<div class="bu-pb-4 technology-density-wrapper__metric-cards-wrapper">
 		<vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
-			<cly-metric-cards class="bu-is-flex-wrap-nowrap">
+			<cly-metric-cards>
                 <cly-metric-card :is-percentage="true" :columnWidth=3  :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in densityItems">
                     {{item.name}}
 					<template v-slot:number>{{item.value}}</template>
@@ -35,10 +35,13 @@
                       <span class="text-medium">{{item.percentText}}</span> 
                     </template>
                 </cly-metric-card>
+					<div v-if="densityItems.length < 4" class="technology-density-wrapper__empty-card">
+						<div class="text-medium">{{i18n('common.table.no-data')}}</div>	
+					</div>
             </cly-metric-cards>
 		</vue-scroll>
 		</div>
-	    <h5> {{i18n('density.distribution')}} </h5>
+	    <h5 class="bu-pb-4"> {{i18n('density.distribution')}} </h5>
 		<div class="technology-density-wrapper__density-versions-wrapper">
 			<vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 				<div class="bu-columns bu-is-gapless">
@@ -50,15 +53,18 @@
 							<vue-scroll :ops="scrollOptions">
 								<div :key="idx2" v-for="(item2, idx2) in item.data" >
 									<div class="technology-density-wrapper__version-graph-block bu-p-3">
-										<div class="technology-density-wrapper__bu-columns version-graph-title">
-											<div class="bu-column">{{item2.name}}</div>
-											<div class="bu-column">{{item2.value}} | {{item2.percent}} % </div>
+										<div class="bu-columns technology-density-wrapper__bu-columns version-graph-title">
+											<div class="bu-column bu-p-0">{{item2.name}}</div>
+											<div class="bu-column bu-p-0">{{item2.value}} | {{item2.percent}} % </div>
 										</div>
 										<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
 									</div>
 								</div>
 							</vue-scroll>
 						</div>
+					</div>
+					<div v-if="densityVersions.length < 4" class="technology-density-wrapper__versions-empty-card">
+						<div class="text-medium">{{i18n('common.table.no-data')}}</div>
 					</div>
 				</div>
 			</vue-scroll>

@@ -1,4 +1,4 @@
-/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment*/
+/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
         props: {
@@ -152,7 +152,7 @@
     countlyPushNotificationComponent.ReviewSectionRow = countlyVue.views.create({
         props: {
             value: {
-                type: String,
+                type: [String, Number],
                 default: ""
             },
             label: {
@@ -234,16 +234,16 @@
                 return "";
             },
             onSelect: function(value) {
-                this.$emit('select', this.id, this.container, value, this.findOptionLabelByValue(value));
+                this.$emit('select', {id: this.id, container: this.container, value: value, label: this.findOptionLabelByValue(value)});
             },
             onUppercase: function(value) {
-                this.$emit('check', this.id, this.container, value);
+                this.$emit('check', {id: this.id, container: this.container, value: value});
             },
             onFallback: function(value) {
-                this.$emit('input', this.id, this.container, value);
+                this.$emit('input', {id: this.id, container: this.container, value: value});
             },
             onRemove: function() {
-                this.$emit('remove', this.id, this.container);
+                this.$emit('remove', {id: this.id, container: this.container});
             },
             onClose: function() {
                 var self = this;
@@ -325,11 +325,6 @@
                 type: Object,
                 required: true,
             },
-            isHTML: {
-                type: Boolean,
-                required: false,
-                default: false,
-            }
         },
         computed: {
             isAndroidPlatformSelected: function() {
@@ -475,6 +470,10 @@
                 type: String,
                 required: true
             },
+            container: {
+                type: String,
+                required: true,
+            },
             type: {
                 type: String,
                 required: false,
@@ -489,7 +488,12 @@
                 type: String,
                 required: false,
                 default: ""
-            }
+            },
+            isRequired: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
         },
         data: function() {
             return {
@@ -497,6 +501,8 @@
                 defaultLabelValue: "Select property",
                 defaultLabelPreview: "Select property|",
                 defaultLocalizationValidationErrors: [],
+                selectionRange: null,
+                mutationObserver: null,
             };
         },
         computed: {
@@ -516,30 +522,64 @@
             }
         },
         methods: {
-            appendZeroWidthSpace: function() {
-                this.$refs.element.appendChild(document.createTextNode('\u200B'));
-            },
-            setCursorAtEnd: function() {
-                var selection = window.getSelection();
-                var textRange = document.createRange();
-                selection.removeAllRanges();
-                textRange.selectNodeContents(this.$refs.element);
-                textRange.collapse(false);
-                selection.addRange(textRange);
-                this.$refs.element.focus();
-            },
-            onUserPropertyClick: function(id, container, element) {
+            onUserPropertyClick: function(id, element) {
                 var elementBound = element.getBoundingClientRect();
                 var leftCoordinate = elementBound.left + (elementBound.width / 2);
-                this.$emit("click", id, container, {left: leftCoordinate, top: elementBound.top });
+                this.$emit("click", {id: id, container: this.container, position: {left: leftCoordinate, top: elementBound.top }});
             },
-            getOnUserPropertyClickEventListener: function(id, name) {
+            getOnUserPropertyClickEventListener: function(id) {
                 var self = this;
                 return function(event) {
-                    self.onUserPropertyClick(id, name, event.target);
+                    self.onUserPropertyClick(id, event.target);
                 };
             },
-            addEmptyUserProperty: function(id, container) {
+            isEmpty: function() {
+                return this.$refs.element.childNodes.length === 0;
+            },
+            isSelected: function() {
+                return window.getSelection().containsNode(this.$refs.element, true);
+            },
+            insertNodeWhenSelected: function(node) {
+                var selection = window.getSelection();
+                var range = this.selectionRange || selection.getRangeAt(0);
+                range.insertNode(node);
+                range.setStartAfter(node);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            },
+            insertNodeWhenNotSelected: function(node) {
+                var selection = window.getSelection();
+                var range = document.createRange();
+                range.selectNodeContents(this.$refs.element);
+                if (!this.isEmpty()) {
+                    range.setStartAfter(this.$refs.element.lastChild, 0);
+                }
+                range.insertNode(node);
+                range.setStartAfter(node);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            },
+            insertNodeAtCaretPosition: function(node) {
+                if (this.isSelected()) {
+                    this.insertNodeWhenSelected(node);
+                }
+                else {
+                    this.insertNodeWhenNotSelected(node);
+                }
+            },
+            insertEmojiAtCaretPosition: function(node) {
+                if (this.selectionRange) {
+                    this.insertNodeWhenSelected(node);
+                }
+                else {
+                    this.insertNodeWhenNotSelected(node);
+                }
+            },
+            saveSelectionRange: function() {
+                var sel = window.getSelection();
+                this.selectionRange = sel.getRangeAt(0);
+            },
+            addEmptyUserProperty: function(id) {
                 var newElement = document.createElement("span");
                 newElement.setAttribute("id", "id-" + id);
                 newElement.setAttribute("contentEditable", false);
@@ -548,16 +588,19 @@
                 newElement.setAttribute("data-user-property-value", "");
                 newElement.setAttribute("data-user-property-fallback", "");
                 newElement.innerText = this.defaultLabelPreview;
-                newElement.onclick = this.getOnUserPropertyClickEventListener(id, container);
-                this.$refs.element.appendChild(newElement);
-                this.appendZeroWidthSpace();
+                newElement.onclick = this.getOnUserPropertyClickEventListener(id);
+                this.insertNodeAtCaretPosition(newElement);
                 this.$emit('change', this.$refs.element.innerHTML);
-                this.onUserPropertyClick(id, container, newElement);
+                this.onUserPropertyClick(id, newElement);
+                this.saveSelectionRange();
             },
             removeUserProperty: function(id) {
-                this.$refs.element.querySelector("#id-" + id).remove();
-                this.$emit('change', this.$refs.element.innerHTML);
-                this.validate();
+                var userProperty = this.$refs.element.querySelector("#id-" + id);
+                if (userProperty) {
+                    userProperty.remove();
+                    this.$emit('change', this.$refs.element.innerHTML);
+                    this.validate();
+                }
             },
             getHTMLContent: function() {
                 return this.$refs.element.innerHTML;
@@ -583,37 +626,90 @@
                 element.innerText = previewValue;
                 this.$emit('change', this.$refs.element.innerHTML);
             },
-            addEventListeners: function(ids, container) {
+            addEventListeners: function(ids) {
                 var self = this;
                 ids.forEach(function(id) {
-                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id, container);
+                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id);
                 });
             },
-            reset: function(htmlContent, ids, container) {
+            reset: function(htmlContent, ids) {
                 this.$refs.element.innerHTML = htmlContent;
-                this.addEventListeners(ids, container);
+                this.addEventListeners(ids);
             },
             appendEmoji: function(emoji) {
-                this.$refs.element.appendChild(document.createTextNode(emoji));
-                this.setCursorAtEnd();
+                this.insertEmojiAtCaretPosition(document.createTextNode(emoji));
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.validate();
+                this.saveSelectionRange();
             },
             validate: function(value) {
                 var self = this;
-                if (!value) {
-                    value = this.$refs.element.innerHTML;
-                }
-                if (this.isDefaultLocalizationActive) {
-                    this.$refs.defaultLocalizationValidationProvider.validate(value).then(function(result) {
-                        self.defaultLocalizationValidationErrors = result.errors;
-                    });
-                }
+                return new Promise(function(resolve) {
+                    if (!value) {
+                        value = self.$refs.element.innerHTML;
+                    }
+                    if (self.isDefaultLocalizationActive) {
+                        self.$refs.defaultLocalizationValidationProvider.validate(value).then(function(result) {
+                            self.defaultLocalizationValidationErrors = result.errors;
+                            resolve(result.valid);
+                        });
+                    }
+                    else {
+                        return resolve(true);
+                    }
+                });
             },
             onInput: function(newValue) {
                 this.$emit('change', newValue);
                 this.validate(newValue);
+                this.saveSelectionRange();
             },
+            onClick: function() {
+                this.saveSelectionRange();
+            },
+            onDelete: function(nodesList) {
+                var self = this;
+                nodesList.forEach(function(removedNode) {
+                    if (removedNode.id) {
+                        var idValue = removedNode.id.split('-')[1];
+                        self.$emit('delete', {id: idValue, container: self.container});
+                    }
+                });
+            },
+            onMutation: function(mutationsList) {
+                var self = this;
+                mutationsList.forEach(function(mutation) {
+                    if (mutation.removedNodes.length) {
+                        self.onDelete(mutation.removedNodes);
+                    }
+                });
+            },
+            onPaste: function(event) {
+                event.preventDefault();
+                if (event.clipboardData) {
+                    var textContent = event.clipboardData.getData('text');
+                    this.insertNodeAtCaretPosition(document.createTextNode(textContent));
+                    this.onInput(this.$refs.element.innerHTML);
+                }
+            },
+            createMutationObserverIfNotFound: function(callback) {
+                if (!this.mutationObserver) {
+                    this.mutationObserver = new MutationObserver(callback);
+                }
+            },
+            startMutationObserver: function() {
+                var config = {childList: true};
+                this.mutationObserver.observe(this.$refs.element, config);
+            },
+            disconnectMutationObserver: function() {
+                this.mutationObserver.disconnect();
+            },
+            addPasteEventListener: function(callback) {
+                this.$refs.element.addEventListener('paste', callback);
+            },
+            removePasteEventListener: function(callback) {
+                this.$refs.element.removeEventListener('paste', callback);
+            }
         },
         mounted: function() {
             var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
@@ -625,14 +721,36 @@
                     element.dispatchEvent(event);
                 });
             }
-            //TODO-LA: trigger validation when user tries to go to next step instead of when component is mounted
-            this.validate();
+            this.createMutationObserverIfNotFound(this.onMutation);
+            this.startMutationObserver();
+            this.addPasteEventListener(this.onPaste);
         },
         beforeDestroy: function() {
             //TODO-LA: remove all user properties elements' event listeners
+            this.disconnectMutationObserver();
+            this.removePasteEventListener(this.onPaste);
         },
         components: {
             'emoji-picker': countlyPushNotificationComponent.EmojiPicker
+        },
+    });
+
+    countlyPushNotification.DetailsTabRow = countlyVue.views.create({
+        template: '#details-tab-row',
+        props: {
+            value: {
+                type: [String, Number],
+                default: ""
+            },
+            label: {
+                type: String,
+                default: ""
+            },
+        },
+        computed: {
+            hasDefaultSlot: function() {
+                return Boolean(this.$slots.default);
+            }
         },
     });
 
@@ -640,14 +758,27 @@
         template: '#details-message-tab',
         data: function() {
             return {
-                selectedLocalizationFilter: countlyPushNotification.service.LocalizationEnum.ALL,
-                localizationFilters: countlyPushNotification.service.getLocalizationFilterOptions()
+                selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
             };
         },
         computed: {
             message: function() {
-                return this.$store.state.countlyPushNotification.details.pushNotification.message;
+                return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
+            },
+            localizations: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification.localizations;
+            },
+            previewMessageTitle: function() {
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.title);
+            },
+            previewMessageContent: function() {
+                return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.content);
             }
+        },
+        components: {
+            'user-property-preview': countlyPushNotificationComponent.UserPropertyPreview,
+            'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview,
+            'details-tab-row': countlyPushNotification.DetailsTabRow
         }
     });
 
@@ -655,18 +786,36 @@
         template: '#details-targeting-tab',
         data: function() {
             return {
-                DAY_TO_MS_RATIO: 86400 * 1000
+                DAY_TO_MS_RATIO: 86400 * 1000,
+                TypeEnum: countlyPushNotification.service.TypeEnum,
+                TargetingEnum: countlyPushNotification.service.TargetingEnum,
+                TriggerEnum: countlyPushNotification.service.TriggerEnum,
+                startDateOptions: countlyPushNotification.service.startDateOptions,
+                targetingOptions: countlyPushNotification.service.targetingOptions,
+                audienceSelectionOptions: countlyPushNotification.service.audienceSelectionOptions,
+                triggerOptions: countlyPushNotification.service.triggerOptions,
+                triggerNotMetOptions: countlyPushNotification.service.triggerNotMetOptions,
+                deliveryDateCalculationOptions: countlyPushNotification.service.deliveryDateCalculationOptions,
+                deliveryMethodOptions: countlyPushNotification.service.deliveryMethodOptions,
             };
         },
         computed: {
             pushNotification: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification;
-            }
+            },
+            previewCohorts: function() {
+                return this.pushNotification.cohorts.map(function(cohortItem) {
+                    return cohortItem.name;
+                });
+            },
         },
         methods: {
             convertDaysInMsToDays: function(daysInMs) {
                 return daysInMs / this.DAY_TO_MS_RATIO;
             }
+        },
+        components: {
+            'details-tab-row': countlyPushNotification.DetailsTabRow
         }
     });
 

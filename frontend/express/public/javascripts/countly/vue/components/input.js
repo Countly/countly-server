@@ -492,6 +492,9 @@
         watch: {
             hasAllOptionsTab: function() {
                 this.determineActiveTabId();
+            },
+            hasTabs: function() {
+                this.determineActiveTabId();
             }
         }
     };
@@ -509,6 +512,16 @@
             width: { type: [Number, Object], default: 400},
             size: {type: String, default: ''},
             adaptiveLength: {type: Boolean, default: false},
+            minInputWidth: {
+                type: Number,
+                default: -1,
+                required: false
+            },
+            maxInputWidth: {
+                type: Number,
+                default: -1,
+                required: false
+            },
             showSelectedCount: {type: Boolean, default: false},
             arrow: {type: Boolean, default: true},
             singleOptionSettings: {
@@ -820,6 +833,116 @@
                 this.$emit('update', event.target.innerText);
             }
         }
+    }));
+
+    var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+
+    Vue.component('cly-select-email', countlyVue.components.BaseComponent.extend({
+        template: '<el-select\
+                        v-on="$listeners"\
+                        v-bind="$attrs"\
+                        :remote-method="tryParsingEmail"\
+                        :placeholder="placeholder"\
+                        :no-data-text="invalidEmailText"\
+                        :value="value"\
+                        @input="handleInput"\
+                        remote\
+                        multiple\
+                        filterable\
+                        class="cly-vue-select-email"\
+                        autocomplete="off">\
+                        <el-option\
+                            v-for="item in options"\
+                            :key="item.value"\
+                            :label="item.label"\
+                            :value="item.value">\
+                        </el-option>\
+                    </el-select>',
+        props: {
+            value: {
+                type: Array
+            },
+            placeholder: {
+                type: String,
+                default: CV.i18n('common.enter-email-addresses'),
+                required: false
+            }
+        },
+        data: function() {
+            return {
+                options: [],
+                invalidEmailText: ''
+            };
+        },
+        mounted: function() {
+            this.resetOptions('');
+        },
+        methods: {
+            handleInput: function(value) {
+                this.$emit("input", value);
+            },
+            resetOptions: function(input) {
+                this.options = [];
+                this.invalidEmailText = CV.i18n('common.invalid-email-address', input);
+            },
+            tryParsingEmail: function(input) {
+                if (!input) {
+                    this.resetOptions(input);
+                }
+                else if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
+                    this.options = [{value: input, label: input}];
+                }
+                else {
+                    var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
+                    if (match) {
+                        // Current implementation ignores name field
+                        this.options = [{value: match[2], label: match[2]}];
+                    }
+                    else {
+                        this.resetOptions(input);
+                    }
+                }
+            }
+        }
+    }));
+
+    Vue.component("cly-sortable-items", countlyVue.components.BaseComponent.extend({
+        props: {
+            value: {
+                type: Array
+            },
+            skin: {
+                type: String,
+                default: 'jumbo-lines'
+            }
+        },
+        computed: {
+            rootClasses: function() {
+                return ["cly-vue-draggable--" + this.skin];
+            }
+        },
+        methods: {
+            handleInput: function(value) {
+                this.$emit("input", value);
+            },
+            removeAt: function(idx) {
+                var copy = this.value.slice();
+                copy.splice(idx, 1);
+                this.handleInput(copy);
+            }
+        },
+        template: '<div class="cly-vue-draggable" :class="rootClasses">\
+                        <draggable\
+                            handle=".drag-icon"\
+                            :value="value"\
+                            @input="handleInput">\
+                            <div class="cly-vue-draggable-item bu-p-3 bu-mb-1" :key="idx" v-for="(item, idx) in value">\
+                                <img class="drag-icon" src="images/drill/drag-icon.svg">\
+                                <slot :item="item" :idx="idx"></slot>\
+                                <a @click="removeAt(idx)" class="ion-backspace"></a>\
+                            </div>\
+                        </draggable>\
+                    </div>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));

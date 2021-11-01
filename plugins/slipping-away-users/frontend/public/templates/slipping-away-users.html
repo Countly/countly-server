@@ -2,34 +2,39 @@
     <cly-header>
         <template v-slot:header-left>
             <h2> {{i18n('slipping-away-users.title')}} </h2>
-            <cly-tooltip-icon :tooltip="i18n('slipping-away-users.description')" icon="ion ion-help-circled" class="bu-ml-4"> </cly-tooltip-icon>
+            <cly-tooltip-icon :tooltip="i18n('slipping-away-users.description')" icon="ion ion-help-circled" style="margin-left:10px"> </cly-tooltip-icon>
         </template>
     </cly-header>
     <cly-main>
-        <cly-qb-bar class="bu-my-5" v-model="slippingAwayUsersFilters" queryStore="slipping-away-users" format="mongo"></cly-qb-bar>
+        <cly-qb-bar v-model="slippingAwayUsersFilters" queryStore="slipping-away-users" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}"></cly-qb-bar>
         <cly-section>
             <cly-chart-bar :option="slippingAwayUsersOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="slippingAwayUsers" :resizable="true" v-loading="isLoading">
+            <cly-datatable-n  :rows="slippingAwayUsersRows" :resizable="false" v-loading="isLoading">
                 <template v-slot="scope">
-                    <el-table-column sortable="custom" prop="period" :label="i18n('slipping-away-users.table-period')">
+                    <el-table-column sortable="custom" width="226" prop="period" :label="i18n('slipping-away-users.table-period')">
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="count" :label="i18n('slipping-away-users.table-count')">
+                    <el-table-column sortable="custom" width="335" prop="count" :label="i18n('slipping-away-users.table-count')">
+                        <template slot-scope="scope">
+                            {{formatNumber(scope.row.count)}}
+                        </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
+                    <el-table-column sortable="custom" width="290" prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
                         <template slot-scope="scope">
                             <div class="bu-level-left">
-                                <div class="bu-level-item slipping-away-users-table-data-item">
+                                <div class="bu-level-item slipping-away-users-table__data-item">
                                     <span>{{scope.row.percentage}} %</span>
                                 </div>
-                                <cly-progress-bar  :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
+                                <cly-progress-bar :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="timeStamp" align="center">
+                    <el-table-column prop="timeStamp"  align="center">
                         <template slot-scope="scope">
-                            <el-link type="primary" @click="onUserListClick(scope.row.timeStamp)" :underline="false"> {{i18n('slipping-away-users.table-user-list')}}<span class="el-icon-right"> </span></el-link>
+                            <div class="bu-level-right">
+                                <el-link type="primary" @click="onUserListClick(scope.row.timeStamp)" :underline="false" class="slipping-away-users-table__link">{{i18n('slipping-away-users.table-user-list')}} <span class="el-icon-right"></span></el-link>
+                            </div>
                         </template>
                     </el-table-column>
                 </template>

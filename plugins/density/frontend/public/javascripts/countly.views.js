@@ -33,7 +33,7 @@ var AppDensityView = countlyVue.views.create({
                     keepShow: false
                 }
             },
-            description: CV.i18n('density.plugin-description'),
+            description: CV.i18n('density.page-desc'),
             dynamicTab: "density-table",
             densityTabs: [
                 {
@@ -158,7 +158,7 @@ var AppDensityView = countlyVue.views.create({
             }
         },
         graphColors: function() {
-            return ["#017AFF", "#39C0C8", "#F5C900", "#6C47FF", "#017AFF", "#39C0C8"];
+            return ["#017AFF", "#39C0C8", "#F5C900", "#6C47FF"];
         },
         appDensity: function() {
             return this.$store.state.countlyDevicesAndTypes.appDensity;
@@ -182,7 +182,7 @@ var AppDensityView = countlyVue.views.create({
                     "percent": percent,
                     "percentText": percent + " % " + CV.i18n('common.of-total'),
                     "info": CV.i18n('common.info'),
-                    "color": this.graphColors[k]
+                    "color": k > 3 ? this.graphColors[k % 4] : this.graphColors[k]
                 });
             }
             return display;
@@ -202,7 +202,7 @@ var AppDensityView = countlyVue.views.create({
                         "percent": percent,
                         "bar": [{
                             percentage: percent,
-                            color: this.graphColors[z]
+                            color: z > 3 ? this.graphColors[z % 4] : this.graphColors[z]
                         }
                         ]
                     });

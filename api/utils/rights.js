@@ -591,7 +591,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
-            var appIdExceptions = ['global_users', 'global_applications'];
+            var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
             // then result is owner id
             if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
@@ -640,7 +640,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                             }
                         }
                         */
-                        if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object") && (member.permission.r[params.qstring.app_id].all || member.permission.r[params.qstring.app_id].allowed[feature]))) {
+                        if (!((member.permission && typeof member.permission.r === "object" && typeof member.permission.r[params.qstring.app_id] === "object") && (member.permission._.a.indexOf(params.qstring.app_id) > -1 || member.permission.r[params.qstring.app_id].all || member.permission.r[params.qstring.app_id].allowed[feature]))) {
                             common.returnMessage(params, 401, 'User does not have right');
                             reject('User does not have right');
                             return false;
@@ -736,7 +736,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject) {
         validate_token_if_exists(params).then(function(result) {
             var query = "";
-            var appIdExceptions = ['global_users', 'global_applications'];
+            var appIdExceptions = ['global_users', 'global_applications', 'global_jobs', 'global_plugins', 'global_configurations', 'global_upload'];
             // then result is owner id
             if (result !== 'token-not-given' && result !== 'token-invalid') {
                 query = {'_id': common.db.ObjectID(result)};
@@ -780,7 +780,7 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                             }
                         }
                         */
-                        if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object") && (member.permission[accessType][params.qstring.app_id].all || member.permission[accessType][params.qstring.app_id].allowed[feature]))) {
+                        if (!((member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][params.qstring.app_id] === "object") && (member.permission._.a.indexOf(params.qstring.app_id) > -1 || member.permission[accessType][params.qstring.app_id].all || member.permission[accessType][params.qstring.app_id].allowed[feature]))) {
                             common.returnMessage(params, 401, 'User does not have right');
                             reject('User does not have right');
                             return false;

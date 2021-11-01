@@ -5,19 +5,25 @@
         </template>
     </cly-header>
     <cly-main>
-        <el-select v-model="selectLog" v-on:change="changeLog" class="bu-mb-4">
-            <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in logList"></el-option>
-        </el-select>
-        <el-button v-on:click="clear" type="danger" class="bu-is-pulled-right bu-ml-4">{{i18n('errorlogs.clear')}}</el-button>
-        <a :href="downloadLink" target="_blank">
-            <el-button class="bu-is-pulled-right bu-ml-4">{{i18n('errorlogs.download')}}</el-button>
-        </a>
-		<cly-section class="bu-mt-4">
-            <div class="errorlogs">
-                <div class="pre-block">
-                    <pre>{{cachedLog.data}}</pre>
-                </div>
+        <cly-section>
+            <div class="routename-errorlogs__dropdown-frame">
+                <el-select v-model="selectLog" v-on:change="changeLog" class="bu-m-3">
+                    <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in logList">
+                    </el-option>
+                </el-select>
             </div>
-		</cly-section>
+            <div class="bu-p-5">
+                <el-link v-on:click="clear" class="bu-is-underlined bu-is-pulled-right bu-ml-4">
+                    {{i18n('errorlogs.clear')}}
+                </el-link>
+                <a :href="downloadLink" target="_blank">
+                    <el-link class="bu-is-underlined bu-is-pulled-right">{{i18n('errorlogs.download')}}</el-link>
+                </a>
+            </div>
+            <div class="routename-errorlogs__scroll-down">
+                <pre class="bu-px-5 bu-pb-4">{{cachedLog.data}}</pre>
+            </div>
+
+        </cly-section>
     </cly-main>
 </div>

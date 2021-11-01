@@ -19,16 +19,16 @@
 		<cly-chart-time :option="lineOptions" :legend="lineLegend" > </cly-chart-time>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :default-sort="{prop: 'dateVal', order: 'ascending'}" :rows="tableData" :resizable="true" >
+			<cly-datatable-n :exportFormat="formatExportFunction"  :default-sort="{prop: 'dateVal', order: 'ascending'}" :rows="tableData" :resizable="true" >
 				<template v-slot="scope">
 					<el-table-column sortable="custom" prop="dateVal" :label="i18n('common.date')">
 						<template slot-scope="scope">
 							{{scope.row.date}}
 						</template>
 					</el-table-column>
-					<el-table-column sortable="custom" prop="u" :label="i18n('common.total-users')"></el-table-column>
-					<el-table-column sortable="custom" prop="n" :label="i18n('common.new-users')"></el-table-column>
-					<el-table-column sortable="custom" prop="returning" :label="i18n('common.returning-users')"></el-table-column>
+					<el-table-column sortable="custom" prop="u" :label="i18n('common.total-users')"><template slot-scope="scope">{{formatNumber(scope.row.u)}}</template></el-table-column>
+					<el-table-column sortable="custom" prop="n" :label="i18n('common.new-users')"><template slot-scope="scope">{{formatNumber(scope.row.n)}}</template></el-table-column>
+					<el-table-column sortable="custom" prop="returning" :label="i18n('common.returning-users')"><template slot-scope="scope">{{formatNumber(scope.row.returning)}}</template></el-table-column>
 				</template>
 			</cly-datatable-n>
 		</cly-section>

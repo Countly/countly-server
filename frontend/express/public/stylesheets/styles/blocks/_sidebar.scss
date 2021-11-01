@@ -16,8 +16,30 @@ $bg-color: #24292e;
 }
 
 .cly-vue-sidebar {
+    .tooltip  {
+        display: block !important;
+        z-index: 10000;
+      .tooltip-inner {
+        background: white;
+        color: black;
+      }
+      .tooltip-arrow {
+        display: none;
+      }
+    }
+      
+    .tooltip[x-placement^="right"] {
+        margin-left: 0px;
+      }
+      
     width: 100%;
     height: 100%;
+    .cly-vue-listbox__item-label {
+        width: 350px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
     ul {
         list-style: none;
@@ -41,6 +63,9 @@ $bg-color: #24292e;
     &__app-name {
         font-size: 14px;
     }
+    &__app-name-type {
+        width: 120px;
+    }
 
     &__app-selector {
         border: 1px solid #424243;
@@ -54,7 +79,7 @@ $bg-color: #24292e;
         opacity: .57;
     }
 
-    &__options {
+    &__menu-options {
         width: 48px;
         height: 100%;
         overflow: auto;
@@ -65,7 +90,7 @@ $bg-color: #24292e;
         }
     }
 
-    &__option {
+    &__menu-option {
         width: 48px;
         height: 24px;
         margin-top: 25px;
@@ -78,19 +103,19 @@ $bg-color: #24292e;
         }
     }
 
-    &__option_app {
+    &__menu-option-app {
         background-color: map.get(c.$colors, "primary-green");
         border-radius: 4px;
         height: 24px;
         width: 24px;
     }
 
-    &__option_divider {
+    &__menu-option-divider {
         width: 24px;
         border: 1px solid map.get(c.$colors, "warm-gray-70");
     }
 
-    &__option-toggle {
+    &__menu-option-toggle {
         height: 48px;
         background-color: $bg-color;
         border-top-left-radius: 50%;
@@ -118,7 +143,7 @@ $bg-color: #24292e;
         padding: 0;
         font-weight: t.$font-weight-text;
         font-family: t.$font-family;
-        padding: 6px 10px 6px 10px;
+        padding: 6px 12px;
 
         .el-collapse-item__arrow {
             margin-right: 0px;
@@ -126,6 +151,7 @@ $bg-color: #24292e;
 
         &:hover {
             background-color: map.get(c.$colors, "warm-gray-80");
+            color: map.get(c.$colors, "white");
             border-radius: 4px;
         }
 
@@ -141,6 +167,12 @@ $bg-color: #24292e;
         }
     }
 
+    &__el-collapse--selected .el-collapse-item__header {
+        border-radius: 4px;
+        background-color:map.get(c.$colors, "warm-gray-80");
+        color: map.get(c.$colors, "white");
+    }
+
     .el-collapse-item__content {
         margin: 0;
         padding: 0;
@@ -150,6 +182,7 @@ $bg-color: #24292e;
         border-bottom: 1px solid map.get(c.$colors, "warm-gray-70");
         background-color: $bg-color;
         box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.4);
+        padding-bottom: 16px;
     }
 
     &__header {
@@ -186,12 +219,6 @@ $bg-color: #24292e;
     &__main-menu {
         overflow: auto;
         height: calc(100% - 82px);
-
-        ul {
-            li {
-                padding: 2px 14px 2px 14px;
-            }
-        }
     }
 
     &__app-image {
@@ -201,11 +228,6 @@ $bg-color: #24292e;
         border-radius: 4px;
         background-position: center;
         display: inline-block;
-    }
-
-    &__analytics-popper {
-        box-shadow: 0px 11px 14px rgb(0, 0, 0, .37);
-        border: 1px solid map.get(c.$colors, "warm-gray-70");
     }
 
     &__user-popper {
@@ -300,10 +322,6 @@ $bg-color: #24292e;
         width: 50px;
         border-radius: 25px;
         text-align: center;
-
-        &:hover {
-            box-shadow: 0px 0px 12px map.get(c.$colors, "primary-green");
-        }
     }
 
     &__user-initials {
@@ -316,52 +334,5 @@ $bg-color: #24292e;
         border: 1px solid map.get(c.$colors, "warm-gray-30");;
         margin-top: 5px;
         position: relative;
-    }
-
-    &__analytics-popper,
-    &__header {
-        background-color: $bg-color;
-        border-radius: 4px;
-        color: map.get(c.$colors, "white");
-
-        .el-select {
-            box-shadow: 0px 11px 14px rgb(0, 0, 0, .37);
-        }
-
-        .el-select-dropdown__item {
-            color: map.get(c.$colors, "white");
-            font-weight: t.$font-weight-text;
-            font-family: t.$font-family;
-
-            &.selected {
-                color: #2EFF00;
-                font-weight: t.$font-weight-text;
-            }
-
-            &:hover, &.hover {
-                background-color: transparent;
-                border: none;
-            }
-        }
-
-        .el-input__inner {
-            background-color: $bg-color;
-            border: 1px solid map.get(c.$colors, "warm-gray-70");
-            color: map.get(c.$colors, "white");
-            font-family: t.$font-family;
-            font-weight: t.$font-weight-text;
-
-            &:focus, &:hover {
-                border: 1px solid map.get(c.$colors, "warm-gray-70");
-            }
-        }
-
-        .el-input {
-            &.is-focus, &:focus {
-                .el-input__inner {
-                    border: 1px solid map.get(c.$colors, "warm-gray-70");
-                }
-            }
-        }
     }
 }

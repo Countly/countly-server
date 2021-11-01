@@ -33,6 +33,18 @@
         params: ['length']
     });
 
+    VeeValidate.extend('json', {
+        validate: function(value) {
+            try {
+                JSON.parse(value);
+                return true;
+            }
+            catch (error) {
+                return false;
+            }
+        }
+    });
+
     countlyVue.mixins.inViewport = inViewportMixin;
 
 }(window.countlyVue = window.countlyVue || {}));

@@ -3498,6 +3498,9 @@
         * @returns {object} returns {@link countlyCommon.periodObj}
         */
         countlyCommon.getPeriodObj = function() {
+            if (countlyCommon.periodObj._period !== _period) {
+                countlyCommon.periodObj = calculatePeriodObject(_period);
+            }
             return countlyCommon.periodObj;
         };
 
@@ -3593,6 +3596,7 @@
                 previousUniquePeriodArr: [],
                 previousUniquePeriodCheckArr: [],
                 periodContainsToday: true,
+                _period: period
             };
 
             endTimestamp = currentTimestamp.clone().utc().endOf("day");

@@ -29,7 +29,8 @@ var Drawer = countlyVue.views.create({
                 params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
             },
             logoFile: "",
-            stamp: 0
+            stamp: 0,
+            cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
         };
     },
     methods: {
@@ -53,6 +54,19 @@ var Drawer = countlyVue.views.create({
 
             if (this.logoFile !== "") {
                 submitted.logo = this.logoFile;
+            }
+
+            if (this.cohortsEnabled) {
+                var finalizedTargeting = null;
+                var exported = this.$refs.ratingsSegmentation.export();
+                if (!((exported.behaviorSegmentation.length === 0) && (Object.keys(exported.propertySegmentation.query).length === 0))) {
+                    finalizedTargeting = Object.assign({}, {
+                        user_segmentation: JSON.stringify(exported.propertySegmentation),
+                        steps: JSON.stringify(exported.behaviorSegmentation)
+                    });
+                }
+
+                submitted.targeting = finalizedTargeting;
             }
 
             if (this.settings.isEditMode) {
@@ -106,6 +120,11 @@ var WidgetsTable = countlyVue.views.create({
             default: []
         }
     },
+    data: function() {
+        return {
+            cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
+        };
+    },
     computed: {
         widgets: function() {
             for (var i = 0; i < this.rows.length; i++) {
@@ -114,6 +133,9 @@ var WidgetsTable = countlyVue.views.create({
                     ratingScore = (this.rows[i].ratingsSum / this.rows[i].ratingsCount).toFixed(1);
                 }
                 this.rows[i].ratingScore = ratingScore;
+                if (this.cohortsEnabled) {
+                    this.rows[i] = this.parseTargeting(this.rows[i]);
+                }
             }
             return this.rows;
         }
@@ -125,6 +147,11 @@ var WidgetsTable = countlyVue.views.create({
                 window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
                 break;
             }
+        },
+        parseTargeting: function(widget) {
+            widget.targeting.steps = JSON.parse(widget.targeting.steps);
+            widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            return widget;
         }
     }
 });
@@ -383,8 +410,8 @@ var WidgetsTab = countlyVue.views.create({
                     'Very Satisfied'
                 ],
                 targeting: {
-                    user_segmentation: { query: {} },
-                    steps: []
+                    user_segmentation: null,
+                    steps: null
                 },
                 trigger_button_text: 'Feedback',
                 trigger_bg_color: '#123456',
@@ -495,6 +522,7 @@ var WidgetDetail = countlyVue.views.create({
     ],
     data: function() {
         return {
+            cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
             activeFilter: {
                 platform: "",
                 version: "",
@@ -629,6 +657,9 @@ var WidgetDetail = countlyVue.views.create({
             });
         },
         editWidget: function() {
+            if (this.cohortsEnabled && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
+                this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
+            }
             this.openDrawer('widget', this.widget);
         },
         handleCommand: function(command) {
@@ -674,6 +705,9 @@ var WidgetDetail = countlyVue.views.create({
             starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
                 self.widget = widget;
                 self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
+                if (self.cohortsEnabled) {
+                    self.widget = self.parseTargeting(widget);
+                }
             });
             // set widget filter as current one
             this.activeFilter.widget = this.widget._id;
@@ -697,6 +731,15 @@ var WidgetDetail = countlyVue.views.create({
                     self.versionOptions.push({ label: self.platform_version[newValue.platform][i], value: self.platform_version[newValue.platform][i] });
                 }
             }
+        },
+        parseTargeting: function(widget) {
+            if (typeof widget.targeting.steps === "string") {
+                widget.targeting.steps = JSON.parse(widget.targeting.steps);
+            }
+            if (typeof widget.targeting.user_segmentation === "string") {
+                widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            }
+            return widget;
         }
     },
     computed: {
@@ -900,10 +943,6 @@ app.addPageScript("/drill#", function() {
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(FEATURE_NAME)) {
-        if (!$("#feedback-menu").length) {
-            app.addMenu("reach", {code: "feedback", text: "sidebar.feedback", icon: '<div class="logo ion-android-star-half"></div>', priority: 20});
-        }
-
         app.addSubMenu("feedback", {
             code: "star-rating",
             url: "#/feedback/ratings",
