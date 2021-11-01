@@ -744,7 +744,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
     }
 
     for (var arg in argProperties) {
-        var argState = true,
+        let argState = true,
             parsed;
         if (argProperties[arg].required) {
             if (args[arg] === void 0) {
@@ -763,6 +763,27 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg].type) {
                 if (argProperties[arg].type === 'Number' || argProperties[arg].type === 'String') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'IntegerString') {
+                    if (args[arg] === null && !argProperties[arg].required) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string' && !isNaN(parseInt(args[arg]))) {
+                        parsed = parseInt(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'number') {
+                        parsed = args[arg];
+                    }
+                    else {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
@@ -829,6 +850,27 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
                 }
+                else if (argProperties[arg].type === 'BooleanString') {
+                    if (args[arg] === null && !argProperties[arg].required) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string' && (args[arg] === 'true' || args[arg] === 'false')) {
+                        parsed = args[arg] === 'true';
+                    }
+                    else if (typeof args[arg] === 'boolean') {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
                 else if (argProperties[arg].type === 'Date') {
                     if (args[arg] === null && !argProperties[arg].required) {
                         // do nothing
@@ -881,9 +923,63 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                 }
                 else if (argProperties[arg].type === 'ObjectID') {
-                    if (!(args[arg] instanceof common.db.ObjectID || (typeof args[arg] === 'string' && common.db.ObjectID.isValid(args[arg]))) && !(!argProperties[arg].required && args[arg] === null)) {
+                    if (!argProperties[arg].required && args[arg] === null) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string') {
+                        if (common.db._ObjectID.isValid(args[arg])) {
+                            parsed = common.db._ObjectID(args[arg]);
+                        }
+                        else {
+                            if (returnErrors) {
+                                returnObj.errors.push('Incorrect ObjectID for ' + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                    else if (args[arg] instanceof common.db._ObjectID) {
+                        parsed = args[arg];
+                    }
+                    else {
                         if (returnErrors) {
-                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.errors.push('Neither ObjectID string or ObjectID instance for ' + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'RegExp') {
+                    if (!argProperties[arg].required && args[arg] === null) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string') {
+                        try {
+                            parsed = new RegExp(args[arg], argProperties[arg].mods || undefined);
+                        }
+                        catch (ex) {
+                            if (returnErrors) {
+                                returnObj.errors.push('Incorrect regex: ' + args[arg]);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                    else if (args[arg] instanceof RegExp) {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push('Must be a valid regexp string or RegExp instance');
                             returnObj.result = false;
                             argState = false;
                         }
@@ -943,6 +1039,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     else if (!returnErrors && !subret) {
                         return false;
                     }
+                    else {
+                        parsed = subret.obj;
+                    }
                 }
                 else if ((typeof argProperties[arg].type === 'object' && argProperties[arg].array) || argProperties[arg].type.indexOf('[]') === argProperties[arg].type.length - 2) {
                     if (!Array.isArray(args[arg])) {
@@ -981,6 +1080,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             else {
                                 return false;
                             }
+                        }
+                        else {
+                            parsed = Object.values(ret.obj);
                         }
                     }
                 }
@@ -1117,10 +1219,10 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
 
             if (argState && returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
-                returnObj.obj[arg] = parsed || args[arg];
+                returnObj.obj[arg] = parsed === undefined ? args[arg] : parsed;
             }
             else if (!returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
-                returnObj[arg] = parsed || args[arg];
+                returnObj[arg] = parsed === undefined ? args[arg] : parsed;
             }
         }
     }

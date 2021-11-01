@@ -207,5 +207,23 @@ describe("Common API utility functions", function() {
             should.deepEqual(common.validateArgs({custom: 'x'}, scheme, true), {errors: ['value is invalid'], result: false});
         });
 
+        it('should validate boolean / number strings', () => {
+            let scheme = {
+                boolString: {type: 'BooleanString'},
+                bool: {type: 'Boolean'},
+                intString: {type: 'IntegerString'},
+                num: {type: 'Number'},
+            };
+            should.deepEqual(common.validateArgs({bool: 'true'}, scheme), {bool: 'true'});
+            should.deepEqual(common.validateArgs({boolString: 'true'}, scheme), {boolString: true});
+            should.deepEqual(common.validateArgs({boolString: 'false'}, scheme), {boolString: false});
+            should.deepEqual(common.validateArgs({boolString: 'x'}, scheme), false);
+
+            should.deepEqual(common.validateArgs({num: '2'}, scheme), false);
+            should.deepEqual(common.validateArgs({intString: '2'}, scheme), {intString: 2});
+            should.deepEqual(common.validateArgs({intString: '0'}, scheme), {intString: 0});
+            should.deepEqual(common.validateArgs({intString: 'x'}, scheme), false);
+        });
+
     });
 });
