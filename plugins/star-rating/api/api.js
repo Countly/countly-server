@@ -245,7 +245,7 @@ function uploadFile(myfile, id, callback) {
         if (params.qstring.method !== "feedback" || (params.qstring.method === "feedback" && params.qstring.type !== "rating")) {
             return false;
         }
- 
+
         return new Promise(function(resolve/*, reject*/) {
             params.qstring.app_id = params.app_id;
             params.app_user = params.app_user || {};
@@ -317,6 +317,7 @@ function uploadFile(myfile, id, callback) {
                 if (!err) {
                     if (cohortsEnabled && widget.targeting) {
                         widget.targeting.app_id = params.app_id + "";//has to be string
+                        // eslint-disable-next-line
                         createCohort(params, type, result.insertedIds[0], widget.targeting, function(cohortId) { //create cohort using this 
                             if (cohortId) {
                                 //update widget record to have this cohortId
@@ -363,6 +364,7 @@ function uploadFile(myfile, id, callback) {
                     }, function(removeWidgetErr) {
                         if (!removeWidgetErr) {
                             if (cohortsEnabled && widget.cohortID) {
+                                // eslint-disable-next-line
                                 deleteCohort(widget.cohortID, widget.app_id + "");
                             }
                             // remove widget and related data
@@ -405,7 +407,7 @@ function uploadFile(myfile, id, callback) {
         validateUpdate(obParams, FEATURE_NAME, function(params) {
             let widgetId;
             var type = "rating";
-            
+
             try {
                 widgetId = common.db.ObjectID(params.qstring.widget_id);
             }
@@ -446,6 +448,7 @@ function uploadFile(myfile, id, callback) {
                                 });
                             }
                             else { //we have to delete that cohort
+                                // eslint-disable-next-line
                                 deleteCohort(widget.cohortID, widget.app_id + "");
                                 common.db.collection("feedback_widgets").findAndModify({"_id": widgetId}, {}, {$unset: {"cohortID": ""}}, function(err4/*, widget*/) { //updating record to do not contain cohortID. 
                                     if (err4) {
@@ -457,6 +460,7 @@ function uploadFile(myfile, id, callback) {
                         }
                         else {
                             changes.targeting.app_id = params.app_id + "";//has to be string
+                            // eslint-disable-next-line
                             createCohort(params, type, widgetId, changes.targeting, function(cohortId) { //create cohort using this 
                                 if (cohortId) {
                                     //update widget record to have this cohortId
@@ -1272,7 +1276,7 @@ function uploadFile(myfile, id, callback) {
         * @param {object} newAtt - newAtt
         * @param {string} callback - callback
         **/
-        function createCohort(params, type, id, newAtt, callback) {
+        function createCohort(params, type, id, newAtt, callback) { // eslint-disable-line
             newAtt.cohort_name = "[CLY]_" + type + id;
 
             if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
@@ -1298,10 +1302,10 @@ function uploadFile(myfile, id, callback) {
 
         /**
          * Remove cohort
-         * @param {*} cohortId 
-         * @param {*} appId 
+         * @param {*} cohortId  - cohort id
+         * @param {*} appId  - application id
          */
-        function deleteCohort(cohortId, appId) {
+        function deleteCohort(cohortId, appId) { // eslint-disable-line
             common.db.collection('cohorts').findOne({ "_id": cohortId}, function(er, cohort) {
                 if (cohort) {
                     plugins.dispatch("/cohort/delete", { "_id": cohortId, "app_id": appId + "", ack: 0 }, function() {
@@ -1314,8 +1318,7 @@ function uploadFile(myfile, id, callback) {
                     });
                 }
             });
-        };
+        }
     }
-    
 }(exported));
 module.exports = exported;
