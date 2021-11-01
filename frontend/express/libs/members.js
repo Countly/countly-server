@@ -84,7 +84,7 @@ membersUtility.recheckConfigs(origConf, membersUtility.countlyConfig);
  * @returns {boolean} return true if string hashed by argon2
  */
 function isArgon2Hash(hashedStr) {
-    return hashedStr.includes("$argon2");
+    return hashedStr && hashedStr.includes("$argon2");
 }
 
 /**
@@ -1105,6 +1105,10 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
 
     if (data.admin_of && data.admin_of.length) {
         user.user_of = [...new Set([...data.admin_of, ...data.user_of])];
+    }
+
+    if (data.group_id && data.group_id.length) {
+        user.group_id = data.group_id;
     }
 
     // legacy rbac
