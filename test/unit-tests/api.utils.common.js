@@ -1,6 +1,7 @@
 var should = require("should");
 var testUtils = require("../testUtils");
 var common = require("../../api/utils/common");
+const mongodb = require('mongodb');
 
 describe("Common API utility functions", function() {
     describe("versionCompare", function() {
@@ -25,5 +26,186 @@ describe("Common API utility functions", function() {
 
             done();
         });
+    });
+
+    describe('validateArgs extra types', () => {
+        common.db = common.db || {
+            _ObjectID: mongodb.ObjectID
+        };
+
+        it('should validate ObjectID', () => {
+            let id = mongodb.ObjectID(),
+                scheme = {
+                    id: { type: 'ObjectID', required: true },
+                    idstr: { type: 'ObjectID', required: true }
+                };
+
+            should.deepEqual(common.validateArgs({id, idstr: id.toString()}, scheme), {id, idstr: id});
+            should.deepEqual(common.validateArgs({id, idstr: id.toString()}, scheme, true), {errors: [], result: true, obj: {id, idstr: id}});
+            should.deepEqual(common.validateArgs({id}, scheme, true), {errors: ['Missing idstr argument'], result: false});
+            should.deepEqual(common.validateArgs({id: 'asd', idstr: id.toString()}, scheme, true), {errors: ['Incorrect ObjectID for id'], result: false});
+            should.deepEqual(common.validateArgs({id: id.toString(), idstr: id.toString()}, scheme, true), {errors: [], result: true, obj: {id: id, idstr: id}});
+        });
+
+        it('should validate ObjectID[]', () => {
+            let id1 = mongodb.ObjectID(),
+                id2 = mongodb.ObjectID(),
+                scheme = {
+                    ids: { type: 'ObjectID[]', required: true },
+                };
+
+            should.deepEqual(common.validateArgs({ids: []}, scheme), {ids: []});
+            should.deepEqual(common.validateArgs({ids: [id1, id2]}, scheme), {ids: [id1, id2]});
+            should.deepEqual(common.validateArgs({ids: [id1.toString(), id2]}, scheme, true), {errors: [], result: true, obj: {ids: [id1, id2]}});
+            should.deepEqual(common.validateArgs({}, scheme, true), {errors: ['Missing ids argument'], result: false});
+            should.deepEqual(common.validateArgs({ids: {}}, scheme, true), {errors: ['Invalid type for ids'], result: false});
+            should.deepEqual(common.validateArgs({ids: id1}, scheme, true), {errors: ['Invalid type for ids'], result: false});
+            should.deepEqual(common.validateArgs({ids: 123}, scheme, true), {errors: ['Invalid type for ids'], result: false});
+            should.deepEqual(common.validateArgs({ids: id1.toString()}, scheme, true), {errors: ['Invalid type for ids'], result: false});
+            should.deepEqual(common.validateArgs({ids: ['a']}, scheme, true), {errors: ['ids: Incorrect ObjectID for 0'], result: false});
+            should.deepEqual(common.validateArgs({ids: [id1, id2.toString(), 'a']}, scheme, true), {errors: ['ids: Incorrect ObjectID for 2'], result: false});
+        });
+
+        it('should validate inner scheme', () => {
+            let id = mongodb.ObjectID(),
+                scheme = {
+                    _id: { type: 'ObjectID', required: true },
+                    num: { type: 'Number' },
+                    object: {
+                        type: {
+                            str: { type: 'String', required: true },
+                            ids: { type: 'ObjectID[]' }
+                        }
+                    },
+                    array: {
+                        type: {
+                            str: { type: 'String', required: true },
+                            ids: { type: 'ObjectID[]' }
+                        },
+                        array: true
+                    },
+                };
+
+            should.deepEqual(common.validateArgs({_id: id}, scheme), {_id: id});
+            should.deepEqual(common.validateArgs({}, scheme, true), {errors: ['Missing _id argument'], result: false});
+            should.deepEqual(common.validateArgs({
+                _id: id,
+                object: {}
+            }, scheme, true), {
+                result: false,
+                errors: ['object: Missing str argument']
+            });
+            should.deepEqual(common.validateArgs({
+                _id: id,
+                object: {
+                    str: 'str',
+                    ids: [id, 'a']
+                }
+            }, scheme, true), {
+                result: false,
+                errors: ['object: ids: Incorrect ObjectID for 1']
+            });
+            should.deepEqual(common.validateArgs({
+                _id: id,
+                array: [{
+                    str: 'str',
+                    ids: [id, 'a']
+                }]
+            }, scheme, true), {
+                result: false,
+                errors: ['array: 0: ids: Incorrect ObjectID for 1']
+            });
+            should.deepEqual(common.validateArgs({
+                _id: id,
+                array: [[]]
+            }, scheme, true), {
+                result: false,
+                errors: ['array: 0: Missing str argument']
+            });
+            should.deepEqual(common.validateArgs({
+                _id: id,
+                array: [Number(5)]
+            }, scheme, true), {
+                result: false,
+                errors: ['array: Invalid type for 0', 'array: 0: Missing str argument']
+            });
+        });
+
+        it('should validate in', () => {
+            let schemeString = {
+                    data: { type: 'String', in: ['a', 'b', 'c'] },
+                },
+                schemeArray = {
+                    data: { type: 'String[]', in: () => ['a', 'b', 'c'] },
+                };
+
+            should.deepEqual(common.validateArgs({}, schemeString), {});
+            should.deepEqual(common.validateArgs({data: 'a'}, schemeString), {data: 'a'});
+            should.deepEqual(common.validateArgs({data: 'b'}, schemeString), {data: 'b'});
+            should.deepEqual(common.validateArgs({data: 'c'}, schemeString), {data: 'c'});
+            should.deepEqual(common.validateArgs({data: 'aa'}, schemeString), false);
+            should.deepEqual(common.validateArgs({data: 'd'}, schemeString), false);
+            should.deepEqual(common.validateArgs({data: ['a']}, schemeArray), {data: ['a']});
+            should.deepEqual(common.validateArgs({data: ['b']}, schemeArray), {data: ['b']});
+            should.deepEqual(common.validateArgs({data: ['c']}, schemeArray), {data: ['c']});
+            should.deepEqual(common.validateArgs({data: ['c', 'a']}, schemeArray), {data: ['c', 'a']});
+            should.deepEqual(common.validateArgs({data: ['c', 'a', 'a']}, schemeArray), {data: ['c', 'a', 'a']});
+            should.deepEqual(common.validateArgs({data: ['c', 'a', 'd']}, schemeArray), false);
+            should.deepEqual(common.validateArgs({data: ['aa']}, schemeArray), false);
+            should.deepEqual(common.validateArgs({data: ['d']}, schemeArray), false);
+            should.deepEqual(common.validateArgs({data: 'x'}, schemeString, true), {errors: ['Value of data is invalid'], result: false});
+            should.deepEqual(common.validateArgs({data: ['x']}, schemeArray, true), {errors: ['Value of data is invalid'], result: false});
+        });
+
+        it('should validate date', () => {
+            let scheme = {
+                    date: { type: 'Date' },
+                },
+                tsMs = Date.now(),
+                dateMs = new Date(tsMs),
+                strMs = dateMs.toISOString(),
+                tsSec = Math.floor(tsMs / 1000),
+                dateSec = new Date(tsSec * 1000),
+                strSec = dateSec.toISOString();
+
+            should.deepEqual(common.validateArgs({}, scheme), {});
+            should.deepEqual(common.validateArgs({date: null}, scheme), {date: null});
+            should.deepEqual(common.validateArgs({date: undefined}, scheme), {});
+            should.deepEqual(common.validateArgs({date: tsMs}, scheme), {date: dateMs});
+            should.deepEqual(common.validateArgs({date: dateMs}, scheme), {date: dateMs});
+            should.deepEqual(common.validateArgs({date: strMs}, scheme), {date: dateMs});
+            should.deepEqual(common.validateArgs({date: tsSec}, scheme), {date: dateSec});
+            should.deepEqual(common.validateArgs({date: dateSec}, scheme), {date: dateSec});
+            should.deepEqual(common.validateArgs({date: strSec}, scheme), {date: dateSec});
+        });
+
+        it('should validate JSON', () => {
+            let scheme = {
+                    json: { type: 'JSON' },
+                },
+                x = {a: true};
+
+            should.deepEqual(common.validateArgs({}, scheme), {});
+            should.deepEqual(common.validateArgs({json: null}, scheme), {json: null});
+            should.deepEqual(common.validateArgs({json: undefined}, scheme), {});
+            should.deepEqual(common.validateArgs({json: JSON.stringify({a: true})}, scheme), {json: {a: true}});
+            should.deepEqual(common.validateArgs({json: JSON.stringify([{a: true}])}, scheme), {json: [{a: true}]});
+            should.deepEqual(common.validateArgs({json: {a: true}}, scheme), {json: {a: true}});
+            should.deepEqual(common.validateArgs({json: [{a: true}]}, scheme), {json: [{a: true}]});
+        });
+
+        it('should validate custom', () => {
+            let scheme = {
+                custom: { type: 'String', custom: v => v === 'valid' ? undefined : 'value is invalid' },
+            };
+
+            should.deepEqual(common.validateArgs({}, scheme), {});
+            should.deepEqual(common.validateArgs({json: null}, scheme), {});
+            should.deepEqual(common.validateArgs({custom: 'invalid'}, scheme), false);
+            should.deepEqual(common.validateArgs({custom: 3}, scheme), false);
+            should.deepEqual(common.validateArgs({custom: 'valid'}, scheme), {custom: 'valid'});
+            should.deepEqual(common.validateArgs({custom: 'x'}, scheme, true), {errors: ['value is invalid'], result: false});
+        });
+
     });
 });

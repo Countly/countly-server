@@ -273,6 +273,11 @@ module.exports = function(name) {
     **/
     return {
         /**
+         * Get logger id
+         * @returns {string} logger id
+         */
+        id: () => name,
+        /**
         * Logging debug level messages
         * @memberof module:api/utils/log~Logger
         * @param {...*} var_args - string and values to format string with
@@ -347,6 +352,16 @@ module.exports = function(name) {
         sub: function(subname) {
             let self = this;
             return {
+                /**
+                 * Get logger id
+                 * @returns {string} logger id
+                 */
+                id: () => name + ':' + subname,
+                /**
+                * Logging information level messages
+                * @memberof module:api/utils/log~Logger
+                * @param {...*} var_args - string and values to format string with
+                **/
                 d: log('DEBUG', name + ':' + subname, getEnabledWithLevel(['debug'], name), this, console.log),
                 /**
                 * Logging information level messages
