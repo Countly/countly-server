@@ -612,7 +612,8 @@ const processRequest = (params) => {
                         taskmanager.deleteResult({
                             db: common.db,
                             id: params.qstring.task_id
-                        }, () => {
+                        }, (err, task) => {
+                            plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_delete", data: task});
                             common.returnMessage(params, 200, "Success");
                         });
                     });
@@ -641,14 +642,14 @@ const processRequest = (params) => {
                             db: common.db,
                             data: data,
                             id: params.qstring.task_id
-                        }, (err) => {
+                        }, (err, d) => {
                             if (err) {
                                 common.returnMessage(params, 503, "Error");
                             }
                             else {
                                 common.returnMessage(params, 200, "Success");
                             }
-
+                            plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_updated", data: d});
                         });
                     });
                     break;
