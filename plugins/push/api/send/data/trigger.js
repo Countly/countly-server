@@ -22,6 +22,10 @@ class Trigger extends Jsonable {
             return data;
         }
 
+        if (!data.kind || Object.values(TriggerKind).indexOf(data.kind) === -1) {
+            throw new PushError('Trigger must have a valid kind');
+        }
+
         this._data = data;
     }
 
@@ -30,8 +34,16 @@ class Trigger extends Jsonable {
      */
     static get scheme() {
         return {
+            kind: {type: 'String', in: Object.values(TriggerKind)},
             start: {type: 'Date', required: true}
         };
+    }
+
+    /**
+     * Class validation rules
+     */
+    get kind() {
+        return this._data.kind;
     }
 
     /**

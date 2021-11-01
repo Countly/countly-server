@@ -4,7 +4,7 @@ const { State, Status, STATUSES, Mongoable, DEFAULTS } = require('./const'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
-    { Results } = require('./results'),
+    { Result } = require('./result'),
     { Info } = require('./info');
 
 /**
@@ -23,7 +23,7 @@ class Message extends Mongoable {
      * @param {object|Filter}       data.filter     user selection filter
      * @param {object[]|Trigger[]}  data.triggers   triggers of this message
      * @param {object|Content[]}    data.contents   message contents array: {l: undefined, p: undefined} is required, any other overrides default one in the order they specified in the array
-     * @param {object|Results}      data.results    sending results
+     * @param {object|Result}       data.result     sending result
      * @param {object|Info}         data.info       info object
      */
     constructor(data) {
@@ -40,31 +40,29 @@ class Message extends Mongoable {
             _id: { required: false, type: 'ObjectID' },
             app: { required: true, type: 'ObjectID' },
             platforms: { required: true, type: 'String[]', in: () => require('../platforms').platforms },
-            state: { required: true, type: 'Number' },
-            status: { required: true, type: 'String', in: Object.values(Status) },
+            state: { type: 'Number' },
+            status: { type: 'String', in: Object.values(Status) },
             filter: {
                 type: Filter.scheme,
                 required: true,
             },
-            trigger: {
+            triggers: {
                 type: Trigger.scheme,
                 array: true,
                 required: true,
                 'min-length': 1
             },
-            content: {
+            contents: {
                 type: Content.scheme,
                 array: true,
                 required: true,
                 'min-length': 1,
             },
-            results: {
-                type: Results.scheme,
-                required: true,
+            result: {
+                type: Result.scheme,
             },
             info: {
                 type: Info.scheme,
-                required: true,
             }
         };
     }
@@ -79,8 +77,8 @@ class Message extends Mongoable {
         if (!(this._data.filter instanceof Filter)) {
             this._data.filter = new Filter(this._data.filter);
         }
-        if (!(this._data.results instanceof Results)) {
-            this._data.results = new Results(this._data.results);
+        if (!(this._data.result instanceof Result)) {
+            this._data.result = new Result(this._data.result);
         }
         if (!(this._data.info instanceof Info)) {
             this._data.info = new Info(this._data.info);
@@ -270,7 +268,7 @@ class Message extends Mongoable {
      * @returns {Trigger} trigger if such trigger exists
      */
     triggerFind(kind) {
-        return this.triggers.filter(t => typeof kind === 'function' ? kind(t.kind) : t.kind === kind)[0];
+        return this.triggers.filter(t => typeof kind === 'function' ? kind(t) : t.kind === kind)[0];
     }
 
     /**
@@ -366,25 +364,25 @@ class Message extends Mongoable {
     }
 
     /**
-     * Getter for results
+     * Getter for result
      * 
-     * @returns {Results} Results object
+     * @returns {Result} Result object
      */
-    get results() {
-        return this._data.results;
+    get result() {
+        return this._data.result;
     }
 
     /**
-     * Setter for results
+     * Setter for result
      * 
-     * @param {Results} results Results object
+     * @param {Result} result Result object
      */
-    set results(results) {
-        if (results instanceof Results) {
-            this._data.results = results;
+    set result(result) {
+        if (result instanceof Result) {
+            this._data.result = result;
         }
         else {
-            delete this._data.results;
+            delete this._data.result;
         }
     }
 
@@ -493,7 +491,7 @@ class Message extends Mongoable {
             filter: Filter.fromNote(note),
             triggers: Trigger.fromNote(note),
             contents: Content.fromNote(note),
-            results: Results.fromNote(note),
+            result: Result.fromNote(note),
             info: Info.fromNote(note)
         });
     }
@@ -513,7 +511,7 @@ class Message extends Mongoable {
             filter: new Filter(),
             triggers: [new PlainTrigger({start: new Date()})],
             contents: [new Content({message: 'test'})],
-            results: new Results(),
+            result: new Result(),
             info: new Info()
         });
     }
@@ -522,7 +520,7 @@ class Message extends Mongoable {
      * Create schedule job if needed
      */
     async schedule() {
-        let plain = this.triggers.filter(t => t.kind === TriggerKind.Plain)[0];
+        let plain = this.triggerPlain();
         if (plain) {
             await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id}).replace().once(plain.start.getTime() - DEFAULTS.schedule_ahead, true);
         }

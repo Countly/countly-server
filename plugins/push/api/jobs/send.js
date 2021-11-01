@@ -1,9 +1,5 @@
 const J = require('../../../../api/parts/jobs/job.js'),
-    { Creds } = require('../send/data/creds'),
-    Loader = require('../parts/store.js').Loader,
-    { Message, pools, TriggerKind, State, Status, PushError, ERROR, encode, FRAME } = require('../send'),
-    { PLATFORM, platforms } = require('../send/platforms'),
-    { Transform } = require('stream'),
+    { State, Status, PushError, ERROR } = require('../send'),
     { Batcher } = require('./util/batcher'),
     { Resultor } = require('./util/resultor'),
     { Connector } = require('./util/connector');
@@ -185,16 +181,16 @@ class Send extends J.Job {
             return Promise.all(Object.keys(bymid).map(mid => {
                 return this.msgs[mid].update({
                     $inc: {
-                        [`results.processed`]: bymid[mid],
-                        [`results.errors.${code}`]: bymid[mid],
+                        [`result.processed`]: bymid[mid],
+                        [`result.errors.${code}`]: bymid[mid],
                     }
                 }, () => {
-                    this.msgs[mid].results.processed = (this.msgs[mid].results.processed || 0) + bymid[mid];
-                    this.msgs[mid].results.errors[code] = (this.msgs[mid].results.errors[code] || 0) + bymid[mid];
+                    this.msgs[mid].result.processed = (this.msgs[mid].result.processed || 0) + bymid[mid];
+                    this.msgs[mid].result.errors[code] = (this.msgs[mid].result.errors[code] || 0) + bymid[mid];
                     return this.msgs[mid];
                 }).then(m => {
                     // in case all pushes within a message are filtered out, record non-recoverable error
-                    if (m.results.error[code] === m.results.processed && m.results.processed === m.results.total) {
+                    if (m.result.error[code] === m.result.processed && m.result.processed === m.result.total) {
                         return this.recordFatalMessageError(m, new PushError('No push credentials', ERROR.DATA_COUNTLY));
                     }
                 });

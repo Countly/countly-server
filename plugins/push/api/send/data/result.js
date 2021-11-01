@@ -4,9 +4,9 @@ const { PushError, ERROR } = require('./error'),
     { toDate, Jsonable } = require('./const');
 
 /**
- * Message sending results
+ * Message sending result
  */
-class Results extends Jsonable {
+class Result extends Jsonable {
     /**
      * 
      * @param {object}                  data                delivery data
@@ -292,11 +292,11 @@ class Results extends Jsonable {
     }
 
     /**
-     * Backwards-compatibility conversion of Note to Results
+     * Backwards-compatibility conversion of Note to Result
      * 
      * @deprecated
      * @param {object} note Note object
-     * @returns {Results} Results instance
+     * @returns {Result} Result instance
      */
     static fromNote(note) {
         let lastErrors = undefined,
@@ -313,7 +313,7 @@ class Results extends Jsonable {
             errors = note.result.errorCodes;
             break;
         }
-        return new Results({
+        return new Result({
             total: note.result.total || (note.build && note.build.total || 0),
             processed: note.result.processed,
             sent: note.result.sent,
@@ -327,5 +327,5 @@ class Results extends Jsonable {
 
 
 
-module.exports = { Results };
+module.exports = { Result };
 

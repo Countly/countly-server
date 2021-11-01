@@ -4,7 +4,7 @@ const { S, State, Status, STATUSES, TriggerKind } = require('./const'),
     { Creds } = require('./creds'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
-    { Results } = require('./results'),
+    { Result } = require('./result'),
     { Message } = require('./message'),
     { Template } = require('./template');
 
@@ -26,7 +26,7 @@ module.exports = {
 
     Filter,
     Content,
-    Results,
+    Result,
 
     Message,
 

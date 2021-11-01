@@ -50,7 +50,7 @@ module.exports.autoOnCohort = function(entry, cohort, uids) {
 
                 new Audience(logCohorts, msg).push().setUIDs(uids).run().then(result => {
                     if (result.count) {
-                        return msg.update({$inc: {'results.total': result.count}}).then(() => Audience.resetQueue(result.next));
+                        return msg.update({$inc: {'result.total': result.count}}).then(() => Audience.resetQueue(result.next));
                     }
                 }).then(() => {
                     logCohorts.d('done processing %s %s', typ, msg._id);
@@ -94,7 +94,7 @@ module.exports.autoOnCohort = function(entry, cohort, uids) {
 
     //     let result = await audience.pushUIDs(uids);
     //     if (result.count) {
-    //         await msg.update({$inc: {'results.total': result.count}});
+    //         await msg.update({$inc: {'result.total': result.count}});
     //         next = next ? Math.min(next, result.next) : result.next;
     //     }
     // }
@@ -118,7 +118,7 @@ module.exports.autoOnCohort = function(entry, cohort, uids) {
 
     //     let result = await audience.popUIDs(uids);
     //     if (result.count) {
-    //         await msg.update({$inc: {'results.total': -result.count}});
+    //         await msg.update({$inc: {'result.total': -result.count}});
     //     }
     // }
 

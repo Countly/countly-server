@@ -226,11 +226,11 @@ describe('PUSH WORKER', () => {
                 should.equal(sets.length, 5);
                 should.equal(users.length, total - 3 - 4 - 2); // connection error + expired + invalid
                 should.equal(dbdata.messageSaves.length, 2);
-                should.equal(dbdata.messageSaves[1].results.errors.t['Connection error'], 3);
-                should.equal(dbdata.messageSaves[1].results.errors.t['Token expired'], 4);
-                should.equal(dbdata.messageSaves[1].results.errors.t['Token invalid'], 2);
-                should.equal(dbdata.messageSaves[1].results.processed, total);
-                should.equal(dbdata.messageSaves[1].results.sent, total - 3 - 4 - 2);
+                should.equal(dbdata.messageSaves[1].result.errors.t['Connection error'], 3);
+                should.equal(dbdata.messageSaves[1].result.errors.t['Token expired'], 4);
+                should.equal(dbdata.messageSaves[1].result.errors.t['Token invalid'], 2);
+                should.equal(dbdata.messageSaves[1].result.processed, total);
+                should.equal(dbdata.messageSaves[1].result.sent, total - 3 - 4 - 2);
                 // connector.synAndDestroy();
                 // resultor.destroy();
                 // batcher.destroy();

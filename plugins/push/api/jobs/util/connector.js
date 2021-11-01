@@ -194,10 +194,10 @@ class Connector extends SynFlushTransform {
         mids.forEach(mid => {
             let q = {$inc: {}};
             if (creds[mid]) {
-                q.$inc['results.errors.nocreds'] = creds[mid];
+                q.$inc['result.errors.nocreds'] = creds[mid];
             }
             if (messages[mid]) {
-                q.$inc['results.errors.nomsg'] = messages[mid];
+                q.$inc['result.errors.nomsg'] = messages[mid];
             }
             promises.push(this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, q));
         });

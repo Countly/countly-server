@@ -14,13 +14,13 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
 
         log.d('push token: %s/%s/%s', p, f, token);
 
-        let push = pushCollection.findOne({_id: dbAppUser.uid}, {projection: {[field]: 1}});
+        let push = await pushCollection.findOne({_id: dbAppUser.uid}, {projection: {[field]: 1}});
         if (token && (!push || common.dot(push, pushField) !== token)) {
             let $set = {[appusersField]: true};
-            if (params.qstring.locale) {
-                $set[common.dbUserMap.locale] = params.qstring.locale;
-                dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
-            }
+            // if (params.qstring.locale) {
+            //     $set[common.dbUserMap.locale] = params.qstring.locale;
+            //     dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
+            // }
             appusersCollection.updateOne({_id: params.app_user_id}, {$set}, () => {}); // don't wait
             pushCollection.updateOne({_id: params.app_user.uid}, {$set: {[pushField]: token}}, {upsert: true}, () => {});
         }
@@ -29,10 +29,10 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
             pushCollection.updateOne({_id: params.app_user.uid}, {$unset: {[pushField]: 1}}, function() {});
         }
     }
-    else if (params.qstring.locale) {
-        common.db.collection(`app_users${params.app_id}`).updateOne({_id: params.app_user_id}, {$set: {[common.dbUserMap.locale]: params.qstring.locale}}, function() {});
-        dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
-    }
+    // else if (params.qstring.locale) {
+    //     common.db.collection(`app_users${params.app_id}`).updateOne({_id: params.app_user_id}, {$set: {[common.dbUserMap.locale]: params.qstring.locale}}, function() {});
+    //     dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
+    // }
 };
 
 module.exports.onSessionUser = ({params, dbAppUser}) => {

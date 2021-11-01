@@ -19,7 +19,7 @@ const key = 'i';
  * @param {object} qstring request params
  * @returns {string[]|undefined} array of [platform, field, token] if qstring has platform-specific token data, undefined otherwise
  */
-function extract(qstring) {
+function extractor(qstring) {
     if (qstring.ios_token !== undefined && qstring.test_mode in FIELDS) {
         return [key, FIELDS[qstring.test_mode], qstring.ios_token];
     }
@@ -779,7 +779,7 @@ class APN extends Base {
 module.exports = {
     key,
     title: 'iOS',
-    extract,
+    extractor,
     FIELDS,
     FIELDS_TITLES,
     FIELD_DEV,

@@ -100,8 +100,8 @@ class Resultor extends SynFlushTransform {
                     arr.forEach(id => {
                         let {p, m} = this.data.pushes[id],
                             msg = this.messages[m];
-                        msg.results.processed++;
-                        msg.results.response(p, results.message, 1);
+                        msg.result.processed++;
+                        msg.result.response(p, results.message, 1);
                         delete this.data.pushes[id];
                         this.toDelete.push(id);
                     });
@@ -125,8 +125,8 @@ class Resultor extends SynFlushTransform {
                     }
 
                     let m = this.messages[p.m];
-                    m.results.sent++;
-                    m.results.processed++;
+                    m.result.sent++;
+                    m.result.processed++;
 
                     this.toDelete.push(id);
                     delete this.data.pushes[id];
@@ -166,8 +166,8 @@ class Resultor extends SynFlushTransform {
 
             for (let mid in mids) {
                 let m = this.messages[mid];
-                m.results.processed[m]++;
-                m.results.pushError(error);
+                m.result.processed[m]++;
+                m.result.pushError(error);
             }
         }
 
@@ -361,8 +361,8 @@ class Resultor extends SynFlushTransform {
     //         if (this.processed[mid]) {
     //             promises.push(this.messages[mid].updateAtomically({
     //                 $inc: {
-    //                     'results.processed': this.processed[mid],
-    //                     'results.sent': this.sent[mid],
+    //                     'result.processed': this.processed[mid],
+    //                     'result.sent': this.sent[mid],
     //                 }
     //             }));
     //             this.processed[mid] = 0;
@@ -375,7 +375,7 @@ class Resultor extends SynFlushTransform {
     //         let inc = {};
     //         for (let p in this.errors[mid]) {
     //             for (let k in this.errors[mid][p]) {
-    //                 inc[`results.errors.${p}+${k.replace(/\./g, ' ')}`] = this.errors[mid][p][k];
+    //                 inc[`result.errors.${p}+${k.replace(/\./g, ' ')}`] = this.errors[mid][p][k];
     //             }
     //             this.errors[mid][p] = {};
     //         }
@@ -391,7 +391,7 @@ class Resultor extends SynFlushTransform {
     //     this.fatalErrors = {}; // {mid: []}
     //     for (let mid in this.fatalErrors) {
     //         this.fatalErrors[mid].forEach(e => {
-    //             this.messages[mid].results.pushError(e.messageError());
+    //             this.messages[mid].result.pushError(e.messageError());
     //         });
     //     }
 

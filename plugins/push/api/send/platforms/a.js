@@ -17,7 +17,7 @@ const key = 'a';
  * @param {object} qstring request params
  * @returns {string[]|undefined} array of [platform, field, token] if qstring has platform-specific token data, undefined otherwise
  */
-function extract(qstring) {
+function extractor(qstring) {
     if (qstring.android_token !== undefined && qstring.test_mode in FIELDS && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
         return [key, FIELDS[qstring.test_mode], qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token];
     }
@@ -430,7 +430,7 @@ const CREDS = {
 module.exports = {
     key: 'a',
     title: 'Android',
-    extract,
+    extractor,
     FIELDS,
     FIELDS_TITLES,
     CREDS,

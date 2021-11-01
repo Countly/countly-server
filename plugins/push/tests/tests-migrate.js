@@ -1,7 +1,7 @@
 const should = require('should'),
     data = require('./data'),
     { Template, PLATFORM, util, PushError } = require('../api/send'),
-    { Message, State, Status, Filter, Results, PlainTrigger, APITrigger } = require('../api/send/data'),
+    { Message, State, Status, Filter, Result, PlainTrigger, APITrigger } = require('../api/send/data'),
     { Note } = require('../api/parts/note');
 
 describe('PUSH MIGRATE', () => {
@@ -15,7 +15,7 @@ describe('PUSH MIGRATE', () => {
         msg.state.should.equal(State.Done);
         msg.status.should.equal(Status.Stopped);
         should.ok(msg.filter instanceof Filter);
-        should.ok(msg.results instanceof Results);
+        should.ok(msg.result instanceof Result);
         should.ok(Array.isArray(msg.triggers));
         should.ok(Array.isArray(msg.contents));
         msg.triggers.length.should.equal(1);
@@ -80,14 +80,14 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(en.button(1).titlePers);
         should.not.exist(en.specific());
 
-        should.not.exist(msg.results.error);
-        should.not.exist(msg.results.errors);
-        should.not.exist(msg.results.responses);
-        should.not.exist(msg.results.batches);
-        should.not.exist(msg.results.next);
-        should.equal(msg.results.total, 1);
-        should.equal(msg.results.processed, 0);
-        should.equal(msg.results.sent, 0);
+        should.not.exist(msg.result.error);
+        should.not.exist(msg.result.errors);
+        should.not.exist(msg.result.responses);
+        should.not.exist(msg.result.batches);
+        should.not.exist(msg.result.next);
+        should.equal(msg.result.total, 1);
+        should.equal(msg.result.processed, 0);
+        should.equal(msg.result.sent, 0);
     });
 
     it('handles sent data messages', () => {
@@ -100,7 +100,7 @@ describe('PUSH MIGRATE', () => {
         msg.state.should.equal(State.Done);
         msg.status.should.equal(Status.Sent);
         should.ok(msg.filter instanceof Filter);
-        should.ok(msg.results instanceof Results);
+        should.ok(msg.result instanceof Result);
         should.ok(Array.isArray(msg.triggers));
         should.ok(Array.isArray(msg.contents));
         msg.triggers.length.should.equal(1);
@@ -140,14 +140,14 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(def.button(1));
         should.not.exist(def.specific());
 
-        should.not.exist(msg.results.error);
-        should.not.exist(msg.results.errors);
-        should.not.exist(msg.results.responses);
-        should.not.exist(msg.results.batches);
-        should.not.exist(msg.results.next);
-        should.equal(msg.results.total, 1);
-        should.equal(msg.results.processed, 1);
-        should.equal(msg.results.sent, 1);
+        should.not.exist(msg.result.error);
+        should.not.exist(msg.result.errors);
+        should.not.exist(msg.result.responses);
+        should.not.exist(msg.result.batches);
+        should.not.exist(msg.result.next);
+        should.equal(msg.result.total, 1);
+        should.equal(msg.result.processed, 1);
+        should.equal(msg.result.sent, 1);
     });
 
     it('handles active tx messages', () => {
@@ -160,7 +160,7 @@ describe('PUSH MIGRATE', () => {
         msg.state.should.equal(State.Streamable);
         msg.status.should.equal(Status.Scheduled);
         should.ok(msg.filter instanceof Filter);
-        should.ok(msg.results instanceof Results);
+        should.ok(msg.result instanceof Result);
         should.ok(Array.isArray(msg.triggers));
         should.ok(Array.isArray(msg.contents));
         msg.triggers.length.should.equal(1);
@@ -200,15 +200,15 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(def.button(1));
         should.not.exist(def.specific());
 
-        should.not.exist(msg.results.error);
-        should.not.exist(msg.results.responses);
-        should.not.exist(msg.results.batches);
-        should.not.exist(msg.results.next);
-        should.equal(msg.results.total, 7);
-        should.equal(msg.results.processed, 7);
-        should.equal(msg.results.sent, 2);
-        should.deepEqual(msg.results.errors, {skiptz: 5});
-        should.equal(msg.results.errorsCount, 5);
+        should.not.exist(msg.result.error);
+        should.not.exist(msg.result.responses);
+        should.not.exist(msg.result.batches);
+        should.not.exist(msg.result.next);
+        should.equal(msg.result.total, 7);
+        should.equal(msg.result.processed, 7);
+        should.equal(msg.result.sent, 2);
+        should.deepEqual(msg.result.errors, {skiptz: 5});
+        should.equal(msg.result.errorsCount, 5);
     });
 
     it('handles errors', () => {
@@ -221,7 +221,7 @@ describe('PUSH MIGRATE', () => {
         msg.state.should.equal(State.Done | State.Error);
         msg.status.should.equal(Status.Failed);
         should.ok(msg.filter instanceof Filter);
-        should.ok(msg.results instanceof Results);
+        should.ok(msg.result instanceof Result);
         should.ok(Array.isArray(msg.triggers));
         should.ok(Array.isArray(msg.contents));
         msg.triggers.length.should.equal(1);
@@ -261,17 +261,17 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(def.button(1));
         should.not.exist(def.specific());
 
-        should.ok(msg.results.error);
-        should.ok(msg.results.error instanceof PushError);
-        should.equal(msg.results.error.message, 'ECONNREFUSED');
-        should.equal(msg.results.error.date.getTime(), note.date.getTime());
-        should.not.exist(msg.results.responses);
-        should.not.exist(msg.results.batches);
-        should.not.exist(msg.results.next);
-        should.equal(msg.results.total, 1);
-        should.equal(msg.results.processed, 0);
-        should.equal(msg.results.sent, 0);
-        should.deepEqual(msg.results.errors, {aborted: 1});
-        should.equal(msg.results.errorsCount, 1);
+        should.ok(msg.result.error);
+        should.ok(msg.result.error instanceof PushError);
+        should.equal(msg.result.error.message, 'ECONNREFUSED');
+        should.equal(msg.result.error.date.getTime(), note.date.getTime());
+        should.not.exist(msg.result.responses);
+        should.not.exist(msg.result.batches);
+        should.not.exist(msg.result.next);
+        should.equal(msg.result.total, 1);
+        should.equal(msg.result.processed, 0);
+        should.equal(msg.result.sent, 0);
+        should.deepEqual(msg.result.errors, {aborted: 1});
+        should.equal(msg.result.errorsCount, 1);
     });
 });

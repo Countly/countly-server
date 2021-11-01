@@ -4,6 +4,7 @@ const { ConnectionError, ERROR, SendError, PushError } = require('../data/error'
     { Creds } = require('../data/creds'),
     { threadId } = require('worker_threads');
 
+const key = 't';
 
 /**
  * Connection implementation for FCM
@@ -435,9 +436,22 @@ const FIELD_DEV = 'd';
  * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
  */
 const FIELDS_TITLES = {
-    '0': 'FCM Production Token', // prod
-    '2': 'FCM Test Token', // test
+    '0': 'TEST Production Token', // prod
+    '1': 'TEST Deveplopment Token', // dev
+    '2': 'TEST Test Token', // test
 };
+
+/**
+ * Extract token & field from token_session request
+ * 
+ * @param {object} qstring request params
+ * @returns {string[]|undefined} array of [platform, field, token] if qstring has platform-specific token data, undefined otherwise
+ */
+function extractor(qstring) {
+    if (qstring.test_token !== undefined && qstring.test_mode in FIELDS) {
+        return [key, FIELDS[qstring.test_mode], qstring.test_token];
+    }
+}
 
 /**
  * Credential types for FCM
@@ -460,8 +474,9 @@ const CREDS = {
 };
 
 module.exports = {
-    key: 't',
+    key,
     title: 'Test',
+    extractor,
     FIELDS,
     FIELDS_TITLES,
     FIELD_DEV,

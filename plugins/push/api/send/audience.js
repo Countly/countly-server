@@ -5,15 +5,39 @@ const common = require('../../../../api/utils/common'),
 
     /**
      * Get Drill plugin api
+     * 
+     * @returns {object} drill api 
      */
     drill = () => {
-        require('../../../pluginManager').getPluginsApis().drill;
+        if (typeof global.it === 'function') {
+            try {
+                return require('../../../drill/api');
+            }
+            catch (e) {
+                return undefined;
+            }
+        }
+        else {
+            return require('../../../pluginManager').getPluginsApis().drill;
+        }
     },
     /**
      * Get Geolocations plugin api
+     * 
+     * @returns {object} geo api 
      */
     geo = () => {
-        require('../../../pluginManager').getPluginsApis().geo;
+        if (typeof global.it === 'function') {
+            try {
+                return require('../../../geo/api');
+            }
+            catch (e) {
+                return undefined;
+            }
+        }
+        else {
+            return require('../../../pluginManager').getPluginsApis().geo;
+        }
     };
 
 /**
@@ -25,7 +49,7 @@ class Audience {
      * 
      * @param {logger} log parent logger
      * @param {Message} message message instance
-     * @param {Object} app app object
+     * @param {Object|undefined} app app object
      */
     constructor(log, message, app = undefined) {
         this.log = log.sub('audience');
@@ -66,73 +90,54 @@ class Audience {
         return new Popper(this);
     }
 
+    // /**
+    //  * Find users defined by message filter and put corresponding records into queue
+    //  * 
+    //  * @param {Message} message message to schedule
+    //  */
+    // static schedule(message) {
+    //     for (let pi = 0; pi < message.platforms.length; pi++) {
+    //         let p = message.platforms[pi];
+    //     }
+    // }
+
     /**
-     * Find users defined by message filter and put corresponding records into queue
+     * Construct an aggregation query for app_users collection from message Filter
      * 
-     * @param {Message} message message to schedule
+     * @param {object} project app_users projection
+     * @returns {object[]} array of aggregation pipeline steps
      */
-    static schedule(message) {
-        for (let pi = 0; pi < message.platforms.length; pi++) {
-            let p = message.platforms[pi];
+    async steps(project = {uid: 1}) {
+        let flds = fields(this.message.platforms, true).map(f => ({[f]: true})),
+            steps = [];
+
+        // We have a token
+        steps.push({$match: {$or: flds}});
+
+        // Geos
+        if (this.message.filter.geos.length && geo()) {
+            let geos = await common.db.collection('geos').find({_id: {$in: this.message.filter.geos}}).toArray();
+            steps.push({$match: {$or: geos.map(g => geo().conds(g))}});
         }
-    }
 
-    /**
-     * Find users defined by message filter and return total number by platform and locale distribution
-     * 
-     * @param {Message} message message object
-     */
-    static audience(message) {
+        // Cohorts
+        if (this.message.filter.cohorts.length) {
+            let chr = {};
+            this.message.filter.cohorts.forEach(id => {
+                chr[`chr.${id}.in`] = 'true';
+            });
+            steps.push({$match: chr});
+        }
 
-    }
-
-    /**
-     * Construct a query for app_users collection from message Filter
-     * 
-     * @param {Message} message message object
-     * @param {array} uids - array of user ids
-     * @param {Boolean} remove - whether build a query for "pop" case
-     * @returns {Object} query for app_users
-     */
-    static async query(message, uids, remove) {
-        let flds = fields(message.platforms, true).map(f => ({[f]: true})),
-            query;
-
-        if (message.filter.user) {
-            query = message.filter.user;
+        // User query
+        if (this.message.filter.user) {
+            let query = this.message.filter.user;
 
             if (query.message) {
-                let filtered = await Audience.filterMessage(query.message);
+                let filtered = await this.filterMessage(query.message);
                 delete query.message;
 
-                if (uids) {
-                    uids = uids.filter(uid => filtered.indexOf(uid) !== -1);
-                }
-                else {
-                    uids = filtered;
-                }
-            }
-
-            if (query.push) {
-                delete query.push;
-            }
-
-            if (query.$and) {
-                if (uids) {
-                    query.$and.push({uid: {$in: uids}});
-                }
-                if (!remove) {
-                    query.$and.push({$or: flds});
-                }
-            }
-            else {
-                if (uids) {
-                    query.uid = {$in: uids};
-                }
-                if (!remove) {
-                    query.$or = flds;
-                    // query[field(p, f, true)] = true;
-                }
+                steps.push({$match: {uid: {$in: filtered}}});
             }
 
             if (query.geo) {
@@ -140,17 +145,7 @@ class Audience {
                     drill().preprocessQuery(query);
                     let geos = await geo().query(this.app._id, query.geo);
                     if (geos && geos.length) {
-                        if (query.$and) {
-                            query.$and.push({$or: geos.map(g => geo().conds(g))});
-                        }
-                        else if (query.$or) {
-                            query.$and = [{$or: query.$or}, geo().conds(geos[0])];
-                        }
-                        else {
-                            query.$or = [geo().conds(geos[0])];
-                        }
-
-                        query.$or = geos.map(g => geo().conds(g));
+                        steps.push({$match: {$or: geos.map(g => geo().conds(g))}});
                     }
                     else {
                         query.invalidgeo = true;
@@ -158,89 +153,75 @@ class Audience {
                 }
                 delete query.geo;
             }
+
+            if (Object.keys(query).length) {
+                steps.push({$match: query});
+            }
         }
-        else {
-            if (remove) {
-                query = {};
+
+        // Drill query
+        if (this.message.filter.drill && drill()) {
+            let query = this.message.filter.drill;
+
+            if (query.queryObject && query.queryObject.chr && Object.keys(query.queryObject).length === 1) {
+                let cohorts = {}, chr = query.queryObject.chr, i;
+
+                if (chr.$in && chr.$in.length) {
+                    for (i = 0; i < chr.$in.length; i++) {
+                        cohorts['chr.' + chr.$in[i] + '.in'] = 'true';
+                    }
+                }
+                if (chr.$nin && chr.$nin.length) {
+                    for (i = 0; i < chr.$nin.length; i++) {
+                        cohorts['chr.' + chr.$nin[i] + '.in'] = {$exists: false};
+                    }
+                }
+
+                steps.push({$match: cohorts});
             }
             else {
-                query = {$or: flds};
-            }
-            if (uids) {
-                query.uid = {$in: uids};
-            }
-        }
+                // drill().drill.openDrillDb();
 
-        if (message.filter.geos && message.filter.geos.length) {
-            await new Promise((res, rej) => {
-                this.db.collection('geos').find({_id: {$in: message.filter.geos}}).toArray((err, geos) => {
+                var params = {
+                    time: common.initTimeObj(this.app.timezone, Date.now()),
+                    qstring: Object.assign({app_id: this.app._id.toString()}, query)
+                };
+                delete params.qstring.queryObject.chr;
+
+                this.log.d('Drilling: %j', params);
+                let arr = await new Promise((resolve, reject) => drill().drill.fetchUsers(params, (err, uids) => {
+                    this.log.i('Done drilling: %j ' + (err ? 'error %j' : '%d uids'), err || (uids && uids.length) || 0);
                     if (err) {
-                        return rej(err);
-                    }
-
-                    if (geos.length) {
-                        let or = geos.map(g => {
-                            return {'loc.geo': {$geoWithin: {$centerSphere: [g.geo.coordinates, g.radius / 6371]}}};
-                        });
-
-                        if (query.$and) {
-                            query.$and.push({$or: or});
-                        }
-                        else {
-                            query.$or = or;
-                        }
+                        reject(err);
                     }
                     else {
-                        query.invalidgeo = true;
+                        resolve(uids || []);
                     }
+                }, common.db));
 
-                    res();
-                });
-            });
-        }
-
-        if (message.filter.cohorts.length) {
-            let chr = {};
-            message.filter.cohorts.forEach(id => {
-                chr[`chr.${id}.in`] = 'true';
-            });
-
-            if (query.$and) {
-                query.$and.push(chr);
-            }
-            else {
-                for (let k in chr) {
-                    query[k] = chr[k];
-                }
+                steps.push({$match: {uid: {$in: arr}}});
             }
         }
 
-        if (message.filter.drill && message.filter.drill.queryObject && message.filter.drill.queryObject.chr) {
-            let cohorts = {}, chr = message.filter.drill.queryObject.chr, i;
+        steps.push({$project: project});
 
-            if (chr.$in && chr.$in.length) {
-                for (i = 0; i < chr.$in.length; i++) {
-                    cohorts['chr.' + chr.$in[i] + '.in'] = 'true';
-                }
-            }
-            if (chr.$nin && chr.$nin.length) {
-                for (i = 0; i < chr.$nin.length; i++) {
-                    cohorts['chr.' + chr.$nin[i] + '.in'] = {$exists: false};
-                }
-            }
+        this.log.d('steps: %j', steps);
+        // TODO: add steps optimisation (i.e. merge uid: $in)
 
-            if (query.$and) {
-                query.$and.push(cohorts);
-            }
-            else {
-                for (let k in cohorts) {
-                    query[k] = cohorts[k];
-                }
-            }
-        }
-
-        return query;
+        return steps;
     }
+
+    /**
+     * Construct an aggregation query for app_users collection from message Filter
+     * 
+     * @param {object} project app_users projection
+     * @returns {object[]} array of app_users documents
+     */
+    async aggregate(project = {uid: 1}) {
+        let steps = await this.query(project);
+        return await common.db.collection(`app_users${this.app._id}`).aggregate(steps).toArray();
+    }
+
 
     /**
      * Get uids by message $in
@@ -248,7 +229,7 @@ class Audience {
      * @param  {Object} min filter condition: [oid], {$in: [oid]}, {$nin: [oid]}
      * @return {Promise}    resoves to array of uids
      */
-    static async filterMessage(min) {
+    async filterMessage(min) {
         let query = (min.$in || min.$nin) ? min : {$in: min};
         if (min.$in) {
             min.$in = min.$in.map(this.db.ObjectID);
@@ -352,7 +333,7 @@ class Popper extends PusherPopper {
      */
     async clear() {
         let deleted = await Promise.all(this.message.platforms.map(async p => {
-            let res = await common.db.collection('push').deleteMany({m: this.message._id});
+            let res = await common.db.collection('push').deleteMany({m: this.message._id, p});
             return res.deletedCount;
         }));
         let update;
@@ -360,14 +341,14 @@ class Popper extends PusherPopper {
             if (!update) {
                 update = {$inc: {}};
             }
-            update.$inc['results.processed'] = (update.$inc['results.processed'] || 0) + deleted[p];
-            update.$inc[`results.errors.${p}.cancelled`] = (update.$inc[`results.errors.${p}.cancelled`] || 0) + deleted[p];
+            update.$inc['result.processed'] = (update.$inc['result.processed'] || 0) + deleted[p];
+            update.$inc[`result.errors.${p}.cancelled`] = (update.$inc[`result.errors.${p}.cancelled`] || 0) + deleted[p];
         }
         if (update) {
             await this.message.update(update, () => {
                 for (let p in deleted) {
-                    this.message.results.processed += deleted[p];
-                    this.message.results.response(p, 'cancelled', deleted[p]);
+                    this.message.result.processed += deleted[p];
+                    this.message.result.response(p, 'cancelled', deleted[p]);
                 }
             });
         }
@@ -384,8 +365,8 @@ class Popper extends PusherPopper {
         let deleted = await this.clear();
         await this.message.update({
             $set: {
-                'results.state': State.Done | State.Error,
-                'results.error': new PushError(msg).serialize()
+                state: State.Done | State.Error,
+                'result.error': new PushError(msg).serialize()
             }
         });
         return deleted;
