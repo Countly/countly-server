@@ -29,7 +29,8 @@ var Drawer = countlyVue.views.create({
                 params: { _csrf: countlyGlobal.csrf_token, identifier: '' }
             },
             logoFile: "",
-            stamp: 0
+            stamp: 0,
+            cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
         };
     },
     methods: {
@@ -55,17 +56,18 @@ var Drawer = countlyVue.views.create({
                 submitted.logo = this.logoFile;
             }
 
-            var finalizedTargeting = null;
+            if (this.cohortsEnabled) {
+                var finalizedTargeting = null;
+                var exported = this.$refs.ratingsSegmentation.export();
+                if (!((exported.behaviorSegmentation.length === 0) && (Object.keys(exported.propertySegmentation.query).length === 0))) {
+                    finalizedTargeting = Object.assign({}, {
+                        user_segmentation: JSON.stringify(exported.propertySegmentation),
+                        steps: JSON.stringify(exported.behaviorSegmentation)
+                    });
+                }
 
-            var exported = this.$refs.ratingsSegmentation.export();
-            if (!((exported.behaviorSegmentation.length === 0) && (Object.keys(exported.propertySegmentation.query).length === 0))) {
-                finalizedTargeting = Object.assign({}, {
-                    user_segmentation: JSON.stringify(exported.propertySegmentation),
-                    steps: JSON.stringify(exported.behaviorSegmentation)
-                });
+                submitted.targeting = finalizedTargeting;
             }
-
-            submitted.targeting = finalizedTargeting;
 
             if (this.settings.isEditMode) {
                 starRatingPlugin.editFeedbackWidget(submitted, function() {
@@ -118,6 +120,11 @@ var WidgetsTable = countlyVue.views.create({
             default: []
         }
     },
+    data: function() {
+        return {
+            cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
+        };
+    },
     computed: {
         widgets: function() {
             for (var i = 0; i < this.rows.length; i++) {
@@ -126,7 +133,9 @@ var WidgetsTable = countlyVue.views.create({
                     ratingScore = (this.rows[i].ratingsSum / this.rows[i].ratingsCount).toFixed(1);
                 }
                 this.rows[i].ratingScore = ratingScore;
-                this.rows[i] = this.parseTargeting(this.rows[i]);
+                if (this.cohortsEnabled) {
+                    this.rows[i] = this.parseTargeting(this.rows[i]);
+                }
             }
             return this.rows;
         }
@@ -513,6 +522,7 @@ var WidgetDetail = countlyVue.views.create({
     ],
     data: function() {
         return {
+            cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
             activeFilter: {
                 platform: "",
                 version: "",
@@ -647,8 +657,9 @@ var WidgetDetail = countlyVue.views.create({
             });
         },
         editWidget: function() {
-            this.widget.targeting.user_segmentation = JSON.parse(this.widget.targeting.user_segmentation);
-            this.widget.targeting.steps = JSON.parse(this.widget.targeting.steps);
+            if (this.cohortsEnabled && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
+                this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
+            }
             this.openDrawer('widget', this.widget);
         },
         handleCommand: function(command) {
@@ -694,7 +705,9 @@ var WidgetDetail = countlyVue.views.create({
             starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
                 self.widget = widget;
                 self.widget.created_at = countlyCommon.formatTimeAgo(self.widget.created_at);
-                self.widget = self.parseTargeting(widget);
+                if (self.cohortsEnabled) {
+                    self.widget = self.parseTargeting(widget);
+                }
             });
             // set widget filter as current one
             this.activeFilter.widget = this.widget._id;
@@ -720,8 +733,12 @@ var WidgetDetail = countlyVue.views.create({
             }
         },
         parseTargeting: function(widget) {
-            widget.targeting.steps = JSON.parse(widget.targeting.steps);
-            widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            if (typeof widget.targeting.steps === "string") {
+                widget.targeting.steps = JSON.parse(widget.targeting.steps);
+            }
+            if (typeof widget.targeting.user_segmentation === "string") {
+                widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
+            }
             return widget;
         }
     },
