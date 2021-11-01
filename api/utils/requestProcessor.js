@@ -613,7 +613,7 @@ const processRequest = (params) => {
                             db: common.db,
                             id: params.qstring.task_id
                         }, (err, task) => {
-                            plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_delete", data: task});
+                            plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_deleted", data: task});
                             common.returnMessage(params, 200, "Success");
                         });
                     });
