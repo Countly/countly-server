@@ -387,11 +387,19 @@ function wrapCallback(params, callback, callbackParam, func) {
     if (callback) {
         promise.asCallback(function(err) {
             if (!err) {
+                let ret;
                 if (callbackParam) {
-                    callback(callbackParam, params);
+                    ret = callback(callbackParam, params);
                 }
                 else {
-                    callback(params);
+                    ret = callback(params);
+                }
+
+                if (ret && typeof ret.then === 'function') {
+                    ret.catch(e => {
+                        log.e('Error in CRUD callback', e);
+                        common.returnMessage(params, 500, 'Server error');
+                    });
                 }
             }
         });
