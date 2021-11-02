@@ -186,12 +186,12 @@ describe("Common API utility functions", function() {
                 x = {a: true};
 
             should.deepEqual(common.validateArgs({}, scheme), {});
-            should.deepEqual(common.validateArgs({json: null}, scheme), {json: null});
+            should.deepEqual(common.validateArgs({json: null}, scheme), {json: 'null'});
             should.deepEqual(common.validateArgs({json: undefined}, scheme), {});
-            should.deepEqual(common.validateArgs({json: JSON.stringify({a: true})}, scheme), {json: {a: true}});
-            should.deepEqual(common.validateArgs({json: JSON.stringify([{a: true}])}, scheme), {json: [{a: true}]});
-            should.deepEqual(common.validateArgs({json: {a: true}}, scheme), {json: {a: true}});
-            should.deepEqual(common.validateArgs({json: [{a: true}]}, scheme), {json: [{a: true}]});
+            should.deepEqual(common.validateArgs({json: JSON.stringify({a: true})}, scheme), {json: '{"a":true}'});
+            should.deepEqual(common.validateArgs({json: JSON.stringify([{a: true}])}, scheme), {json: '[{"a":true}]'});
+            should.deepEqual(common.validateArgs({json: {a: true}}, scheme), {json: '{"a":true}'});
+            should.deepEqual(common.validateArgs({json: [{a: true}]}, scheme), {json: '[{"a":true}]'});
         });
 
         it('should validate custom', () => {
