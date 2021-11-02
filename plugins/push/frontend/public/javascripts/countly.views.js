@@ -870,12 +870,11 @@
                 return this.$store.state.countlyPushNotification.main.rows;
             },
             pushNotificationOptions: function() {
-                var series = this.yAxisPushNotificationSeries;
                 return {
                     xAxis: {
                         data: this.xAxisPushNotificationPeriods
                     },
-                    series: series
+                    series: this.yAxisPushNotificationSeries
                 };
             },
             totalAppUsers: function() {
@@ -894,6 +893,24 @@
                         name: pushNotificationSerie.label
                     };
                 });
+            },
+            legend: function() {
+                return {
+                    show: true,
+                    type: "primary",
+                    data: [
+                        {
+                            name: CV.i18n('push-notification.sent-serie-name'),
+                            value: this.$store.state.countlyPushNotification.main.totalSent[this.selectedPushNotificationType],
+                            tooltip: CV.i18n('push-notification.sent-serie-description')
+                        },
+                        {
+                            name: CV.i18n('push-notification.actions-performed-serie-name'),
+                            value: this.$store.state.countlyPushNotification.main.totalActions[this.selectedPushNotificationType],
+                            tooltip: CV.i18n('push-notification.actions-performed-serie-description')
+                        }
+                    ]
+                };
             },
             selectedStatusFilter: {
                 get: function() {
