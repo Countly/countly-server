@@ -1,10 +1,7 @@
 const should = require('should'),
     data = require('./data'),
     {FRAME, encode, decode} = require('../api/send/proto'),
-    Worker = require('../api/send/worker'),
     log = require('../../../api/utils/log')('push'),
-    {Pool, Message} = require('../api/send'),
-    {ERROR, SendError, ConnectionError} = require('../api/send/data/error'),
     { ObjectID } = require('mongodb'),
     { Readable } = require('stream'),
     { State } = require('../api/jobs/util/state'),
@@ -163,11 +160,11 @@ describe('PUSH WORKER', () => {
                         19999: true
                     },
                 },
-                push_bulk_writes = total +
-                    (-3) + // connection error
-                    3 + // token invalid: unset
-                    3 + // token expired: unset
-                    4, // token changed: set
+                // push_bulk_writes = total +
+                //     (-3) + // connection error
+                //     3 + // token invalid: unset
+                //     3 + // token expired: unset
+                //     4, // token changed: set
                 db = db_fixture(dbdata, total),
                 state = new State(),
                 pushes = db.collection('push').find({d: {$lte: this.last}}).sort({d: 1}).stream(),

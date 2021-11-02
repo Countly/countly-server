@@ -1,11 +1,8 @@
-const common = require('../../../api/utils/common'),
-    testUtils = require('../../../test/testUtils'),
+const testUtils = require('../../../test/testUtils'),
     { PLATFORMS_TITLES, FIELDS_TITLES, platforms } = require('../api/send'),
     // supertest = require('supertest').agent(testUtils.url),
     supertest = require('supertest').agent('http://localhost:3001'),
-    moment = require('moment-timezone'),
-    should = require('should'),
-    log = common.log('push:test');
+    should = require('should');
 
 // let aid,
 //     app_key,
@@ -19,21 +16,6 @@ let aid = '617e6cf3cd001aac73834e18',
         did2: {device_id: 'did2', tokens: [{android_token: 'token0', test_mode: 2}], locale: 'en_US', events: [{key: 'cart'}, {key: 'buy'}]},
         did3: {device_id: 'did3', tokens: [{ios_token: 'token0', test_mode: 2}, {android_token: 'token0', test_mode: 0}], locale: 'ru_RU', events: [{key: 'subscribe'}]},
     };
-
-async function test_data(plfs) {
-    let app,
-        uids = [];
-    // Create app
-
-    // Upload platform credentials
-
-    // Create users
-
-    return {
-        app,
-        uids
-    };
-}
 
 describe('PUSH INTEGRATION TESTS', () => {
     it('should reset the app', async() => {

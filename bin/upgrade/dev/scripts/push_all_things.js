@@ -62,21 +62,21 @@ plugins.dbConnection().then(async db => {
                 }
                 else {
                     let creds = Creds.fromCredentials(c),
-                        app = apps.filter(a => (a.plugins.push.i && a.plugins.push.i && a.plugins.push.i._id.toString() === c._id.toString()) ||
-                            (a.plugins.push.a && a.plugins.push.a && a.plugins.push.a._id.toString() === c._id.toString()) || 
-                            (a.plugins.push.h && a.plugins.push.h && a.plugins.push.h._id.toString() === c._id.toString()))[0];
+                        app = apps.filter(a => (a.plugins.push.i && a.plugins.push.i._id && a.plugins.push.i._id.toString() === c._id.toString()) ||
+                            (a.plugins.push.a && a.plugins.push.a._id && a.plugins.push.a._id.toString() === c._id.toString()) || 
+                            (a.plugins.push.h && a.plugins.push.h._id && a.plugins.push.h._id.toString() === c._id.toString()))[0];
 
                     if (!app) {
                         return console.error('Illegal state: app not found for credentials %s', cid);
                     }
 
-                    if (app.plugins.push.i && app.plugins.push.i && app.plugins.push.i._id.toString() === c._id.toString()) {
+                    if (app.plugins.push.i && app.plugins.push.i._id && app.plugins.push.i._id.toString() === c._id.toString()) {
                         await db.collection('apps').updateOne({_id: app._id}, {$set: {'app.plugins.push.i': creds.view}});
                     }
-                    else if (app.plugins.push.a && app.plugins.push.a && app.plugins.push.a._id.toString() === c._id.toString()) {
+                    else if (app.plugins.push.a && app.plugins.push.a._id && app.plugins.push.a._id.toString() === c._id.toString()) {
                         await db.collection('apps').updateOne({_id: app._id}, {$set: {'app.plugins.push.a': creds.view}});
                     }
-                    else if (app.plugins.push.h && app.plugins.push.h && app.plugins.push.h._id.toString() === c._id.toString()) {
+                    else if (app.plugins.push.h && app.plugins.push.h._id && app.plugins.push.h._id.toString() === c._id.toString()) {
                         await db.collection('apps').updateOne({_id: app._id}, {$set: {'app.plugins.push.h': creds.view}});
                     }
                     else {

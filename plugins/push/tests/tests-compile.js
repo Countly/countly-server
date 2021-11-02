@@ -1,7 +1,6 @@
 const should = require('should'),
     data = require('./data'),
-    { Message, Template, PLATFORM, util } = require('../api/send'),
-    { Note } = require('../api/parts/note');
+    { Message, Template, PLATFORM } = require('../api/send');
 
 describe('PUSH COMPILE', () => {
     it('compiles APN templates', () => {

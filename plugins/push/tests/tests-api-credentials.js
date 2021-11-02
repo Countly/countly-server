@@ -1,6 +1,5 @@
 const should = require('should'),
     data = require('./data'),
-    log = require('../../../api/utils/log')('push'),
     { ValidationError } = require('../api/send'),
     { onAppPluginsUpdate } = require('../api/api-push'),
     { ObjectID } = require('mongodb'),
@@ -65,8 +64,7 @@ describe('API credentials', () => {
     it('FCM creds upload works', async() => {
 
         let dbdata = {},
-            db = db_fixture(dbdata),
-            flush;
+            db = db_fixture(dbdata);
 
         require('../../../api/utils/common').db = db;
 
@@ -190,7 +188,6 @@ describe('API credentials', () => {
 
         let dbdata = {},
             db = db_fixture(dbdata),
-            flush,
             cert = 'data:application/x-pkcs12;base64,' + FORGE.util.encode64(FS.readFileSync(__dirname + '/Cert.p12', {encoding: 'binary'})),
             certWithPassphrase = 'data:application/x-pkcs12;base64,' + FORGE.util.encode64(FS.readFileSync(__dirname + '/CertWithPassphrase.p12', {encoding: 'binary'})),
             certDev = 'data:application/x-pkcs12;base64,' + FORGE.util.encode64(FS.readFileSync(__dirname + '/CertDev.p12', {encoding: 'binary'})),
