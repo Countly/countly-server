@@ -32,12 +32,13 @@
                 <div class="bu-level">
                     <div class="bu-level-left">
                         <div v-if="db" class="dbviewer-tab__content">
-                            <div class="bu-has-text-weight-normal bu-is-size-5">{{ collections[db].map[collection] }}</div>
+                            <div class="bu-has-text-weight-normal bu-is-size-5">
+                                <span v-if="index">{{ i18n('dbviewer.indexes-of') }} </span>{{ collections[db].map[collection] }}
+                            </div>
                         </div>
                     </div>
                     <div class="bu-level-right">
                         <el-button @click="showFilterPopup()" icon="fas fa-filter"> Filter</el-button>
-                        <el-button class="bu-ml-2" icon="fas fa-download"></el-button>
                         <cly-more-options class="bu-ml-2" @command="dbviewerActions($event)">
                             <el-dropdown-item command="aggregation">{{ i18n('dbviewer.aggregate') }}</el-dropdown-item>
                             <el-dropdown-item command="indexes">{{ i18n('dbviewer.indexes') }}</el-dropdown-item>
@@ -45,15 +46,12 @@
                     </div>
                 </div>
                 <cly-section class="dbviewer-tab__result-table bu-mt-3">
-                    <cly-datatable-n 
-                        :rows="collectionData"
-                        :show-header="false"
-                        :hide-top="true"
-                    >
+                    <cly-datatable-n :rows="collectionData">
                         <template v-slot="scope">
                             <el-table-column fixed>
                                 <template v-slot="rowScope">
-                                    _id: {{ rowScope.row._id }}
+                                    <span v-if="!index">_id: {{ rowScope.row._id }}</span>
+                                    <span v-if="index">{{ rowScope.row.name }}</span>
                                 </template>
                             </el-table-column>
                             <el-table-column fixed type="expand">
@@ -73,7 +71,7 @@
             <template v-slot="formDialogScope">
                 <div class="dbviewer-tab__popup-content">
                     <div class="dbviewer-tab__filter-textarea">
-                        <label class="text-small">Filter Query</label>
+                        <label class="text-small">{{ i18n('dbviewer.filter-query') }}</label>
                         <el-input
                             type="textarea"
                             v-model="formDialogScope.editedObject.filter"
@@ -85,24 +83,24 @@
                         <el-checkbox 
                             class="bu-mt-2"
                             v-model="formDialogScope.editedObject.projectionEnabled">
-                                <span class="bu-has-text-weight-normal">Select fields to return</span>
+                                <span class="bu-has-text-weight-normal">{{ i18n('dbviewer.select-fields-to-return') }}</span>
                         </el-checkbox>
                         <div>
                             <label
                                 for="dbviewer-tab__projection-selector"
                                 v-if="formDialogScope.editedObject.projectionEnabled"
                                 class="text-small bu-mt-2">
-                                Projection fields
+                                {{ i18n('dbviewer.projection') }}
                             </label>
                             <el-select
                                 :popper-append-to-body="false"
                                 multiple
                                 id="dbviewer-tab__projection-selector"
                                 class="bu-mt-1"
-                                :label="'Projection fields'"
+                                :label="i18n('dbviewer.projection')"
                                 v-if="formDialogScope.editedObject.projectionEnabled"
                                 v-model="formDialogScope.editedObject.projection"
-                                placeholder="Projection fields"
+                                :placeholder="i18n('dbviewer.projection')"
                             >
                                 <el-option 
                                     v-for="item in projectionOptions"
@@ -118,24 +116,24 @@
                         <el-checkbox
                             class="bu-mt-2"
                             v-model="formDialogScope.editedObject.sortEnabled">
-                            <span class="bu-has-text-weight-normal">Select fields to sort</span>
+                            <span class="bu-has-text-weight-normal"> {{ i18n('dbviewer.select-fields-to-sort') }}</span>
                         </el-checkbox>
                         <div>
                             <label
                                 for="dbviewer-tab__sort-selector"
                                 v-if="formDialogScope.editedObject.sortEnabled"
                                 class="text-small bu-mt-2">
-                                Sort options
+                                {{ i18n('dbviewer.sort-options') }}
                             </label>
                             <div class="dbviewer-tab__sort-inputs">
                                 <el-select
                                     id="dbviewer-tab__sort-selector"
                                     class="bu-mt-1"
                                     :popper-append-to-body="false"
-                                    :label="'Sort options'"
+                                    :label="i18n('dbviewer.sort-options')"
                                     v-if="formDialogScope.editedObject.sortEnabled"
                                     v-model="formDialogScope.editedObject.sort"
-                                    placeholder="Sort">
+                                    :placeholder="i18n('dbviewer.sort-options')">
                                     <el-option 
                                         v-for="item in projectionOptions"
                                         :key="item"
@@ -148,8 +146,8 @@
                                     id="dbviewer-tab__sort-type-selector"
                                     v-if="formDialogScope.editedObject.sortEnabled"
                                     v-model="isDescentSort"
-                                    active-text="Descending"
-                                    inactive-text="Ascending">
+                                    :active-text="i18n('dbviewer.descending')"
+                                    :inactive-text="i18n('dbviewer.ascending')">
                                 </el-switch>
                             </div>
                         </div>

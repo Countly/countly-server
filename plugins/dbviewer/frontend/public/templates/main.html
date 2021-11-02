@@ -5,7 +5,16 @@
           &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </template>
         <template v-slot:header-tabs>
-            <cly-dynamic-tabs v-model="dynamicTab" :tab="dynamicTab" :tabs="tabs" skin="secondary" :apps="apps" :collections="collections" :db="db" :collection="collection">
+            <cly-dynamic-tabs
+                v-model="dynamicTab"
+                skin="secondary"
+                :tab="dynamicTab"
+                :tabs="tabs"
+                :apps="apps"
+                :collections="collections"
+                :db="db"
+                :collection="collection"
+                :index="index">
                 <template v-slot:tables="scope">
                     <span>{{ scope.tab.title }}</span>
                 </template>

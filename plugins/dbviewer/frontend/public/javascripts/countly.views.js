@@ -24,6 +24,10 @@ var DBViewerTab = countlyVue.views.create({
         db: {
             type: String,
             default: "countly"
+        },
+        index: {
+            type: Boolean,
+            default: false
         }
     },
     data: function() {
@@ -43,17 +47,17 @@ var DBViewerTab = countlyVue.views.create({
     },
     watch: {
         selectedCollection: function(newVal) {
-            window.location.hash = "#/manage/db/" + this.tab + "/" + newVal;
+            window.location.hash = "#/manage/db/" + this.db + "/" + newVal;
         }
     },
     methods: {
         dbviewerActions: function(command) {
             switch(command) {
                 case 'aggregation':
-                    console.log('aggregation');
+                    window.location.hash = "#/manage/db/aggregate/" + this.db + "/" + this.collection
                     break;
                 case 'indexes':
-                    console.log('indexes');
+                    window.location.hash = "#/manage/db/indexes/" + this.db + "/" + this.collection
                     break;
             }
         },
@@ -78,12 +82,11 @@ var DBViewerTab = countlyVue.views.create({
             // fire the request!
             this.fetch();
         },
-        fetch: function() {
+        fetch: function(index) {
             var self = this;
-            countlyDBviewer.loadCollections(this.db, this.collection, 1, this.queryFilter, 20, this.preparedSortObject, this.projectionEnabled ? this.preparedProjectionFields : null, this.sortEnabled, this.isIndexRequest)
+            countlyDBviewer.loadCollections(this.db, this.collection, 1, this.queryFilter, 20, this.preparedSortObject, this.projectionEnabled ? this.preparedProjectionFields : null, this.sortEnabled, index)
                 .done(function(response) {
                     self.collectionData = response.collections;
-                    console.log(self.collectionData);
                     self.projectionOptions = Object.keys(self.collectionData[0]);
                 })
             .catch(function(err) {
@@ -106,7 +109,14 @@ var DBViewerTab = countlyVue.views.create({
         }
     },
     created: function() {
-        this.fetch();
+        if (!this.collection) {
+            if (this.collections[this.db].list.length) {
+                window.location = '#/manage/db/' + this.db + '/' + this.collections[this.db].list[0].value;
+            }
+        }
+        else {
+            this.fetch(this.index);
+        }
     }
 });
 
@@ -119,7 +129,8 @@ var DBViewerMain = countlyVue.views.create({
             collection: (this.$route.params && this.$route.params.collection) || null,
             tabs: [],
             apps: [],
-            collections: {}
+            collections: {},
+            index: (this.$route.params && this.$route.params.index) || null,
         };
     },
     methods: {
@@ -196,12 +207,54 @@ var DBViewerMain = countlyVue.views.create({
     }
 });
 
+var DBViewerAggregate = countlyVue.views.create({
+    template: CV.T("/dbviewer/templates/aggregate.html"),
+    data: function() {
+        return {
+            query: '',
+            db: (this.$route.params && this.$route.params.db),
+            collection: (this.$route.params && this.$route.params.collection),
+            aggregationResult: [{'_id': 'query_not_executed_yet'}],
+            queryLoading: false
+        };
+    },
+    methods: {
+        backToDBViewer: function() {
+            window.location = '#/manage/db/' + this.db + '/' + this.collection;
+        },
+        executeQuery: function() {
+            var self = this;
+
+            try {
+                var query = JSON.stringify(JSON.parse(this.query));
+                this.queryLoading = true;
+                countlyDBviewer.executeAggregation(this.db, this.collection, query, countlyGlobal.ACTIVE_APP_ID, null, function(res) {
+                    self.aggregationResult = res.aaData;
+                    self.queryLoading = false;
+                });
+            }
+            catch(err) {
+                this.$message(CV.i18n('dbviewer.invalid-pipeline'));
+            }
+        }
+    },
+    created: function() {
+        if (!(this.$route.params && this.$route.params.collection) || !(this.$route.params && this.$route.params.db)) {
+            window.location = '#/manage/db';
+        }
+    }
+});
+
 var DBViewerMainView = new countlyVue.views.BackboneWrapper({
     component: DBViewerMain
 });
 
 var DBViewerTabView = new countlyVue.views.BackboneWrapper({
     component: DBViewerTab
+});
+
+var DBViewerAggregateView = new countlyVue.views.BackboneWrapper({
+    component: DBViewerAggregate
 });
 
 if (countlyAuth.validateRead(FEATURE_NAME)) {
@@ -222,6 +275,23 @@ if (countlyAuth.validateRead(FEATURE_NAME)) {
             collection: collection
         };
         this.renderWhenReady(DBViewerMainView);
+    });
+
+    app.route('/manage/db/indexes/:db/:collection', 'dbs', function(db, collection) {
+        DBViewerMainView.params = {
+            db: db,
+            collection: collection,
+            index: true
+        };
+        this.renderWhenReady(DBViewerMainView);
+    });
+
+    app.route('/manage/db/aggregate/:db/:collection', 'dbs', function(db, collection) {
+        DBViewerAggregateView.params = {
+            db: db,
+            collection: collection
+        };
+        this.renderWhenReady(DBViewerAggregateView);
     });
 }
 

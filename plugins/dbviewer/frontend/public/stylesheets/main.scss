@@ -52,3 +52,20 @@
         overflow-y: scroll;
     }
 }
+
+.dbviewer-aggregate {
+    &__query-area {
+        .cly-vue-section__content {
+            border: none;
+        }
+    }
+
+    &__query-button-area {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    &__back-button {
+        cursor: pointer;
+    }
+}
