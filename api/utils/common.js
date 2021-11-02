@@ -1331,13 +1331,13 @@ common.returnRaw = function(params, returnCode, body, heads) {
 * Output message as request response with provided http code
 * @param {params} params - params object
 * @param {number} returnCode - http code to use
-* @param {string} message - Message to output, will be encapsulated in JSON object under result property
+* @param {string|object} message - Message to output, will be encapsulated in JSON object under result property
 * @param {object} heads - headers to add to the output
 */
 common.returnMessage = function(params, returnCode, message, heads) {
     params.response = {
         code: returnCode,
-        body: JSON.stringify({result: message}, escape_html_entities)
+        body: JSON.stringify(typeof message === 'object' ? message : {result: message}, escape_html_entities)
     };
 
     if (params && params.APICallback && typeof params.APICallback === 'function') {
@@ -1346,7 +1346,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(returnCode !== 200, JSON.stringify({result: message}), heads, returnCode, params);
+            params.APICallback(returnCode !== 200, JSON.stringify(typeof message === 'object' ? message : {result: message}), heads, returnCode, params);
         }
         return;
     }
