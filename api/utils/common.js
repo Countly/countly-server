@@ -990,11 +990,11 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
                 else if (argProperties[arg].type === 'JSON') {
                     if (typeof args[arg] === 'object') {
-                        parsed = args[arg];
+                        parsed = JSON.stringify(args[arg]);
                     }
                     else if (typeof args[arg] === 'string') {
                         try {
-                            parsed = JSON.parse(args[arg]);
+                            JSON.parse(args[arg]);
                         }
                         catch (e) {
                             if (returnErrors) {
