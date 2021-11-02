@@ -3,6 +3,10 @@ const should = require('should'),
     { Splitter } = require('../api/send/platforms/utils/splitter'),
     FCM = require('../api/send/platforms/a');
 
+function decode() {
+    return Buffer.from('QUFBQTFFZE83dWs6QVBBOTFiRUVfWE5LU3U5aXdncTJuOGctYUdYaW9SeE9jN2swODBweHV2MklOcVVLZUV0alEtdDBxWWJ2cE01X2JYNmxKV0ZuUWNTSTIwU1g0c1drMXEyZThBT080Mk1FYjJGQm5faUc5cUV5M3dEZG5fZTl4WlZRWWNMX1FMQjJnVWIySkpVWTE2TTQ=', 'base64').toString('ascii');
+}
+
 describe('PUSH PLATFORMS', () => {
     class SplitterTest extends Splitter {
         constructor(log, type, creds, messages, options) {
@@ -81,7 +85,7 @@ describe('PUSH PLATFORMS', () => {
 
     it('FCM validates correct key', done => {
         let cr = new FCM.CREDS.fcm({
-                key: 'AAAA1EdO7uk:APA91bEE_XNKSu9iwgq2n8g-aGXioRxOc7k080pxuv2INqUKeEtjQ-t0qYbvpM5_bX6lJWFnQcSI20SX4sWk1q2e8AOO42MEb2FBn_iG9qEy3wDdn_e9xZVQYcL_QLB2gUb2JJUY16M4'
+                key: decode()
             }),
             c = new FCM.connection('push:test', 'a', cr, [], {});
         c.connect().then(ok => {

@@ -104,10 +104,9 @@ class SynFlushTransform extends Transform {
     /**
      * Send syn and close once the syn is returned back
      * 
-     * @param {function} callback callback
      * @returns {number} a numerical id of syn frame
      */
-    flushIt(callback) {
+    flushIt() {
         if (this.writableObjectMode) {
             this.write({frame: FRAME.FLUSH, payload: this.syn, length: 0});
         }

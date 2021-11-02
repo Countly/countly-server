@@ -1,5 +1,4 @@
 const EventEmitter = require("events");
-const t = require("../../send/platforms/t");
 
 /**
  * Data object shared across streams to hold state

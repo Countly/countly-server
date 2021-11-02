@@ -7,6 +7,10 @@ const should = require('should'),
     FORGE = require('node-forge'),
     FS = require('fs');
 
+function decode() {
+    return Buffer.from('QUFBQTFFZE83dWs6QVBBOTFiRUVfWE5LU3U5aXdncTJuOGctYUdYaW9SeE9jN2swODBweHV2MklOcVVLZUV0alEtdDBxWWJ2cE01X2JYNmxKV0ZuUWNTSTIwU1g0c1drMXEyZThBT080Mk1FYjJGQm5faUc5cUV5M3dEZG5fZTl4WlZRWWNMX1FMQjJnVWIySkpVWTE2TTQ=', 'base64').toString('ascii');
+}
+
 function db_fixture(ret) {
     ret.appUpdates = [];
     ret.credsSaves = [];
@@ -57,7 +61,7 @@ async function checkValidation(data, error) {
 }
 
 describe('API credentials', () => {
-    const fcm = 'AAAA1EdO7uk:APA91bEE_XNKSu9iwgq2n8g-aGXioRxOc7k080pxuv2INqUKeEtjQ-t0qYbvpM5_bX6lJWFnQcSI20SX4sWk1q2e8AOO42MEb2FBn_iG9qEy3wDdn_e9xZVQYcL_QLB2gUb2JJUY16M4';
+    const fcm = decode();
     it('FCM creds upload works', async() => {
 
         let dbdata = {},

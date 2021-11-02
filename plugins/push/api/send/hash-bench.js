@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const CRC32 = require('crc-32'),
     crc = require('node-crc'),
     MMHstream = require('murmurhash-native/stream'),
@@ -348,16 +349,16 @@ function databufcrc(data) {
 
 /**
  * Sets 
- * @param {Buffer} buffer buffer to put data into
+ * @param {Buffer} buf buffer to put data into
  * @param {number} offset start offset for the buffer
  * @param {any} data data
  * @returns {number} number of bytes written
  */
-function bufset(buffer, offset, data) {
+function bufset(buf, offset, data) {
     let t = typeof data,
         len = 0;
     if (t === 'string') {
-        len += Buffer.from(data, 'utf-8').copy(buffer, offset);
+        len += Buffer.from(data, 'utf-8').copy(buf, offset);
     }
     else if (t === 'object') {
         if (!data) { // null
@@ -365,29 +366,29 @@ function bufset(buffer, offset, data) {
         }
         else if (Array.isArray(data)) {
             for (let i = data.length - 1; i >= 0; i--) {
-                len += bufset(buffer, offset + len, data[i]);
+                len += bufset(buf, offset + len, data[i]);
             }
         }
         else {
             for (let k in data) {
-                len += Buffer.from(k, 'utf-8').copy(buffer, offset + len);
-                bufset(buffer, offset + len, data[k]);
+                len += Buffer.from(k, 'utf-8').copy(buf, offset + len);
+                bufset(buf, offset + len, data[k]);
             }
         }
     }
     else if (t === 'number') {
-        let buf = Buffer.alloc(8);
-        buf.writeDoubleBE(data);
-        len += buf.copy(buffer, offset);
+        let b = Buffer.alloc(8);
+        b.writeDoubleBE(data);
+        len += b.copy(buf, offset);
     }
     else if (t === 'boolean') {
-        len += (data ? Buffer.from([0x01]) : Buffer.from([0x00])).copy(buffer, offset);
+        len += (data ? Buffer.from([0x01]) : Buffer.from([0x00])).copy(buf, offset);
     }
     else if (t === 'undefined') {
         return len;
     }
     else {
-        len += Buffer.from(JSON.stringify(data), 'utf-8').copy(buffer, offset);
+        len += Buffer.from(JSON.stringify(data), 'utf-8').copy(buf, offset);
     }
     return len;
 }

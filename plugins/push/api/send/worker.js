@@ -1,4 +1,4 @@
-const {Worker, threadId, isMainThread, parentPort, workerData} = require('worker_threads'),
+const {Worker, isMainThread, parentPort, workerData} = require('worker_threads'),
     {Duplex} = require('stream'),
     {FRAME, FRAME_NAME, encode, decode, frame_type, frame_length} = require('./proto'),
     Measurement = require('./measure'),
