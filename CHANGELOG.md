@@ -1,3 +1,22 @@
+
+## Version 20.11.2.14
+
+Fixes:
+- [cmd] use new hash for user management 
+- [frontend] Discard the first week in ticks if it is the 7th day
+- [populator] styling fix for CE
+- [push] no personalisation in CE fix
+
+Features:
+- [crashes] dispatch event on new crashes
+- [systemlogs] added systemlogs to long tasks create, update and delete
+
+Enterprise features:
+- [AD] push approver permission
+- [attribution] pass custom segments onto custom scheme too
+- [surveys] improved export format
+
+
 ## Version 20.11.2.13
 
 Fixes:
