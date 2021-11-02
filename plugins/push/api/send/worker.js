@@ -90,7 +90,7 @@ if (isMainThread) {
                     let l = frame_length(m.buffer);
                     this.processing -= l;
 
-                    if ((!frame & FRAME.ERROR)) {
+                    if (!(frame & FRAME.ERROR)) {
                         this.out.inc(l);
                     }
 

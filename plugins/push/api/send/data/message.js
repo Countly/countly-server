@@ -437,7 +437,7 @@ class Message extends Mongoable {
             Deleted: 1 << 11, // 2048
         };
 
-        let status = Status.Stopped, state = State.Done, old = note.result.status;
+        let status, state, old = note.result.status;
         if (old & OldStatus.Done) {
             if (old & OldStatus.Error) {
                 state = State.Done | State.Error;

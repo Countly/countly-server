@@ -149,7 +149,8 @@ function toDate(date) {
             return date;
         }
         else {
-            throw new require('./error').PushError(`Invalid date value: ${date}`);
+            let { PushError } = require('./error');
+            throw new PushError(`Invalid date value: ${date}`);
         }
     }
 }

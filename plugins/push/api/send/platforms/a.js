@@ -129,7 +129,7 @@ class FCM extends Splitter {
                             error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
                         }
                         else if (r.error === 'MessageTooBig' || r.error === 'InvalidDataKey' || r.error === 'InvalidTtl') {
-                            error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
+                            error(ERROR.DATA_PROVIDER, '' + r.error).addAffected(pushes[i]._id, one);
                         }
                         else {
                             error(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);

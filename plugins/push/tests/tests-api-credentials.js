@@ -196,7 +196,7 @@ describe('API credentials', () => {
             certDev = 'data:application/x-pkcs12;base64,' + FORGE.util.encode64(FS.readFileSync(__dirname + '/CertDev.p12', {encoding: 'binary'})),
             certProd = 'data:application/octet-stream;base64,' + FORGE.util.encode64(FS.readFileSync(__dirname + '/CertProd.p12', {encoding: 'binary'})),
             certExpired = 'data:application/x-pkcs12;base64,' + FORGE.util.encode64(FS.readFileSync(__dirname + '/CertExpired.p12', {encoding: 'binary'})),
-            certInvalid = 'data:application/x-pkcs12;base64,' + FORGE.util.encode64('hello world'.toString('hex')),
+            certInvalid = 'data:application/x-pkcs12;base64,' + Buffer.from('hello world').toString('base64'),
             certP8 = 'data:application/x-pkcs8;base64,' + FORGE.util.encode64(FS.readFileSync(__dirname + '/Cert.p12', {encoding: 'binary'}));
 
         require('../../../api/utils/common').db = db;
@@ -290,6 +290,19 @@ describe('API credentials', () => {
                 }
             }
         }, 'Not a universal (Sandbox & Production) certificate');
+
+        // dev cert, not universal one
+        await checkValidation({
+            params: {},
+            app: data.app,
+            config: {
+                i: {
+                    type: 'apn_universal',
+                    fileType: 'p12',
+                    cert: certInvalid,
+                }
+            }
+        }, 'Failed to parse certificate');
 
         // dev cert, not universal one
         await checkValidation({

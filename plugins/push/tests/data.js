@@ -295,12 +295,12 @@ let exp = module.exports = {
                 "nextbatch": null
             },
             "expiration": 604800000,
-            "date": Date("2021-04-28T11:36:34.655Z"),
+            "date": new Date("2021-04-28T11:36:34.655Z"),
             "tz": false,
             "tx": false,
             "auto": false,
             "actualDates": false,
-            "created": Date("2021-04-28T11:36:34.655Z"),
+            "created": new Date("2021-04-28T11:36:34.655Z"),
             "test": false,
             "v": 190600,
             "build": {
@@ -380,12 +380,12 @@ let exp = module.exports = {
                 "nextbatch": 1619708345599
             },
             "expiration": 604800000,
-            "date": Date("2021-04-29T14:59:05.599Z"),
+            "date": new Date("2021-04-29T14:59:05.599Z"),
             "tz": false,
             "tx": false,
             "auto": false,
             "actualDates": false,
-            "created": Date("2021-04-29T14:59:05.599Z"),
+            "created": new Date("2021-04-29T14:59:05.599Z"),
             "test": false,
             "v": 190600,
             "build": {
