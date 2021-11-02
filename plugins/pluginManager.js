@@ -1336,6 +1336,7 @@ var pluginManager = function pluginManager() {
                     return id;
                 }
             };
+            countlyDb._ObjectID = mongodb.ObjectID;
         }
         if (!countlyDb.oid) {
             /**
