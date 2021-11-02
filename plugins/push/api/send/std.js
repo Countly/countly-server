@@ -290,19 +290,4 @@ function hash(data, seed) {
     }
 }
 
-module.exports = { Base, testBase, util: {hash, wait}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };
-
-/* eslint-disable */
-
-/**
- * Tests for Base
- */
-function testBase() {
-    const should = require('should');
-    describe('Base', function(){
-        it('should validate correct GCM key', done => {
-        });
-    });
-}
-
-/* eslint-enable */
+module.exports = { Base, util: {hash, wait}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };

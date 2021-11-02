@@ -60,7 +60,7 @@ describe('PUSH PLATFORMS', () => {
 
         setTimeout(() => {
             should.equal(results.length, 1);
-            let {p, l} = results[0];
+            let {p} = results[0];
             should.equal(p.length, 6);
             should.deepEqual(p[0].ids, data.slice(0, 1));
             should.deepEqual(p[1].ids, data.slice(1, 2));

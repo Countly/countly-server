@@ -193,7 +193,7 @@ const CREDS = {
                 topics.sort((a, b) => a.length - b.length);
                 this._data.bundle = topics.length > 0 ? topics[0] : this._data.title.split(' ').pop();
                 this._data.topics = topics;
-                this._data.hash = FORGE.md.sha1.create().update(this._data.cert).digest().toHex();
+                this._data.hash = FORGE.md.sha256.create().update(this._data.cert).digest().toHex();
 
                 logger('push:credentials:i').d('checked credentials %s topics %j, bundle %j', this.id, this._data.topics, this._data.bundle);
             }
@@ -286,7 +286,7 @@ const CREDS = {
                 return ['Not a private key in P8 format in base64-encoded string'];
             }
 
-            this._data.hash = FORGE.md.sha1.create().update(this._data.key).digest().toHex();
+            this._data.hash = FORGE.md.sha256.create().update(this._data.key).digest().toHex();
         }
 
         /**

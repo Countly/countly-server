@@ -407,7 +407,7 @@ const CREDS = {
             if (res) {
                 return res;
             }
-            this._data.hash = FORGE.md.sha1.create().update(this._data.key).digest().toHex();
+            this._data.hash = FORGE.md.sha256.create().update(this._data.key).digest().toHex();
         }
 
         /**

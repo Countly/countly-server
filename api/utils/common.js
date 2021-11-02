@@ -11,7 +11,8 @@ var common = {},
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose'),
-    argon2 = require('argon2');
+    argon2 = require('argon2'),
+    _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
@@ -961,7 +962,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (typeof args[arg] === 'string') {
                         try {
-                            parsed = new RegExp(args[arg], argProperties[arg].mods || undefined);
+                            parsed = new RegExp(_.escapeRegExp(args[arg]), argProperties[arg].mods || undefined);
                         }
                         catch (ex) {
                             if (returnErrors) {

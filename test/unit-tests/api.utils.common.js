@@ -181,9 +181,8 @@ describe("Common API utility functions", function() {
 
         it('should validate JSON', () => {
             let scheme = {
-                    json: { type: 'JSON' },
-                },
-                x = {a: true};
+                json: { type: 'JSON' },
+            };
 
             should.deepEqual(common.validateArgs({}, scheme), {});
             should.deepEqual(common.validateArgs({json: null}, scheme), {json: 'null'});

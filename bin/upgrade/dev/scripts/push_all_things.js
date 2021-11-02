@@ -54,7 +54,7 @@ plugins.dbConnection().then(async db => {
 
             // Migrate credentials
             console.log('Migrating %d out of %d credentials', credentialsInApps.length, credentials.length);
-            await Promise.all(credentialsInApps.map(cid => {
+            await Promise.all(credentialsInApps.map(async cid => {
                 console.log('Migrating credentials %s', cid);
                 let c = credentials.filter(x => x._id.toString() === cid.toString())[0];
                 if (!c) {

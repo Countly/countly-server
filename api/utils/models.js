@@ -204,7 +204,7 @@ class Mongoable extends Validatable {
     static async findOneAndUpdate(filter, update) {
         let data = await require('./common').db.collection(this.collection).findOneAndUpdate(filter, update, {returnDocument: 'after'});
         if (data.ok) {
-            return new this.constructor(data.value);
+            return new this(data.value);
         }
         return false;
     }
