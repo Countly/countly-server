@@ -1,13 +1,14 @@
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api'),
-    { Message, State, TriggerKind, fields, platforms } = require('./send'),
+    { Message, State, TriggerKind, fields, platforms, ValidationError, PushError } = require('./send'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
     { onTokenSession, onSessionUser, onAppPluginsUpdate } = require('./api-push'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
     { estimate, create, update, toggle, remove, all } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
+    { clear, reset, removeUsers } = require('./api-reset'),
     FEATURE_NAME = 'push',
     PUSH_CACHE_GROUP = 'P',
     PUSH = {},
@@ -133,18 +134,12 @@ function apiCall(apisObj, ob) {
     if (method in apisObj) {
         if (!sub) {
             let [check, fn] = apisObj[method];
-            check(params, FEATURE_NAME, par => fn(par).catch(e => {
-                log.e('Error during API request /%s', method, e);
-                common.returnOutput(par, {errors: ['Server error']});
-            }));
+            check(params, FEATURE_NAME, endpoint(method, fn));
             return true;
         }
         else if (sub in apisObj[method]) {
             let [check, fn] = apisObj[method][sub];
-            check(params, FEATURE_NAME, par => fn(par).catch(e => {
-                log.e('Error during API request /%s/%s', method, sub, e);
-                common.returnOutput(par, {errors: ['Server error']});
-            }));
+            check(params, FEATURE_NAME, endpoint(method + '/' + sub, fn));
             return true;
         }
     }
@@ -152,6 +147,28 @@ function apiCall(apisObj, ob) {
     log.d('invalid endpoint', paths);
     common.returnMessage(params, 404, 'Invalid endpoint');
     return true;
+}
+
+/**
+ * Wrap push endpoint catching any push-specific errors from it
+ * 
+ * @param {string} method endpoint name
+ * @param {function} fn actual endpoint returning a promise
+ * @returns {function} CRUD callback
+ */
+function endpoint(method, fn) {
+    return params => fn(params).catch(e => {
+        log.e('Error during API request /%s', method, e);
+        if (e instanceof ValidationError) {
+            common.returnMessage(params, 400, {kind: 'ValidationError', errors: e.errors});
+        }
+        else if (e instanceof PushError) {
+            common.returnMessage(params, 400, {kind: 'PushError', errors: [e.message]});
+        }
+        else {
+            common.returnMessage(params, 500, {kind: 'ServerError', errors: ['Server error']});
+        }
+    });
 }
 
 // Token handling, push internal events handling, evented auto push
@@ -174,5 +191,23 @@ plugins.register('/drill/postprocess_uids', drillPostprocessUids);
 
 // Permissions
 plugins.register('/permissions/features', ob => ob.features.push(FEATURE_NAME));
+
+// Data clears/resets/deletes
+plugins.register('/i/apps/reset', reset);
+plugins.register('/i/apps/clear_all', clear);
+plugins.register('/i/apps/delete', reset);
+plugins.register('/i/app_users/delete', ({app_id, uids}) => removeUsers(app_id, uids));
+plugins.register('/consent/change', ({params, changes}) => {
+    if (changes && changes.push === false && params.app_id && params.app_user && params.app_user.uid !== undefined) {
+        return removeUsers(params.app_id, [params.app_user.uid]);
+    }
+});
+plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs, export_folder}) => {
+    if (uids && uids.length) {
+        if (!export_commands.push) {
+            export_commands.push = [{cmd: 'mongoexport', args: [...dbargs, '--collection', `push_${app_id}`, '-q', `{"_id": {"$in": ${JSON.stringify(uids)}}}`, '--out', `${export_folder}/push_${app_id}.json`]}];
+        }
+    }
+});
 
 module.exports = PUSH;

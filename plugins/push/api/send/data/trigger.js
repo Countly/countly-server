@@ -265,7 +265,7 @@ class AutoTrigger extends Trigger {
      */
     static get scheme() {
         return Object.assign({}, super.scheme, {
-            end: {type: 'Date', required: true},
+            end: {type: 'Date', required: false},
             actuals: {type: 'Boolean', required: false},
             time: {type: 'Number', required: false},
             reschedule: {type: 'Boolean', required: false},
@@ -281,7 +281,7 @@ class AutoTrigger extends Trigger {
      * @returns {Date|undefined} end date
      */
     get end() {
-        return toDate(this._data.end);
+        return this._data.end ? toDate(this._data.end) : undefined;
     }
 
     /**

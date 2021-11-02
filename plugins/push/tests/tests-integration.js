@@ -176,7 +176,7 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.deepEqual(res.body.locales, {default: 0, ru: 1, en: 2});
             });
     });
-    it('should create simple message', async() => {
+    it('should create a few simple messages', async() => {
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
                 demo: true,
@@ -186,7 +186,7 @@ describe('PUSH INTEGRATION TESTS', () => {
                     user: JSON.stringify({la: {$in: ['en', 'ru']}})
                 },
                 contents: [
-                    {message: 'Hello world'}
+                    {message: 'message'}
                 ],
                 triggers: [
                     {kind: 'plain', start: new Date(Date.now() + 3600000)}
@@ -195,14 +195,10 @@ describe('PUSH INTEGRATION TESTS', () => {
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.not.exist(res.body.errors);
                 should.ok(res.body._id);
                 should.equal(res.body.app, aid);
             });
-    });
-
-    it('should return message table', async() => {
-        await supertest.post(`/i/push/message/all?api_key=${api_key}&app_id=${aid}`)
+        await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
                 demo: true,
                 app: aid,
@@ -211,7 +207,8 @@ describe('PUSH INTEGRATION TESTS', () => {
                     user: JSON.stringify({la: {$in: ['en', 'ru']}})
                 },
                 contents: [
-                    {message: 'Hello world'}
+                    {message: 'notification'},
+                    {la: 'ru', title: 'Заголовок'}
                 ],
                 triggers: [
                     {kind: 'plain', start: new Date(Date.now() + 3600000)}
@@ -220,9 +217,101 @@ describe('PUSH INTEGRATION TESTS', () => {
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.not.exist(res.body.errors);
                 should.ok(res.body._id);
                 should.equal(res.body.app, aid);
+            });
+        await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                demo: true,
+                app: aid,
+                platforms,
+                filter: {},
+                contents: [
+                    {message: 'notification', title: 'title'},
+                ],
+                triggers: [
+                    {kind: 'api', start: new Date(Date.now() + 3600000)}
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.ok(res.body._id);
+                should.equal(res.body.app, aid);
+            });
+    });
+
+    it('should return message table', async() => {
+        let message, title, api;
+
+        await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}`)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.equal(res.body.iTotalRecords, 2);
+                should.equal(res.body.iTotalDisplayRecords, 2);
+                should.ok(res.body.aaData);
+                should.equal(res.body.aaData.length, 2);
+                message = res.body.aaData.filter(m => m.contents.length === 1 && m.filter.user)[0]._id;
+                title = res.body.aaData.filter(m => m.contents.length === 2)[0]._id;
+            });
+        await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&auto=true`)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.equal(res.body.iTotalRecords, 0);
+                should.equal(res.body.iTotalDisplayRecords, 0);
+                should.deepEqual(res.body.aaData, []);
+            });
+        await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&api=true`)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.equal(res.body.iTotalRecords, 1);
+                should.equal(res.body.iTotalDisplayRecords, 1);
+                should.ok(res.body.aaData);
+                should.equal(res.body.aaData.length, 1);
+                api = res.body.aaData[0]._id;
+            });
+        await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&iDisplayStart=1`)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.equal(res.body.iTotalRecords, 2);
+                should.equal(res.body.iTotalDisplayRecords, 2);
+                should.ok(res.body.aaData);
+                should.equal(res.body.aaData.length, 1);
+                should.equal(res.body.aaData[0]._id, title);
+            });
+        await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&sSearch=message`)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.equal(res.body.iTotalRecords, 2);
+                should.equal(res.body.iTotalDisplayRecords, 1);
+                should.ok(res.body.aaData);
+                should.equal(res.body.aaData.length, 1);
+                should.equal(res.body.aaData[0]._id, message);
+            });
+        await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&sSearch=${encodeURIComponent('заголо')}`)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.equal(res.body.iTotalRecords, 2);
+                should.equal(res.body.iTotalDisplayRecords, 1);
+                should.ok(res.body.aaData);
+                should.equal(res.body.aaData.length, 1);
+                should.equal(res.body.aaData[0]._id, title);
+            });
+        await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&sSearch=notif`)
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.equal(res.body.iTotalRecords, 2);
+                should.equal(res.body.iTotalDisplayRecords, 1);
+                should.ok(res.body.aaData);
+                should.equal(res.body.aaData.length, 1);
+                should.equal(res.body.aaData[0]._id, title);
             });
     });
 });

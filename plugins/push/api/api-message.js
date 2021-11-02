@@ -16,7 +16,7 @@ async function validate(args, preparing = false) {
         msg = new Message(msg.obj);
     }
     else {
-        return msg.errors;
+        throw new ValidationError(msg.errors);
     }
 
     let app = await common.db.collection('apps').findOne(msg.app);
@@ -272,7 +272,7 @@ module.exports.all = async params => {
     let data = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
         auto: {type: 'BooleanString', required: false},
-        tx: {type: 'BooleanString', required: false},
+        api: {type: 'BooleanString', required: false},
         sSearch: {type: 'RegExp', required: false, mods: 'gi'},
         iDisplayStart: {type: 'IntegerString', required: false},
         iDisplayLength: {type: 'IntegerString', required: false},
@@ -287,25 +287,26 @@ module.exports.all = async params => {
         let query = {
             app: data.app_id,
         };
-        if (data.sSearch) {
-            query.$or = [
-                {'contents.message': data.sSearch},
-                {'contents.title': data.sSearch},
-            ];
-        }
 
         if (data.auto) {
             query['triggers.kind'] = {$in: [TriggerKind.Event, TriggerKind.Cohort]};
         }
-        else if (data.tx) {
+        else if (data.api) {
             query['triggers.kind'] = TriggerKind.API;
         }
         else {
             query['triggers.kind'] = TriggerKind.Plain;
         }
 
-        let total = await Message.count(query),
-            cursor = common.db.collection(Message.collection).find(query),
+        let total = await Message.count(query);
+
+        if (data.sSearch) {
+            query.$or = [
+                {'contents.message': data.sSearch},
+                {'contents.title': data.sSearch},
+            ];
+        }
+        let cursor = common.db.collection(Message.collection).find(query),
             count = await cursor.count();
 
         if (data.iDisplayStart) {

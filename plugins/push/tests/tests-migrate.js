@@ -1,6 +1,6 @@
 const should = require('should'),
     data = require('./data'),
-    { Template, PLATFORM, util, PushError } = require('../api/send'),
+    { PushError } = require('../api/send'),
     { Message, State, Status, Filter, Result, PlainTrigger, APITrigger } = require('../api/send/data'),
     { Note } = require('../api/parts/note');
 
