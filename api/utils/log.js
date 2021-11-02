@@ -63,6 +63,13 @@ var styles = {
     }
 };
 
+const ACCEPTABLE = {
+    d: ['debug'],
+    i: ['debug', 'info'],
+    w: ['debug', 'info', 'warn'],
+    e: ['debug', 'info', 'warn', 'error'],
+};
+
 /**
  * Returns logger function for given preferences
  * @param {string} level - log level
@@ -274,33 +281,50 @@ module.exports = function(name) {
     return {
         /**
          * Get logger id
-         * @returns {string} logger id
+         * @returns {string} id of this logger
          */
         id: () => name,
         /**
-        * Logging debug level messages
+        * Log debug level messages
         * @memberof module:api/utils/log~Logger
         * @param {...*} var_args - string and values to format string with
         **/
-        d: log('DEBUG', name, getEnabledWithLevel(['debug'], name), this, console.log),
+        d: log('DEBUG', name, getEnabledWithLevel(ACCEPTABLE.d, name), this, console.log),
+
         /**
-        * Logging information level messages
+        * Log information level messages
         * @memberof module:api/utils/log~Logger
         * @param {...*} var_args - string and values to format string with
         **/
-        i: log('INFO', name, getEnabledWithLevel(['debug', 'info'], name), this, console.info),
+        i: log('INFO', name, getEnabledWithLevel(ACCEPTABLE.i, name), this, console.info),
+
         /**
-        * Logging warning level messages
+        * Log warning level messages
         * @memberof module:api/utils/log~Logger
         * @param {...*} var_args - string and values to format string with
         **/
-        w: log('WARN', name, getEnabledWithLevel(['debug', 'info', 'warn'], name), this, console.warn, styles.stylers.warn),
+        w: log('WARN', name, getEnabledWithLevel(ACCEPTABLE.w, name), this, console.warn, styles.stylers.warn),
+
         /**
-        * Logging error level messages
+        * Log error level messages
         * @memberof module:api/utils/log~Logger
         * @param {...*} var_args - string and values to format string with
         **/
-        e: log('ERROR', name, getEnabledWithLevel(['debug', 'info', 'warn', 'error'], name), this, console.error, styles.stylers.error),
+        e: log('ERROR', name, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, styles.stylers.error),
+
+        /**
+         * Log variable level messages (for cases when logging parameters calculation are expensive enough and shouldn't be done unless the level is enabled)
+         * @param {String} l log level (d, i, w, e)
+         * @param {function} f function to call with single argument - logging function
+         * @returns {boolean} true if f() has been called
+         */
+        f: function(l, f) {
+            if (ACCEPTABLE[l].indexOf(levels[name] || deflt) !== -1) {
+                f(log('ERROR', name, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, styles.stylers.error));
+                return true;
+            }
+        },
+
         /**
         * Logging inside callbacks
         * @memberof module:api/utils/log~Logger
@@ -354,33 +378,49 @@ module.exports = function(name) {
             return {
                 /**
                  * Get logger id
-                 * @returns {string} logger id
+                 * @returns {string} id of this logger
                  */
                 id: () => name + ':' + subname,
                 /**
-                * Logging information level messages
+                * Log debug level messages
                 * @memberof module:api/utils/log~Logger
                 * @param {...*} var_args - string and values to format string with
                 **/
-                d: log('DEBUG', name + ':' + subname, getEnabledWithLevel(['debug'], name), this, console.log),
+                d: log('DEBUG', name + ':' + subname, getEnabledWithLevel(ACCEPTABLE.d, name), this, console.log),
+
                 /**
-                * Logging information level messages
+                * Log information level messages
                 * @memberof module:api/utils/log~Logger
                 * @param {...*} var_args - string and values to format string with
                 **/
-                i: log('INFO', name + ':' + subname, getEnabledWithLevel(['debug', 'info'], name), this, console.info),
+                i: log('INFO', name + ':' + subname, getEnabledWithLevel(ACCEPTABLE.i, name), this, console.info),
+
                 /**
-                * Logging warning level messages
+                * Log warning level messages
                 * @memberof module:api/utils/log~Logger
                 * @param {...*} var_args - string and values to format string with
                 **/
-                w: log('WARN', name + ':' + subname, getEnabledWithLevel(['debug', 'info', 'warn'], name), this, console.warn, styles.stylers.warn),
+                w: log('WARN', name + ':' + subname, getEnabledWithLevel(ACCEPTABLE.w, name), this, console.warn, styles.stylers.warn),
+
                 /**
-                * Logging error level messages
+                * Log error level messages
                 * @memberof module:api/utils/log~Logger
                 * @param {...*} var_args - string and values to format string with
                 **/
-                e: log('ERROR', name + ':' + subname, getEnabledWithLevel(['debug', 'info', 'warn', 'error'], name), this, console.error, styles.stylers.error),
+                e: log('ERROR', name + ':' + subname, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, styles.stylers.error),
+
+                /**
+                 * Log variable level messages (for cases when logging parameters calculation are expensive enough and shouldn't be done unless the level is enabled)
+                 * @param {String} l log level (d, i, w, e)
+                 * @param {function} f function to call with single argument - logging function
+                 * @returns {boolean} true if f() has been called
+                 */
+                f: function(l, f) {
+                    if (ACCEPTABLE[l].indexOf(levels[name] || deflt) !== -1) {
+                        f(log('ERROR', name + ':' + subname, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, l === 'w' ? styles.stylers.warn : l === 'e' ? styles.stylers.error : undefined));
+                        return true;
+                    }
+                },
 
                 /**
                  * Pass sub one level up
@@ -390,10 +430,10 @@ module.exports = function(name) {
         }
     };
     // return {
-    //  d: log('DEBUG\t', getEnabledWithLevel(['debug'], name), this, debug(name)),
-    //  i: log('INFO\t', getEnabledWithLevel(['debug', 'info'], name), this, debug(name)),
-    //  w: log('WARN\t', getEnabledWithLevel(['debug', 'info', 'warn'], name), this, debug(name)),
-    //  e: log('ERROR\t', getEnabledWithLevel(['debug', 'info', 'warn', 'error'], name), this, debug(name)),
+    //  d: log('DEBUG\t', getEnabledWithLevel(ACCEPTABLE.d, name), this, debug(name)),
+    //  i: log('INFO\t', getEnabledWithLevel(ACCEPTABLE.i, name), this, debug(name)),
+    //  w: log('WARN\t', getEnabledWithLevel(ACCEPTABLE.w, name), this, debug(name)),
+    //  e: log('ERROR\t', getEnabledWithLevel(ACCEPTABLE.e, name), this, debug(name)),
     //  callback: function(next){
     //      var self = this;
     //      return function(err) {

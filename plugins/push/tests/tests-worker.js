@@ -1,6 +1,5 @@
 const should = require('should'),
     data = require('./data'),
-    {FRAME, encode, decode} = require('../api/send/proto'),
     log = require('../../../api/utils/log')('push'),
     { ObjectID } = require('mongodb'),
     { Readable } = require('stream'),
@@ -8,7 +7,7 @@ const should = require('should'),
     { Batcher } = require('../api/jobs/util/batcher'),
     { Resultor } = require('../api/jobs/util/resultor'),
     { Connector } = require('../api/jobs/util/connector'),
-    { pools } = require('../api/send/pools');
+    { ERROR, Pool, pools, ConnectionError, SendError } = require('../api/send');
 
 function db_fixture(ret, total = 1000) {
     ret.messageUpdates = [];
@@ -17,6 +16,7 @@ function db_fixture(ret, total = 1000) {
     ret.bulks = {};
     return {
         ObjectID,
+        _ObjectID: ObjectID,
         collection: name => {
             if (name === 'apps') {
                 return {
@@ -119,19 +119,19 @@ function db_fixture(ret, total = 1000) {
 
 describe('PUSH WORKER', () => {
     describe('GENERAL', () => {
-        // it('processOnce works', async() => {
-        //     let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
-        //         bytes: 100,
-        //         workers: 1,
-        //     });
+        it('processOnce works', async() => {
+            let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
+                bytes: 100,
+                workers: 1,
+            });
 
-        //     let results = await pool.processOnce([data.compilation[0]]);
+            let results = await pool.processOnce([data.compilation[0]]);
 
-        //     should.ok(results);
-        //     should.ok(results.results);
-        //     should.equal(results.results.length, 1);
-        //     should.equal(results.results[0], data.compilation[0]._id);
-        // }).timeout(5000);
+            should.ok(results);
+            should.ok(results.results);
+            should.equal(results.results.length, 1);
+            should.equal(results.results[0], data.compilation[0]._id);
+        }).timeout(5000);
 
         it('streaming & multiplexing works', done => {
 
@@ -246,121 +246,121 @@ describe('PUSH WORKER', () => {
         }).timeout(100000);
     });
 
-    // describe('VALIDATE', () => {
-    //     it('validate works: ok', async() => {
-    //         let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
-    //             bytes: 100,
-    //             workers: 1,
-    //             e_send_recoverable: 'Test error'
-    //         });
+    describe('VALIDATE', () => {
+        it('validate works: ok', async() => {
+            let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
+                bytes: 100,
+                workers: 1,
+                e_send_recoverable: 'Test error'
+            });
 
-    //         await pool.validate().then(ok => {
-    //             should.ok(ok);
-    //         }, error => {
-    //             console.log(error);
-    //             should.fail('error is thrown');
-    //         });
-    //     });
+            await pool.validate().then(ok => {
+                should.ok(ok);
+            }, error => {
+                console.log(error);
+                should.fail('error is thrown');
+            });
+        });
 
-    //     it('validate works: fail', async() => {
-    //         let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
-    //             bytes: 100,
-    //             workers: 1,
-    //             e_connect: [ERROR.INVALID_CREDENTIALS, 401, 'Wrong credentials']
-    //         });
+        it('validate works: fail', async() => {
+            let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
+                bytes: 100,
+                workers: 1,
+                e_connect: [ERROR.INVALID_CREDENTIALS, 401, 'Wrong credentials']
+            });
 
-    //         await pool.validate().then(ok => {
-    //             should.equal(ok, false);
-    //         }, error => {
-    //             console.log(error);
-    //             should.fail('error is thrown');
-    //         });
-    //     });
-    // });
+            await pool.validate().then(ok => {
+                should.equal(ok, false);
+            }, error => {
+                console.log(error);
+                should.fail('error is thrown');
+            });
+        });
+    });
 
-    // describe('ERROR HANDLING', () => {
-    //     it('processOnce handles connection errors', async() => {
-    //         let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
-    //             bytes: 100,
-    //             workers: 1,
-    //             e_connect: [ERROR.CONNECTION_PROVIDER, 401, 'Wrong credentials']
-    //         });
+    describe('ERROR HANDLING', () => {
+        it('processOnce handles connection errors', async() => {
+            let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
+                bytes: 100,
+                workers: 1,
+                e_connect: [ERROR.CONNECTION_PROVIDER, 401, 'Wrong credentials']
+            });
 
-    //         await pool.processOnce([data.compilation[0]]).then(() => {
-    //             should.fail('no ConnectionError error thrown');
-    //         }, error => {
-    //             should.ok(error instanceof ConnectionError);
-    //             should.ok(error.message);
-    //             should.ok(error.message.includes('Wrong credentials'));
-    //         });
-    //     });
+            await pool.processOnce([data.compilation[0]]).then(() => {
+                should.fail('no ConnectionError error thrown');
+            }, error => {
+                should.ok(error instanceof ConnectionError);
+                should.ok(error.message);
+                should.ok(error.message.includes('Wrong credentials'));
+            });
+        });
 
-    //     it('processOnce handles mid-sending recoverable errors', async() => {
-    //         let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
-    //             bytes: 100,
-    //             workers: 1,
-    //             e_send_recoverable: 'Test error'
-    //         });
+        it('processOnce handles mid-sending recoverable errors', async() => {
+            let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
+                bytes: 100,
+                workers: 1,
+                e_send_recoverable: 'Test error'
+            });
 
-    //         await pool.processOnce(data.compilation.slice(0, 3)).then(res => {
-    //             should.ok(res);
-    //             should.ok(res.results);
-    //             should.ok(res.errors);
-    //             should.equal(res.results.length, 2);
-    //             should.equal(res.errors.length, 1);
-    //             should.ok(res.errors[0] instanceof SendError);
-    //             should.equal(res.errors[0].affected.length, 1);
-    //         }, error => {
-    //             console.error(error);
-    //             should.fail('processOnce rejected');
-    //         });
-    //     }).timeout(5000);
+            await pool.processOnce(data.compilation.slice(0, 3)).then(res => {
+                should.ok(res);
+                should.ok(res.results);
+                should.ok(res.errors);
+                should.equal(res.results.length, 2);
+                should.equal(res.errors.length, 1);
+                should.ok(res.errors[0] instanceof SendError);
+                should.equal(res.errors[0].affected.length, 1);
+            }, error => {
+                console.error(error);
+                should.fail('processOnce rejected');
+            });
+        }).timeout(5000);
 
-    //     it('processOnce handles mid-sending non recoverable connection errors with no affected', async() => {
-    //         let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
-    //             bytes: 100,
-    //             workers: 1,
-    //             e_send_nonrecoverable: ['Test error', ERROR.CONNECTION_PROVIDER]
-    //         });
+        it('processOnce handles mid-sending non recoverable connection errors with no affected', async() => {
+            let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
+                bytes: 100,
+                workers: 1,
+                e_send_nonrecoverable: ['Test error', ERROR.CONNECTION_PROVIDER]
+            });
 
-    //         await pool.processOnce(data.compilation.slice(0, 5)).then(res => {
-    //             should.ok(res);
-    //             should.ok(res.results);
-    //             should.ok(res.left);
-    //             should.ok(res.errors);
-    //             should.equal(res.results.length, 3);
-    //             should.equal(res.errors.length, 0);
-    //             should.equal(res.left.length, 2);
-    //             should.equal(res.left[0], data.compilation[3]._id);
-    //             should.equal(res.left[1], data.compilation[4]._id);
-    //         }, error => {
-    //             console.error(error);
-    //             should.fail('processOnce rejected');
-    //         });
-    //     }).timeout(5000);
+            await pool.processOnce(data.compilation.slice(0, 5)).then(res => {
+                should.ok(res);
+                should.ok(res.results);
+                should.ok(res.left);
+                should.ok(res.errors);
+                should.equal(res.results.length, 3);
+                should.equal(res.errors.length, 0);
+                should.equal(res.left.length, 2);
+                should.equal(res.left[0], data.compilation[3]._id);
+                should.equal(res.left[1], data.compilation[4]._id);
+            }, error => {
+                console.error(error);
+                should.fail('processOnce rejected');
+            });
+        }).timeout(5000);
 
-    //     it('processOnce handles mid-sending non recoverable connection errors with affected', async() => {
-    //         let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
-    //             bytes: 100,
-    //             workers: 1,
-    //             e_send_nonrecoverable: ['Test error', ERROR.CONNECTION_PROXY]
-    //         });
+        it('processOnce handles mid-sending non recoverable connection errors with affected', async() => {
+            let pool = new Pool('test-x', 't', 'key', 'secret', [data.messages.m1], {
+                bytes: 100,
+                workers: 1,
+                e_send_nonrecoverable: ['Test error', ERROR.CONNECTION_PROXY]
+            });
 
-    //         await pool.processOnce(data.compilation.slice(0, 5)).then(res => {
-    //             should.ok(res);
-    //             should.ok(res.results);
-    //             should.ok(res.left);
-    //             should.ok(res.errors);
-    //             should.equal(res.results.length, 2);
-    //             should.equal(res.errors.length, 1);
-    //             should.equal(res.left.length, 2);
-    //             should.equal(res.errors[0].affected[0], data.compilation[2]._id);
-    //             should.equal(res.left[0], data.compilation[3]._id);
-    //             should.equal(res.left[1], data.compilation[4]._id);
-    //         }, error => {
-    //             console.error(error);
-    //             should.fail('processOnce rejected');
-    //         });
-    //     }).timeout(5000);
-    // });
+            await pool.processOnce(data.compilation.slice(0, 5)).then(res => {
+                should.ok(res);
+                should.ok(res.results);
+                should.ok(res.left);
+                should.ok(res.errors);
+                should.equal(res.results.length, 2);
+                should.equal(res.errors.length, 1);
+                should.equal(res.left.length, 2);
+                should.equal(res.errors[0].affected[0], data.compilation[2]._id);
+                should.equal(res.left[0], data.compilation[3]._id);
+                should.equal(res.left[1], data.compilation[4]._id);
+            }, error => {
+                console.error(error);
+                should.fail('processOnce rejected');
+            });
+        }).timeout(5000);
+    });
 });
