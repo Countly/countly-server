@@ -3,14 +3,15 @@
         <cly-main>
             <cly-section>
                 <cly-metric-cards>
-                    <cly-metric-card :number="totalAppUsers">
+                    <cly-metric-card :number="formatNumber(totalAppUsers)">
                         {{i18n('push-notification.total-app-users')}}
                     </cly-metric-card>
-                    <cly-metric-card :number="enabledUsers">
+                    <cly-metric-card :number="formatNumber(enabledUsers)">
                         {{i18n('push-notification.total-app-users')}}                     
                     </cly-metric-card>
                     <cly-metric-card :is-percentage="true" :number="formatPercentage(enabledUsers/totalAppUsers)">
-                        {{i18n('push-notification.enabled-users-percentage')}}                     
+                        {{i18n('push-notification.enabled-users-percentage')}}
+                        <cly-tooltip-icon :tooltip="i18n('push-notification.enabled-users-percentage-description')" icon="ion ion-help-circled" class="bu-ml-2"> </cly-tooltip-icon>                     
                     </cly-metric-card>
                 </cly-metric-cards>
             </cly-section>
@@ -120,13 +121,16 @@
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="custom" prop="sent" :label="i18n('push-notification.table-sent')">
+                        <el-table-column sortable="custom" prop="sent" :label="i18n('push-notification.table-sent')" class="cly-vue-push-notification-table-column">
+                            <template slot-scope="scope">
+                                <span class="cly-vue-push-notification-table-column__numbers-only"> {{scope.row.sent}} </span>
+                            </template>
                         </el-table-column>
-                        <el-table-column sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')">
+                        <el-table-column sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-level">
-                                    <div class="bu-level-left">
-                                        <span class="bu-mr-1">{{scope.row.actioned}}</span>
+                                    <div class="bu-level-left cly-vue-push-notification-table-column__numbers-only">
+                                        <span class="bu-mr-1">{{formatNumber(scope.row.actioned)}}</span>
                                         <span class="bu-mr-1">|</span>
                                         <span>{{formatPercentage(scope.row.actioned/totalAppUsers)}} %</span>
                                     </div>

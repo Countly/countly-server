@@ -825,6 +825,7 @@
 
     var PushNotificationTabView = countlyVue.views.BaseView.extend({
         template: "#push-notification-tab",
+        mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             return {
                 platformFilters: platformFilterOptions,
@@ -901,12 +902,12 @@
                     data: [
                         {
                             name: CV.i18n('push-notification.sent-serie-name'),
-                            value: this.$store.state.countlyPushNotification.main.totalSent[this.selectedPushNotificationType],
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.totalSent[this.selectedPushNotificationType]),
                             tooltip: CV.i18n('push-notification.sent-serie-description')
                         },
                         {
                             name: CV.i18n('push-notification.actions-performed-serie-name'),
-                            value: this.$store.state.countlyPushNotification.main.totalActions[this.selectedPushNotificationType],
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.totalActions[this.selectedPushNotificationType]),
                             tooltip: CV.i18n('push-notification.actions-performed-serie-description')
                         }
                     ]
@@ -949,7 +950,7 @@
                 this.$store.dispatch('countlyPushNotification/main/fetchAll', false);
             },
             formatPercentage: function(value, decimalPlaces) {
-                return CountlyHelpers.formatPercentage(value, decimalPlaces);
+                return this.formatNumber(CountlyHelpers.formatPercentage(value, decimalPlaces));
             },
             onApprove: function(id) {
                 var self = this;

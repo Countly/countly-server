@@ -6,11 +6,11 @@
 .cly-vue-push-notification-chart {
 
     &__left-text {
-        font-weight: 500;
-        font-size: 12px;
+        font-weight: typography.$font-weight-primary;
+        font-size: typography.$text-small-size;
         line-height: 15px;
         letter-spacing: 0.5px;
-        color: #A7AEB8;
+        color: map.get(colors.$colors,"cool-gray-40");
     }
 }
 
@@ -20,13 +20,18 @@
     }
 
     &__second-line {
-        color: #A7AEB8;
+        color: map.get(colors.$colors,"cool-gray-40");
         font-size: typography.$text-small-size;
     }
 
     &__separator-blinker {
-        background-color:#A7AEB8 !important; 
-        margin-left:6px;
+        background-color: map.get(colors.$colors,"cool-gray-40") !important;
+        margin-left: 6px;
+    }
+
+    &__numbers-only {
+        font-weight: typography.$font-weight-primary;
+        font-size: typography.$text-2xl-size;
     }
 }
 
