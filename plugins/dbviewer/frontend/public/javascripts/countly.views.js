@@ -1,3 +1,4 @@
+/*global $, countlyAuth, countlyGlobal, countlyDBviewer, app, countlyCommon, CV, countlyVue, _*/
 var FEATURE_NAME = 'dbviewer';
 
 var DBViewerTab = countlyVue.views.create({
@@ -43,7 +44,7 @@ var DBViewerTab = countlyVue.views.create({
             projectionOptions: [],
             isDescentSort: false,
             isIndexRequest: false
-        }
+        };
     },
     watch: {
         selectedCollection: function(newVal) {
@@ -52,13 +53,13 @@ var DBViewerTab = countlyVue.views.create({
     },
     methods: {
         dbviewerActions: function(command) {
-            switch(command) {
-                case 'aggregation':
-                    window.location.hash = "#/manage/db/aggregate/" + this.db + "/" + this.collection
-                    break;
-                case 'indexes':
-                    window.location.hash = "#/manage/db/indexes/" + this.db + "/" + this.collection
-                    break;
+            switch (command) {
+            case 'aggregation':
+                window.location.hash = "#/manage/db/aggregate/" + this.db + "/" + this.collection;
+                break;
+            case 'indexes':
+                window.location.hash = "#/manage/db/indexes/" + this.db + "/" + this.collection;
+                break;
             }
         },
         showFilterPopup: function(options) {
@@ -67,7 +68,7 @@ var DBViewerTab = countlyVue.views.create({
                 projectionEnabled: this.projectionEnabled || false,
                 fields: this.projection || [],
                 sortEnabled: this.sortEnabled || false,
-                sort: this.sort || ""
+                sort: this.sort || ""
             }, options));
         },
         onExecuteFilter: function(formData) {
@@ -89,9 +90,9 @@ var DBViewerTab = countlyVue.views.create({
                     self.collectionData = response.collections;
                     self.projectionOptions = Object.keys(self.collectionData[0]);
                 })
-            .catch(function(err) {
-                // handle error case
-            })
+                .catch(function() {
+                    // handle error case
+                });
         }
     },
     computed: {
@@ -109,6 +110,10 @@ var DBViewerTab = countlyVue.views.create({
         }
     },
     created: function() {
+        if (!this.db) {
+            this.db = 'countly';
+        }
+
         if (!this.collection) {
             if (this.collections[this.db].list.length) {
                 window.location = '#/manage/db/' + this.db + '/' + this.collections[this.db].list[0].value;
@@ -181,7 +186,7 @@ var DBViewerMain = countlyVue.views.create({
                 formattedApps.push({
                     label: apps[appKeys[i]].name,
                     value: apps[appKeys[i]]._id
-                })
+                });
             }
             this.apps = formattedApps;
         }
@@ -192,15 +197,15 @@ var DBViewerMain = countlyVue.views.create({
 
         if (!dbs.length) {
             countlyDBviewer.initialize()
-            .then(function() {
-                dbs = countlyDBviewer.getData();
-                self.prepareTabs(dbs);
-                self.prepareCollectionList(dbs); 
-            });
+                .then(function() {
+                    dbs = countlyDBviewer.getData();
+                    self.prepareTabs(dbs);
+                    self.prepareCollectionList(dbs);
+                });
         }
         else {
             this.prepareTabs(dbs);
-            this.prepareCollectionList(dbs); 
+            this.prepareCollectionList(dbs);
         }
 
         this.prepareApps();
@@ -233,7 +238,7 @@ var DBViewerAggregate = countlyVue.views.create({
                     self.queryLoading = false;
                 });
             }
-            catch(err) {
+            catch (err) {
                 this.$message(CV.i18n('dbviewer.invalid-pipeline'));
             }
         }
@@ -247,10 +252,6 @@ var DBViewerAggregate = countlyVue.views.create({
 
 var DBViewerMainView = new countlyVue.views.BackboneWrapper({
     component: DBViewerMain
-});
-
-var DBViewerTabView = new countlyVue.views.BackboneWrapper({
-    component: DBViewerTab
 });
 
 var DBViewerAggregateView = new countlyVue.views.BackboneWrapper({
