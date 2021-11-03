@@ -27,7 +27,7 @@
             </div>
         </cly-main>
         <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
-        <cly-in-page-notification text="totalViewCountWarning" v-if="true"></cly-in-page-notification>
+        <!-- <cly-in-page-notification text="totalViewCountWarning" v-if="true"></cly-in-page-notification> -->
     </div>
     </script>
     
@@ -109,13 +109,12 @@
     
 <script  type="text/x-template" id="alert-drawer">
     <cly-drawer
-        
         @submit="onSubmit"
         @close="onClose"
         @copy="onCopy"
         :title="title"
         :saveButtonLabel="saveButtonLabel"
-        v-bind="$props.controls">
+        v-bind="$props.controls"  ref="drawerData">>
         <template v-slot:default="drawerScope">
             <cly-form-step id="alert-drawer-main">
             
