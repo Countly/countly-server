@@ -1,0 +1,76 @@
+.dbviewer-tab {
+    &__sidebar {
+        border-top-right-radius: 4px;
+        border-top-left-radius: 4px;
+        border: 1px solid #ECECEC;
+    }
+
+    &__app-selector-dropdown {
+        padding: 16px;
+        border-bottom: 1px solid #ECECEC;
+        
+        .el-select {
+            width: 100%;
+        }
+    }
+
+    &__filter-textarea {
+        textarea {
+            height: 150px;
+        }
+    }
+
+    &__popup-content {
+        display: flex;
+        flex-direction: column;
+        padding: 15px 0px;
+        min-height: 250px;
+        justify-content: space-evenly;
+
+        .el-select {
+            width: 100%;
+        }
+    }
+
+    &__sort-inputs {
+        display: flex;
+
+        .el-select {
+            width: 50%;
+        }
+
+        .el-switch {
+            width: 50%;
+            align-items: center;
+            height: 38px;
+            justify-content: center;
+        }
+    }
+
+    &__result-table {
+        height: calc(80vh - 40px);
+        overflow-y: scroll;
+    }
+
+    &__collections-list {
+        border-radius: 0px !important;
+        border: none !important;
+    }
+}
+
+.dbviewer-aggregate {
+    &__query-area {
+        .cly-vue-section__content {
+            border: none;
+        }
+    }
+
+    &__query-button-area {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    &__back-button {
+        cursor: pointer;
+    }
+}
