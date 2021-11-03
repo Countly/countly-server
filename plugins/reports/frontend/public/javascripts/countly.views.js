@@ -212,10 +212,6 @@
             },
         },
         watch: {
-            "apps": function () {
-                var self = this;
-                
-            }
         },
         props: {
             controls: {
