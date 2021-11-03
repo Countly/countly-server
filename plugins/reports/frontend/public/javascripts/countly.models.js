@@ -224,14 +224,14 @@
                     },).then(function(data) {
                         if (data.length > 0) {
                             var cnts = app.manageAppsView.getTimeZones();
-                            ReportingView.zones = {};
+                           // ReportingView.zones = {};
                             var zNames = {};
                             var zoneNames = [];
                             for (var i in cnts) {
                                 for (var j = 0; j < cnts[i].z.length; j++) {
                                     for (var k in cnts[i].z[j]) {
                                         zoneNames.push(k);
-                                        ReportingView.zones[k] = cnts[i].z[j][k];
+                                       // ReportingView.zones[k] = cnts[i].z[j][k];
                                         zNames[cnts[i].z[j][k]] = k;
                                     }
                                 }

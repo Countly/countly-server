@@ -5,7 +5,6 @@
     countlyAuth,
     countlyView,
     countlyEvent,
-    ReportingView,
     countlyReporting,
     jQuery,
     app,
@@ -13,1364 +12,358 @@
     _,
     T
  */
- var FEATURE_NAME = "reports";
+(function() {
+    var FEATURE_NAME = "reports";
 
-window.ReportingView = countlyView.extend({
-    featureName: 'reports',
-    statusChanged: {},
-    emailInput: {},
-    initialize: function() {
-    },
-    beforeRender: function() {
-        var allAjaxCalls = [];
-        var reportCallbacks = app.getReportsCallbacks();
-
-        Object.keys(reportCallbacks).forEach(function(report) {
-            if (reportCallbacks[report].ajax) {
-                allAjaxCalls.push(reportCallbacks[report].ajax());
-            }
-        });
-
-        allAjaxCalls.push(
-            countlyReporting.initialize()
-        );
-
-        if (this.template) {
-            return $.when.apply(null, allAjaxCalls).then(function() {});
-        }
-        else {
-            var self = this;
-            allAjaxCalls.push(
-                T.get('/reports/templates/drawer.html', function(src) {
-                    src = (Handlebars.compile(src))({"email-placeholder": jQuery.i18n.map["reports.report-email"]});
-                    Handlebars.registerPartial("reports-drawer-template", src);
-                }),
-                T.render('/reports/templates/reports.html', function(src) {
-                    self.template = src;
-                })
-            );
-            return $.when.apply(null, allAjaxCalls).then(function() {});
-        }
-    },
-    getDayName: function(day) {
-        switch (day) {
-        case 1:
-            return jQuery.i18n.map["reports.monday"];
-        case 2:
-            return jQuery.i18n.map["reports.tuesday"];
-        case 3:
-            return jQuery.i18n.map["reports.wednesday"];
-        case 4:
-            return jQuery.i18n.map["reports.thursday"];
-        case 5:
-            return jQuery.i18n.map["reports.friday"];
-        case 6:
-            return jQuery.i18n.map["reports.saturday"];
-        case 7:
-            return jQuery.i18n.map["reports.sunday"];
-        default:
-            return "";
-        }
-    },
-    getDayNumber: function(day) {
-        switch (day) {
-        case jQuery.i18n.map["reports.monday"]:
-            return "1";
-        case jQuery.i18n.map["reports.tuesday"]:
-            return "2";
-        case jQuery.i18n.map["reports.wednesday"]:
-            return "3";
-        case jQuery.i18n.map["reports.thursday"]:
-            return "4";
-        case jQuery.i18n.map["reports.friday"]:
-            return "5";
-        case jQuery.i18n.map["reports.saturday"]:
-            return "6";
-        case jQuery.i18n.map["reports.sunday"]:
-            return "7";
-        default:
-            return "1";
-        }
-    },
-    renderCommon: function(isRefresh) {
-        var cnts = app.manageAppsView.getTimeZones();
-        ReportingView.zones = {};
-        var zNames = {};
-        var zoneNames = [];
-        for (var i in cnts) {
-            for (var j = 0; j < cnts[i].z.length; j++) {
-                for (var k in cnts[i].z[j]) {
-                    zoneNames.push(k);
-                    ReportingView.zones[k] = cnts[i].z[j][k];
-                    zNames[cnts[i].z[j][k]] = k;
-                }
-            }
-        }
-
-        var data = countlyReporting.getData();
-        for (i = 0; i < data.length; i++) {
-            data[i].appNames = CountlyHelpers.appIdsToNames(data[i].apps || []).split(", ");
-            if (data[i].hour < 10) {
-                data[i].hour = "0" + data[i].hour;
-            }
-            if (data[i].minute < 10) {
-                data[i].minute = "0" + data[i].minute;
-            }
-
-            data[i].dayname = this.getDayName(data[i].day);
-            data[i].zoneName = zNames[data[i].timezone] || "(GMT+00:00) GMT (no daylight saving)";
-        }
-
-        zoneNames.sort(function(a, b) {
-            a = parseFloat(a.split(")")[0].replace(":", ".").substring(4));
-            b = parseFloat(b.split(")")[0].replace(":", ".").substring(4));
-            if (a < b) {
-                return -1;
-            }
-            if (a > b) {
-                return 1;
-            }
-            return 0;
-        });
-        this.zoneNames = zoneNames;
-        this.zones = ReportingView.zones;
-        this.templateData = {
-            "page-title": jQuery.i18n.map["reports.title"],
-            "data": data,
-            "apps": countlyGlobal.apps,
-            "zoneNames": zoneNames,
-            "member": countlyGlobal.member,
-            "hasCrash": (typeof countlyCrashes !== "undefined"),
-            "hasPush": (typeof countlyPush !== "undefined"),
-            "hasRevenue": (typeof countlyRevenue !== "undefined"),
-            "hasViews": (typeof countlyViews !== "undefined")
-        };
-
-
-        var self = this;
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-            self.dtable = $('#reports-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": data,
-                "fnRowCallback": function(nRow, aData) {
-                    $(nRow).attr("id", aData._id);
-                },
-                "aoColumns": [
-                    {"mData": 'title', "sType": "string", "sTitle": jQuery.i18n.map['report.report-title']},
-                    {
-                        "mData": function(row, type) {
-                            if (type === "display") {
-                                var disabled = (row.prepackaged) ? 'disabled' : '';
-                                var input = '<div class="on-off-switch ' + disabled + '">';
-                                if (row.enabled) {
-                                    input += '<input type="checkbox" class="on-off-switch-checkbox report-switcher" id="plugin-' + row._id + '" checked ' + disabled + '>';
+    var TableView = countlyVue.views.BaseView.extend({
+        template: '#reports-table',
+        computed: {
+            tableRows: function () {
+                var rows = this.$store.getters["countlyReports/table/all"];
+                return rows;
+            },
+        },
+        data: function () {
+            var tableDynamicCols = [{
+                value: "emails",
+                label: jQuery.i18n.map['reports.emails'],
+                required: true, 
+            },{
+                value: "timeColumn",
+                label: jQuery.i18n.map['reports.time'],
+                required: true, 
+            }]; 
+            return {
+                localTableTrackedFields: ['enabled'],
+                isAdmin: countlyGlobal.member.global_admin,
+                tableDynamicCols,
+            };
+        },
+        methods: {
+            handleHookEditCommand: function(command, scope) {
+                switch (command) {
+                    case "edit-comment":
+                        /* eslint-disable */
+                        var data = {...scope.row};
+                        /* eslint-enable */
+                        delete data.operation;
+                        delete data.triggerEffectColumn;
+                        delete data.nameDescColumn;
+                        this.$parent.$parent.openDrawer("home", data);
+                        break;
+                    case "delete-comment":
+                        var hookID = scope.row._id;
+                        var name = scope.row.name;
+                        var self = this;
+                        return CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function (result) {
+                            if (result) {
+                                hooksPlugin.deleteHook(hookID, function () {
+                                    self.$store.dispatch("countlyReports/table/fetchAll")
+                                });
+                            }
+                        }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-an-event"});
+                        break;
+                    case "send-comment":
+                        var overlay = $("#overlay").clone();
+                        overlay.show();
+                        $.when(countlyReporting.send(scope.row._id)).always(function(data) {
+                            overlay.hide();
+                            if (data && data.result === "Success") {
+                                CountlyHelpers.alert(jQuery.i18n.map["reports.sent"], "green");
+                            }
+                            else {
+                                if (data && data.result) {
+                                    CountlyHelpers.alert(data.result, "red");
                                 }
                                 else {
-                                    input += '<input type="checkbox" class="on-off-switch-checkbox report-switcher" id="plugin-' + row._id + '" ' + disabled + '>';
-                                }
-                                input += '<label class="on-off-switch-label" for="plugin-' + row._id + '"></label>';
-                                input += '<span class="text">' + 'Enable' + '</span>';
-                                return input;
-                            }
-                            else {
-                                return row.enabled;
-                            }
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map['report.status'],
-                        "bSortable": false,
-
-                    },
-                    {
-                        "mData": function(row) {
-                            return row.emails.join("<br/>");
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map["reports.emails"]
-                    },
-                    {
-                        "mData": function(row) {
-                            var ret = "";
-
-                            if (row.report_type === "core") {
-                                for (var rowProp in row.metrics) {
-                                    ret += jQuery.i18n.map["reports." + rowProp] + ", ";
-                                }
-
-                                ret = ret.substring(0, ret.length - 2);
-
-                                ret += " for " + row.appNames.join(", ");
-                            }
-                            else if (!row.pluginEnabled) {
-                                ret = jQuery.i18n.prop("reports.enable-plugin", row.report_type);
-                            }
-                            else if (!row.isValid) {
-                                ret = jQuery.i18n.prop("reports.not-valid");
-                            }
-                            else {
-                                var report = app.getReportsCallbacks()[row.report_type];
-                                if (report && report.tableData) {
-                                    ret = report.tableData(row);
+                                    CountlyHelpers.alert(jQuery.i18n.map["reports.too-long"], "red");
                                 }
                             }
-
-                            return ret;
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map["reports.metrics"]
-                    },
-                    {
-                        "mData": function(row) {
-                            return jQuery.i18n.map["reports." + row.frequency];
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map["reports.frequency"]
-                    },
-                    {
-                        "mData": function(row) {
-                            var ret = jQuery.i18n.map["reports.at"] + " " + row.hour + ":" + row.minute + ", " + row.zoneName;
-                            if (row.frequency === "weekly") {
-                                ret += ", " + jQuery.i18n.map["reports.on"] + " " + row.dayname;
-                            }
-                            if (row.frequency === "monthly") {
-                                ret += ", " + jQuery.i18n.map["reports.every-month"];
-                            }
-                            return ret;
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map["reports.time"]
-                    },
-                    {
-                        "mData": function(row) {
-                            var createdByMe = true;
-                            if (countlyGlobal.member.global_admin === true || row.user === countlyGlobal.member._id) {
-                                createdByMe = false;
-                            }
-                            return createdByMe;
-                        },
-                        "sTitle": jQuery.i18n.map['report.report-created-by-me'],
-                        "bSortable": false,
-                    },
-                    {
-                        "mData": function(row) {
-                            var viewOnly = true;
-                            if (countlyGlobal.member.global_admin === true || row.user === countlyGlobal.member._id) {
-                                viewOnly = false;
-                            }
-                            var menu = "<div class='options-item'>" +
-                                            "<div class='edit'></div>" +
-                                            "<div class='edit-menu reports-menu'>";
-                            if (row.pluginEnabled && row.isValid) {
-
-                                menu += viewOnly ? "" : "<div class='edit-report item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i>Edit</div>";
-                                menu += "<div class='send-report item'" + " id='" + row._id + "'" +
-                                            "><i class='fa fa-paper-plane'></i>Send Now</div>" +
-                                        "<div class='preview-report item'" + " id='" + row._id + "'" + ">" +
-                                         '<a href=\'/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: row._id}) + '\' target="_blank" class=""><i class="fa fa-eye"></i><span data-localize="reports.preview">' + jQuery.i18n.map["reports.preview"] + '</span></a>' +
-                                          "</div>";
-                            }
-                            menu += viewOnly ? "" : "<div class='delete-report item'" + " id='" + row._id + "'" + " data-name = '" + row.title + "' ><i class='fa fa-trash'></i>Delete</div>" +
-                                            "</div>" +
-                                        "</div>";
-                            return menu;
-                        },
-                        "bSortable": false,
-                    },
-                ]
-            }));
-            self.dtable.fnSort([ [0, 'desc'] ]);
-            self.dtable.stickyTableHeaders();
-            self.initTable();
-
-            self.initReportsWidget("core");
-            $("#add-report").on("click", function() {
-                self.widgetDrawer.init("core");
-            });
-
-            if (!countlyAuth.validateCreate(self.featureName)) {
-                $('#add-report').hide();
-            }
-
-            if (!countlyAuth.validateUpdate(self.featureName)) {
-                $('.edit-report').hide();
-            }
-
-            if (!countlyAuth.validateDelete(self.featureName)) {
-                $('.delete-report').hide();
-            }
-        }
-    },
-
-    initReportsWidget: function(reportType) {
-        var self = this;
-        var apps = [];
-
-        $("#add-report").on("click", function() {
-            $("#reports-widget-drawer").addClass("open");
-            $("#reports-widget-drawer").removeClass("editing");
-
-            var reportCallbacks = app.getReportsCallbacks();
-
-            Object.keys(reportCallbacks).forEach(function(report) {
-                if (reportCallbacks[report].reset) {
-                    reportCallbacks[report].reset();
-                }
-            });
-
-            self.widgetDrawer.resetCore();
-        });
-
-        $("#frequency-dropdown").clySelectSetItems([
-            {name: jQuery.i18n.map["reports.daily"], value: "daily"},
-            {name: jQuery.i18n.map["reports.weekly"], value: "weekly"},
-            {name: jQuery.i18n.map["reports.monthly"], value: "monthly"}
-        ]);
-
-        var timeList = [];
-        for (var i = 0; i < 24; i++) {
-            var v = (i > 9 ? i : "0" + i) + ":00";
-            timeList.push({ value: v, name: v});
-        }
-
-        $("#reports-time-dropdown").clySelectSetItems(timeList);
-
-        var cnts = app.manageAppsView.getTimeZones();
-        var zones = {};
-        var zNames = {};
-        var zoneNames = [];
-        var timeZoneList = [];
-        for (i in cnts) {
-            for (var j = 0; j < cnts[i].z.length; j++) {
-                for (var k in cnts[i].z[j]) {
-                    zoneNames.push(k);
-                    zones[k] = cnts[i].z[j][k];
-                    zNames[cnts[i].z[j][k]] = k;
-                }
-            }
-        }
-        zoneNames.sort(function(a, b) {
-            a = parseFloat(a.split(")")[0].replace(":", ".").substring(4));
-            b = parseFloat(b.split(")")[0].replace(":", ".").substring(4));
-            if (a < b) {
-                return -1;
-            }
-            if (a > b) {
-                return 1;
-            }
-            return 0;
-        });
-        zoneNames.forEach(function(zone) {
-            timeZoneList.push({value: zone, name: zone});
-        });
-        $("#reports-timezone-dropdown").clySelectSetItems(timeZoneList);
-
-        for (var appId in countlyGlobal.apps) {
-            apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
-        }
-
-        $("#reports-multi-app-dropdown").clyMultiSelectSetItems(apps);
-
-        $("#reports-multi-metrics-dropdown").clyMultiSelectSetItems(countlyReporting.getMetrics());
-
-        $('#reports-widge-close').off("click").on("click", function() {
-            $("#reports-widget-drawer").removeClass("open");
-        });
-
-        $('#daily-option').on("click", function() {
-            $("#reports-dow-section").css("display", "none");
-            $('#weekly-option').removeClass("selected");
-            $('#monthly-option').removeClass("selected");
-            $(this).addClass("selected");
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
-        $('#weekly-option').on("click", function() {
-            $("#reports-dow-section").css("display", "block");
-            $('#daily-option').removeClass("selected");
-            $('#monthly-option').removeClass("selected");
-            $("#reports-dow").clySelectSetSelection("", "");
-            $(this).addClass("selected");
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
-        $('#monthly-option').on("click", function() {
-            $("#reports-dow-section").css("display", "none");
-            $('#weekly-option').removeClass("selected");
-            $('#daily-option').removeClass("selected");
-            $(this).addClass("selected");
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
-
-        var weekList = [
-            {name: jQuery.i18n.map["reports.monday"], value: 1},
-            {name: jQuery.i18n.map["reports.tuesday"], value: 2},
-            {name: jQuery.i18n.map["reports.wednesday"], value: 3},
-            {name: jQuery.i18n.map["reports.thursday"], value: 4},
-            {name: jQuery.i18n.map["reports.friday"], value: 5},
-            {name: jQuery.i18n.map["reports.saturday"], value: 6},
-            {name: jQuery.i18n.map["reports.sunday"], value: 7},
-
-        ];
-        $("#reports-dow").clySelectSetItems(weekList);
-
-        $("#reports-create-widget").off().on("click", function() {
-            if ($(this).hasClass("disabled")) {
-                return;
-            }
-            var reportSetting = self.widgetDrawer.getReportSetting();
-            reportSetting.enabled = true;
-
-            for (var key in reportSetting) {
-                if (!reportSetting[key] || reportSetting[key] === '' ||
-                    (reportSetting[key] && reportSetting[key].length === 0)) {
-                    return CountlyHelpers.alert("Please complete all required fields",
-                        "green",
-                        function() { });
-                }
-            }
-            $.when(countlyReporting.create(reportSetting)).then(function(data) {
-                if (data.result === "Success") {
-                    $("#reports-widget-drawer").removeClass("open");
-                    app.activeView.render();
-                }
-                else {
-                    CountlyHelpers.alert(data.result, "red");
-                }
-            }, function(err) {
-                var data = JSON.parse(err.responseText);
-                CountlyHelpers.alert(data.result, "red");
-            });
-        });
-
-        $("#reports-save-widget").off().on("click", function() {
-            if ($(this).hasClass("disabled")) {
-                return;
-            }
-            var reportSetting = self.widgetDrawer.getReportSetting();
-            reportSetting._id = $("#current_report_id").text();
-            for (var key in reportSetting) {
-                if (!reportSetting[key] || reportSetting[key] === '' ||
-                    (reportSetting[key] && reportSetting[key].length === 0)) {
-                    return CountlyHelpers.alert("Please complete all required fields",
-                        "green",
-                        function() { });
-                }
-            }
-            $.when(countlyReporting.update(reportSetting)).then(function(data) {
-                if (data.result === "Success") {
-                    $("#reports-widget-drawer").removeClass("open");
-                    app.activeView.render();
-                }
-                else {
-                    CountlyHelpers.alert(data.result, "red");
-                }
-            }, function(err) {
-                var data = JSON.parse(err.responseText);
-                CountlyHelpers.alert(data.result, "red");
-            });
-        });
-
-        $(".cly-drawer").find(".close").off("click").on("click", function() {
-            $(".grid-stack-item").removeClass("marked-for-editing");
-            $(this).parents(".cly-drawer").removeClass("open");
-        });
-
-        $("#report-name-input").on("keyup", function() {
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
-
-        $("#reports-multi-metrics-dropdown").on("cly-multi-select-change", function() {
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
-
-        $("#report-types").on("click", ".opt:not(.disabled)", function() {
-            $("#report-types").find(".opt").removeClass("selected");
-            $(this).addClass("selected");
-
-            var selReportType = $("#report-types").find(".opt.selected").data("report-type");
-
-            var reportCallbacks = app.getReportsCallbacks();
-
-            Object.keys(reportCallbacks).forEach(function(report) {
-                if (reportCallbacks[report].reset) {
-                    reportCallbacks[report].reset();
-                }
-            });
-
-            $("#reports-multi-app-dropdown").clyMultiSelectClearSelection();
-            $("#reports-multi-app-dropdown .select-items .item").removeClass("selected");
-            $("#reports-multi-metrics-dropdown").clyMultiSelectClearSelection();
-            $("#reports-multi-metrics-dropdown .select-items .item").removeClass("selected");
-
-            self.widgetDrawer.init(selReportType);
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
-
-        $("#reports-dow, #reports-time-dropdown, #reports-timezone-dropdown").on("cly-select-change", function() {
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
-
-        $("#reports-multi-app-dropdown").on("cly-multi-select-change", function() {
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-            var selectedApps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
-            self.loadEventsForApps(selectedApps);
-            self.checkEventsSectionView();
-            $(".include-events").clyMultiSelectClearSelection();
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
-        self.loadEventsForApps = function(targetApps) {
-            countlyEvent.getEventsForApps(targetApps, function(eventData) {
-                $("#reports-multi-events-dropdown").clyMultiSelectSetItems(eventData);
-                $("#reports-widget-drawer").trigger("cly-report-widget-section-events-loaded");
-            });
-        };
-
-        self.checkEventsSectionView = function() {
-            var selectedMetrics = $('#reports-multi-metrics-dropdown').clyMultiSelectGetSelection();
-            var selectedApps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
-            var eventsSection = $("#reports-widget-drawer .details .include-events").closest(".section");
-
-            if (selectedMetrics.indexOf("events") > -1 && selectedApps.length > 0) {
-                eventsSection.show();
-            }
-            else {
-                eventsSection.hide();
-            }
-        };
-
-        $("#reports-widget-drawer .details .include-metrics").on("cly-multi-select-change", function() {
-            self.checkEventsSectionView();
-        });
-        $("#reports-multi-events-dropdown").on("cly-multi-select-change", function() {
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
-
-        var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-        self.emailInput = $('#email-list-input').selectize({
-            plugins: ['remove_button'],
-            persist: false,
-            maxItems: null,
-            valueField: 'email',
-            labelField: 'name',
-            searchField: ['name', 'email'],
-            options: [
-                {email: countlyGlobal.member.email, name: ''},
-            ],
-            render: {
-                item: function(item, escape) {
-                    return '<div>' +
-                        (item.name ? '<span class="name">' + escape(item.name) + '</span>' : '') +
-                        (item.email ? '<span class="email">' + escape(item.email) + '</span>' : '') +
-                    '</div>';
-                },
-                option: function(item, escape) {
-                    var label = item.name || item.email;
-                    var caption = item.name ? item.email : null;
-                    return '<div>' +
-                        '<span class="label">' + escape(label) + '</span>' +
-                        (caption ? '<span class="caption">' + escape(caption) + '</span>' : '') +
-                    '</div>';
-                }
-            },
-            createFilter: function(input) {
-                var match, regex;
-
-                // email@address.com
-                regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
-                match = input.match(regex);
-                if (match) {
-                    return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
-                }
-
-                // name <email@address.com>
-                /*eslint-disable */
-                regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
-                /*eslint-enable */
-                match = input.match(regex);
-                if (match) {
-                    return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
-                }
-
-                return false;
-            },
-            create: function(input) {
-                if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
-                    return {email: input};
-                }
-                /*eslint-disable */
-                var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-                /*eslint-enable */
-                if (match) {
-                    return {
-                        email: match[2],
-                        name: $.trim(match[1])
-                    };
-                }
-                CountlyHelpers.alert('Invalid email address.', "red");
-                return false;
-            }
-        });
-
-        self.emailInput.on("change", function() {
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
-
-        $("#reports-widget-drawer").on("cly-report-widget-section-complete", function() {
-            var reportSetting = self.widgetDrawer.getReportSetting();
-            reportSetting.enabled = true;
-
-            var allGood = true;
-
-            for (var key in reportSetting) {
-                if (!reportSetting[key] || reportSetting[key] === '' ||
-                    (reportSetting[key] && reportSetting[key].length === 0)) {
-                    allGood = false;
-                }
-            }
-
-            if (allGood) {
-                $("#reports-create-widget").removeClass("disabled");
-                $("#reports-save-widget").removeClass("disabled");
-            }
-            else {
-                $("#reports-create-widget").addClass("disabled");
-                $("#reports-save-widget").addClass("disabled");
-            }
-        });
-
-        self.widgetDrawer.init(reportType);
-    },
-
-    widgetDrawer: {
-        init: function(reportType) {
-            var self = this;
-
-            self.report_type = reportType;
-            $("#reports-widget-drawer .details .section").hide();
-
-            $("#reports-widget-drawer .details #report-name-input").closest(".section").show();
-            $("#reports-widget-drawer .details #email-list-input").closest(".section").show();
-            $("#reports-widget-drawer .details #reports-frequency").closest(".section").show();
-            $("#reports-widget-drawer .details #reports-time-dropdown").closest(".section").show();
-            $("#reports-widget-drawer .details #reports-timezone-dropdown").closest(".section").show();
-            $("#reports-widget-drawer .details #report-types").closest(".section").show();
-
-
-            if ($("#weekly-option").hasClass("selected")) {
-                $("#reports-dow-section").show();
-            }
-            var $reportTypes = $("#report-types");
-            $reportTypes.find(".opt").removeClass("selected");
-            $reportTypes.find(".opt[data-report-type=" + reportType + "]").addClass("selected");
-
-            var report = app.getReportsCallbacks()[reportType];
-            if (report && report.init) {
-                report.init();
-            }
-            $("#reports-widget-drawer .report-multi-events-section").hide();
-            if (reportType === "core") {
-                $("#reports-widget-drawer .details #reports-multi-app-dropdown").closest(".section").show();
-                $("#reports-widget-drawer .details .include-metrics").closest(".section").show();
-            }
-        },
-
-        loadData: function(data) {
-            var reportType = data.report_type || "core";
-            this.init(reportType);
-            var emailInp = app.reportingView.emailInput;
-            if (emailInp && emailInp.length > 0) {
-                for (var i = 0; i < data.emails.length; i++) {
-                    (emailInp[0]).selectize.addOption({ "name": '', "email": data.emails[i] });
-                }
-                (emailInp[0]).selectize.setValue(data.emails, false);
-            }
-
-            $("#report-types").find(".opt").removeClass("selected");
-            $("#report-types").find(".opt[data-report-type=" + reportType + "]").addClass("selected");
-
-            $("#reports-widget-drawer").addClass("open editing");
-            $("#current_report_id").text(data._id);
-            $("#report-name-input").val(data.title);
-
-            if (data.frequency === 'daily') {
-                $('#daily-option').addClass("selected");
-                $('#weekly-option').removeClass("selected");
-                $('#monthly-option').removeClass("selected");
-                $("#reports-dow-section").css("display", "none");
-            }
-            else if (data.frequency === 'monthly') {
-                $('#daily-option').removeClass("selected");
-                $('#weekly-option').removeClass("selected");
-                $('#monthly-option').addClass("selected");
-                $("#reports-dow-section").css("display", "none");
-            }
-            else {
-                $('#daily-option').removeClass("selected");
-                $('#monthly-option').removeClass("selected");
-                $('#weekly-option').addClass("selected");
-                $("#reports-dow-section").css("display", "block");
-                $("#reports-dow").clySelectSetSelection(data.day, app.reportingView.getDayName(data.day));
-            }
-
-            var timeString = data.hour + ":" + data.minute;
-            $("#reports-time-dropdown").clySelectSetSelection(timeString, timeString);
-
-            $("#reports-timezone-dropdown").clySelectSetSelection(data.zoneName, data.zoneName);
-
-            var report = app.getReportsCallbacks()[reportType];
-            if (report && report.set) {
-                report.set(data);
-            }
-
-            if (reportType === "core") {
-                var appSelected = [];
-                for (var index in data.apps) {
-                    var appId = data.apps[index];
-                    appSelected.push({name: countlyGlobal.apps[appId].name, value: appId});
-                }
-
-                $("#reports-multi-app-dropdown").clyMultiSelectSetSelection(appSelected);
-
-                var selectedMetrics = [];
-                var metricOptions = countlyReporting.getMetrics();
-                metricOptions.forEach(function(m) {
-                    if (data.metrics[m.value] === true) {
-                        selectedMetrics.push(m);
-                    }
-                });
-                $("#reports-multi-metrics-dropdown").clyMultiSelectSetSelection(selectedMetrics);
-
-                $("#reports-widget-drawer").off("cly-report-widget-section-events-loaded").on("cly-report-widget-section-events-loaded", function() {
-                    if (data.metrics.events > -1) {
-                        var eventsSelected = data.selectedEvents || [];
-                        var items = $("#reports-multi-events-dropdown").clyMultiSelectGetItems();
-                        var map = {};
-                        for (var item = 0; item < items.length; item++) {
-                            map[items[item].value] = items[item].name;
-                        }
-                        var options = eventsSelected.map(function(e) {
-                            var elements = e.split("***");
-                            var targetAppId = elements[0];
-                            var eventName = map[e] || elements[1];
-                            var displayName = eventName + " (" + countlyGlobal.apps[targetAppId].name + ")";
-
-                            return {value: e, name: displayName};
                         });
-                        $("#reports-multi-events-dropdown").clyMultiSelectSetSelection(options);
-                    }
+                        break;
+
+                    case "preview-comment":
+                        var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id})
+                        window.open(url, "_blank");
+                        break;
+                    default:
+                        return
+                }
+            },
+            updateStatus:  async function (scope) {
+                var diff = scope.diff;
+                var status = {}
+                diff.forEach(function (item) {
+                    status[item.key] = item.newValue;
                 });
-            }
-
-            $("#reports-save-widget").addClass("disabled");
-        },
-
-        resetCore: function() {
-            $("#current_report_id").text("");
-            $("#report-name-input").val("");
-            $("#report-name-input").attr("placeholder", jQuery.i18n.prop("reports.report-name"));
-            $("#reports-dow").clySelectSetSelection("", jQuery.i18n.prop("reports.select_dow"));
-            $("#reports-timezone-dropdown").clySelectSetSelection("", jQuery.i18n.prop("reports.select_timezone"));
-            $("#reports-time-dropdown").clySelectSetSelection("", jQuery.i18n.prop("reports.select_time"));
-            $("#reports-multi-app-dropdown").clyMultiSelectClearSelection();
-            $("#reports-multi-app-dropdown .select-items .item").removeClass("selected");
-            $("#reports-multi-app-dropdown .select-items .item").removeClass("disabled");
-
-
-            $("#reports-multi-metrics-dropdown").clyMultiSelectClearSelection();
-            $("#reports-multi-metrics-dropdown .select-items .item").removeClass("selected");
-            $("#reports-multi-metrics-dropdown").clyMultiSelectSetItems(countlyReporting.getMetrics());
-            $(".include-events").clyMultiSelectClearSelection();
-
-            $("#reports-dow-section").css("display", "none");
-            $("#reports-frequency").find(".check").removeClass("selected");
-            $('#daily-option').addClass("selected");
-            var emailInp = app.reportingView.emailInput;
-
-            if (emailInp && emailInp.length > 0) {
-                (emailInp[0]).selectize.addOption({});
-                (emailInp[0]).selectize.setValue([], false);
-            }
-        },
-
-        getReportSetting: function() {
-            var reportType = this.report_type;
-            var emails = [];
-            $("#email-list-input  :selected").each(function() {
-                emails.push($(this).val());
-            });
-            var settings = {
-                report_type: reportType,
-                title: $("#report-name-input").val(),
-                emails: emails,
-                frequency: "daily",
-                day: 1,
-                hour: null,
-                minute: null
-            };
-            var selectDaily = $("#daily-option").hasClass("selected");
-            var selectMonthly = $("#monthly-option").hasClass("selected");
-            if (!selectDaily && !selectMonthly) {
-                settings.frequency = "weekly";
-                settings.day = parseInt($("#reports-dow").clySelectGetSelection());
-            }
-            if (selectMonthly) {
-                settings.frequency = "monthly";
-            }
-            var timeSelected = $("#reports-time-dropdown").clySelectGetSelection();
-            if (timeSelected) {
-                var time = timeSelected ? timeSelected.split(":") : null;
-                settings.hour = time[0];
-                settings.minute = time[1];
-            }
-
-            var zones = app.reportingView.zones;
-            if (!zones) {
-                var cnts = app.manageAppsView.getTimeZones();
-                zones = {};
-                for (var i in cnts) {
-                    for (var j = 0; j < cnts[i].z.length; j++) {
-                        for (var k in cnts[i].z[j]) {
-                            zones[k] = cnts[i].z[j][k];
-                        }
-                    }
-                }
-            }
-
-            var timeZone = $("#reports-timezone-dropdown").clySelectGetSelection() || "Etc/GMT";
-            settings.timezone = zones[timeZone];
-
-            if (reportType === "core") {
-                settings.metrics = {};
-                var selectedMetrics = $('#reports-multi-metrics-dropdown').clyMultiSelectGetSelection();
-                selectedMetrics.forEach(function(m) {
-                    settings.metrics[m] = true;
-                });
-                if (selectedMetrics.indexOf("events") > -1) {
-                    settings.selectedEvents = $("#reports-multi-events-dropdown").clyMultiSelectGetSelection();
-                }
-
-                settings.apps = $('#reports-multi-app-dropdown').clyMultiSelectGetSelection();
-            }
-
-            var report = app.getReportsCallbacks()[reportType];
-            if (report && report.settings) {
-                var reportSettings = report.settings();
-                for (var key in reportSettings) {
-                    settings[key] = reportSettings[key];
-                }
-            }
-
-            return settings;
+                await this.$store.dispatch("countlyReports/table/updateStatus", status);
+                await this.$store.dispatch("countlyReports/table/fetchAll");
+                scope.unpatch();
+            },
+            refresh: function () {
+            // this.$store.dispatch("countlyReports/table/fetchAll");
+            },
         }
-    },
-    initTable: function() {
-        var self = this;
-        $(".save-report").off("click").on("click", function(data) {
-            $.when(countlyReporting.update(data)).then(function(result) {
-                if (result.result === "Success") {
-                    app.activeView.render();
-                }
-                else {
-                    CountlyHelpers.alert(result.result, "red");
-                }
-            }, function(err) {
-                var errorData = JSON.parse(err.responseText);
-                CountlyHelpers.alert(errorData.result, "red");
-            });
-        });
-
-        $(".edit-report").off("click").on("click", function(e) {
-            var reportId = e.target.id;
-            var formData = countlyReporting.getReport(reportId);
-            self.widgetDrawer.loadData(formData);
-        });
-
-        $(".delete-report").off("click").on("click", function(e) {
-            var id = e.target.id;
-            var name = $(e.target).attr("data-name");
-            CountlyHelpers.confirm(jQuery.i18n.prop("reports.confirm", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
-                if (!result) {
-                    return false;
-                }
-                $.when(countlyReporting.del(id)).then(function(data) {
-                    if (data.result === "Success") {
-                        app.activeView.render();
-                    }
-                    else {
-                        CountlyHelpers.alert(data.result, "red");
-                    }
-                });
-
-            }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["reports.yes-delete-report"]], {title: jQuery.i18n.map["reports.delete-report-title"], image: "delete-email-report"});
-        });
-
-        $(".send-report").off("click").on("click", function(e) {
-            var id = e.target.id;
-            var overlay = $("#overlay").clone();
-            overlay.show();
-            $.when(countlyReporting.send(id)).always(function(data) {
-                overlay.hide();
-                if (data && data.result === "Success") {
-                    CountlyHelpers.alert(jQuery.i18n.map["reports.sent"], "green");
-                }
-                else {
-                    if (data && data.result) {
-                        CountlyHelpers.alert(data.result, "red");
-                    }
-                    else {
-                        CountlyHelpers.alert(jQuery.i18n.map["reports.too-long"], "red");
-                    }
-                }
-            });
-        });
-
-        $('input[name=frequency]').off("click").on("click", function() {
-            var currUserDetails = $(".user-details:visible");
-            switch ($(this).val()) {
-            case "daily":
-                currUserDetails.find(".reports-dow").hide();
-                break;
-            case "weekly":
-                currUserDetails.find(".reports-dow").show();
-                break;
-            case "monthly":
-                currUserDetails.find(".reports-dow").hide();
-                break;
-            }
-        });
-        CountlyHelpers.initializeSelect($(".user-details"));
-
-        // load menu
-        $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function() {
-            $(".edit-menu").fadeOut();
-            $(this).next(".edit-menu").fadeToggle();
-            event.stopPropagation();
-        });
-
-        $(window).click(function() {
-            $(".options-item").find(".edit").next(".edit-menu").fadeOut();
-        });
-
-        $(".report-switcher").off("click").on("click", function() {
-            var pluginId = this.id.toString().replace(/^plugin-/, '');
-            var newStatus = $(this).is(":checked");
-            var list = countlyReporting.getData();
-            var record = _.filter(list, function(item) {
-                return item._id === pluginId;
-            });
-            if (record) {
-                (record[0].enabled !== newStatus) ? (self.statusChanged[pluginId] = newStatus) : (delete self.statusChanged[pluginId]);
-            }
-            var keys = _.keys(self.statusChanged);
-            if (keys && keys.length > 0) {
-                $(".data-save-bar-remind").text(' You made ' + keys.length + (keys.length === 1 ? ' change.' : ' changes.'));
-
-                return $(".data-saver-bar").removeClass("data-saver-bar-hide");
-            }
-            $(".data-saver-bar").addClass("data-saver-bar-hide");
-        });
-
-        $(".data-saver-cancel-button").off("click").on("click", function() {
-            $.when(countlyReporting.initialize()).then(function() {
-                self.statusChanged = {};
-                self.renderCommon();
-                app.localize();
-                return $(".data-saver-bar").addClass("data-saver-bar-hide");
-            });
-        });
-
-        $(".data-saver-button").off("click").on("click", function() {
-            $.when(countlyReporting.updateStatus(self.statusChanged)).then(function() {
-                return $.when(countlyReporting.initialize()).then(function() {
-                    self.statusChanged = {};
-                    self.renderCommon();
-                    app.localize();
-                    return $(".data-saver-bar").addClass("data-saver-bar-hide");
-                });
-            });
-        });
-
-        $(".save-table-data").css("display", "none");
-    }
-});
-
-app.addReportsCallbacks = function(plugin, options) {
-    if (!this.reportCallbacks) {
-        this.reportCallbacks = {};
-    }
-
-    this.reportCallbacks[plugin] = options;
-};
-
-app.getReportsCallbacks = function() {
-    return this.reportCallbacks;
-};
-
-app.addReportsCallbacks("reports", {
-    initialize: function(el, reportType, cb) {
-        el = el || "body";
-        var self = this;
-        $.when(
-            T.get('/reports/templates/drawer.html', function(src) {
-                self.reportsDrawer = src;
-            }),
-            countlyReporting.initialize()
-        ).then(function() {
-            $('#reports-widget-drawer').remove();
-            var drawerViewDom = Handlebars.compile(self.reportsDrawer)({"email-placeholder": jQuery.i18n.map["reports.report-email"]});
-            $(el).after(drawerViewDom);
-            app.localize();
-            app.reportingView.initReportsWidget(reportType);
-            $("#reports-widget-drawer .details #report-types").closest(".section").hide();
-
-            if (cb) {
-                return cb();
-            }
-        });
-    }
-});
+    });
 
 
 
-
-var TableView = countlyVue.views.BaseView.extend({
-    template: '#reports-table',
-    computed: {
-        tableRows: function () {
-            var rows = this.$store.getters["countlyReports/table/all"];
-            return rows;
+    var ReportsDrawer = countlyVue.views.BaseView.extend({
+        template: '#reports-drawer',
+        mixins: [
+            countlyVue.container.dataMixin({
+                "externalDataTypeOptions": "/reports/data-type",
+            })
+        ],
+        components: {
         },
-    },
-    data: function () {
-        var tableDynamicCols = [{
-            value: "emails",
-            label: jQuery.i18n.map['reports.emails'],
-            required: true, 
-        },{
-            value: "timeColumn",
-            label: jQuery.i18n.map['reports.time'],
-            required: true, 
-        }]; 
-        return {
-            localTableTrackedFields: ['enabled'],
-            isAdmin: countlyGlobal.member.global_admin,
-            tableDynamicCols,
-        };
-    },
-    methods: {
-        handleHookEditCommand: function(command, scope) {
-            switch (command) {
-                case "edit-comment":
-                    var data = {...scope.row};
-                    delete data.operation;
-                    delete data.triggerEffectColumn;
-                    delete data.nameDescColumn;
-                    this.$parent.$parent.openDrawer("home", data);
-                    break;
-                case "delete-comment":
-                    var hookID = scope.row._id;
-                    var name = scope.row.name;
-                    var self = this;
-                    return CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function (result) {
-                        if (result) {
-                            hooksPlugin.deleteHook(hookID, function () {
-                                self.$store.dispatch("countlyReports/table/fetchAll")
-                            });
-                        }
-                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-an-event"});
-                    break;
-                case "send-comment":
-                    var overlay = $("#overlay").clone();
-                    overlay.show();
-                    $.when(countlyReporting.send(scope.row._id)).always(function(data) {
-                        overlay.hide();
-                        if (data && data.result === "Success") {
-                            CountlyHelpers.alert(jQuery.i18n.map["reports.sent"], "green");
-                        }
-                        else {
-                            if (data && data.result) {
-                                CountlyHelpers.alert(data.result, "red");
-                            }
-                            else {
-                                CountlyHelpers.alert(jQuery.i18n.map["reports.too-long"], "red");
-                            }
-                        }
-                    });
-                    break;
-
-                case "preview-comment":
-                    var url = '/i/reports/preview?api_key=' + countlyGlobal.member.api_key + '&args=' + JSON.stringify({_id: scope.row._id})
-                    window.open(url, "_blank");
-                    break;
-                default:
-                    return
+        data: function () {
+            const appsSelectorOption = [];
+            for (let id in countlyGlobal.apps) {
+                appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
             }
-        },
-        updateStatus:  async function (scope) {
-            var diff = scope.diff;
-            var status = {}
-            diff.forEach(function (item) {
-                status[item.key] = item.newValue;
-            });
-            await this.$store.dispatch("countlyReports/table/updateStatus", status);
-            await this.$store.dispatch("countlyReports/table/fetchAll");
-            scope.unpatch();
-        },
-        refresh: function () {
-           // this.$store.dispatch("countlyReports/table/fetchAll");
-        },
-    }
-});
 
+            // const reportTypeOptions = [
+            //     {label: jQuery.i18n.map["reports.core"], value: 'core'},
+            // ];
+            // if (countlyGlobal.plugins.indexOf("dashboards")  > -1) {
+            //     reportTypeOptions.push({label: jQuery.i18n.map["dashboards.report"], value: 'dashboards'});
+            // }
 
-
-var ReportsDrawer = countlyVue.views.BaseView.extend({
-    template: '#reports-drawer',
-    mixins: [
-        countlyVue.container.dataMixin({
-            "externalDataTypeOptions": "/reports/data-type",
-        })
-    ],
-    components: {
-    },
-    data: function () {
-        const appsSelectorOption = [];
-        for (let id in countlyGlobal.apps) {
-            appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
-        }
-
-        // const reportTypeOptions = [
-        //     {label: jQuery.i18n.map["reports.core"], value: 'core'},
-        // ];
-        // if (countlyGlobal.plugins.indexOf("dashboards")  > -1) {
-        //     reportTypeOptions.push({label: jQuery.i18n.map["dashboards.report"], value: 'dashboards'});
-        // }
-
-        const metricOptions = [
-            {label: jQuery.i18n.map["reports.analytics"], value: "analytics"},
-            {label: jQuery.i18n.map["reports.events"], value: "events"},
-            {label: jQuery.i18n.map["reports.revenue"], value: "revenue"},
-            {label: jQuery.i18n.map["reports.crash"], value: "crash"},
-        ];
-
-        if (countlyGlobal.plugins.indexOf("star-rating") > -1) {
-            metricOptions.push({label: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
-        }
-
-        if (countlyGlobal.plugins.indexOf("performance-monitoring") > -1) {
-            metricOptions.push({label: jQuery.i18n.map["sidebar.performance-monitoring"], value: "performance"});
-        }
-
-        const frequencyOptions = [
-            {label: jQuery.i18n.map["reports.daily"], value: "daily", description: jQuery.i18n.map["reports.daily-desc"]},
-            {label: jQuery.i18n.map["reports.weekly"], value: "weekly", description: jQuery.i18n.map["reports.weekly-desc"]},
-            {label: jQuery.i18n.map["reports.monthly"], value: "monthly", description: jQuery.i18n.map["reports.monthly-desc"]},
-        ];
-        const dayOfWeekOptions = [
-            {label: jQuery.i18n.map["reports.monday"], value: 1},
-            {label: jQuery.i18n.map["reports.tuesday"], value: 2},
-            {label: jQuery.i18n.map["reports.wednesday"], value: 3},
-            {label: jQuery.i18n.map["reports.thursday"], value: 4},
-            {label: jQuery.i18n.map["reports.friday"], value: 5},
-            {label: jQuery.i18n.map["reports.saturday"], value: 6},
-            {label: jQuery.i18n.map["reports.sunday"], value: 7},
-
-        ];
-        var zones = [];
-        for (var country in countlyGlobal.timezones) {
-            countlyGlobal.timezones[country].z.forEach((item) => {
-                for (var zone in item) {
-                    zones.push({value: item[zone], label: countlyGlobal.timezones[country].n + ' ' + zone});
-                }
-            });
-        }
-        const timeListOptions = [];
-        for (var i = 0; i < 24; i++) {
-            var v = (i > 9 ? i : "0" + i) + ":00";
-            timeListOptions.push({ value: i, label: v});
-        }
-
-        return {
-            title: "",
-            saveButtonLabel: "",
-            appsSelectorOption,
-            metricOptions,
-            eventOptions: [],
-            frequencyOptions,
-            dayOfWeekOptions,
-            timeListOptions,
-            timezoneOptions: zones,
-            emailOptions:[{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
-            showApps: true,
-            showMetrics: true,
-            showDashboards: false,
-            reportDateRangesOptions: [],
-        };
-    },
-    computed: {
-        reportTypeOptions: function() {
-            var options = [
-                {label: jQuery.i18n.map["reports.core"], value: 'core'},
+            const metricOptions = [
+                {label: jQuery.i18n.map["reports.analytics"], value: "analytics"},
+                {label: jQuery.i18n.map["reports.events"], value: "events"},
+                {label: jQuery.i18n.map["reports.revenue"], value: "revenue"},
+                {label: jQuery.i18n.map["reports.crash"], value: "crash"},
             ];
-            if (this.externalDataTypeOptions) {
-                options = options.concat(this.externalDataTypeOptions);
-            }
-            return options;
-        },
-        dashboardsOptions: function() {
-            var dashboardsList = countlyDashboards.getAllDashboards();
-            var dashboardsOptions = [];
-            for (var i = 0; i < dashboardsList.length; i++) {
-                dashboardsOptions.push({ value: dashboardsList[i].id, label: dashboardsList[i].name });
-            };
-            countlyVue.container.registerData("/reports/dashboards-option", dashboardsOptions);
-            return dashboardsOptions;
-        },
-    },
-    watch: {
-        "apps": function () {
-            var self = this;
-            
-        }
-    },
-    props: {
-        controls: {
-            type: Object
-        }
-    },
-    methods: {
-        reportTypeChange: function(type) {
-            if (type === 'dashboards') {
-                this.$data.showApps = false;
-                this.$data.showMetrics = false;
-                this.$data.showDashboards = true; 
-                this.$children[0].$data.editedObject.metricsArray = [];
-            } else {
-                this.$data.showApps = true;
-                this.$data.showMetrics = true;
-                this.$data.showDashboards = false
-            }
-        },
-        reportFrequencyChange: function (reportFrequency) {
-            var reportDateRanges = countlyDashboards.getReportDateRanges(reportFrequency);
-            this.$data.reportDateRangesOptions = reportDateRanges.map(function(r) {
-                return {value: r.value, label: r.name} 
-            });
-        },
-        emailInputFilter: function (val) {
-            var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-            regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
-            var match = val.match(regex);
-            if (match) {
-                this.emailOptions=[{value:val, label:val}]
-            } else {
-                this.emailOptions=[]
-            }
-        },
-        appsChange: function (apps, change) {
-            var self = this;
-            countlyEvent.getEventsForApps(apps, function(eventData) {
-                const eventOptions = eventData.map(function(e){
-                    return {value: e.value, label: e.name};
-                });
-                self.$data.eventOptions = eventOptions;
-            });
-            this.$children[0].$data.editedObject.selectedEvents = [];
-        },
-        onSubmit: async function (doc) {
-            doc.metrics = {};
-            doc.metricsArray.forEach(function (m){
-                doc.metrics[m] = true;
-            });
-            delete doc.metricsArray;
-            await this.$store.dispatch("countlyReports/saveReport", doc);
-            await this.$store.dispatch("countlyReports/table/fetchAll");
-        },
-        onClose: function ($event) {
-            this.$emit("close", $event);
-        },
-        onCopy: function (newState) {
-            var self = this;
-            if (newState._id !== null) {
-                this.reportTypeChange(newState.report_type);
-                this.reportFrequencyChange(newState.frequency);
 
-                this.title = jQuery.i18n.map["reports.edit_report_title"];
-                this.saveButtonLabel = jQuery.i18n.map["reports.Save_Changes"];
-                newState.metricsArray =[];
-                for(var k in newState.metrics) {
-                    newState.metricsArray.push(k);
+            if (countlyGlobal.plugins.indexOf("star-rating") > -1) {
+                metricOptions.push({label: jQuery.i18n.map["reports.star-rating"], value: "star-rating"});
+            }
+
+            if (countlyGlobal.plugins.indexOf("performance-monitoring") > -1) {
+                metricOptions.push({label: jQuery.i18n.map["sidebar.performance-monitoring"], value: "performance"});
+            }
+
+            const frequencyOptions = [
+                {label: jQuery.i18n.map["reports.daily"], value: "daily", description: jQuery.i18n.map["reports.daily-desc"]},
+                {label: jQuery.i18n.map["reports.weekly"], value: "weekly", description: jQuery.i18n.map["reports.weekly-desc"]},
+                {label: jQuery.i18n.map["reports.monthly"], value: "monthly", description: jQuery.i18n.map["reports.monthly-desc"]},
+            ];
+            const dayOfWeekOptions = [
+                {label: jQuery.i18n.map["reports.monday"], value: 1},
+                {label: jQuery.i18n.map["reports.tuesday"], value: 2},
+                {label: jQuery.i18n.map["reports.wednesday"], value: 3},
+                {label: jQuery.i18n.map["reports.thursday"], value: 4},
+                {label: jQuery.i18n.map["reports.friday"], value: 5},
+                {label: jQuery.i18n.map["reports.saturday"], value: 6},
+                {label: jQuery.i18n.map["reports.sunday"], value: 7},
+
+            ];
+            var zones = [];
+            for (var country in countlyGlobal.timezones) {
+                countlyGlobal.timezones[country].z.forEach((item) => {
+                    for (var zone in item) {
+                        zones.push({value: item[zone], label: countlyGlobal.timezones[country].n + ' ' + zone});
+                    }
+                });
+            }
+            const timeListOptions = [];
+            for (var i = 0; i < 24; i++) {
+                var v = (i > 9 ? i : "0" + i) + ":00";
+                timeListOptions.push({ value: i, label: v});
+            }
+
+            return {
+                title: "",
+                saveButtonLabel: "",
+                appsSelectorOption,
+                metricOptions,
+                eventOptions: [],
+                frequencyOptions,
+                dayOfWeekOptions,
+                timeListOptions,
+                timezoneOptions: zones,
+                emailOptions:[{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
+                showApps: true,
+                showMetrics: true,
+                showDashboards: false,
+                reportDateRangesOptions: [],
+            };
+        },
+        computed: {
+            reportTypeOptions: function() {
+                var options = [
+                    {label: jQuery.i18n.map["reports.core"], value: 'core'},
+                ];
+                if (this.externalDataTypeOptions) {
+                    options = options.concat(this.externalDataTypeOptions);
                 }
-                countlyEvent.getEventsForApps(newState.apps, function(eventData) {
+                return options;
+            },
+            dashboardsOptions: function() {
+                var dashboardsList = countlyDashboards.getAllDashboards();
+                var dashboardsOptions = [];
+                for (var i = 0; i < dashboardsList.length; i++) {
+                    dashboardsOptions.push({ value: dashboardsList[i].id, label: dashboardsList[i].name });
+                };
+                countlyVue.container.registerData("/reports/dashboards-option", dashboardsOptions);
+                return dashboardsOptions;
+            },
+        },
+        watch: {
+            "apps": function () {
+                var self = this;
+                
+            }
+        },
+        props: {
+            controls: {
+                type: Object
+            }
+        },
+        methods: {
+            reportTypeChange: function(type) {
+                if (type === 'dashboards') {
+                    this.showApps = false;
+                    this.showMetrics = false;
+                    this.showDashboards = true; 
+                    this.$children[0].editedObject.metricsArray = [];
+                } else {
+                    this.showApps = true;
+                    this.showMetrics = true;
+                    this.showDashboards = false
+                }
+            },
+            reportFrequencyChange: function (reportFrequency) {
+                var reportDateRanges = countlyDashboards.getReportDateRanges(reportFrequency);
+                this.reportDateRangesOptions = reportDateRanges.map(function(r) {
+                    return {value: r.value, label: r.name} 
+                });
+            },
+            emailInputFilter: function (val) {
+                var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
+                regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
+                var match = val.match(regex);
+                if (match) {
+                    this.emailOptions=[{value:val, label:val}]
+                } else {
+                    this.emailOptions=[]
+                }
+            },
+            appsChange: function (apps, change) {
+                var self = this;
+                countlyEvent.getEventsForApps(apps, function(eventData) {
                     const eventOptions = eventData.map(function(e){
                         return {value: e.value, label: e.name};
                     });
-                    self.$data.eventOptions = eventOptions;
+                    self.eventOptions = eventOptions;
                 });
-                return;
-            }
-            this.title = jQuery.i18n.map["reports.create_new_report_title"];
-            this.saveButtonLabel = jQuery.i18n.map["reports.Create_New_Report"];
-        },
-    }
-});
+                this.$children[0].editedObject.selectedEvents = [];
+            },
+            onSubmit: async function (doc) {
+                doc.metrics = {};
+                doc.metricsArray.forEach(function (m){
+                    doc.metrics[m] = true;
+                });
+                delete doc.metricsArray;
+                await this.$store.dispatch("countlyReports/saveReport", doc);
+                await this.$store.dispatch("countlyReports/table/fetchAll");
+            },
+            onClose: function ($event) {
+                this.$emit("close", $event);
+            },
+            onCopy: function (newState) {
+                var self = this;
+                if (newState._id !== null) {
+                    this.reportTypeChange(newState.report_type);
+                    this.reportFrequencyChange(newState.frequency);
 
-var ReportsHomeViewComponent = countlyVue.views.BaseView.extend({
-    template: "#reports-home",
-    mixins: [countlyVue.mixins.hasDrawers("home")],
-    components: {
-        "table-view": TableView,
-        "drawer": ReportsDrawer,
-    },
-    data: function () {
-       return {};
-    },
-    beforeCreate: function () {
-       this.$store.dispatch("countlyReports/initialize");
-    },
-    methods: {
-        createReport: function () {
-            this.openDrawer("home", countlyReporting.defaultDrawerConfigValue());
-        },
-    },
-});
-
-app.reportingView = new countlyVue.views.BackboneWrapper({
-
-    component: ReportsHomeViewComponent,
-    vuex: [{
-        clyModel: countlyReporting 
-    }],
-    templates: [
-        "/reports/templates/vue-main.html",
-    ]
-});
-app.reportingView.featureName = 'reports';
-
-
-
-
-
-//register views
-app.reportingView2 = new ReportingView();
-
-if (countlyAuth.validateRead(app.reportingView.featureName)) {
-    app.route('/manage/reports', 'reports', function() {
-        this.renderWhenReady(this.reportingView);
-    });
-}
-
-$(document).ready(function() {
-    if (countlyAuth.validateRead(app.reportingView.featureName)) {
-        app.addMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
-        if (app.configurationsView) {
-            app.configurationsView.registerLabel("reports", "reports.title");
-            app.configurationsView.registerLabel(
-                "reports.secretKey",
-                "reports.secretKey"
-            );
+                    this.title = jQuery.i18n.map["reports.edit_report_title"];
+                    this.saveButtonLabel = jQuery.i18n.map["reports.Save_Changes"];
+                    newState.metricsArray =[];
+                    for(var k in newState.metrics) {
+                        newState.metricsArray.push(k);
+                    }
+                    countlyEvent.getEventsForApps(newState.apps, function(eventData) {
+                        const eventOptions = eventData.map(function(e){
+                            return {value: e.value, label: e.name};
+                        });
+                        self.eventOptions = eventOptions;
+                    });
+                    return;
+                }
+                this.title = jQuery.i18n.map["reports.create_new_report_title"];
+                this.saveButtonLabel = jQuery.i18n.map["reports.Create_New_Report"];
+            },
         }
+    });
+
+    var ReportsHomeViewComponent = countlyVue.views.BaseView.extend({
+        template: "#reports-home",
+        mixins: [countlyVue.mixins.hasDrawers("home")],
+        components: {
+            "table-view": TableView,
+            "drawer": ReportsDrawer,
+        },
+        data: function () {
+        return {};
+        },
+        beforeCreate: function () {
+        this.$store.dispatch("countlyReports/initialize");
+        },
+        methods: {
+            createReport: function () {
+                this.openDrawer("home", countlyReporting.defaultDrawerConfigValue());
+            },
+        },
+    });
+
+    var reportsView = new countlyVue.views.BackboneWrapper({
+
+        component: ReportsHomeViewComponent,
+        vuex: [{
+            clyModel: countlyReporting 
+        }],
+        templates: [
+            "/reports/templates/vue-main.html",
+        ]
+    });
+    reportsView.featureName = FEATURE_NAME;
+
+    if (countlyAuth.validateRead(FEATURE_NAME)) {
+        app.route('/manage/reports', 'reports', function() {
+            this.renderWhenReady(reportsView);
+        });
     }
 
-    if (countlyGlobal.plugins.indexOf("dashboards") > -1) {
-        countlyVue.container.registerData("/reports/data-type", {label: jQuery.i18n.map["dashboards.report"], value: 'dashboards'});
-    }
-});
+    $(document).ready(function() {
+        if (countlyAuth.validateRead(FEATURE_NAME)) {
+            app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+            if (app.configurationsView) {
+                app.configurationsView.registerLabel("reports", "reports.title");
+                app.configurationsView.registerLabel(
+                    "reports.secretKey",
+                    "reports.secretKey"
+                );
+            }
+        }
+
+        if (countlyGlobal.plugins.indexOf("dashboards") > -1) {
+            countlyVue.container.registerData("/reports/data-type", {label: jQuery.i18n.map["dashboards.report"], value: 'dashboards'});
+        }
+    });
+
+
+    app.addReportsCallbacks = function(plugin, options) {
+        if (!this.reportCallbacks) {
+            this.reportCallbacks = {};
+        }
+
+        this.reportCallbacks[plugin] = options;
+    };
+
+    app.getReportsCallbacks = function() {
+        return this.reportCallbacks;
+    };
+})()
