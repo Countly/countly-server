@@ -17,6 +17,7 @@
                     this.uploadData.app_image_id = countlyGlobal.apps[this.selectedApp]._id + "";
                     this.app_icon["background-image"] = 'url("appimages/' + this.selectedApp + '.png")';
                     this.unpatch();
+                    app.onAppManagementSwitch(value, countlyGlobal.apps[value] && countlyGlobal.apps[value].type || "mobile");
                     app.navigate("#/manage/apps/" + value);
                 }
             },
@@ -94,8 +95,17 @@
                     {value: "delete", label: CV.i18n("management-applications.delete-an-app"), divided: true},
                 ],
                 loadingDetails: false,
-                appSettings: {}
+                appSettings: {},
+                appManagementViews: app.appManagementViews
             };
+        },
+        watch: {
+            'appManagementViews': {
+                handler: function() {
+                    this.unpatch();
+                },
+                deep: true
+            }
         },
         beforeCreate: function() {
             var self = this;
@@ -319,6 +329,7 @@
                                 label: data.name
                             });
                             self.selectedSearchBar = data._id + "";
+                            self.$store.dispatch("countlyCommon/addToAllApps", data);
                             self.firstApp = self.checkIfFirst();
                         },
                         error: function(xhr, status, error) {
@@ -459,6 +470,7 @@
                         dataType: "json",
                         success: function() {
                             $(document).trigger("/i/apps/delete", { app_id: app_id });
+                            self.$store.dispatch("countlyCommon/removeFromAllApps", app_id);
 
                             var index = Backbone.history.appIds.indexOf(app_id + "");
                             if (index > -1) {
@@ -489,6 +501,7 @@
 
                                 //find next app
                                 var nextAapp = (self.appList[index2]) ? self.appList[index2].value : self.appList[0].value;
+                                self.$store.dispatch("countlyCommon/setActiveApp", nextAapp);
                                 self.selectedApp = nextAapp;
                                 self.uploadData.app_image_id = countlyGlobal.apps[self.selectedApp]._id + "";
                                 self.app_icon["background-image"] = 'url("appimages/' + self.selectedApp + '.png")';
