@@ -23,7 +23,7 @@
                         skin="jumbo"
                         v-model="selectedCollection"
                         :searchable="true"
-                        :options="collections[tab].list"
+                        :options="preparedCollectionList"
                     >
                     </cly-listbox>
                 </div>
@@ -38,7 +38,8 @@
                         </div>
                     </div>
                     <div class="bu-level-right">
-                        <el-button @click="showFilterPopup()" icon="fas fa-filter"> Filter</el-button>
+                        <el-button v-if="queryFilter" @click="removeFilters()" icon="fas fa-minus-square"> {{ i18n('dbviewer.remove-filters') }} </el-button>
+                        <el-button @click="showFilterPopup()" icon="fas fa-filter"> {{ i18n('dbviewer.filter') }}</el-button>
                         <cly-more-options class="bu-ml-2" @command="dbviewerActions($event)">
                             <el-dropdown-item command="aggregation">{{ i18n('dbviewer.aggregate') }}</el-dropdown-item>
                             <el-dropdown-item command="indexes">{{ i18n('dbviewer.indexes') }}</el-dropdown-item>

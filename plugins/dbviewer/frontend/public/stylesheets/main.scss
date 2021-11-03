@@ -51,6 +51,11 @@
         height: calc(80vh - 40px);
         overflow-y: scroll;
     }
+
+    &__collections-list {
+        border-radius: 0px !important;
+        border: none !important;
+    }
 }
 
 .dbviewer-aggregate {

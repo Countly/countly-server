@@ -83,6 +83,14 @@ var DBViewerTab = countlyVue.views.create({
             // fire the request!
             this.fetch();
         },
+        removeFilters: function() {
+            this.queryFilter = null;
+            this.projectionEnabled = false;
+            this.projection = [];
+            this.sortEnabled = false;
+            this.sort = "";
+            this.fetch(false);
+        },
         fetch: function(index) {
             var self = this;
             countlyDBviewer.loadCollections(this.db, this.collection, 1, this.queryFilter, 20, this.preparedSortObject, this.projectionEnabled ? this.preparedProjectionFields : null, this.sortEnabled, index)
@@ -96,6 +104,17 @@ var DBViewerTab = countlyVue.views.create({
         }
     },
     computed: {
+        preparedCollectionList: function() {
+            var self = this;
+            return this.collections[this.db].list.filter(function(collection) {
+                if (self.appFilter !== "all") {
+                    return collection.label.indexOf(self.appFilter) > -1;
+                }
+                else {
+                    return collection;
+                }
+            });
+        },
         preparedProjectionFields: function() {
             var ob = {};
             for (var i = 0; i < this.projection.length; i++) {
