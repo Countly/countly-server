@@ -7,7 +7,8 @@
 var locale = {},
     fs = require('fs'),
     path = require('path'),
-    parser = require('properties-parser');
+    parser = require('properties-parser'),
+    log = require('./log')('api:localization');
 
 var dir = path.resolve(__dirname, '../../frontend/express/public/localization/min');
 var file = "locale";
@@ -34,19 +35,25 @@ catch (ex) {
 * });
 */
 locale.format = function(value /* Add parameters as function arguments as necessary  */) {
-    var re, list;
-    if (arguments[1] && Array.isArray(arguments[1])) {
-        list = arguments[1];
-    }
-    else {
-        list = Array.prototype.slice.call(arguments).slice(1, arguments.length);
-    }
+    try {
+        var re, list;
+        if (arguments[1] && Array.isArray(arguments[1])) {
+            list = arguments[1];
+        }
+        else {
+            list = Array.prototype.slice.call(arguments).slice(1, arguments.length);
+        }
 
-    for (var i = 0; i < list.length; i++) {
-        re = new RegExp('\\{' + i + '\\}', "g");
-        value = value.replace(re, list[i]);
+        for (var i = 0; i < list.length; i++) {
+            re = new RegExp('\\{' + i + '\\}', "g");
+            value = value.replace(re, list[i]);
+        }
+        return value;
     }
-    return value;
+    catch (e) {
+        log.e('format() error', e);
+        return '';
+    }
 };
 
 /**
