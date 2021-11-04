@@ -1,9 +1,10 @@
 const http = require('http'),
+    https = require('https'),
     tls = require('tls'),
     log = require('../../../../../../api/utils/log')('push:send:worker:agent');
 
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-// https.globalAgent.options.secureProtocol = 'SSLv3_method';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+https.globalAgent.options.secureProtocol = 'SSLv3_method';
 
 /**
  * HTTP Agent for proxy support
