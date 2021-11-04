@@ -35,8 +35,8 @@ catch (ex) {
 * });
 */
 locale.format = function(value /* Add parameters as function arguments as necessary  */) {
+    var re, list;
     try {
-        var re, list;
         if (arguments[1] && Array.isArray(arguments[1])) {
             list = arguments[1];
         }
@@ -51,7 +51,7 @@ locale.format = function(value /* Add parameters as function arguments as necess
         return value;
     }
     catch (e) {
-        log.e('format() error', e);
+        log.e('format() error for value "%s" list %j:', value, list, e);
         return '';
     }
 };
