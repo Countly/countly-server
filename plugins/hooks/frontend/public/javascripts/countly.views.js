@@ -843,18 +843,17 @@
     });
 
 
-    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+    if (countlyAuth.validateRead(FEATURE_NAME)) {
         app.route('/manage/hooks', 'hooks', function () {
             this.renderWhenReady(hooksView);
         });
-
 
         app.route("/manage/hooks/:id", "hooks-detail", function(id) {
             var params = {
                 id: id
             };
 
-            this.hooksDetailView.params = params;
+            hooksDetailView.params = params;
             this.renderWhenReady(hooksDetailView);
         });
     }
