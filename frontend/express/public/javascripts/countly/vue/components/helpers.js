@@ -107,9 +107,10 @@
         },
         methods: {
             save: function() {
-                if (this.emitSaveWhenDisabled) {
-                    this.$emit("save");
+                if (this.disabled && !this.emitSaveWhenDisabled) {
+                    return;
                 }
+                this.$emit("save");
             },
             discard: function() {
                 this.$emit("discard");
