@@ -427,8 +427,6 @@ usersApi.updateUser = async function(params) {
         return false;
     }
 
-    log.d('updating user %', updatedMember.user_id);
-
     if (updatedMember.password) {
         var secret = countlyConfig.passwordSecret || "";
         passwordNoHash = updatedMember.password;
@@ -478,35 +476,27 @@ usersApi.updateUser = async function(params) {
     }
 
 
-    log.d('updating user 0 %', updatedMember.user_id);
     common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err, memberBefore) {
-        log.d('updating user 1 %', updatedMember.user_id);
         common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function() {
-            log.d('updating user 2 %', updatedMember.user_id);
             common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err2, member) {
-                log.d('updating user 3 %', updatedMember.user_id);
                 if (member && !err2) {
-                    log.d('updating user 4 %', updatedMember.user_id);
                     updatedMember._id = params.qstring.args.user_id;
                     plugins.dispatch("/i/users/update", {
                         params: params,
                         data: updatedMember,
                         member: memberBefore
                     });
-                    log.d('updating user 5 %', updatedMember.user_id);
                     if (params.qstring.args.send_notification && passwordNoHash) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
                     }
                     if (updatedMember.password && params.member._id + "" !== updatedMember._id + "") {
                         killAllSessionForUser(updatedMember._id);
                     }
-                    log.d('updating user 6 %', updatedMember.user_id);
 
                     if (updatedMember.email) {
                         //remove password reset e-mail
                         common.db.collection('password_reset').remove({ "user_id": common.db.ObjectID(updatedMember._id + "")}, {multi: true}, function() {});
                     }
-                    log.d('updating user 7 %', updatedMember.user_id);
                     common.returnMessage(params, 200, 'Success');
                 }
                 else {
