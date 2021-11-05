@@ -3,9 +3,10 @@
 		@close="onClose"
 		@copy="onCopy"
 		:title="title"
+        ref="drawerData"
 		:saveButtonLabel="saveButtonLabel"
 		v-bind="$props.controls">
-        <template v-slot:default="drawerScope">
+        <template v-slot:default="drawerScope" >
             <cly-form-step id="step1" :name="i18n('hooks.step1')">
                 <div class="cly-vue-drawer-step__section">
                     <div class="text-small text-heading">
@@ -99,7 +100,7 @@
                                     {{i18n('hooks.test-hook-intro')}} 
                                 </div>
                             </div>
-                            <div class="is-action-card-title-right"><el-button @click="" class="1">{{i18n('hooks.test-hook-button')}}</el-button></div>
+                            <div class="is-action-card-title-right"><el-button @click="testHook" class="1">{{i18n('hooks.test-hook-button')}}</el-button></div>
                         </div>
                     </div>
                 </div>
