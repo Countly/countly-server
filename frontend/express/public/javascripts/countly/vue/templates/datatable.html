@@ -1,6 +1,6 @@
 <div class="cly-vue-eldatatable" :class="classes">
     <div v-loading="isLoading" element-loading-background="rgb(255,255,255,0.3)">
-        <div class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white" @mouseenter="onNoCellMouseEnter">
+        <div v-if="!hideTop" class="bu-level cly-vue-eldatatable__header cly-vue-eldatatable__header--white" @mouseenter="onNoCellMouseEnter">
             <div class="bu-level-left">
                 <slot v-bind="commonScope" name="header-left"></slot>
             </div>

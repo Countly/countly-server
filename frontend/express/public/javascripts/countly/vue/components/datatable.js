@@ -711,6 +711,10 @@
             border: {
                 type: Boolean,
                 default: false
+            },
+            hideTop: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {

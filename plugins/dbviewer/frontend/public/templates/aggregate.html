@@ -1,0 +1,45 @@
+<div class="dbviewer-aggregate">
+    <cly-header>
+        <template v-slot:header-left>
+            <div class="dbviewer-aggregate__title">
+                <div @click="backToDBViewer()" class="bu-is-size-7 dbviewer-aggregate__back-button">
+                    <i class="el-icon-back"></i> {{ i18n('dbviewer.back-to-dbviewer') }}
+                </div>
+                <h2 class="bu-mt-5"> {{ i18n('dbviewer.aggregation') }}</h2>
+            </div>
+        </template>
+    </cly-header>
+    <cly-main>
+        <div class="bu-is-size-5">
+            {{ i18n('dbviewer.execute-aggregation') }} <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+        </div>
+        <cly-section class="bg-white bu-p-4 bu-mt-5 dbviewer-aggregate__query-area">
+            <el-input
+            type="textarea"
+            :placeholder="i18n('dbviewer.enter-aggregation-pipeline')"
+            v-model="query">
+            </el-input>
+            <div class="dbviewer-aggregate__query-button-area">
+                <el-button :disabled="queryLoading" @click="executeQuery()" type="success" class="bu-mt-2">
+                    {{ i18n('dbviewer.generate-aggregate-report') }}
+                </el-button>
+            </div>
+        </cly-section>
+        <cly-section>
+            <cly-datatable-n :rows="aggregationResult">
+                <template v-slot="scope">
+                    <el-table-column fixed>
+                        <template v-slot="rowScope">
+                            <span>_id: {{ rowScope.row._id }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column fixed type="expand">
+                        <template v-slot="rowScope">
+                            {{ rowScope.row }}
+                        </template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+    </cly-main>
+</div> 
