@@ -23,6 +23,52 @@
     }
 }
 
+.cly-vue-status-tag {
+    padding-right: 16.33px;
+    border-radius: 4px;
+    display: inline-block;
+    &--green {
+        background-color: #EBFAEE;
+        color: #12AF51;
+        padding: 0px 6px;   
+    }
+    &--green  &__blink{
+        background-color: #12AF51;
+    }
+    &--yellow {
+        background-color: #FCF5E5;
+        color: #CDAD7A;
+        padding: 0px 6px;
+    }
+    &--yellow  &__blink{
+        background-color: #CDAD7A;
+    }
+    &--red {
+        background-color: #FBECE5;
+        color: #D23F00;
+        padding: 0px 6px;
+    }
+    &--red  &__blink{
+        background-color: #D23F00;
+    }
+    &__blink {
+        position: relative;
+        top: -1px;
+        width: 6px;
+        height: 6px;
+        border-radius: 8px;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 5px;
+        animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+    }
+    @keyframes blinker {
+        50% {
+          opacity: 0;
+        }
+      }    
+  }
+
 .cly-vue-theme-clydef {
 
     background-color:#FCFCFC;
