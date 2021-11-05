@@ -1,63 +1,77 @@
 <div :class="[componentId]">
-    <cly-header>
-        <template v-slot:header-left>
-            <h2>{{i18n('keywords.title')}}</h2>
-            <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="i18n('keywords.description')"></span>
-        </template>
-    </cly-header>
-    <cly-main name="searchTerms">
-        <div class="acquisition-keywords-view__date-picker-container">
-          <div class="bu-level-left">
-            <div class="bu-level-item">
-              <cly-date-picker-g></cly-date-picker-g>
-            </div>
+  <cly-header>
+      <template v-slot:header-left>
+          <h2>{{i18n('keywords.title')}}</h2>
+          <span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:10px" v-tooltip.top-center="i18n('keywords.description')"></span>
+      </template>
+  </cly-header>
+  <cly-main name="searchTerms">
+      <div class="acquisition-keywords-view__date-picker-container">
+        <div class="bu-level-left">
+          <div class="bu-level-item">
+            <cly-date-picker-g></cly-date-picker-g>
           </div>
         </div>
-        <div class="bu-mb-4 bu-level">
-          <div class="bu-level-left">
-            <div class="bu-level-item">
-              <h4>{{ i18n('keywords.top_terms') }}</h4>
-            </div>
+      </div>
+      <div class="bu-mb-4 bu-level">
+        <div class="bu-level-left">
+          <div class="bu-level-item">
+            <h4>{{ i18n('keywords.top_terms') }}</h4>
           </div>
         </div>
-        <cly-section>
-          <cly-metric-cards>
-            <cly-metric-card>
-                {{ searchTermsTop3[0].label }}
-              <template v-slot:number>{{ searchTermsTop3[0].value }}</template>
-              <template v-slot:description>
-                <span class="text-medium">{{ searchTermsTop3[0].percentage }}% {{ i18n('keywords.total') }}</span>
-              </template>
-            </cly-metric-card>
-            <cly-metric-card>
-                {{ searchTermsTop3[1].label }}
-              <template v-slot:number>{{ searchTermsTop3[1].value }}</template>
-              <template v-slot:description>
-                <span class="text-medium">{{ searchTermsTop3[1].percentage }}% {{ i18n('keywords.total') }}</span>
-              </template>
-            </cly-metric-card>
-            <cly-metric-card>
-                {{ searchTermsTop3[2].label }}
-              <template v-slot:number>{{ searchTermsTop3[2].value }}</template>
-              <template v-slot:description>
-                <span class="text-medium">{{ searchTermsTop3[2].percentage }}% {{ i18n('keywords.total') }}</span>
-              </template>
-            </cly-metric-card>
-          </cly-metric-cards> 
-        </cly-section>   
-        <cly-section>
-          <cly-datatable-n :rows="searchedTermsData" :resizable="true">
-              <template v-slot="scope">
-                <el-table-column sortable="custom" prop="_id" :label="i18n('keywords.title')">
-                </el-table-column>
-                <el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')">
-                </el-table-column>
-                <el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')">
-                </el-table-column>
-                <el-table-column sortable="custom" prop="n" :label="i18n('common.new-users')">
-                </el-table-column>
-              </template>
-          </cly-datatable-n>
-      </cly-section>                     
-      </cly-main>
+      </div>
+      <cly-section>
+        <cly-metric-cards v-loading="isLoading">
+          <cly-metric-card>
+              {{ searchTermsTop3[0].label }}
+            <template v-slot:number>{{ searchTermsTop3[0].value }}</template>
+            <template v-slot:description>
+              <span class="text-medium">{{ searchTermsTop3[0].percentage }}% {{ i18n('keywords.total') }}</span>
+            </template>
+          </cly-metric-card>
+          <cly-metric-card>
+              {{ searchTermsTop3[1].label }}
+            <template v-slot:number>{{ searchTermsTop3[1].value }}</template>
+            <template v-slot:description>
+              <span class="text-medium">{{ searchTermsTop3[1].percentage }}% {{ i18n('keywords.total') }}</span>
+            </template>
+          </cly-metric-card>
+          <cly-metric-card>
+              {{ searchTermsTop3[2].label }}
+            <template v-slot:number>{{ searchTermsTop3[2].value }}</template>
+            <template v-slot:description>
+              <span class="text-medium">{{ searchTermsTop3[2].percentage }}% {{ i18n('keywords.total') }}</span>
+            </template>
+          </cly-metric-card>
+        </cly-metric-cards> 
+      </cly-section>   
+      <cly-section>
+        <cly-datatable-n :rows="searchedTermsData" :resizable="true" v-loading="isLoading">
+            <template v-slot="scope">
+              <el-table-column sortable="custom" prop="_id" :label="i18n('keywords.title')"></el-table-column>
+              <el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')">
+                <template v-slot="rowScope">
+                  <div>
+                      {{ formatNumber(rowScope.row.t) }}
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')">
+                <template v-slot="rowScope">
+                  <div>
+                      {{ formatNumber(rowScope.row.u) }}
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column sortable="custom" prop="n" :label="i18n('common.new-users')">
+                <template v-slot="rowScope">
+                  <div>
+                      {{ formatNumber(rowScope.row.n) }}
+                  </div>
+                </template>
+              </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-section>                     
+    </cly-main>
 </div>

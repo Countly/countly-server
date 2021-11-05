@@ -22,15 +22,15 @@
   <cly-section>
     <div class="bu-columns bu-is-gapless">
       <div class="bu-column bu-is-6">
-        <cly-chart-pie :option="pieSourcesTotalSessions" :showToggle="false"></cly-chart-pie>
+        <cly-chart-pie :option="pieSourcesTotalSessions" :showToggle="false" v-loading="isLoading"></cly-chart-pie>
       </div>
       <div class="bu-column bu-is-6">
-        <cly-chart-pie :option="pieSourcesNewUsers" :showToggle="false"></cly-chart-pie>
+        <cly-chart-pie :option="pieSourcesNewUsers" :showToggle="false" v-loading="isLoading"></cly-chart-pie>
       </div>
     </div>
   </cly-section>
   <cly-section>
-    <cly-datatable-n :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false">
+    <cly-datatable-n :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false" v-loading="isLoading">
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">
@@ -49,21 +49,21 @@
         <el-table-column sortable="true" prop="total-sessions" :label="i18n('common.table.total-sessions')">
             <template v-slot="rowScope">
                 <div>
-                    {{ rowScope.row.t }}
+                    {{ formatNumber(rowScope.row.t) }}
                 </div>
             </template>
         </el-table-column>
         <el-table-column sortable="true" prop="total-users" :label="i18n('common.table.total-users')">
             <template v-slot="rowScope">
                 <div>
-                    {{ rowScope.row.u }}
+                    {{ formatNumber(rowScope.row.u) }}
                 </div>
             </template>
         </el-table-column>
         <el-table-column sortable="true" prop="new-users" :label="i18n('common.new-users')">
         <template v-slot="rowScope">
             <div>
-                {{ rowScope.row.n }}
+                {{ formatNumber(rowScope.row.n) }}
             </div>
         </template>
         </el-table-column>
