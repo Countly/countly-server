@@ -85,7 +85,8 @@ class IncomingDataTrigger {
         const user = JSON.parse(JSON.stringify(params.app_user)) || {};
         let {filter, event} = rule.trigger.configuration;
         const targetEventKey = event[0].split("***")[1];
-        filter = filter.dbFilter;
+        filter = filter.dbFilter || {};
+        filter = filter.query ? filter.query : filter;
         log.d("[incoming data trigger]", params, rule);
 
         //process metrics before comparing
@@ -165,6 +166,21 @@ class IncomingDataTrigger {
                 matched = false;
             }
             if (filterObj.$not && filterObj.$not.test && filterObj.$not.test(value)) {
+                matched = false;
+            }
+            if (filterObj.rgxcn && (filterObj.rgxcn[0] !== undefined) && value.indexOf(filterObj.rgxcn[0]) === -1) {
+                matched = false;
+            }
+            if ((filterObj.$lte !== undefined)  && value > filterObj.$lte) {
+                matched = false;
+            }
+            if ((filterObj.$gte !== undefined)  && value < filterObj.$gte) {
+                matched = false;
+            }
+            if ((filterObj.$lt !== undefined) && value >= filterObj.$lt) {
+                matched = false;
+            }
+            if ((filterObj.$gt !== undefined) && value <= filterObj.$gt) {
                 matched = false;
             }
             return matched;

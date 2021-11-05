@@ -337,12 +337,24 @@
         },
         computed:{
             selectedEvent: function() {
-                var event = this.$props.value.event;
+                var event = this.$props.value.event[0];
                 if ( event && event.indexOf("***") > 0) {
                     event = event.split("***")[1];
                     return event;
                 }
                 return ""
+            },
+            queryObj: { 
+                set: function (newValue) {
+                   /* eslint-disable */
+                   this.$emit("input", Object.assign({},{...this.$props.value, filter: JSON.stringify({dbFilter: newValue})}));
+                   /* eslint-enable */
+                   this.query = newValue;
+                   return 
+                },
+                get: function () {
+                  return this.query;
+                }
             }
         },
         watch: {
