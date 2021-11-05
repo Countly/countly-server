@@ -78,6 +78,23 @@
         }
     }));
 
+    Vue.component("cly-status-tag", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-status-tag" :class="dynamicClasses">\n' +
+                     '<div class="cly-vue-status-tag__blink"></div>\n' +
+                        '{{text}}\n' +
+                  '</div>',
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            text: { required: true, type: String },
+            color: { default: "green", type: String},
+        },
+        computed: {
+            dynamicClasses: function() {
+                return "cly-vue-status-tag--" + this.color;
+            }
+        },
+    }));
+
     Vue.component("cly-diff-helper", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
