@@ -325,6 +325,7 @@
 
     TemplateLoader.prototype.destroy = function() {
         this.elementsToBeRendered = [];
+        $("#vue-templates").empty();
     };
 
     var VuexLoader = function(vuex) {
@@ -348,6 +349,48 @@
         this.loadedModuleIds = [];
     };
 
+    var mainVM = new Vue({
+        el: $('#vue-content .vue-wrapper').get(0),
+        store: _vuex.getGlobalStore(),
+        components: {
+            /*
+                Some 3rd party components such as echarts, use Composition API.
+                It is not clear why, but when a view with those components destroyed,
+                they leave some memory leaks. Instantiating DummyCompAPI triggers memory cleanups. 
+            */
+            DummyCompAPI: DummyCompAPI
+        },
+        data: function() {
+            return { currentViewComponent: null };
+        },
+        template: '<div>\
+                        <component :is="currentViewComponent"></component>\
+                        <DummyCompAPI></DummyCompAPI>\
+                    </div>',
+        methods: {
+            handleClyError: function(payload) {
+                this.$notify.error({
+                    title: _i18n("common.error"),
+                    message: payload.message
+                });
+            },
+            handleClyRefresh: function() {
+                this.$root.$emit("cly-refresh", {reason: "dateChange"});
+            },
+            loadViewComponent: function(cmp, params) {
+                this.currentViewComponent = cmp;
+                this.$route.params = params;
+            },
+            killViewComponent: function() {
+                this.currentViewComponent = null;
+            }
+        },
+        created: function() {
+            this.$on("cly-date-change", this.handleClyRefresh);
+            this.$on("cly-error", this.handleClyError);
+        }
+    });
+
     var countlyVueWrapperView = countlyView.extend({
         constructor: function(opts) {
             this.component = opts.component;
@@ -362,77 +405,29 @@
         },
         renderCommon: function(isRefresh) {
             if (!isRefresh) {
-                $(this.el).html("<div><div class='vue-wrapper'></div><div id='vue-templates'></div></div>");
                 $("body").addClass("cly-vue-theme-clydef");
                 this.templateLoader.mount();
             }
         },
         refresh: function() {
-            var self = this;
-            if (self.vm) {
-                self.vm.$root.$emit("cly-refresh", {reason: "periodical"}); // for 10 sec interval
-            }
+            mainVM.$root.$emit("cly-refresh", {reason: "periodical"}); // for 10 sec interval
         },
         onError: function(message) {
-            if (this.vm) {
-                this.vm.$root.$emit("cly-error", {message: message});
-            }
+            mainVM.$root.$emit("cly-error", {message: message});
         },
         afterRender: function() {
-            var el = $(this.el).find('.vue-wrapper').get(0),
-                self = this;
+            var self = this;
 
             if (self.vuex) {
                 self.vuexLoader.load();
             }
 
-            /*
-                Some 3rd party components such as echarts, use Composition API.
-                It is not clear why, but when a view with those components destroyed,
-                they leave some memory leaks. Instantiating DummyCompAPI triggers memory cleanups. 
-            */
-
-            self.vm = new Vue({
-                el: el,
-                store: _vuex.getGlobalStore(),
-                components: {
-                    DummyCompAPI: DummyCompAPI,
-                    MainView: self.component
-                },
-                template: '<div>\
-                                <MainView></MainView>\
-                                <DummyCompAPI></DummyCompAPI>\
-                            </div>',
-                beforeCreate: function() {
-                    this.$route.params = self.params;
-                },
-                methods: {
-                    handleClyError: function(payload) {
-                        this.$notify.error({
-                            title: _i18n("common.error"),
-                            message: payload.message
-                        });
-                    },
-                    handleClyRefresh: function() {
-                        this.$root.$emit("cly-refresh", {reason: "dateChange"});
-                    }
-                },
-                created: function() {
-                    this.$on("cly-date-change", this.handleClyRefresh);
-                    this.$on("cly-error", this.handleClyError);
-                }
-            });
+            mainVM.loadViewComponent(self.component, self.params);
         },
         destroy: function() {
-            var self = this;
             this.templateLoader.destroy();
-            if (self.vm) {
-                $("body").removeClass("cly-vue-theme-clydef");
-                self.vm.$destroy();
-                self.vm.$off();
-                $(self.vm.$el).remove();
-                self.vm = null;
-            }
+            $("body").removeClass("cly-vue-theme-clydef");
+            mainVM.killViewComponent();
             this.vuexLoader.destroy();
         }
     });
