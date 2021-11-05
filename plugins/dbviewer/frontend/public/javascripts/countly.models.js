@@ -62,9 +62,11 @@
             filter: filter || "{}",
             limit: limit,
             sort: (isSort) ? (typeof sort === "string") ? sort : JSON.stringify(sort) : "{}",
-            projection: (typeof projection === "string") ? projection : JSON.stringify(projection),
             skip: skip
         };
+        if (projection) {
+            requestData.projection = (typeof projection === "string") ? projection : JSON.stringify(projection);
+        }
         if (isIndexRequest) {
             requestData.action = "get_indexes";
         }

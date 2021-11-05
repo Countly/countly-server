@@ -56,7 +56,8 @@
                     ]
                 },
                 dataMap: {},
-                sourcesDetailData: {}
+                sourcesDetailData: {},
+                isLoading: false
             };
         },
         methods: {
@@ -117,19 +118,24 @@
                     }
                 };
             },
-            refresh: function() {
+            refresh: function(force) {
                 var self = this;
-                $.when(countlySources.initialize())
-                    .then(function() {
-                        self.sourcesData = countlySources.getData();
-                        self.sourcesDetailDataMap();
+                if (force) {
+                    $.when(countlySources.initialize(true))
+                        .then(function() {
+                            self.sourcesData = countlySources.getData();
+                            self.sourcesDetailDataMap();
 
-                        // calculate charts data for total session and new users charts
-                        var chartsData = self.chartsDataPrepare(self.sourcesData);
-                        self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
-                        self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
-                    });
+                            // calculate charts data for total session and new users charts
+                            var chartsData = self.chartsDataPrepare(self.sourcesData);
+                            self.pieSourcesTotalSessions.series[0].data = chartsData.t.data;
+                            self.pieSourcesNewUsers.series[0].data = chartsData.n.data;
+                        });
+                }
             }
+        },
+        dateChange: function() {
+            this.refresh(true);
         },
         computed: {
             topDropdown: function() {
@@ -144,13 +150,16 @@
         mixins: [
             countlyVue.container.dataMixin({
                 'externalLinks': '/analytics/sources/links'
-            })
+            }),
+            countlyVue.mixins.commonFormatters
         ],
-        beforeCreate: function() {
+        created: function() {
             var self = this;
-            $.when(countlySources.initialize())
+            this.isLoading = true;
+            $.when(countlySources.initialize(true))
                 .then(function() {
                     // get fetched sources datas
+                    self.isLoading = false;
                     self.sourcesData = countlySources.getData();
                     self.sourcesDetailDataMap();
 
@@ -171,7 +180,8 @@
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 },
                     { percentage: 0, label: CV.i18n('common.table.no-data'), value: 0 }
-                ]
+                ],
+                isLoading: false
             };
         },
         methods: {
@@ -209,11 +219,14 @@
                     });
             }
         },
-        beforeCreate: function() {
+        mixins: [countlyVue.mixins.commonFormatters],
+        created: function() {
             var self = this;
+            this.isLoading = true;
             $.when(countlySources.initializeKeywords())
                 .then(function() {
                     // calculate top 3 search terms data
+                    self.isLoading = false;
                     self.searchedTermsData = countlySources.getKeywords();
                     self.searchTermsTop3 = self.getTop3(self.searchedTermsData);
                 });
@@ -309,12 +322,8 @@
                     {percentage: Math.round((data[totalsArray[2][0]].t / sum) * 100), label: data[totalsArray[2][0]]._id, value: countlyCommon.getShortNumber(totalsArray[2][1] || 0)}
                 ];
             }
-        },
-        computed: {
-
         }
     });
-
 
     var SourcesDashboardWidget = countlyVue.views.create({
         template: CV.T("/sources/templates/sourcesHomeWidget.html"),
@@ -325,14 +334,14 @@
         },
         mounted: function() {
             var self = this;
-            $.when(countlySources.initialize()).then(function() {
+            $.when(countlySources.initialize(true)).then(function() {
                 self.calculateAllData();
             });
         },
         methods: {
             refresh: function() {
                 var self = this;
-                $.when(countlySources.initialize()).then(function() {
+                $.when(countlySources.initialize(true)).then(function() {
                     self.calculateAllData();
                 });
             },
@@ -376,9 +385,6 @@
                 }
                 this.sourceItems = blocks;
             }
-        },
-        computed: {
-
         }
     });
 
@@ -417,5 +423,4 @@
             app.addSubMenuForType("mobile", "analytics", {code: "analytics-acquisition", url: "#/analytics/acquisition", text: "sidebar.acquisition", priority: 28});
         }
     });
-
 })();
