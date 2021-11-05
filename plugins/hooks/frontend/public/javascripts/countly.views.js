@@ -697,16 +697,23 @@
                 this.saveButtonLabel = jQuery.i18n.map["hooks.create-hook"];
             },
             addEffect: function(){
-            this.$children[0].editedObject.effects.push({type:null, configuration: null});
+                this.$refs.drawerData.editedObject.effects.push({type:null, configuration: null});
             },
 
             removeEffect: function (index) {
-                console.log("reeff", index);
-                this.$children[0].editedObject.effects.splice(index,1);
+                this.$refs.drawerData.editedObject.effects.splice(index,1);
+            },
+            
+            testHook: function () {
+               var hookData = this.$refs.drawerData.editedObject;
+               hooksPlugin.testHook(hookData, function(a,b) {
+                   console.log("tested", a,b)
+               }) 
+
             },
 
             updateHookConfigValue: function ({path, value}) {
-                var object = this.$children[0].editedObject;
+                var object = this.$refs.drawerData.editedObject;
                 if(!path) {
                     return;
                 }
