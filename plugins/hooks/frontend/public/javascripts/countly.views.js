@@ -424,7 +424,7 @@
                         {value: "/i/users/delete", label: "/i/users/delete"},
                         {value: "/master", label: "/master"},
                         {value: "/systemlogs", label: "/systemlogs"},
-                        // {value: "/crashes/new", label: "/crashes/new"},
+                        {value: "/crashes/new", label: "/crashes/new"},
                         {value: "/hooks/trigger", label: "/hooks/trigger"},
                 ],
                 cohortOptions: [],
