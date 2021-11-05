@@ -548,9 +548,9 @@
             },
             mapEnabledUsers: function(dto) {
                 var result = {};
-                result[PlatformEnum.ALL] = dto.enabled.total;
-                result[PlatformEnum.ANDROID] = dto.enabled.a + dto.enabled.h;
-                result[PlatformEnum.IOS] = dto.enabled.i;
+                result[PlatformEnum.ALL] = parseInt(dto.enabled.total);
+                result[PlatformEnum.ANDROID] = parseInt(dto.enabled.a + dto.enabled.h);
+                result[PlatformEnum.IOS] = parseInt(dto.enabled.i);
                 return result;
             },
             mapTotalActions: function(dto) {
@@ -572,7 +572,7 @@
                     rows: this.mapRows(allPushNotificationsDto),
                     series: this.mapSeries(dashboardDto, type),
                     periods: this.mapPeriods(dashboardDto, type),
-                    totalAppUsers: dashboardDto.users,
+                    totalAppUsers: parseInt(dashboardDto.users),
                     enabledUsers: this.mapEnabledUsers(dashboardDto),
                     totalActions: this.mapTotalActions(dashboardDto),
                     totalSent: this.mapTotalSent(dashboardDto)
@@ -1441,14 +1441,14 @@
             },
             rows: [],
             periods: {monthly: [], weekly: []},
-            totalAppUsers: null,
+            totalAppUsers: 0,
             enabledUsers: enabledUsers,
             totalActions: totalActions,
             totalSent: totalSent,
             statusFilter: countlyPushNotification.service.StatusEnum.ALL,
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
-            totalPushMessagesSent: null,
-            totalUserActionsPerformed: null,
+            totalPushMessagesSent: 0,
+            totalUserActionsPerformed: 0,
         };
     };
 

@@ -884,6 +884,12 @@
             enabledUsers: function() {
                 return this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.ALL];
             },
+            enabledUsersPercentage: function() {
+                if (!this.totalAppUsers) {
+                    return 0;
+                }
+                return Math.ceil(this.enabledUsers / this.totalAppUsers);
+            },
             xAxisPushNotificationPeriods: function() {
                 return this.$store.state.countlyPushNotification.main.periods[this.selectedPeriodFilter];
             },
@@ -951,6 +957,11 @@
             },
             formatPercentage: function(value, decimalPlaces) {
                 return this.formatNumber(CountlyHelpers.formatPercentage(value, decimalPlaces));
+            },
+            getPreviewPlatforms: function(platforms) {
+                return platforms.map(function(item) {
+                    return item.label;
+                }).sort().join(', ');
             },
             onApprove: function(id) {
                 var self = this;
