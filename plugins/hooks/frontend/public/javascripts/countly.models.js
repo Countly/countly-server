@@ -67,29 +67,6 @@
         return data;
     }
 
-    /**
-	* test hook settings
-    * @param {object} hookConfig - hookConfig record
-    * @param {function} callback - callback function
-	*/
-    hooksPlugin.testHook = function load(hookConfig, callback) {
-        var mockData = hooksPlugin.mockDataGenerator(hookConfig);
-        $.ajax({
-            type: "POST",
-            url: countlyCommon.API_PARTS.data.w + "/hook/test",
-            data: {
-                "hook_config": JSON.stringify(hookConfig),
-                "mock_data": JSON.stringify(mockData),
-            },
-            dataType: "json",
-            success: function(res) {
-                if (callback) {
-                    callback(res);
-                }
-            }
-        });
-    };
-
     hooksPlugin.generateTriggerActionsTreeDom = function (row) {
         var triggerNames = {
             "APIEndPointTrigger": jQuery.i18n.map["hooks.trigger-api-endpoint-uri"],
@@ -152,24 +129,35 @@
         var getEmptyState = function() {
             return {
                 hookDetail: {},
+                testResult: [],
             };
         };
 
         var state = function() {
             return {
-                hookDetail: []
+                hookDetail: [],
+                testResult: [],
             };
         };
 
         var getters = {
             hookDetail(state) {
                 return state.hookDetail;
+            },
+            testResult(state) {
+                return state.testResult;
             }
         };
 
         var mutations = {
             setDetail: function (state, detail) {
                 state.hookDetail = detail;
+            },
+            setTestResult: function (state, result) {
+                state.testResult = result;
+            },
+            resetTestResult: function (state) {
+                state.testResult = [];
             }
         };
 
@@ -206,6 +194,31 @@
                     dataType: "json",
                 });
             },
+            testHook: function (context, hookConfig) {
+                delete hookConfig.error_logs;
+                var mockData = hooksPlugin.mockDataGenerator(hookConfig);
+                context.commit("resetTestResult");
+                return CV.$.ajax({
+                    type: "get",
+                    url: countlyCommon.API_PARTS.data.w + "/hook/test",
+                    data: {
+                        "hook_config": JSON.stringify(hookConfig),
+                        "mock_data": JSON.stringify(mockData),
+                    },
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.result){
+                            res.result = res.result.map(function(data, idx) {
+                                    data.t = idx === 0? data.rule.trigger.type : data.rule.effects[idx-1].type;
+                                    data.i = idx === 0? data.params : res.result[idx-1].params;
+                                    data.o = data.params;
+                                    return data;
+                            });
+                            context.commit("setTestResult", res.result);
+                        }
+                    }
+                });
+            }
         }
 
         var tableResource = countlyVue.vuex.Module("table", {

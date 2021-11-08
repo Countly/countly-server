@@ -100,7 +100,18 @@
                                     {{i18n('hooks.test-hook-intro')}} 
                                 </div>
                             </div>
-                            <div class="is-action-card-title-right"><el-button @click="testHook" class="1">{{i18n('hooks.test-hook-button')}}</el-button></div>
+                            <div class="is-action-card-title-right"><el-button @click="testHook" class="1"><span class="el-icon-s-promotion cly-vue-tooltip-icon"></span>{{i18n('hooks.test-hook-button')}}</el-button></div>
+                        </div>
+                       
+                        <div>
+                            <section v-for="item, idx in testResult">
+                                <el-collapse v-model="idx"> 
+                                    <el-collapse-item :title="i18n('hooks.' + item.t)" name="idx">
+                                        <div>Input: {{item.i}}</div>
+                                        <div>Output: {{item.o}}</div>
+                                    </el-collapse-item>
+                                </el-collapse>
+                            </section>
                         </div>
                     </div>
                 </div>

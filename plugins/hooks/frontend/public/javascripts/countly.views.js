@@ -104,7 +104,6 @@
                     return;
                 }
                 app.navigate("/manage/hooks/" + params._id, true);
-                console.log("!!", params, target)
             },
         }
     });
@@ -674,6 +673,12 @@
                 appsSelectorOption,
             };
         },
+        computed: {
+            testResult: function () {
+                var testResult = this.$store.getters["countlyHooks/testResult"]; 
+                return testResult || [];
+            },
+        },
         props: {
             controls: {
                 type: Object
@@ -704,12 +709,9 @@
                 this.$refs.drawerData.editedObject.effects.splice(index,1);
             },
             
-            testHook: function () {
+            testHook: async function () {
                var hookData = this.$refs.drawerData.editedObject;
-               hooksPlugin.testHook(hookData, function(a,b) {
-                   console.log("tested", a,b)
-               }) 
-
+               await this.$store.dispatch("countlyHooks/testHook", hookData);
             },
 
             updateHookConfigValue: function ({path, value}) {
