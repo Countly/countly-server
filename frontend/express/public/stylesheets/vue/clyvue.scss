@@ -35,6 +35,14 @@
     &--green  &__blink{
         background-color: #12AF51;
     }
+    &--blue {
+        background-color: #E6F0FB;
+        color: #017AFF;
+        padding: 0px 6px;   
+    }
+    &--blue  &__blink{
+        background-color: #017AFF;
+    }
     &--yellow {
         background-color: #FCF5E5;
         color: #CDAD7A;
