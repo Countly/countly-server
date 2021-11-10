@@ -20,13 +20,13 @@
         row.scheduleLabel = row.schedule;
         index = row.schedule.indexOf("starting on");
         if (index > (-1)) {
-            row.scheduleLabel = row.schedule.substring(0, index);
-            row.scheduleDetail = row.schedule.substring(index);
+            row.scheduleLabel = row.schedule.substring(0, index).trim();
+            row.scheduleDetail = row.schedule.substring(index).trim();
         }
         if (row.schedule.startsWith("at")) {
             index = row.schedule.indexOf("every");
-            row.scheduleDetail = row.schedule.substring(0, index) ;
-            row.scheduleLabel = row.schedule.substring(index);
+            row.scheduleDetail = row.schedule.substring(0, index).trim();
+            row.scheduleLabel = row.schedule.substring(index).trim();
         }
     };
     var JobsView = countlyVue.views.create({
