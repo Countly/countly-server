@@ -1,6 +1,7 @@
-/*global $,countlyView,countlyGlobal,Handlebars,extendViewWithFilter,RemoteConfigComponents,moment,Backbone,_,CountlyHelpers,countlySegmentation,jQuery,countlyCommon,app,remoteConfigView,countlyRemoteConfig, T */
+/*global $,countlyView,countlyGlobal,countlyAuth,Handlebars,extendViewWithFilter,RemoteConfigComponents,moment,Backbone,_,CountlyHelpers,countlySegmentation,jQuery,countlyCommon,app,remoteConfigView,countlyRemoteConfig, T */
 
 window.remoteConfigView = countlyView.extend({
+    featureName: 'remote_config',
     initialize: function() {
     },
 
@@ -141,10 +142,6 @@ window.remoteConfigView = countlyView.extend({
     },
 
     initSegmentation: function(el) {
-        if (!this.drillEnabled) {
-            return;
-        }
-
         var self = this;
         var segmentationSection = self.segmentationSection();
         $(segmentationSection).insertAfter(el);
@@ -380,16 +377,11 @@ window.remoteConfigView = countlyView.extend({
     renderCommon: function() {
         var self = this;
 
-        var adminApps = Object.keys(countlyGlobal.admin_apps);
-        var isAdminofApp = (countlyGlobal.member.global_admin || (adminApps.indexOf(countlyCommon.ACTIVE_APP_ID)) >= 0) ? true : false;
-
-        self.isAdminofApp = isAdminofApp;
-        self.drillEnabled = countlyGlobal.plugins.indexOf("drill") > -1;
+        self.isAdminofApp = countlyAuth.validateUpdate(this.featureName) || countlyAuth.validateDelete(this.featureName);
 
         this.templateData = {
             "page-title": jQuery.i18n.map["remote-config.plugin-title"],
-            "is-admin": isAdminofApp,
-            "drill-enabled": self.drillEnabled,
+            "is-admin": countlyAuth.validateCreate(this.featureName)
         };
 
         $(this.el).html(this.template(this.templateData));
@@ -427,15 +419,31 @@ window.remoteConfigView = countlyView.extend({
         });
 
         self.initParametersDrawer();
+        self.initConditionsDrawer();
         self.initParametersTabls();
+        self.initConditionsTable();
+        self.conditionModel = new CountlyHelpers.model();
+        if (typeof self.initDrill === "function") {
+            $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {});
+        }
 
-        if (self.drillEnabled) {
-            self.initConditionsDrawer();
-            self.initConditionsTable();
-            self.conditionModel = new CountlyHelpers.model();
-            if (typeof self.initDrill === "function") {
-                $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {});
-            }
+        if (!countlyAuth.validateCreate(self.featureName)) {
+            $('#add-parameter').hide();
+            $('#add-condition').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(self.featureName)) {
+            $('.rc-edit-parameter').hide();
+            $('.rc-edit-condition').hide();
+        }
+
+        if (!countlyAuth.validateDelete(self.featureName)) {
+            $('.rc-delete-parameter').hide();
+            $('.rc-delete-condition').hide();
+        }
+
+        if (!countlyAuth.validateUpdate(self.featureName) && !countlyAuth.validateDelete(self.featureName)) {
+            $('.options-menu').hide();
         }
     },
 
@@ -821,26 +829,24 @@ window.remoteConfigView = countlyView.extend({
                     blockContainer.append(block);
 
                     var paramConditions = row.conditions;
-                    if (self.drillEnabled) {
-                        for (var i = 0; i < paramConditions.length; i++) {
-                            var condition = countlyRemoteConfig.getCondition(paramConditions[i].condition_id);
-                            block = $('<div class="value-box-container" style="visibility:hidden">' +
-                                        '   <div class="value-box condition-background-color alt' + condition.condition_color + '">' +
-                                        '       <div class="icon">' +
-                                        '           <i class="material-icons condition-text-color alt' + condition.condition_color + '"> call_split </i>' +
-                                        '       </div>' +
-                                        '       <div class="text condition-text-color alt' + condition.condition_color + '"></div>' +
-                                        '       <div class="value"><input class="input" type="text" disabled></div>' +
-                                        '   </div>' +
-                                        '</div>');
-                            block.find(".text").text(condition.condition_name);
-                            value = paramConditions[i].value;
-                            if (typeof (value) === 'object') {
-                                value = JSON.stringify(paramConditions[i].value);
-                            }
-                            block.find(".value input").attr("value", value);
-                            blockContainer.append(block);
+                    for (var i = 0; i < paramConditions.length; i++) {
+                        var condition = countlyRemoteConfig.getCondition(paramConditions[i].condition_id);
+                        block = $('<div class="value-box-container" style="visibility:hidden">' +
+                                    '   <div class="value-box condition-background-color alt' + condition.condition_color + '">' +
+                                    '       <div class="icon">' +
+                                    '           <i class="material-icons condition-text-color alt' + condition.condition_color + '"> call_split </i>' +
+                                    '       </div>' +
+                                    '       <div class="text condition-text-color alt' + condition.condition_color + '"></div>' +
+                                    '       <div class="value"><input class="input" type="text" disabled></div>' +
+                                    '   </div>' +
+                                    '</div>');
+                        block.find(".text").text(condition.condition_name);
+                        value = paramConditions[i].value;
+                        if (typeof (value) === 'object') {
+                            value = JSON.stringify(paramConditions[i].value);
                         }
+                        block.find(".value input").attr("value", value);
+                        blockContainer.append(block);
                     }
 
                     return blockContainer.html();
@@ -863,10 +869,14 @@ window.remoteConfigView = countlyView.extend({
                     "mData": function(row) {
                         var menu = "<div class='options-menu'>" +
                                         "<div class='edit'></div>" +
-                                        "<div class='edit-menu'>" +
-                                            "<div class='rc-edit-parameter item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map['common.edit'] + "</div>" +
-                                            "<div class='rc-delete-parameter item'" + " id='" + row._id + "'" + " data-name = '" + row.parameter_key + "' ><i class='fa fa-trash'></i>" + jQuery.i18n.map['common.delete'] + "</div>" +
-                                        "</div>" +
+                                        "<div class='edit-menu'>";
+                        if (countlyAuth.validateUpdate(self.featureName)) {
+                            menu += "<div class='rc-edit-parameter item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map['common.edit'] + "</div>";
+                        }
+                        if (countlyAuth.validateDelete(self.featureName)) {
+                            menu += "<div class='rc-delete-parameter item'" + " id='" + row._id + "'" + " data-name = '" + row.parameter_key + "' ><i class='fa fa-trash'></i>" + jQuery.i18n.map['common.delete'] + "</div>";
+                        }
+                        menu += "</div>" +
                                     "</div>";
                         return menu;
                     },
@@ -1373,10 +1383,14 @@ window.remoteConfigView = countlyView.extend({
                     "mData": function(row) {
                         var menu = "<div class='options-menu'>" +
                                         "<div class='edit'></div>" +
-                                        "<div class='edit-menu'>" +
-                                            "<div class='rc-edit-condition item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map['common.edit'] + "</div>" +
-                                            "<div class='rc-delete-condition item'" + " id='" + row._id + "'" + " data-name = '" + row.condition_name + "' ><i class='fa fa-trash'></i>" + jQuery.i18n.map['common.delete'] + "</div>" +
-                                        "</div>" +
+                                        "<div class='edit-menu'>";
+                        if (countlyAuth.validateUpdate(self.featureName)) {
+                            menu += "<div class='rc-edit-condition item'" + " id='" + row._id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map['common.edit'] + "</div>";
+                        }
+                        if (countlyAuth.validateUpdate(self.featureName)) {
+                            menu += "<div class='rc-delete-condition item'" + " id='" + row._id + "'" + " data-name = '" + row.condition_name + "' ><i class='fa fa-trash'></i>" + jQuery.i18n.map['common.delete'] + "</div>";
+                        }
+                        menu += "</div>" +
                                     "</div>";
                         return menu;
                     },
@@ -1543,14 +1557,10 @@ window.remoteConfigView = countlyView.extend({
             }
 
             var parameters = countlyRemoteConfig.returnParameters();
+            var conditions = countlyRemoteConfig.getConditions();
 
             CountlyHelpers.refreshTable(self.parametersTable, parameters);
-
-            if (self.drillEnabled) {
-                var conditions = countlyRemoteConfig.getConditions();
-                CountlyHelpers.refreshTable(self.conditionsTable, conditions);
-            }
-
+            CountlyHelpers.refreshTable(self.conditionsTable, conditions);
             if (cbk) {
                 return cbk();
             }
@@ -1560,15 +1570,17 @@ window.remoteConfigView = countlyView.extend({
 
 app.remoteConfigView = new remoteConfigView();
 
-app.route('/remote-config', 'remote-config', function() {
-    this.remoteConfigView._tab = "parameters";
-    this.renderWhenReady(this.remoteConfigView);
-});
+if (countlyAuth.validateRead(app.remoteConfigView.featureName)) {
+    app.route('/remote-config', 'remote-config', function() {
+        this.remoteConfigView._tab = "parameters";
+        this.renderWhenReady(this.remoteConfigView);
+    });
 
-app.route('/remote-config/:tab', 'remote-config-tabs', function(tab) {
-    this.remoteConfigView._tab = tab;
-    this.renderWhenReady(this.remoteConfigView);
-});
+    app.route('/remote-config/:tab', 'remote-config-tabs', function(tab) {
+        this.remoteConfigView._tab = tab;
+        this.renderWhenReady(this.remoteConfigView);
+    });
+}
 
 app.addPageScript("/manage/logger", function() {
     var rcLogItem = {
@@ -1587,7 +1599,12 @@ $(document).ready(function() {
         extendViewWithFilter(app.remoteConfigView);
     }
 
-    app.addMenu("improve", {code: "remote-config", url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 20});
+    if (countlyGlobal.plugins.indexOf("drill") < 0) {
+        return;
+    }
+    if (countlyAuth.validateRead(app.remoteConfigView.featureName)) {
+        app.addMenu("improve", {code: "remote-config", url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 20});
+    }
 });
 
 app.addPageScript("/manage/export/export-features", function() {

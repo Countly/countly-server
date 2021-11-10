@@ -3,7 +3,10 @@ var pluginOb = {},
     common = require('../../../api/utils/common.js'),
     log = common.log('remote-config:api'),
     remoteConfig = require('./parts/rc'),
-    async = require('async');
+    async = require('async'),
+    {validateRead, validateCreate, validateUpdate, validateDelete} = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'remote_config';
 
 plugins.setConfigs("remote-config", {
     maximum_allowed_parameters: 2000,
@@ -11,6 +14,10 @@ plugins.setConfigs("remote-config", {
 });
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
+
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
 
@@ -110,67 +117,53 @@ plugins.setConfigs("remote-config", {
                         }
                     };
 
-                    var drillAvailable = plugins.isPluginEnabled('drill');
-
-                    if (drillAvailable) {
-                        //The following block will only work if -
-                        //The remote config condition processing module is available
-                        //This module is only available in the enterprise version of the plugin
-
-                        async.series([fetchConditions.bind(null, params)], function(er, res) {
-                            if (er || !res) {
-                                output[parameter.parameter_key] = parameterValue;
-                                log.w("Error while fetching condition", parameter);
-                                return callback(null);
-                            }
-
-                            var paramConditionsInfo = res[0];
-
-                            for (let i = 0; i < paramConditions.length; i++) {
-                                var conditionInfo = paramConditionsInfo.filter(function(cond) {
-                                    return cond._id.toString() === paramConditions[i].condition_id.toString();
-                                });
-
-                                if (!conditionInfo.length) {
-                                    continue;
-                                }
-
-                                var conditionObj = conditionInfo[0];
-                                conditionObj.value = paramConditions[i].value;
-
-                                try {
-                                    conditionObj.condition = JSON.parse(conditionObj.condition);
-                                    plugins.dispatch("/drill/preprocess_query", {
-                                        query: conditionObj.condition
-                                    });
-                                }
-                                catch (e) {
-                                    log.w("Skipping condition", conditionObj);
-                                    continue;
-                                }
-
-                                var seed = conditionObj.seed_value || "";
-                                var deviceId = params.qstring.device_id || "";
-                                user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
-
-                                var conditionStatus = remoteConfig.processFilter(params, user, conditionObj.condition);
-
-                                if (conditionStatus) {
-                                    parameterValue = conditionObj.value;
-                                    break;
-                                }
-                            }
-
+                    async.series([fetchConditions.bind(null, params)], function(er, res) {
+                        if (er || !res) {
                             output[parameter.parameter_key] = parameterValue;
+                            log.w("Error while fetching condition", parameter);
                             return callback(null);
-                        });
-                    }
-                    else {
-                        log.d("Condition processing is not available for you. Its only available to the EE users.");
+                        }
+
+                        var paramConditionsInfo = res[0];
+
+                        for (let i = 0; i < paramConditions.length; i++) {
+                            var conditionInfo = paramConditionsInfo.filter(function(cond) {
+                                return cond._id.toString() === paramConditions[i].condition_id.toString();
+                            });
+
+                            if (!conditionInfo.length) {
+                                continue;
+                            }
+
+                            var conditionObj = conditionInfo[0];
+                            conditionObj.value = paramConditions[i].value;
+
+                            try {
+                                conditionObj.condition = JSON.parse(conditionObj.condition);
+                                plugins.dispatch("/drill/preprocess_query", {
+                                    query: conditionObj.condition
+                                });
+                            }
+                            catch (e) {
+                                log.w("Skipping condition", conditionObj);
+                                continue;
+                            }
+
+                            var seed = conditionObj.seed_value || "";
+                            var deviceId = params.qstring.device_id || "";
+                            user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
+
+                            var conditionStatus = remoteConfig.processFilter(params, user, conditionObj.condition);
+
+                            if (conditionStatus) {
+                                parameterValue = conditionObj.value;
+                                break;
+                            }
+                        }
+
                         output[parameter.parameter_key] = parameterValue;
                         return callback(null);
-                    }
-
+                    });
                 }, function(e) {
                     if (e) {
                         common.returnMessage(params, 400, 'Error while fetching remote config data.');
@@ -186,23 +179,23 @@ plugins.setConfigs("remote-config", {
 
     plugins.register("/i/remote-config", function(ob) {
         var params = ob.params,
-            paths = ob.paths,
-            validateUserForDataWriteAPI = ob.validateUserForDataWriteAPI;
+            paths = ob.paths;
+
 
         switch (paths[3]) {
-        case 'add-parameter': validateUserForDataWriteAPI(params, addParameter);
+        case 'add-parameter': validateCreate(params, FEATURE_NAME, addParameter);
             break;
-        case 'update-parameter': validateUserForDataWriteAPI(params, updateParameter);
+        case 'update-parameter': validateUpdate(params, FEATURE_NAME, updateParameter);
             break;
-        case 'remove-parameter': validateUserForDataWriteAPI(params, removeParameter);
+        case 'remove-parameter': validateDelete(params, FEATURE_NAME, removeParameter);
             break;
-        case 'add-condition': validateUserForDataWriteAPI(params, addCondition);
+        case 'add-condition': validateUpdate(params, FEATURE_NAME, addCondition);
             break;
-        case 'update-condition': validateUserForDataWriteAPI(params, updateCondition);
+        case 'update-condition': validateUpdate(params, FEATURE_NAME, updateCondition);
             break;
-        case 'remove-condition': validateUserForDataWriteAPI(params, removeCondition);
+        case 'remove-condition': validateDelete(params, FEATURE_NAME, removeCondition);
             break;
-        case 'add-complete-config': validateUserForDataWriteAPI(params, addCompleteConfig);
+        case 'add-complete-config': validateCreate(params, FEATURE_NAME, addCompleteConfig);
             break;
         default: common.returnMessage(params, 404, 'Invalid endpoint');
             break;
@@ -212,10 +205,9 @@ plugins.setConfigs("remote-config", {
 
     plugins.register("/o", function(ob) {
         var params = ob.params;
-        var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
 
         if (params.qstring.method === "remote-config") {
-            validateUserForDataReadAPI(params, function() {
+            validateRead(params, FEATURE_NAME, function() {
                 var parallelTasks = [
                     fetchParametersFromRCDB.bind(null, params),
                     fetchConditions.bind(null, params)
@@ -1048,10 +1040,6 @@ plugins.setConfigs("remote-config", {
         }
 
         parameter.valuesList.push(parameter.default_value);
-
-        if (!parameter.conditions || !parameter.conditions.length) {
-            return;
-        }
 
         for (let i = 0; i < parameter.conditions.length; i++) {
             try {

@@ -28,31 +28,29 @@
                 </div>
             </div>
         </div>
-        {{#if drill-enabled}}
-            <div class="section">
-                <div class="panel">
-                    <div class="panel-heading" data-localize="remote-config.conditions"></div>
-                    <div class="panel-body">
-                        <div id="conditions-overview-table">
-                            <condition-sortable-table :items="items" :conditions="conditions"></condition-sortable-table>
-                        </div>
-                        <div class="condition-menu-trigger">
-                            <div class="btn btn-orange">+ Add value for condition</div>
-                            <div class="dropdown">
-                                <div class="menu">
-                                    <div class="condition-title" data-localize="remote-config.select-condition"></div>
-                                    <div class="wrapper">
-                                        <div class="search nav-search"><input type="text" autofocus readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"></div>
-                                        <div class="list"></div>
-                                    </div>
-                                    <div id="cly-create-new-condition" class="action"><i class="icon ion-plus-circled"></i><span>Create new condition</span></div>
+        <div class="section">
+            <div class="panel">
+                <div class="panel-heading" data-localize="remote-config.conditions"></div>
+                <div class="panel-body">
+                    <div id="conditions-overview-table">
+                        <condition-sortable-table :items="items" :conditions="conditions"></condition-sortable-table>
+                    </div>
+                    <div class="condition-menu-trigger">
+                        <div class="btn btn-orange">+ Add value for condition</div>
+                        <div class="dropdown">
+                            <div class="menu">
+                                <div class="condition-title" data-localize="remote-config.select-condition"></div>
+                                <div class="wrapper">
+                                    <div class="search nav-search"><input type="text" autofocus readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"></div>
+                                    <div class="list"></div>
                                 </div>
+                                <div id="cly-create-new-condition" class="action"><i class="icon ion-plus-circled"></i><span>Create new condition</span></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        {{/if}}
+        </div>
     </div>
 
     <div class="buttons">
