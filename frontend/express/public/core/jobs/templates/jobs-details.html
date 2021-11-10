@@ -11,20 +11,28 @@
 		<cly-section>
 			<cly-datatable-n :data-source="remoteTableDataSource" :default-sort="{prop: 'next', order: 'descending'}">
                 <template v-slot="scope">
+                    <el-table-column sortable="custom" prop="status" :label="i18n('jobs.job-status')">
+                        <template slot-scope="scope">   
+                            <cly-status-tag :text ="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
+                        </template>
+                    </el-table-column>
                     <el-table-column sortable="custom" prop="schedule" :label="i18n('jobs.job-schedule')">
+                        <template slot-scope="scope">
+                            <p>{{scope.row.scheduleLabel}}</p>
+                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.scheduleDetail}}</p>
+                        </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="next" :label="i18n('jobs.job-next-run')">
                         <template slot-scope="scope">
-                            <p>{{scope.row.nextRun}}</p>
+                            <p>{{scope.row.nextRunDate}}</p>
+                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.nextRunTime}}</p>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="finished" :label="i18n('jobs.job-last-run')">
                         <template slot-scope="scope">
                             <p v-html="scope.row.lastRun"></p>
                         </template>
-                    </el-table-column>
-                    <el-table-column sortable="custom" prop="status" :label="i18n('jobs.job-status')">
-                    </el-table-column>
+                    </el-table-column>    
                     <el-table-column prop="dataAsString" :label="i18n('jobs.job-data')">
                         <template slot-scope="scope">
                             <pre>{{scope.row.dataAsString}}</pre>
