@@ -12,16 +12,19 @@
             return "green";
         }
     };
-    var updateScheduleLabel = function(row) {
+    var updateScheduleRow = function(row) {
         var index;
+        row.nextRunDate = countlyCommon.getDate(row.next);
+        row.nextRunTime = countlyCommon.getTime(row.next);
+        row.lastRun = countlyCommon.formatTimeAgo(row.finished);
         row.scheduleLabel = row.schedule;
-        index = row.schedule.indexOf(" starting on");
+        index = row.schedule.indexOf("starting on");
         if (index > (-1)) {
             row.scheduleLabel = row.schedule.substring(0, index);
             row.scheduleDetail = row.schedule.substring(index);
         }
         if (row.schedule.startsWith("at")) {
-            index = row.schedule.indexOf(" every");
+            index = row.schedule.indexOf("every");
             row.scheduleDetail = row.schedule.substring(0, index) ;
             row.scheduleLabel = row.schedule.substring(index);
         }
@@ -48,10 +51,7 @@
                     var row;
                     for (var i = 0; i < rows.length; i++) {
                         row = rows[i];
-                        row.nextRunDate = countlyCommon.getDate(row.next);
-                        row.nextRunTime = countlyCommon.getTime(row.next);
-                        row.lastRun = countlyCommon.formatTimeAgo(row.finished);
-                        updateScheduleLabel(row);
+                        updateScheduleRow(row);
                     }
                     return rows;
                 }
@@ -99,12 +99,9 @@
                     var row;
                     for (var i = 0; i < rows.length; i++) {
                         row = rows[i];
-                        row.nextRunDate = countlyCommon.getDate(row.next);
-                        row.nextRunTime = countlyCommon.getTime(row.next);
-                        row.lastRun = countlyCommon.formatTimeAgo(row.finished);
                         row.dataAsString = JSON.stringify(row.data, null, 2);
                         row.durationInSeconds = (row.duration / 1000) + 's';
-                        updateScheduleLabel(row);
+                        updateScheduleRow(row);
                     }
                     return rows;
                 }
