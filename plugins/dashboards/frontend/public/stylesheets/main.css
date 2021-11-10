@@ -1,7 +1,7 @@
-body.dashboards-view { background-color: #272b37; transition:background-color 0.5s; min-height: 100%; min-width: 1024px; }
-body.dashboards-view .pace .pace-progress { top:57px; height:3px; }
+body.dashboards-view { background-color: #272b37; transition:background-color 0.5s; min-height: 100%; }
+/* body.dashboards-view .pace .pace-progress { top:0px; height:3px; } */
 
-#main-views-container #dashboards-main-view.active + #analytics-main-view #content-container { min-height: 0; padding: 0; }
+/* #main-views-container #dashboards-main-view.active + #analytics-main-view #content-container { min-height: 0; padding: 0; } */
 #dashboard-selection .selected { text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
 #dashboards .grid-stack { padding-bottom: 100px; }
 #dashboards .grid-stack-item.ui-state-disabled { opacity: 1; }
@@ -186,8 +186,8 @@ body.dashboards-view .pace .pace-progress { top:57px; height:3px; }
 #no-widgets .description,
 #no-dashboards .description { text-align:center; font-size: 14px; color:rgba(255, 255, 255, 0.33); padding: 0 10px; line-height: 25px; margin-top:15px; }
 
-#dashboards #dashboard-data { padding: 10px; }
-#dashboards #dashboard-top { margin: 70px 10px 40px 10px; }
+/* #dashboards #dashboard-data { padding: 10px; } */
+#dashboards #dashboard-top { margin: 24px; }
 #dashboards #dashboard-name { float:left; font-size: 22px; color: #FFF; }
 #dashboards #add-widget { padding: 6px 20px; line-height: 17px; }
 #dashboards.view-only #add-widget { display: none; }

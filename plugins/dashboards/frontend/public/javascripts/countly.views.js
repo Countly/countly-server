@@ -1,4 +1,4 @@
-/*global $,countlyView,countlyGlobal,Countly,countlyAuth,screenfull,CustomDashboardsView,countlyDashboards,countlyWidgets,Handlebars,Backbone,_,CountlyHelpers,jQuery,countlyCommon,app, T,DashbaordsCustomPeriod,groupsModel */
+/*global $,countlyView,countlyGlobal,Countly,countlyAuth,CV,screenfull,CustomDashboardsView,countlyDashboards,countlyWidgets,Handlebars,Backbone,_,CountlyHelpers,jQuery,countlyCommon,app, T,DashbaordsCustomPeriod, countlyVue, groupsModel */
 
 window.CustomDashboardsView = countlyView.extend({
     featureName: 'dashboards',
@@ -2338,23 +2338,23 @@ var reportsOptions = {
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.customDashboardsView.featureName)) {
-        countlyDashboards.initialize();
+        // countlyDashboards.initialize();
 
-        var $dashboardNavigation = $("#dashboard-selection");
+        // var $dashboardNavigation = $("#dashboard-selection");
 
-        $dashboardNavigation.on("click", ".item", function() {
-            $dashboardNavigation.find(".selected").text($(this).text());
-        });
+        // $dashboardNavigation.on("click", ".item", function() {
+        //     $dashboardNavigation.find(".selected").text($(this).text());
+        // });
 
-        $dashboardNavigation.on("click", "#add-dashboard", function() {
-            if (!$("body").hasClass("dashboards-view")) {
-                app.navigate("#/custom", true);
-            }
-        });
+        // $dashboardNavigation.on("click", "#add-dashboard", function() {
+        //     if (!$("body").hasClass("dashboards-view")) {
+        //         app.navigate("#/custom", true);
+        //     }
+        // });
 
-        $dashboardNavigation.on("click", function() {
-            app.customDashboardsView.populateDashboardList();
-        });
+        // $dashboardNavigation.on("click", function() {
+        //     app.customDashboardsView.populateDashboardList();
+        // });
 
         if (typeof app.addReportsCallbacks === "function") {
             app.addReportsCallbacks("dashboards", reportsOptions);
@@ -2393,23 +2393,112 @@ $.fn.alterClass = function(removals, additions) {
     return !additions ? self : self.addClass(additions);
 };
 
-app.addPageScript("/manage/export/export-features", function() {
-    $.when(countlyDashboards.initialize(null, true)).then(function() {
-        var dashboards = countlyDashboards.getAllDashboards();
-        var dashboardsList = [];
-        dashboards.forEach(function(dashboard) {
-            dashboardsList.push({
-                name: dashboard.name,
-                id: dashboard.id
+countlyVue.container.registerMixin("/manage/export/export-features", {
+    beforeCreate: function() {
+        var self = this;
+        $.when(countlyDashboards.initialize(null, true))
+            .then(function() {
+                var dashboards = countlyDashboards.getAllDashboards();
+                var dashboardsList = [];
+                dashboards.forEach(function(dashboard) {
+                    dashboardsList.push({
+                        name: dashboard.name,
+                        id: dashboard.id
+                    });
+                });
+                var selectItem = {
+                    id: "dashboards",
+                    name: "Dashboards",
+                    children: dashboardsList
+                };
+                if (dashboardsList.length) {
+                    self.$store.dispatch("countlyConfigTransfer/addConfigurations", selectItem);
+                }
             });
-        });
-        var selectItem = {
-            id: "dashboards",
-            name: "Dashboards",
-            children: dashboardsList
-        };
-        if (dashboardsList.length) {
-            app.exportView.addSelectTable(selectItem);
-        }
-    });
+    }
 });
+
+(function() {
+    var FEATURE_NAME = "dashboards";
+
+    if (countlyAuth.validateRead(FEATURE_NAME)) {
+
+        var DashboardsMenu = countlyVue.views.create({
+            template: CV.T('/dashboards/templates/dashboards-menu.html'),
+            data: function() {
+                return {
+                    canCreate: countlyAuth.validateCreate(FEATURE_NAME),
+                    allDashboards: []
+                };
+            },
+            methods: {
+                onCreate: function() {
+                    app.navigate("#/custom", true);
+                },
+                onDashboardMenuItemClick: function(dashboard) {
+                    this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: dashboard});
+                    app.navigate('#/custom/' + dashboard.id, true);
+                }
+            },
+            computed: {
+                selectedDashboard: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    if (selected.menu === "dashboards") {
+                        return selected.item;
+                    }
+
+                    return {};
+                }
+            },
+            beforeCreate: function() {
+                var self = this;
+                $.when(countlyDashboards.initialize(null, true))
+                    .then(function() {
+                        var dashboards = countlyDashboards.getAllDashboards();
+                        //Move this to vuex later when dashboards is being transitioned to vue
+                        //Reason being whenever we create or delete a dashboard, the side bar updates automatically
+
+                        if (dashboards && dashboards.length) {
+                            self.allDashboards = dashboards;
+                        }
+
+                        identifySelectedDashboard(self, dashboards);
+                    });
+            }
+        });
+
+        countlyVue.container.registerData("/sidebar/menu/main", {
+            name: "dashboards",
+            icon: "ion-android-apps",
+            component: DashboardsMenu
+        });
+    }
+
+    /**
+     * Function to identify current dashboard
+     * @param  {Object} instance - vuex store
+     * @param  {Array} allDashboards - all dashboards
+     */
+    function identifySelectedDashboard(instance, allDashboards) {
+        var currLink = Backbone.history.fragment;
+
+        if (/^\/custom/.test(currLink) === false) {
+            return;
+        }
+        currLink = currLink.split("/");
+        var id = currLink[currLink.length - 1];
+
+        var currMenu = allDashboards.find(function(d) {
+            return d.id === id;
+        });
+
+        if (!currMenu) {
+            // eslint-disable-next-line no-console
+            console.log("Dashboard not found - ", id, allDashboards);
+        }
+
+        instance.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "dashboards", item: currMenu || {}});
+    }
+
+})();

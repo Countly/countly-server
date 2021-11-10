@@ -575,6 +575,9 @@ plugins.setConfigs("dashboards", {
                     });
                     dataObj.newWidgetIds = newWidgetIds;
                     callback();
+                    widgets.forEach(function(widget, idx) {
+                        plugins.dispatch("/dashboard/widget/created", {params: params, widget: Object.assign({}, {_id: result.insertedIds[idx]}, widget)});
+                    });
                 });
             }
         });
@@ -842,6 +845,7 @@ plugins.setConfigs("dashboards", {
                                     var newWidgetId = result.insertedIds[0];
                                     plugins.dispatch("/systemlogs", {params: params, action: "widget_added", data: widget});
                                     common.db.collection("dashboards").update({_id: common.db.ObjectID(dashboardId)}, {'$addToSet': {widgets: newWidgetId}}, function() {});
+                                    plugins.dispatch("/dashboard/widget/created", {params: params, widget: Object.assign({}, {_id: newWidgetId}, widget)});
                                     common.returnOutput(params, newWidgetId);
                                 }
                                 else {
@@ -909,6 +913,7 @@ plugins.setConfigs("dashboards", {
                                 }
                                 else {
                                     plugins.dispatch("/systemlogs", {params: params, action: "widget_edited", data: {before: result.value, update: widget}});
+                                    plugins.dispatch("/dashboard/widget/updated", {params: params, widget: {before: result.value, update: widget}});
                                     common.returnMessage(params, 200, 'Success');
                                 }
                             });
@@ -975,6 +980,7 @@ plugins.setConfigs("dashboards", {
                                         }
                                         else {
                                             plugins.dispatch("/systemlogs", {params: params, action: "widget_deleted", data: widgetResult.value});
+                                            plugins.dispatch("/dashboard/widget/deleted", {params: params, widget: widgetResult.value});
                                             common.returnMessage(params, 200, 'Success');
                                         }
                                     });
@@ -1626,6 +1632,7 @@ plugins.setConfigs("dashboards", {
             common.db.collection("widgets").insert(importData.data, function(er, result) {
                 if (!er && result && result.insertedIds && result.insertedIds[0]) {
                     plugins.dispatch("/systemlogs", {params: params, action: "widget_added", data: importData.data});
+                    // TODO: dispatch widget_imported
                     resolve();
                 }
                 else {
