@@ -12,6 +12,20 @@
             return "green";
         }
     };
+    var updateScheduleLabel = function(row) {
+        var index;
+        row.scheduleLabel = row.schedule;
+        index = row.schedule.indexOf(" starting on");
+        if (index > (-1)) {
+            row.scheduleLabel = row.schedule.substring(0, index);
+            row.scheduleDetail = row.schedule.substring(index);
+        }
+        if (row.schedule.startsWith("at")) {
+            index = row.schedule.indexOf(" every");
+            row.scheduleDetail = row.schedule.substring(0, index) ;
+            row.scheduleLabel = row.schedule.substring(index);
+        }
+    };
     var JobsView = countlyVue.views.create({
         template: CV.T('/core/jobs/templates/jobs.html'),
         data: function() {
@@ -31,24 +45,13 @@
                 },
                 onReady: function(context, rows) {
                     self.loaded = true;
-                    var row, index;
+                    var row;
                     for (var i = 0; i < rows.length; i++) {
                         row = rows[i];
                         row.nextRunDate = countlyCommon.getDate(row.next);
                         row.nextRunTime = countlyCommon.getTime(row.next);
                         row.lastRun = countlyCommon.formatTimeAgo(row.finished);
-                        row.scheduleLabel = row.schedule;
-
-                        index = row.schedule.indexOf(" starting on");
-                        if (index > (-1)) {
-                            row.scheduleLabel = row.schedule.substring(0, index);
-                            row.scheduleDetail = row.schedule.substring(index);
-                        }
-                        if (row.schedule.startsWith("at")) {
-                            index = row.schedule.indexOf(" every");
-                            row.scheduleDetail = row.schedule.substring(0, index) ;
-                            row.scheduleLabel = row.schedule.substring(index);
-                        }
+                        updateScheduleLabel(row);
                     }
                     return rows;
                 }
@@ -93,7 +96,7 @@
                 },
                 onReady: function(context, rows) {
                     self.loaded = true;
-                    var row, index;
+                    var row;
                     for (var i = 0; i < rows.length; i++) {
                         row = rows[i];
                         row.nextRunDate = countlyCommon.getDate(row.next);
@@ -101,18 +104,7 @@
                         row.lastRun = countlyCommon.formatTimeAgo(row.finished);
                         row.dataAsString = JSON.stringify(row.data, null, 2);
                         row.durationInSeconds = (row.duration / 1000) + 's';
-                        row.scheduleLabel = row.schedule;
-
-                        index = row.schedule.indexOf(" starting on");
-                        if (index > (-1)) {
-                            row.scheduleLabel = row.schedule.substring(0, index);
-                            row.scheduleDetail = row.schedule.substring(index);
-                        }
-                        if (row.schedule.startsWith("at")) {
-                            index = row.schedule.indexOf(" every");
-                            row.scheduleDetail = row.schedule.substring(0, index) ;
-                            row.scheduleLabel = row.schedule.substring(index);
-                        }
+                        updateScheduleLabel(row);
                     }
                     return rows;
                 }
