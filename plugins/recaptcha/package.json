@@ -1,0 +1,26 @@
+{
+  "name": "countly-recaptcha",
+  "title": "Recaptcha",
+  "version": "1.0.0",
+  "description": "Display recaptcha on incorrect login",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/plugins/recaptcha",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
+  "keywords": [
+    "countly",
+    "analytics",
+    "captcha",
+    "plugins",
+    "recaptcha"
+  ],
+  "dependencies": {
+    "express-recaptcha": "2.1.0"
+  },
+  "private": true
+}

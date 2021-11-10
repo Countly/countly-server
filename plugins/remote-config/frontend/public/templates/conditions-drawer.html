@@ -1,0 +1,127 @@
+<div id="rc-condition-drawer" class="cly-drawer condition-block-drawer">
+    <div class="title" style="width: 100%;top: 0px; box-sizing:border-box">
+        <span id="add-condition-title" data-localize="remote-config.add-condition-title"></span>
+        <span id="edit-condition-title" data-localize="remote-config.edit-condition-title"></span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+
+    <div class="details">
+        <div class="section" id="rc-condition-name-section">
+            <div class="label" data-localize="remote-config.condition-name"></div>
+            <div id="rc-condition-name-input">
+                <input class="input" type="text" data-localize="placeholder.condition-name">
+            </div>
+            <div class="description" style="color: #E95C6C;" data-localize="remote-config.condition-key-error"></div>
+        </div>
+        <div class="section" style="margin-bottom: 55px;">
+            <div class="label" data-localize="remote-config.color"></div>
+            <div id="condition-colors" class="colors">
+                <div data-color="1" class="color alt1 selected"></div>
+                <div data-color="2" class="color alt2"></div>
+                <div data-color="3" class="color alt3"></div>
+                <div data-color="4" class="color alt4"></div>
+            </div>
+        </div>
+        <div class="section" id="rc-seed-value-section">
+            <div class="label" data-localize="remote-config.seed"></div>
+            <div id="rc-condition-seed-value-input">
+                <input class="input" type="text" data-localize="placeholder.seed-value">
+            </div>
+            <div class="description" data-localize="remote-config.seed-value-description"></div>
+        </div>
+        <!-- This section below is added by countly.view.js -->
+        <!-- <div class="section" id="segmentation-section">
+            <div id="filter-view" style="width:100%">
+                <div style="display:none;" id="defalt-filter-block">
+                    <div class="query" style="margin-bottom:3px">
+                        <div class="and-or" style="padding: 10px 0px; margin-top:-5px">
+                            <div class="block-line-row">
+                                <div class="filter-connector cly-select centered force" style="width:45px; height:24px; margin-left:20px; z-index:1;">
+                                    <div class="select-inner">
+                                        <div class="text-container">
+                                            <div data-value="AND" class="text" style="font-size:11px; width: 100%; padding: 6px 0px 5px 0px;" data-localize="drill.and">AND</div>
+                                        </div>
+                                    </div>
+                                    <div class="select-items square" style="width:46px; display: none;">
+                                        <div data-value="AND" class="item" style="font-size:11px" data-localize="drill.and">AND</div>
+                                        <div data-value="OR" class="item" style="font-size:11px" data-localize="drill.or">OR</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filters">
+                            <div class="filter-name cly-select cly-select-keynav centered text-align-left" style="width:200px;">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text" data-localize="drill.select-filter">Select a Filter</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square" style="width:200px; display: none;">
+                                    <div></div>
+                                </div>
+                            </div>
+                            <div class="filter-type cly-select centered force disabled" style="width:100px;">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div data-value="=" class="text" data-localize="drill.opr.is"></div>
+                                    </div>
+                                </div>
+                                <div class="select-items square" style="width:100px; display: none;">
+                                    <div data-value="rgxcn" class="item str list rgx rgxcn" data-localize="drill.opr.contains"></div>
+                                    <div data-value="$gt" class="item num gt" data-localize="drill.opr.greater-than"></div>
+                                    <div data-value="$gte" class="item num gt gte" data-localize="drill.opr.at-least"></div>
+                                    <div data-value="$lt" class="item num lt" data-localize="drill.opr.less-than"></div>
+                                    <div data-value="$lte" class="item num lt lte" data-localize="drill.opr.at-most"></div>
+                                    <div data-value="=" class="item both eq" data-localize="drill.opr.is"></div>
+                                    <div data-value="!=" class="item both neq" data-localize="drill.opr.is-not"></div>
+                                </div>
+                            </div>
+                            <div class="filter-value list cly-select cly-select-keynav centered text-align-left disabled" style="width:200px;">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text" data-localize="drill.list">List</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square" style="width:200px; display: none;">
+                                    <div></div>
+                                </div>
+                            </div>
+                            <div class="filter-value string hidden">
+                                <input type="text" placeholder="String"/>
+                            </div>
+                            <div class="filter-value num hidden">
+                                <input type="number" placeholder="Number"/>
+                            </div>
+                            <div class="filter-value date hidden">
+                                <input class="open-date-picker" type="text" placeholder="Date"/>
+                                <div class="date-picker">
+                                    <div class="calendar-container calendar-light">
+                                        <div class="calendar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="delete text-light-gray"><a class="material-icons" style="padding-top:2px">highlight_off</a></div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-heading" data-localize="remote-config.condition-definition"></div>
+                    <div class="panel-body">
+                        <div id="segmentation" style="float: none; padding:0; min-width: initial; width: 100%;">
+                            <div id="filter-blocks" class="empty"></div>
+                            <div class="block-line-row"></div>
+                            <button id="filter-add-container" style="all:unset;"><span class="btn btn-orange">+ Add Condition</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+    </div>
+
+    <div class="buttons">
+        <div id="create-condition" class="icon-button green disabled" data-localize="common.create"></div>
+        <div id="save-condition" class="icon-button green disabled" data-localize="common.save"></div>
+    </div>
+</div>

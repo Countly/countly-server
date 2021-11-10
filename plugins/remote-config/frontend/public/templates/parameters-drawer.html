@@ -1,0 +1,109 @@
+<div id="rc-parameter-drawer" class="cly-drawer">
+    <div class="title" style="width: 100%;top: 0px; box-sizing:border-box">
+        <span id="add-parameter-title" data-localize="remote-config.add-parameter-title"></span>
+        <span id="edit-parameter-title" data-localize="remote-config.edit-parameter-title"></span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <div class="details">
+        <div class="section" id="rc-parameter-name-section">
+            <div class="label" data-localize="remote-config.parameter-key"></div>
+            <div>
+                <input id="rc-parameter-name-input" class="input" type="text" data-localize="placeholder.parameter-key-name" maxlength="256">
+            </div>
+            <div class="description" style="color: #E95C6C;" data-localize="remote-config.param-key-error"></div>
+        </div>
+        <div class="section" id="rc-parameter-description-section">
+            <div class="label" style="position: relative">
+                <a class='fa fa-square-o check-green' id="parameter-description-checkbox" style="position:relative; vertical-align:middle; bottom: 1px"></a>
+                <span data-localize="remote-config.add-description" style="position: absolute; left: 20px"></span>
+            </div>
+            <input id="parameter-description" class="input" data-localize="placeholder.add-description" type="text" style="display: none;" />
+        </div>
+        <div class="section">
+            <div class="panel">
+                <div class="panel-heading" data-localize="remote-config.default-value"></div>
+                <div class="panel-body">
+                    <div class="label" data-localize="remote-config.default-value"></div>
+                    <cly-textarea-drop :items="items" v-model="defaultValue"></cly-textarea-drop>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <div class="panel">
+                <div class="panel-heading" data-localize="remote-config.conditions"></div>
+                <div class="panel-body">
+                    <div id="conditions-overview-table">
+                        <condition-sortable-table :items="items" :conditions="conditions"></condition-sortable-table>
+                    </div>
+                    <div class="condition-menu-trigger">
+                        <div class="btn btn-orange">+ Add value for condition</div>
+                        <div class="dropdown">
+                            <div class="menu">
+                                <div class="condition-title" data-localize="remote-config.select-condition"></div>
+                                <div class="wrapper">
+                                    <div class="search nav-search"><input type="text" autofocus readonly onfocus="if (this.hasAttribute('readonly')) {this.removeAttribute('readonly'); this.blur(); this.focus();}"></div>
+                                    <div class="list"></div>
+                                </div>
+                                <div id="cly-create-new-condition" class="action"><i class="icon ion-plus-circled"></i><span>Create new condition</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <div id="create-parameter" class="icon-button green disabled" data-localize="common.create"></div>
+        <div id="save-parameter" class="icon-button green disabled" data-localize="common.save"></div>
+    </div>
+</div>
+
+<script type="text/x-template" id="cly-single-select">
+    <div class="cly-textarea-drop">
+        <div class="text-field" v-bind:class="{open: opened}">
+            <textarea
+                ref="write"
+                v-bind:placeholder="placeholder"
+                v-bind:value="value.name"
+                v-on:input="onInput"
+                @click="toggle"
+            >
+            </textarea>
+            <div class="jb">
+                <div class="json-braces">{ }</div>
+            </div>
+        </div>
+
+        <div class="items" v-show="opened">
+            <div v-for="(item, i) in items"
+                :key="i"
+                @click="setItem(item)"
+                class="item"
+                v-bind:data-value="item.value"
+                v-text="item.name"
+            >
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="cly-rc-condition-sortable-table">
+    <table>
+        <tbody>
+            <tr v-for="(item, i) in conditions" v-bind:data-order-key="i" v-bind:key="i" v-bind:data-condition-id = "item._id">
+                <td>
+                    <div>
+                        <span><i class="fa fa-reorder condition-order"></i></span>
+                        <span style="margin-left:6px;">Value for <span class="condition-text-color" v-bind:class="'alt' + item.condition_color" v-text="item.condition_name"></span></span>
+                    </div>
+                    <div class="condition-input-container">
+                        <cly-textarea-drop :items="items" v-model="item.value"></cly-textarea-drop>
+                        <div class="delete text-light-gray"><a v-bind:data-order-key="i" class="material-icons">highlight_off</a></div>
+                    </div>
+                    <div class="block-line-row"></div>
+                </td>
+            </tr>
+        </tbody>
+    </table> 
+</script>
