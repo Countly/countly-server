@@ -69,10 +69,11 @@ class IncomingDataTrigger {
         InternalEvents.forEach((e) => {
             plugins.register(e, (obj) => {
                 const ob = Object.assign({}, obj);
+                console.log(e, ob, "?##33333433");
                 if (e === '/plugins/drill') {
                     const hooksData = {
                         params: {...ob.params}
-                    }
+                    };
                     if (ob.events) {
                         hooksData.params.qstring.events = ob.events;
                     }

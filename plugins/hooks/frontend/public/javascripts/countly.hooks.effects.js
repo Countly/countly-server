@@ -17,7 +17,7 @@
                 if (!code) {
                     return null;
                 }
-                return {code}
+                return {code: code};
             },
         },
         "EmailEffect": {

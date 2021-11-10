@@ -25,17 +25,19 @@ class CustomCodeEffect {
         let runtimePassed = true ;
         let logs = [];
         let result = {};
-        try{
+        try {
+            result = await new Promise((CUSTOM_CODE_RESOLVER, CUSTOM_CODE_REJECT) => {
+                const code = effect.configuration.code;
+                /** 
+                 * callback function for promise failed
+                 * @param {object} e - error object
+                 **/
+                const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
+                    utils.addErrorRecord(rule._id, e);
+                    CUSTOM_CODE_REJECT(e);
+                };
 
-       
-        result = await  new Promise((CUSTOM_CODE_RESOLVER, CUSTOM_CODE_REJECT) => {
-            const code = effect.configuration.code;
-            const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
-                utils.addErrorRecord(rule._id, e);
-                CUSTOM_CODE_REJECT(e)
-            }
-
-            genCode = `
+                genCode = `
                 const CUSTOM_MAIN = async () => {
                    
                     try {
@@ -48,18 +50,22 @@ class CustomCodeEffect {
                      return CUSTOM_CODE_RESOLVER(params);
                 }
                 CUSTOM_MAIN();
-            `
-            vm.runInNewContext(genCode, {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK},{ timeout: 300000, microtaskMode: 'afterEvaluate' });
-            options.params = params;
-        }).catch(e => {
-            runtimePassed = false;
-            log.e("got error when executing custom code", e, genCode, options);
-            logs.push(`message:${e.message}
+            `;
+                vm.runInNewContext(genCode, {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK}, { timeout: 30000, microtaskMode: 'afterEvaluate' });
+                options.params = params;
+                log.d("custom code effect run", result);
+            }).catch(e => {
+                runtimePassed = false;
+                log.e("got error when executing custom code", e, genCode, options);
+                logs.push(`message:${e.message}
             stack: ${JSON.stringify(e.stack)}
                 `);
-        });
-        } catch(ee) {console.log(ee)}
-        return  runtimePassed ? options : {params: null, logs};
+            });
+        }
+        catch (ee) {
+            console.log(ee);
+        }
+        return runtimePassed ? options : {params: null, logs};
     }
 }
 

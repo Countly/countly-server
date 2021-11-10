@@ -66,13 +66,13 @@ utils.addErrorRecord = function addErrorRecord(hookId, error) {
     }
     const updateOperation = {
         $push: {
-           error_logs: {
-             $each: [ errorString ],
-             $slice: -10
-           }
-         }
-    }
+            error_logs: {
+                $each: [ errorString ],
+                $slice: -10
+            }
+        }
+    };
     common.writeBatcher.add("hooks", hookId, updateOperation);
-}
+};
 
 module.exports = utils;
