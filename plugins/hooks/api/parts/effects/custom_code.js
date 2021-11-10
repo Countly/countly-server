@@ -1,7 +1,7 @@
 const vm = require('vm');
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
-const log = common.log("hooks:api:api_custom_code_effect");
+const log = common.log("hooks:api:api_endpoint_trigger");
 
 const request = require("request");
 /**
@@ -24,20 +24,17 @@ class CustomCodeEffect {
         let genCode = "";
         let runtimePassed = true ;
         let logs = [];
-        let result = {};
-        try {
-            result = await new Promise((CUSTOM_CODE_RESOLVER, CUSTOM_CODE_REJECT) => {
-                const code = effect.configuration.code;
-                /** 
-                 * callback function for promise failed
-                 * @param {object} e - error object
-                 **/
-                const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
-                    utils.addErrorRecord(rule._id, e);
-                    CUSTOM_CODE_REJECT(e);
-                };
+        await new Promise(CUSTOM_CODE_RESOLVER => {
+            const code = effect.configuration.code;
+            /**
+            * log error
+            * @param {object} e - error object
+            */
+            const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
+                utils.addErrorRecord(rule._id, e);
+            };
 
-                genCode = `
+            genCode = `
                 const CUSTOM_MAIN = async () => {
                    
                     try {
@@ -45,26 +42,21 @@ class CustomCodeEffect {
                      }
                      catch(e) {
                         CUSTOM_CODE_ERROR_CALLBACK(e);                        
-                        return CUSTOM_CODE_RESOLVER(params);
+                        CUSTOM_CODE_RESOLVER();
                      }
-                     return CUSTOM_CODE_RESOLVER(params);
+                     CUSTOM_CODE_RESOLVER();
                 }
                 CUSTOM_MAIN();
             `;
-                vm.runInNewContext(genCode, {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK}, { timeout: 30000, microtaskMode: 'afterEvaluate' });
-                options.params = params;
-                log.d("custom code effect run", result);
-            }).catch(e => {
-                runtimePassed = false;
-                log.e("got error when executing custom code", e, genCode, options);
-                logs.push(`message:${e.message}
+            vm.runInNewContext(genCode, {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK}, { timeout: 30000, microtaskMode: 'afterEvaluate' });
+            options.params = params;
+        }).catch(e => {
+            runtimePassed = false;
+            log.e("got error when executing custom code", e, genCode, options);
+            logs.push(`message:${e.message}
             stack: ${JSON.stringify(e.stack)}
                 `);
-            });
-        }
-        catch (ee) {
-            console.log(ee);
-        }
+        });
         return runtimePassed ? options : {params: null, logs};
     }
 }

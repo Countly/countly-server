@@ -42,24 +42,27 @@
                 </div>
 
                 <div class="panel-body hooks-trigger-block">
-                        <div class="label" data-localize='hooks.set-hook-trigger'></div>
-                        <div id="single-hook-trigger-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                            <div class="select-inner">
-                                <div class="text-container">
-                                    <div class="text">
-                                        <div class="default-text" data-localize='hooks.select-trigger'></div>
-                                    </div>
+                    <div class="label" data-localize='hooks.set-hook-trigger'></div>
+                    <div id="single-hook-trigger-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">
+                                    <div class="default-text" data-localize='hooks.select-trigger'></div>
                                 </div>
-                                <div class="right combo"></div>
                             </div>
-                            <div class="select-items square" style="width: 100%;"></div>
+                            <div class="right combo"></div>
                         </div>
-                        <div class="hook-trigger-view">
-                        </div>
-                        <div class="trigger-intro" style="display: none">
-                            <div data-localize="hooks.trigger-instruction" class="trigger-intro-title"> </div>
-                            <div class="trigger-intro-content"> </div>
-                        </div>
+                        <div class="select-items square" style="width: 100%;"></div>
+                    </div>
+                    <div class="hook-trigger-view">
+                    </div>
+                    <div class="trigger-intro" style="display: none">
+                        <div data-localize="hooks.trigger-instruction" class="trigger-intro-title"> </div>
+                        <div class="trigger-intro-content"> </div>
+                    </div>
+                    
+                </div>
+                <div class="panel-body ui-widget hook-test-info">
                 </div>
             </div>
         </div>
@@ -81,6 +84,8 @@
                     </div>
                     <div>
                         <div class="icon-button add-effect-button" data-localize="hooks.add-effect"></div>
+                        <div class="icon-button test-hook-button" data-localize="hooks.test-hook"></div>
+
                         <div style="clear:both;"></div>
                     </div>
                 </div>
@@ -231,6 +236,19 @@
 
 
 
+<script id="template-hook-effect-CustomCodeEffect" type="text/x-handlebars-template">
+    <div class="section">
+        <div class="label" data-localize='hooks.Custom Code' >Custom Code</div>
+        <div>
+            <textarea style="width:100%;border: 1px solid #d6d6d6;" name="custom-code-input" rows="5"  cols="60" placeholder="//Javascript code here"></textarea>
+
+        </div>
+    </div>
+</script>
+
+
+
+
 <script id="template-hook-effect-SDKEventEffect" type="text/x-handlebars-template">
     <div class="section">
         <div class="label" data-localize='hooks.' >SDKEventEffect</div>
@@ -306,6 +324,8 @@
 
         <div class="hook-effect-view">
         </div>
+        <div class=" ui-widget hook-test-info">
+        </div>
         <div class="block-line-row"></div>
     </div>
 </script>
@@ -343,13 +363,28 @@
     </div>
 </script>
 
-<script id="template-hook-effect-CustomCodeEffect" type="text/x-handlebars-template">
-    <div class="section">
-        <div class="label" data-localize='hooks.Custom Code' >Custom Code</div>
-        <div>
-            <textarea style="width:100%;border: 1px solid #d6d6d6;" name="custom-code-input" rows="5"  cols="60" placeholder="//Javascript code here. &#10//Input: 'params'  &#10//Return: 'params' &#10//The code here will be wrapped in an async function"></textarea>
 
+<script id="template-hook-test-block" type="text/x-handlebars-template">
+    <div class="hook-test-block">
+      <h3 class="test-accordion-title">Test Data</h3>
+      <div style="border: none; height: 100% !important;">
+        <div class="test-in-block" style="display:none;">
+            <div class="test-subtitle">Input: </div>
+            <div class="test-result" ></div>
         </div>
+        
+        <div  class="test-out-block" style="display:none;">
+            <div class="test-subtitle">Ouput:</div>
+            <div class="test-result"></div>
+        </div>
+
+        <div class="test-logs-block" style="display:none;">
+            <div class="test-subtitle">Logs: </div>
+            <div class="test-result"></div>
+        </div>
+      </div>
     </div>
 </script>
+
+
 

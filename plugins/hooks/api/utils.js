@@ -5,6 +5,9 @@ utils.updateRuleTriggerTime = function updateRuleTriggerTime(hookID) {
     const db = common.db;
     console.log("update rule trigger time,", hookID);
 
+    if (!hookID) {
+        return;
+    }
     db && db.collection('hooks').findAndModify(
         {_id: common.db.ObjectID(hookID)},
         {},
@@ -15,6 +18,24 @@ utils.updateRuleTriggerTime = function updateRuleTriggerTime(hookID) {
     );
 };
 
+utils.addErrorRecord = function addErrorRecord(hookId, error) {
+    if (!hookId) {
+        return;
+    }
+    let errorString = error;
+    if (typeof error === 'object') {
+        errorString = (error.toString && error.toString()) || JSON.stringify(error);
+    }
+    const updateOperation = {
+        $push: {
+            error_logs: {
+                $each: [ errorString ],
+                $slice: -10
+            }
+        }
+    };
+    common.writeBatcher.add("hooks", hookId, updateOperation);
+};
 
 utils.parseStringTemplate = function(str, data, httpMethod) {
     const parseData = function(obj) {
@@ -55,24 +76,5 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
     });
 };
 
-
-utils.addErrorRecord = function addErrorRecord(hookId, error) {
-    if (!hookId) {
-        return;
-    }
-    let errorString = error;
-    if (typeof error === 'object') {
-        errorString = (error.toString && error.toString()) || JSON.stringify(error);
-    }
-    const updateOperation = {
-        $push: {
-            error_logs: {
-                $each: [ errorString ],
-                $slice: -10
-            }
-        }
-    };
-    common.writeBatcher.add("hooks", hookId, updateOperation);
-};
 
 module.exports = utils;

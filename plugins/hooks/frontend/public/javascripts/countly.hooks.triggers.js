@@ -6,7 +6,6 @@
     var _hookTriggers = {
         "IncomingDataTrigger": {
             name: jQuery.i18n.map["hooks.IncomingDataTrigger"],
-            showDrillFilter: countlyGlobal.plugins.indexOf('drill') > -1,
             init: function() {
                 var self = this;
                 self.filterObj = {};
@@ -14,32 +13,27 @@
                     self.loadEventsData();
                 });
                 this.loadEventsData();
-                if (self.showDrillFilter) {
-                    $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
-                        self.initDrill();
-                    });
-                }
-
+                $.when(countlySegmentation.initialize("[CLY]_session")).then(function() {
+                    self.initDrill();
+                });
                 $("#multi-event-dropdown").on("cly-multi-select-change", function() {
                     var events = $("#multi-event-dropdown").clyMultiSelectGetSelection();
+                    countlySegmentation.reset();
                     self.filterObj = {};
-                    if (self.showDrillFilter) {
-                        countlySegmentation.reset();
-                        $("#filter-blocks").empty();
-                        if (events.length === 1 && self.showDrillFilter) {
-                            var currEvent = events[0].split("***")[1];
-                            $.when(countlySegmentation.initialize(currEvent)).then(function() {
-                                $("#filter-definition").show();
-                                self.adjustFilters();
-                                if (self.tmpFilterCall) {
-                                    self.tmpFilterCall();
-                                    self.tmpFilterCall = null;
-                                }
-                            });
-                        }
-                        else {
-                            $("#filter-definition").hide();
-                        }
+                    $("#filter-blocks").empty();
+                    if (events.length === 1) {
+                        var currEvent = events[0].split("***")[1];
+                        $.when(countlySegmentation.initialize(currEvent)).then(function() {
+                            $("#filter-definition").show();
+                            self.adjustFilters();
+                            if (self.tmpFilterCall) {
+                                self.tmpFilterCall();
+                                self.tmpFilterCall = null;
+                            }
+                        });
+                    }
+                    else {
+                        $("#filter-definition").hide();
                     }
                 });
             },
@@ -997,17 +991,13 @@
             init: function() {
                 var self = this;
                 var internalEvents = [
+                    {value: "/cohort/enter", name: "/cohort/enter"},
+                    {value: "/cohort/exit", name: "/cohort/exit"},
                     {value: "/i/app_users/create", name: "/i/app_users/create"},
                     {value: "/i/app_users/update", name: "/i/app_users/update"},
                     {value: "/i/app_users/delete", name: "/i/app_users/delete"},
                     {value: "/hooks/trigger", name: "/hooks/trigger"},
                 ];
-                if (countlyGlobal.plugins.indexOf("cohorts") > -1) {
-                    internalEvents = internalEvents.concat([
-                        {value: "/cohort/enter", name: "/cohort/enter"},
-                        {value: "/cohort/exit", name: "/cohort/exit"},
-                    ]);
-                }
                 $("#single-hook-trigger-internal-event-dropdown")
                     .clySelectSetItems(internalEvents);
                 $("#single-hook-trigger-internal-event-dropdown")

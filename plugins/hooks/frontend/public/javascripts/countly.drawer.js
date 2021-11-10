@@ -26,7 +26,7 @@ window.HooksDrawer = function(HookView) {
                     $("#single-hook-trigger-dropdown").clySelectSetSelection("", "");
                     $(".hook-effects-list").html("");
                     $("#create-widget").show();
-
+                    $(".hook-test-info").html("");
 
                     $(HookView.DrawerComponent.drawer).find('.title span').first().html(jQuery.i18n.map["hooks.drawer-create-title"]);
                     $("#hooks-widget-drawer").find("#widget-types .opt").removeClass("disabled");
@@ -49,6 +49,15 @@ window.HooksDrawer = function(HookView) {
                 self.drawer.resetForm();
                 self.drawer.open();
                 self.checkDisabled();
+            });
+            $(".test-hook-button").off("click").on("click", function() {
+                $(".test-hook-button").addClass("testing");
+                $(".test-hook-button").addClass("disabled");
+                setTimeout(function() {
+                    $(".test-hook-button").removeClass("testing");
+
+                }, 5000);
+                self.testHook();
             });
         },
         init: function() {
@@ -178,14 +187,21 @@ window.HooksDrawer = function(HookView) {
         },
         checkDisabled: function() {
             var hookConfig = this.getWidgetSettings();
-            $("#create-widget").removeClass("disabled");
-            $("#save-widget").removeClass("disabled");
             for (var key in hookConfig) {
                 if (hookConfig[key] === null) {
                     $("#create-widget").addClass("disabled");
                     $("#save-widget").addClass("disabled");
+                    $(".test-hook-button").addClass("disabled");
+                    $(".test-hook-button").hide();
+                    return;
                 }
             }
+            $("#create-widget").removeClass("disabled");
+            $("#save-widget").removeClass("disabled");
+            if (!$(".test-hook-button").hasClass("testing")) {
+                $(".test-hook-button").removeClass("disabled");
+            }
+            $(".test-hook-button").show();
         },
         loadWidgetData: function(data) {
             this.drawer.resetForm();
@@ -263,6 +279,52 @@ window.HooksDrawer = function(HookView) {
                 configs.push(effect);
             }
             return configs;
-        }
+        },
+
+        testHook: function() {
+            var hooksConfig = this.getWidgetSettings(true);
+            $(".hook-test-info").html("");
+
+            hooksPlugin.testHook(hooksConfig, function callback(data) {
+                var result = data.result;
+                if (result) {
+                    result.forEach(function(r, idx) {
+                        var testBlockHTML = $("#template-hook-test-block").html();
+                        var dom = $(".hook-test-info")[idx];
+                        $(dom).html(testBlockHTML);
+                        $(dom).find('h3.ui-accordion-header').next().slideDown();
+
+                        $(dom).find(".hook-test-block .test-in-block");
+                        // input
+                        if (idx > 0) {
+                            $(dom).find(".hook-test-block .test-in-block").show();
+                            $(dom).find(".hook-test-block .test-in-block .test-result").text(JSON.stringify(result[idx - 1].params));
+                        }
+                        // output
+                        if (r.params) {
+                            $(dom).find(".hook-test-block .test-out-block").show();
+                            $(dom).find(".hook-test-block .test-out-block .test-result").text(JSON.stringify(r.params));
+                        }
+                        //logs
+                        if (r.logs && r.logs.length > 0) {
+                            $(dom).find(".hook-test-block .test-logs-block").show();
+                            $(dom).find(".hook-test-block .test-logs-block .test-result ").text(JSON.stringify(r.logs));
+                        }
+                        var testPassed = (r.params !== null);
+                        $(dom).find(".test-accordion-title").text(
+                            testPassed ? "Test Passed" : "Test Failed"
+                        );
+                        $(dom).find(".hook-test-block").accordion({
+                            collapsible: true,
+                            active: true,
+                        });
+                        if (!testPassed) {
+                            $(dom).find(".hook-test-block").accordion("refresh");
+                        }
+
+                    });
+                }
+            });
+        },
     };
 };

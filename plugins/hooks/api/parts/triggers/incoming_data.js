@@ -48,16 +48,21 @@ class IncomingDataTrigger {
 
     /**
      * process pipeline feed, pick out matched record with rule
-     * @param {string} eventType - internal event types
      * @param {object} ob - trggered out from pipeline
+     * @param {string} eventType - internal event types
      */
-    async process(eventType, ob) {
-        for (let i = 0; i < this._rules.length; i++) {
-            const rule = this._rules[i];
-            // match
-            if (rule.apps[0] === ob.params.app_id.toString()) {
-                await this.matchFilter(ob.params, rule);
+    async process(ob/*, eventType*/) {
+        let rule = null;
+        if (ob.is_mock === true) {
+            return ob;
+        }
+        this._rules.forEach((r) => {
+            if (r.apps[0] === ob.params.app_id.toString()) {
+                rule = r;
             }
+        });
+        if (rule) {
+            await this.matchFilter(ob.params, rule);
         }
     }
 
@@ -67,19 +72,10 @@ class IncomingDataTrigger {
      */
     register() {
         InternalEvents.forEach((e) => {
-            plugins.register(e, (obj) => {
-                const ob = Object.assign({}, obj);
-                console.log(e, ob, "?##33333433");
-                if (e === '/plugins/drill') {
-                    const hooksData = {
-                        params: {...ob.params}
-                    };
-                    if (ob.events) {
-                        hooksData.params.qstring.events = ob.events;
-                    }
-                    this.process(e, hooksData);
-                    return;
-                }
+            plugins.register(e, (ob) => {
+                /*if (e === '/sdk' && ob.params.qstring.events && Array.isArray(ob.params.qstring.events) && ob.params.qstring.events.length) {
+                    ob.params.qstring.events = ob.params.qstring.events.filter((er) => er.key !== '[CLY]_view'); // ignore view events since it process by /plugins/drill
+                }*/
                 this.process(e, ob);
             });
         });
@@ -95,6 +91,7 @@ class IncomingDataTrigger {
         let {filter, event} = rule.trigger.configuration;
         const targetEventKey = event[0].split("***")[1];
         filter = filter.dbFilter;
+        log.d("[incoming data trigger]", params, rule);
 
         //process metrics before comparing
         const map = {
@@ -247,12 +244,11 @@ class IncomingDataTrigger {
                     catch (err) {
                         console.log(err, "[IncomingDataTrigger]");
                     }
-                    rule.effects.forEach(e => {
-                        this.pipeline({
-                            params: {events, user},
-                            rule: rule,
-                            effect: e,
-                        });
+
+                    // send to pipeline
+                    this.pipeline({
+                        params: {events, user},
+                        rule: rule,
                     });
                 }
             }
@@ -263,6 +259,5 @@ class IncomingDataTrigger {
 module.exports = IncomingDataTrigger;
 const InternalEvents = [
     "/sdk",
-    "/hooks/incoming_data",
-    "/plugins/drill",
+    "/hooks/incoming_data"
 ];

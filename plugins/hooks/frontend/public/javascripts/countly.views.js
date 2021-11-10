@@ -1,7 +1,8 @@
 /*global
-  countlyView, $, jQuery,countlyGlobal, app, T, Handlebars, hooksPlugin, _, moment, CountlyHelpers,
+  countlyView, $, jQuery,countlyGlobal, countlyAuth, app, T, Handlebars, hooksPlugin, _, moment, CountlyHelpers,
  */
 window.HooksView = countlyView.extend({
+    featureName: 'hooks',
     statusChanged: {},
     initialize: function() {
         var self = this;
@@ -27,6 +28,10 @@ window.HooksView = countlyView.extend({
             this.renderTable();
             this.DrawerComponent = window.HooksDrawer(this);
             this.DrawerComponent.prepareDrawer();
+
+            if (!countlyAuth.validateCreate(this.featureName)) {
+                $('#create-hook').hide();
+            }
         }
     },
     renderTable: function() {
@@ -65,7 +70,7 @@ window.HooksView = countlyView.extend({
                 {
                     "mData": function(row, type) {
                         if (type === "display") {
-                            var disabled = (row.prepackaged) ? 'disabled' : '';
+                            var disabled = (row.prepackaged || !countlyAuth.validateUpdate(self.featureName)) ? 'disabled' : '';
                             var input = '<div class="on-off-switch ' + disabled + '">';
                             if (row.enabled) {
                                 input += '<input type="checkbox" class="on-off-switch-checkbox hook-switcher" id="plugin-' + row.id + '" checked ' + disabled + '>';
@@ -173,7 +178,7 @@ window.HooksView = countlyView.extend({
                     "sType": "numeric",
                     "sTitle": jQuery.i18n.map["hooks.trigger-count"],
                     "bSortable": true,
-                    "sWidth": "10%",
+                    "sWidth": "16%",
                 },
                 {
                     "mData": function(row, type) {
@@ -219,12 +224,17 @@ window.HooksView = countlyView.extend({
         }
         dataTableDefine.aoColumns.push({
             "mData": function(row) {
-                return "<div class='options-item'>" +
-					"<div class='edit'></div>" +
-					"<div class='edit-menu hooks-menu'>" +
-					"<div class='edit-hook item'" + " id='" + row.id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["hooks.edit"] + "</div>" +
-					"<div class='delete-hook item'" + " id='" + row.id + "'" + " data-name='" + row.name + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["hooks.delete"] + "</div></div>" +
-					"</div>";
+                if (!countlyAuth.validateUpdate(self.featureName) && !countlyAuth.validateDelete(self.featureName)) {
+                    return "";
+                }
+                else {
+                    return "<div class='options-item'>" +
+                        "<div class='edit'></div>" +
+                        "<div class='edit-menu hooks-menu'>" +
+                        (countlyAuth.validateUpdate(self.featureName) ? "<div class='edit-hook item'" + " id='" + row.id + "'" + "><i class='fa fa-pencil'></i>" + jQuery.i18n.map["hooks.edit"] + "</div>" : "") +
+                        (countlyAuth.validateDelete(self.featureName) ? "<div class='delete-hook item'" + " id='" + row.id + "'" + " data-name='" + row.name + "'" + "><i class='fa fa-trash'></i>" + jQuery.i18n.map["hooks.delete"] + "</div></div>" : "") +
+                        "</div>";
+                }
             },
             "bSortable": false,
         });
@@ -319,14 +329,19 @@ window.HooksView = countlyView.extend({
 
 app.hooksView = new window.HooksView();
 
-if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+if (countlyAuth.validateRead(app.hooksView.featureName)) {
     app.route('/manage/hooks', 'hooks', function() {
         this.renderWhenReady(app.hooksView);
     });
 }
 
 $(document).ready(function() {
-    if (countlyGlobal.member.global_admin || countlyGlobal.member.admin_of.length) {
+    if (countlyAuth.validateRead(app.hooksView.featureName)) {
         app.addSubMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 60});
+    }
+    //check if configuration view exists
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("hooks", "hooks.plugin-title");
+        app.configurationsView.registerLabel("hooks.batchSize", "hooks.batch-size");
     }
 });

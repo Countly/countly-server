@@ -1,6 +1,8 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
+const log = common.log("hooks:api:api_endpoint_trigger");
+
 /**
  * API endpoint  trigger
  */
@@ -11,11 +13,8 @@ class APIEndPointTrigger {
      * @param {object} options.pipeline -pipeline instance inited by Hooks class
      */
     constructor(options) {
-        this._rules = [];
-        this.pipeline = () => {};
-        if (options.pipeline) {
-            this.pipeline = options.pipeline;
-        }
+        this._rules = options.rules || [];
+        this.pipeline = options.pipeline || (() => {});
         this.register();
     }
 
@@ -37,33 +36,30 @@ class APIEndPointTrigger {
      * @param {object} ob - trggered out from pipeline
      */
     async process(ob) {
+        log.d(JSON.stringify(ob), "[hook trigger api_endpoint]");
         const {params} = ob;
         const {paths} = params;
         const hookPath = paths.length >= 4 ? paths[3] : null;
-        if (!hookPath) {
-            return true;
-        }
         const {qstring} = params || {};
 
-        this._rules.forEach(rule => {
-            // match
-            if (rule.trigger.configuration.path === hookPath) {
-                try {
-                    utils.updateRuleTriggerTime(rule._id);
-                }
-                catch (err) {
-                    console.log(err, "[APIEndPointTrigger]");
-                }
-                // send to pipeline
-                rule.effects.forEach(e => {
-                    this.pipeline({
-                        effect: e,
-                        params: qstring,
-                        rule: rule // optional
-                    });
-                });
+        let rule = null;
+        this._rules.forEach(r => {
+            if (r.trigger.configuration.path === hookPath) {
+                rule = r;
             }
         });
+        if (!rule || !hookPath) {
+            return false;
+        }
+
+        utils.updateRuleTriggerTime(rule._id);
+        // send to pipeline
+        const data = {
+            params: qstring,
+            rule: rule,
+        };
+        this.pipeline(data);
+        return data;
     }
 
     /**
