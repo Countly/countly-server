@@ -1,19 +1,26 @@
-/*global $,countlyView,countlyGlobal,Countly,screenfull,CustomDashboardsView,countlyDashboards,countlyWidgets,Handlebars,Backbone,_,CountlyHelpers,jQuery,countlyCommon,app, T,DashbaordsCustomPeriod,groupsModel */
+/*global $,countlyView,countlyGlobal,Countly,countlyAuth,screenfull,CustomDashboardsView,countlyDashboards,countlyWidgets,Handlebars,Backbone,_,CountlyHelpers,jQuery,countlyCommon,app, T,DashbaordsCustomPeriod,groupsModel */
 
 window.CustomDashboardsView = countlyView.extend({
+    featureName: 'dashboards',
     _dashboardId: null,
     emailEditInput: {},
     emailViewInput: {},
     initialize: function() {
-        var dashboardsDrop = $('<div id="dashboard-selection" class="dropdown bordered large" style="border-left:none;"></div>');
-        dashboardsDrop.append('<div class="selected" data-localize="dashboards.default"></div>');
-        dashboardsDrop.append('<div class="empty-state" data-localize="dashboards.default"></div>');
+        // check read permission for dashboard dropdown menu
+        if (countlyAuth.validateRead(this.featureName)) {
+            var dashboardsDrop = $('<div id="dashboard-selection" class="dropdown bordered large" style="border-left:none;"></div>');
+            dashboardsDrop.append('<div class="selected" data-localize="dashboards.default"></div>');
+            dashboardsDrop.append('<div class="empty-state" data-localize="dashboards.default"></div>');
+            var dashboardMenu = $('<div class="menu"></div>');
+            dashboardMenu.append('<div class="search nav-search"><input type="text" autofocus></div><div class="list"></div>');
 
-        var dashboardMenu = $('<div class="menu"></div>');
-        dashboardMenu.append('<div id="add-dashboard" class="action"><i class="icon ion-plus-circled"></i><span data-localize="dashboards.create-dashboard"></span></div>');
-        dashboardMenu.append('<div class="search nav-search"><input type="text" autofocus></div><div class="list"></div>');
+            // check permission for add-dashboard button. this feature requires create permission
+            if (countlyAuth.validateCreate(this.featureName)) {
+                dashboardMenu.append('<div id="add-dashboard" class="action"><i class="icon ion-plus-circled"></i><span data-localize="dashboards.create-dashboard"></span></div>');
+            }
 
-        dashboardsDrop.append(dashboardMenu);
+            dashboardsDrop.append(dashboardMenu);
+        }
 
         $("#top-bar").find(".left-menu").append(dashboardsDrop);
         app.localize();
@@ -117,6 +124,25 @@ window.CustomDashboardsView = countlyView.extend({
 
         if (!isRefresh) {
             $("#custom-dashboard").html(this.template(this.templateData));
+
+            // hide add widget button if user doesn't have create permission
+            // hide duplicate dashboard button if user doesn't have create permission
+            if (!countlyAuth.validateCreate(this.featureName)) {
+                $('#add-widget').hide();
+                $('#duplicate-dashboard').hide();
+            }
+
+            // hide edit dashboard button if user doesn't have update permission
+            if (!countlyAuth.validateUpdate(this.featureName)) {
+                $('#edit-dashboard').hide();
+                $('.edit-widget').hide();
+            }
+
+            // hide delete dashboard button if user doesn't have update permission
+            if (!countlyAuth.validateDelete(this.featureName)) {
+                $('#delete-dashboard').hide();
+                $('.delete-widget').hide();
+            }
 
             $(".cly-drawer").on("cly-drawer-open", function() {
                 var totalOpts = $("#widget-drawer .details #widget-types .opts .opt").length;
@@ -1299,7 +1325,7 @@ window.CustomDashboardsView = countlyView.extend({
             var viewGroups = [];
 
             for (i = 0; i < dSharedUserGroupsEdit.length; i++) {
-                var editGroup = groups.filter(function(g) { //eslint-disable-line no-loop-func
+                var editGroup = groups.filter(function(g) {
                     return g._id === dSharedUserGroupsEdit[i];
                 });
 
@@ -1312,7 +1338,7 @@ window.CustomDashboardsView = countlyView.extend({
             }
 
             for (i = 0; i < dSharedUserGroupsView.length; i++) {
-                var viewGroup = groups.filter(function(g) { //eslint-disable-line no-loop-func
+                var viewGroup = groups.filter(function(g) {
                     return g._id === dSharedUserGroupsView[i];
                 });
 
@@ -1727,7 +1753,7 @@ window.CustomDashboardsView = countlyView.extend({
                     var textStyles = countlyDashboards.getTextDecorations();
                     var selectedDecorations = [];
                     for (var kl = 0; kl < textDecoration.length; kl++) {
-                        var d = textStyles.filter(function(td) { //eslint-disable-line no-loop-func
+                        var d = textStyles.filter(function(td) {
                             return td.value === textDecoration[kl];
                         });
 
@@ -2025,15 +2051,17 @@ window.CustomDashboardsView = countlyView.extend({
 
 app.customDashboardsView = new CustomDashboardsView();
 
-app.route("/custom", '', function() {
-    delete this.customDashboardsView._dashboardId;
-    this.renderWhenReady(this.customDashboardsView);
-});
+if (countlyAuth.validateRead(app.customDashboardsView.featureName)) {
+    app.route("/custom", '', function() {
+        delete this.customDashboardsView._dashboardId;
+        this.renderWhenReady(this.customDashboardsView);
+    });
 
-app.route('/custom/*dashboardId', '', function(dashboardId) {
-    this.customDashboardsView._dashboardId = dashboardId;
-    this.renderWhenReady(this.customDashboardsView);
-});
+    app.route('/custom/*dashboardId', '', function(dashboardId) {
+        this.customDashboardsView._dashboardId = dashboardId;
+        this.renderWhenReady(this.customDashboardsView);
+    });
+}
 
 app.addWidgetCallbacks = function(widget, options) {
     //Keeping this function for backward compatibility.
@@ -2055,104 +2083,109 @@ app.addPageScript("/custom#", function() {
         return;
     }
 
-    var addEmailButton = '<div id="add-report" class="item"><i class="fa fa-cog"></i><span>' + jQuery.i18n.prop("dashboards.create-email-reports") + '</span></div>';
+    // check create permission before "add report" button render process
+    if (countlyAuth.validateCreate(app.customDashboardsView.featureName)) {
 
-    $("#dashboards #dashboard-top #add-widget-button-group .cly-button-menu #edit-dashboard").after(addEmailButton);
+        var addEmailButton = '<div id="add-report" class="item"><i class="fa fa-cog"></i><span>' + jQuery.i18n.prop("dashboards.create-email-reports") + '</span></div>';
 
-    var reportsCallbacks = app.getReportsCallbacks().reports;
+        $("#dashboards #dashboard-top #add-widget-button-group .cly-button-menu #edit-dashboard").after(addEmailButton);
 
-    if (!reportsCallbacks) {
-        return;
-    }
+        var reportsCallbacks = app.getReportsCallbacks().reports;
 
-    reportsCallbacks.initialize("#dashboards", "dashboards", function() {
-        var dashboardDropdown = '<div class="section">' +
-        '    <div class="label">' + jQuery.i18n.prop("dashboards.select_dashboards") + '</div>' +
-        '    <div id="reports-dashboard-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">' +
-        '        <div class="select-inner">' +
-        '            <div class="text-container">' +
-        '                <div class="text">' +
-        '                    <div class="default-text">' + jQuery.i18n.prop("dashboards.select") + '</div>' +
-        '                </div>' +
-        '            </div>' +
-        '            <div class="right combo"></div>' +
-        '        </div>' +
-        '        <div class="select-items square" style="width: 100%;"></div>' +
-        '    </div>' +
-        '</div>';
-
-        var reportDateRangeDropdown = '<div class="section">' +
-        '    <div class="label">' + jQuery.i18n.prop("dashboards.select-report-date-range") + '</div>' +
-        '    <div id="reports-dashboard-date-range-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">' +
-        '        <div class="select-inner">' +
-        '            <div class="text-container">' +
-        '                <div class="text">' +
-        '                    <div class="default-text">' + jQuery.i18n.prop("dashboards.select-date-range") + '</div>' +
-        '                </div>' +
-        '            </div>' +
-        '            <div class="right combo"></div>' +
-        '        </div>' +
-        '        <div class="select-items square" style="width: 100%;"></div>' +
-        '    </div>' +
-        '</div>';
-
-        $("#reports-widget-drawer .details").prepend(dashboardDropdown);
-        $("#reports-widget-drawer .details").append(reportDateRangeDropdown);
-
-        var currentDashboardId = app.customDashboardsView._dashboardId;
-        var currentDashboard = {};
-        var dashboards = [];
-        var dashboardsList = countlyDashboards.getAllDashboards();
-        for (var i = 0; i < dashboardsList.length; i++) {
-            if (!currentDashboardId) {
-                break;
-            }
-            dashboards.push({ value: dashboardsList[i].id, name: dashboardsList[i].name });
-            if (currentDashboardId.toString() === dashboardsList[i].id) {
-                currentDashboard = dashboardsList[i];
-                $("#add-report").on("click", selectDashFromDropdown);
-            }
+        if (!reportsCallbacks) {
+            return;
         }
 
-        /**
-        * Function to select dashboard from dropdown
-        */
-        function selectDashFromDropdown() {
-            $("#reports-dashboard-dropdown").clySelectSetSelection(currentDashboard.id, currentDashboard.name);
-        }
+        reportsCallbacks.initialize("#dashboards", "dashboards", function() {
+            var dashboardDropdown = '<div class="section">' +
+            '    <div class="label">' + jQuery.i18n.prop("dashboards.select_dashboards") + '</div>' +
+            '    <div id="reports-dashboard-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">' +
+            '        <div class="select-inner">' +
+            '            <div class="text-container">' +
+            '                <div class="text">' +
+            '                    <div class="default-text">' + jQuery.i18n.prop("dashboards.select") + '</div>' +
+            '                </div>' +
+            '            </div>' +
+            '            <div class="right combo"></div>' +
+            '        </div>' +
+            '        <div class="select-items square" style="width: 100%;"></div>' +
+            '    </div>' +
+            '</div>';
 
-        $("#reports-dashboard-dropdown").clySelectSetItems(dashboards);
-        $("#reports-dashboard-dropdown").clySelectSetSelection("", jQuery.i18n.prop("dashboards.select"));
+            var reportDateRangeDropdown = '<div class="section">' +
+            '    <div class="label">' + jQuery.i18n.prop("dashboards.select-report-date-range") + '</div>' +
+            '    <div id="reports-dashboard-date-range-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">' +
+            '        <div class="select-inner">' +
+            '            <div class="text-container">' +
+            '                <div class="text">' +
+            '                    <div class="default-text">' + jQuery.i18n.prop("dashboards.select-date-range") + '</div>' +
+            '                </div>' +
+            '            </div>' +
+            '            <div class="right combo"></div>' +
+            '        </div>' +
+            '        <div class="select-items square" style="width: 100%;"></div>' +
+            '    </div>' +
+            '</div>';
 
-        $("#reports-dashboard-dropdown").on("cly-select-change", function() {
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
+            $("#reports-widget-drawer .details").prepend(dashboardDropdown);
+            $("#reports-widget-drawer .details").append(reportDateRangeDropdown);
 
-        $("#reports-dashboard-date-range-dropdown").clySelectSetSelection("", jQuery.i18n.prop("dashboards.select-date-range"));
-
-        $("#reports-dashboard-date-range-dropdown").find(".select-inner").on("click", function() {
-            var reportFrequency;
-            if ($("#monthly-option").hasClass("selected")) {
-                reportFrequency = "monthly";
+            var currentDashboardId = app.customDashboardsView._dashboardId;
+            var currentDashboard = {};
+            var dashboards = [];
+            var dashboardsList = countlyDashboards.getAllDashboards();
+            for (var i = 0; i < dashboardsList.length; i++) {
+                if (!currentDashboardId) {
+                    break;
+                }
+                dashboards.push({ value: dashboardsList[i].id, name: dashboardsList[i].name });
+                if (currentDashboardId.toString() === dashboardsList[i].id) {
+                    currentDashboard = dashboardsList[i];
+                    $("#add-report").on("click", selectDashFromDropdown);
+                }
             }
-            else if ($("#weekly-option").hasClass("selected")) {
-                reportFrequency = "weekly";
-            }
-            else {
-                reportFrequency = "daily";
-            }
-            var reportDateRanges = countlyDashboards.getReportDateRanges(reportFrequency);
-            $("#reports-dashboard-date-range-dropdown").clySelectSetItems(reportDateRanges);
-        });
 
-        $("#reports-dashboard-date-range-dropdown").on("cly-select-change", function() {
-            $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
-        });
+            /**
+            * Function to select dashboard from dropdown
+            */
+            function selectDashFromDropdown() {
+                $("#reports-dashboard-dropdown").clySelectSetSelection(currentDashboard.id, currentDashboard.name);
+            }
 
-        $("#reports-frequency").find(".check").on("click", function() {
+            $("#reports-dashboard-dropdown").clySelectSetItems(dashboards);
+            $("#reports-dashboard-dropdown").clySelectSetSelection("", jQuery.i18n.prop("dashboards.select"));
+
+            $("#reports-dashboard-dropdown").on("cly-select-change", function() {
+                $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+            });
+
             $("#reports-dashboard-date-range-dropdown").clySelectSetSelection("", jQuery.i18n.prop("dashboards.select-date-range"));
+
+            $("#reports-dashboard-date-range-dropdown").find(".select-inner").on("click", function() {
+                var reportFrequency;
+                if ($("#monthly-option").hasClass("selected")) {
+                    reportFrequency = "monthly";
+                }
+                else if ($("#weekly-option").hasClass("selected")) {
+                    reportFrequency = "weekly";
+                }
+                else {
+                    reportFrequency = "daily";
+                }
+                var reportDateRanges = countlyDashboards.getReportDateRanges(reportFrequency);
+                $("#reports-dashboard-date-range-dropdown").clySelectSetItems(reportDateRanges);
+            });
+
+            $("#reports-dashboard-date-range-dropdown").on("cly-select-change", function() {
+                $("#reports-widget-drawer").trigger("cly-report-widget-section-complete");
+            });
+
+            $("#reports-frequency").find(".check").on("click", function() {
+                $("#reports-dashboard-date-range-dropdown").clySelectSetSelection("", jQuery.i18n.prop("dashboards.select-date-range"));
+            });
         });
-    });
+
+    }
 });
 
 app.addPageScript("/manage/reports", function() {
@@ -2304,30 +2337,32 @@ var reportsOptions = {
 };
 
 $(document).ready(function() {
-    countlyDashboards.initialize();
+    if (countlyAuth.validateRead(app.customDashboardsView.featureName)) {
+        countlyDashboards.initialize();
 
-    var $dashboardNavigation = $("#dashboard-selection");
+        var $dashboardNavigation = $("#dashboard-selection");
 
-    $dashboardNavigation.on("click", ".item", function() {
-        $dashboardNavigation.find(".selected").text($(this).text());
-    });
+        $dashboardNavigation.on("click", ".item", function() {
+            $dashboardNavigation.find(".selected").text($(this).text());
+        });
 
-    $dashboardNavigation.on("click", "#add-dashboard", function() {
-        if (!$("body").hasClass("dashboards-view")) {
-            app.navigate("#/custom", true);
+        $dashboardNavigation.on("click", "#add-dashboard", function() {
+            if (!$("body").hasClass("dashboards-view")) {
+                app.navigate("#/custom", true);
+            }
+        });
+
+        $dashboardNavigation.on("click", function() {
+            app.customDashboardsView.populateDashboardList();
+        });
+
+        if (typeof app.addReportsCallbacks === "function") {
+            app.addReportsCallbacks("dashboards", reportsOptions);
         }
-    });
 
-    $dashboardNavigation.on("click", function() {
-        app.customDashboardsView.populateDashboardList();
-    });
-
-    if (typeof app.addReportsCallbacks === "function") {
-        app.addReportsCallbacks("dashboards", reportsOptions);
-    }
-
-    if (app.configurationsView) {
-        app.configurationsView.registerLabel("dashboards", "dashboards.dashboard");
+        if (app.configurationsView) {
+            app.configurationsView.registerLabel("dashboards", "dashboards.dashboard");
+        }
     }
 });
 

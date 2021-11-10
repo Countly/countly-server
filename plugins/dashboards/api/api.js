@@ -11,28 +11,33 @@ var pluginOb = {},
     versionInfo = require('../../../frontend/express/version.info'),
     ip = require("../../../api/parts/mgmt/ip"),
     localize = require('../../../api/utils/localization.js'),
-    async = require('async');
+    async = require('async'),
+    { validateCreate, validateRead, validateUpdate, validateDelete, validateUser } = require('../../../api/utils/rights.js');
+
+const FEATURE_NAME = 'dashboards';
 
 plugins.setConfigs("dashboards", {
     sharing_status: true
 });
 
 (function() {
+    plugins.register("/permissions/features", function(ob) {
+        ob.features.push(FEATURE_NAME);
+    });
 
     plugins.register("/o/dashboards", function(ob) {
         var paths = ob.paths;
 
         if (typeof paths[3] === "undefined") {
-            var prms = ob.params,
-                validateUserForWriteAPI = ob.validateUserForWriteAPI,
-                dashboardId = prms.qstring.dashboard_id;
+            var params = ob.params,
+                dashboardId = params.qstring.dashboard_id;
 
             if (typeof dashboardId === "undefined" || dashboardId.length !== 24) {
-                common.returnMessage(prms, 401, 'Invalid parameter: dashboard_id');
+                common.returnMessage(params, 401, 'Invalid parameter: dashboard_id');
                 return true;
             }
 
-            validateUserForWriteAPI(function(params) {
+            validateRead(params, FEATURE_NAME, function() {
                 var member = params.member,
                     memberId = member._id + "";
 
@@ -181,29 +186,28 @@ plugins.setConfigs("dashboards", {
                         });
                     }
                 });
-            }, prms);
+            });
 
             return true;
         }
     });
 
     plugins.register("/o/dashboards/widget", function(ob) {
-        var prms = ob.params,
-            validateUserForWriteAPI = ob.validateUserForWriteAPI,
-            dashboardId = prms.qstring.dashboard_id,
-            widgetId = prms.qstring.widget_id;
+        var params = ob.params,
+            dashboardId = params.qstring.dashboard_id,
+            widgetId = params.qstring.widget_id;
 
         if (typeof dashboardId === "undefined" || dashboardId.length !== 24) {
-            common.returnMessage(prms, 401, 'Invalid parameter: dashboard_id');
+            common.returnMessage(params, 401, 'Invalid parameter: dashboard_id');
             return true;
         }
 
         if (typeof widgetId === "undefined" || widgetId.length !== 24) {
-            common.returnMessage(prms, 401, 'Invalid parameter: widget_id');
+            common.returnMessage(params, 401, 'Invalid parameter: widget_id');
             return true;
         }
 
-        validateUserForWriteAPI(function(params) {
+        validateRead(params, FEATURE_NAME, function() {
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 if (!err && dashboard) {
                     hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
@@ -222,7 +226,7 @@ plugins.setConfigs("dashboards", {
                     common.returnMessage(params, 404, "Dashboard does not exist");
                 }
             });
-        }, prms);
+        });
 
         return true;
     });
@@ -246,10 +250,9 @@ plugins.setConfigs("dashboards", {
     });
 
     plugins.register("/o/dashboards/all", function(ob) {
-        var prms = ob.params;
-        var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
+        var params = ob.params;
 
-        validateUserForMgmtReadAPI(function(params) {
+        validateUser(params, function() {
             var member = params.member,
                 memberId = member._id + "",
                 memberEmail = member.email,
@@ -328,16 +331,15 @@ plugins.setConfigs("dashboards", {
                     common.returnOutput(params, dashboards);
                 });
             });
-        }, prms);
+        });
 
         return true;
     });
 
     plugins.register("/o/dashboards/widget-layout", function(ob) {
-        var prms = ob.params;
-        var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
+        var params = ob.params;
 
-        validateUserForMgmtReadAPI(function(params) {
+        validateRead(params, FEATURE_NAME, function() {
 
             var dashboardId = params.qstring.dashboard_id;
 
@@ -352,16 +354,15 @@ plugins.setConfigs("dashboards", {
                 }
             });
 
-        }, prms);
+        });
 
         return true;
     });
 
     plugins.register("/i/dashboards/create", function(ob) {
-        var prms = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        var params = ob.params;
 
-        validateUserForWriteAPI(function(params) {
+        validateCreate(params, FEATURE_NAME, function() {
             var dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit || [],
                 sharedEmailView = params.qstring.shared_email_view || [],
@@ -576,16 +577,15 @@ plugins.setConfigs("dashboards", {
                     callback();
                 });
             }
-        }, prms);
+        });
 
         return true;
     });
 
     plugins.register("/i/dashboards/update", function(ob) {
-        var prms = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        var params = ob.params;
 
-        validateUserForWriteAPI(function(params) {
+        validateUpdate(params, FEATURE_NAME, function() {
             var dashboardId = params.qstring.dashboard_id,
                 dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit,
@@ -742,16 +742,15 @@ plugins.setConfigs("dashboards", {
                     });
                 }
             });
-        }, prms);
+        });
 
         return true;
     });
 
     plugins.register("/i/dashboards/delete", function(ob) {
-        var prms = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        var params = ob.params;
 
-        validateUserForWriteAPI(function(params) {
+        validateDelete(params, FEATURE_NAME, function() {
             var dashboardId = params.qstring.dashboard_id,
                 memberId = params.member._id + "";
 
@@ -795,16 +794,15 @@ plugins.setConfigs("dashboards", {
                     });
                 }
             });
-        }, prms);
+        });
 
         return true;
     });
 
     plugins.register("/i/dashboards/add-widget", function(ob) {
-        var prms = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        var params = ob.params;
 
-        validateUserForWriteAPI(function(params) {
+        validateUpdate(params, FEATURE_NAME, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widget = params.qstring.widget || {};
@@ -861,16 +859,15 @@ plugins.setConfigs("dashboards", {
                 }
             });
 
-        }, prms);
+        });
 
         return true;
     });
 
     plugins.register("/i/dashboards/update-widget", function(ob) {
-        var prms = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        var params = ob.params;
 
-        validateUserForWriteAPI(function(params) {
+        validateUpdate(params, FEATURE_NAME, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -926,16 +923,15 @@ plugins.setConfigs("dashboards", {
                 }
             });
 
-        }, prms);
+        });
 
         return true;
     });
 
     plugins.register("/i/dashboards/remove-widget", function(ob) {
-        var prms = ob.params;
-        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        var params = ob.params;
 
-        validateUserForWriteAPI(function(params) {
+        validateDelete(params, FEATURE_NAME, function() {
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -998,7 +994,7 @@ plugins.setConfigs("dashboards", {
                 }
             });
 
-        }, prms);
+        });
 
         return true;
     });
