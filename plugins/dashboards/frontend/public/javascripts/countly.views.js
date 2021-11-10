@@ -1325,7 +1325,7 @@ window.CustomDashboardsView = countlyView.extend({
             var viewGroups = [];
 
             for (i = 0; i < dSharedUserGroupsEdit.length; i++) {
-                var editGroup = groups.filter(function(g) {
+                var editGroup = groups.filter(function(g) { //eslint-disable-line no-loop-func
                     return g._id === dSharedUserGroupsEdit[i];
                 });
 
@@ -1338,7 +1338,7 @@ window.CustomDashboardsView = countlyView.extend({
             }
 
             for (i = 0; i < dSharedUserGroupsView.length; i++) {
-                var viewGroup = groups.filter(function(g) {
+                var viewGroup = groups.filter(function(g) { //eslint-disable-line no-loop-func
                     return g._id === dSharedUserGroupsView[i];
                 });
 
@@ -1753,7 +1753,7 @@ window.CustomDashboardsView = countlyView.extend({
                     var textStyles = countlyDashboards.getTextDecorations();
                     var selectedDecorations = [];
                     for (var kl = 0; kl < textDecoration.length; kl++) {
-                        var d = textStyles.filter(function(td) {
+                        var d = textStyles.filter(function(td) { //eslint-disable-line no-loop-func
                             return td.value === textDecoration[kl];
                         });
 
