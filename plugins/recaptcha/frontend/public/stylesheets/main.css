@@ -1,0 +1,8 @@
+.g-recaptcha > div { margin-left: auto; margin-right: auto; }
+.recaptcha-enabled input[type=text],
+.recaptcha-enabled input[type=password] { width: 282px; margin-right: 2px; }
+.recaptcha-enabled #login-button { width: 302px; margin-right: 2px; }
+.recaptcha-enabled #login-form { height:346px; margin-top: -173px; }
+
+.enterpriseinfo-enabled.recaptcha-enabled #login-logo { margin-top: 15px; }
+.enterpriseinfo-enabled.recaptcha-enabled #login-form { width:950px; margin-left: -475px; height: 380px; margin-top: -190px; }

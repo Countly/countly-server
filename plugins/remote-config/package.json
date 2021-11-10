@@ -1,0 +1,24 @@
+{
+  "name": "remote-config",
+  "title": "Remote Config",
+  "version": "1.0.0",
+  "description": "Change the behaviour and appearance of your application using server side parameters",
+  "author": "Countly",
+  "homepage": "https://count.ly/plugins/remote-config",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
+  "keywords": [
+    "countly",
+    "analytics",
+    "remote",
+    "config"
+  ],
+  "cly_dependencies": {},
+  "dependencies": {},
+  "private": true
+}
