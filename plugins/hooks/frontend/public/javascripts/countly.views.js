@@ -337,7 +337,7 @@ if (countlyAuth.validateRead(app.hooksView.featureName)) {
 
 $(document).ready(function() {
     if (countlyAuth.validateRead(app.hooksView.featureName)) {
-        app.addSubMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 60});
+        app.addMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 50});
     }
     //check if configuration view exists
     if (app.configurationsView) {
