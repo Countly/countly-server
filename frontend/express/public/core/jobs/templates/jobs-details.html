@@ -13,7 +13,7 @@
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="status" :label="i18n('jobs.job-status')">
                         <template slot-scope="scope">   
-                            <cly-status-tag :text ="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
+                            <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="schedule" :label="i18n('jobs.job-schedule')">
