@@ -68,7 +68,7 @@
     "mcc-mnc-list": "1.1.7",
     "method-override": "3.0.0",
     "moment": "2.29.1",
-    "moment-timezone": "0.5.33",
+    "moment-timezone": "0.5.34",
     "mongodb": "3.6.10",
     "nginx-conf": "1.5.0",
     "node-xlsx-stream": "^0.1.8",
