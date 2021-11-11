@@ -224,6 +224,85 @@ class Mongoable extends Validatable {
         }
         return false;
     }
+
+    /**
+     * Simple batch insert object:
+     * 
+     * let batch = Model.batchInsert(3);
+     * await batch.pushAsync({a: 1});
+     * await batch.pushAsync({a: 2});
+     * await batch.pushAsync({a: 3}); // <- insertMany here
+     * await batch.pushAsync({a: 4});
+     * ... 
+     * await batch.flush(); // flush the rest
+     * 
+     * --- or ---
+     * 
+     * for (let n of [1, 2, 3]) {
+     *     if (batch.pushSync({a: 1})) {
+     *         await batch.flush();
+     *     }
+     * }
+     * 
+     * @param {number} batch batch size
+     * @returns {object} with 2 async methods: push(record) and flush()
+     */
+    static batchInsert(batch = 10000) {
+        let buffer = [],
+            total = 0,
+            collection = require('./common').db.collection(this.collection);
+        return {
+            /**
+             * Get current batch buffer length
+             */
+            get length() {
+                return buffer.length;
+            },
+
+            /**
+             * Get current batch buffer length
+             */
+            get total() {
+                return total;
+            },
+
+            /**
+             * Async push, that is if we're ok with a promise per insert
+             * 
+             * @param {object} record document to insert
+             */
+            async pushAsync(record) {
+                total++;
+                buffer.push(record);
+                if (buffer.length >= batch) {
+                    this.flush();
+                }
+            },
+
+            /**
+             * Sync push, that is if we're NOT ok with a promise per insert
+             * 
+             * @param {object} record document to insert
+             * @returns {boolean} true if buffer needs to be flush()ed
+             */
+            pushSync(record) {
+                total++;
+                buffer.push(record);
+                return buffer.length >= batch;
+            },
+
+            /**
+             * Flush the buffer by inserting documents into collection
+             */
+            async flush() {
+                if (buffer.length) {
+                    await collection.insertMany(buffer);
+                    buffer = [];
+                }
+            }
+        };
+    }
+
 }
 
 module.exports = { Jsonable, Validatable, Mongoable };

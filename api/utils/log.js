@@ -315,13 +315,18 @@ module.exports = function(name) {
         /**
          * Log variable level messages (for cases when logging parameters calculation are expensive enough and shouldn't be done unless the level is enabled)
          * @param {String} l log level (d, i, w, e)
-         * @param {function} f function to call with single argument - logging function
+         * @param {function} fn function to call with single argument - logging function
+         * @param {String} fl fallback level if l is disabled
+         * @param {any[]} fargs fallback level arguments
          * @returns {boolean} true if f() has been called
          */
-        f: function(l, f) {
+        f: function(l, fn, fl, ...fargs) {
             if (ACCEPTABLE[l].indexOf(levels[name] || deflt) !== -1) {
-                f(log('ERROR', name, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, styles.stylers.error));
+                fn(log('ERROR', name, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, styles.stylers.error));
                 return true;
+            }
+            else if (fl) {
+                this[fl].apply(this, fargs);
             }
         },
 
@@ -412,13 +417,18 @@ module.exports = function(name) {
                 /**
                  * Log variable level messages (for cases when logging parameters calculation are expensive enough and shouldn't be done unless the level is enabled)
                  * @param {String} l log level (d, i, w, e)
-                 * @param {function} f function to call with single argument - logging function
+                 * @param {function} fn function to call with single argument - logging function
+                 * @param {String} fl fallback level if l is disabled
+                 * @param {any[]} fargs fallback level arguments
                  * @returns {boolean} true if f() has been called
                  */
-                f: function(l, f) {
+                f: function(l, fn, fl, ...fargs) {
                     if (ACCEPTABLE[l].indexOf(levels[name] || deflt) !== -1) {
-                        f(log('ERROR', name + ':' + subname, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, l === 'w' ? styles.stylers.warn : l === 'e' ? styles.stylers.error : undefined));
+                        fn(log('ERROR', name + ':' + subname, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, l === 'w' ? styles.stylers.warn : l === 'e' ? styles.stylers.error : undefined));
                         return true;
+                    }
+                    else if (fl) {
+                        this[fl].apply(this, fargs);
                     }
                 },
 

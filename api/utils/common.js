@@ -1137,10 +1137,36 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
+            if (argProperties[arg].max) {
+                if (args[arg] > argProperties[arg].max) {
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " is greater than max value");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
+            if (argProperties[arg].min) {
+                if (args[arg] < argProperties[arg].min) {
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " is lower than min value");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
             if (argProperties[arg]['has-number']) {
                 if (!/\d/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has number");
+                        returnObj.errors.push(arg + " should have number");
                         returnObj.result = false;
                         argState = false;
                     }
@@ -1153,7 +1179,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg]['has-char']) {
                 if (!/[A-Za-z]/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has char");
+                        returnObj.errors.push(arg + " should have char");
                         returnObj.result = false;
                         argState = false;
                     }
@@ -1166,7 +1192,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg]['has-upchar']) {
                 if (!/[A-Z]/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has upchar");
+                        returnObj.errors.push(arg + " should have upchar");
                         returnObj.result = false;
                         argState = false;
                     }
@@ -1179,7 +1205,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg]['has-special']) {
                 if (!/[^A-Za-z\d]/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has special character");
+                        returnObj.errors.push(arg + " should have special character");
                         returnObj.result = false;
                         argState = false;
                     }

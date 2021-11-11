@@ -224,5 +224,26 @@ describe("Common API utility functions", function() {
             should.deepEqual(common.validateArgs({intString: 'x'}, scheme), false);
         });
 
+        it('should validate min/max', () => {
+            let scheme = {
+                str: { type: 'String', min: 'c', max: 'f' },
+                num: { type: 'Number', min: 5, max: 10 },
+            };
+
+            should.deepEqual(common.validateArgs({}, scheme), {});
+            should.deepEqual(common.validateArgs({str: null, num: null}, scheme), false);
+            should.deepEqual(common.validateArgs({str: 'asd'}, scheme), false);
+            should.deepEqual(common.validateArgs({str: 'c'}, scheme), {str: 'c'});
+            should.deepEqual(common.validateArgs({str: 'ca'}, scheme), {str: 'ca'});
+            should.deepEqual(common.validateArgs({str: 'd'}, scheme), {str: 'd'});
+            should.deepEqual(common.validateArgs({str: 'f'}, scheme), {str: 'f'});
+            should.deepEqual(common.validateArgs({str: 'g'}, scheme), false);
+            should.deepEqual(common.validateArgs({num: 0}, scheme), false);
+            should.deepEqual(common.validateArgs({num: 5}, scheme), {num: 5});
+            should.deepEqual(common.validateArgs({num: 6}, scheme), {num: 6});
+            should.deepEqual(common.validateArgs({num: 10}, scheme), {num: 10});
+            should.deepEqual(common.validateArgs({num: 11}, scheme), false);
+        });
+
     });
 });
