@@ -4333,6 +4333,20 @@ transform: rotate(45deg);
 }
 
 
+  
+  #event-groups-settings-table tr:hover .edit-event, #events-custom-settings-table tr:hover .edit-event {
+    width: 54px;
+    height: 29px;
+    border-radius: 2px;
+    border: solid 1px #d0d0d0;
+    background-color: #ffffff;
+    visibility: visible;
+    cursor: pointer;
+    margin-right: 15px;
+    color: #6B6B6B;
+  }
+
+  
 .user-config-danger-zone {
     display: none;
 }

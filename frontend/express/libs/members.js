@@ -84,7 +84,7 @@ membersUtility.recheckConfigs(origConf, membersUtility.countlyConfig);
  * @returns {boolean} return true if string hashed by argon2
  */
 function isArgon2Hash(hashedStr) {
-    return hashedStr.includes("$argon2");
+    return hashedStr && hashedStr.includes("$argon2");
 }
 
 /**
@@ -1108,6 +1108,10 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
         user.user_of = [...new Set([...data.admin_of, ...data.user_of])];
     }
 
+    if (data.group_id && data.group_id.length) {
+        user.group_id = data.group_id;
+    }
+
     // legacy rbac
     if (data.marketing_of && data.marketing_of.length) {
         user.admin_of.push(...data.marketing_of);
@@ -1116,6 +1120,10 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     const buffer = crypto.randomBytes(48);
     user.api_key = data.api_key || common.md5Hash(buffer.toString('hex') + Math.random());
     user.password = data.password || common.md5Hash(data.api_key);
+
+    // push approver permission
+    user.approver = !!data.approver;
+    user.approver_bypass = !!data.approver_bypass;
 
     const query = user.email
         ? {

@@ -1,4 +1,4 @@
-/*global $, moment, countlyVue, app, countlyLogger, CV */
+/*global $, moment, countlyVue, app, countlyLogger, countlyCommon, CV */
 (function() {
     var isSecondFormat = (Math.round(parseFloat(this.timestamp)) + "").length === 10;
 
@@ -77,7 +77,29 @@
                 isTablePaused: true,
                 logsData: [],
                 autoRefresh: false,
+                isLoading: false,
                 collectionInfo: '',
+                tablePersistKey: 'requestLogsTable_' + countlyCommon.ACTIVE_APP_ID,
+                tableDynamicCols: [{
+                    value: "requests",
+                    label: CV.i18n('logger.requests'),
+                    required: true
+                },
+                {
+                    value: "timestamp",
+                    label: CV.i18n('logger.timestamp'),
+                    default: true
+                },
+                {
+                    value: "details",
+                    label: CV.i18n('logger.details'),
+                    default: true
+                },
+                {
+                    value: "info",
+                    label: CV.i18n('logger.info'),
+                    default: true
+                }],
                 defaultFilters: [{
                     value: 'all',
                     label: this.i18n('logger.all')
@@ -124,20 +146,23 @@
             stopAutoRefresh: function() {
                 this.autoRefresh = false;
             },
-            fetchRequestLogs: function() {
+            fetchRequestLogs: function(isRefreshing) {
                 var vm = this;
+
+                if (!isRefreshing) {
+                    vm.isLoading = true;
+                }
+
                 countlyLogger.getRequestLogs()
                     .then(function(data) {
+                        vm.isLoading = false;
                         vm.logsData = filterLogs(data.logs || data, vm.loggerFilter);
                     });
             },
             refresh: function() {
                 if (this.autoRefresh) {
-                    this.fetchRequestLogs();
+                    this.fetchRequestLogs(true);
                 }
-            },
-            sync: function() {
-                this.fetchRequestLogs();
             },
             filterChange: function() {
                 this.fetchRequestLogs();
@@ -192,9 +217,9 @@
                 input: "el-select",
                 attrs: {},
                 list: [
-                    {value: 'on', label: CV.i18n("logger.state-on")},
-                    {value: 'off', label: CV.i18n("logger.state-off")},
-                    {value: 'automatic', label: CV.i18n("logger.state-automatic")}
+                    { value: 'on', label: CV.i18n("logger.state-on") },
+                    { value: 'off', label: CV.i18n("logger.state-off") },
+                    { value: 'automatic', label: CV.i18n("logger.state-automatic") }
                 ]
             });
             app.configurationsView.registerLabel("logger.limit", "logger.limit");

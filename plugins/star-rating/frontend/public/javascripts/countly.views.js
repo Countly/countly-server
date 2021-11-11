@@ -775,9 +775,87 @@ var WidgetDetail = countlyVue.views.create({
     }
 });
 
+var UserFeedbackRatingsTable = countlyVue.views.create({
+    template: CV.T('/star-rating/templates/users-feedback-ratings-table.html'),
+    props: {
+        ratings: {
+            type: Array,
+            default: function() {
+                return [
+                    {
+                        widget: '1',
+                        rating: 1,
+                        time: 1
+                    },
+                    {
+                        widget: '2',
+                        rating: 2,
+                        time: 2
+                    },
+                    {
+                        widget: '3',
+                        rating: 3,
+                        time: 3
+                    },
+                    {
+                        widget: '4',
+                        rating: 4,
+                        time: 4
+                    },
+                    {
+                        widget: '5',
+                        rating: 5,
+                        time: 5
+                    }];
+            }
+        }
+    }
+});
+
+// create vue view
+countlyVue.container.registerTab("/users/tabs", {
+    priority: 1,
+    title: 'Feedback',
+    name: 'feedback',
+    component: countlyVue.components.create({
+        template: CV.T("/star-rating/templates/users-tab.html"),
+        components: {
+            'user-feedback-ratings-table': UserFeedbackRatingsTable
+        },
+        data: function() {
+            return {
+                uid: '',
+                ratingsData: [],
+                title: CV.i18n('feedback.ratings')
+            };
+        },
+        methods: {},
+        created: function() {
+            this.uid = this.$route.params.uid;
+            var self = this;
+            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "12months"})
+                .then(function() {
+                    self.ratingsData = starRatingPlugin.getFeedbackData().aaData;
+                    self.ratingsData.map(function(rating) {
+                        rating.ts = countlyCommon.formatTimeAgo(rating.ts);
+                        starRatingPlugin.requestSingleWidget(rating.widget_id, function(widget) {
+                            if (widget) {
+                                rating.widgetTitle = widget.popup_header_text;
+                            }
+                            else {
+                                rating.widgetTitle = "Widget not exist";
+                            }
+
+                            return rating;
+                        });
+                    });
+                });
+        }
+    })
+});
+
 var RatingsMainView = new countlyVue.views.BackboneWrapper({
-    component: RatingsMain,
-    templates: ["/drill/templates/query.builder.v2.html"]
+    component: RatingsMain
 });
 
 var WidgetDetailView = new countlyVue.views.BackboneWrapper({
