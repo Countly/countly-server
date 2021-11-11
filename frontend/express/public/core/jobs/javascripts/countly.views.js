@@ -1,6 +1,34 @@
 /*global countlyAuth, countlyCommon, app, countlyVue, CV */
 
 (function() {
+    var getColor = function(row) {
+        if (row.status === "SCHEDULED") {
+            return "yellow";
+        }
+        else if (row.status === "CANCELLED") {
+            return "red";
+        }
+        else if (row.status === "RUNNING") {
+            return "green";
+        }
+    };
+    var updateScheduleRow = function(row) {
+        var index;
+        row.nextRunDate = countlyCommon.getDate(row.next);
+        row.nextRunTime = countlyCommon.getTime(row.next);
+        row.lastRun = countlyCommon.formatTimeAgo(row.finished);
+        row.scheduleLabel = row.schedule;
+        index = row.schedule.indexOf("starting on");
+        if (index > (-1)) {
+            row.scheduleLabel = row.schedule.substring(0, index).trim();
+            row.scheduleDetail = row.schedule.substring(index).trim();
+        }
+        if (row.schedule.startsWith("at")) {
+            index = row.schedule.indexOf("every");
+            row.scheduleDetail = row.schedule.substring(0, index).trim();
+            row.scheduleLabel = row.schedule.substring(index).trim();
+        }
+    };
     var JobsView = countlyVue.views.create({
         template: CV.T('/core/jobs/templates/jobs.html'),
         data: function() {
@@ -23,8 +51,7 @@
                     var row;
                     for (var i = 0; i < rows.length; i++) {
                         row = rows[i];
-                        row.nextRun = countlyCommon.getDate(row.next) + " " + countlyCommon.getTime(row.next);
-                        row.lastRun = countlyCommon.formatTimeAgo(row.finished);
+                        updateScheduleRow(row);
                     }
                     return rows;
                 }
@@ -44,7 +71,8 @@
             },
             goTo: function(row) {
                 app.navigate("#/manage/jobs/" + row.name, true);
-            }
+            },
+            getColor: getColor
         }
     });
 
@@ -71,10 +99,9 @@
                     var row;
                     for (var i = 0; i < rows.length; i++) {
                         row = rows[i];
-                        row.nextRun = countlyCommon.getDate(row.next) + " " + countlyCommon.getTime(row.next);
-                        row.lastRun = countlyCommon.formatTimeAgo(row.finished);
                         row.dataAsString = JSON.stringify(row.data, null, 2);
                         row.durationInSeconds = (row.duration / 1000) + 's';
+                        updateScheduleRow(row);
                     }
                     return rows;
                 }
@@ -95,7 +122,8 @@
             },
             navigate: function(id) {
                 app.navigate("#/manage/jobs/" + id);
-            }
+            },
+            getColor: getColor
         }
     });
 

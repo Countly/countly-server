@@ -78,6 +78,23 @@
         }
     }));
 
+    Vue.component("cly-status-tag", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-status-tag" :class="dynamicClasses">\n' +
+                     '<div class="cly-vue-status-tag__blink"></div>\n' +
+                        '{{text}}\n' +
+                  '</div>',
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            text: { required: true, type: String },
+            color: { default: "green", type: String},
+        },
+        computed: {
+            dynamicClasses: function() {
+                return "cly-vue-status-tag--" + this.color;
+            }
+        },
+    }));
+
     Vue.component("cly-diff-helper", countlyBaseComponent.extend({
         mixins: [
             _mixins.i18n
@@ -107,9 +124,10 @@
         },
         methods: {
             save: function() {
-                if (this.emitSaveWhenDisabled) {
-                    this.$emit("save");
+                if (this.disabled && !this.emitSaveWhenDisabled) {
+                    return;
                 }
+                this.$emit("save");
             },
             discard: function() {
                 this.$emit("discard");
@@ -358,10 +376,16 @@
     }));
 
     Vue.component("cly-blank", countlyBaseComponent.extend({
-        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center">\
-                        <h3 class="color-cool-gray-50">{{text}}</h3>\
+        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center bu-is-flex-direction-column">\
+                        <h3 class="color-cool-gray-50">{{title}}</h3>\
+                        <div v-if="text"><p class="text-medium">{{text}}</p></div>\
                     </div>',
         props: {
+            title: {
+                type: String,
+                default: '',
+                required: false
+            },
             text: {
                 type: String,
                 default: '',

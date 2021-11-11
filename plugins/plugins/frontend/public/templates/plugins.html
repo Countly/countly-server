@@ -11,20 +11,30 @@
 		<cly-section>
 			<cly-datatable-n :rows="pluginsData" :tracked-fields="localTableTrackedFields" :default-sort="{prop: 'name', order: 'ascending'}" :row-class-name="tableRowClassName">
                 <template v-slot="scope">
-                    <el-table-column type="switch" fixed="left" width="100" sortable prop="enabled">
+                    <el-table-column type="switch" fixed="left" width="70" prop="enabled">
                         <template v-slot="rowScope">
                             <el-switch :value="rowScope.row.enabled"
                                 @input="onToggle(scope, rowScope.row)">
                             </el-switch>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable prop="name" :label="i18n('plugins.name')" width="200"></el-table-column>
-                    <el-table-column sortable prop="desc" :label="i18n('plugins.description')"></el-table-column>
-                    <el-table-column sortable prop="deps" :label="i18n('plugins.dependents')" width="200"></el-table-column>
-                    <el-table-column sortable prop="version" :label="i18n('plugins.version')" width="100"></el-table-column>
+                    <el-table-column sortable prop="name" :label="i18n('plugins.name')" width="200">
+                        <template slot-scope="rowScope">
+                            <a :href="rowScope.row.homepage" target="_blank">{{ rowScope.row.name }}</a>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="desc" :label="i18n('plugins.description')">
+                        <template v-slot="rowScope">
+                            <div style="white-space: normal;"> 
+                                {{ rowScope.row.description }}
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="deps" :label="i18n('plugins.dependents')" width="200"></el-table-column>
+                    <el-table-column prop="version" :label="i18n('plugins.version')" width="100"></el-table-column>
                 </template>
                 <template v-slot:header-left>
-                    <el-radio-group v-model="filterValue" @change="filter">
+                    <el-radio-group v-model="filterValue" @change="filter" plain size="small">
                         <el-radio-button label="all">{{i18n('plugins.all')}}</el-radio-button>
                         <el-radio-button label="enabled">{{i18n('plugins.enabled')}}</el-radio-button>
                         <el-radio-button label="disabled">{{i18n('plugins.disabled')}}</el-radio-button>

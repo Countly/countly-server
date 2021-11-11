@@ -1,0 +1,23 @@
+<cly-drawer
+    @submit="onSubmit"
+    @copy="onCopy"
+    :title="title"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="controls">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="conditions-drawer">
+            <cly-form-field :label="i18n('remote-config.condition-name')" name="condition_name" rules="required" v-slot:default>
+                <el-input
+                    v-model="drawerScope.editedObject.condition_name"
+                    :placeholder="i18n('placeholder.condition-name')">
+                </el-input>
+            </cly-form-field>
+            <cly-form-field :label="i18n('remote-config.seed-value')" name="seed_value" rules="required" v-slot:default>
+                <el-input
+                    v-model="drawerScope.editedObject.seed_value"
+                    :placeholder="i18n('placeholder.seed-value')">
+                </el-input>
+            </cly-form-field>
+        </cly-form-step>
+    </template>
+</cly-drawer>
