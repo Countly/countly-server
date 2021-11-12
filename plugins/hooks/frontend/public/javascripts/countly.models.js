@@ -25,7 +25,7 @@
             case 'APIEndPointTrigger':
                 data = {
                     qstring: {"paramA": "abc", "paramB": 123,  "paramC": [1,2,3]}, 
-                    paths: `localhost/o/hooks/${hookConfig.trigger.configuration.path}`.split("/") 
+                    paths: ("localhost/o/hooks/" + hookConfig.trigger.configuration.path).split("/") 
                 };
                 break;
             case 'IncomingDataTrigger':

@@ -32,12 +32,12 @@
             },
         },
         data: function () {
-            const appsSelectorOption = [];
+            var appsSelectorOption = [];
             for (var id in countlyGlobal.apps) {
                 appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
             }
             return {
-                appsSelectorOption,
+                appsSelectorOption: appsSelectorOption,
                 filterStatus: 'all',
                 filteredApps: [],
                 tableDynamicCols: [
@@ -64,7 +64,7 @@
         methods: {
             handleHookEditCommand: function(command, scope) {
                 if (command === "edit-comment") {
-                    /* eslint-disable */
+                    /* eslint-disable no-spreading */
                     var data = {...scope.row};
                     /* eslint-enable */
 
