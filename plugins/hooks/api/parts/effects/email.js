@@ -23,6 +23,8 @@ class EmailEffect {
     async run(options) {
         const {effect, params, rule} = options;
         let emailAddress = effect.configuration.address;
+        let emailTemplate = effect.configuration.emailTemplate;
+
         if (typeof emailAddress === "string") {
             emailAddress = [emailAddress]; //parse to array
         }
@@ -42,11 +44,20 @@ class EmailEffect {
         }
         const sendTasks = [];
         await emailAddress.forEach(address => {
-            const formatedJSON = "<pre>" + JSON.stringify(params, null, 2) + "</pre>";
+            let formatedEmailContent = "<pre>" + JSON.stringify(params, null, 2) + "</pre>";
+            if (emailTemplate && emailTemplate.length > 0) {
+                try {
+                    formatedEmailContent = utils.parseStringTemplate(emailTemplate, params);
+                    formatedEmailContent = formatedEmailContent.replace(/\n/g, "<br />");
+                } catch(e) {
+                    log.e(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                }
+                
+            }
             var msg = {
                 to: address ,
                 subject: "Countly Hooks",
-                html: formatedJSON,
+                html: formatedEmailContent,
             };
             sendTasks.push(promisifyEMailSending(msg));
             log.d("[hook email effect]", msg);

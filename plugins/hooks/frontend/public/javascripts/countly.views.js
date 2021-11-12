@@ -71,6 +71,7 @@
                     delete data.operation;
                     delete data.triggerEffectColumn;
                     delete data.nameDescColumn;
+                    delete data.triggerEffectDom;
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
@@ -147,8 +148,9 @@
         },
         watch: {
             ["value.address"] : function() {
-                console.log("!!aaa", this);
                 //this.emailInput.selectize.setValue(this.value.address, false);
+            },
+            ["value.emailTemplate"] : function() {
             }
         },
         mounted: function () {
@@ -215,7 +217,7 @@
                     return false;
                 },
                 onChange: function(value) {
-                    self.$emit("input", {address: value || []});
+                    self.$emit("input", {address: value || [], emailTemplate: self.value.emailTemplate});
                 }
             });
             if (this.value && this.value.address) {
@@ -260,14 +262,13 @@
         },
         watch: {
             ["value.type"]: function(newValue, oldValue) {
-                console.log(newValue, oldValue, "ttt");
                 if (!oldValue && this.value.configuration) { // edit record
                     return;
                 }
                 if (1 ||!oldValue) {
                     switch(newValue) {
                         case 'EmailEffect': 
-                            this.value.configuration={address:[]};
+                            this.value.configuration={address:[], emailTemplate:''};
                             break;
                         case 'CustomCodeEffect':
                             this.value.configuration = {code:''};
@@ -290,7 +291,6 @@
         },
         methods: {
             removeEffect: function () {
-                console.log("ddd");
                 this.$emit('removeEffect', this.$attrs.index);
             },
         }
@@ -377,7 +377,6 @@
                 }
             },
             getEventOptions: function () {
-                console.log("get event", this);
                 var self = this;
                 var apps = [this.$props.app];
                 countlyEvent.getEventsForApps(apps, function(events) {
@@ -693,6 +692,7 @@
                 this.$emit("close", $event);
             },
             onCopy: function (newState) {
+                console.log(newState,"#$4444")
                 if (newState._id !== null) {
                     this.title = jQuery.i18n.map["hooks.edit-your-hook"];
                     this.saveButtonLabel = jQuery.i18n.map["hooks.save-hook"];
@@ -712,18 +712,6 @@
             testHook: async function () {
                var hookData = this.$refs.drawerData.editedObject;
                await this.$store.dispatch("countlyHooks/testHook", hookData);
-            },
-
-            updateHookConfigValue: function ({path, value}) {
-                var object = this.$refs.drawerData.editedObject;
-                if(!path) {
-                    return;
-                }
-                var stack = path.split('.');
-                while(stack.length>1){
-                object = object[stack.shift()];
-                }
-                object[stack.shift()] = value;
             },
         }
     });
@@ -784,7 +772,6 @@
                 var hookDetail = this.$store.getters["countlyHooks/hookDetail"];
                 hookDetail.created_at_string = moment(hookDetail.created_at).fromNow();
                 hookDetail.lastTriggerTimestampString = moment(hookDetail.lastTriggerTimestamp).fromNow();
-                console.log(hookDetail,"#hookDetail");
                 return hookDetail 
             }
         },
@@ -798,6 +785,7 @@
                     delete data.operation;
                     delete data.triggerEffectColumn;
                     delete data.nameDescColumn;
+                    delete data.triggerEffectDom;
                     this.openDrawer("detail", data);
                 }
                 else if (command === "delete-comment") {

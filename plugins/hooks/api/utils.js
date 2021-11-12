@@ -36,7 +36,6 @@ utils.addErrorRecord = function addErrorRecord(hookId, error) {
             }
         }
     };
-    console.log(hookId, updateOperation,"#fffd333");
     common.writeBatcher.add("hooks", hookId, updateOperation);
 }
 
@@ -57,23 +56,32 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
     };
 
     return str.replace(/\{\{(.*?)}\}/g, (sub, path) => {
-        path = path.trim();
-        path = path.replace(/\[(\w+)\]/g, '.$1');
+        let obj = null;
+        try {
+            path = path.trim();
+            path = path.replace(/\[(\w+)\]/g, '.$1');
 
-        const props = path.split('.');
-        let obj = data;
-        if (props.length === 1 && props[0] === 'payload_json') {
+            const props = path.split('.');
+            obj = data;
+            if (props.length === 1 && props[0] === 'payload_json') {
+                return parseData(obj);
+            }
+
+            if (props.length === 1 && props[0] === 'payload_string') {
+                let jsonStr = parseData(obj);
+                return jsonStr.replace(/"|\\"/g, '\\"');
+            }
+            props.forEach(prop => {
+                obj = obj[prop] || undefined;
+            });
+        } catch (e) {
+            console.log(e);
+        }
+        if (obj) {
             return parseData(obj);
+        } else {
+            return sub;
         }
-
-        if (props.length === 1 && props[0] === 'payload_string') {
-            let jsonStr = parseData(obj);
-            return jsonStr.replace(/"|\\"/g, '\\"');
-        }
-        props.forEach(prop => {
-            obj = obj[prop] || undefined;
-        });
-        return parseData(obj);
     });
 };
 

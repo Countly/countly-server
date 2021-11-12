@@ -36,7 +36,10 @@
     </div>
         <select class="email-list-input" placeholder="Input Email address" v-model="value.address">
         </select>
-    </div>
+        <div class="">
+            <textarea v-model="value.emailTemplate" style="width:100%;border: 1px solid #d6d6d6;" name="email-template" rows="5"  cols="60" placeholder="Content template here"></textarea> 
+        </div>
+     </div>
 </div>
 </script>
 
