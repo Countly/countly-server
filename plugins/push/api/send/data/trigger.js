@@ -146,6 +146,7 @@ class Trigger extends Jsonable {
         else {
             return [new PlainTrigger({
                 start: note.date,
+                delayed: note.delayed,
                 tz: typeof note.tz === 'number' ? true : false,
                 sctz: typeof note.tz === 'number' ? note.tz : undefined
             })];
@@ -250,7 +251,7 @@ class AutoTrigger extends Trigger {
      * @param {object|null}     data            filter data
      * @param {Date}            data.end        message end date (don't send anything after this date, set status to Stopped)
      * @param {boolean}         data.actuals    whether to use server calculation date (false) or event/cohort entry date for scheduling (true)
-     * @param {number}          data.time       time (seconds since 00:00) when to send in user's timezone
+     * @param {number}          data.time       time (milliseconds since 00:00) when to send in user's timezone
      * @param {boolean}         data.reschedule allow rescheduling to next day when sending on "time" is not an option
      * @param {number}          data.delay      delay sending this much seconds after the trigger
      * @param {number}          data.cap        send maximum this much messages

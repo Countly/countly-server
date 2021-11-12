@@ -296,7 +296,7 @@ let exp = module.exports = {
             },
             "expiration": 604800000,
             "date": new Date("2021-04-28T11:36:34.655Z"),
-            "tz": false,
+            "tz": 3600000,
             "tx": false,
             "auto": false,
             "actualDates": false,
@@ -459,6 +459,7 @@ let exp = module.exports = {
                 "Halu"
             ],
             "platforms": [
+                "i",
                 "a"
             ],
             "source": "dash",

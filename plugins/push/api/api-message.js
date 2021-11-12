@@ -85,6 +85,9 @@ async function validate(args, preparing = false) {
         if (!msg.contents.length) {
             throw new ValidationError('Message must have at least one Content');
         }
+        if (!msg.contents[0].expiration) {
+            throw new ValidationError('Default Content must have expiration value');
+        }
     }
 
     return msg;
@@ -101,7 +104,7 @@ module.exports.create = async params => {
     }
     else if (msg.triggerPlain()) {
         msg.state = State.Created;
-        msg.status = Status.Scheduled;
+        msg.status = Status.Created;
         await msg.save();
         await msg.schedule();
     }
@@ -121,7 +124,7 @@ module.exports.update = async params => {
             msg.status = Status.Scheduled;
         }
         else if (msg.triggerPlain()) {
-            throw new ValidationError('Sent plain messages cannot be changed');
+            throw new ValidationError('Finished plain messages cannot be changed');
         }
         else {
             throw new ValidationError('Wrong trigger kind');
@@ -130,9 +133,9 @@ module.exports.update = async params => {
 
     await msg.save();
 
-    if (msg.triggerPlain()) {
-        await msg.schedule();
-    }
+    // if (msg.triggerPlain()) {
+    //     await msg.schedule();
+    // }
 
     common.returnOutput(params, msg.json);
 };

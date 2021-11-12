@@ -4,11 +4,11 @@ const { PushError } = require('./error'),
     { S, Jsonable } = require('./const');
 
 /**
- * Message contents, possibly defined following way:
- * 1. {p: undefined, l: undefined, ...} - a required default Content (no p or l in it)
- * 2. {p: 'i', badge: 2} - an override for all iOS devices
- * 3. {p: 'a', l: 'de'} - another override for Android devices with german locale, other locales would still use 1.
- * 4. {p: 'i', l: 'fr'} - applies on top of 'i' override for iOS devices with french locale, other locales would use 2.
+ * Message `contents` array consists of Content objects, it's to be defined the following way (each line below is an element of `contents` array):
+ * 0. {p: undefined, la: undefined, ...} - a required default Content (no p or la in it)
+ * 1. {p: 'i', badge: 2} - an override for all iOS devices
+ * 2. {p: 'a', la: 'de'} - another override for Android devices with german locale, other locales would still use 0.
+ * 3. {p: 'i', la: 'fr'} - applies on top of 'i' override for iOS devices with french locale, other locales would use 1.
  */
 class Content extends Jsonable {
     /**
@@ -18,9 +18,9 @@ class Content extends Jsonable {
      * @param {string}      data.p                  this content overrides default content for this platform
      * @param {string}      data.la                 this content overrides default content for this language
      * @param {string}      data.title              title
-     * @param {object}      data.titlePers          title personalization
+     * @param {object}      data.titlePers          title personalization ({'2': {f, c, k}})
      * @param {string}      data.message            message
-     * @param {object}      data.messagePers        message personalization
+     * @param {object}      data.messagePers        message personalization ({'2': {f, c, k}})
      * @param {string}      data.sound              sound
      * @param {number}      data.badge              badge
      * @param {string}      data.data               JSON of additional data to send
@@ -57,6 +57,7 @@ class Content extends Jsonable {
             badge: {type: 'Number', required: false},
             data: {type: 'JSON', required: false},
             extras: {type: 'String[]', required: false},
+            expiration: {type: 'Number', required: false, min: 60000, max: 365 * 24 * 3600000},
             url: {type: 'URL', required: false},
             media: {type: 'URL', required: false},
             mediaMime: {type: 'String', required: false},
@@ -344,6 +345,29 @@ class Content extends Jsonable {
     }
 
     /**
+     * Getter for expiration
+     * 
+     * @returns {number} ms for a push to expire in push provider queue
+     */
+    get expiration() {
+        return this._data.expiration;
+    }
+
+    /**
+     * Setter for expiration
+     * 
+     * @param {number} expiration ms for a push to expire in push provider queue
+     */
+    set expiration(expiration) {
+        if (typeof expiration === 'number') {
+            this._data.expiration = expiration;
+        }
+        else {
+            delete this._data.expiration;
+        }
+    }
+
+    /**
      * Add user prop key to the set
      * 
      * @param {string} key user prop key to push
@@ -531,52 +555,13 @@ class Content extends Jsonable {
      * 
      * @deprecated
      * @param {object} note Note object
-     * @param {string} la language to extract from note (null for all Content for given note)
-     * @returns {Content|Content[]} Content instance
+     * @returns {Content|Content[]} array of Content instances
      */
-    static fromNote(note, la) {
-        if (la) {
-            let buttons = undefined,
-                mpl = note.messagePerLocale || {},
-                titlePers,
-                messagePers;
-            if (note.buttons > 0) {
-                buttons = [];
-                for (let i = 0; i < note.buttons; i++) {
-                    let url = mpl[la + S + i + S + 'l'],
-                        title = mpl[la + S + i + S + 't'];
-                    buttons.push({url, title});
-                }
-            }
-            // eslint-disable-next-line no-unused-vars
-            for (let _k in mpl[la + S + 'tp']) {
-                titlePers = mpl[la + S + 'tp'];
-                break;
-            }
-            // eslint-disable-next-line no-unused-vars
-            for (let _k in mpl[la + S + 'p']) {
-                messagePers = mpl[la + S + 'p'];
-                break;
-            }
-            return new Content({
-                la: la === 'default' ? undefined : la,
-                title: mpl[la + S + 't'],
-                titlePers,
-                message: mpl[la],
-                messagePers,
-                sound: la === 'default' ? note.sound : undefined,
-                badge: la === 'default' ? note.badge : undefined,
-                data: la === 'default' ? (note.data ? JSON.stringify(note.data) : undefined) : undefined,
-                url: la === 'default' ? note.url : undefined,
-                media: la === 'default' ? note.media : undefined,
-                mediaMime: la === 'default' ? note.mediaMime : undefined,
-                buttons
-            });
-        }
-        else {
-            let keys = Object.keys(note.messagePerLocale || {}).filter(k => {
-                let v = note.messagePerLocale[k];
-                if (typeof v !== 'string' || !v) {
+    static fromNote(note) {
+        let mpl = note.messagePerLocale || {},
+            locales = Object.keys(mpl).filter(k => {
+                let v = mpl[k];
+                if (typeof v !== 'string' || !v || k.indexOf('default') === 0) {
                     return false;
                 }
                 else if (k.indexOf(S) === -1) {
@@ -593,16 +578,70 @@ class Content extends Jsonable {
                 else {
                     return k;
                 }
-            });
-            if (keys.length) {
-                keys = keys.filter((k, i) => keys.indexOf(k) === i);
-                return keys.map(k => Content.fromNote(note, k));
-            }
-            else {
-                return [Content.fromNote(note, 'default')];
-            }
+            }),
+            /**
+             * Returns the parameter if object has any keys
+             * 
+             * @param {object} obj object
+             * @returns {object|undefined} obj if it has any keys
+             */
+            nonEmpty = obj => {
+                for (let _ in obj) {
+                    return obj;
+                }
+            };
+        locales = locales.filter((k, i) => locales.indexOf(k) === i);
+
+        return [new Content({ // default content
+            title: mpl[`default${S}t`],
+            titlePers: nonEmpty(mpl[`default${S}tp`]),
+            message: mpl.default,
+            messagePers: nonEmpty(mpl[`default${S}p`]),
+            sound: note.sound,
+            media: note.media,
+            mediaMime: note.mediaMime,
+            expiration: note.expiration,
+            buttons: note.buttons ? new Array(note.buttons).fill(0).map((_, i) => ({
+                title: mpl[`default${S}${i}${S}t`],
+                url: mpl[`default${S}${i}${S}l`],
+            })) : undefined
+        })]
+            .concat(locales.map(l => new Content({ // localised messages & titles
+                la: l,
+                title: mpl[`${l}${S}t`],
+                titlePers: nonEmpty(mpl[`${l}${S}tp`]),
+                message: mpl[l],
+                messagePers: nonEmpty(mpl[`${l}${S}p`]),
+                buttons: note.buttons && mpl[`${l}${S}0|t`] ? new Array(note.buttons).fill(0).map((_, i) => ({
+                    title: mpl[`${l}${S}${i}${S}t`],
+                    url: mpl[`${l}${S}${i}${S}l`],
+                })) : undefined
+            })))
+            .concat(note.platforms.map(p => new Content({ // platform-specific stuff to comply with new UI
+                p,
+                sound: note.sound,
+                badge: note.badge,
+                data: note.data,
+                url: note.url,
+                extras: note.userProps,
+            })));
+    }
+
+    /**
+     * Construct Content if needed
+     * 
+     * @param {Content|object} data Content instance of content data
+     * @returns {Content} Content instance
+     */
+    static from(data) {
+        if (data instanceof Content) {
+            return data;
+        }
+        else {
+            return new Content(data);
         }
     }
+
 }
 
 module.exports = { Content };

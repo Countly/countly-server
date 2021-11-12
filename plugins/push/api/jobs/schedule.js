@@ -60,7 +60,9 @@ class ScheduleJob extends J.Job {
             error = 'No plain trigger in the message';
         }
         else {
-            let {total, next} = await this.audience.push().run();
+            let trigger = this.message.triggerPlain(),
+                {total, next} = await this.audience.schedule(trigger, this.data.start).run(); // this.data.start is supposed to be undefined for now
+
             if (total === 0) {
                 update = {
                     $set: {
@@ -83,9 +85,6 @@ class ScheduleJob extends J.Job {
                         'state': State.Created | State.Streamable,
                         status: Status.Scheduled,
                         'result.next': next
-                    },
-                    $unset: {
-                        'result.next': 1
                     }
                 };
             }

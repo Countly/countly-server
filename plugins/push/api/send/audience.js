@@ -1,7 +1,11 @@
 const common = require('../../../../api/utils/common'),
     { PushError, ERROR } = require('./data/error'),
-    { State } = require('./data/const'),
-    { fields } = require('./platforms'),
+    { State, TriggerKind } = require('./data'),
+    { DEFAULTS } = require('./data/const'),
+    { PLATFORM } = require('./platforms'),
+    { Push } = require('./data/message'),
+    { fields, TK } = require('./platforms'),
+    momenttz = require('moment-timezone'),
 
     /**
      * Get Drill plugin api
@@ -75,19 +79,32 @@ class Audience {
     /**
      * Create new Pusher
      * 
+     * @param {Trigger} trigger effective trigger
      * @returns {Pusher} pusher instance bound to this audience
      */
-    push() {
-        return new Pusher(this);
+    push(trigger) {
+        return new Pusher(this, trigger);
     }
 
     /**
      * Create new Popper
      * 
+     * @param {Trigger} trigger effective trigger
      * @returns {Popper} popper instance bound to this audience
      */
-    pop() {
-        return new Popper(this);
+    pop(trigger) {
+        return new Popper(this, trigger);
+    }
+
+    /**
+     * Create new SchedulePusher
+     * 
+     * @param {Trigger} trigger effective trigger
+     * @param {Date} date override
+     * @returns {SchedulePusher} popper instance bound to this audience
+     */
+    schedule(trigger, date) {
+        return new SchedulePusher(this, trigger).setStart(date);
     }
 
     // /**
@@ -206,6 +223,7 @@ class Audience {
         steps.push({$project: project});
 
         this.log.d('steps: %j', steps);
+
         // TODO: add steps optimisation (i.e. merge uid: $in)
 
         return steps;
@@ -253,19 +271,183 @@ class Audience {
 }
 
 /**
+ * Base Mapper
+ * 
+ * ... using classes here to quit from lots and lots of conditionals in favor of quite simple hierarchical logic
+ */
+class Mapper {
+    /**
+     * Constructor
+     * 
+     * @param {object} app app
+     * @param {Message} message message
+     * @param {Trigger} trigger trigger
+     * @param {string} p platform key
+     * @param {string} f field key
+     */
+    constructor(app, message, trigger, p, f) {
+        this.offset = momenttz.tz(app.timezone).utcOffset();
+        this.message = message;
+        this.trigger = trigger;
+        this.p = p;
+        this.f = f;
+        this.pf = p + f;
+        this.userFields = message.userFields;
+    }
+
+    /**
+     * Set sending date addition in ms for rate limiting
+     * 
+     * @param {number} addition sending date addition in ms
+     * @returns {Mapper} this instance for method chaining
+     */
+    setAddition(addition) {
+        this.addition = addition;
+        return this;
+    }
+
+    /**
+     * Map app_user object to message
+     * 
+     * @param {object} user app_user object
+     * @param {number} date notification date as ms timestamp
+     * @param {object} pr user props object
+     * @param {object[]} c [Content.json] overrides
+     * @returns {object} push object ready to be inserted
+     */
+    map(user, date, pr, c) {
+        let ret = {
+            _id: common.db.oidWithDate(date),
+            m: this.message._id,
+            p: this.p,
+            f: this.f,
+            u: user.uid,
+            t: user[TK][this.pf],
+            pr
+        };
+        if (c) {
+            ret.c = c;
+        }
+        return c;
+    }
+}
+
+/**
+ * Plain or API triggers mapper - uses date calculation logic for those cases
+ */
+class PlainApiMapper extends Mapper {
+    /**
+     * Map app_user object to message
+     * 
+     * @param {object} user app_user object
+     * @param {Date} date notification date
+     * @param {object[]} c [Content.json] overrides
+     * @returns {object} push object ready to be inserted
+     */
+    map(user, date, c) {
+        let d = date.getTime();
+        if (this.trigger.tz) {
+            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
+            d = date.getTime() - this.trigger.sctz * 60000 - utz;
+        }
+        return super.map(user, d, c);
+    }
+}
+
+/**
+ * Plain or API triggers mapper - uses date calculation logic for those cases
+ */
+class CohortsEventsMapper extends Mapper {
+    /**
+     * Map app_user object to message
+     * 
+     * @param {object} user app_user object
+     * @param {Date} date reference date (cohort entry date, event date)
+     * @param {object[]} c [Content.json] overrides
+     * @returns {object} push object ready to be inserted
+     */
+    map(user, date, c) {
+        let d = date.getTime();
+
+        // send in user's timezone
+        if (this.trigger.time !== null && this.trigger.time !== undefined) {
+            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000,
+                auto = new Date(d),
+                inTz;
+
+            auto.setHours(0);
+            auto.setMinutes(0);
+            auto.setSeconds(0);
+            auto.setMilliseconds(0);
+
+            inTz = auto.getTime() + this.trigger.time + (new Date().getTimezoneOffset() || 0) * 60000 - utz;
+            if (inTz < Date.now()) {
+                if (this.trigger.reschedule) {
+                    d = inTz + 24 * 60 * 60000;
+                }
+                else {
+                    return null;
+                }
+            }
+            else {
+                d = inTz;
+            }
+        }
+
+        // delayed message to spread the load across time
+        if (this.trigger.delay) {
+            d += this.trigger.delay;
+        }
+
+        // trigger end date is before the date we have, we can't send this
+        if (this.trigger.end && this.trigger.end.getTime() < d) {
+            return null;
+        }
+
+        return super.map(user, d, c);
+    }
+}
+
+/**
  * Pushing / popping notes to queue logic
  */
 class PusherPopper {
     /**
      * Constructor
      * @param {Audience} audience audience object
+     * @param {Trigger} trigger trigger object
      */
-    constructor(audience) {
+    constructor(audience, trigger) {
         this.audience = audience;
+        this.trigger = trigger;
+        this.mappers = this.audience.message.platforms.map(p => {
+            return Object.values(PLATFORM[p].FIELDS).map(f => {
+                if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
+                    return new PlainApiMapper(audience.app, audience.message, trigger, p, f);
+                }
+                else {
+                    return new CohortsEventsMapper(audience.app, audience.message, trigger, p, f);
+                }
+            });
+        }).flat();
+        // this.date = {
+        //     [Trigger]: this.datathis.audience.message.triggerFind(t => t.kind === TriggerKind.API || t.kind === TriggerKind.Plain) ? this.datePlainAPI.bind(this) : this.dateCohortsEvents.bind(this);
+    }
+
+    /**
+     * Set contents overrides
+     * 
+     * @param {Content[]} contents notification data
+     * @returns {Pusher} this instance for easy method chaining
+     */
+    setContents(contents) {
+        this.contents = contents;
+        return this;
     }
 
     /**
      * Set custom data
+     * 
      * @param {Object} data notification data
      * @returns {Pusher} this instance for easy method chaining
      */
@@ -275,17 +457,30 @@ class PusherPopper {
     }
 
     /**
-     * Set date
-     * @param {Date} date date of the notification
+     * Set custom variables
+     * 
+     * @param {Object} variables notification variables
      * @returns {Pusher} this instance for easy method chaining
      */
-    setDate(date) {
-        this.date = date;
+    setVariables(variables) {
+        this.variables = variables;
+        return this;
+    }
+
+    /**
+     * Set start
+     * 
+     * @param {Date} start start of the notification
+     * @returns {Pusher} this instance for easy method chaining
+     */
+    setStart(start) {
+        this.start = start;
         return this;
     }
 
     /**
      * Set user uids
+     * 
      * @param {string[]} uids array of uids
      * @returns {Pusher} this instance for easy method chaining
      */
@@ -299,6 +494,41 @@ class PusherPopper {
      */
     async run() {
         throw new Error('Must be overridden');
+    }
+}
+
+/**
+ * Scheduler, that is pusher for all notes given message filter
+ */
+class SchedulePusher extends PusherPopper {
+    /**
+     * Insert records into db
+     */
+    async run() {
+        this.audience.log.f('d', log => log('scheduling %s date %s data %j', this.audience.message._id, this.date ? this.date : '', this.data ? this.data : ''),
+            'i', 'scheduling %s', this.audience.message._id);
+
+        let batchSize = DEFAULTS.queue_insert_batch,
+            steps = await this.audience.steps(this.audience.message.userFields),
+            stream = common.db.collection(`app_users${this.audience.app._id}`).aggregate(steps).stream(),
+            batch = Push.batchInsert(batchSize),
+            start = this.start || this.audience.message.triggerPlain().start; // plain trigger is supposed to be set here as SchedulePusher is only used for plain triggers
+
+        for await (let user of stream) {
+            for (let mapper of this.mappers) {
+                let push = mapper.map(user, start, this.contents);
+                if (!push) {
+                    continue;
+                }
+                if (batch.pushSync(push)) {
+                    this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);
+                    await batch.flush();
+                }
+            }
+        }
+
+        this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
+        await batch.flush();
     }
 }
 

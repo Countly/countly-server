@@ -5,6 +5,7 @@ const { Jsonable, Mongoable } = require('../../../../../api/utils/models');
 
 const DEFAULTS = {
     schedule_ahead: 5 * 60000,  // schedule job needs to be scheduled this much ms prior to the job date
+    queue_insert_batch: 100000,  // insert into "push" collection in batches of 100 000 records
 };
 
 /**

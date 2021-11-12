@@ -1,6 +1,6 @@
 'use strict';
 
-const { State, Status, STATUSES, Mongoable, DEFAULTS } = require('./const'),
+const { State, Status, STATUSES, Mongoable, DEFAULTS, S } = require('./const'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
@@ -22,7 +22,7 @@ class Message extends Mongoable {
      * @param {string}              data.status     user-facing message status
      * @param {object|Filter}       data.filter     user selection filter
      * @param {object[]|Trigger[]}  data.triggers   triggers of this message
-     * @param {object|Content[]}    data.contents   message contents array: {l: undefined, p: undefined} is required, any other overrides default one in the order they specified in the array
+     * @param {object|Content[]}    data.contents   message contents array: {la: undefined, p: undefined} is required, any other overrides default one in the order they specified in the array
      * @param {object|Result}       data.result     sending result
      * @param {object|Info}         data.info       info object
      */
@@ -84,7 +84,7 @@ class Message extends Mongoable {
             this._data.info = new Info(this._data.info);
         }
         this._data.triggers = (this._data.triggers || []).map(Trigger.from);
-        this._data.contents = (this._data.contents || []).map(c => c instanceof Content ? c : new Content(c));
+        this._data.contents = (this._data.contents || []).map(Content.from);
     }
 
     /**
@@ -364,6 +364,40 @@ class Message extends Mongoable {
     }
 
     /**
+     * Get array of app_user field names which might be needed for this message to be sent to a particular user
+     * 
+     * @returns {string[]} array of app user field names
+     */
+    get userFields() {
+        let keys = this.contents.map(c => Object.values(c.messagePers || {}).concat(Object.values(c.titlePers || {})).map(obj => obj.k).concat(c.extras || []).map(Message.decodeFieldKey)).flat();
+        if (this.contents.length > 1) {
+            keys.push('la');
+        }
+        keys = keys.filter((k, i) => keys.indexOf(k) === i);
+        return keys;
+    }
+
+    /**
+     * Encode field key so it could be stored in mongo (replace dots with S - Separator)
+     * 
+     * @param {string} key field name
+     * @returns {string} key with dots replaced by separator
+     */
+    static encodeFieldKey(key) {
+        return key.replaceAll('.', S);
+    }
+
+    /**
+     * Decode field key so it could be stored in mongo (replace dots with S - Separator)
+     * 
+     * @param {string} key with dots replaced by separator
+     * @returns {string} original field name
+     */
+    static decodeFieldKey(key) {
+        return key.replaceAll(S, '.');
+    }
+
+    /**
      * Getter for result
      * 
      * @returns {Result} Result object
@@ -522,9 +556,22 @@ class Message extends Mongoable {
     async schedule() {
         let plain = this.triggerPlain();
         if (plain) {
-            await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id}).replace().once(plain.start.getTime() - DEFAULTS.schedule_ahead, true);
+            let date = plain.delayed ? plain.start.getTime() - DEFAULTS.schedule_ahead : Date.now();
+            await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id}).replace().once(date, true);
         }
     }
 }
 
-module.exports = { Message };
+/**
+ * A stub class to make use of Mongoable's batchInsert()
+ */
+class Push extends Mongoable {
+    /**
+     * Collection name for Mongoable
+     */
+    static get collection() {
+        return 'push';
+    }
+}
+
+module.exports = { Message, Push };

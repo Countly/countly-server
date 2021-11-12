@@ -19,7 +19,7 @@ describe('PUSH MIGRATE', () => {
         should.ok(Array.isArray(msg.triggers));
         should.ok(Array.isArray(msg.contents));
         msg.triggers.length.should.equal(1);
-        msg.contents.length.should.equal(2);
+        msg.contents.length.should.equal(3);
 
         should.equal(msg.filter.isEmpty, true);
         should.not.exist(msg.filter.user);
@@ -30,11 +30,15 @@ describe('PUSH MIGRATE', () => {
         let trigger = msg.triggers[0],
             info = msg.info,
             def = msg.content(),
-            en = msg.content(undefined, 'en');
+            en = msg.content(undefined, 'en'),
+            a = msg.content('a');
 
         should.ok(trigger);
         should.ok(trigger instanceof PlainTrigger);
         should.equal(trigger.start, note.date);
+        should.equal(trigger.delayed, true);
+        should.equal(trigger.tz, true);
+        should.equal(trigger.sctz, 3600000);
         should.ok(info);
         should.equal(info.created, note.created);
         should.ok(def);
@@ -44,10 +48,10 @@ describe('PUSH MIGRATE', () => {
         should.equal(def.message, note.messagePerLocale['default']);
         should.deepEqual(def.messagePers, note.messagePerLocale['default|p']);
         should.equal(def.sound, note.sound);
-        should.equal(def.badge, note.badge);
-        should.deepEqual(def.data, note.data);
+        should.equal(def.badge, undefined);
+        should.deepEqual(def.data, undefined);
         should.not.exist(def.extras);
-        should.equal(def.url, note.url);
+        should.equal(def.url, undefined);
         should.equal(def.media, note.media);
         should.equal(def.mediaMime, note.mediaMime);
         should.ok(def.buttons);
@@ -59,6 +63,11 @@ describe('PUSH MIGRATE', () => {
         should.equal(def.button(1).title, note.messagePerLocale['default|1|t']);
         should.not.exist(def.button(1).titlePers);
         should.not.exist(def.specific());
+
+        should.equal(a.sound, note.sound);
+        should.equal(a.badge, note.badge);
+        should.deepEqual(a.data, note.data);
+        should.equal(a.url, note.url);
 
         should.equal(en.title, note.messagePerLocale['en|t']);
         should.deepEqual(en.titlePers, note.messagePerLocale['en|tp']);
@@ -104,7 +113,7 @@ describe('PUSH MIGRATE', () => {
         should.ok(Array.isArray(msg.triggers));
         should.ok(Array.isArray(msg.contents));
         msg.triggers.length.should.equal(1);
-        msg.contents.length.should.equal(1);
+        msg.contents.length.should.equal(2);
 
         should.equal(msg.filter.isEmpty, true);
         should.not.exist(msg.filter.user);
@@ -115,15 +124,16 @@ describe('PUSH MIGRATE', () => {
         let trigger = msg.triggers[0],
             info = msg.info,
             def = msg.content(),
-            other = msg.content(undefined, 'default');
+            a = msg.content('a');
 
         should.ok(trigger);
         should.ok(trigger instanceof PlainTrigger);
         should.equal(trigger.start, note.date);
+        should.equal(trigger.delayed, note.delayed);
         should.ok(info);
         should.equal(info.created, note.created);
         should.ok(def);
-        should.not.exist(other);
+        should.ok(a);
         should.not.exist(def.title);
         should.not.exist(def.titlePers);
         should.not.exist(def.message);
@@ -131,7 +141,6 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(def.sound);
         should.not.exist(def.badge);
         should.not.exist(def.extras);
-        should.not.exist(def.badge);
         should.not.exist(def.url);
         should.not.exist(def.media);
         should.not.exist(def.mediaMime);
@@ -139,6 +148,21 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(def.button(0));
         should.not.exist(def.button(1));
         should.not.exist(def.specific());
+
+        should.not.exist(a.title);
+        should.not.exist(a.titlePers);
+        should.not.exist(a.message);
+        should.not.exist(a.messagePers);
+        should.not.exist(a.sound);
+        should.not.exist(a.badge);
+        should.not.exist(a.extras);
+        should.not.exist(a.url);
+        should.not.exist(a.media);
+        should.not.exist(a.mediaMime);
+        should.not.exist(a.buttons);
+        should.not.exist(a.button(0));
+        should.not.exist(a.button(1));
+        should.not.exist(a.specific());
 
         should.not.exist(msg.result.error);
         should.not.exist(msg.result.errors);
@@ -164,7 +188,7 @@ describe('PUSH MIGRATE', () => {
         should.ok(Array.isArray(msg.triggers));
         should.ok(Array.isArray(msg.contents));
         msg.triggers.length.should.equal(1);
-        msg.contents.length.should.equal(1);
+        msg.contents.length.should.equal(2);
 
         should.equal(msg.filter.isEmpty, true);
         should.not.exist(msg.filter.user);
@@ -175,7 +199,7 @@ describe('PUSH MIGRATE', () => {
         let trigger = msg.triggers[0],
             info = msg.info,
             def = msg.content(),
-            other = msg.content(undefined, 'default');
+            a = msg.content('a');
 
         should.ok(trigger);
         should.ok(trigger instanceof APITrigger);
@@ -183,7 +207,7 @@ describe('PUSH MIGRATE', () => {
         should.ok(info);
         should.equal(info.created, note.created);
         should.ok(def);
-        should.not.exist(other);
+        should.ok(a);
         should.not.exist(def.title);
         should.not.exist(def.titlePers);
         should.equal(def.message, note.messagePerLocale['default']);
@@ -199,6 +223,8 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(def.button(0));
         should.not.exist(def.button(1));
         should.not.exist(def.specific());
+        should.equal(a.sound, 'default');
+        should.deepEqual(a.json, {p: 'a', sound: 'default'});
 
         should.not.exist(msg.result.error);
         should.not.exist(msg.result.responses);
@@ -225,7 +251,7 @@ describe('PUSH MIGRATE', () => {
         should.ok(Array.isArray(msg.triggers));
         should.ok(Array.isArray(msg.contents));
         msg.triggers.length.should.equal(1);
-        msg.contents.length.should.equal(1);
+        msg.contents.length.should.equal(3);
 
         should.equal(msg.filter.isEmpty, true);
         should.not.exist(msg.filter.user);
@@ -236,7 +262,8 @@ describe('PUSH MIGRATE', () => {
         let trigger = msg.triggers[0],
             info = msg.info,
             def = msg.content(),
-            other = msg.content(undefined, 'default');
+            i = msg.content('i'),
+            a = msg.content('a');
 
         should.ok(trigger);
         should.ok(trigger instanceof PlainTrigger);
@@ -244,12 +271,17 @@ describe('PUSH MIGRATE', () => {
         should.ok(info);
         should.equal(info.created, note.created);
         should.ok(def);
-        should.not.exist(other);
+        should.ok(i);
+        should.ok(a);
         should.not.exist(def.title);
         should.not.exist(def.titlePers);
         should.equal(def.message, note.messagePerLocale['default']);
         should.not.exist(def.messagePers);
         should.equal(def.sound, 'default');
+        should.equal(i.sound, 'default');
+        should.equal(a.sound, 'default');
+        should.deepEqual(i.json, {p: 'i', sound: 'default'});
+        should.deepEqual(a.json, {p: 'a', sound: 'default'});
         should.not.exist(def.badge);
         should.not.exist(def.extras);
         should.not.exist(def.badge);

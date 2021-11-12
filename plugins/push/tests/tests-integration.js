@@ -58,7 +58,7 @@ describe('PUSH INTEGRATION TESTS', () => {
         for (let did in users) {
             let user = users[did];
             for (let token of user.tokens) {
-                await supertest.post(`/i?app_key=${app_key}&device_id=${user.device_id}&token_session=1`)
+                await supertest.post(`/i?app_key=${app_key}&device_id=${user.device_id}`)
                     .send({
                         begin_session: 1,
                         metrics: {
@@ -168,7 +168,7 @@ describe('PUSH INTEGRATION TESTS', () => {
                     user: JSON.stringify({la: {$in: ['en', 'ru']}})
                 },
                 contents: [
-                    {message: 'message'}
+                    {message: 'message', expiration: 120000}
                 ],
                 triggers: [
                     {kind: 'plain', start: new Date(Date.now() + 3600000)}
@@ -189,7 +189,7 @@ describe('PUSH INTEGRATION TESTS', () => {
                     user: JSON.stringify({la: {$in: ['en', 'ru']}})
                 },
                 contents: [
-                    {message: 'notification'},
+                    {message: 'notification', expiration: 120000},
                     {la: 'ru', title: 'Заголовок'}
                 ],
                 triggers: [
@@ -209,7 +209,7 @@ describe('PUSH INTEGRATION TESTS', () => {
                 platforms,
                 filter: {},
                 contents: [
-                    {message: 'notification', title: 'title'},
+                    {message: 'notification', title: 'title', expiration: 120000},
                 ],
                 triggers: [
                     {kind: 'api', start: new Date(Date.now() + 3600000)}
