@@ -1336,6 +1336,41 @@ var pluginManager = function pluginManager() {
                     return id;
                 }
             };
+            countlyDb._ObjectID = mongodb.ObjectID;
+        }
+        if (!countlyDb.oid) {
+            /**
+             * Decode string to ObjectID if needed
+             * 
+             * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
+             * @returns {ObjectID} id
+             */
+            countlyDb.oid = function(id) {
+                return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
+            };
+            /**
+             * Create ObjectID with given timestamp. Uses current ObjectID random/server parts, meaning the 
+             * object id returned still has same uniquness guarantees as random ones.
+             * 
+             * @param {Date|number} date Date object or timestamp in seconds, current date by default
+             * @returns {ObjectID} with given timestamp
+             */
+            countlyDb.oidWithDate = (date = new Date()) => {
+                let seconds = typeof date === 'number' ? date : Math.floor(date.getTime() / 1000).toString(16),
+                    server = new countlyDb.ObjectId().toString().substr(8);
+                return new mongodb.ObjectId(seconds + server);
+            };
+            /**
+             * Create blank ObjectID with given timestamp. Everything except for date part is zeroed.
+             * For use in queries like {_id: {$gt: oidBlankWithDate()}}
+             * 
+             * @param {Date|number} date Date object or timestamp in seconds, current date by default
+             * @returns {ObjectID} with given timestamp and zeroes in the rest of the bytes
+             */
+            countlyDb.oidBlankWithDate = (date = new Date()) => {
+                let seconds = typeof date === 'number' ? date : Math.floor(date.getTime() / 1000).toString(16);
+                return new mongodb.ObjectId(seconds + '0000000000000000');
+            };
         }
         countlyDb.encode = function(str) {
             return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
