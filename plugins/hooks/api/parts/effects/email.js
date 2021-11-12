@@ -40,8 +40,8 @@ class EmailEffect {
                     }
                     resolve();
                 });
-            })
-        }
+            });
+        };
         const sendTasks = [];
         await emailAddress.forEach(address => {
             let formatedEmailContent = "<pre>" + JSON.stringify(params, null, 2) + "</pre>";
@@ -49,13 +49,14 @@ class EmailEffect {
                 try {
                     formatedEmailContent = utils.parseStringTemplate(emailTemplate, params);
                     formatedEmailContent = formatedEmailContent.replace(/\n/g, "<br />");
-                } catch(e) {
+                }
+                catch (e) {
                     log.e(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
                 }
-                
+
             }
             var msg = {
-                to: address ,
+                to: address,
                 subject: "Countly Hooks",
                 html: formatedEmailContent,
             };

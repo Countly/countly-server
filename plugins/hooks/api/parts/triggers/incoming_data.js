@@ -51,7 +51,7 @@ class IncomingDataTrigger {
      */
     async process(ob, eventType) {
         let rule = null;
-        if(ob.is_mock === true) {
+        if (ob.is_mock === true) {
             return ob;
         }
         this._rules.forEach((r) => {
@@ -171,10 +171,10 @@ class IncomingDataTrigger {
             if (filterObj.rgxcn && (filterObj.rgxcn[0] !== undefined) && value.indexOf(filterObj.rgxcn[0]) === -1) {
                 matched = false;
             }
-            if ((filterObj.$lte !== undefined)  && value > filterObj.$lte) {
+            if ((filterObj.$lte !== undefined) && value > filterObj.$lte) {
                 matched = false;
             }
-            if ((filterObj.$gte !== undefined)  && value < filterObj.$gte) {
+            if ((filterObj.$gte !== undefined) && value < filterObj.$gte) {
                 matched = false;
             }
             if ((filterObj.$lt !== undefined) && value >= filterObj.$lt) {
@@ -269,5 +269,5 @@ class IncomingDataTrigger {
 module.exports = IncomingDataTrigger;
 const InternalEvents = [
     "/sdk",
-     "/hooks/incoming_data",
+    "/hooks/incoming_data",
 ];

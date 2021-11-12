@@ -88,7 +88,7 @@ class Hooks {
         const self = this;
         const db = common.db;
         db && db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray(function(err, result) {
-            log.d("Fetch rules:", result, err , process.pid);
+            log.d("Fetch rules:", result, err, process.pid);
             if (result) {
                 self._cachedRules = result;
                 self.syncRulesWithTrigger();
@@ -114,7 +114,7 @@ class Hooks {
     async pipeEffects() {
         log.d("Process::", process.pid, ":::", this._queue.length);
         try {
-            
+
             let batchActionSize = plugins.getConfig("hooks").batchActionSize;
             if (batchActionSize === 0) {
                 batchActionSize = 100;
@@ -129,7 +129,8 @@ class Hooks {
                     if (this._effects[item.effect.type]) {
                         //this._effects[item.effect.type].run(item);
                     }
-                } else {
+                }
+                else {
                     const rule = item.rule;
                     for (let i = 0; i < rule.effects.length; i++) {
                         item.effect = rule.effects[i];
@@ -137,7 +138,8 @@ class Hooks {
                         try {
                             const result = await this._effects[item.effect.type].run(item);
                             log.d("[test trigger result]", result);
-                        } catch(e) {
+                        }
+                        catch (e) {
                             log.e("[test hook trigger]", e);
                             utils.addErrorRecord(rule._id, e);
                         }
@@ -160,7 +162,7 @@ class Hooks {
     }
 }
 
-const CheckHookProperties = function (hookConfig) {
+const CheckHookProperties = function(hookConfig) {
     const rules = {
         'name': { 'required': hookConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
         'description': { 'required': false, 'type': 'String', 'min-length': 0 },
@@ -311,7 +313,7 @@ plugins.register("/i/hook/delete", function(ob) {
 plugins.register("/i/hook/test", function(ob) {
     const paramsInstance = ob.params;
     let validateUserForWriteAPI = ob.validateUserForWriteAPI;
-    validateUserForWriteAPI(async (params) => {
+    validateUserForWriteAPI(async(params) => {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
@@ -322,11 +324,11 @@ plugins.register("/i/hook/test", function(ob) {
             }
 
             // trigger process            
-            log.d(JSON.stringify(hookConfig),"[hook test config]");
+            log.d(JSON.stringify(hookConfig), "[hook test config]");
             const results = [];
 
             // build mock data
-            const trigger = hookConfig.trigger; 
+            const trigger = hookConfig.trigger;
             hookConfig._id = null;
             log.d("[hook test mock data]", mockData);
             const ob = {
@@ -346,8 +348,9 @@ plugins.register("/i/hook/test", function(ob) {
             results.push(JSON.parse(JSON.stringify(triggerResult)));
 
             // call effect loop
-            const effects = hookConfig.effects; 
-            for (let i = 0; i < effects.length; i++) { let effectResult = {};
+            const effects = hookConfig.effects;
+            for (let i = 0; i < effects.length; i++) {
+                let effectResult = {};
                 const effect = new Effects[effects[i].type]();
                 let lastStep = JSON.parse(JSON.stringify(results[results.length - 1]));
                 lastStep.effect = effects[i];
@@ -359,7 +362,8 @@ plugins.register("/i/hook/test", function(ob) {
                         return;
                     }
                     log.d("[hook effect[i] test result]", effectResult, effects[i], i);
-                } catch (e) {
+                }
+                catch (e) {
                     log.e("[hook effect[i] teste error]", e);
                     effectResult.error = e;
                 }
@@ -367,7 +371,8 @@ plugins.register("/i/hook/test", function(ob) {
             log.d("[hook test results]", results);
             common.returnMessage(params, 200, results);
             return false;
-        } catch(e) {
+        }
+        catch (e) {
             log.e("hook test error", e);
             common.returnMessage(params, 503, "Hook test failed.");
             return;

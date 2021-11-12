@@ -24,12 +24,12 @@ class CustomCodeEffect {
         let genCode = "";
         let runtimePassed = true ;
         let logs = [];
-        await  new Promise(CUSTOM_CODE_RESOLVER => {
+        await new Promise(CUSTOM_CODE_RESOLVER => {
             const code = effect.configuration.code;
             const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
-                console.log(e,"eee, exech333333!!")
+                console.log(e, "eee, exech333333!!");
                 utils.addErrorRecord(rule._id, e);
-            }
+            };
 
             genCode = `
                 const CUSTOM_MAIN = async () => {
@@ -44,8 +44,8 @@ class CustomCodeEffect {
                      CUSTOM_CODE_RESOLVER();
                 }
                 CUSTOM_MAIN();
-            `
-            vm.runInNewContext(genCode, {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK},{ timeout: 30000, microtaskMode: 'afterEvaluate' });
+            `;
+            vm.runInNewContext(genCode, {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK}, { timeout: 30000, microtaskMode: 'afterEvaluate' });
             options.params = params;
         }).catch(e => {
             runtimePassed = false;
@@ -54,9 +54,9 @@ class CustomCodeEffect {
                 stack: ${JSON.stringify(e.stack)}
             `);
             utils.addErrorRecord(rule._id, e);
-            console.log(e,"eee, exech!!")
+            console.log(e, "eee, exech!!");
         });
-        return  runtimePassed ? options : {params: null, logs};
+        return runtimePassed ? options : {params: null, logs};
     }
 }
 

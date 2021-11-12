@@ -26,18 +26,18 @@ utils.addErrorRecord = function addErrorRecord(hookId, error) {
         errorString = `
             message:${error.message}
             stack: ${JSON.stringify(error.stack)}
-        `
+        `;
     }
     const updateOperation = {
         $push: {
             error_logs: {
-                $each: [ {e:errorString, timestamp: new Date().getTime()} ],
+                $each: [ {e: errorString, timestamp: new Date().getTime()} ],
                 $slice: -10
             }
         }
     };
     common.writeBatcher.add("hooks", hookId, updateOperation);
-}
+};
 
 
 utils.parseStringTemplate = function(str, data, httpMethod) {
@@ -74,12 +74,14 @@ utils.parseStringTemplate = function(str, data, httpMethod) {
             props.forEach(prop => {
                 obj = obj[prop] || undefined;
             });
-        } catch (e) {
+        }
+        catch (e) {
             console.log(e);
         }
         if (obj) {
             return parseData(obj);
-        } else {
+        }
+        else {
             return sub;
         }
     });

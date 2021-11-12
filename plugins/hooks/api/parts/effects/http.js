@@ -30,14 +30,14 @@ class HTTPEffect {
 
             // todo: assemble params for request;
             // const params = {}
-            
+
             switch (method) {
             case 'get':
                 await request.get({uri: parsedURL + "?" + parsedRequestData, timeout: this._timeout}, function(e, r, body) {
                     log.d("[http get effect]", e, body);
-                    if(e) {
-                       logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
-                       utils.addErrorRecord(rule._id, e);
+                    if (e) {
+                        logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
+                        utils.addErrorRecord(rule._id, e);
                     }
                 });
                 break;
@@ -65,11 +65,12 @@ class HTTPEffect {
                         logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
                         utils.addErrorRecord(rule._id, e);
                     }
-                    
+
                 });
                 break;
             }
-        } catch (e) {
+        }
+        catch (e) {
             logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
             utils.addErrorRecord(rule._id, e);
         }

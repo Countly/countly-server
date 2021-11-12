@@ -1,7 +1,7 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
-const log = common.log("hooks:api:schedule")
+const log = common.log("hooks:api:schedule");
 const JOB = require('../../../../../api/parts/jobs');
 const later = require('later');
 const moment = require('moment-timezone');
@@ -60,18 +60,18 @@ class ScheduledTrigger {
     register() {
         plugins.register("/hooks/schedule", () => {
             log.d("[hooks schedule triggered]");
-            this._rules.forEach( r => {
-                var sched =  later.parse.cron(r.trigger.configuration.cron);
+            this._rules.forEach(r => {
+                var sched = later.parse.cron(r.trigger.configuration.cron);
                 var nextTime = later.schedule(sched).next(1);
                 const expectedTime = new moment(nextTime);
                 const serverTime = new moment(new Date()).tz(r.trigger.configuration.timezone2);
                 log.d("[hooks schedule check]", nextTime, expectedTime, serverTime, r);
 
-                if (expectedTime.year() === serverTime.year() && 
+                if (expectedTime.year() === serverTime.year() &&
                     expectedTime.month() === serverTime.month() &&
                     expectedTime.date() === serverTime.date() &&
-                    expectedTime.hour() === serverTime.hour()){
-                    this.process({rule:r});
+                    expectedTime.hour() === serverTime.hour()) {
+                    this.process({rule: r});
                     log.d("[hooks schedule check matched]", expectedTime, serverTime, r);
                 }
             });
