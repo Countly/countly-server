@@ -1,0 +1,84 @@
+<cly-drawer
+  @submit="onSubmit"
+  @copy="onCopy"
+  :title="title"
+  :saveButtonLabel="saveButtonLabel"
+  v-bind="controls">
+  <template v-slot:default="drawerScope">
+    <cly-form-step id="conditions-drawer">
+      <div class="cly-vue-drawer-step__section">
+        <div class="bu-pb-4">
+          <div class="font-weight-bold text-smallish cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.condition-name')}}
+          </div>
+          <div class="color-cool-gray-50 text-small cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('placeholder.condition-name')}}
+          </div>
+          <validation-provider name="condition_name" rules="required" v-slot="v">
+            <el-input
+              :class="{'is-error': v.errors.length > 0}"
+              v-model="drawerScope.editedObject.condition_name"
+              :placeholder="i18n('remote-config.condition.name.placeholder')">
+            </el-input>
+          </validation-provider>
+        </div>
+        <div class="bu-py-4">
+           <el-checkbox class="text-smallish"
+            v-bind:label="i18n('remote-config.use.description')"
+            v-model="useDescription"
+            >
+          </el-checkbox>
+          <div class="bu-pt-5" v-if="useDescription">
+          <div class="font-weight-bold text-smallish bu-pb-2">
+            {{i18n('remote-config.conditions.description')}}
+          </div>
+            <div class="cly-vue-remote-config-conditions-drawer">
+              <textarea
+                class="input"
+                v-model="drawerScope.editedObject.condition_description"
+                :placeholder="i18n('remote-config.conditions.description.placeholder')">
+              </textarea>
+            </div>
+          </div>
+        </div>
+        <div class="bu-py-4">
+          <div class="text-big cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.condition.color.tag')}}
+          </div>
+          <div class="bu-mb-3 color-cool-gray-50 text-small cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.condition.color.tag.description')}}
+          </div>
+          <color-tag :tags="colorTag" :defaultColorKey="defaultColorKey" v-model="selectedColorKey"></color-tag>
+        </div>
+        <div v-if="showSeedValue" class="bu-py-4">
+          <div class="font-weight-bold text-smallish cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.seed')}}
+          </div>
+          <div class="color-cool-gray-50 text-small cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.seed-value-description')}}
+          </div>
+          <el-input
+            v-model="drawerScope.editedObject.seed_value"
+            :placeholder="i18n('placeholder.seed-value')">
+          </el-input>
+        </div>
+        <div class="bu-pt-4">
+            <div class="font-weight-bold text-smallish cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.condition-definition')}}
+          </div>
+          <div class="color-cool-gray-50 text-small cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.condition-definition.description')}}
+          </div>
+          <div>
+            <cly-qb-segmentation 
+              :additional-properties="additionalProperties"
+              :add-empty-row-on-empty-query="true"
+              :allow-breakdown="false"
+              v-model="managedPropertySegmentation">
+            </cly-qb-segmentation>
+          </div>
+        </div>
+      </div>
+    </cly-form-step>
+  </template>
+</cly-drawer>
