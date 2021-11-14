@@ -8,7 +8,9 @@
                     parameter_key: "",
                     default_value: "",
                     description: "",
-                    conditions: []
+                    conditions: [],
+                    status: "Running",
+                    expiry_dttm: null
                 };
             }
         },
@@ -115,6 +117,11 @@
                 return countlyRemoteConfig.service.initialize().then(function(res) {
                     var parameters = res.parameters || [];
                     var conditions = res.conditions || [];
+                    parameters.forEach(function(parameter) {
+                        if (parameter.expiry_dttm && parameter.expiry_dttm < Date.now()) {
+                            parameter.status = "Expired";
+                        }
+                    });
                     context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
                     context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
                 });
@@ -124,22 +131,32 @@
         var parametersResource = countlyVue.vuex.Module("parameters", {
             state: function() {
                 return {
-                    all: []
+                    all: [],
+                    showJsonEditor: false
                 };
             },
             getters: {
                 all: function(state) {
                     return state.all;
+                },
+                showJsonEditor: function(state) {
+                    return state.showJsonEditor;
                 }
             },
             mutations: {
                 setAll: function(state, val) {
                     state.all = val;
+                },
+                setShowJsonEditor: function(state, val) {
+                    state.showJsonEditor = val;
                 }
             },
             actions: {
                 all: function(context, parameters) {
                     context.commit("setAll", parameters);
+                },
+                showJsonEditor: function(context, parameter) {
+                    context.commit("setShowJsonEditor", parameter);
                 },
                 create: function(context, parameter) {
                     return countlyRemoteConfig.service.createParameter(parameter).then(function() {
@@ -153,10 +170,11 @@
                 },
                 update: function(context, parameter) {
                     var id = parameter._id;
-
-                    delete parameter.value_list;
-                    delete parameter._id;
-                    return countlyRemoteConfig.service.updateParameter(id, parameter);
+                    var updateParameter = Object.assign({}, parameter);
+                    delete updateParameter.value_list;
+                    delete updateParameter._id;
+                    delete updateParameter.hover;
+                    return countlyRemoteConfig.service.updateParameter(id, updateParameter);
                 },
                 remove: function(context, parameter) {
                     return countlyRemoteConfig.service.removeParameter(parameter._id);
@@ -191,6 +209,7 @@
                     var id = condition._id;
 
                     delete condition._id;
+                    delete condition.hover;
                     return countlyRemoteConfig.service.updateCondition(id, condition);
                 },
                 remove: function(context, condition) {

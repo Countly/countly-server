@@ -1,29 +1,91 @@
 <cly-drawer
-    @submit="onSubmit"
-    @copy="onCopy"
-    :title="title"
-    :saveButtonLabel="saveButtonLabel"
-    v-bind="controls">
-    <template v-slot:default="drawerScope">
-        <cly-form-step id="parameters-drawer">
-            <cly-form-field :label="i18n('remote-config.parameter-key')" name="parameter_key" rules="required" v-slot:default>
-                <el-input
-                    v-model="drawerScope.editedObject.parameter_key"
-                    :placeholder="i18n('placeholder.parameter-key-name')">
-                </el-input>
-            </cly-form-field>
-            <cly-form-field :label="i18n('remote-config.description')" name="description" rules="required" v-slot:default>
-                <el-input
-                    v-model="drawerScope.editedObject.description"
-                    :placeholder="i18n('placeholder.add-description')">
-                </el-input>
-            </cly-form-field>
-            <cly-form-field :label="i18n('remote-config.default-value')" name="default_value" rules="required" v-slot:default>
-                <el-input
-                    v-model="drawerScope.editedObject.default_value"
-                    :placeholder="i18n('placeholder.set-default-value')">
-                </el-input>
-            </cly-form-field>
-        </cly-form-step>
-    </template>
+  @submit="onSubmit"
+  @copy="onCopy"
+  :title="title"
+  :saveButtonLabel="saveButtonLabel"
+  v-bind="controls">
+  <template v-slot:default="drawerScope">
+    <cly-form-step id="parameters-drawer">
+      <div class="cly-vue-drawer-step__section">
+        <div class="bu-pb-4">
+          <div class="font-weight-bold text-smallish cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.parameter-key')}}
+          </div>
+          <div class="color-cool-gray-50 text-small cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.parameter-key.description')}}
+          </div>
+          <validation-provider name="parameter_key" rules="required" v-slot="v">
+            <el-input
+              :class="{'is-error': v.errors.length > 0}"
+              v-model="drawerScope.editedObject.parameter_key"
+              :placeholder="i18n('remote-config.parameter-key.placeholder')">
+            </el-input>
+          </validation-provider>
+        </div>
+        <div class="bu-py-4">
+          <el-checkbox class="text-smallish"
+            v-bind:label="i18n('remote-config.use.description')"
+            v-model="showDescription"
+            >
+          </el-checkbox>
+          <div class="bu-pt-5" v-if="showDescription">
+            <div class="font-weight-bold text-smallish bu-pb-2">
+              {{i18n('remote-config.parameter.description')}}
+            </div>
+            <div class="cly-vue-remote-config-conditions-drawer">
+              <textarea
+                class="input"
+                v-model="drawerScope.editedObject.description"
+                :placeholder="i18n('remote-config.parameter.description.placeholder')">
+              </textarea>
+            </div>
+          </div>
+        </div>
+        <div class="bu-py-4">
+          <div class="font-weight-bold text-smallish cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.default-value')}}
+          </div>
+          <div class="color-cool-gray-50 text-small cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.default-value.description')}}
+          </div>
+          <div>
+            <el-autocomplete
+              class="cly-vue-remote-config-parameters-drawer__autocomplete"
+              v-model="drawerScope.editedObject.default_value"
+              :fetch-suggestions="querySearch"
+              :placeholder="i18n('remote-config.default-value.placeholder')"
+              >
+              <el-button type="text" slot="suffix" @click="openJsonEditor" class="cly-vue-remote-config-parameters-drawer__autocomplete-button">{ }</el-button>
+            </el-autocomplete>
+          </div>
+        </div>
+        <div class="bu-py-4">
+          <div class="font-weight-bold text-smallish cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.conditions')}}
+          </div>
+          <div class="color-cool-gray-50 text-small cly-vue-remote-config-conditions-drawer__margin-bottom">
+            {{i18n('remote-config.parameter.conditions.description')}}
+          </div>
+          <div>
+          </div>
+        </div>
+        <div class="bu-mt-4 cly-vue-drawer-step__section-group cly-vue-drawer-step__section-group--filled">
+          <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+            <div>
+              <el-switch v-model="showExpirationDate"></el-switch>
+              <span class="cly-vue-remote-config-conditions-drawer__letter-spacing font-weight-bold text-small cly-vue-remote-config-conditions-drawer__margin-bottom">
+              {{i18n('remote-config.expiration.time')}}
+              </span>
+            </div>
+            <div class=" color-cool-gray-50 text-small cly-vue-remote-config-conditions-drawer__margin-bottom">
+              {{i18n('remote-config.expiration.time.description')}}
+            </div>
+          </div>
+          <div>
+            <cly-date-picker class="bu-mt-5" v-if="showExpirationDate" v-model="drawerScope.editedObject.expiry_dttm" timestampFormat="ms" type="date" :isFuture="true" :selectTime="true"></cly-date-picker>
+          </div>
+        </div>
+      </div>
+    </cly-form-step>
+  </template>
 </cly-drawer>

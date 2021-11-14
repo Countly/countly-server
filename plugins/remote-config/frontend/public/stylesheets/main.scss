@@ -1,5 +1,5 @@
-@use "../../../../../stylesheets/styles/base/_typography-variables.scss" as t;
-@use "../../../../../stylesheets/styles/base/colors" as c;
+@use "../../../../../frontend/express/public/stylesheets/styles/base/_typography-variables.scss" as t;
+@use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
 @use "sass:map";
 
 .cly-vue-remote-config-conditions-drawer {
