@@ -376,10 +376,16 @@
     }));
 
     Vue.component("cly-blank", countlyBaseComponent.extend({
-        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center">\
-                        <h3 class="color-cool-gray-50">{{text}}</h3>\
+        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center bu-is-flex-direction-column">\
+                        <h3 class="color-cool-gray-50">{{title}}</h3>\
+                        <div v-if="text"><p class="text-medium">{{text}}</p></div>\
                     </div>',
         props: {
+            title: {
+                type: String,
+                default: '',
+                required: false
+            },
             text: {
                 type: String,
                 default: '',
