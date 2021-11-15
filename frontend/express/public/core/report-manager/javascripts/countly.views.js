@@ -159,6 +159,7 @@
                             }
                             return countlyCommon.formatTime(Math.round(time / 1000));
                         };
+                        row.startFormatted = countlyCommon.formatTimeAgoText(row.start);
                         row.subtaskDesc = processSubtasks();
                         row.duration = processTime();
                     });
