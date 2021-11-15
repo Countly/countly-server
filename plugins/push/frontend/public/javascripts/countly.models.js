@@ -1,7 +1,7 @@
 /*global countlyVue,CV,countlyCommon,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal*/
 (function(countlyPushNotification) {
 
-    var messagesSentLabel = CV.i18n('push-notification.messages-sent-serie-name');
+    var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
     var actionsPerformedLabel = CV.i18n('push-notification.actions-performed-serie-name');
     var DEBOUNCE_TIME_IN_MS = 250;
     var MB_TO_BYTES_RATIO = 1000000;
@@ -331,18 +331,18 @@
             mapSeries: function(dto, type) {
                 if (type === TypeEnum.ONE_TIME) {
                     return {
-                        monthly: [{data: dto.actions.monthly.data || [], label: actionsPerformedLabel}, {data: dto.sent.monthly.data || [], label: messagesSentLabel}],
-                        weekly: [{data: dto.actions.weekly.data || [], label: actionsPerformedLabel}, {data: dto.sent.weekly.data || [], label: messagesSentLabel}],
+                        monthly: [{data: dto.sent.monthly.data || [], label: messagesSentLabel}, {data: dto.actions.monthly.data || [], label: actionsPerformedLabel}],
+                        weekly: [{data: dto.sent.weekly.data || [], label: messagesSentLabel}, {data: dto.actions.weekly.data || [], label: actionsPerformedLabel}],
                     };
                 }
                 else if (type === TypeEnum.AUTOMATIC) {
                     return {
-                        daily: [{data: dto.actions_automated.daily.data || [], label: actionsPerformedLabel}, {data: dto.sent_automated.daily.data || [], label: messagesSentLabel}]
+                        daily: [{data: dto.sent_automated.daily.data || [], label: messagesSentLabel}, {data: dto.actions_automated.daily.data || [], label: actionsPerformedLabel}]
                     };
                 }
                 else {
                     return {
-                        daily: [{data: dto.actions_tx.daily.data || [], label: actionsPerformedLabel}, {data: dto.sent_tx.daily.data || [], label: messagesSentLabel}]
+                        daily: [{data: dto.sent_tx.daily.data || [], label: messagesSentLabel}, {data: dto.actions_tx.daily.data || [], label: actionsPerformedLabel}]
                     };
                 }
             },
@@ -385,7 +385,7 @@
                             time: moment(pushNotificationDtoItem.info.started).format("h:mm:ss a")
                         },
                         sent: pushNotificationDtoItem.result.sent,
-                        actioned: pushNotificationDtoItem.result.actioned,
+                        actioned: pushNotificationDtoItem.result.actioned || 0,
                         createdBy: pushNotificationDtoItem.info.createdBy,
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                         content: this.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
@@ -524,9 +524,23 @@
             },
             mapEnabledUsers: function(dto) {
                 var result = {};
-                result[PlatformEnum.ALL] = dto.enabled.total;
-                result[PlatformEnum.ANDROID] = dto.enabled.a + dto.enabled.h;
-                result[PlatformEnum.IOS] = dto.enabled.i;
+                result[PlatformEnum.ALL] = parseInt(dto.enabled.total);
+                result[PlatformEnum.ANDROID] = parseInt(dto.enabled.a + dto.enabled.h);
+                result[PlatformEnum.IOS] = parseInt(dto.enabled.i);
+                return result;
+            },
+            mapTotalActions: function(dto) {
+                var result = {};
+                result[TypeEnum.ONE_TIME] = dto.actions.total;
+                result[TypeEnum.AUTOMATIC] = dto.actions_automated.total;
+                result[TypeEnum.TRANSACTIONAL] = dto.actions_tx.total;
+                return result;
+            },
+            mapTotalSent: function(dto) {
+                var result = {};
+                result[TypeEnum.ONE_TIME] = dto.sent.total;
+                result[TypeEnum.AUTOMATIC] = dto.sent_automated.total;
+                result[TypeEnum.TRANSACTIONAL] = dto.sent_tx.total;
                 return result;
             },
             mapMainDtoToModel: function(allPushNotificationsDto, dashboardDto, type) {
@@ -534,8 +548,10 @@
                     rows: this.mapRows(allPushNotificationsDto),
                     series: this.mapSeries(dashboardDto, type),
                     periods: this.mapPeriods(dashboardDto, type),
-                    totalAppUsers: dashboardDto.users,
+                    totalAppUsers: parseInt(dashboardDto.users),
                     enabledUsers: this.mapEnabledUsers(dashboardDto),
+                    totalActions: this.mapTotalActions(dashboardDto),
+                    totalSent: this.mapTotalSent(dashboardDto)
                 };
             },
             mapDtoToBaseModel: function(dto) {
@@ -1408,6 +1424,16 @@
         enabledUsers[PlatformEnum.IOS] = 0;
         enabledUsers[PlatformEnum.ANDROID] = 0;
 
+        var totalActions = {};
+        totalActions[TypeEnum.ONE_TIME] = 0;
+        totalActions[TypeEnum.AUTOMATIC] = 0;
+        totalActions[TypeEnum.TRANSACTIONAL] = 0;
+
+        var totalSent = {};
+        totalSent[TypeEnum.ONE_TIME] = 0;
+        totalSent[TypeEnum.AUTOMATIC] = 0;
+        totalSent[TypeEnum.TRANSACTIONAL] = 0;
+
         return {
             selectedPushNotificationType: countlyPushNotification.service.TypeEnum.ONE_TIME,
             series: {
@@ -1416,12 +1442,14 @@
             },
             rows: [],
             periods: {monthly: [], weekly: []},
-            totalAppUsers: null,
+            totalAppUsers: 0,
             enabledUsers: enabledUsers,
+            totalActions: totalActions,
+            totalSent: totalSent,
             statusFilter: countlyPushNotification.service.StatusEnum.ALL,
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
-            totalPushMessagesSent: null,
-            totalUserActionsPerformed: null,
+            totalPushMessagesSent: 0,
+            totalUserActionsPerformed: 0,
         };
     };
 

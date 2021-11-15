@@ -1,0 +1,36 @@
+<div>
+    <cly-header title="Parameters">
+        <template v-slot:header-right>
+            <div class="bu-level-item">
+                <el-button @click="create" type="primary" size="small" icon="el-icon-circle-plus">Add Parameter</el-button>
+            </div>
+        </template>
+    </cly-header>
+
+    <cly-main>
+        <cly-datatable-n :rows="tableRows">
+            <template v-slot:default="scope">
+                <el-table-column prop="parameter_key" label="Parameter" :sortable="true">
+                </el-table-column>
+                <el-table-column prop="default_value" label="Condition">
+                    <template v-slot:default="rowScope">
+                        <span>Default value: </span>{{rowScope.row.default_value}}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="description" label="Description">
+                </el-table-column>
+                <el-table-column type="options">
+                    <template v-slot="rowScope">
+                        <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
+                            <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                            <el-dropdown-item command="remove">{{i18n('common.delete')}}</el-dropdown-item>
+                        </cly-more-options>
+                    </template>
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-main>
+
+    <drawer :controls="drawers.parameters" @submit="onSubmit"></drawer>
+
+</div>

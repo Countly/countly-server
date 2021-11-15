@@ -33,6 +33,10 @@ jobs:
         shell: bash
         run: sudo bash ./bin/scripts/countly.enable.all.plugins.sh
         
+      - name: Reinstall plugins
+        shell: bash
+        run: sudo bash ./bin/scripts/countly.install.plugins.sh
+        
       - name: ShellCheck
         shell: bash
         run: countly shellcheck

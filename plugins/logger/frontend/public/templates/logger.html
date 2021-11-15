@@ -1,4 +1,4 @@
-<div v-bind:class="[componentId]" class="main-view logger-home cly-vue-logger">
+<div v-bind:class="[componentId]" class="logger-home cly-vue-logger">
     <cly-header>
         <template v-slot:header-left>
             <h2 class="cly-vue-logger__title"> {{i18n('logger.title')}}
@@ -16,7 +16,8 @@
                 <span class="cly-vue-logger__refresh--enabled">{{i18n('logger.auto-refresh-is')}}</span>
                 <span class="cly-vue-logger__refresh--enabled-color">{{i18n('logger.enabled')}}</span>
                 <span v-tooltip="getRefreshTooltip()"><i class="cly-vue-logger__tooltip ion-help-circled"></i></span>
-                <el-button @click="stopAutoRefresh()"><i class="ion-stop"></i> {{i18n('logger.auto-refresh-stop')}}</el-button>
+                <el-button @click="stopAutoRefresh()"><i class="ion-stop"></i> {{i18n('logger.auto-refresh-stop')}}
+                </el-button>
             </div>
             <div v-else="autoRefresh" class="bu-level-item">
                 <el-switch v-model="autoRefresh">
@@ -28,19 +29,14 @@
     </cly-header>
     <cly-main>
         <cly-section>
-            <cly-datatable-n :rows="logsData" :resizable="false">
-                <template v-slot:header-left="scope">
+            <cly-datatable-n :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :rows="logsData"
+                :resizable="false" v-loading="isLoading" class="is-clickable">
+                <template v-slot:header-left="filterScope">
                     <el-select v-model="loggerFilter" placeholder="Select" @change="filterChange()">
-                        <el-option v-for="filter in filterOptions" :key="filter.value" :label="filter.label" :value="filter.value">
+                        <el-option v-for="filter in filterOptions" :key="filter.value" :label="filter.label"
+                            :value="filter.value">
                         </el-option>
                     </el-select>
-                </template>
-                <template v-slot:header-right="scope">
-                    <div class="cly-vue-logger__next-page">
-                        <div class="cly-vue-logger__next-page--first"></div>
-                        <div class="cly-vue-logger__next-page--second"></div>
-                    </div>
-                    <i :click="sync()" class="el-icon-refresh cly-vue-logger__refresh"></i>
                 </template>
                 <template v-slot="scope">
                     <el-table-column type="expand">
@@ -60,28 +56,33 @@
                                 </el-tabs>
                             </cly-section>
                         </template>
-                </el-table-column>
-                <el-table-column :label="i18n('logger.requests')">
-                    <template slot-scope="scope">
-                            <logger-readable-date :timestamp="scope.row.reqts"></logger-readable-date>
-                        </template>
-                </el-table-column>
-                <el-table-column sortable="custom" :label="i18n('logger.timestamp')">
-                    <template slot-scope="scope">
-                            <logger-readable-date :timestamp="scope.row.ts"></logger-readable-date>
-                        </template>
-                </el-table-column>
-                <el-table-column prop="d" :label="i18n('logger.details')">
-                    <template slot-scope="scope">
-                            <logger-details :device="scope.row.d" :version="scope.row.v" :sdk="scope.row.s"
-                                :location="scope.row.l"></logger-details>
-                        </template>
-                </el-table-column>
-                <el-table-column :label="i18n('logger.info')">
-                    <template slot-scope="scope">
-                            <logger-info :info="scope.row.t" :filter="loggerFilter"></logger-info>
-                        </template>
-                </el-table-column>
+                    </el-table-column>
+
+                    <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
+                        <el-table-column v-if="col.value === 'requests'" :key="idx" class='' sortable="custom"
+                            :label="i18n('logger.requests')">
+                            <template slot-scope="rowScope">
+                                <logger-readable-date :timestamp="rowScope.row.reqts"></logger-readable-date>
+                            </template>
+                        </el-table-column>
+                        <el-table-column v-if="col.value === 'timestamp'" :key="idx" sortable="custom" prop="timestamp" :label="i18n('logger.timestamp')">
+                            <template slot-scope="rowScope">
+                                <logger-readable-date :timestamp="rowScope.row.ts"></logger-readable-date>
+                            </template>
+                        </el-table-column>
+                        <el-table-column v-if="col.value === 'details'" :key="idx" sortable="custom" prop="details" :label="i18n('logger.details')">
+                            <template slot-scope="rowScope">
+                                <logger-details :device="rowScope.row.d" :version="rowScope.row.v" :sdk="rowScope.row.s"
+                                    :location="rowScope.row.l"></logger-details>
+                            </template>
+                        </el-table-column>
+                        <el-table-column v-if="col.value === 'info'" :key="idx" sortable="custom" prop="info" :label="i18n('logger.info')">
+                            <template slot-scope="rowScope">
+                                <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>
+                            </template>
+                        </el-table-column>
+                    </template>
+
                 </template>
             </cly-datatable-n>
         </cly-section>

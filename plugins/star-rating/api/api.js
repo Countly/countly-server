@@ -740,6 +740,9 @@ function uploadFile(myfile, id, callback) {
                 return true;
             }
         }
+        if (params.qstring.uid) {
+            query.uid = params.qstring.uid;
+        }
 
         validateRead(params, FEATURE_NAME, function() {
             query.ts = countlyCommon.getTimestampRangeQuery(params, true);

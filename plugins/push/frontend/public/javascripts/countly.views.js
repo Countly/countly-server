@@ -825,6 +825,7 @@
 
     var PushNotificationTabView = countlyVue.views.BaseView.extend({
         template: "#push-notification-tab",
+        mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             return {
                 platformFilters: platformFilterOptions,
@@ -870,12 +871,11 @@
                 return this.$store.state.countlyPushNotification.main.rows;
             },
             pushNotificationOptions: function() {
-                var series = this.yAxisPushNotificationSeries;
                 return {
                     xAxis: {
                         data: this.xAxisPushNotificationPeriods
                     },
-                    series: series
+                    series: this.yAxisPushNotificationSeries
                 };
             },
             totalAppUsers: function() {
@@ -883,6 +883,12 @@
             },
             enabledUsers: function() {
                 return this.$store.state.countlyPushNotification.main.enabledUsers[this.PlatformEnum.ALL];
+            },
+            enabledUsersPercentage: function() {
+                if (!this.totalAppUsers) {
+                    return 0;
+                }
+                return Math.ceil(this.enabledUsers / this.totalAppUsers);
             },
             xAxisPushNotificationPeriods: function() {
                 return this.$store.state.countlyPushNotification.main.periods[this.selectedPeriodFilter];
@@ -894,6 +900,24 @@
                         name: pushNotificationSerie.label
                     };
                 });
+            },
+            legend: function() {
+                return {
+                    show: true,
+                    type: "primary",
+                    data: [
+                        {
+                            name: CV.i18n('push-notification.sent-serie-name'),
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.totalSent[this.selectedPushNotificationType]),
+                            tooltip: CV.i18n('push-notification.sent-serie-description')
+                        },
+                        {
+                            name: CV.i18n('push-notification.actions-performed-serie-name'),
+                            value: this.formatNumber(this.$store.state.countlyPushNotification.main.totalActions[this.selectedPushNotificationType]),
+                            tooltip: CV.i18n('push-notification.actions-performed-serie-description')
+                        }
+                    ]
+                };
             },
             selectedStatusFilter: {
                 get: function() {
@@ -932,7 +956,12 @@
                 this.$store.dispatch('countlyPushNotification/main/fetchAll', false);
             },
             formatPercentage: function(value, decimalPlaces) {
-                return CountlyHelpers.formatPercentage(value, decimalPlaces);
+                return this.formatNumber(CountlyHelpers.formatPercentage(value, decimalPlaces));
+            },
+            getPreviewPlatforms: function(platforms) {
+                return platforms.map(function(item) {
+                    return item.label;
+                }).sort().join(', ');
             },
             onApprove: function(id) {
                 var self = this;

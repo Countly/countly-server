@@ -1,0 +1,6 @@
+class PushNotificationEffect {
+    constructor() {
+    }
+    run(option) {
+    }
+}

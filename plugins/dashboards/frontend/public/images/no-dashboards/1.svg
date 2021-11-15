@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="135" height="82" viewBox="0 0 135 82" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <rect id="a" width="135" height="36.896" rx="1.62"/>
+    <mask id="d" width="135" height="36.896" x="0" y="0" fill="white">
+      <use xlink:href="#a"/>
+    </mask>
+    <rect id="b" width="81.132" height="36.896" y=".104" rx="1.62"/>
+    <mask id="e" width="81.132" height="36.896" x="0" y="0" fill="white">
+      <use xlink:href="#b"/>
+    </mask>
+    <rect id="c" width="44.623" height="36.896" x=".377" y=".104" rx="1.62"/>
+    <mask id="f" width="44.623" height="36.896" x="0" y="0" fill="white">
+      <use xlink:href="#c"/>
+    </mask>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <use fill="#D8D8D8" fill-opacity="0" stroke="#566081" stroke-width="3.24" mask="url(#d)" xlink:href="#a"/>
+    <g transform="translate(0 45)">
+      <use fill="#D8D8D8" fill-opacity="0" stroke="#566081" stroke-width="3.24" mask="url(#e)" xlink:href="#b"/>
+      <g fill="#41BEB9" transform="translate(17.85 13.74)">
+        <g transform="translate(.799 .258)">
+          <rect width="4.507" height="4.01" y="7.219"/>
+          <rect width="4.507" height="8.021" x="7.888" y="3.208"/>
+          <rect width="4.507" height="11.229" x="15.776"/>
+        </g>
+        <g transform="translate(25.138 .258)">
+          <rect width="4.507" height="8.021" y="3.208"/>
+          <rect width="4.507" height="4.01" x="7.888" y="7.219"/>
+          <rect width="4.507" height="11.229" x="15.776"/>
+        </g>
+      </g>
+    </g>
+    <g transform="translate(90 45)">
+      <use fill="#D8D8D8" fill-opacity="0" stroke="#566081" stroke-width="3.24" mask="url(#f)" xlink:href="#c"/>
+      <g fill="#F6890C" transform="translate(12.547 10.531)">
+        <rect width="4.923" height="3.903"/>
+        <rect width="4.923" height="1.604" y="6.657"/>
+        <rect width="4.923" height="3.903" x="7.574"/>
+        <rect width="4.923" height="1.604" x="7.574" y="6.657"/>
+        <rect width="4.923" height="3.903" x="15.148"/>
+        <rect width="4.923" height="1.604" x="15.148" y="6.657"/>
+        <rect width="4.923" height="1.604" y="10.559"/>
+        <rect width="4.923" height="1.604" x="7.574" y="10.559"/>
+        <rect width="4.923" height="1.604" x="15.148" y="10.559"/>
+        <rect width="4.923" height="1.604" y="14.462"/>
+        <rect width="4.923" height="1.604" x="7.574" y="14.462"/>
+        <rect width="4.923" height="1.604" x="15.148" y="14.462"/>
+      </g>
+    </g>
+    <polyline stroke="#5E9EEA" stroke-width="1.62" points="21.045 26.469 32.606 20.453 44.167 22.458 55.932 14.438 67.696 24.865 79.257 21.255 90.818 14.438 102.387 20.453 113.955 10.427" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -23,6 +23,60 @@
     }
 }
 
+.cly-vue-status-tag {
+    padding-right: 16.33px;
+    border-radius: 4px;
+    display: inline-block;
+    &--green {
+        background-color: #EBFAEE;
+        color: #12AF51;
+        padding: 0px 6px;   
+    }
+    &--green  &__blink{
+        background-color: #12AF51;
+    }
+    &--blue {
+        background-color: #E6F0FB;
+        color: #017AFF;
+        padding: 0px 6px;   
+    }
+    &--blue  &__blink{
+        background-color: #017AFF;
+    }
+    &--yellow {
+        background-color: #FCF5E5;
+        color: #CDAD7A;
+        padding: 0px 6px;
+    }
+    &--yellow  &__blink{
+        background-color: #CDAD7A;
+    }
+    &--red {
+        background-color: #FBECE5;
+        color: #D23F00;
+        padding: 0px 6px;
+    }
+    &--red  &__blink{
+        background-color: #D23F00;
+    }
+    &__blink {
+        position: relative;
+        top: -1px;
+        width: 6px;
+        height: 6px;
+        border-radius: 8px;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 5px;
+        animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+    }
+    @keyframes blinker {
+        50% {
+          opacity: 0;
+        }
+      }    
+  }
+
 .cly-vue-theme-clydef {
 
     background-color:#FCFCFC;
@@ -3321,11 +3375,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
+        text-align: center;
         background-color: #fff;
 
+        .image {
+            width: 100px;
+            height: 100px;
+        }
+
         .info {
-            width: 250px;
-            margin-right: 40px;
+            width: 327px;
 
             .title {
                 color: #3a3a3a;
@@ -3335,17 +3395,17 @@
             }
 
             .text {
-                font-size: 13px;
+                font-size: 14px;
                 line-height: 20px;
+                color: #81868D;
             }
         }
-
-        .circle {
-            width: 250px;
-            height: 250px;
-            border-radius: 125px;
-            background-color: #e8e8e8;
-        }
+        // .circle {
+        //     width: 250px;
+        //     height: 250px;
+        //     border-radius: 125px;
+        //     background-color: #e8e8e8;
+        // }
     }
 
     .dropzone,

@@ -1,0 +1,22 @@
+{
+  "name": "dashboards",
+  "title": "Dashboards",
+  "version": "1.0.0",
+  "description": "Create custom dashboards from multi-app data using widgets",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/plugins/dashboards",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
+  "keywords": [
+    "widgets",
+    "dashboard",
+    "tv"
+  ],
+  "dependencies": {},
+  "private": true
+}
