@@ -162,6 +162,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/session-frequency/javascripts/countly.models.js',
                     'frontend/express/public/core/session-frequency/javascripts/countly.views.js',
                     'frontend/express/public/core/app-version/javascripts/countly.views.js',
+                    'frontend/express/public/core/jobs/javascripts/countly.views.js',
+                    'frontend/express/public/core/report-manager/javascripts/countly.views.js',
                     'frontend/express/public/core/app-resolution/javascripts/countly.views.js',
                     'frontend/express/public/core/platform/javascripts/countly.views.js',
                     'frontend/express/public/core/browser/javascripts/countly.views.js',
