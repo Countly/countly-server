@@ -4502,6 +4502,7 @@ window.LongTaskView = countlyView.extend({
         }
         return "#E98010";
     },
+    // Vue transition: skip drawer
     reporInputValidator: function() {
         var report_name = $("#report-name-input").val();
         //var report_desc = $("#report-desc-input").val();
@@ -4654,6 +4655,7 @@ window.LongTaskView = countlyView.extend({
         });
         $("#create-report").addClass("disabled");
     },
+    // Vue transition: checkpoint
     renderCommon: function(isRefresh) {
         var self = this;
         this.templateData = {
