@@ -1,15 +1,66 @@
-<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'start', order: 'descending'}">
+<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI"
+    :default-sort="{prop: 'start', order: 'descending'}">
     <template v-slot:header-left>
         <el-select v-model="selectedOrigin" :placeholder="i18n('taskmanager.select-origin')">
             <el-option v-for="(label, value) in availableOrigins" :label="label" :value="value"></el-option>
         </el-select>
-        <el-select v-if="reportType === 'manual'" v-model="selectedRunTimeType" :placeholder="i18n('common.select-type')">
+        <el-select v-if="reportType === 'manual'" v-model="selectedRunTimeType"
+            :placeholder="i18n('common.select-type')">
             <el-option v-for="(label, value) in availableRunTimeTypes" :label="label" :value="value"></el-option>
         </el-select>
         <el-select v-model="selectedState" :placeholder="i18n('common.select-status')">
             <el-option v-for="(label, value) in availableStates" :label="label" :value="value"></el-option>
         </el-select>
     </template>
-    <template v-slot="scope">
+    <template>
+        <el-table-column :label="i18n('report-manager.name-and-desc')">
+            <template v-slot="scope">
+                {{ scope.row.report_name || "-" }}
+                <div class="report-manager-report-desc"> {{ scope.row.report_desc || "-" }}</div>
+            </template>
+        </el-table-column>
+        <el-table-column :label="i18n('report-manager.data')">
+            <template v-slot="scope">
+                {{ scope.row.name || scope.row.meta || "" }}
+            </template>
+        </el-table-column>
+        <el-table-column :label="i18n('common.status')">
+            <template v-slot="scope">
+                {{ scope.row.subtaskDesc}}
+            </template>
+        </el-table-column>
+        <el-table-column :label="i18n('taskmanager.origin')">
+            <template v-slot="scope">
+                <span class="status-color" style="text-transform:capitalize">{{scope.row.type}}</span>
+            </template>
+        </el-table-column>
+        <el-table-column :label="i18n('common.type')">
+            <template v-slot="scope">
+                {{scope.row.autoRefresh ? i18n("taskmanager.auto") : i18n("taskmanager.manual")}}
+            </template>
+        </el-table-column>
+        <el-table-column :label="i18n('report-manager.period')">
+            <template v-slot="scope">
+                {{scope.row.period_desc || "-"}}
+            </template>
+        </el-table-column>
+        <el-table-column :label="i18n('report-manager.period')">
+            <template v-slot="scope">
+                {{scope.row.global === false ? 'Private' : 'Global'}}
+            </template>
+        </el-table-column>
+        <el-table-column :label="i18n('common.last-updated')">
+            <template v-slot="scope">
+                {{formatTimeAgo(scope.row.start) }}
+            </template>
+        </el-table-column>
+        <el-table-column :label="i18n('events.table.dur')">
+            <template v-slot="scope">
+                {{ scope.row.duration }}
+            </template>
+        </el-table-column>
+        <el-table-column>
+            opts
+        </el-table-column>
     </template>
 </cly-datatable-n>

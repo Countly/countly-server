@@ -33,6 +33,7 @@
 
     Vue.component("cly-report-manager-table", countlyVue.views.create({
         template: CV.T('/core/report-manager/templates/reportmanager-table.html'),
+        mixins: [countlyVue.mixins.commonFormatters],
         props: {
             "report-type": {
                 type: String,
@@ -40,6 +41,7 @@
             }
         },
         data: function() {
+            var self = this;
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("reportsTable", {
                 columns: ['name', "schedule", "next", "finished", "status", "total"],
                 onRequest: function() {
@@ -75,11 +77,11 @@
                         self.refresh();
                     });*/
                     var queryObject = {
-                        type: this.selectedOrigin,
-                        autoRefresh: this.selectedRunTimeType,
-                        status: this.selectedState,
+                        type: self.selectedOrigin,
+                        autoRefresh: self.selectedRunTimeType,
+                        status: self.selectedState,
                     };
-                    if (this.reportType === 'manual') {
+                    if (self.reportType === 'manual') {
                         queryObject.manually_create = true;
                     }
                     else {
@@ -90,180 +92,85 @@
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r + "/tasks/list?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
                         data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID,
-                            query: queryObject
+                            query: JSON.stringify(queryObject)
                         }
                     };
                 },
+                onError: function(context, err) {
+                    throw err;
+                },
                 onReady: function(context, rows) {
-                    /*var tableColumns = [
-                        {
-                            "mData": function(row, type) {
-                                if (type === "display") {
-                                    return (row.report_name || "-") + "<div class=\"report-manager-report-desc\">" + (row.report_desc || "-") + "</div>";
-                                }
-                                else {
-                                    return row.report_name || "-";
-                                }
-                            },
-                            "sType": "string",
-                            "sTitle": jQuery.i18n.map["report-manager.name-and-desc"],
-                            "bSortable": false,
-                            "sClass": "report-manager-break"
-                        },
-                        {
-                            "mData": function(row) {
-                                if (row.type === 'tableExport') {
-                                    return row.report_name;
-                                }
-                                else {
-                                    return row.name || row.meta || "";
-                                }
-                            },
-                            "sType": "string",
-                            "sTitle": jQuery.i18n.map["report-manager.data"],
-                            "bSortable": false,
-                            "sClass": "report-manager-break report-manager-data-col"
-                        },
-                        {
-                            "mData": function(row) {
-                                if (row.taskgroup && row.subtasks) {
-                                    var difStats = false;
-                                    var stat = "completed";
-                                    var dd = "";
-            
-                                    for (var k in row.subtasks) {
-                                        if (row.subtasks[k].status !== stat) {
-                                            difStats = true;
-                                        }
-                                        var color = "green";
-                                        if (row.subtasks[k].status === "errored") {
-                                            color = "red";
-                                        }
-                                        if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
-                                            color = "blue";
-                                        }
-                                        if (row.subtasks[k].errormsg) {
-                                            dd += "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "<p class='error_message_div'>" + row.subtasks[k].errormsg + "</div></div>";
-                                        }
-                                        else {
-                                            dd += "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "</div>";
-                                        }
-            
+                    rows.forEach(function(row) {
+                        var processSubtasks = function() {
+                            if (row.taskgroup && row.subtasks) {
+                                var difStats = false;
+                                var stat = "completed";
+                                var dd = "";
+
+                                for (var k in row.subtasks) {
+                                    if (row.subtasks[k].status !== stat) {
+                                        difStats = true;
                                     }
-                                    if (difStats) {
-                                        return dd;
+                                    var color = "green";
+                                    if (row.subtasks[k].status === "errored") {
+                                        color = "red";
+                                    }
+                                    if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                        color = "blue";
+                                    }
+                                    if (row.subtasks[k].errormsg) {
+                                        dd += "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "<p class='error_message_div'>" + row.subtasks[k].errormsg + "</div></div>";
                                     }
                                     else {
-                                        if (row.errormsg && row.status === "errored") {
-                                            return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "<p class='error_message_div'>" + row.errormsg + "</p></span>";
-                                        }
-                                        else {
-                                            return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "</span>";
-                                        }
+                                        dd += "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "</div>";
                                     }
+
+                                }
+                                if (difStats) {
+                                    return dd;
                                 }
                                 else {
-                                    if (row.errormsg) {
-                                        return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "<p class='error_message_div'>" + row.errormsg + "</p></span>";
+                                    if (row.errormsg && row.status === "errored") {
+                                        return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.availableStates[row.status] || row.status) + "<p class='error_message_div'>" + row.errormsg + "</p></span>";
                                     }
                                     else {
-                                        return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.states[row.status] || row.status) + "</span>";
+                                        return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.availableStates[row.status] || row.status) + "</span>";
                                     }
                                 }
-                            },
-                            "sType": "string",
-                            "bSortable": false,
-                            "sTitle": jQuery.i18n.map["common.status"]
-                        },
-                        {
-                            "mData": function(row) {
-                                return '<span class="status-color" style="text-transform:capitalize">' + row.type + "</span>";
-                            },
-                            "sType": "string",
-                            "bSortable": false,
-                            "sTitle": jQuery.i18n.map["taskmanager.origin"]
-                        },
-                        {
-                            "mData": function(row) {
-                                return row.autoRefresh ? jQuery.i18n.map["taskmanager.auto"] : jQuery.i18n.map["taskmanager.manual"];
-                            },
-                            "sType": "string",
-                            "sTitle": jQuery.i18n.map["common.type"],
-                            "bSortable": false,
-                            "sClass": "report-manager-break"
-                        },
-                        {
-                            "mData": function(row) {
-                                return row.period_desc || "-";
-                            },
-                            "sType": "string",
-                            "sTitle": jQuery.i18n.map["report-manager.period"],
-                            "bSortable": false,
-                            "sClass": "report-manager-break"
-                        },
-                        {
-                            "mData": function(row) {
-                                return row.global === false ? 'Private' : 'Global';
-                            },
-                            "sType": "string",
-                            "sTitle": jQuery.i18n.map["report-manager.visibility"],
-                            "bSortable": false,
-                            "sClass": "report-manager-break"
-                        },
-                        {
-                            "mData": function(row, type) {
-                                if (type === "display") {
-                                    return countlyCommon.formatTimeAgo(row.start);
+                            }
+                            else {
+                                if (row.errormsg) {
+                                    return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.availableStates[row.status] || row.status) + "<p class='error_message_div'>" + row.errormsg + "</p></span>";
                                 }
                                 else {
-                                    return row.start;
+                                    return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.availableStates[row.status] || row.status) + "</span>";
                                 }
-                            },
-                            "sType": "string",
-                            "sTitle": jQuery.i18n.map["common.last-updated"]
-                        },
-                        {
-                            "mData": function(row, type) {
-                                var time = 0;
-                                if (row.taskgroup && row.subtasks) {
-                                    for (var k in row.subtasks) {
-                                        if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
-                                            row.status = row.subtasks[k].status;
-                                            row.start = row.subtasks[k].start || row.start;
-                                        }
-                                        if (row.end < row.subtasks[k].end) {
-                                            row.end = row.subtasks[k].end;
-                                        }
+                            }
+                        };
+                        var processTime = function() {
+                            var time = 0;
+                            if (row.taskgroup && row.subtasks) {
+                                for (var k in row.subtasks) {
+                                    if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                        row.status = row.subtasks[k].status;
+                                        row.start = row.subtasks[k].start || row.start;
+                                    }
+                                    if (row.end < row.subtasks[k].end) {
+                                        row.end = row.subtasks[k].end;
                                     }
                                 }
-                                if (row.status === "running" || row.status === "rerunning") {
-                                    time = Math.max(new Date().getTime() - row.start, 0);
-                                }
-                                else if (row.end && row.end > row.start) {
-                                    time = row.end - row.start;
-                                }
-                                if (type === "display") {
-                                    return countlyCommon.formatTime(Math.round(time / 1000));
-                                }
-                                else {
-                                    return time;
-                                }
-                            },
-                            "bSortable": false,
-                            "sType": "numeric",
-                            "sTitle": jQuery.i18n.map["events.table.dur"]
-                        },
-                        {
-                            "mData": function() {
-                                return '<a class="cly-list-options"></a>';
-                            },
-                            "sType": "string",
-                            "sTitle": "",
-                            "sClass": "shrink center",
-                            bSortable: false
-                        }
-                    ];*/
+                            }
+                            if (row.status === "running" || row.status === "rerunning") {
+                                time = Math.max(new Date().getTime() - row.start, 0);
+                            }
+                            else if (row.end && row.end > row.start) {
+                                time = row.end - row.start;
+                            }
+                            return countlyCommon.formatTime(Math.round(time / 1000));
+                        };
+                        row.subtaskDesc = processSubtasks();
+                        row.duration = processTime();
+                    });
                     return rows;
                 }
             }));
@@ -296,11 +203,20 @@
                 selectedState: null,
 
                 // var manuallyColumns = [true, true, true, true, true, true, true, true, false, true];
-                // var automaticallyColumns = [false, true, true, true, false, false, false, true, true, true];
+                // var automatiColumns = [false, true, true, true, false, false, false, true, true, true];
                 //                         [NAME, DATA, STAT(R),ORIGIN, TYPE,PERIOD,VISIB,LASTUp,Started,duration,status(SUB),but]
             };
         },
         methods: {
+            getStatusColor: function(status) {
+                if (status === "completed") {
+                    return "#2FA732";
+                }
+                if (status === "errored") {
+                    return "#D63E40";
+                }
+                return "#E98010";
+            },
             /*
             renderTable: function() {
                 var self = this;
