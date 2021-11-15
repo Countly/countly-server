@@ -207,8 +207,17 @@
                 }
                 return "#E98010";
             },
+            getViewText: function(row) {
+                return (row.status !== "running" && row.status !== "rerunning") ? CV.i18n("common.view") : CV.i18n("taskmanager.view-old");
+            },
+            isReadyForView: function(row) {
+                return row.view && row.hasData;
+            },
+            isReadyForRerun: function(row) {
+                return row.status !== "running" && row.status !== "rerunning" && row.request;
+            },
             handleCommand: function(command, row) {
-                var id = row.id,
+                var id = row._id,
                     self = this;
 
                 if (id) {
@@ -238,35 +247,11 @@
                             });
                         }, [CV.i18n("common.no-dont-do-that"), CV.i18n("taskmanager.yes-rerun-report")], {title: CV.i18n("taskmanager.confirm-rerun-title"), image: "rerunning-task"});
                     }
-                    // else if (el.hasClass("edit-task")) {
-                    //     self.loadReportDrawerView(id);
-                    // }
+                    else if (command === "view-task") {
+                        window.location = row.view + id;
+                    }
                 }
             },
-            /*
-            if (row.status !== "running" && row.status !== "rerunning") {
-                if (row.view && row.hasData) {
-                    $(".tasks-menu").find(".view-task").attr("href", row.view + subid).data("localize", "common.view").text(jQuery.i18n.map["common.view"]).show();
-                }
-                else {
-                    $(".tasks-menu").find(".view-task").hide();
-                }
-                if (row.request) {
-                    $(".tasks-menu").find(".rerun-task").data("id", id).show();
-                }
-                else {
-                    $(".tasks-menu").find(".rerun-task").hide();
-                }
-            }
-            else {
-                if (row.view && row.hasData) {
-                    $(".tasks-menu").find(".view-task").attr("href", row.view + subid).data("localize", "taskmanager.view-old").text(jQuery.i18n.map["taskmanager.view-old"]).show();
-                }
-                else {
-                    $(".tasks-menu").find(".view-task").hide();
-                }
-            }
-            */
             getExportAPI: function() {
                 var requestPath = '/o/tasks/list?api_key=' + countlyGlobal.member.api_key +
                     "&app_id=" + countlyCommon.ACTIVE_APP_ID;
