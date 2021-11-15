@@ -5,6 +5,11 @@
 
     var ParametersDrawer = countlyVue.views.create({
         template: CV.T("/remote-config/templates/parameters-drawer.html"),
+        computed: {
+            isDrillEnabled: function() {
+                return countlyGlobal.plugins.indexOf("drill") > -1 ? true : false;
+            },
+        },
         props: {
             controls: {
                 type: Object
@@ -32,8 +37,8 @@
                 return cb(results);
             },
             createFilter: function(queryString) {
-                return (value) => {
-                    return (value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+                return function(value) {
+                    return value.toLowerCase().indexOf(queryString.toLowerCase()) === 0;
                 };
             },
             onSubmit: function(doc) {
@@ -148,7 +153,7 @@
             },
             prettyFormat: function() {
                 // reset error
-                let jsonValue = "";
+                var jsonValue = "";
                 try {
                     // try to parse
                     jsonValue = JSON.parse(this.jsonstr);
@@ -422,22 +427,25 @@
     var MainComponent = countlyVue.views.BaseView.extend({
         template: "#remote-config-main",
         data: function() {
+            var tabs = [
+                {
+                    title: "Parameters",
+                    name: "parameters",
+                    component: ParametersComponent,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/remote-config/parameters"
+                }
+            ];
+            if (countlyGlobal.plugins.indexOf("drill") > -1) {
+                tabs.push({
+                    title: "Conditions",
+                    name: "conditions",
+                    component: ConditionsComponent,
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/remote-config/conditions"
+                });
+            }
             return {
                 dynamicTab: (this.$route.params && this.$route.params.tab) || "parameters",
-                tabs: [
-                    {
-                        title: "Parameters",
-                        name: "parameters",
-                        component: ParametersComponent,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/remote-config/parameters"
-                    },
-                    {
-                        title: "Conditions",
-                        name: "conditions",
-                        component: ConditionsComponent,
-                        route: "#/" + countlyCommon.ACTIVE_APP_ID + "/remote-config/conditions"
-                    },
-                ]
+                tabs: tabs
             };
         },
         beforeCreate: function() {
@@ -456,22 +464,24 @@
                 clyModel: countlyRemoteConfig
             }
         ];
+        var templates = [
+            {
+                namespace: "remote-config",
+                mapping: {
+                    main: "/remote-config/templates/main.html",
+                    parameters: "/remote-config/templates/parameters.html",
+                    conditions: "/remote-config/templates/conditions.html",
+                }
+            }
+        ];
+        if (countlyGlobal.plugins.indexOf("drill") > -1) {
+            templates.push("/drill/templates/query.builder.v2.html");
+        }
 
         return new countlyVue.views.BackboneWrapper({
             component: MainComponent,
             vuex: vuex,
-            templates: [
-                "/drill/templates/query.builder.v2.html",
-
-                {
-                    namespace: "remote-config",
-                    mapping: {
-                        main: "/remote-config/templates/main.html",
-                        parameters: "/remote-config/templates/parameters.html",
-                        conditions: "/remote-config/templates/conditions.html",
-                    }
-                }
-            ]
+            templates: templates
         });
     };
 
@@ -493,9 +503,7 @@
         //We shouldn't be using $ (jquery)
 
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            if (countlyGlobal.plugins.indexOf("drill") > -1) {
-                app.addMenu("improve", {code: "remote-config", url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
-            }
+            app.addMenu("improve", {code: "remote-config", url: "#/remote-config", text: "sidebar.remote-config", icon: '<div class="logo"><i class="material-icons" style="transform:rotate(90deg)"> call_split </i></div>', priority: 30});
         }
     });
 })();
