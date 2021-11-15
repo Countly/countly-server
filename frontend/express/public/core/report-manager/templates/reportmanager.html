@@ -1,0 +1,41 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('sidebar.management.longtasks')}} </h2>
+        </template>
+    </cly-header>
+    <cly-main>
+		<cly-section>
+			<cly-datatable-n >
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" prop="name" :label="i18n('jobs.job-name')" type="clickable">
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="status" :label="i18n('jobs.job-status')">
+                        <template slot-scope="scope">   
+                            <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="schedule" :label="i18n('jobs.job-schedule')">
+                        <template slot-scope="scope">
+                            <p>{{scope.row.scheduleLabel}}</p>
+                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.scheduleDetail}}</p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="next" :label="i18n('jobs.job-next-run')">
+                        <template slot-scope="scope">
+                            <p>{{scope.row.nextRunDate}}</p>
+                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.nextRunTime}}</p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="finished" :label="i18n('jobs.job-last-run')">
+                        <template slot-scope="scope">
+                            <p v-html="scope.row.lastRun"></p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="total" :label="i18n('jobs.job-total-scheduled')">
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+		</cly-section>
+    </cly-main>
+</div>

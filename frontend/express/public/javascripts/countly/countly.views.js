@@ -5732,7 +5732,7 @@ if (countlyAuth.validateRead('global_users')) {
     });
 }
 
-app.route("/manage/tasks", "longTasks", function() {
+app.route("/manage/tasks_old", "longTasks", function() {
     this.renderWhenReady(this.longTaskView);
 });
 
