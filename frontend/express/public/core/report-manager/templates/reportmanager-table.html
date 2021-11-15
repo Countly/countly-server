@@ -1,9 +1,9 @@
-<cly-datatable-n :data-source-disabled="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'ts', order: 'descending'}">
+<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'start', order: 'descending'}">
     <template v-slot:header-left>
         <el-select v-model="selectedOrigin" :placeholder="i18n('taskmanager.select-origin')">
             <el-option v-for="(label, value) in availableOrigins" :label="label" :value="value"></el-option>
         </el-select>
-        <el-select v-model="selectedRunTimeType" :placeholder="i18n('common.select-type')">
+        <el-select v-if="reportType === 'manual'" v-model="selectedRunTimeType" :placeholder="i18n('common.select-type')">
             <el-option v-for="(label, value) in availableRunTimeTypes" :label="label" :value="value"></el-option>
         </el-select>
         <el-select v-model="selectedState" :placeholder="i18n('common.select-status')">
