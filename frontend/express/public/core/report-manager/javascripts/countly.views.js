@@ -41,6 +41,9 @@
             }
         },
         computed: {
+            isManual: function() {
+                return this.reportType === 'manual';
+            },
             query: function() {
                 var q = {};
                 if (this.selectedOrigin && this.selectedOrigin !== "all") {
@@ -57,16 +60,16 @@
         },
         watch: {
             "query": function() {
-                // TODO refresh data onchange
+                this.tableStore.dispatch("fetchReportsTable", {_silent: false});
             }
         },
         data: function() {
             var self = this;
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("reportsTable", {
-                columns: ['name', "schedule", "next", "finished", "status", "total"],
+                columns: ["start"],
                 onRequest: function() {
                     var queryObject = Object.assign({}, self.query);
-                    if (self.reportType === 'manual') {
+                    if (self.isManual) {
                         queryObject.manually_create = true;
                     }
                     else {

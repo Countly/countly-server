@@ -4,7 +4,7 @@
         <el-select v-model="selectedOrigin" :placeholder="i18n('taskmanager.select-origin')">
             <el-option v-for="(label, value) in availableOrigins" :label="label" :value="value"></el-option>
         </el-select>
-        <el-select v-if="reportType === 'manual'" v-model="selectedRunTimeType"
+        <el-select v-if="isManual" v-model="selectedRunTimeType"
             :placeholder="i18n('common.select-type')">
             <el-option v-for="(label, value) in availableRunTimeTypes" :label="label" :value="value"></el-option>
         </el-select>
@@ -34,27 +34,27 @@
                 <span class="status-color" style="text-transform:capitalize">{{scope.row.type}}</span>
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('common.type')">
+        <el-table-column :label="i18n('common.type')" v-if="isManual">
             <template v-slot="scope">
                 {{scope.row.autoRefresh ? i18n("taskmanager.auto") : i18n("taskmanager.manual")}}
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('report-manager.period')">
+        <el-table-column :label="i18n('report-manager.period')" v-if="isManual">
             <template v-slot="scope">
                 {{scope.row.period_desc || "-"}}
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('report-manager.period')">
+        <el-table-column :label="i18n('report-manager.visibility')" v-if="isManual">
             <template v-slot="scope">
                 {{scope.row.global === false ? 'Private' : 'Global'}}
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('common.last-updated')">
+        <el-table-column prop="start" sortable="custom" :label="i18n('common.last-updated')">
             <template v-slot="scope">
                 {{formatTimeAgo(scope.row.start) }}
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('events.table.dur')">
+        <el-table-column :label="i18n('events.table.dur')" v-if="!isManual">
             <template v-slot="scope">
                 {{ scope.row.duration }}
             </template>
