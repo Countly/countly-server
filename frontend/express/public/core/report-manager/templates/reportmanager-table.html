@@ -60,7 +60,14 @@
             </template>
         </el-table-column>
         <el-table-column>
-            opts
+            <template v-slot="scope">
+                <cly-more-options @command="handleCommand($event, scope.row)" placement="bottom-end">
+                    <el-dropdown-item command="view-task">{{i18n('common.view')}}</el-dropdown-item>
+                    <el-dropdown-item command="rerun-task">{{i18n('taskmanager.rerun')}}</el-dropdown-item>
+                    <!-- <el-dropdown-item v-if="isManual" command="edit-task">{{i18n('taskmanager.edit')}}</el-dropdown-item> -->
+                    <el-dropdown-item v-if="canDeleteReport" command="delete-task">{{i18n('common.delete')}}</el-dropdown-item>
+                </cly-more-options>
+            </template>
         </el-table-column>
     </template>
 </cly-datatable-n>
