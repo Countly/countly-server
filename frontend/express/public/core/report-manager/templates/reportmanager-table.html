@@ -1,30 +1,15 @@
-<cly-datatable-n >
+<cly-datatable-n :data-source-disabled="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'ts', order: 'descending'}">
+    <template v-slot:header-left>
+        <el-select v-model="selectedOrigin" :placeholder="i18n('taskmanager.select-origin')">
+            <el-option v-for="(label, value) in availableOrigins" :label="label" :value="value"></el-option>
+        </el-select>
+        <el-select v-model="selectedRunTimeType" :placeholder="i18n('common.select-type')">
+            <el-option v-for="(label, value) in availableRunTimeTypes" :label="label" :value="value"></el-option>
+        </el-select>
+        <el-select v-model="selectedState" :placeholder="i18n('common.select-status')">
+            <el-option v-for="(label, value) in availableStates" :label="label" :value="value"></el-option>
+        </el-select>
+    </template>
     <template v-slot="scope">
-        <el-table-column sortable="custom" prop="name" :label="i18n('jobs.job-name')" type="clickable">
-        </el-table-column>
-        <el-table-column sortable="custom" prop="status" :label="i18n('jobs.job-status')">
-            <template slot-scope="scope">   
-                <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
-            </template>
-        </el-table-column>
-        <el-table-column sortable="custom" prop="schedule" :label="i18n('jobs.job-schedule')">
-            <template slot-scope="scope">
-                <p>{{scope.row.scheduleLabel}}</p>
-                <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.scheduleDetail}}</p>
-            </template>
-        </el-table-column>
-        <el-table-column sortable="custom" prop="next" :label="i18n('jobs.job-next-run')">
-            <template slot-scope="scope">
-                <p>{{scope.row.nextRunDate}}</p>
-                <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.nextRunTime}}</p>
-            </template>
-        </el-table-column>
-        <el-table-column sortable="custom" prop="finished" :label="i18n('jobs.job-last-run')">
-            <template slot-scope="scope">
-                <p v-html="scope.row.lastRun"></p>
-            </template>
-        </el-table-column>
-        <el-table-column sortable="custom" prop="total" :label="i18n('jobs.job-total-scheduled')">
-        </el-table-column>
     </template>
 </cly-datatable-n>
