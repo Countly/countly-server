@@ -40,47 +40,32 @@
                 default: "manual"
             }
         },
+        computed: {
+            query: function() {
+                var q = {};
+                if (this.selectedOrigin && this.selectedOrigin !== "all") {
+                    q.type = this.selectedOrigin;
+                }
+                if (this.selectedRunTimeType && this.selectedRunTimeType !== "all") {
+                    q.autoRefresh = this.selectedRunTimeType;
+                }
+                if (this.selectedState && this.selectedState !== "all") {
+                    q.status = this.selectedState;
+                }
+                return q;
+            }
+        },
+        watch: {
+            "query": function() {
+                // TODO refresh data onchange
+            }
+        },
         data: function() {
             var self = this;
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("reportsTable", {
                 columns: ['name', "schedule", "next", "finished", "status", "total"],
                 onRequest: function() {
-                    /*$(".filter1-segmentation .segmentation-option").on("click", function() {
-                        if (!self._query) {
-                            self._query = {};
-                        }
-                        self._query.type = $(this).data("value");
-                        if (self._query.type === "all") {
-                            delete self._query.type;
-                        }
-                        self.refresh();
-                    });
-            
-                    $(".filter2-segmentation .segmentation-option").on("click", function() {
-                        if (!self._query) {
-                            self._query = {};
-                        }
-                        self._query.autoRefresh = $(this).data("value") === 'auto-refresh';
-                        if ($(this).data("value") === "all") {
-                            delete self._query.autoRefresh;
-                        }
-                        self.refresh();
-                    });
-                    $(".filter3-segmentation .segmentation-option").on("click", function() {
-                        if (!self._query) {
-                            self._query = {};
-                        }
-                        self._query.status = $(this).data("value");
-                        if (self._query.status === "all") {
-                            delete self._query.status;
-                        }
-                        self.refresh();
-                    });*/
-                    var queryObject = {
-                        type: self.selectedOrigin,
-                        autoRefresh: self.selectedRunTimeType,
-                        status: self.selectedState,
-                    };
+                    var queryObject = Object.assign({}, self.query);
                     if (self.reportType === 'manual') {
                         queryObject.manually_create = true;
                     }
