@@ -55,7 +55,6 @@
             default: {
                 title: "",
                 content: "",
-                localizationLabel: countlyPushNotification.service.DEFAULT_LOCALIZATION_LABEL,
                 buttons: [],
                 properties: {
                     title: {},
@@ -67,6 +66,7 @@
             ios: {
                 subtitle: "",
                 mediaURL: "",
+                mediaMime: "",
                 soundFileName: "",
                 badgeNumber: "",
                 onClickURL: "",
@@ -75,6 +75,7 @@
             },
             android: {
                 mediaURL: "",
+                mediaMime: "",
                 soundFileName: "",
                 badgeNumber: "",
                 icon: "",
@@ -83,7 +84,8 @@
                 userData: []
             },
             all: {
-                mediaURL: ""
+                mediaURL: "",
+                mediaMime: "",
             }
         },
         queryFilter: null,
@@ -113,6 +115,7 @@
             trigger: countlyPushNotification.service.TriggerEnum.COHORT_ENTRY,
             triggerNotMet: countlyPushNotification.service.TriggerNotMetEnum.SEND_ANYWAY,
             events: [],
+            cohorts: [],
             capping: false,
             maximumMessagesPerUser: 1,
             minimumTimeBetweenMessages: {
@@ -331,10 +334,9 @@
                     return countlyPushNotification.service.platformOptions[selectedPlatform].label;
                 });
             },
-            previewCohorts: function() {
-                var self = this;
+            previewCohorts: function(cohorts) {
                 var selectedCohorts = this.cohortOptions.filter(function(cohort) {
-                    return self.pushNotificationUnderEdit.cohorts.some(function(selectedCohortId) {
+                    return cohorts.some(function(selectedCohortId) {
                         return cohort._id === selectedCohortId;
                     });
                 });
@@ -441,7 +443,7 @@
                             });
                         }
                         else {
-                            this.dispatchUnknownErrorNotification();
+                            self.dispatchUnknownErrorNotification();
                         }
                         //TODO:log error
                         resolve(false);
@@ -470,7 +472,7 @@
                         });
                     }
                     else {
-                        this.dispatchUnknownErrorNotification();
+                        self.dispatchUnknownErrorNotification();
                     }
                     //TODO:log error
                     done(true);
@@ -535,12 +537,10 @@
             },
             addEmptyLocalizationMessageIfNotFound: function(localization) {
                 var value = localization.value;
-                var label = localization.label;
                 if (!this.pushNotificationUnderEdit.message[value]) {
                     this.$set(this.pushNotificationUnderEdit.message, value, {
                         title: "",
                         content: "",
-                        localizationLabel: label,
                         buttons: [],
                         properties: {
                             title: {},
