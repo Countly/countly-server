@@ -92,76 +92,31 @@
                 },
                 onReady: function(context, rows) {
                     rows.forEach(function(row) {
-                        var processSubtasks = function() {
-                            if (row.taskgroup && row.subtasks) {
-                                var difStats = false;
-                                var stat = "completed";
-                                var dd = "";
-
-                                for (var k in row.subtasks) {
-                                    if (row.subtasks[k].status !== stat) {
-                                        difStats = true;
-                                    }
-                                    var color = "green";
-                                    if (row.subtasks[k].status === "errored") {
-                                        color = "red";
-                                    }
-                                    if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
-                                        color = "blue";
-                                    }
-                                    if (row.subtasks[k].errormsg) {
-                                        dd += "<div class='have_error_message table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "<p class='error_message_div'>" + row.subtasks[k].errormsg + "</div></div>";
-                                    }
-                                    else {
-                                        dd += "<div class='table_status_dot table_status_dot_" + color + "'><span >" + "</span>" + row.subtasks[k].status + "</div>";
-                                    }
-
+                        if (row.taskgroup && row.subtasks) {
+                            var stat = null;
+                            for (var k in row.subtasks) {
+                                if (stat && row.subtasks[k].status !== stat) {
+                                    row.hasStatusDifferences = true;
                                 }
-                                if (difStats) {
-                                    return dd;
+                                stat = row.subtasks[k].status;
+                                if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                    row.status = row.subtasks[k].status;
+                                    row.start = row.subtasks[k].start || row.start;
                                 }
-                                else {
-                                    if (row.errormsg && row.status === "errored") {
-                                        return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.availableStates[row.status] || row.status) + "<p class='error_message_div'>" + row.errormsg + "</p></span>";
-                                    }
-                                    else {
-                                        return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.availableStates[row.status] || row.status) + "</span>";
-                                    }
+                                if (row.end < row.subtasks[k].end) {
+                                    row.end = row.subtasks[k].end;
                                 }
                             }
-                            else {
-                                if (row.errormsg) {
-                                    return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.availableStates[row.status] || row.status) + "<p class='error_message_div'>" + row.errormsg + "</p></span>";
-                                }
-                                else {
-                                    return '<span class="status-color" style="color:' + self.getStatusColor(row.status) + ';"><i class="fa fa-circle" aria-hidden="true"></i>' + (self.availableStates[row.status] || row.status) + "</span>";
-                                }
-                            }
-                        };
-                        var processTime = function() {
-                            var time = 0;
-                            if (row.taskgroup && row.subtasks) {
-                                for (var k in row.subtasks) {
-                                    if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
-                                        row.status = row.subtasks[k].status;
-                                        row.start = row.subtasks[k].start || row.start;
-                                    }
-                                    if (row.end < row.subtasks[k].end) {
-                                        row.end = row.subtasks[k].end;
-                                    }
-                                }
-                            }
-                            if (row.status === "running" || row.status === "rerunning") {
-                                time = Math.max(new Date().getTime() - row.start, 0);
-                            }
-                            else if (row.end && row.end > row.start) {
-                                time = row.end - row.start;
-                            }
-                            return countlyCommon.formatTime(Math.round(time / 1000));
-                        };
+                        }
                         row.startFormatted = countlyCommon.formatTimeAgoText(row.start);
-                        row.subtaskDesc = processSubtasks();
-                        row.duration = processTime();
+                        var time = 0;
+                        if (row.status === "running" || row.status === "rerunning") {
+                            time = Math.max(new Date().getTime() - row.start, 0);
+                        }
+                        else if (row.end && row.end > row.start) {
+                            time = row.end - row.start;
+                        }
+                        row.duration = countlyCommon.formatTime(Math.round(time / 1000));
                     });
                     return rows;
                 }
@@ -199,14 +154,14 @@
             refresh: function(force) {
                 this.tableStore.dispatch("fetchReportsTable", {_silent: !force});
             },
-            getStatusColor: function(status) {
+            getColor: function(status) {
                 if (status === "completed") {
-                    return "#2FA732";
+                    return "green";
                 }
                 if (status === "errored") {
-                    return "#D63E40";
+                    return "red";
                 }
-                return "#E98010";
+                return "blue";
             },
             getViewText: function(row) {
                 return (row.status !== "running" && row.status !== "rerunning") ? CV.i18n("common.view") : CV.i18n("taskmanager.view-old");
@@ -283,36 +238,7 @@
                     prop: ['aaData']
                 };
                 return apiQueryData;
-            },
-            /*
-            addErrorTooltips: function() {
-                $("#data-table").on('mouseenter mouseleave', ".have_error_message", function() {
-                    $('.have_error_message span').not(".tooltipstered").tooltipster({
-                        animation: "fade",
-                        animationDuration: 50,
-                        delay: 100,
-                        theme: 'tooltipster-borderless',
-                        side: ['top'],
-                        maxWidth: 500,
-                        trigger: 'click',
-                        interactive: true,
-                        functionBefore: function(instance, helper) {
-                            instance.content($(helper.origin).parent().find(".error_message_div").html());
-                        },
-                        contentAsHTML: true,
-                        functionInit: function(instance, helper) {
-                            instance.content($(helper.origin).parent().find(".error_message_div").html());
-                        }
-                    });
-
-                });
-                $("#data-table").on('click', ".have_error_message", function(e) {
-                    if ($(e.target).hasClass('have_error_message')) {
-                        $(this).find('span').trigger("click");
-                    }
-                });
             }
-            */
         }
     }));
 
