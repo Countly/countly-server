@@ -639,7 +639,7 @@
                 context.commit('setHasSegments', hasSegments);
             },
             fetchCategories: function(context) {
-                countlyAllEvents.service.getCategories().then(function(data) {
+                countlyAllEvents.service.fetchCategories().then(function(data) {
                     var map = {};
                     data.forEach(function(c) {
                         map[c._id] = c.name;
