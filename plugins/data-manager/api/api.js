@@ -1,15 +1,17 @@
+const FEATURE_NAME = 'data_manager';
 const common = require('../../../api/utils/common.js');
 const { validateRead } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');
+const log = require('./../../../api/utils/log.js')(FEATURE_NAME + ':core-api');
+
 try {
     if (plugins.isPluginEnabled('drill')) {
         require('./api.extended')();
     }
 }
 catch (e) {
-    console.log('running in basic mode');
+    log.d('running in basic mode');
 }
-const FEATURE_NAME = 'data_manager';
 
 plugins.register("/o/data-manager/events", function(ob) {
     validateRead(ob.params, FEATURE_NAME, async function() {
@@ -73,7 +75,7 @@ plugins.register("/o/data-manager/events", function(ob) {
             common.returnOutput(ob.params, Object.values(eventMap));
         }
         catch (e) {
-            console.error(e);
+            log.e(e);
             common.returnOutput(ob.params, 500, "Error");
         }
     });
