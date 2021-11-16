@@ -24,7 +24,7 @@
                 {{ scope.row.name || scope.row.meta || "" }}
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('common.status')">
+        <el-table-column width="120" :label="i18n('common.status')">
             <template v-slot="scope">
                 <div v-if="scope.row.taskgroup && scope.row.subtasks && scope.row.hasStatusDifferences">
                     <cly-status-tag
@@ -44,39 +44,39 @@
                 </div>
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('taskmanager.origin')">
+        <el-table-column width="120" :label="i18n('taskmanager.origin')">
             <template v-slot="scope">
                 <span class="status-color" style="text-transform:capitalize">{{scope.row.type}}</span>
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('common.type')" v-if="isManual">
+        <el-table-column width="100" :label="i18n('common.type')" v-if="isManual">
             <template v-slot="scope">
                 {{scope.row.autoRefresh ? i18n("taskmanager.auto") : i18n("taskmanager.manual")}}
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('report-manager.period')" v-if="isManual">
+        <el-table-column width="100" :label="i18n('report-manager.period')" v-if="isManual">
             <template v-slot="scope">
                 {{scope.row.period_desc || "-"}}
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('report-manager.visibility')" v-if="isManual">
+        <el-table-column width="100" :label="i18n('report-manager.visibility')" v-if="isManual">
             <template v-slot="scope">
                 {{scope.row.global === false ? 'Private' : 'Global'}}
             </template>
         </el-table-column>
-        <el-table-column prop="start" sortable="custom" :label="i18n('common.last-updated')">
+        <el-table-column width="140" prop="start" sortable="custom" :label="i18n('common.last-updated')">
             <template v-slot="scope">
                 {{ scope.row.startFormatted && scope.row.startFormatted.text }}
             </template>
         </el-table-column>
-        <el-table-column :label="i18n('events.table.dur')" v-if="!isManual">
+        <el-table-column width="100" :label="i18n('events.table.dur')" v-if="!isManual">
             <template v-slot="scope">
                 {{ scope.row.duration }}
             </template>
         </el-table-column>
-        <el-table-column>
+        <el-table-column align="center" type="options">
             <template v-slot="scope">
-                <cly-more-options @command="handleCommand($event, scope.row)" placement="bottom-end">
+                <cly-more-options v-if="scope.row.hover" @command="handleCommand($event, scope.row)" placement="bottom-end">
                     <el-dropdown-item v-if="isReadyForView(scope.row)" command="view-task">{{getViewText(scope.row)}}</el-dropdown-item>
                     <el-dropdown-item v-if="isReadyForRerun(scope.row)" command="rerun-task">{{i18n('taskmanager.rerun')}}</el-dropdown-item>
                     <!-- <el-dropdown-item v-if="isManual" command="edit-task">{{i18n('taskmanager.edit')}}</el-dropdown-item> -->
