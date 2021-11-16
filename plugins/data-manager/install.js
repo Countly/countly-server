@@ -1,6 +1,6 @@
-try{
+try {
     require('./install-extension.js')();
 }
-catch(e){
+catch (e) {
     // suppress
 }
