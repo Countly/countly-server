@@ -3375,11 +3375,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
+        text-align: center;
         background-color: #fff;
 
+        .image {
+            width: 100px;
+            height: 100px;
+        }
+
         .info {
-            width: 250px;
-            margin-right: 40px;
+            width: 327px;
 
             .title {
                 color: #3a3a3a;
@@ -3389,17 +3395,17 @@
             }
 
             .text {
-                font-size: 13px;
+                font-size: 14px;
                 line-height: 20px;
+                color: #81868D;
             }
         }
-
-        .circle {
-            width: 250px;
-            height: 250px;
-            border-radius: 125px;
-            background-color: #e8e8e8;
-        }
+        // .circle {
+        //     width: 250px;
+        //     height: 250px;
+        //     border-radius: 125px;
+        //     background-color: #e8e8e8;
+        // }
     }
 
     .dropzone,
