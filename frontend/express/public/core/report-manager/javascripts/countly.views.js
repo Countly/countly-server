@@ -87,6 +87,9 @@
                         }
                     };
                 },
+                onOverrideRequest: function(context, request) {
+                    self.lastRequestPayload = request.data;
+                },
                 onError: function(context, err) {
                     throw err;
                 },
@@ -147,7 +150,8 @@
                 },
                 selectedOrigin: null,
                 selectedRunTimeType: null,
-                selectedState: null
+                selectedState: null,
+                lastRequestPayload: {}
             };
         },
         methods: {
@@ -210,24 +214,19 @@
             },
             getExportAPI: function() {
                 var requestPath = '/o/tasks/list?api_key=' + countlyGlobal.member.api_key +
-                    "&app_id=" + countlyCommon.ACTIVE_APP_ID;
-                if (this._cachedAoData) {
-                    for (var i = 0; i < this._cachedAoData.length; i++) {
-                        var item = this._cachedAoData[i];
-                        switch (item.name) {
-                        case 'iDisplayStart':
-                            requestPath += '&' + item.name + '=0';
-                            break;
-                        case 'iDisplayLength':
-                            requestPath += '&' + item.name + '=10000';
-                            break;
+                    "&app_id=" + countlyCommon.ACTIVE_APP_ID + '&iDisplayStart=0&iDisplayLength=10000',
+                    self = this;
+
+                if (this.lastRequestPayload) {
+                    Object.keys(this.lastRequestPayload).forEach(function(name) {
+                        switch (name) {
                         case 'query':
-                            requestPath += '&' + item.name + '=' + encodeURI(item.value);
+                            requestPath += '&' + name + '=' + encodeURI(self.lastRequestPayload[name]);
                             break;
                         default:
-                            requestPath += '&' + item.name + '=' + item.value;
+                            requestPath += '&' + name + '=' + self.lastRequestPayload[name];
                         }
-                    }
+                    });
                 }
                 var apiQueryData = {
                     api_key: countlyGlobal.member.api_key,
