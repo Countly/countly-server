@@ -72,6 +72,7 @@
           <div>
             <cly-qb-segmentation 
               :additional-properties="additionalProperties"
+              :additionalRules="remoteConfigFilterRules"
               :add-empty-row-on-empty-query="true"
               :allow-breakdown="false"
               v-model="managedPropertySegmentation">

@@ -182,29 +182,29 @@
             }
         },
         computed: {
-            managedPropertySegmentation: {
-                get: function() {
-                    return this.conditionPropertySegmentation;
-
-                },
-                set: function(value) {
-                    if (!_.isEmpty(value.query)) {
-                        this.conditionPropertySegmentation.query = value.query;
-                    }
-                    if (value.queryText) {
-                        this.conditionPropertySegmentation.queryText = value.queryText;
-                        if (value.queryText.includes("Random Percentile")) {
-                            this.showSeedValue = true;
-                            return;
-                        }
-                    }
-                    this.showSeedValue = false;
+            showSeedValue: function() {
+                if (!_.isEmpty(this.managedPropertySegmentation.queryText) && this.managedPropertySegmentation.queryText.includes("Random Percentile")) {
+                    return true;
                 }
+                return false;
             }
         },
         data: function() {
             var additionalProperties = [];
-
+            var remoteConfigFilterRules = [new countlyQueryBuilder.RowRule({
+                name: "cly.remote-config-random-percentile-rule",
+                selector: function(row) {
+                    return row.property.id === "condition.randomPercentile";
+                },
+                actions: [new countlyQueryBuilder.RowAction({
+                    id: "disallowOperator",
+                    params: {
+                        selector: function(operator) {
+                            return ["cly.=", "cly.!=", "cly.contains", "cly.between", "cly.isset"].includes(operator.id);
+                        }
+                    }
+                })]
+            })];
             additionalProperties.push(new countlyQueryBuilder.Property({
                 id: 'condition.randomPercentile',
                 name: "Random Percentile",
@@ -213,10 +213,11 @@
 
             }));
             return {
+                remoteConfigFilterRules: remoteConfigFilterRules,
                 selectedColorKey: 1,
                 useDescription: false,
+                managedPropertySegmentation: {},
                 conditionPropertySegmentation: { query: {}, byVal: []},
-                showSeedValue: false,
                 additionalProperties: additionalProperties,
                 title: "",
                 saveButtonLabel: "",
@@ -252,11 +253,11 @@
                 if (!doc.condition_description || !self.useDescription) {
                     doc.condition_description = "-";
                 }
-                if (!_.isEmpty(self.conditionPropertySegmentation.query)) {
-                    doc.condition = self.conditionPropertySegmentation.query;
+                if (!_.isEmpty(self.managedPropertySegmentation.query)) {
+                    doc.condition = self.managedPropertySegmentation.query;
                 }
-                if (self.conditionPropertySegmentation.queryText) {
-                    doc.condition_definition = self.conditionPropertySegmentation.queryText;
+                if (self.managedPropertySegmentation.queryText) {
+                    doc.condition_definition = self.managedPropertySegmentation.queryText;
                 }
                 var action = "countlyRemoteConfig/conditions/create";
                 if (doc._id) {
@@ -279,11 +280,11 @@
                     this.title = "Update condition";
                     this.saveButtonLabel = "Save";
                     if (!_.isEmpty(doc.condition)) {
-                        this.conditionPropertySegmentation.query = JSON.parse(doc.condition);
+                        this.managedPropertySegmentation.query = JSON.parse(doc.condition);
 
                     }
                     if (doc.condition_definition) {
-                        this.conditionPropertySegmentation.queryText = doc.condition_definition;
+                        this.managedPropertySegmentation.queryText = doc.condition_definition;
 
                     }
                     if (doc.condition_description) {
@@ -293,8 +294,8 @@
                 else {
                     this.title = "Add condition";
                     this.saveButtonLabel = "Save";
-                    this.conditionPropertySegmentation.query = {};
-                    this.conditionPropertySegmentation.queryText = "";
+                    this.managedPropertySegmentation.query = {};
+                    this.managedPropertySegmentation.queryText = "";
                     this.useDescription = false;
                     this.selectedColorKey = 1;
                     this.defaultColorKey = 1;
