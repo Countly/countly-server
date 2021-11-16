@@ -35,9 +35,13 @@
         template: CV.T('/core/report-manager/templates/reportmanager-table.html'),
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
-            "report-type": {
+            reportType: {
                 type: String,
                 default: "manual"
+            },
+            fixedOrigin: {
+                type: String,
+                default: null
             }
         },
         computed: {
@@ -49,7 +53,10 @@
             },
             query: function() {
                 var q = {};
-                if (this.selectedOrigin && this.selectedOrigin !== "all") {
+                if (this.fixedOrigin) {
+                    q.type = this.fixedOrigin;
+                }
+                else if (this.selectedOrigin && this.selectedOrigin !== "all") {
                     q.type = this.selectedOrigin;
                 }
                 if (this.selectedRunTimeType && this.selectedRunTimeType !== "all") {
@@ -237,6 +244,39 @@
                     prop: ['aaData']
                 };
                 return apiQueryData;
+            }
+        }
+    }));
+
+    Vue.component("cly-report-manager-dialog", countlyVue.views.create({
+        template: CV.T('/core/report-manager/templates/reportmanager-dialog.html'),
+        props: {
+            origin: {
+                type: String,
+                default: null
+            },
+            disabled: {
+                type: Boolean,
+                default: false
+            }
+        },
+        data: function() {
+            return {
+                isDialogVisible: false
+            };
+        },
+        watch: {
+            disabled: function(newVal) {
+                if (newVal) {
+                    this.isDialogVisible = false;
+                }
+            }
+        },
+        methods: {
+            showDialog: function() {
+                if (!this.disabled) {
+                    this.isDialogVisible = true;
+                }
             }
         }
     }));
