@@ -42,6 +42,10 @@
             fixedOrigin: {
                 type: String,
                 default: null
+            },
+            compact: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
