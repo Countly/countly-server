@@ -357,8 +357,23 @@
                         key: "status",
                         options: [
                             {value: "all", label: "All Statuses"},
-                            {value: "live", label: "Live"},
-                            {value: "created", label: "Created"}
+                            {value: "unplanned", label: "Unplanned"},
+                            {
+                                label: CV.i18n("data-manager.created"),
+                                value: 'created'
+                            },
+                            {
+                                label: CV.i18n("data-manager.approved"),
+                                value: 'approved'
+                            },
+                            {
+                                label: CV.i18n("data-manager.live"),
+                                value: 'live'
+                            },
+                            {
+                                label: CV.i18n("data-manager.blocked"),
+                                value: 'blocked'
+                            }
                         ],
                         default: "all",
                         action: false
