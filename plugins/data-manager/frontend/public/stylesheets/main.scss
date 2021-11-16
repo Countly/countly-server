@@ -1,0 +1,95 @@
+.cly-vue-data-manager{
+    .tag-container{
+        font-size: 12px;
+        .tag{
+            &--unplanned{
+                background-color: #FBECE5;
+                color:#D23F00;
+                .blinker{
+                    background-color: #D23F00;
+                }
+            }
+            &--created{
+                background-color: #E6F0FB;
+                color:#017AFF;
+                .blinker{
+                    background-color: #017AFF;
+                }
+            }
+            &--approved{
+                background-color: #E6F0FB;
+                color:#017AFF;
+                .blinker{
+                    background-color: #017AFF;
+                }
+            }
+            &--live{
+                background-color: #EBFAEE;
+                color:#10A14A;
+                .blinker{
+                    background-color: #10A14A;
+                }
+            }
+            &--blocked{
+                background-color: #FBECE5;
+                color:#D23F00;
+                .blinker{
+                    background-color: #D23F00;
+                }
+            }
+            &--deleted{
+                background-color: #FBECE5;
+                color:#D23F00;
+                .blinker{
+                    background-color: #D23F00;
+                }
+            }
+        }
+    }
+
+    &__validation{
+        &-action-bar{
+            background: #FBECE5;
+            padding-top: 14px;
+            padding-bottom: 14px;
+            border: 1px solid rgba(227, 79, 47, 0.25);
+            border-radius: 12px;
+            box-sizing: border-box;
+        }
+    }
+
+    &__box-container {
+        &--boxed {
+            border: 1px solid #ececec;
+            border-radius: 4px;
+            .cly-vue-section__content{
+                border-top: 0px;
+                border-bottom: 0px;
+                border-radius: 4px;
+            }
+        }
+        
+        &__table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 0 0.5em;
+            tr td:nth-child(1) {
+                font-weight: 500;
+            }
+        }
+    }
+
+    &__mci {
+        &--block {
+            height: 70px;
+            border-top: 1px solid #ECECEC;
+        }
+
+        &:last-child {
+            .cly-vue-data-manager__mci--block {
+                border-bottom: 1px solid #ECECEC;
+            }
+        }
+    }
+}

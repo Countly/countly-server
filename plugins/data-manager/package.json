@@ -1,0 +1,24 @@
+{
+    "name": "data-manager",
+    "title": "Data Manager",
+    "version": "1.0.0-ce",
+    "description": "Data Manager Plugin",
+    "author": "Count.ly",
+    "homepage": "https://count.ly/plugins/",
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/Countly/countly-server.git"
+    },
+    "bugs": {
+        "url": "http://github.com/Countly/countly-server/issues"
+    },
+    "keywords": [
+        "countly",
+        "analytics",
+        "mobile",
+        "plugins",
+        "template"
+    ],
+    "dependencies": {},
+    "private": true
+}
