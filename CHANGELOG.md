@@ -1,3 +1,48 @@
+
+## Version 20.11.2.14
+
+Fixes:
+- [cmd] use new hash for user management 
+- [frontend] Discard the first week in ticks if it is the 7th day
+- [populator] styling fix for CE
+- [push] no personalisation in CE fix
+
+Features:
+- [crashes] dispatch event on new crashes
+- [systemlogs] added systemlogs to long tasks create, update and delete
+
+Enterprise features:
+- [AD] push approver permission
+- [attribution] pass custom segments onto custom scheme too
+- [surveys] improved export format
+
+
+## Version 20.11.2.13
+
+Fixes:
+- [frontend] fixes for making server side tables to be exported as local
+- [web] fix case for enhancing crash data for JSON POST request
+
+Enterprise fixes:
+- [drill] export tables locally
+- [users] use indexed lac property for Last Seen on
+
+## Version 20.11.2.12
+
+Fixes:
+- [prelogin] do not use double params in templates
+- [scripts] epel repo installing only for centos 7 
+
+Enterprise Improvements:
+- [active_directory] azure ad latest client & fixing group pagination
+- [active_directory] default group
+- [active_directory] use proper intersection for restrict
+- [attribution] fix mobile manual attribution check
+- [attribution] option to pass query data to end url
+- [dashboards] format duration on drill widgets
+- [dashboards] sharing with groups
+- [surveys] show popup in center for android and ios
+
 ## Version 20.11.2.10
 
 Improvements:

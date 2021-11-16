@@ -1,0 +1,38 @@
+<div>
+    <cly-header title="Conditions">
+        <template v-slot:header-right>
+            <div class="bu-level-item">
+                <el-button @click="create" type="primary" size="small" icon="el-icon-circle-plus">Add Condition</el-button>
+            </div>
+        </template>
+    </cly-header>
+
+    <cly-main>
+        <cly-datatable-n :rows="tableRows">
+            <template v-slot="scope">
+                <el-table-column prop="condition_name" label="Name">
+                </el-table-column>
+                <el-table-column prop="condition_definition" label="Definition">
+                </el-table-column>
+                <el-table-column prop="used_in_parameters" label="Used in parameters">
+                </el-table-column>
+                <el-table-column prop="seed_value" label="Seed value">
+                    <template v-slot:default="rowScope">
+                        {{rowScope.row.seed_value || "Default"}}
+                    </template>
+                </el-table-column>
+                <el-table-column type="options">
+                    <template v-slot="rowScope">
+                        <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, scope, rowScope.row)">
+                            <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                            <el-dropdown-item command="remove">{{i18n('common.delete')}}</el-dropdown-item>
+                        </cly-more-options>
+                    </template>
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-main>
+
+    <drawer :controls="drawers.conditions" @submit="onSubmit"></drawer>
+
+</div>

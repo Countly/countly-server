@@ -2,28 +2,18 @@
     <div v-bind:class="[componentId]">
         <cly-main>
             <cly-section>
-                <div class="bu-columns bu-is-gapless">
-                    <div class="bu-column bu-is-4">
-                        <el-card shadow="never" class="cly-vue-push-notification-card"> 
-                            <div class="cly-vue-push-notification-card__title">{{i18n('push-notification.total-app-users')}}</div> 
-                            <div class="cly-vue-push-notification-card__content">{{totalAppUsers}}</div>
-                        </el-card>
-                    </div>
-
-                    <div class="bu-column bu-is-4">
-                        <el-card shadow="never" class="cly-vue-push-notification-card">
-                            <div class="cly-vue-push-notification-card__title">{{i18n('push-notification.enabled-users')}}</div>
-                            <div class="cly-vue-push-notification-card__content">{{enabledUsers}}</div>
-                        </el-card>
-                    </div>
-
-                    <div class="bu-column bu-is-4">
-                        <el-card shadow="never" class="cly-vue-push-notification-card">
-                            <div class="cly-vue-push-notification-card__title">{{i18n('push-notification.enabled-users-percentage')}}</div>
-                            <div class="cly-vue-push-notification-card__content">{{formatPercentage(enabledUsers/totalAppUsers)}} %</div>
-                        </el-card>
-                    </div>
-                </div>
+                <cly-metric-cards>
+                    <cly-metric-card :number="totalAppUsers">
+                        {{i18n('push-notification.total-app-users')}}
+                    </cly-metric-card>
+                    <cly-metric-card :number="enabledUsers">
+                        {{i18n('push-notification.enabled-users')}}                     
+                    </cly-metric-card>
+                    <cly-metric-card :is-percentage="true" :number="enabledUsersPercentage">
+                        {{i18n('push-notification.enabled-users-percentage')}}
+                        <cly-tooltip-icon :tooltip="i18n('push-notification.enabled-users-percentage-description')" icon="ion ion-help-circled" class="bu-ml-2"> </cly-tooltip-icon>                     
+                    </cly-metric-card>
+                </cly-metric-cards>
             </cly-section>
             <div>
                 <div class="bu-level-left" style="margin-bottom:32px">
@@ -33,19 +23,18 @@
                         </div>
                     </div>
                     <div class="bu-level-item">
-                        <el-select v-model="selectedPlatformFilter">
-                            <el-option :key="item.value" :value="item.value" :label="item.label"
-                                v-for="item in platformFilters"
-                            >
+                        <el-select v-model="selectedPlatformFilter" :arrow="false" :adaptiveLength="true">
+                            <el-option v-for="item in platformFilters" :key="item.value" :value="item.value" :label="item.label">
                             </el-option>
                         </el-select>
                     </div>
                 </div>
             </div>
             <cly-section>
-                <cly-chart-time :bucket="selectedPeriodFilter" :option="pushNotificationOptions" :height="400" v-loading="isLoading">
+                <cly-chart-time :bucket="selectedPeriodFilter" :option="pushNotificationOptions" :height="400" v-loading="isLoading" :legend="legend" class="cly-vue-push-notification-chart">
                     <template v-slot:chart-left="scope">
-                        <div style="width: 100px;">
+                        <span class="cly-vue-push-notification-chart__left-text bu-mr-2">{{i18n('push-notification.time-period')}}</span>
+                        <div style="width:100px;">
                             <el-select v-if="selectedPushNotificationType === TypeEnum.ONE_TIME" v-model="selectedOneTimePeriodFilter">
                                 <el-option :key="item.value" :value="item.value" :label="item.label"
                                     v-for="item in oneTimePeriodFilters"></el-option>
@@ -65,7 +54,7 @@
             <cly-section>
                 <cly-datatable-n  :rows="pushNotificationRows" :available-dynamic-cols="optionalTableColumns" :resizable="true" v-loading="isLoading">
                     <template v-slot:header-left>
-                        <el-select v-model="selectedStatusFilter" >
+                        <el-select v-model="selectedStatusFilter">
                             <el-option
                                 :key="item.value"
                                 :value="item.value"
@@ -75,15 +64,21 @@
                         </el-select>
                     </template>
                     <template v-slot="scope">
-                        <el-table-column type="clickable" sortable="custom" prop="name" :label="i18n('push-notification.table-message-name')" class="cly-vue-push-notification-multi-line-table-data">
+                        <el-table-column fixed width="400" type="clickable" sortable="custom" prop="name" :label="i18n('push-notification.table-notification-name')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
-                                <span class="cly-vue-push-notification-multi-line-table-data__first-line" @click="onRowClick(scope.row)">{{scope.row.name}}</span>
-                                <br />
-                                <span class="cly-vue-push-notification-multi-line-table-data__second-line">{{scope.row.platforms.map(function(platform){return platform.label}).join(", ")}}</span>
+                                <div class="bu-is-flex bu-is-flex-direction-column">
+                                    <span class="cly-vue-push-notification-table-column__first-line" @click="onRowClick(scope.row)">{{scope.row.name}}</span>
+                                    <span class="cly-vue-push-notification-table-column__second-line">
+                                        <span> {{getPreviewPlatforms(scope.row.platforms)}} </span>
+                                        <span class="blinker cly-vue-push-notification-table-column__separator-blinker"></span>
+                                        <span> {{i18n('push-notification.created-by')}} {{scope.row.createdBy}} </span>
+                                    </span>
+                                </div>
                             </template>
                         </el-table-column>
                         <template v-for="(col,idx) in scope.dynamicCols">
                             <el-table-column 
+                                width="360"
                                 v-if="col.value === 'content'"  
                                 :key="idx" 
                                 sortable="custom" 
@@ -93,6 +88,7 @@
                                 </template>
                             </el-table-column>
                             <el-table-column 
+                                width="200"
                                 v-if="col.value === 'createdBy'"  
                                 :key="idx" 
                                 sortable="custom" 
@@ -102,42 +98,41 @@
                                 </template>
                             </el-table-column>
                         </template>
-                        <el-table-column sortable="custom" prop="status" :label="i18n('push-notification.table-status')">
+                        <el-table-column width="220" sortable="custom" prop="status" :label="i18n('push-notification.table-status')">
                             <template slot-scope="scope">
                                 <span class="blinker-wrapper" v-bind:style="{backgroundColor:getStatusBackgroundColor(scope.row.status.value).concat(DEFAULT_ALPHA_COLOR_VALUE_HEX)}"> 
                                     <span class="blinker" v-bind:style="{backgroundColor:getStatusBackgroundColor(scope.row.status.value)}">  </span>{{scope.row.status.label}}
                                 </span>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')" class="cly-vue-push-notification-multi-line-table-data">
+                        <el-table-column width="220" sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')"  class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
-                                <span class="cly-vue-push-notification-multi-line-table-data__first-line">{{scope.row.createdDateTime.date}}</span>
-                                <br />
-                                <span class="cly-vue-push-notification-multi-line-table-data__second-line">{{scope.row.createdDateTime.time}}</span>
+                                <div class="bu-is-flex bu-is-flex-direction-column">
+                                    <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.createdDateTime.date}}</span>
+                                    <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.createdDateTime.time}}</span>
+                                </div>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="custom" prop="sentDateTime" :label="i18n('push-notification.table-date-sent')" class="cly-vue-push-notification-multi-line-table-data">
+                        <el-table-column  width="280" sortable="custom" prop="sentDateTime" :label="i18n('push-notification.table-date-sent')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
-                                <span class="cly-vue-push-notification-multi-line-table-data__first-line">{{scope.row.sentDateTime.date}}</span>
-                                <br />
-                                <span class="cly-vue-push-notification-multi-line-table-data__second-line">{{scope.row.sentDateTime.time}}</span>
+                                <div class="bu-is-flex bu-is-flex-direction-column">
+                                    <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.sentDateTime.date}}</span>
+                                    <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.sentDateTime.time}}</span>
+                                </div>
                             </template>
                         </el-table-column>
-                        <el-table-column sortable="custom" prop="sent" :label="i18n('push-notification.table-sent')">
+                        <el-table-column sortable="custom" prop="sent" :label="i18n('push-notification.table-sent')" class="cly-vue-push-notification-table-column">
+                            <template slot-scope="scope">
+                                <span class="cly-vue-push-notification-table-column__numbers-only"> {{scope.row.sent}} </span>
+                            </template>
                         </el-table-column>
-                        <el-table-column sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')">
+                        <el-table-column sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-level">
-                                    <div class="bu-level-left">
-                                        <div class="bu-level-item first-user-activity-table-data-item">
-                                            <span>{{scope.row.actioned}}</span>
-                                        </div>
-                                        <div class="bu-level-item user-activity-table-data-item-divider">
-                                            <span>|</span>
-                                        </div>
-                                        <div class="bu-level-item user-activity-table-data-item">
-                                            <span>{{formatPercentage(scope.row.actioned/totalAppUsers)}} %</span>
-                                        </div>
+                                    <div class="bu-level-left cly-vue-push-notification-table-column__numbers-only">
+                                        <span class="bu-mr-1">{{formatNumber(scope.row.actioned)}}</span>
+                                        <span class="bu-mr-1">|</span>
+                                        <span>{{formatPercentage(scope.row.actioned/totalAppUsers)}} %</span>
                                     </div>
                                 </div>
                             </template>

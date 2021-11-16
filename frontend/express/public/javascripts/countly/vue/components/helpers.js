@@ -34,7 +34,7 @@
                 }
             },
             template: '<a @click="back" class="cly-vue-back-link"> \n' +
-                            '<span><i class="fas fa-arrow-left bu-pr-3"></i>{{innerTitle}}</span>\n' +
+                            '<span class="text-medium bu-is-capitalized"><i class="fas fa-arrow-left bu-pr-3"></i>{{innerTitle}}</span>\n' +
                         '</a>'
         }
     ));
@@ -60,14 +60,16 @@
 
     Vue.component("cly-empty-home", countlyBaseComponent.extend({
         template: '<div class="cly-vue-empty-home">\n' +
-                    '<div class="info">\n' +
-                        '<div class="title">{{title}}</div>\n' +
-                        '<div class="text">\n' +
-                            '{{body}}\n' +
-                        '</div>\n' +
+                    '<div class="bu-mb-3" v-if="image">\n' +
+                        '<img :src="image" class="image">\n' +
                     '</div>\n' +
-                    '<div v-if="image">\n' +
-                        '<img :src="image">\n' +
+                    '<div class="info">\n' +
+                        '<div class="title">\n' +
+                            '<h3>{{title}}</h3>\n' +
+                        '</div>\n' +
+                        '<div class="text">\n' +
+                            '<span v-html="body"></span>\n' +
+                        '</div>\n' +
                     '</div>\n' +
                 '</div>',
         mixins: [countlyVue.mixins.i18n],
@@ -376,10 +378,16 @@
     }));
 
     Vue.component("cly-blank", countlyBaseComponent.extend({
-        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center">\
-                        <h3 class="color-cool-gray-50">{{text}}</h3>\
+        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center bu-is-flex-direction-column">\
+                        <h3 class="color-cool-gray-50">{{title}}</h3>\
+                        <div v-if="text"><p class="text-medium">{{text}}</p></div>\
                     </div>',
         props: {
+            title: {
+                type: String,
+                default: '',
+                required: false
+            },
             text: {
                 type: String,
                 default: '',
