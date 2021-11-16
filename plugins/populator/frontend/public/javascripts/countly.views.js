@@ -162,8 +162,9 @@
                 countlyPopulator.setStartTime(countlyCommon.getPeriod()[0] / 1000);
                 countlyPopulator.setEndTime(countlyCommon.getPeriod()[1] / 1000);
 
-                countlyPopulator.getTemplate(this.selectedTemplate, function(template) {
-                    countlyPopulator.generateUsers(this.maxTime * 4, template);
+                countlyPopulator.setSelectedTemplate(self.selectedTemplate);
+                countlyPopulator.getTemplate(self.selectedTemplate, function(template) {
+                    countlyPopulator.generateUsers(self.maxTime * 4, template);
                 });
 
                 this.progressBar = setInterval(function() {
@@ -171,6 +172,7 @@
                         self.percentage += parseInt(100 / self.maxTime);
                     }
                     else {
+                        countlyPopulator.stopGenerating();
                         window.clearInterval(self.progressBar);
                         self.percentage = 100;
                         self.generateDataModal = { showDialog: false };
@@ -183,6 +185,12 @@
                 this.finishedGenerateModal = { showDialog: false };
                 this.generateDataModal = { showDialog: false };
                 this.description = CV.i18n('populator.warning3');
+                var self = this;
+                countlyPopulator.stopGenerating(function() {
+                    window.clearInterval(self.progressBar);
+                    self.generateDataModal = { showDialog: false };
+                    self.dialog = {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: ''};
+                });
             },
             openDialog: function() {
                 if (this.selectedTemplate === '' || this.selectedTemplate === null || this.selectedTemplate === undefined) {
