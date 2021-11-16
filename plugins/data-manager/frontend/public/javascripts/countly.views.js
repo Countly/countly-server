@@ -780,12 +780,13 @@
                             });
                     }
                     data.segments = segments;
-                }else{
-                    data.segments = data.segments.map(function(seg){
+                }
+                else {
+                    data.segments = data.segments.map(function(seg) {
                         return {
                             name: seg
-                        }
-                    })
+                        };
+                    });
                 }
                 data.isEditMode = true;
                 data.is_visible = data.is_visible === undefined ? true : data.is_visible;

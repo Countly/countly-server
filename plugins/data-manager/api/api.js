@@ -55,7 +55,7 @@ plugins.register("/o/data-manager/events", function(ob) {
                     return !ev.startsWith('[CLY]');
                 })
                 .map(ev=>{
-                    let combined = {segments: events.segments[ev] || [], key: ev};
+                    let combined = {segments: events?.segments[ev] || [], key: ev};
                     let mapObj = events?.map?.[ev] || {};
                     return {...combined, ...mapObj};
                 });
