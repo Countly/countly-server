@@ -1297,9 +1297,8 @@ function uploadFile(myfile, id, callback) {
                 steps: JSON.parse(newAtt.steps),
                 user_segmentation: JSON.parse(newAtt.user_segmentation)
             }, function(cohortResult) {
-                cohorts.calculateSteps(params, common, cohortResult, function() {
-                    return callback(cohortResult._id);
-                });
+                cohorts.calculateSteps(params, common, cohortResult, function() {});
+                return callback(cohortResult._id);
             });
         }
 
