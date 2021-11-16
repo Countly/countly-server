@@ -197,8 +197,10 @@
                 });
             },
             saveEvent: function(context, event) {
-                countlyDataManager.service.saveEvent(event).then(function(err, data) {
-                    console.log(err, data);
+                countlyDataManager.service.saveEvent(event).then(function(err) {
+                    if (err === 'Error') {
+                        return err;
+                    }
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
                 });
@@ -238,11 +240,11 @@
                     status: event.status,
                     category: event.category
                 };
-                countlyDataManager.service.editEvent(eventMap, omittedSegments).then(function(err, data) {
-                    console.log('err, data');
-                    console.log(err, data);
-                    countlyDataManager.service.editEventMeta(eventMeta).then(function(errMeta, dataMeta) {
-                        console.log(errMeta, dataMeta);
+                countlyDataManager.service.editEvent(eventMap, omittedSegments).then(function(err) {
+                    countlyDataManager.service.editEventMeta(eventMeta).then(function(errMeta) {
+                        if (err === 'Error' || errMeta === "Error") {
+                            return 'Error';
+                        }
                         context.dispatch('loadEventsData');
                         context.dispatch('loadValidations');
                         context.dispatch('loadSegmentsMap');
@@ -251,7 +253,9 @@
             },
             omitSegments: function(context, data) {
                 countlyDataManager.service.editEvent(data.eventMap, data.omittedSegments).then(function(res) {
-                    console.log(res);
+                    if (res === 'Error') {
+                        return res;
+                    }
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
                 });
@@ -259,7 +263,9 @@
             changeVisibility: function(context, data) {
                 var visibility = data.isVisible ? 'show' : 'hide';
                 countlyDataManager.service.changeVisibility(data.events, visibility).then(function(res) {
-                    console.log(res);
+                    if (res === 'Error') {
+                        return res;
+                    }
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
                 });
@@ -267,7 +273,9 @@
             deleteEvents: function(context, events) {
                 countlyDataManager.service.deleteEvents(events).then(function(res) {
                     countlyDataManager.service.deleteEventsMeta(events).then(function(res2) {
-                        console.log(res, res2);
+                        if (res === 'Error' || res2 === 'Error') {
+                            return 'Error';
+                        }
                         context.dispatch('loadEventsData');
                         context.dispatch('loadSegmentsMap');
                     });
