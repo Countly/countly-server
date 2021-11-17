@@ -15,15 +15,10 @@
     <json-editor></json-editor>
     <cly-datatable-n :rows="tableRows">
       <template v-slot:default="scope">
-        <el-table-column type="expand" min-width="50">
+        <el-table-column type="expand" min-width="50" v-if="isDrillEnabled">
           <template v-slot="props">
             <cly-section>
               <el-tabs type="border-card" value="default_value">
-                <el-tab-pane name="default_value" :label="i18n('remote-config.default-value')">
-                  <div>
-                    <pre>{{ props.row.default_value }}</pre>
-                  </div>
-                </el-tab-pane>
                 <el-tab-pane name="conditions" :label="i18n('remote-config.conditions')">
                   <div>
                     <pre>{{ props.row.conditions }}</pre>
@@ -37,7 +32,7 @@
           <template v-slot:default="rowScope">
             <div>
               <div class="cly-vue-remote-config-conditions-drawer__margin-bottom">             {{rowScope.row.parameter_key}}</div>
-              <div class="color-cool-gray-40 text-small"><span> {{getNumberOfConditionsText(rowScope.row.conditions)}} </span></div>
+              <div v-if="isDrillEnabled" class="color-cool-gray-40 text-small"><span> {{getNumberOfConditionsText(rowScope.row.conditions)}} </span></div>
             </div>
           </template>
         </el-table-column>
