@@ -174,35 +174,40 @@
             loadEventGroups: function(context) {
                 countlyDataManager.service.loadEventGroups().then(function(data) {
                     context.commit('setEventGroups', data);
+                    return data;
                 });
             },
             deleteEventGroups: function(context, events) {
-                countlyDataManager.service.deleteEventGroups(events).then(function() {
+                countlyDataManager.service.deleteEventGroups(events).then(function(data) {
                     context.dispatch("loadEventGroups");
+                    return data;
                 });
             },
             changeEventGroupsVisibility: function(context, data) {
-                countlyDataManager.service.editEventGroups(undefined, undefined, data.events, data.isVisible).then(function() {
+                countlyDataManager.service.editEventGroups(undefined, undefined, data.events, data.isVisible).then(function(res) {
                     context.dispatch("loadEventGroups");
+                    return res;
                 });
             },
             saveEventGroups: function(context, data) {
-                countlyDataManager.service.createEventGroups(data).then(function() {
+                countlyDataManager.service.createEventGroups(data).then(function(res) {
                     context.dispatch("loadEventGroups");
+                    return res;
                 });
             },
             editEventGroups: function(context, data) {
-                countlyDataManager.service.editEventGroups(data).then(function() {
+                countlyDataManager.service.editEventGroups(data).then(function(res) {
                     context.dispatch("loadEventGroups");
+                    return res;
                 });
             },
             saveEvent: function(context, event) {
                 countlyDataManager.service.saveEvent(event).then(function(err) {
-                    if (err === 'Error') {
-                        return err;
+                    if (err !== 'Error') {
+                        context.dispatch('loadEventsData');
+                        context.dispatch('loadSegmentsMap');
                     }
-                    context.dispatch('loadEventsData');
-                    context.dispatch('loadSegmentsMap');
+                    return err;
                 });
             },
             editEvent: function(context, event) {
