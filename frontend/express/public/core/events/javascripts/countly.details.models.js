@@ -439,6 +439,15 @@
             }
             return limitAlert;
         },
+        getCurrentCategory: function(context) {
+            if (context.state.allEventsData.map && context.state.allEventsData.map[context.state.selectedEventName]) {
+                var categoryId = context.state.allEventsData.map[context.state.selectedEventName].category;
+                if (categoryId && context.state.categoriesMap[categoryId]) {
+                    return context.state.categoriesMap[categoryId];
+                }
+            }
+            return "";
+        },
         extendMeta: function(prevState, selectedEventsData) {
             for (var metaObj in selectedEventsData.meta) {
                 if (prevState.meta[metaObj] && selectedEventsData.meta[metaObj] && prevState.meta[metaObj].length !== selectedEventsData.meta[metaObj].length) {
@@ -504,6 +513,17 @@
                 dataType: "json",
             });
         },
+        fetchCategories: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + '/data-manager/category',
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "preventRequestAbort": true
+                },
+                dataType: "json"
+            });
+        },
         fetchRefreshSelectedEventsData: function(context) {
             return CV.$.ajax({
                 type: "GET",
@@ -540,7 +560,9 @@
                 selectedEventsOverview: {},
                 allEventsList: [],
                 labels: [],
-                limitAlerts: []
+                limitAlerts: [],
+                categoriesMap: [],
+                currentCategory: ""
             };
         };
 
@@ -554,6 +576,8 @@
                                 localStorage.setItem("eventKey", res.list[0]);
                                 context.commit('setSelectedEventName', res.list[0]);
                             }
+                            context.commit("setCurrentCategory", countlyAllEvents.helpers.getCurrentCategory(context));
+
                             countlyAllEvents.service.fetchAllEventsGroupData(context)
                                 .then(function(result) {
                                     if (result) {
@@ -613,6 +637,15 @@
             },
             fetchHasSegments: function(context, hasSegments) {
                 context.commit('setHasSegments', hasSegments);
+            },
+            fetchCategories: function(context) {
+                countlyAllEvents.service.fetchCategories().then(function(data) {
+                    var map = {};
+                    data.forEach(function(c) {
+                        map[c._id] = c.name;
+                    });
+                    context.commit('setCategoriesMap', map);
+                });
             },
             fetchRefreshAllEventsData: function(context) {
                 return countlyAllEvents.service.fetchAllEventsData(context)
@@ -711,7 +744,13 @@
             },
             setLimitAlerts: function(state, value) {
                 state.limitAlerts = value;
-            }
+            },
+            setCategoriesMap: function(state, value) {
+                state.categoriesMap = value;
+            },
+            setCurrentCategory: function(state, value) {
+                state.currentCategory = value;
+            },
         };
         var allEventsGetters = {
             allEvents: function(_state) {
@@ -767,6 +806,12 @@
             },
             limitAlerts: function(_state) {
                 return _state.limitAlerts;
+            },
+            categoriesMap: function(_state) {
+                return _state.categoriesMap;
+            },
+            currentCategory: function(_state) {
+                return _state.currentCategory;
             }
         };
         return countlyVue.vuex.Module("countlyAllEvents", {

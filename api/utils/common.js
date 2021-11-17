@@ -11,7 +11,8 @@ var common = {},
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose'),
-    argon2 = require('argon2');
+    argon2 = require('argon2'),
+    _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
@@ -744,7 +745,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
     }
 
     for (var arg in argProperties) {
-        var argState = true;
+        let argState = true,
+            parsed;
         if (argProperties[arg].required) {
             if (args[arg] === void 0) {
                 if (returnErrors) {
@@ -762,6 +764,27 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg].type) {
                 if (argProperties[arg].type === 'Number' || argProperties[arg].type === 'String') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'IntegerString') {
+                    if (args[arg] === null && !argProperties[arg].required) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string' && !isNaN(parseInt(args[arg]))) {
+                        parsed = parseInt(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'number') {
+                        parsed = args[arg];
+                    }
+                    else {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
@@ -823,6 +846,57 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             returnObj.result = false;
                             argState = false;
                         }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'BooleanString') {
+                    if (args[arg] === null && !argProperties[arg].required) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string' && (args[arg] === 'true' || args[arg] === 'false')) {
+                        parsed = args[arg] === 'true';
+                    }
+                    else if (typeof args[arg] === 'boolean') {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'Date') {
+                    if (args[arg] === null && !argProperties[arg].required) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string' && !isNaN(new Date(args[arg]))) {
+                        parsed = new Date(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'number' && args[arg] > 1000000000000 && args[arg] < 2000000000000) { // it's bad and I know it!
+                        parsed = new Date(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'number' && args[arg] > 1000000000 && args[arg] < 2000000000) { // it's bad and I know it!
+                        parsed = new Date(args[arg] * 1000);
+                    }
+                    else if (args[arg] instanceof Date && !isNaN(new Date(args[arg]))) {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
                     }
                 }
                 else if (argProperties[arg].type === 'Array') {
@@ -846,6 +920,170 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                         else {
                             return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'ObjectID') {
+                    if (!argProperties[arg].required && args[arg] === null) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string') {
+                        if (common.db._ObjectID.isValid(args[arg])) {
+                            parsed = common.db._ObjectID(args[arg]);
+                        }
+                        else {
+                            if (returnErrors) {
+                                returnObj.errors.push('Incorrect ObjectID for ' + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                    else if (args[arg] instanceof common.db._ObjectID) {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push('Neither ObjectID string or ObjectID instance for ' + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'RegExp') {
+                    if (!argProperties[arg].required && args[arg] === null) {
+                        // do nothing
+                    }
+                    else if (typeof args[arg] === 'string') {
+                        try {
+                            parsed = new RegExp(_.escapeRegExp(args[arg]), argProperties[arg].mods || undefined);
+                        }
+                        catch (ex) {
+                            if (returnErrors) {
+                                returnObj.errors.push('Incorrect regex: ' + args[arg]);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                    else if (args[arg] instanceof RegExp) {
+                        parsed = args[arg];
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push('Must be a valid regexp string or RegExp instance');
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (argProperties[arg].type === 'JSON') {
+                    if (typeof args[arg] === 'object') {
+                        parsed = JSON.stringify(args[arg]);
+                    }
+                    else if (typeof args[arg] === 'string') {
+                        try {
+                            JSON.parse(args[arg]);
+                        }
+                        catch (e) {
+                            if (returnErrors) {
+                                returnObj.errors.push("Invalid JSON for " + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                    else {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid JSON for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (typeof argProperties[arg].type === 'object' && !argProperties[arg].array) {
+                    if (typeof args[arg] !== 'object' && !(!argProperties[arg].required && args[arg] === null)) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+
+                    let subret = common.validateArgs(args[arg], argProperties[arg].type, returnErrors);
+                    if (returnErrors && !subret.result) {
+                        returnObj.errors.push(...subret.errors.map(e => `${arg}: ${e}`));
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else if (!returnErrors && !subret) {
+                        return false;
+                    }
+                    else {
+                        parsed = subret.obj;
+                    }
+                }
+                else if ((typeof argProperties[arg].type === 'object' && argProperties[arg].array) || argProperties[arg].type.indexOf('[]') === argProperties[arg].type.length - 2) {
+                    if (!Array.isArray(args[arg])) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    else if (args[arg].length) {
+                        let type,
+                            scheme = {},
+                            ret;
+
+                        if (typeof argProperties[arg].type === 'object' && argProperties[arg].array) {
+                            type = argProperties[arg].type;
+                        }
+                        else {
+                            type = argProperties[arg].type.substr(0, argProperties[arg].type.length - 2);
+                        }
+
+                        args[arg].forEach((v, i) => {
+                            scheme[i] = { type, required: true };
+                        });
+
+                        ret = common.validateArgs(args[arg], scheme, true);
+                        if (!ret.result) {
+                            if (returnErrors) {
+                                returnObj.errors.push(...ret.errors.map(e => `${arg}: ${e}`));
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                        else {
+                            parsed = Object.values(ret.obj);
                         }
                     }
                 }
@@ -899,10 +1137,36 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                 }
             }
 
+            if (argProperties[arg].max) {
+                if (args[arg] > argProperties[arg].max) {
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " is greater than max value");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
+            if (argProperties[arg].min) {
+                if (args[arg] < argProperties[arg].min) {
+                    if (returnErrors) {
+                        returnObj.errors.push(arg + " is lower than min value");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
             if (argProperties[arg]['has-number']) {
                 if (!/\d/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has number");
+                        returnObj.errors.push(arg + " should have number");
                         returnObj.result = false;
                         argState = false;
                     }
@@ -915,7 +1179,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg]['has-char']) {
                 if (!/[A-Za-z]/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has char");
+                        returnObj.errors.push(arg + " should have char");
                         returnObj.result = false;
                         argState = false;
                     }
@@ -928,7 +1192,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg]['has-upchar']) {
                 if (!/[A-Z]/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has upchar");
+                        returnObj.errors.push(arg + " should have upchar");
                         returnObj.result = false;
                         argState = false;
                     }
@@ -941,7 +1205,37 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             if (argProperties[arg]['has-special']) {
                 if (!/[^A-Za-z\d]/.test(args[arg])) {
                     if (returnErrors) {
-                        returnObj.errors.push(arg + " should has special character");
+                        returnObj.errors.push(arg + " should have special character");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
+            if (argProperties[arg].in) {
+                let inn = typeof argProperties[arg].in === 'function' ? argProperties[arg].in() : argProperties[arg].in;
+
+                if ((Array.isArray(args[arg]) && args[arg].filter(x => inn.indexOf(x) === -1).length) ||
+                    (!Array.isArray(args[arg]) && inn.indexOf(args[arg]) === -1)) {
+                    if (returnErrors) {
+                        returnObj.errors.push("Value of " + arg + " is invalid");
+                        returnObj.result = false;
+                        argState = false;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+
+            if (argProperties[arg].custom) {
+                let err = argProperties[arg].custom(args[arg]);
+                if (err) {
+                    if (returnErrors) {
+                        returnObj.errors.push(err);
                         returnObj.result = false;
                         argState = false;
                     }
@@ -952,10 +1246,10 @@ common.validateArgs = function(args, argProperties, returnErrors) {
             }
 
             if (argState && returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
-                returnObj.obj[arg] = args[arg];
+                returnObj.obj[arg] = parsed === undefined ? args[arg] : parsed;
             }
             else if (!returnErrors && !argProperties[arg]['exclude-from-ret-obj']) {
-                returnObj[arg] = args[arg];
+                returnObj[arg] = parsed === undefined ? args[arg] : parsed;
             }
         }
     }
@@ -1064,13 +1358,13 @@ common.returnRaw = function(params, returnCode, body, heads) {
 * Output message as request response with provided http code
 * @param {params} params - params object
 * @param {number} returnCode - http code to use
-* @param {string} message - Message to output, will be encapsulated in JSON object under result property
+* @param {string|object} message - Message to output, will be encapsulated in JSON object under result property
 * @param {object} heads - headers to add to the output
 */
 common.returnMessage = function(params, returnCode, message, heads) {
     params.response = {
         code: returnCode,
-        body: JSON.stringify({result: message}, escape_html_entities)
+        body: JSON.stringify(typeof message === 'object' ? message : {result: message}, escape_html_entities)
     };
 
     if (params && params.APICallback && typeof params.APICallback === 'function') {
@@ -1079,7 +1373,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(returnCode !== 200, JSON.stringify({result: message}), heads, returnCode, params);
+            params.APICallback(returnCode !== 200, JSON.stringify(typeof message === 'object' ? message : {result: message}), heads, returnCode, params);
         }
         return;
     }

@@ -1,0 +1,29 @@
+<cly-drawer
+    @submit="onSubmit"
+    @copy="onCopy"
+    :title="title"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="controls">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="parameters-drawer">
+            <cly-form-field :label="i18n('remote-config.parameter-key')" name="parameter_key" rules="required" v-slot:default>
+                <el-input
+                    v-model="drawerScope.editedObject.parameter_key"
+                    :placeholder="i18n('placeholder.parameter-key-name')">
+                </el-input>
+            </cly-form-field>
+            <cly-form-field :label="i18n('remote-config.description')" name="description" rules="required" v-slot:default>
+                <el-input
+                    v-model="drawerScope.editedObject.description"
+                    :placeholder="i18n('placeholder.add-description')">
+                </el-input>
+            </cly-form-field>
+            <cly-form-field :label="i18n('remote-config.default-value')" name="default_value" rules="required" v-slot:default>
+                <el-input
+                    v-model="drawerScope.editedObject.default_value"
+                    :placeholder="i18n('placeholder.set-default-value')">
+                </el-input>
+            </cly-form-field>
+        </cly-form-step>
+    </template>
+</cly-drawer>

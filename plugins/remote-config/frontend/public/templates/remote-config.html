@@ -1,0 +1,77 @@
+<div class="widget">
+    <div id="remote-config">
+        <div id="tabs">
+            <ul>
+                <li><a href="#remote-config-parameters" data-localize="remote-config.parameters"></a></li>
+                <li><a href="#remote-config-conditions" data-localize="remote-config.conditions"></a></li>
+            </ul>
+            <div id="remote-config-parameters">
+                <div class="widget-header">
+                    <div class="left">
+                        <div class="title" data-localize="remote-config.parameters"></div>
+                    </div>
+                    {{#if is-admin}}
+                        <div class="right btn-header">
+                            <div class="icon-button green" id="add-parameter" data-localize="remote-config.add-parameters"></div>
+                        </div>
+                    {{/if}}
+                </div>
+                <div class="table-outer-container">
+                    <table id="table-parameters" class="d-table sortable help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+                </div>
+            </div>
+            <div id="remote-config-conditions">
+                <div class="widget-header">
+                    <div class="left">
+                        <div class="title" data-localize="remote-config.conditions"></div>
+                    </div>
+                    {{#if is-admin}}
+                        <div class="right btn-header">
+                            <div class="icon-button green" id="add-condition" data-localize="remote-config.add-conditions"></div>
+                        </div>
+                    {{/if}}
+                </div>
+                <div class="table-outer-container">
+                    <table id="table-conditions" class="d-table sortable help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+                </div>
+            </div>
+        </div>
+        {{> parameters-drawer }}
+        {{> conditions-drawer }}
+
+        <div id="cly-new-condition-model" class="model condition-model">
+            <div class="title" data-localize="remote-config.add-new-condition"></div>
+            <div class="body">
+                <div class="details">
+                    <div class="section" id="rc-condition-name-section">
+                        <div class="label" data-localize="remote-config.condition-name"></div>
+                        <div id="rc-condition-name-input">
+                            <input class="input" type="text" data-localize="placeholder.condition-name">
+                        </div>
+                        <div class="description" style="color: #E95C6C;" data-localize="remote-config.condition-key-error"></div>
+                    </div>
+                    <div class="section" style="margin-bottom: 55px;">
+                        <div class="label" data-localize="remote-config.color"></div>
+                        <div id="condition-colors" class="colors">
+                            <div data-color="1" class="color alt1 selected"></div>
+                            <div data-color="2" class="color alt2"></div>
+                            <div data-color="3" class="color alt3"></div>
+                            <div data-color="4" class="color alt4"></div>
+                        </div>
+                    </div>
+                    <div class="section" id="rc-seed-value-section">
+                        <div class="label" data-localize="remote-config.seed"></div>
+                        <div id="rc-condition-seed-value-input">
+                            <input class="input" type="text" data-localize="placeholder.seed-value">
+                        </div>
+                        <div class="description" data-localize="remote-config.seed-value-description"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <div id="model-cancel" class="icon-button light" data-localize="common.cancel"></div>
+                <div id="model-continue" class="icon-button light disabled" data-localize="remote-config.create-condition"></div>
+            </div>
+        </div>
+    </div>
+</div>

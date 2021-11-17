@@ -29,7 +29,7 @@
 			  </el-alert>
 			</div>
 		  <div class="cly-vue-events-all" v-if="!groupData.isGroup">
-			{{selectedEventName}}
+			{{selectedEventName}}<span v-if="category!=''" class="cly-vue-events-group bu-ml-4">{{category}}</span>
 		  </div>
 		  <div class="cly-vue-events-all" v-else>
 			{{groupData.name}}<span class="cly-vue-events-group bu-ml-4">{{i18n('events.all.group')}}</span>

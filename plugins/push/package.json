@@ -23,6 +23,7 @@
     "notifications"
   ],
   "dependencies": {
+    "bigint-hash": "^0.2.2",
     "jsonwebtoken": "^8.0.1",
     "node-forge": "0.7.6"
   },

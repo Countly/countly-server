@@ -10,6 +10,7 @@ var countlyConfig = require("../../frontend/express/config.js");
 var countlyFs = require("./countlyFs.js");
 var crypto = require("crypto");
 var request = require("request");
+var plugins = require('../../plugins/pluginManager.js');
 const log = require('./log.js')('core:taskmanager');
 
 /**
@@ -230,6 +231,9 @@ taskmanager.createTask = function(options, callback) {
     }
     else {
         options.db.collection("long_tasks").update({_id: options.id}, {$set: update}, {'upsert': true}, callback);
+        if (options.manually_create) {
+            plugins.dispatch("/systemlogs", {params: options.params, action: "task_manager_task_created", data: update});
+        }
     }
 };
 
@@ -435,7 +439,9 @@ taskmanager.editTask = function(options, callback) {
                     req.json.period_desc = options.data.period_desc;
                 }
                 options.data.request = JSON.stringify(req);
-                options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, callback);
+                options.db.collection("long_tasks").update({_id: options.id}, {$set: options.data}, function() {
+                    callback(null, {before: data, after: options.data});
+                });
             }
             catch (e) {
                 log.e(' got error while process task request parse', e);
@@ -631,7 +637,9 @@ taskmanager.deleteResult = function(options, callback) {
         if (task.gridfs) {
             countlyFs.gridfs.deleteFile("task_results", options.id, {id: options.id}, function() {});
         }
-        options.db.collection("long_tasks").remove({_id: options.id}, callback);
+        options.db.collection("long_tasks").remove({_id: options.id}, function() {
+            callback(null, task);
+        });
         if (task.taskgroup) {
             options.db.collection("long_tasks").find({subtask: options.id}, {_id: 1}).toArray(function(err2, tasks) {
                 if (tasks && tasks.length) {
