@@ -350,43 +350,6 @@
         this.loadedModuleIds = [];
     };
 
-    var memoryTracker = {
-        data: function() {
-            return {
-                memoryTicks: [],
-                memoryUsage: {},
-                prevVal: 0
-            };
-        },
-        created: function() {
-            var self = this;
-            // logMemory("view_change", app.route);
-            setInterval(function() {
-                self.logMemory("interval");
-                self.memoryUsage = self.memoryTicks[0];
-            }, 1000);
-        },
-        methods: {
-            bytesToSize: function(bytes, nFractDigit) {
-                var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-                if (bytes === 0) {
-                    return 'n/a';
-                }
-                nFractDigit	= nFractDigit !== undefined ? nFractDigit : 0;
-                var precision	= Math.pow(10, nFractDigit);
-                var i = Math.floor(Math.log(bytes) / Math.log(1024));
-                return Math.round(bytes * precision / Math.pow(1024, i)) / precision + ' ' + sizes[i];
-            },
-            logMemory: function(event) {
-                var lastVal = performance.memory.usedJSHeapSize;
-                var delta = lastVal - this.prevVal;
-                this.prevVal = lastVal;
-                var deltaSign = delta < 0 ? "-" : "+";
-                this.memoryTicks.unshift([Date.now(), event, this.bytesToSize(lastVal, 3), deltaSign + this.bytesToSize(Math.abs(delta), 3), window.location.hash]);
-            }
-        },
-        template: '<div style="position: fixed;right: 0;opacity: 0.8;background-color: antiquewhite;padding: 10px;border-radius: 4px;margin: 10px;bottom: 0;z-index: 10000;>Memory usage <pre>{{memoryUsage}}</pre></div>'
-    };
 
     var mainVM = new Vue({
         el: $('#vue-content .vue-wrapper').get(0),
@@ -397,14 +360,12 @@
                 It is not clear why, but when a view with those components destroyed,
                 they leave some memory leaks. Instantiating DummyCompAPI triggers memory cleanups. 
             */
-            'memory-tracker': memoryTracker,
             DummyCompAPI: DummyCompAPI
         },
         data: function() {
             return { currentViewComponent: null };
         },
         template: '<div>\
-                        <memory-tracker></memory-tracker>\
                         <component :is="currentViewComponent"></component>\
                         <DummyCompAPI></DummyCompAPI>\
                     </div>',
@@ -419,8 +380,10 @@
                 this.$root.$emit("cly-refresh", {reason: "dateChange"});
             },
             loadViewComponent: function(cmp, params) {
-                this.currentViewComponent = cmp;
-                this.$route.params = params;
+                this.$nextTick(function() {
+                    this.currentViewComponent = cmp;
+                    this.$route.params = params;
+                });
             },
             killViewComponent: function(callback) {
                 this.currentViewComponent = null;
@@ -471,11 +434,10 @@
             mainVM.loadViewComponent(self.component, self.params);
         },
         destroy: function() {
-            var self = this;
             this.templateLoader.destroy();
             $("body").removeClass("cly-vue-theme-clydef");
-            self.vuexLoader.destroy();
             mainVM.killViewComponent();
+            //self.vuexLoader.destroy();
         }
     });
 
