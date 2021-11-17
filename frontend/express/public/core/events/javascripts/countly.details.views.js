@@ -1,4 +1,4 @@
-/* global countlyVue, countlyAllEvents, countlyCommon, CV,app*/
+/* global countlyVue, countlyGlobal, countlyAllEvents, countlyCommon, CV,app*/
 (function() {
     var EventsTable = countlyVue.views.create({
         template: CV.T("/core/events/templates/eventsTable.html"),
@@ -113,6 +113,9 @@
             hasSegments: function() {
                 return this.$store.getters["countlyAllEvents/hasSegments"];
             },
+            category: function() {
+                return this.$store.getters["countlyAllEvents/currentCategory"];
+            },
             availableSegments: function() {
                 var availableSegments = this.$store.getters["countlyAllEvents/availableSegments"];
                 if (availableSegments) {
@@ -182,11 +185,20 @@
             return {description: CV.i18n('events.all.title.new') };
         },
         beforeCreate: function() {
+            var self = this;
             var currEvent = (this.$route.params && this.$route.params.eventKey) || localStorage.getItem("eventKey");
             if (currEvent) {
                 this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', currEvent);
             }
-            this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+            if (countlyGlobal.plugins.indexOf("drill") > -1 && countlyGlobal.plugins.indexOf("data-manager") > -1) {
+                this.$store.dispatch('countlyAllEvents/fetchCategories').then(function() {
+                    self.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+                });
+            }
+            else {
+                this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+            }
+
         },
         methods: {
             refresh: function() {

@@ -94,6 +94,9 @@
             }
             return {
                 submittedForm: {name: 'John', surname: 'Doe'},
+                selectedEvent: null,
+                selectedApp: null,
+                selectedApps: [],
                 listBoxOptions: [
                     {"label": "hello0", "value": 0},
                     {"label": "hello1", "value": 1},

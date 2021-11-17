@@ -1,4 +1,4 @@
-/* global Vue, app, countlyEvent */
+/* global Vue, app, countlyEvent, countlyGlobal*/
 
 (function(countlyVue) {
 
@@ -395,6 +395,40 @@
             }
         }
     }));
+
+    Vue.component("cly-app-select", {
+        template: '<el-select v-bind="$attrs" v-on="$listeners">\
+                        <el-option\
+                            v-if="allowAll"\
+                            key="all"\
+                            label="All apps"\
+                            value="all">\
+                        </el-option>\
+                        <el-option\
+                            v-for="app in apps"\
+                            :key="app.value"\
+                            :label="app.label"\
+                            :value="app.value">\
+                        </el-option>\
+                    </el-select>',
+        props: {
+            allowAll: {
+                type: Boolean,
+                default: false
+            }
+        },
+        computed: {
+            apps: function() {
+                var apps = countlyGlobal.apps || {};
+                return Object.keys(apps).map(function(key) {
+                    return {
+                        label: apps[key].name,
+                        value: apps[key]._id
+                    };
+                });
+            }
+        }
+    });
 
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
