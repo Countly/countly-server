@@ -1,0 +1,87 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2 v-if="currentSecondaryTab === 'validations'"> {{i18n('data-manager.manage-validations')}} </h2>
+            <h2 v-else-if="currentSecondaryTab === 'segmentation'"> {{i18n('data-manager.manage-event-segmentation')}} </h2>
+            <h2 v-else> {{i18n('data-manager.manage-events')}} </h2>
+            <cly-tooltip-icon class="bu-ml-2" icon="ion-help-circled" :tooltip="i18n('data-manager.manage-events')"></cly-tooltip-icon>
+        </template>
+        <template v-slot:header-tabs>
+            <cly-dynamic-tabs :no-history=true v-model="currentSecondaryTab" :tabs="secondaryTabs" skin="secondary"></cly-dynamic-tabs>
+      </template>
+      <template v-slot:header-right>
+          <div v-if="isDrill && currentSecondaryTab !== 'validations'">
+            <cly-more-options size="small" text="Create new" type="success" icon="el-icon-circle-plus" @command="handleCreateCommand($event, currentSecondaryTab)">
+                <el-dropdown-item v-if="currentSecondaryTab === 'events' || currentSecondaryTab === 'segmentation' " command="create-transform">
+                    {{i18n('data-manager.create-transformation')}}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="currentSecondaryTab === 'events' " command="create-event">
+                    {{i18n('data-manager.create-event')}}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="currentSecondaryTab === 'event-groups' " command="create-event-group">
+                    {{i18n('data-manager.create-group')}}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="currentSecondaryTab === 'transformations' " command="create-event-transform">
+                    {{i18n('data-manager.create-event-transformation')}}
+                </el-dropdown-item>
+                <el-dropdown-item v-if="currentSecondaryTab === 'transformations' " command="create-segment-transform">
+                    {{i18n('data-manager.create-segment-transformation')}}
+                </el-dropdown-item>
+            </cly-more-options>
+          </div>
+          <div v-else>
+              <cly-more-options v-if="currentSecondaryTab === 'event-groups' " size="small" text="Create new" type="success" icon="el-icon-circle-plus" @command="handleCreateCommand($event, currentSecondaryTab)">
+                  <el-dropdown-item command="create-event-group">
+                    {{i18n('data-manager.create-group')}}
+                </el-dropdown-item>
+              </cly-more-options>
+          </div>
+        <div v-if="isDrill" class="bu-ml-2">
+            <cly-more-options size="small" @command="handleMetaCommands($event)">
+                <el-dropdown-item command="regnerate">{{i18n('data-manager.regenerate')}}</el-dropdown-item>
+                <el-dropdown-item command="export-schema">{{i18n('data-manager.export-schema')}}</el-dropdown-item>
+                <el-dropdown-item command="import-schema">{{i18n('data-manager.import-schema')}}</el-dropdown-item>
+            </cly-more-options>
+        </div>
+    </template>
+    </cly-header>
+    <events-drawer @close="closeDrawer" :controls="drawers.events"></events-drawer>
+    <event-group-drawer @close="closeDrawer" :controls="drawers.eventgroup"></event-group-drawer>
+    <div v-if="isDrill">
+        <transform-drawer @close="closeDrawer" :controls="drawers.transform"></transform-drawer>
+        <segments-drawer @close="closeDrawer" :controls="drawers.segments"></segments-drawer>
+        <regenerate-drawer @close="closeDrawer" :controls="drawers.regenerate"></regenerate-drawer>
+        <cly-form-dialog
+            ref="importSchemaFormDialog"
+            title="Import Event Schema"
+            name="Import Event Schema"
+            @submit="onSaveImport"
+            :closeFn="onCloseImport"
+            saveButtonLabel="Save"
+            :isOpened="importDialogVisible">
+            <template v-slot="formDialogScope">
+                <cly-dropzone 
+                @vdropzone-removed-file="onFileRemoved" 
+                @vdropzone-file-added="onFileAdded" 
+                ref="importSchemaDropzone" 
+                id="import-schema-dropzone"
+                :useCustomSlot=true 
+                :options="dropzoneOptions">
+                    <div class="dropzone-custom-content">
+                        <div class="dz-message">
+                            <div class="give-upload">
+                                <div class="arrow"></div>
+                                <p class="fline">{{i18n('export.upload-title')}}</p>
+                                <p class="sline">
+                                    <span>{{i18n('export.drag-drop')}}</span>
+                                    <span>{{i18n('export.browse')}}</span>
+                                    <span>{{i18n('export.files-to-import')}}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </cly-dropzone>
+            </template>
+        </cly-form-dialog>
+    </div>
+</div>

@@ -1,0 +1,151 @@
+<div class="cly-vue-data-manager__events">
+    <cly-datatable-n
+    @row-click="onRowClick"
+    ref="eventsDefaultTable"
+    searchPlaceholder="Search in Events"
+    :rows="events"
+    :keyFn="function(row) {return row.key}"
+    :row-class-name="function() {return 'bu-is-clickable'}"
+    :indent=0
+    :height=550
+    :tracked-fields="trackedFields"
+    @select-all="handleAllChange"
+    @select="handleCurrentChange"
+    :available-dynamic-cols="dynamicEventCols"
+    :persist-key="eventsTablePersistKey"
+    class="bu-mx-5">
+
+        <template v-slot:header-left>
+            <cly-multi-select
+             ref="eventCategoryFilters" 
+             v-model="filter" 
+             :fields="filterFields">
+                <template v-slot:action>
+                    <div class="bu-level-item bu-is-clickable text-small color-red-100">
+                        <a @click="manageCategories">Manage</a>
+                    </div>
+                </template>
+            </cly-multi-select>
+        </template>
+
+        <template v-slot="scope">   
+            <el-table-column fixed="left" type="selection" :reserve-selection="true" width="55" prop="isSelected">
+            </el-table-column>
+
+            <el-table-column fixed="left" width="280" sortable="custom" prop="name" label="Event Name">
+                <template v-slot="rowScope">
+                    <div>{{rowScope.row.name || rowScope.row.key || rowScope.row.e}}</div>
+                    <div v-if="rowScope.row.audit && rowScope.row.audit.userName" class="text-small color-cool-gray-50">Last modified by {{rowScope.row.audit.userName}}</div>
+                    <div>
+                        <span v-if="isDrill" class="tag-container">
+                            <span v-bind:class="statusClassObject(rowScope.row.status)" class="bu-tag bu-mt-1"> 
+                                <span class="blinker"></span>
+                                <span class="bu-is-capitalized">{{rowScope.row.status || 'unplanned'}}</span>
+                            </span>
+                        </span>
+                        <span v-if="rowScope.row.is_visible === false" class="bu-tag"><i class="fa fa-eye-slash"></i></span>
+                        <span v-else class="bu-tag"><i class="fa fa-eye"></i></ion-icon></span>
+                    </div>
+                </template>
+            </el-table-column>
+
+            <el-table-column width="200" prop="description" label="Description">
+            </el-table-column>
+
+            <el-table-column v-if="isDrill" width="230" prop="category" label="Category">
+                <template v-slot="rowScope">
+                    {{rowScope.row.categoryName || 'Uncategorized'}}
+                </template>
+            </el-table-column>
+
+            <el-table-column prop="lastModifiedts" width="200" label="Last Modified">
+                <template v-slot="rowScope">
+                    <div v-if="rowScope.row && rowScope.row.lastModifiedts">
+                        <div>{{rowScope.row.lastModifiedDate}}</div>
+                        <span class="text-small color-cool-gray-50">{{rowScope.row.lastModifiedTime}}</span>
+                    </div>
+                </template>
+            </el-table-column>
+
+            <el-table-column width="200" label="Last Triggered">
+            </el-table-column>
+
+            <el-table-column fixed="right" width="100" align="center">
+                <template v-slot="rowScope">
+                    <cly-more-options size="small" @command="handleCommand($event, scope, rowScope.row)">
+                        <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                        <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                    </cly-more-options>
+                </template>
+            </el-table-column>
+
+            <template v-for="(col,idx) in scope.dynamicCols" :prop="col.value">
+                <el-table-column width="250" :prop="col.value" :label="col.label">
+                    <template v-slot="rowScope">
+                        {{rowScope.row[col.value]}}
+                    </template>
+                </el-table-column>
+            </template>  
+
+        </template>
+        <template v-slot:bottomline="scope">
+            <cly-diff-helper class="action-bar" :diff="scope.diff" @discard="scope.unpatch()">
+                <template v-slot:main>
+                    <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center" style="height: 100%;">
+                        <cly-more-options class="bu-mr-3" size="small" text="Change Category" type="default" icon="el-icon-crop" @command="handleChangeCategory($event, scope.diff)">
+                            <el-dropdown-item command=null>Uncategorized</el-dropdown-item>
+                            <el-dropdown-item :command="cat._id" :key="idx" v-for="(cat, idx) in categories">{{cat.name}}</el-dropdown-item>
+                        </cly-more-options>
+                        <cly-more-options v-if="isDrill" class="bu-mr-3" size="small" text="Change Status" type="default" icon="el-icon-s-tools" @command="handleChangeStatus($event, scope.diff)">
+                            <el-dropdown-item command="live">Live</el-dropdown-item>
+                            <el-dropdown-item command="approved">Approved</el-dropdown-item>
+                            <el-dropdown-item command="unplanned">Unplanned</el-dropdown-item>
+                            <el-dropdown-item command="blocked">Blocked</el-dropdown-item>
+                        </cly-more-options>
+                        <cly-more-options class="bu-mr-3" size="small" text="Change Visibility" type="default" icon="el-icon-view" @command="handleChangeVisibility($event, scope.diff)">
+                            <el-dropdown-item command="visible">Visibile</el-dropdown-item>
+                            <el-dropdown-item command="hidden">Hidden</el-dropdown-item>
+                        </cly-more-options>
+                        
+                        <el-button class="bu-mr-3" size="small" type="default" icon="el-icon-delete-solid" @click="handleDelete(scope.diff)">Delete</el-button>
+                    </div>
+                </template>
+            </cly-diff-helper>
+        </template>
+    </cly-datatable-n>
+
+    <cly-confirm-dialog 
+    @cancel="closeDeleteForm" 
+    @confirm="submitDeleteForm" 
+    :before-close="closeDeleteForm" 
+    ref="deleteConfirmDialog" 
+    :visible.sync="showDeleteDialog" 
+    dialogType="danger" 
+    :saveButtonLabel="i18n('common.delete')" 
+    :cancelButtonLabel="i18n('common.no-dont-delete')" 
+    title="Delete Events" >
+        <template slot-scope="scope">
+            Delete event(s) permanently?<br/> <small class="color-red-100">Warning: This is not reversible</small>
+            <ul>
+             <li v-for="ev in deleteQueue"> {{ev.key}}</li>
+            </ul>
+        </template>
+    </cly-confirm-dialog>
+    <cly-form-dialog
+        v-if="isDrill"
+        name="Manage Categories"
+        title="Manage Categories"
+        @submit="onSaveCategories"
+        :closeFn="onCloseCategories"
+        saveButtonLabel="Save"
+        :isOpened="categoryDialogVisible"
+        v-bind="categories">
+        <template v-slot="formDialogScope">
+            <data-manager-manage-category
+		        :max-categories="100"
+                :deletedCategories="deletedCategories"
+		        v-model="categories">
+            </data-manager-manage-category>
+        </template>
+    </cly-form-dialog>
+</div>

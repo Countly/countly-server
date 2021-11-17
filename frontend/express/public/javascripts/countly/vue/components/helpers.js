@@ -1,4 +1,4 @@
-/* global Vue, app, countlyEvent */
+/* global Vue, app, countlyEvent, countlyGlobal*/
 
 (function(countlyVue) {
 
@@ -34,7 +34,7 @@
                 }
             },
             template: '<a @click="back" class="cly-vue-back-link"> \n' +
-                            '<span><i class="fas fa-arrow-left bu-pr-3"></i>{{innerTitle}}</span>\n' +
+                            '<span class="text-medium bu-is-capitalized"><i class="fas fa-arrow-left bu-pr-3"></i>{{innerTitle}}</span>\n' +
                         '</a>'
         }
     ));
@@ -60,14 +60,16 @@
 
     Vue.component("cly-empty-home", countlyBaseComponent.extend({
         template: '<div class="cly-vue-empty-home">\n' +
-                    '<div class="info">\n' +
-                        '<div class="title">{{title}}</div>\n' +
-                        '<div class="text">\n' +
-                            '{{body}}\n' +
-                        '</div>\n' +
+                    '<div class="bu-mb-3" v-if="image">\n' +
+                        '<img :src="image" class="image">\n' +
                     '</div>\n' +
-                    '<div v-if="image">\n' +
-                        '<img :src="image">\n' +
+                    '<div class="info">\n' +
+                        '<div class="title">\n' +
+                            '<h3>{{title}}</h3>\n' +
+                        '</div>\n' +
+                        '<div class="text">\n' +
+                            '<span v-html="body"></span>\n' +
+                        '</div>\n' +
                     '</div>\n' +
                 '</div>',
         mixins: [countlyVue.mixins.i18n],
@@ -76,6 +78,23 @@
             body: { required: true, type: String },
             image: { type: String, default: null }
         }
+    }));
+
+    Vue.component("cly-status-tag", countlyBaseComponent.extend({
+        template: '<div class="cly-vue-status-tag" :class="dynamicClasses">\n' +
+                     '<div class="cly-vue-status-tag__blink"></div>\n' +
+                        '{{text}}\n' +
+                  '</div>',
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            text: { required: true, type: String },
+            color: { default: "green", type: String},
+        },
+        computed: {
+            dynamicClasses: function() {
+                return "cly-vue-status-tag--" + this.color;
+            }
+        },
     }));
 
     Vue.component("cly-diff-helper", countlyBaseComponent.extend({
@@ -359,10 +378,16 @@
     }));
 
     Vue.component("cly-blank", countlyBaseComponent.extend({
-        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center">\
-                        <h3 class="color-cool-gray-50">{{text}}</h3>\
+        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center bu-is-flex-direction-column">\
+                        <h3 class="color-cool-gray-50">{{title}}</h3>\
+                        <div v-if="text"><p class="text-medium">{{text}}</p></div>\
                     </div>',
         props: {
+            title: {
+                type: String,
+                default: '',
+                required: false
+            },
             text: {
                 type: String,
                 default: '',
@@ -370,6 +395,40 @@
             }
         }
     }));
+
+    Vue.component("cly-app-select", {
+        template: '<el-select v-bind="$attrs" v-on="$listeners">\
+                        <el-option\
+                            v-if="allowAll"\
+                            key="all"\
+                            label="All apps"\
+                            value="all">\
+                        </el-option>\
+                        <el-option\
+                            v-for="app in apps"\
+                            :key="app.value"\
+                            :label="app.label"\
+                            :value="app.value">\
+                        </el-option>\
+                    </el-select>',
+        props: {
+            allowAll: {
+                type: Boolean,
+                default: false
+            }
+        },
+        computed: {
+            apps: function() {
+                var apps = countlyGlobal.apps || {};
+                return Object.keys(apps).map(function(key) {
+                    return {
+                        label: apps[key].name,
+                        value: apps[key]._id
+                    };
+                });
+            }
+        }
+    });
 
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],

@@ -1,0 +1,73 @@
+<div class="cly-vue-data-manager" v-bind:class="[componentId]">
+    <event-group-drawer @close="closeDrawer" :controls="drawers.eventgroup"></event-group-drawer>
+    <cly-header>
+        {{eventGroup}}
+        <template v-slot:header-left>
+            <div>
+                <cly-back-link link="/manage/data-manager/events/event-groups" title="Back to Manage Event Groups"></cly-back-link>
+                <div class="bu-mt-4">
+                    <h3 class="bu-is-capitalize"> {{eventGroup.name}} </h3>
+                </div>
+            </div>
+        </template>
+        <template v-slot:header-right>
+            <div class="bu-mt-6">
+                <el-button @click="handleEdit" size="small" icon="el-icon-edit">Edit Group</el-button>
+                <cly-more-options class="bu-ml-2" size="small" @command="handleCommand($event, eventGroup)">
+                    <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                </cly-more-options>
+            </div>
+        </template>
+    </cly-header>
+    <cly-section class="bu-mx-5 cly-vue-data-manager__box-container--boxed">
+        <div class="bu-columns bu-is-gapless">
+            <div class="bu-column">
+                <div class="bu-mx-5 bu-my-5">
+                    <div class="bu-mt-5">
+                        <h4>
+                            Event Group Details
+                        </h4>
+                        <table class="bu-mt-5 cly-vue-data-manager__box-container__table text-medium">
+                            <colgroup>
+                                <col width="30%" />
+                                <col width="70%" />
+                            </colgroup>
+                            <tbody>
+                                <tr>
+                                    <td><span>Description</span>
+                                    </td>
+                                    <td>{{eventGroup.description}}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span>Included Events</span>
+                                    </td>
+                                    <td>
+                                        <div v-for="e in eventGroup.source_events">{{e}}</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </cly-section>
+    <cly-confirm-dialog 
+    @cancel="closeDeleteForm" 
+    @confirm="submitDeleteForm" 
+    :before-close="closeDeleteForm" 
+    ref="deleteConfirmDialog" 
+    :visible.sync="showDeleteDialog" 
+    dialogType="danger" 
+    :saveButtonLabel="i18n('common.delete')" 
+    :cancelButtonLabel="i18n('common.no-dont-delete')" 
+    title="Delete Event Group" >
+        <template slot-scope="scope">
+            Delete Event Group permanently?<br/> <small class="color-red-100">Warning: This is not reversible</small>
+            <ul>
+             <li v-if="deleteElement">{{deleteElement.name}}</li>
+            </ul>
+        </template>
+    </cly-confirm-dialog>
+</div>
