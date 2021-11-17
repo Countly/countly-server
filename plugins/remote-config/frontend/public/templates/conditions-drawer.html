@@ -48,7 +48,7 @@
           <div class="bu-mb-3 color-cool-gray-50 text-small cly-vue-remote-config-conditions-drawer__margin-bottom">
             {{i18n('remote-config.condition.color.tag.description')}}
           </div>
-          <color-tag :tags="colorTag" :defaultColorKey="defaultColorKey" v-model="selectedColorKey"></color-tag>
+          <cly-color-tag :tags="colorTag" :defaultTag="defaultTag" v-model="selectedTag"></cly-color-tag>
         </div>
         <div v-if="showSeedValue" class="bu-py-4">
           <div class="font-weight-bold text-smallish cly-vue-remote-config-conditions-drawer__margin-bottom">
@@ -71,6 +71,7 @@
           </div>
           <div>
             <cly-qb-segmentation 
+              ref="qb"
               :additional-properties="additionalProperties"
               :additionalRules="remoteConfigFilterRules"
               :add-empty-row-on-empty-query="true"

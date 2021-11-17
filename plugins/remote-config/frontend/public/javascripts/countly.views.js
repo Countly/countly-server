@@ -92,39 +92,6 @@
         }
     });
 
-    var ColorTag = countlyVue.views.BaseView.extend({
-        data: function() {
-            return {
-                selectedColorKey: this.defaultColorKey
-            };
-        },
-        methods: {
-            click: function(event) {
-                this.selectedColorKey = event.target.getAttribute('data-color');
-                this.$emit("input", Number(this.selectedColorKey));
-            },
-        },
-
-        props: {
-            value: Number,
-            tags: {
-                type: Array,
-                default: []
-            },
-            defaultColorKey: {
-                type: Number,
-                default: 1
-            }
-        },
-        template: '<div class="bu-is-flex bu-is-flex-wrap-wrap bu-is-align-items-center">\
-                                <div class="cly-vue-remote-config-conditions-drawer__color-tag-wrapper"  v-for="(tag,idx) in tags" :data-color="tag.key">{{ tag.label }}\
-                                <div v-if="tag.key == selectedColorKey" @click="click" class="cly-vue-remote-config-conditions-drawer__color-tag cly-vue-remote-config-conditions-drawer__color-tag__selected bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.colorCode}" :data-color="tag.key">\
-                                    <i class="ion-checkmark cly-vue-remote-config-conditions-drawer__checkmark"></i>\
-                                </div>\
-                                <div v-else @click="click" class="cly-vue-remote-config-conditions-drawer__color-tag bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.colorCode}" :data-color="tag.key"></div>\
-                                </div>\
-                    </div>'
-    });
     var JsonEditor = countlyVue.views.create({
         template: CV.T("/remote-config/templates/json-editor.html"),
         data: function() {
@@ -173,9 +140,6 @@
     });
     var ConditionsDrawer = countlyVue.views.create({
         template: CV.T("/remote-config/templates/conditions-drawer.html"),
-        components: {
-            "color-tag": ColorTag
-        },
         props: {
             controls: {
                 type: Object
@@ -183,7 +147,7 @@
         },
         computed: {
             showSeedValue: function() {
-                if (!_.isEmpty(this.managedPropertySegmentation.queryText) && this.managedPropertySegmentation.queryText.includes("Random Percentile")) {
+                if (!_.isEmpty(this.managedPropertySegmentation.queryText) && this.$refs.qb && this.$refs.qb.meta.usedProps["up.random_percentile"]) {
                     return true;
                 }
                 return false;
@@ -194,7 +158,7 @@
             var remoteConfigFilterRules = [new countlyQueryBuilder.RowRule({
                 name: "cly.remote-config-random-percentile-rule",
                 selector: function(row) {
-                    return row.property.id === "condition.randomPercentile";
+                    return row.property.id === "up.random_percentile";
                 },
                 actions: [new countlyQueryBuilder.RowAction({
                     id: "disallowOperator",
@@ -206,41 +170,44 @@
                 })]
             })];
             additionalProperties.push(new countlyQueryBuilder.Property({
-                id: 'condition.randomPercentile',
-                name: "Random Percentile",
+                id: 'up.random_percentile',
+                name: CV.i18n("remote-config.conditions.random.percentile"),
                 type: countlyQueryBuilder.PropertyType.NUMBER,
                 group: 'User Properties',
 
             }));
             return {
                 remoteConfigFilterRules: remoteConfigFilterRules,
-                selectedColorKey: 1,
+                selectedTag: {},
                 useDescription: false,
                 managedPropertySegmentation: {},
                 conditionPropertySegmentation: { query: {}, byVal: []},
                 additionalProperties: additionalProperties,
                 title: "",
                 saveButtonLabel: "",
-                defaultColorKey: 1,
+                defaultTag: {
+                    value: 1,
+                    label: "#6C47FF"
+                },
                 colorTag: [{
-                    key: 1,
-                    colorCode: "#6C47FF"
+                    value: 1,
+                    label: "#6C47FF"
                 },
                 {
-                    key: 2,
-                    colorCode: "#39C0C8"
+                    value: 2,
+                    label: "#39C0C8"
                 },
                 {
-                    key: 3,
-                    colorCode: "#F96300"
+                    value: 3,
+                    label: "#F96300"
                 },
                 {
-                    key: 4,
-                    colorCode: "#F34971"
+                    value: 4,
+                    label: "#F34971"
                 },
                 {
-                    key: 5,
-                    colorCode: "#F5C900"
+                    value: 5,
+                    label: "#F5C900"
                 }
 
                 ]
@@ -249,7 +216,7 @@
         methods: {
             onSubmit: function(doc) {
                 var self = this;
-                doc.condition_color = this.selectedColorKey;
+                doc.condition_color = this.selectedTag.value;
                 if (!doc.condition_description || !self.useDescription) {
                     doc.condition_description = "-";
                 }
@@ -272,7 +239,18 @@
             onCopy: function(doc) {
                 if (doc._id) {
                     if (doc.condition_color) {
-                        this.defaultColorKey = doc.condition_color;
+                        var arr = this.colorTag.filter(function(item) {
+                            return item.value === doc.condition_color;
+                        });
+                        if (arr.length > 0) {
+                            this.defaultTag = arr[0];
+                        }
+                        else {
+                            this.defaultTag = {
+                                value: 1,
+                                label: "#6C47FF"
+                            };
+                        }
                     }
                     if (doc.condition_description === "-") {
                         doc.condition_description = "";
@@ -297,8 +275,11 @@
                     this.managedPropertySegmentation.query = {};
                     this.managedPropertySegmentation.queryText = "";
                     this.useDescription = false;
-                    this.selectedColorKey = 1;
-                    this.defaultColorKey = 1;
+                    this.selectedTag = {};
+                    this.defaultTag = {
+                        value: 1,
+                        label: "#6C47FF"
+                    };
                 }
             }
         }
@@ -313,6 +294,9 @@
 
         },
         computed: {
+            isDrillEnabled: function() {
+                return countlyGlobal.plugins.indexOf("drill") > -1 ? true : false;
+            },
             tableRows: function() {
                 return this.$store.getters["countlyRemoteConfig/parameters/all"];
             }

@@ -23,6 +23,26 @@
     }
 }
 
+.cly-vue-color-tag {
+    &__color-tag-wrapper {
+        width:20%;
+    }
+
+    &__color-tag {
+        width:92%;
+        height: 37px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        &__selected {
+            border: 2px solid #0166D6;
+        }
+    }
+
+    &__checkmark {
+        color: map.get(c.$colors, "white");
+    }
+}
+
 .cly-vue-status-tag {
     padding-right: 16.33px;
     border-radius: 4px;
