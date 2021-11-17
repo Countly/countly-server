@@ -1,3 +1,9 @@
+## Version 21.11.0
+
+* Adding Custom Dashboards plugin
+* Adding Hooks plugin
+* Adding Recaptcha plugin
+* Adding Remote Config plugin
 
 ## Version 20.11.2.14
 
