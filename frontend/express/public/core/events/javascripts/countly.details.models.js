@@ -524,6 +524,17 @@
                 dataType: "json"
             });
         },
+        fetchSegmentMap: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + '/data-manager/event-segment',
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "preventRequestAbort": true,
+                },
+                dataType: "json"
+            });
+        },
         fetchRefreshSelectedEventsData: function(context) {
             return CV.$.ajax({
                 type: "GET",
@@ -562,7 +573,9 @@
                 labels: [],
                 limitAlerts: [],
                 categoriesMap: [],
-                currentCategory: ""
+                currentCategory: "",
+                segments: [],
+                segmentDescription: ""
             };
         };
 
@@ -640,12 +653,40 @@
             },
             fetchCategories: function(context) {
                 countlyAllEvents.service.fetchCategories().then(function(data) {
-                    var map = {};
-                    data.forEach(function(c) {
-                        map[c._id] = c.name;
-                    });
-                    context.commit('setCategoriesMap', map);
+                    if (data) {
+                        var map = {};
+                        data.forEach(function(c) {
+                            map[c._id] = c.name;
+                        });
+                        context.commit('setCategoriesMap', map);
+                    }
                 });
+            },
+            fetchSegments: function(context) {
+                countlyAllEvents.service.fetchSegmentMap().then(function(data) {
+                    if (data) {
+                        var segments = [];
+                        data.forEach(function(segmap) {
+                            return segmap.sg.forEach(function(s) {
+                                s.event = segmap._id;
+                                segments.push(s);
+                            });
+                        });
+                        context.commit('setSegments', segments);
+                        return data;
+                    }
+                });
+            },
+            setSegmentDescription: function(context) {
+                var segment = context.state.segments.filter(function(seg) {
+                    return (seg.event === context.state.selectedEventName) && (seg.name === context.state.currentActiveSegmentation);
+                });
+                if (segment.length > 0 && segment[0].description) {
+                    context.commit('setSegmentDescription', segment[0].description);
+                }
+                else {
+                    context.commit('setSegmentDescription', "");
+                }
             },
             fetchRefreshAllEventsData: function(context) {
                 return countlyAllEvents.service.fetchAllEventsData(context)
@@ -751,6 +792,12 @@
             setCurrentCategory: function(state, value) {
                 state.currentCategory = value;
             },
+            setSegments: function(state, value) {
+                state.segments = value;
+            },
+            setSegmentDescription: function(state, value) {
+                state.segmentDescription = value;
+            },
         };
         var allEventsGetters = {
             allEvents: function(_state) {
@@ -812,7 +859,14 @@
             },
             currentCategory: function(_state) {
                 return _state.currentCategory;
+            },
+            segments: function(_state) {
+                return _state.segments;
+            },
+            segmentDescription: function(_state) {
+                return _state.segmentDescription;
             }
+
         };
         return countlyVue.vuex.Module("countlyAllEvents", {
             state: getInitialState,
