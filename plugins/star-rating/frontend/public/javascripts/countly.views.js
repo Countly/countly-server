@@ -1,4 +1,4 @@
-/*global $, countlyAuth, countlyReporting, countlyGlobal, starRatingPlugin, app, jQuery, countlyCommon, CV, countlyVue*/
+/*global $, countlyAuth, countlyReporting, countlyGlobal, starRatingPlugin, Promise, app, jQuery, countlyCommon, CV, countlyVue*/
 var FEATURE_NAME = 'star_rating';
 
 var Drawer = countlyVue.views.create({
@@ -806,7 +806,8 @@ var UserFeedbackRatingsTable = countlyVue.views.create({
                         widget: '5',
                         rating: 5,
                         time: 5
-                    }];
+                    }
+                ];
             }
         }
     }
@@ -832,6 +833,7 @@ countlyVue.container.registerTab("/users/tabs", {
         methods: {},
         created: function() {
             this.uid = this.$route.params.uid;
+            /*
             var self = this;
             starRatingPlugin.requestFeedbackData({uid: this.uid, period: "12months"})
                 .then(function() {
@@ -845,10 +847,31 @@ countlyVue.container.registerTab("/users/tabs", {
                             else {
                                 rating.widgetTitle = "Widget not exist";
                             }
-
                             return rating;
                         });
                     });
+                });
+            */
+            var self = this;
+            starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})
+                .then(function() {
+                    return Promise.all(starRatingPlugin.getFeedbackData().aaData.map(function(rating) {
+                        return new Promise(function(resolve) {
+                            rating.ts = countlyCommon.formatTimeAgo(rating.ts);
+                            starRatingPlugin.requestSingleWidget(rating.widget_id, function(widget) {
+                                if (widget) {
+                                    rating.widgetTitle = widget.popup_header_text;
+                                }
+                                else {
+                                    rating.widgetTitle = "Widget not exist";
+                                }
+                                resolve(rating);
+                            });
+                        });
+                    }));
+                })
+                .then(function(data) {
+                    self.ratingsData = data;
                 });
         }
     })
