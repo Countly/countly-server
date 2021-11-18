@@ -303,10 +303,10 @@
         },
         methods: {
             getNumberOfConditionsText: function(conditions) {
-                if (conditions.length === 0) {
+                if (conditions.length === 1) {
                     return "1 condition";
                 }
-                return conditions.length + 1 + "conditions";
+                return conditions.length + "conditions";
             },
             getDate: function(ts) {
                 if (!ts) {
