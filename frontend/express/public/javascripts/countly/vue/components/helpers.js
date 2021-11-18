@@ -1,4 +1,4 @@
-/* global Vue, app, countlyEvent */
+/* global Vue, app, countlyEvent, countlyGlobal*/
 
 (function(countlyVue) {
 
@@ -396,6 +396,40 @@
         }
     }));
 
+    Vue.component("cly-app-select", {
+        template: '<el-select v-bind="$attrs" v-on="$listeners">\
+                        <el-option\
+                            v-if="allowAll"\
+                            key="all"\
+                            label="All apps"\
+                            value="all">\
+                        </el-option>\
+                        <el-option\
+                            v-for="app in apps"\
+                            :key="app.value"\
+                            :label="app.label"\
+                            :value="app.value">\
+                        </el-option>\
+                    </el-select>',
+        props: {
+            allowAll: {
+                type: Boolean,
+                default: false
+            }
+        },
+        computed: {
+            apps: function() {
+                var apps = countlyGlobal.apps || {};
+                return Object.keys(apps).map(function(key) {
+                    return {
+                        label: apps[key].name,
+                        value: apps[key]._id
+                    };
+                });
+            }
+        }
+    });
+
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
         template: '<cly-select-x\
@@ -597,6 +631,44 @@
                 default: 10
             }
         }
+    }));
+
+    Vue.component("cly-color-tag", countlyBaseComponent.extend({
+        data: function() {
+            return {
+                selectedTag: this.defaultTag
+            };
+        },
+        methods: {
+            click: function(tag) {
+                this.selectedTag = tag;
+                this.$emit("input", tag);
+            },
+        },
+
+        props: {
+            value: Object,
+            tags: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            defaultTag: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        template: '<div class="bu-is-flex bu-is-flex-wrap-wrap bu-is-align-items-center">\
+                                <div class="cly-vue-color-tag__color-tag-wrapper"  v-for="(tag,idx) in tags">\
+                                <div v-if="tag.value == selectedTag.value" @click="click(tag)" class="cly-vue-color-tag__color-tag cly-vue-color-tag__color-tag__selected bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}">\
+                                    <i class="ion-checkmark cly-vue-color-tag__checkmark"></i>\
+                                </div>\
+                                <div v-else @click="click(tag)" class="cly-vue-color-tag__color-tag bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}"></div>\
+                                </div>\
+                    </div>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));

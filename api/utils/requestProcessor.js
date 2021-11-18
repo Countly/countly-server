@@ -375,7 +375,7 @@ const processRequest = (params) => {
                             }
                             countlyApi.mgmt.appUsers.update(params.qstring.app_id, params.qstring.query, params.qstring.update, params, function(err2) {
                                 if (err2) {
-                                    common.returnMessage(params, 400, err);
+                                    common.returnMessage(params, 400, err2);
                                 }
                                 else {
                                     common.returnMessage(params, 200, 'User Updated');
@@ -420,7 +420,7 @@ const processRequest = (params) => {
                             }
                             countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err2) {
                                 if (err2) {
-                                    common.returnMessage(params, 400, err);
+                                    common.returnMessage(params, 400, err2);
                                 }
                                 else {
                                     common.returnMessage(params, 200, 'User deleted');

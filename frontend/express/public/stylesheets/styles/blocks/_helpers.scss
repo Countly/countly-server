@@ -1,3 +1,6 @@
+@use "../base/colors" as c;
+@use "sass:map";
+
 .cly-vue-tooltip-icon {
     font-size: 20px;
     color: #A7AEB8;
@@ -61,5 +64,25 @@
     }
     .el-radio-button__inner {
         width: 100%;
+    }
+}
+
+.cly-vue-color-tag {
+    &__color-tag-wrapper {
+        width:20%;
+    }
+
+    &__color-tag {
+        width:92%;
+        height: 37px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        &__selected {
+            border: 2px solid #0166D6;
+        }
+    }
+
+    &__checkmark {
+        color: map.get(c.$colors, "white");
     }
 }

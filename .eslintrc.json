@@ -207,7 +207,7 @@
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 9
+                "ecmaVersion": 2020
             },
             "rules": {
                 "no-console": "off",
@@ -285,7 +285,7 @@
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 9
+                "ecmaVersion": 2020
             },
             "rules": {
                 "no-console": "off"
@@ -303,7 +303,7 @@
                 "mocha": true
             },
             "parserOptions": {
-                "ecmaVersion": 9
+                "ecmaVersion": 2020
             },
             "rules": {
                 "no-console": "off",

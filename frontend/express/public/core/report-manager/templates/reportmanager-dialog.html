@@ -1,0 +1,11 @@
+<div>
+    <el-button @click="showDialog" :disabled="disabled" type="default" size="small">
+        Last queries
+    </el-button>
+    <cly-dialog
+        title="Recent reports"
+        width="850px"
+        :visible.sync="isDialogVisible">
+        <cly-report-manager-table @view-task="onViewTask" disableAutoNavigationToTask report-type="auto" :fixed-origin="origin" compact></cly-report-manager-table>
+    </cly-dialog>
+</div>
