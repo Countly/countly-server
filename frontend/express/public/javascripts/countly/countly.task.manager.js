@@ -315,7 +315,7 @@
             store.set("countly_task_monitor", monitor);
             if (!silent) {
                 $(".orange-side-notification-banner-wrapper").css("display", "block");
-                app.updateLongTaskViewsNofification();
+                app.updateLongTaskViewsNotification();
                 /*CountlyHelpers.notify({
                     title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
                     message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
@@ -336,7 +336,7 @@
 
     countlyTaskManager.tick = function() {
         var assistantAvailable = true;
-        app.updateLongTaskViewsNofification();
+        app.updateLongTaskViewsNotification();
         if (typeof countlyAssistant === "undefined") {
             assistantAvailable = false;
         }
@@ -367,7 +367,7 @@
                             if (res1 && res1.manually_create === false) {
                                 $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
                                 app.haveUnreadReports = true;
-                                app.updateLongTaskViewsNofification();
+                                app.updateLongTaskViewsNotification();
                             }
                             if (res1 && res1.view) {
                                 if (!assistantAvailable) {
@@ -402,7 +402,7 @@
                                 if (res1.manually_create === false) {
                                     $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
                                     app.haveUnreadReports = true;
-                                    app.updateLongTaskViewsNofification();
+                                    app.updateLongTaskViewsNotification();
                                 }
                                 if (!assistantAvailable) {
                                     CountlyHelpers.notify({

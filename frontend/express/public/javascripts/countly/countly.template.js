@@ -766,7 +766,7 @@ var AppRouter = Backbone.Router.extend({
             node.callback(category, node, menu);
         }
     },
-    updateLongTaskViewsNofification: function(appChanged) {
+    updateLongTaskViewsNotification: function(appChanged) {
         countlyTaskManager.getLastReports(function(data) {
             if (appChanged) {
                 app.haveUnreadReports = false;
@@ -3726,7 +3726,7 @@ var AppRouter = Backbone.Router.extend({
                 if (window.components && window.components.slider && window.components.slider.instance) {
                     window.components.slider.instance.close();
                 }
-                app.updateLongTaskViewsNofification(true);
+                app.updateLongTaskViewsNotification(true);
             }
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal.apps[appId].type;
