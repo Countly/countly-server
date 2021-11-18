@@ -1,4 +1,5 @@
-const { Message, State, Status, platforms, Audience, ValidationError, TriggerKind } = require('./send'),
+const { Message, State, Status, platforms, Audience, ValidationError, TriggerKind, MEDIA_MIME_ALL } = require('./send'),
+    { DEFAULTS } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message');
 
@@ -96,6 +97,8 @@ async function validate(args, preparing = false) {
 module.exports.create = async params => {
     let msg = await validate(params.qstring);
     msg._id = common.db.ObjectID();
+    msg.info.created = new Date();
+    msg.info.createdBy = params.member._id;
 
     if (msg.triggerAutoOrApi()) {
         msg.state = State.Streamable;
@@ -130,6 +133,9 @@ module.exports.update = async params => {
             throw new ValidationError('Wrong trigger kind');
         }
     }
+
+    msg.info.updated = new Date();
+    msg.info.updatedBy = params.member._id;
 
     await msg.save();
 
@@ -270,6 +276,65 @@ module.exports.estimate = async params => {
     common.returnOutput(params, {count, locales});
 };
 
+module.exports.mime = async params => {
+    try {
+        let info = await mimeInfo(params.qstring.url);
+        if (info.status !== 200) {
+            common.returnMessage(params, 400, {errors: [`Invalid status ${info.status}`]});
+        }
+        else if (info.headers['content-type'] === undefined) {
+            common.returnMessage(params, 400, {errors: ['No content-type while HEADing the url']});
+        }
+        else if (info.headers['content-length'] === undefined) {
+            common.returnMessage(params, 400, {errors: ['No content-length while HEADing the url']});
+        }
+        else if (MEDIA_MIME_ALL.indexOf(info.headers['content-type']) === -1) {
+            common.returnMessage(params, 400, {errors: [`Media mime type "${info.headers['content-type']}" is not supported`]});
+        }
+        else if (parseInt(info.headers['content-length']) > DEFAULTS.max_media_size) {
+            common.returnMessage(params, 400, {errors: [`Media size (${info.headers['content-length']}) is too large`]});
+        }
+        else {
+            let media = info.url,
+                mediaMime = info.headers['content-type'],
+                mediaSize = parseInt(info.headers['content-length']);
+
+            common.returnOutput(params, {
+                media,
+                mediaMime,
+                mediaSize
+            });
+        }
+    }
+    catch (err) {
+        if (!err.errors) {
+            log.e('Mime request error', err);
+        }
+        common.returnMessage(params, 400, {errors: err.errors || ['Server error']});
+    }
+};
+
+
+module.exports.one = async params => {
+    let data = common.validateArgs(params.qstring, {
+        _id: {type: 'ObjectID', required: true},
+    }, true);
+    if (data.result) {
+        data = data.obj;
+    }
+    else {
+        return common.returnOutput(params, {errors: data.errors});
+    }
+
+    let msg = await Message.findOne(data._id);
+    if (msg) {
+        common.returnOutput(params, msg.json);
+    }
+    else {
+        throw new ValidationError('Message not found');
+    }
+};
+
 
 module.exports.all = async params => {
     let data = common.validateArgs(params.qstring, {
@@ -339,3 +404,90 @@ module.exports.all = async params => {
         return common.returnOutput(params, {errors: data.errors});
     }
 };
+
+/** 
+ * Get MIME of the file behind url by sending a HEAD request
+ * 
+ * @param {string} url - url to get info from
+ * @returns {Promise} - {status, headers} in case of success, PushError otherwise
+ */
+function mimeInfo(url) {
+    let conf = common.plugins.getConfig('push'),
+        ok = common.validateArgs({url}, {
+            url: {type: 'URLString', required: true},
+        }, true),
+        protocol = 'http';
+
+    if (ok.result) {
+        url = ok.obj.url;
+        protocol = url.protocol.substr(0, url.protocol.length - 1);
+    }
+    else {
+        throw new ValidationError(ok.errors);
+    }
+
+    log.d('Retrieving URL', url);
+
+    return new Promise((resolve, reject) => {
+        if (conf && conf.proxyhost) {
+            let opts = {
+                host: conf.proxyhost,
+                method: 'CONNECT',
+                path: url.hostname + ':' + (url.port ? url.port : (protocol === 'https' ? 443 : 80))
+            };
+            if (conf.proxyport) {
+                opts.port = conf.proxyport;
+            }
+            if (conf.proxyuser) {
+                opts.headers = {'Proxy-Authorization': 'Basic ' + Buffer.from(conf.proxyuser + ':' + conf.proxypass).toString('base64')};
+            }
+            log.d('Connecting to proxy', opts);
+
+            require('http')
+                .request(url, opts)
+                .on('connect', (res, socket) => {
+                    if (res.statusCode === 200) {
+                        opts = {
+                            method: 'HEAD',
+                            agent: false,
+                            socket
+                        };
+
+                        let req = require(protocol).request(url, opts, res2 => {
+                            resolve({url: url.toString(), status: res2.statusCode, headers: res2.headers});
+                        });
+                        req.on('error', err => {
+                            log.e('error when HEADing ' + url, err);
+                            reject(new ValidationError('Cannot access proxied URL'));
+                        });
+                        req.end();
+                    }
+                    else {
+                        log.e('Cannot connect to proxy %j: %j / %j', opts, res.statusCode, res.statusMessage);
+                        reject(new ValidationError('Cannot access proxy server'));
+                    }
+                })
+                .on('error', err => {
+                    reject(new ValidationError('Cannot CONNECT to proxy server'));
+                    log.e('error when CONNECTing %j', opts, err);
+                })
+                .end();
+        }
+        else {
+            require(protocol)
+                .request(url, {method: 'HEAD'}, res => {
+                    if ((res.statusCode === 301 || res.statusCode === 302) && res.headers.location) {
+                        mimeInfo(res.headers.location).then(resolve, reject);
+                    }
+                    else {
+                        resolve({url: url.toString(), status: res.statusCode, headers: res.headers});
+                    }
+                })
+                .on('error', err => {
+                    log.e('error when HEADing ' + url, err);
+                    reject(new ValidationError('Cannot access URL'));
+                })
+                .end();
+        }
+    });
+}
