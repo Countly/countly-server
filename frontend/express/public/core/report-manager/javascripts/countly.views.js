@@ -46,6 +46,10 @@
             compact: {
                 type: Boolean,
                 default: false
+            },
+            disableAutoNavigationToTask: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -219,7 +223,12 @@
                         }, [CV.i18n("common.no-dont-do-that"), CV.i18n("taskmanager.yes-rerun-report")], {title: CV.i18n("taskmanager.confirm-rerun-title"), image: "rerunning-task"});
                     }
                     else if (command === "view-task") {
-                        window.location = row.view + id;
+                        if (this.disableAutoNavigationToTask) {
+                            self.$emit("view-task", row);
+                        }
+                        else {
+                            window.location = row.view + id;
+                        }
                     }
                 }
             },
@@ -281,6 +290,10 @@
                 if (!this.disabled) {
                     this.isDialogVisible = true;
                 }
+            },
+            onViewTask: function(payload) {
+                this.$emit("view-task", payload);
+                this.isDialogVisible = false;
             }
         }
     }));

@@ -6,6 +6,6 @@
         title="Recent reports"
         width="850px"
         :visible.sync="isDialogVisible">
-        <cly-report-manager-table report-type="auto" :fixed-origin="origin" compact></cly-report-manager-table>
+        <cly-report-manager-table @view-task="onViewTask" disableAutoNavigationToTask report-type="auto" :fixed-origin="origin" compact></cly-report-manager-table>
     </cly-dialog>
 </div>
