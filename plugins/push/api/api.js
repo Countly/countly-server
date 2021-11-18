@@ -6,7 +6,7 @@ const plugins = require('../../pluginManager'),
     { onTokenSession, onSessionUser, onAppPluginsUpdate } = require('./api-push'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, create, update, toggle, remove, all } = require('./api-message'),
+    { estimate, create, update, toggle, remove, all, one, mime } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
     FEATURE_NAME = 'push',
@@ -15,9 +15,11 @@ const plugins = require('../../pluginManager'),
     apis = {
         o: {
             dashboard: [validateRead, dashboard],
+            mime: [validateRead, mime],
             message: {
                 estimate: [validateRead, estimate],
-                all: [validateRead, all]
+                all: [validateRead, all],
+                GET: [validateCreate, one, '_id'],
             }
         },
         i: {
@@ -25,7 +27,9 @@ const plugins = require('../../pluginManager'),
                 create: [validateCreate, create],
                 update: [validateUpdate, update],
                 toggle: [validateUpdate, toggle],
-                remove: [validateDelete, remove]
+                remove: [validateDelete, remove],
+                PUT: [validateCreate, create],
+                POST: [validateUpdate, update, '_id'],
             }
         }
     };
@@ -64,7 +68,10 @@ plugins.register('/cache/init', function() {
             log.d('cache: initialized with %d msgs: %j', msgs.length, msgs.map(m => m._id));
             return msgs.map(m => [m.id, m]);
         },
-        read: k => Message.findOne(k),
+        read: k => {
+            log.d('cache: read', k);
+            return Message.findOne(k);
+        },
         write: async(k, data) => {
             log.d('cache: writing', k, data);
             if (!(data instanceof Message)) {
@@ -83,6 +90,7 @@ plugins.register('/cache/init', function() {
 
 plugins.register('/i', async ob => {
     var params = ob.params;
+    log.d('push query', params.qstring);
     if (params.qstring.events && Array.isArray(params.qstring.events)) {
         let events = params.qstring.events,
             keys = events.map(e => e.key);
@@ -142,6 +150,14 @@ function apiCall(apisObj, ob) {
             check(params, FEATURE_NAME, endpoint(method + '/' + sub, fn));
             return true;
         }
+        else if (params.method in apisObj[method]) {
+            let [check, fn, key] = apisObj[method][sub];
+            if (key) {
+                params.qstring[key] = sub;
+            }
+            check(params, FEATURE_NAME, endpoint(method, fn));
+            return true;
+        }
     }
 
     log.d('invalid endpoint', paths);
@@ -160,13 +176,13 @@ function endpoint(method, fn) {
     return params => fn(params).catch(e => {
         log.e('Error during API request /%s', method, e);
         if (e instanceof ValidationError) {
-            common.returnMessage(params, 400, {kind: 'ValidationError', errors: e.errors});
+            common.returnMessage(params, 400, {kind: 'ValidationError', errors: e.errors}, null, true);
         }
         else if (e instanceof PushError) {
-            common.returnMessage(params, 400, {kind: 'PushError', errors: [e.message]});
+            common.returnMessage(params, 400, {kind: 'PushError', errors: [e.message]}, null, true);
         }
         else {
-            common.returnMessage(params, 500, {kind: 'ServerError', errors: ['Server error']});
+            common.returnMessage(params, 500, {kind: 'ServerError', errors: ['Server error']}, null, true);
         }
     });
 }

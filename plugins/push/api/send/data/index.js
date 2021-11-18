@@ -1,4 +1,4 @@
-const { S, State, Status, STATUSES, TriggerKind } = require('./const'),
+const { S, State, Status, STATUSES, TriggerKind, MEDIA_MIME_ALL, MEDIA_MIME_IOS, MEDIA_MIME_ANDROID } = require('./const'),
     { PushError, SendError, ConnectionError, ValidationError, ERROR } = require('./error'),
     { Trigger, PlainTrigger, EventTrigger, CohortTrigger, APITrigger } = require('./trigger'),
     { Creds } = require('./creds'),
@@ -36,5 +36,9 @@ module.exports = {
     PushError,
     SendError,
     ConnectionError,
-    ValidationError
+    ValidationError,
+
+    MEDIA_MIME_ALL,
+    MEDIA_MIME_IOS,
+    MEDIA_MIME_ANDROID
 };

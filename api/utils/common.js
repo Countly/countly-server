@@ -18,6 +18,11 @@ var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
 
 /**
+ * Because why requiring both all the time
+ */
+common.plugins = plugins;
+
+/**
 * Escape special characters in the given string of html.
 * @param  {string} string - The string to escape for inserting into HTML
 * @param  {bool} more - if false, escapes only tags, if true escapes also quotes and ampersands
@@ -817,6 +822,34 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
                 }
+                else if (argProperties[arg].type === 'URLString') {
+                    if (toString.call(args[arg]) !== '[object String]') {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    else {
+                        let { URL } = require('url');
+                        try {
+                            parsed = new URL(args[arg]);
+                        }
+                        catch (ignored) {
+                            if (returnErrors) {
+                                returnObj.errors.push('Invalid URL string ' + arg);
+                                returnObj.result = false;
+                                argState = false;
+                            }
+                            else {
+                                return false;
+                            }
+                        }
+                    }
+                }
                 else if (argProperties[arg].type === 'Email') {
                     if (toString.call(args[arg]) !== '[object String]') {
                         if (returnErrors) {
@@ -1360,11 +1393,12 @@ common.returnRaw = function(params, returnCode, body, heads) {
 * @param {number} returnCode - http code to use
 * @param {string|object} message - Message to output, will be encapsulated in JSON object under result property
 * @param {object} heads - headers to add to the output
+* @param {boolean} noResult - skip wrapping message object into stupid {result: }
 */
-common.returnMessage = function(params, returnCode, message, heads) {
+common.returnMessage = function(params, returnCode, message, heads, noResult = false) {
     params.response = {
         code: returnCode,
-        body: JSON.stringify(typeof message === 'object' ? message : {result: message}, escape_html_entities)
+        body: JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities)
     };
 
     if (params && params.APICallback && typeof params.APICallback === 'function') {
@@ -1373,7 +1407,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
                 params.res = {};
             }
             params.res.finished = true;
-            params.APICallback(returnCode !== 200, JSON.stringify(typeof message === 'object' ? message : {result: message}), heads, returnCode, params);
+            params.APICallback(returnCode !== 200, JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}), heads, returnCode, params);
         }
         return;
     }
@@ -1403,7 +1437,7 @@ common.returnMessage = function(params, returnCode, message, heads) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
             }
             else {
-                params.res.write(JSON.stringify({result: message}, escape_html_entities));
+                params.res.write(JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities));
             }
 
             params.res.end();

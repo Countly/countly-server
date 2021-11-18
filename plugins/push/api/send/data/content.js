@@ -95,14 +95,20 @@ class Content extends Jsonable {
                 return 'Personalisation object cannot be empty';
             }
             for (let kk in opt) {
-                if (kk === 'k' && (typeof opt[kk] !== 'string' || !opt[kk])) {
-                    return 'Personalisation key must be a non empty string';
+                if (kk === 'k') {
+                    if (typeof opt[kk] !== 'string' || !opt[kk]) {
+                        return 'Personalisation key must be a non empty string';
+                    }
                 }
-                else if (kk === 'c' && typeof opt[kk] !== 'boolean') {
-                    return 'Personalisation capitalise option must be boolean';
+                else if (kk === 'c') {
+                    if (typeof opt[kk] !== 'boolean') {
+                        return 'Personalisation capitalise option must be boolean';
+                    }
                 }
-                else if (kk === 'f' && (typeof opt[kk] !== 'string' || !opt[kk])) {
-                    return 'Personalisation fallback must be a non empty string';
+                else if (kk === 'f') {
+                    if (typeof opt[kk] !== 'string' || !opt[kk]) {
+                        return 'Personalisation fallback must be a non empty string';
+                    }
                 }
                 else {
                     return 'Invalid key in personalisation object';
