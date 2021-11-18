@@ -338,7 +338,7 @@ plugins.setConfigs("remote-config", {
         var maximumParametersAllowed = plugins.getConfig("remote-config").maximum_allowed_parameters;
         var maximumConditionsAllowed = plugins.getConfig("remote-config").conditions_per_paramaeters;
         var collectionName = "remoteconfig_parameters" + appId;
-
+        parameter.ts = Date.now();
         var asyncTasks = [
             checkMaximumParameterLimit.bind(null, appId, maximumParametersAllowed),
             checkMaximumConditionsLimit.bind(null, parameter.conditions, maximumConditionsAllowed),
