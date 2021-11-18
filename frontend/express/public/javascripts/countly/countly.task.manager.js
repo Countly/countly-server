@@ -316,11 +316,11 @@
             if (!silent) {
                 $(".orange-side-notification-banner-wrapper").css("display", "block");
                 app.updateLongTaskViewsNotification();
-                /*CountlyHelpers.notify({
+                CountlyHelpers.notify({
                     title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
                     message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
                     info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
-                });*/
+                });
             }
         }
         else {
