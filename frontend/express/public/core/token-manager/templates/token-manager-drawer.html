@@ -1,0 +1,119 @@
+
+<cly-drawer v-bind="$props.controls" title="Create New Token" saveButtonLabel="Create Token">
+<!--
+    <template v-slot:sidecars="formScope">
+        <cly-content id="mainSidecar" role="sidecar" :always-active="true">
+            <div class="bu-is-flex bu-is-justify-content-center bu-m-6">
+                <pre class="bg-cool-gray-20 bu-p-5" style="border-radius: 16px;">{{formScope.editedObject}}</pre>
+            </div>
+        </cly-content>
+    </template> 
+-->
+    <template v-slot:default="formScope">
+        <cly-form-step id="step1" name="First Step">
+            <cly-form-field name="description" label="Token Description" rules="required">
+                <el-input v-model="formScope.editedObject.description" placeholder="Enter token description"></el-input>
+            </cly-form-field>
+            <cly-form-field class="bu-p-0">
+                <div class="bu-is-flex bu-is-justify-content-space-between bu-mb-0">
+                    <p class="bu-has-text-left bu-is-size-6 color-cool-gray-100">Endpoints<i
+                            class="el-icon-question bu-ml-1"></i></p>
+                    <p class="bu-has-text-right bu-is-size-7 color-cool-gray-50">Optional</p>
+                </div>
+                <p class="bu-is-size-7 color-cool-gray-50" style="margin-top: -10px;">
+                    Given endpoints are interpreted as regularexpressions
+                </p>
+            </cly-form-field>
+            <cly-form-field-group highlight>
+                <div class="bu-is-flex bu-is-justify-content-space-between">
+                    <p class="bu-mt-1 bu-is-size-7 color-cool-gray-100 bu-has-text-left">ENDPOINT DETAILS</p>
+                    <el-button class="bu-has-text-right color-red-100 bu-is-size-7" type="text" plain>Remove</el-button>
+                </div>
+                <cly-form-field name="endpointName" label="Endpoint Name" class="bu-mb-3">
+                    <el-input v-model="formScope.editedObject.endpointName" placeholder="Enter a value"></el-input>
+                </cly-form-field>
+                <cly-form-field label="Query Parameters">
+                    <div class="bu-is-flex">
+                        <el-input class="bu-has-text-left column is-half" v-model="formScope.editedObject.field1"
+                            placeholder="Parameter">
+                        </el-input>
+                        <el-input class="bu-has-text-right bu-ml-2 bu-mr-4 column is-half"
+                            v-model="formScope.editedObject.field2" placeholder="Parameter">
+                        </el-input>
+                        <i class="el-icon-close bu-mt-3 bu-is-size-7"></i>
+                    </div>
+                    <el-link type="primary" class="bu-mt-4">+ Add Parameter</el-link>
+                </cly-form-field>
+            </cly-form-field-group>
+            <cly-form-field class="bu-p-0">
+                <el-button class="bg-light-blue-100 color-blue-100 bu-mt-4" type="text" plain>
+                    + Add new endpoint
+                </el-button>
+            </cly-form-field>
+            <cly-form-field class="bu-p-0">
+                <div class="bu-is-flex bu-is-justify-content-flex-start bu-mt-4">
+                    <p class="bu-is-size-6 color-cool-gray-100">Token Usage<i class="el-icon-question bu-ml-1"></i></p>
+                </div>
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-0">
+                    <el-radio class="is-autosized bu-p-4" v-model="formScope.editedObject.radioVal1" label="0" border>
+                        Allow token to be used in all apps
+                    </el-radio>
+                    <el-radio class="is-autosized bu-p-4" v-model="formScope.editedObject.radioVal1" label="1" border>
+                        Allow token to be used only in some apps
+                    </el-radio>
+                </div>
+            </cly-form-field>
+            <cly-form-field class="bu-p-0">
+                <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-4">
+                    <p class="bu-has-text-left bu-is-size-7 color-cool-gray-100">Select Apps
+                        <i class="el-icon-question bu-ml-1"></i></p>
+                </div>
+                <el-select :multiple="true" v-model="formScope.editedObject.elSelectValue"
+                    placeholder="Select apps to allow token" class="bu-is-block">
+                    <el-option v-for="item in constants.apps" :label="item.name" :key="item.value" :value="item.value">
+                    </el-option>
+                </el-select>
+            </cly-form-field>
+            <cly-form-field class="bu-p-0">
+                <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-4">
+                    <p class="bu-has-text-left bu-is-size-6 color-cool-gray-100">Token Expiration
+                        <i class="el-icon-question bu-ml-1"></i></p>
+                </div>
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                    <el-radio class="is-autosized bu-p-4 color-cool-gray-100" v-model="formScope.editedObject.radioVal2" label="0" border>
+                        Unlimited Time
+                        <p class="bu-is-size-7 color-cool-gray-50">
+                            Token can be used until it is deleted
+                        </p>
+                    </el-radio>
+                    <el-radio class="is-autosized bu-p-4 color-cool-gray-100" v-model="formScope.editedObject.radioVal2" label="1" border>
+                        Limited Time
+                        <p class="bu-is-size-7 color-cool-gray-50">
+                            Token will expire after the time you set
+                        </p>
+                    </el-radio>
+                </div>
+            </cly-form-field>
+            <cly-form-field class="bu-p-0">
+                <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-2">
+                    <p class="bu-has-text-left bu-is-size-6 color-cool-gray-100">Expiration Time
+                        <i class="el-icon-question bu-ml-1"></i></p>
+                </div>
+                <p class="bu-is-size-7 color-cool-gray-50" style="margin-top: -10px;">
+                    Set expiration time for token
+                </p>
+                <div class="bu-is-flex" style="max-width: 240px;">
+                    <el-input v-model="formScope.editedObject.elInput"></el-input>
+                    <el-select :multiple="false" v-model="formScope.editedObject.elSelectMultiValue">
+                        <el-option v-for="item in constants.availableProps" :key="item.value" :value="item.value" :label="item.label">
+                        </el-option>
+                    </el-select>
+                </div>
+            </cly-form-field>
+            <cly-form-field class="bu-p-0">
+                <el-checkbox v-model="formScope.editedObject.elCheckboxValue" class="bu-mt-5 color-cool-gray-100">Token can be used multiple times
+                </el-checkbox>
+            </cly-form-field>
+        </cly-form-step>
+    </template>
+</cly-drawer>

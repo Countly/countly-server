@@ -5765,7 +5765,7 @@ app.route('/exportedData/tableExport/:task_id', 'userExportTask', function(task_
     this.renderWhenReady(this.DownloadView);
 });
 
-app.route('/manage/token_manager', 'token_manager', function() {
+app.route('/manage/token_manager_old', 'token_manager', function() {
     this.renderWhenReady(this.TokenManagerView);
 });
 app.route('/versions', 'version_history', function() {

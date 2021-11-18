@@ -1,0 +1,45 @@
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <h2> {{i18n('sidebar.management.token-manager')}} </h2>
+        </template>
+        <template v-slot:header-right>
+            <el-button type="success" icon="el-icon-circle-plus" @click="onCreateClick">Create New Token</el-button>
+        </template>
+    </cly-header>
+    <cly-main>
+        <cly-section>
+            <cly-datatable-n :rows="tableData">
+                <template v-slot="scope">
+                    <el-table-column sortable="custom" label="description">
+                        <template slot-scope="scope">
+                            <p>{{scope.row.purpose}}</p>
+                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row._id}}</p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" label="status">
+                        <template slot-scope="scope">
+                            <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" label="valid until">
+                        <template slot-scope="scope">
+                            <p>{{scope.row.ttlDate}}</p>
+                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.ttlTime}}</p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" label="multiple times"><template
+                            slot-scope="scope">{{scope.row.multi}}</template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" label="app"><template
+                            slot-scope="scope">{{scope.row.app}}</template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" label="endpoint"><template
+                            slot-scope="scope">{{scope.row.endpoint}}</template>
+                    </el-table-column>
+                </template>
+            </cly-datatable-n>
+        </cly-section>
+        <main-drawer :controls="drawers.main"></main-drawer>
+    </cly-main>
+</div>
