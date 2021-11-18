@@ -178,7 +178,7 @@
                         <div class="cly-vue-drawer-step__section">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Select one or more events to set the trigger</div>
                             <div class="cly-vue-push-notification-drawer__input-description">Some description for selection goes here</div>
-                            <validation-provider v-slot="validation" rules="required" rules="required" :detectInput="true">
+                            <validation-provider v-slot="validation" rules="required" :detectInput="true">
                                 <el-select
                                     v-model="pushNotificationUnderEdit.automatic.events"
                                     multiple
@@ -202,7 +202,7 @@
                         <div class="cly-vue-drawer-step__section">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Select one ore more cohorts to set the trigger</div>
                             <div class="cly-vue-push-notification-drawer__input-description">Recalculation of cohorts above will trigger sending process automatically</div>
-                            <validation-provider v-slot="validation" rules="required" rules="required" :detectInput="true">
+                            <validation-provider v-slot="validation" rules="required" :detectInput="true">
                                 <el-select
                                     v-model="pushNotificationUnderEdit.automatic.cohorts"
                                     multiple
@@ -244,27 +244,25 @@
                             </el-select> 
                         </validation-provider>
                     </div>
-                    <template v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT">
-                        <div class="cly-vue-drawer-step__section">
-                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__line-radio-button-group-header">
-                                Delivery date calculation
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-delivery-date-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-                            </div>
-                            <div class="bu-is-flex bu-is-flex-direction-column">
-                                <line-radio-button-with-description 
-                                    :label="DeliveryDateCalculationEnum.EVENT_SERVER_DATE"
-                                    v-model="pushNotificationUnderEdit.automatic.deliveryDateCalculation"
-                                    title="Relative to the date event arrived to the server">
-                                </line-radio-button-with-description>
-                                <line-radio-button-with-description 
-                                    :label="DeliveryDateCalculationEnum.EVENT_DEVICE_DATE"
-                                    v-model="pushNotificationUnderEdit.automatic.deliveryDateCalculation"
-                                    title="Relative to the date event occurred on a device">
-                                </line-radio-button-with-description>
-                            </div>
+                    <div class="cly-vue-drawer-step__section">
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                            Delivery date calculation
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-delivery-date-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                         </div>
-                    </template>
-                    <template v-else>
+                        <div class="bu-is-flex bu-is-flex-direction-column">
+                            <line-radio-button-with-description 
+                                :label="DeliveryDateCalculationEnum.EVENT_SERVER_DATE"
+                                v-model="pushNotificationUnderEdit.automatic.deliveryDateCalculation"
+                                title="Relative to the date event arrived to the server">
+                            </line-radio-button-with-description>
+                            <line-radio-button-with-description 
+                                :label="DeliveryDateCalculationEnum.EVENT_DEVICE_DATE"
+                                v-model="pushNotificationUnderEdit.automatic.deliveryDateCalculation"
+                                title="Relative to the date event occurred on a device">
+                            </line-radio-button-with-description>
+                        </div>
+                    </div>
+                    <template v-if="pushNotificationUnderEdit.automatic.trigger !== TriggerEnum.EVENT">
                         <div class="cly-vue-drawer-step__section">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__line-radio-button-group-header">
                                 Behavior when trigger condition is no longer met

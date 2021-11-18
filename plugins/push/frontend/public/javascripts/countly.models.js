@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlyCommon,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal*/
+/*global countlyVue,CV,countlyCommon,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -30,7 +30,7 @@
     });
     var StatusEnum = Object.freeze({
         CREATED: "created",
-        INACTIVE: "inactive",
+        NOT_APPROVED: "not_approved",
         DRAFT: "draft",
         SCHEDULED: "scheduled",
         SENDING: "sending",
@@ -129,6 +129,16 @@
     platformOptions[PlatformEnum.ANDROID] = {label: "Android", value: PlatformEnum.ANDROID};
     platformOptions[PlatformEnum.IOS] = {label: 'IOS', value: PlatformEnum.IOS};
 
+    var statusOptions = {};
+    statusOptions[StatusEnum.CREATED] = {label: "Created", value: StatusEnum.CREATED};
+    statusOptions[StatusEnum.NOT_APPROVED] = {label: "Not approved", value: StatusEnum.NOT_APPROVED};
+    statusOptions[StatusEnum.DRAFT] = {label: "Draft", value: StatusEnum.DRAFT};
+    statusOptions[StatusEnum.SCHEDULED] = {label: "Scheduled", value: StatusEnum.SCHEDULED};
+    statusOptions[StatusEnum.SENDING] = {label: "Sending", value: StatusEnum.SENDING};
+    statusOptions[StatusEnum.SENT] = {label: "Sent", value: StatusEnum.SENT};
+    statusOptions[StatusEnum.STOPPED] = {label: "Stopped", value: StatusEnum.STOPPED};
+    statusOptions[StatusEnum.FAILED] = {label: "Failed", value: StatusEnum.FAILED};
+
     var iosAuthConfigTypeOptions = {};
     iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: "Key file (P8)", value: IOSAuthConfigTypeEnum.P8};
     iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P12] = {label: "Sandbox + Production certificate (P12)", value: IOSAuthConfigTypeEnum.P12};
@@ -217,11 +227,11 @@
         getDefaultLocalization: function() {
             return {label: DEFAULT_LOCALIZATION_LABEL, value: DEFAULT_LOCALIZATION_VALUE, percentage: 100};
         },
-        hasNoUsersToSendPushNotification: function(pushNotificationDto) {
-            return pushNotificationDto.build.total === 0;
+        hasNoUsersToSendPushNotification: function(infoDto) {
+            return infoDto.count === 0;
         },
         isNoPushCredentialsError: function(error) {
-            return error.message === 'No push credentials';
+            return error === 'No push credentials in db';
         },
         isNoUsersFoundError: function(error) {
             return error.message === 'No users were found from selected configuration';
@@ -368,6 +378,12 @@
                     return allPlatformItems;
                 }, []);
             },
+            mapStatus: function(dto) {
+                if (dto.status === 'inactive') {
+                    return statusOptions[StatusEnum.NOT_APPROVED];
+                }
+                return statusOptions[dto.status];
+            },
             mapRows: function(dto) {
                 var self = this;
                 var rowsModel = [];
@@ -375,7 +391,7 @@
                     rowsModel[index] = {
                         _id: pushNotificationDtoItem._id,
                         name: pushNotificationDtoItem.info.title || '-',
-                        status: pushNotificationDtoItem.status,
+                        status: self.mapStatus(pushNotificationDtoItem),
                         createdDateTime: {
                             date: moment(pushNotificationDtoItem.info.created).format("MMMM Do YYYY"),
                             time: moment(pushNotificationDtoItem.info.created).format("h:mm:ss a")
@@ -384,11 +400,11 @@
                             date: moment(pushNotificationDtoItem.info.started).format("MMMM Do YYYY"),
                             time: moment(pushNotificationDtoItem.info.started).format("h:mm:ss a")
                         },
-                        sent: pushNotificationDtoItem.result.sent,
+                        sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
-                        createdBy: pushNotificationDtoItem.info.createdBy,
+                        createdBy: pushNotificationDtoItem.info.createdBy || '',
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
-                        content: this.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
+                        content: self.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
                     };
                 });
                 return rowsModel;
@@ -476,7 +492,7 @@
                         }
                     }
                 });
-                //TODO: check if the ios and android media is the same for all platforms!
+                //TODO-LA: check if the ios and android media is the same for all platforms!
                 return result;
             },
             mapMessageLocalizationUserProperties: function(userPropertyDto) {
@@ -525,7 +541,10 @@
             mapEnabledUsers: function(dto) {
                 var result = {};
                 result[PlatformEnum.ALL] = parseInt(dto.enabled.total);
-                result[PlatformEnum.ANDROID] = parseInt(dto.enabled.a + dto.enabled.h);
+                result[PlatformEnum.ANDROID] = parseInt(dto.enabled.a);
+                if (dto.enabled.h) {
+                    result[PlatformEnum.ANDROID] += parseInt(dto.enabled.h);
+                }
                 result[PlatformEnum.IOS] = parseInt(dto.enabled.i);
                 return result;
             },
@@ -555,7 +574,7 @@
                 };
             },
             mapDtoToBaseModel: function(dto) {
-                var localizations = this.mapLocalizations(dto);
+                var localizations = this.mapLocalizations(dto.info.locales, dto.info.locales.count);
                 return {
                     id: dto._id,
                     status: dto.status,
@@ -658,24 +677,29 @@
                 var label = countlyGlobalLang.languages[localizationKey] && countlyGlobalLang.languages[localizationKey].englishName;
                 return { label: label || localizationKey, value: localizationKey};
             },
-            hasAnyLocales: function(pushNotificationDto) {
-                if (pushNotificationDto.info) {
-                    return Object.keys(pushNotificationDto.info.locales).some(function(localeKey) {
+            hasAnyLocales: function(localesDto) {
+                if (localesDto) {
+                    return Object.keys(localesDto).some(function(localeKey) {
                         return Boolean(countlyGlobalLang.languages[localeKey]);
                     });
                 }
                 return false;
             },
-            mapLocalizations: function(pushNotificationDto) {
+            mapLocalizations: function(localesDto, count) {
                 var self = this;
-                if (!this.hasAnyLocales(pushNotificationDto)) {
+                if (!this.hasAnyLocales(localesDto)) {
                     return [countlyPushNotification.helper.getDefaultLocalization()];
                 }
-                var result = Object.keys(pushNotificationDto.info.locales).map(function(localeKey) {
-                    var localizationItem = self.mapLocalizationByKey(localeKey);
-                    localizationItem.percentage = pushNotificationDto.info.locales[localeKey];
-                    return localizationItem;
-                });
+                var result = Object.keys(localesDto).reduce(function(allLocales, localeKey) {
+                    if (localeKey !== DEFAULT_LOCALIZATION_VALUE && localeKey !== 'count') {
+                        var localizationItem = self.mapLocalizationByKey(localeKey);
+                        localizationItem.percentage = localesDto[localeKey];
+                        localizationItem.count = localesDto[localeKey];
+                        localizationItem.percentage = CountlyHelpers.formatPercentage(localesDto[localeKey] / count);
+                        allLocales.push(localizationItem);
+                    }
+                    return allLocales;
+                }, []);
                 result.unshift(countlyPushNotification.helper.getDefaultLocalization());
                 return result;
             },
@@ -824,16 +848,6 @@
                     return self.mapPlatformItem(platform);
                 });
             },
-            mapLocalizations: function(localizations, totalAppUsers) {
-                return localizations.map(function(localizationModel) {
-                    return {
-                        value: localizationModel.value,
-                        title: localizationModel.label,
-                        count: localizationModel.value === DEFAULT_LOCALIZATION_VALUE ? totalAppUsers : localizationModel.count,
-                        percent: localizationModel.percentage
-                    };
-                });
-            },
             mapUserProperties: function(localizedMessage, container) {
                 var userPropertyDto = {};
                 if (this.hasUserProperties(localizedMessage, container)) {
@@ -865,15 +879,29 @@
             },
             mapIOSSettings: function(model) {
                 var iosSettings = model.settings[PlatformEnum.IOS];
-                var result = {
-                    sound: iosSettings.soundFileName,
-                    badge: iosSettings.badgeNumber,
-                    data: iosSettings.json || {},
-                    extras: iosSettings.userData,
-                    url: iosSettings.onClickURL,
-                    media: model.settings[PlatformEnum.ALL].mediaURL,
-                    mediaMime: model.settings[PlatformEnum.ALL].mediaMime
-                };
+                var result = {};
+                result.p = PlatformDtoEnum.IOS;
+                if (iosSettings.soundFileName) {
+                    result.sound = iosSettings.soundFileName;
+                }
+                if (iosSettings.badgeNumber) {
+                    result.badge = parseInt(iosSettings.badgeNumber);
+                }
+                if (iosSettings.json) {
+                    result.data = iosSettings.json;
+                }
+                if (iosSettings.userData && iosSettings.userData.length) {
+                    result.extras = iosSettings.userData;
+                }
+                if (iosSettings.onClickURL) {
+                    result.url = iosSettings.onClickURL;
+                }
+                if (model.settings[PlatformEnum.ALL].mediaURL) {
+                    result.media = model.settings[PlatformEnum.ALL].mediaURL;
+                }
+                if (model.settings[PlatformEnum.ALL].mediaMime) {
+                    result.mediaMime = model.settings[PlatformEnum.ALL].mediaMime;
+                }
                 if (iosSettings.media) {
                     result.media = iosSettings.media;
                     result.mediaMime = iosSettings.mediaMime;
@@ -882,15 +910,29 @@
             },
             mapAndroidSettings: function(model) {
                 var androidSettings = model.settings[PlatformEnum.ANDROID];
-                var result = {
-                    sound: androidSettings.soundFileName,
-                    badge: androidSettings.badgeNumber,
-                    data: androidSettings.json || {},
-                    extras: androidSettings.userData,
-                    url: androidSettings.onClickURL,
-                    media: model.settings[PlatformEnum.ALL].mediaURL,
-                    mediaMime: model.settings[PlatformEnum.ALL].mediaMime,
-                };
+                var result = {};
+                result.p = PlatformDtoEnum.ANDROID;
+                if (androidSettings.soundFileName) {
+                    result.sound = androidSettings.soundFileName;
+                }
+                if (androidSettings.badgeNumber) {
+                    result.badge = parseInt(androidSettings.badgeNumber);
+                }
+                if (androidSettings.json) {
+                    result.data = androidSettings.json;
+                }
+                if (androidSettings.userData && androidSettings.userData.length) {
+                    result.extras = androidSettings.userData;
+                }
+                if (androidSettings.onClickURL) {
+                    result.url = androidSettings.onClickURL;
+                }
+                if (model.settings[PlatformEnum.ALL].mediaURL) {
+                    result.media = model.settings[PlatformEnum.ALL].mediaURL;
+                }
+                if (model.settings[PlatformEnum.ALL].mediaMime) {
+                    result.mediaMime = model.settings[PlatformEnum.ALL].mediaMime;
+                }
                 if (androidSettings.media) {
                     result.media = androidSettings.media;
                     result.mediaMime = androidSettings.mediaMime;
@@ -902,14 +944,16 @@
                 var content = [];
                 Object.keys(pushNotificationModel.message).forEach(function(localizationKey) {
                     var localeDto = {};
-                    if (!localizationKey === DEFAULT_LOCALIZATION_VALUE) {
+                    if (localizationKey !== DEFAULT_LOCALIZATION_VALUE) {
                         localeDto.la = localizationKey;
                     }
                     localeDto.message = self.getMessageText(pushNotificationModel.message[localizationKey], 'content');
                     localeDto.title = self.getMessageText(pushNotificationModel.message[localizationKey], 'title');
                     localeDto.messagePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'content');
                     localeDto.titlePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'title');
-                    localeDto.buttons = self.mapButtons(pushNotificationModel.message[localizationKey]);
+                    if (pushNotificationModel.message[localizationKey].buttons.length) {
+                        localeDto.buttons = self.mapButtons(pushNotificationModel.message[localizationKey]);
+                    }
                     if (localizationKey === DEFAULT_LOCALIZATION_VALUE) {
                         content.unshift(localeDto);
                     }
@@ -919,18 +963,26 @@
                 });
                 return content;
             },
-
             mapOneTimeTrigger: function(model) {
-                //TODO-LA: map sctz property
-                return [{kind: 'plain', start: '', delayed: model.audienceSelection, tz: model.timezone === TimezoneEnum.SAME, sctz: '-180' }];
+                var result = {
+                    kind: 'plain',
+                    start: model.delivery.startDate,
+                };
+                if (model.delivery.type === SendEnum.LATER) {
+                    result.tz = model.timezone === TimezoneEnum.SAME;
+                    result.delayed = model.audienceSelection === AudienceSelectionEnum.BEFORE;
+                }
+                if (model.timezone === TimezoneEnum.SAME && model.delivery.type === SendEnum.LATER) {
+                    result.sctz = new Date().getTimezoneOffset();
+                }
+                return [result];
             },
             mapAutomaticTrigger: function(model) {
                 var result = {
-                    kind: model.trigger === TriggerEnum.EVENT ? 'event' : 'cohort',
+                    kind: model.automatic.trigger === TriggerEnum.EVENT ? 'event' : 'cohort',
                     start: model.delivery.startDate,
-                    actuals: model.delivery.deliveryDateCalculation,
+                    actuals: model.automatic.deliveryDateCalculation === DeliveryDateCalculationEnum.EVENT_DEVICE_DATE,
                     time: '', //TODO-LA: time in ms when to send in user's timezome when it is seleced (needs to be added for automatic messages in UI)
-                    reschedule: model.automatic.pastSchedule,
                 };
                 if (model.delivery.isEndDateSet) {
                     result.end = model.delivery.endDate;
@@ -950,13 +1002,13 @@
                     };
                     result.sleep = countlyPushNotification.helper.convertDateTimeToMS(cappingDateTime);
                 }
-                if (result.kind === 'event') {
+                if (model.automatic.trigger === TriggerEnum.EVENT) {
                     result.events = model.automatic.events;
                 }
-                if (result.kind === 'cohort') {
+                if (model.automatic.trigger !== TriggerEnum.EVENT) {
                     result.cohorts = model.automatic.cohorts;
-                    result.entry = model.trigger === TriggerEnum.COHORT_ENTRY,
-                    result.cancels = model.automatic.triggerNotMet;
+                    result.entry = model.automatic.trigger === TriggerEnum.COHORT_ENTRY,
+                    result.cancels = model.automatic.triggerNotMet === TriggerNotMetEnum.CANCEL_ON_EXIT;
                 }
                 return [result];
             },
@@ -971,7 +1023,41 @@
                     drill: model.drill || [],
                 };
             },
-            mapModelToBaseDto: function(pushNotificationModel) {
+            getLocalizationsCount: function(locales) {
+                var count = 0;
+                locales.forEach(function(currentItem) {
+                    if (currentItem.value === DEFAULT_LOCALIZATION_VALUE) {
+                        return;
+                    }
+                    count += currentItem.count;
+                });
+                return count;
+            },
+            mapLocalizations: function(selectedLocalizations, allLocalizations) {
+                var result = {};
+                allLocalizations.forEach(function(currentItem) {
+                    if (currentItem.value === DEFAULT_LOCALIZATION_VALUE) {
+                        return;
+                    }
+                    if (selectedLocalizations.some(function(selectedLocaleKey) {
+                        return Boolean(currentItem.value === selectedLocaleKey);
+                    })) {
+                        result[currentItem.value] = currentItem.count;
+                    }
+                });
+                result[DEFAULT_LOCALIZATION_VALUE] = 0;
+                result.count = this.getLocalizationsCount(allLocalizations);
+                return result;
+            },
+            mapInfo: function(model, options) {
+                var result = {};
+                if (model.name) {
+                    result.title = model.name;
+                }
+                result.locales = this.mapLocalizations(model.localizations, options.localizations);
+                return result;
+            },
+            mapModelToBaseDto: function(pushNotificationModel, options) {
                 var resultDto = {
                     app: countlyCommon.ACTIVE_APP_ID,
                     platforms: this.mapPlatforms(pushNotificationModel.platforms),
@@ -979,12 +1065,12 @@
                 if (pushNotificationModel._id) {
                     resultDto._id = pushNotificationModel._id;
                 }
-
                 var contentsDto = this.mapMessageLocalization(pushNotificationModel);
                 contentsDto.push(this.mapAndroidSettings(pushNotificationModel));
                 contentsDto.push(this.mapIOSSettings(pushNotificationModel));
                 resultDto.contents = contentsDto;
                 resultDto.filter = this.mapFilters(pushNotificationModel);
+                resultDto.info = this.mapInfo(pushNotificationModel, options);
                 var expirationInMS = countlyPushNotification.helper.convertDateTimeToMS({
                     days: pushNotificationModel.expiration.days,
                     hours: pushNotificationModel.expiration.hours
@@ -993,18 +1079,18 @@
                 contentsDto[0].expiration = expirationInMS;
                 return resultDto;
             },
-            mapModelToOneTimeDto: function(pushNotificationModel) {
-                var dto = this.mapModelToBaseDto(pushNotificationModel);
+            mapModelToOneTimeDto: function(pushNotificationModel, options) {
+                var dto = this.mapModelToBaseDto(pushNotificationModel, options);
                 dto.triggers = this.mapOneTimeTrigger(pushNotificationModel);
                 return dto;
             },
-            mapModelToAutomaticDto: function(pushNotificationModel) {
-                var dto = this.mapModelToBaseDto(pushNotificationModel);
+            mapModelToAutomaticDto: function(pushNotificationModel, options) {
+                var dto = this.mapModelToBaseDto(pushNotificationModel, options);
                 dto.triggers = this.mapAutomaticTrigger(pushNotificationModel);
                 return dto;
             },
-            mapModelToTransactionalDto: function(pushNotificationModel) {
-                var dto = this.mapModelToBaseDto(pushNotificationModel);
+            mapModelToTransactionalDto: function(pushNotificationModel, options) {
+                var dto = this.mapModelToBaseDto(pushNotificationModel, options);
                 dto.triggers = this.mapTransactionalTrigger(pushNotificationModel);
                 return dto;
             },
@@ -1024,12 +1110,14 @@
                 var iosConfigModel = model[PlatformEnum.IOS];
                 if (iosConfigModel) {
                     var result = {
-                        _id: iosConfigModel._id || "",
                         type: iosConfigModel.authType === IOSAuthConfigTypeEnum.P8 ? 'apn_token' : 'apn_universal',
                         key: iosConfigModel.authType === IOSAuthConfigTypeEnum.P8 ? iosConfigModel.keyId : 'team',
                         bundle: iosConfigModel.bundleId || "",
                         fileType: iosConfigModel.authType
                     };
+                    if (iosConfigModel._id) {
+                        result._id = iosConfigModel._id;
+                    }
                     if (iosConfigModel.hasUploadedKeyFile) {
                         result.file = iosConfigModel.keyFile;
                     }
@@ -1045,11 +1133,14 @@
             },
             mapAndroidAppLevelConfig: function(model) {
                 if (model[PlatformEnum.ANDROID]) {
-                    return {
-                        _id: model[PlatformEnum.ANDROID]._id || "",
+                    var result = {
                         key: model[PlatformEnum.ANDROID].firebaseKey,
                         type: model[PlatformEnum.ANDROID].type
                     };
+                    if (model[PlatformEnum.ANDROID]._id) {
+                        result._id = model[PlatformEnum.ANDROID]._id;
+                    }
+                    return result;
                 }
                 return null;
             },
@@ -1146,7 +1237,7 @@
             Object.assign(data, this.getTypeUrlParameter(type));
             return CV.$.ajax({
                 type: "POST",
-                url: countlyCommon.API_PARTS.data.r + "/pushes/all",
+                url: countlyCommon.API_PARTS.data.r + "/push/message/all",
                 data: data,
                 dataType: "json"
             }, {disableAutoCatch: true});
@@ -1154,7 +1245,7 @@
         fetchById: function(id) {
             return CV.$.ajax({
                 type: "GET",
-                url: window.countlyCommon.API_URL + "/i/pushes/message",
+                url: window.countlyCommon.API_URL + "/i/push/message",
                 data: {
                     args: JSON.stringify({_id: id, apps: [countlyCommon.ACTIVE_APP_ID]})
                 },
@@ -1167,7 +1258,7 @@
             };
             return CV.$.ajax({
                 type: "GET",
-                url: window.countlyCommon.API_URL + '/i/pushes/dashboard',
+                url: window.countlyCommon.API_URL + '/o/push/dashboard',
                 data: data,
                 dataType: "json"
             }, {disableAutoCatch: true});
@@ -1179,7 +1270,7 @@
             };
             return CV.$.ajax({
                 method: 'GET',
-                url: window.countlyCommon.API_URL + '/i/pushes/delete',
+                url: window.countlyCommon.API_URL + '/i/push/message/remove',
                 data: data,
                 dataType: "json"
             }, {disableAutoCatch: true});
@@ -1188,7 +1279,7 @@
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     method: 'GET',
-                    url: window.countlyCommon.API_URL + '/i/pushes/mime?url=' + url,
+                    url: window.countlyCommon.API_URL + '/i/push/mime?url=' + url,
                     success: function(data) {
                         resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(data.headers));
                     },
@@ -1202,26 +1293,30 @@
             this.fetchMediaMetadata(url).then(resolveCallback).catch(rejectCallback);
         }, DEBOUNCE_TIME_IN_MS),
         prepare: function(pushNotificationModel) {
-            var result = countlyPushNotification.mapper.outgoing.mapModelToBaseDto(pushNotificationModel);
             return new Promise(function(resolve, reject) {
+                var platforms = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
+                // var filters = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel);
+                var data = {
+                    app: countlyCommon.ACTIVE_APP_ID,
+                    platforms: platforms,
+                };
                 CV.$.ajax({
                     type: "POST",
-                    url: window.countlyCommon.API_URL + '/i/pushes/prepare',
-                    data: {
-                        args: JSON.stringify(result)
-                    },
-                    dataType: "json",
+                    url: window.countlyCommon.API_URL + '/o/push/message/estimate',
+                    data: JSON.stringify(data),
+                    contentType: "application/json",
                     success: function(response) {
                         if (countlyPushNotification.helper.hasNoUsersToSendPushNotification(response)) {
                             reject(new Error('No users were found from selected configuration'));
+                            return;
                         }
-                        else if (response.error) {
-                            reject(new Error(response.error));
+                        if (response.error) {
+                            reject(new Error('Unknown error occurred'));
+                            //TODO:log error
+                            return;
                         }
-                        else {
-                            var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(response);
-                            resolve({localizations: localizations, total: response.build.total, _id: response._id});
-                        }
+                        var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(response.locales, response.count);
+                        resolve({localizations: localizations, total: response.count, _id: response._id});
                     },
                     error: function(error) {
                         reject(error);
@@ -1234,21 +1329,31 @@
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     type: "POST",
-                    url: window.countlyCommon.API_URL + '/i/pushes/create',
-                    data: {
-                        args: JSON.stringify(dto)
-                    },
-                    dataType: "json",
+                    url: window.countlyCommon.API_URL + '/i/push/message/create',
+                    data: JSON.stringify(dto),
+                    contentType: "application/json",
                     success: function(response) {
                         if (response.error) {
                             reject(new Error(response.error));
+                            return;
                         }
-                        else {
-                            resolve();
+                        if (response.result.errors) {
+                            reject(response.result.errors);
+                            return;
                         }
+                        resolve();
                     },
                     error: function(error) {
-                        reject(error);
+                        if (error.responseJSON && error.responseJSON.result) {
+                            if (error.responseJSON.result.errors && error.responseJSON.result.errors.some(function(message) {
+                                return countlyPushNotification.helper.isNoPushCredentialsError(message);
+                            })) {
+                                reject(new Error('No push notification credentials were found'));
+                                return;
+                            }
+                        }
+                        reject(new Error('Unknown error occurred.Please try again later.'));
+                        //TODO:log error
                     }
                 }, {disableAutoCatch: true});
             });

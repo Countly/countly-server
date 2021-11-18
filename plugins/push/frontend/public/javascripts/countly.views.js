@@ -334,16 +334,6 @@
                     return countlyPushNotification.service.platformOptions[selectedPlatform].label;
                 });
             },
-            previewCohorts: function(cohorts) {
-                var selectedCohorts = this.cohortOptions.filter(function(cohort) {
-                    return cohorts.some(function(selectedCohortId) {
-                        return cohort._id === selectedCohortId;
-                    });
-                });
-                return selectedCohorts.map(function(cohort) {
-                    return cohort.name.replace(/&quot;/g, '\\"');
-                });
-            },
             previewLocations: function() {
                 var self = this;
                 return this.locationOptions.filter(function(location) {
@@ -354,6 +344,16 @@
             }
         },
         methods: {
+            previewCohorts: function(cohorts) {
+                var selectedCohorts = this.cohortOptions.filter(function(cohort) {
+                    return cohorts.some(function(selectedCohortId) {
+                        return cohort._id === selectedCohortId;
+                    });
+                });
+                return selectedCohorts.map(function(cohort) {
+                    return cohort.name.replace(/&quot;/g, '\\"');
+                });
+            },
             formatDateTime: function(dateTime, format) {
                 return countlyPushNotification.helper.formatDateTime(dateTime, format);
             },
@@ -435,17 +435,11 @@
                         resolve(true);
                     }).catch(function(error) {
                         self.setLocalizationOptions([]);
-                        if (countlyPushNotification.helper.isNoUsersFoundError(error)) {
-                            CountlyHelpers.notify({
-                                title: "No users were found with selected configuration",
-                                message: "Selected cohort and location target options resulted in zero users found. Please try a different configuration.",
-                                type: "warning"
-                            });
-                        }
-                        else {
-                            self.dispatchUnknownErrorNotification();
-                        }
-                        //TODO:log error
+                        CountlyHelpers.notify({
+                            title: "Push notification error",
+                            message: error.message,
+                            type: "error"
+                        });
                         resolve(false);
                     }).finally(function() {
                         self.setIsLoading(false);
@@ -464,17 +458,11 @@
                     done();
                     self.$store.dispatch("countlyPushNotification/main/fetchAll", true);
                 }).catch(function(error) {
-                    if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
-                        CountlyHelpers.notify({
-                            title: "No Push credentials",
-                            message: "There were no push credentials found for selected platform/s.",
-                            type: "error"
-                        });
-                    }
-                    else {
-                        self.dispatchUnknownErrorNotification();
-                    }
-                    //TODO:log error
+                    CountlyHelpers.notify({
+                        title: "Push notification error",
+                        message: error.message,
+                        type: "error"
+                    });
                     done(true);
                 });
             },
