@@ -280,19 +280,19 @@ module.exports.mime = async params => {
     try {
         let info = await mimeInfo(params.qstring.url);
         if (info.status !== 200) {
-            common.returnMessage(params, 400, {errors: [`Invalid status ${info.status}`]});
+            common.returnMessage(params, 400, {errors: [`Invalid status ${info.status}`]}, null, true);
         }
         else if (info.headers['content-type'] === undefined) {
-            common.returnMessage(params, 400, {errors: ['No content-type while HEADing the url']});
+            common.returnMessage(params, 400, {errors: ['No content-type while HEADing the url']}, null, true);
         }
         else if (info.headers['content-length'] === undefined) {
-            common.returnMessage(params, 400, {errors: ['No content-length while HEADing the url']});
+            common.returnMessage(params, 400, {errors: ['No content-length while HEADing the url']}, null, true);
         }
         else if (MEDIA_MIME_ALL.indexOf(info.headers['content-type']) === -1) {
-            common.returnMessage(params, 400, {errors: [`Media mime type "${info.headers['content-type']}" is not supported`]});
+            common.returnMessage(params, 400, {errors: [`Media mime type "${info.headers['content-type']}" is not supported`]}, null, true);
         }
         else if (parseInt(info.headers['content-length']) > DEFAULTS.max_media_size) {
-            common.returnMessage(params, 400, {errors: [`Media size (${info.headers['content-length']}) is too large`]});
+            common.returnMessage(params, 400, {errors: [`Media size (${info.headers['content-length']}) is too large`]}, null, true);
         }
         else {
             let media = info.url,
@@ -310,7 +310,7 @@ module.exports.mime = async params => {
         if (!err.errors) {
             log.e('Mime request error', err);
         }
-        common.returnMessage(params, 400, {errors: err.errors || ['Server error']});
+        common.returnMessage(params, 400, {errors: err.errors || ['Server error']}, null, true);
     }
 };
 

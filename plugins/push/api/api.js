@@ -176,13 +176,13 @@ function endpoint(method, fn) {
     return params => fn(params).catch(e => {
         log.e('Error during API request /%s', method, e);
         if (e instanceof ValidationError) {
-            common.returnMessage(params, 400, {kind: 'ValidationError', errors: e.errors});
+            common.returnMessage(params, 400, {kind: 'ValidationError', errors: e.errors}, null, true);
         }
         else if (e instanceof PushError) {
-            common.returnMessage(params, 400, {kind: 'PushError', errors: [e.message]});
+            common.returnMessage(params, 400, {kind: 'PushError', errors: [e.message]}, null, true);
         }
         else {
-            common.returnMessage(params, 500, {kind: 'ServerError', errors: ['Server error']});
+            common.returnMessage(params, 500, {kind: 'ServerError', errors: ['Server error']}, null, true);
         }
     });
 }
