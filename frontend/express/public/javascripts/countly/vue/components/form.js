@@ -323,6 +323,7 @@
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({
         props: {
+            subheading: String,
             label: String,
             optional: {
                 type: Boolean,
@@ -357,6 +358,9 @@
                         <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || label || optional">\
                             <div class="text-small text-heading">{{label}}</div>\
                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
+                        </div>\
+                        <div v-if="subheading" class="color-cool-gray-50 text-small bu-mb-1">\
+                            {{subheading}}\
                         </div>\
                         <component :is="wrapperElement">\
                             <validation-provider v-bind="$attrs" v-on="$listeners" v-slot="validation">\

@@ -19,11 +19,7 @@
           <template v-slot="props">
             <cly-section>
               <el-tabs type="border-card" value="default_value">
-                <el-tab-pane name="conditions" :label="i18n('remote-config.conditions')">
-                  <div>
-                    <pre>{{ props.row.conditions }}</pre>
-                  </div>
-                </el-tab-pane>
+                {{props.row.conditions}}
               </el-tabs>
             </cly-section>
           </template>

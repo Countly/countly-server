@@ -650,11 +650,15 @@
             value: Object,
             tags: {
                 type: Array,
-                default: []
+                default: function() {
+                    return [];
+                }
             },
             defaultTag: {
                 type: Object,
-                default: {}
+                default: function() {
+                    return {};
+                }
             }
         },
         template: '<div class="bu-is-flex bu-is-flex-wrap-wrap bu-is-align-items-center">\
