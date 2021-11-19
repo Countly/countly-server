@@ -372,12 +372,12 @@
             var persistent = store.get("countly_task_monitor") || {};
             return {
                 monitored: persistent,
-                tick: 0
+                ticks: 0
             };
         },
         mutations: {
-            incrementTick: function(state) {
-                state.tick += 1;
+            incrementTicks: function(state) {
+                state.ticks += 1;
             },
             reloadPersistent: function(state) {
                 var monitored = store.get("countly_task_monitor") || {};
@@ -402,7 +402,8 @@
         },
         actions: {
             tick: function(context) {
-                context.commit("incrementTick");
+                context.commit("incrementTicks");
+                context.commit("reloadPersistent");
             },
             monitor: function(context, payload) {
                 context.commit("reloadPersistent");
@@ -456,37 +457,32 @@
                     }
 
                     //notify task completed
-                    if (res && res.result === "completed") {
+                    if (res && res.result) {
                         countlyTaskManager.fetchTaskInfo(id, function(res1) {
                             if (res1 && res1.type === "tableExport") {
                                 if (res1.report_name) {
                                     res1.name = "<span style='overflow-wrap: break-word;'>" + res1.report_name + "</span>";
                                 }
                             }
-                            if (res1 && res1.manually_create === false) {
-                                $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
-                                app.haveUnreadReports = true;
-                                app.updateLongTaskViewsNotification();
-                            }
-                            if (res1 && res1.view) {
-                                notifiers.completed(id, res1);
-                            }
-                        });
-                    }
-                    else if (res && res.result === "errored") {
-                        countlyTaskManager.fetchTaskInfo(id, function(res1) {
-                            if (res1 && res1.type === "tableExport") {
-                                if (res1.report_name) {
-                                    res1.name = "<span style='overflow-wrap: break-word;'>" + res1.report_name + "</span>";
-                                }
-                            }
-                            if (res1 && res1.view) {
-                                if (res1.manually_create === false) {
+                            if (res.result === "completed") {
+                                if (res1 && res1.manually_create === false) {
                                     $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
                                     app.haveUnreadReports = true;
                                     app.updateLongTaskViewsNotification();
                                 }
-                                notifiers.errored(id, res1);
+                                if (res1 && res1.view) {
+                                    notifiers.completed(id, res1);
+                                }
+                            }
+                            else if (res.result === "errored") {
+                                if (res1 && res1.view) {
+                                    if (res1.manually_create === false) {
+                                        $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
+                                        app.haveUnreadReports = true;
+                                        app.updateLongTaskViewsNotification();
+                                    }
+                                    notifiers.errored(id, res1);
+                                }
                             }
                         });
                     }
