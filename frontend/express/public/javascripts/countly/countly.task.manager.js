@@ -324,9 +324,9 @@
             var assistantAvailable = typeof countlyAssistant !== "undefined";
             if (!assistantAvailable) {
                 CountlyHelpers.notify({
-                    title: jQuery.i18n.prop("assistant.taskmanager.completed.title", "", fetchedTask.name || ""),
-                    message: jQuery.i18n.map["assistant.taskmanager.completed.message"],
-                    info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
+                    title: CV.i18n("assistant.taskmanager.completed.title", "", fetchedTask.name || ""),
+                    message: CV.i18n("assistant.taskmanager.completed.message"),
+                    info: CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
                     sticky: true,
                     onClick: function() {
                         app.navigate(fetchedTask.view + id, true);
@@ -335,9 +335,9 @@
             }
             else {
                 countlyTaskManager.makeTaskNotification(
-                    jQuery.i18n.prop("assistant.taskmanager.completed.title", "", fetchedTask.name || ""),
-                    jQuery.i18n.map["assistant.taskmanager.completed.message"],
-                    jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
+                    CV.i18n("assistant.taskmanager.completed.title", "", fetchedTask.name || ""),
+                    CV.i18n("assistant.taskmanager.completed.message"),
+                    CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
                     [fetchedTask.view + id, fetchedTask.name || ""], 3, "assistant.taskmanager.completed", 1);
             }
         },
@@ -345,9 +345,9 @@
             var assistantAvailable = typeof countlyAssistant !== "undefined";
             if (!assistantAvailable) {
                 CountlyHelpers.notify({
-                    title: jQuery.i18n.prop("assistant.taskmanager.errored.title", fetchedTask.name || ""),
-                    message: jQuery.i18n.map["assistant.taskmanager.errored.message"],
-                    info: jQuery.i18n.map["assistant.taskmanager.errored.info"],
+                    title: CV.i18n("assistant.taskmanager.errored.title", fetchedTask.name || ""),
+                    message: CV.i18n("assistant.taskmanager.errored.message"),
+                    info: CV.i18n("assistant.taskmanager.errored.info"),
                     type: "error",
                     sticky: true,
                     onClick: function() {
@@ -357,9 +357,9 @@
             }
             else {
                 countlyTaskManager.makeTaskNotification(
-                    jQuery.i18n.prop("assistant.taskmanager.errored.title", fetchedTask.name || ""),
-                    jQuery.i18n.map["assistant.taskmanager.errored.message"],
-                    jQuery.i18n.map["assistant.taskmanager.errored.info"],
+                    CV.i18n("assistant.taskmanager.errored.title", fetchedTask.name || ""),
+                    CV.i18n("assistant.taskmanager.errored.message"),
+                    CV.i18n("assistant.taskmanager.errored.info"),
                     [fetchedTask.name || ""], 4, "assistant.taskmanager.errored", 1);
             }
         }
