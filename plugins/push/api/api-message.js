@@ -99,6 +99,7 @@ module.exports.create = async params => {
     msg._id = common.db.ObjectID();
     msg.info.created = new Date();
     msg.info.createdBy = params.member._id;
+    msg.info.createdByName = params.member.full_name;
 
     if (msg.triggerAutoOrApi()) {
         msg.state = State.Streamable;
@@ -136,6 +137,7 @@ module.exports.update = async params => {
 
     msg.info.updated = new Date();
     msg.info.updatedBy = params.member._id;
+    msg.info.updatedName = params.member.full_name;
 
     await msg.save();
 
