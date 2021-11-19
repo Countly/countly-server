@@ -30,12 +30,12 @@ class Info extends Jsonable {
     static get scheme() {
         return {
             title: {type: 'String', required: false},
-            appName: {type: 'String', required: true},
+            appName: {type: 'String', required: false},
             locales: {type: 'Object', required: false},
-            created: {type: 'Date', required: true},
-            createdBy: {type: 'String', required: true},
-            updated: {type: 'Date', required: true},
-            updatedBy: {type: 'String', required: true},
+            created: {type: 'Date', required: false},
+            createdBy: {type: 'String', required: false},
+            updated: {type: 'Date', required: false},
+            updatedBy: {type: 'String', required: false},
             approved: {type: 'Date', required: false},
             approvedBy: {type: 'String', required: false},
             started: {type: 'Date', required: false},

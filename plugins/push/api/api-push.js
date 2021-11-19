@@ -29,6 +29,9 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
             pushCollection.updateOne({_id: params.app_user.uid}, {$unset: {[pushField]: 1}}, function() {});
         }
     }
+    else {
+        log.d('no push token in token_session:', params.qstring);
+    }
     // else if (params.qstring.locale) {
     //     common.db.collection(`app_users${params.app_id}`).updateOne({_id: params.app_user_id}, {$set: {[common.dbUserMap.locale]: params.qstring.locale}}, function() {});
     //     dbAppUser[common.dbUserMap.locale] = params.qstring.locale;
