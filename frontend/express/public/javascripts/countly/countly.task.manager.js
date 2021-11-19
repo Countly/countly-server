@@ -1,11 +1,10 @@
-/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery, countlyVue, CV*/
+/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery, countlyVue, CV, Promise*/
 (function(countlyTaskManager, $) {
 
     //Private Properties
     var _resultData = [],
         _resultObj = {},
-        _data = {},
-        curTask = 0;
+        _data = {};
 
     //Public Methods
     countlyTaskManager.initialize = function(isRefresh, query) {
@@ -283,7 +282,6 @@
         _resultData = [];
         _resultObj = {};
         _data = {};
-        curTask = 0;
     };
 
     countlyTaskManager.getResults = function() {
@@ -372,19 +370,23 @@
             var persistent = store.get("countly_task_monitor") || {};
             return {
                 monitored: persistent,
-                ticks: 0
+                ticks: 0,
+                curTask: 0
             };
         },
         mutations: {
             incrementTicks: function(state) {
                 state.ticks += 1;
             },
+            incrementCurTask: function(state) {
+                state.curTask += 1;
+            },
+            resetCurTask: function(state) {
+                state.curTask = 0;
+            },
             reloadPersistent: function(state) {
                 var monitored = store.get("countly_task_monitor") || {};
                 state.monitored = monitored;
-            },
-            persist: function(state) {
-                store.set("countly_task_monitor", state.monitored);
             },
             registerTask: function(state, payload) {
                 var monitored = state.monitored,
@@ -396,14 +398,87 @@
                 }
                 if (monitored[appId].indexOf(taskId) === -1) {
                     monitored[appId].push(taskId);
-                    state.commit("persist");
+                    store.set("countly_task_monitor", state.monitored);
+                }
+            },
+            unregisterTask: function(state, payload) {
+                var monitored = state.monitored,
+                    appId = payload.appId,
+                    taskId = payload.taskId;
+
+                var index = monitored[appId].indexOf(taskId);
+
+                if (index !== -1) {
+                    monitored[appId].splice(index, 1);
+                    store.set("countly_task_monitor", state.monitored);
                 }
             }
         },
         actions: {
-            tick: function(context) {
-                context.commit("incrementTicks");
-                context.commit("reloadPersistent");
+            tick: function(context, payload) {
+                payload = payload || {};
+                return new Promise(function(resolve) {
+                    app.updateLongTaskViewsNotification();
+                    context.commit("incrementTicks");
+                    context.commit("reloadPersistent");
+
+                    var monitored = context.state.monitored,
+                        appId = payload.appId || countlyCommon.ACTIVE_APP_ID,
+                        curTask = context.state.curTask;
+
+                    if (monitored[appId] && monitored[appId][curTask]) {
+                        var id = monitored[appId][curTask];
+                        countlyTaskManager.check(id, function(checkedTask) {
+                            if (checkedTask === false || checkedTask.result === "completed" || checkedTask.result === "errored") {
+
+                                //get it from storage again, in case it has changed
+                                context.commit("reloadPersistent");
+                                monitored = context.state.monitored;
+                                context.commit("unregisterTask", {
+                                    appId: countlyCommon.ACTIVE_APP_ID,
+                                    taskId: id
+                                });
+
+                                //notify task completed
+                                if (checkedTask && checkedTask.result) {
+                                    countlyTaskManager.fetchTaskInfo(id, function(fetchedTask) {
+                                        if (!fetchedTask) {
+                                            return;
+                                        }
+                                        if (fetchedTask.type === "tableExport") {
+                                            if (fetchedTask.report_name) {
+                                                fetchedTask.name = "<span style='overflow-wrap: break-word;'>" + fetchedTask.report_name + "</span>";
+                                            }
+                                        }
+                                        if (fetchedTask.manually_create === false) {
+                                            $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
+                                            app.haveUnreadReports = true;
+                                            app.updateLongTaskViewsNotification();
+                                        }
+                                        if (fetchedTask.view) {
+                                            if (checkedTask.result === "completed") {
+                                                notifiers.completed(id, fetchedTask);
+                                            }
+                                            else if (checkedTask.result === "errored") {
+                                                notifiers.errored(id, fetchedTask);
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                            else {
+                                context.commit("incrementCurTask");
+                            }
+                            if (context.state.curTask >= monitored[appId].length) {
+                                context.commit("resetCurTask");
+                            }
+                            resolve();
+                        });
+                    }
+                    else {
+                        resolve();
+                    }
+                });
             },
             monitor: function(context, payload) {
                 context.commit("reloadPersistent");
@@ -439,66 +514,11 @@
     };
 
     countlyTaskManager.tick = function() {
-        app.updateLongTaskViewsNotification();
-        var monitor = store.get("countly_task_monitor") || {};
-        if (monitor[countlyCommon.ACTIVE_APP_ID] && monitor[countlyCommon.ACTIVE_APP_ID][curTask]) {
-            var id = monitor[countlyCommon.ACTIVE_APP_ID][curTask];
-            countlyTaskManager.check(id, function(checkedTask) {
-                if (checkedTask === false || checkedTask.result === "completed" || checkedTask.result === "errored") {
-
-                    //get it from storage again, in case it has changed
-                    monitor = store.get("countly_task_monitor") || {};
-                    //get index of task, cause it might have been changed
-                    var index = monitor[countlyCommon.ACTIVE_APP_ID].indexOf(id);
-                    //remove item
-                    if (index !== -1) {
-                        monitor[countlyCommon.ACTIVE_APP_ID].splice(index, 1);
-                        store.set("countly_task_monitor", monitor);
-                    }
-
-                    //notify task completed
-                    if (checkedTask && checkedTask.result) {
-                        countlyTaskManager.fetchTaskInfo(id, function(fetchedTask) {
-                            if (!fetchedTask) {
-                                return;
-                            }
-                            if (fetchedTask.type === "tableExport") {
-                                if (fetchedTask.report_name) {
-                                    fetchedTask.name = "<span style='overflow-wrap: break-word;'>" + fetchedTask.report_name + "</span>";
-                                }
-                            }
-                            if (fetchedTask.manually_create === false) {
-                                $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
-                                app.haveUnreadReports = true;
-                                app.updateLongTaskViewsNotification();
-                            }
-                            if (fetchedTask.view) {
-                                if (checkedTask.result === "completed") {
-                                    notifiers.completed(id, fetchedTask);
-                                }
-                                else if (checkedTask.result === "errored") {
-                                    notifiers.errored(id, fetchedTask);
-                                }
-                            }
-                        });
-                    }
-                }
-                else {
-                    curTask++;
-                }
-                if (curTask >= monitor[countlyCommon.ACTIVE_APP_ID].length) {
-                    curTask = 0;
-                }
-                setTimeout(function() {
-                    countlyTaskManager.tick();
-                }, countlyCommon.DASHBOARD_REFRESH_MS);
-            });
-        }
-        else {
+        vuexStore.dispatch("countlyTaskManager/tick").then(function() {
             setTimeout(function() {
                 countlyTaskManager.tick();
             }, countlyCommon.DASHBOARD_REFRESH_MS);
-        }
+        });
     };
 
     $(document).ready(function() {
