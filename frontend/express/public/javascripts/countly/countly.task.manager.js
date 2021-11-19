@@ -278,12 +278,6 @@
         });
     };
 
-    countlyTaskManager.reset = function() {
-        _resultData = [];
-        _resultObj = {};
-        _data = {};
-    };
-
     countlyTaskManager.getResults = function() {
         return _resultData;
     };
@@ -305,8 +299,7 @@
 
     var notifiers = {
         dispatched: function() {
-            $(".orange-side-notification-banner-wrapper").css("display", "block");
-            app.updateLongTaskViewsNotification();
+            // TODO(vck): Replace app.updateLongTaskViewsNotification fn here
             CountlyHelpers.notify({
                 title: CV.i18n("assistant.taskmanager.longTaskTooLong.title"),
                 message: CV.i18n("assistant.taskmanager.longTaskTooLong.message"),
@@ -418,7 +411,7 @@
             tick: function(context, payload) {
                 payload = payload || {};
                 return new Promise(function(resolve) {
-                    app.updateLongTaskViewsNotification();
+                    // TODO(vck): Replace app.updateLongTaskViewsNotification fn here
                     context.commit("incrementTicks");
                     context.commit("reloadPersistent");
 
@@ -451,9 +444,9 @@
                                             }
                                         }
                                         if (fetchedTask.manually_create === false) {
-                                            $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
-                                            app.haveUnreadReports = true;
-                                            app.updateLongTaskViewsNotification();
+                                            // TODO(vck):Handle app.haveUnreadReports = true
+                                            // app.haveUnreadReports = true;
+                                            // app.updateLongTaskViewsNotification();
                                         }
                                         if (fetchedTask.view) {
                                             if (checkedTask.result === "completed") {
@@ -519,6 +512,13 @@
                 countlyTaskManager.tick();
             }, countlyCommon.DASHBOARD_REFRESH_MS);
         });
+    };
+
+    countlyTaskManager.reset = function() {
+        _resultData = [];
+        _resultObj = {};
+        _data = {};
+        vuexStore.commit("countlyTaskManager/resetCurTask");
     };
 
     $(document).ready(function() {
