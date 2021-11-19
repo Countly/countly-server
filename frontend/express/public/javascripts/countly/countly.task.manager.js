@@ -459,28 +459,24 @@
                     //notify task completed
                     if (checkedTask && checkedTask.result) {
                         countlyTaskManager.fetchTaskInfo(id, function(fetchedTask) {
-                            if (fetchedTask && fetchedTask.type === "tableExport") {
+                            if (!fetchedTask) {
+                                return;
+                            }
+                            if (fetchedTask.type === "tableExport") {
                                 if (fetchedTask.report_name) {
                                     fetchedTask.name = "<span style='overflow-wrap: break-word;'>" + fetchedTask.report_name + "</span>";
                                 }
                             }
-                            if (checkedTask.result === "completed") {
-                                if (fetchedTask && fetchedTask.manually_create === false) {
-                                    $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
-                                    app.haveUnreadReports = true;
-                                    app.updateLongTaskViewsNotification();
-                                }
-                                if (fetchedTask && fetchedTask.view) {
+                            if (fetchedTask.manually_create === false) {
+                                $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
+                                app.haveUnreadReports = true;
+                                app.updateLongTaskViewsNotification();
+                            }
+                            if (fetchedTask.view) {
+                                if (checkedTask.result === "completed") {
                                     notifiers.completed(id, fetchedTask);
                                 }
-                            }
-                            else if (checkedTask.result === "errored") {
-                                if (fetchedTask && fetchedTask.view) {
-                                    if (fetchedTask.manually_create === false) {
-                                        $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
-                                        app.haveUnreadReports = true;
-                                        app.updateLongTaskViewsNotification();
-                                    }
+                                else if (checkedTask.result === "errored") {
                                     notifiers.errored(id, fetchedTask);
                                 }
                             }
