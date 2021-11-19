@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery*/
+/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery, countlyVue, CV*/
 (function(countlyTaskManager, $) {
 
     //Private Properties
@@ -290,6 +290,85 @@
         return _resultData;
     };
 
+    var notifiers = {
+        dispatch: function() {
+            $(".orange-side-notification-banner-wrapper").css("display", "block");
+            app.updateLongTaskViewsNotification();
+            CountlyHelpers.notify({
+                title: CV.i18n("assistant.taskmanager.longTaskTooLong.title"),
+                message: CV.i18n("assistant.taskmanager.longTaskTooLong.message"),
+                info: CV.i18n("assistant.taskmanager.longTaskTooLong.info")
+            });
+        },
+        duplicate: function() {
+            CountlyHelpers.notify({
+                title: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.title"),
+                message: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.message"),
+                info: CV.i18n("assistant.taskmanager.longTaskTooLong.info")
+            });
+        }
+    };
+
+    var taskManagerVuex = countlyVue.vuex.Module("countlyTaskManager", {
+        state: function() {
+            var persistent = store.get("countly_task_monitor") || {};
+            return {
+                monitored: persistent,
+                tick: 0
+            };
+        },
+        mutations: {
+            incrementTick: function(state) {
+                state.tick += 1;
+            },
+            reloadPersistent: function(state) {
+                var monitored = store.get("countly_task_monitor") || {};
+                state.monitored = monitored;
+            },
+            registerTask: function(state, payload) {
+                var monitored = state.monitored,
+                    appId = payload.appId,
+                    taskId = payload.taskId;
+
+                if (!monitored[appId]) {
+                    monitored[appId] = [];
+                }
+                if (monitored[appId].indexOf(taskId) === -1) {
+                    monitored[appId].push(taskId);
+                    store.set("countly_task_monitor", monitored);
+                }
+            }
+        },
+        actions: {
+            tick: function(context) {
+                context.commit("incrementTick");
+            },
+            monitor: function(context, payload) {
+                context.commit("reloadPersistent");
+                var monitored = context.state.monitored,
+                    appId = payload.appId || countlyCommon.ACTIVE_APP_ID,
+                    taskId = payload.taskId;
+
+                if (!monitored[appId] || monitored[appId].indexOf(taskId) === -1) {
+                    context.commit("registerTask", {
+                        appId: countlyCommon.ACTIVE_APP_ID,
+                        taskId: payload.taskId
+                    });
+                    if (!payload.silent) {
+                        notifiers.dispatch();
+                    }
+                }
+                else if (!payload.silent) {
+                    notifiers.duplicate();
+                }
+            }
+        }
+    });
+
+    countlyVue.vuex.registerGlobally(taskManagerVuex);
+
+    var vuexStore = countlyVue.vuex.getGlobalStore();
+
     countlyTaskManager.makeTaskNotification = function(title, message, info, data, notifSubType, i18nId, notificationVersion) {
         var contentData = data;
         var ownerName = "ReportManager";
@@ -306,32 +385,10 @@
     };
 
     countlyTaskManager.monitor = function(id, silent) {
-        var monitor = store.get("countly_task_monitor") || {};
-        if (!monitor[countlyCommon.ACTIVE_APP_ID]) {
-            monitor[countlyCommon.ACTIVE_APP_ID] = [];
-        }
-        if (monitor[countlyCommon.ACTIVE_APP_ID].indexOf(id) === -1) {
-            monitor[countlyCommon.ACTIVE_APP_ID].push(id);
-            store.set("countly_task_monitor", monitor);
-            if (!silent) {
-                $(".orange-side-notification-banner-wrapper").css("display", "block");
-                app.updateLongTaskViewsNotification();
-                CountlyHelpers.notify({
-                    title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
-                    message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
-                    info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
-                });
-            }
-        }
-        else {
-            if (!silent) {
-                CountlyHelpers.notify({
-                    title: jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.title"],
-                    message: jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.message"],
-                    info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
-                });
-            }
-        }
+        vuexStore.dispatch("countlyTaskManager/monitor", {
+            taskId: id,
+            silent: silent
+        });
     };
 
     countlyTaskManager.tick = function() {
