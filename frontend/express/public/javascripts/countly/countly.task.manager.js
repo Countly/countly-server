@@ -322,32 +322,32 @@
                 info: CV.i18n("assistant.taskmanager.longTaskTooLong.info")
             });
         },
-        completed: function(id, res1) {
+        completed: function(id, fetchedTask) {
             var assistantAvailable = typeof countlyAssistant !== "undefined";
             if (!assistantAvailable) {
                 CountlyHelpers.notify({
-                    title: jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""),
+                    title: jQuery.i18n.prop("assistant.taskmanager.completed.title", "", fetchedTask.name || ""),
                     message: jQuery.i18n.map["assistant.taskmanager.completed.message"],
                     info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
                     sticky: true,
                     onClick: function() {
-                        app.navigate(res1.view + id, true);
+                        app.navigate(fetchedTask.view + id, true);
                     }
                 });
             }
             else {
                 countlyTaskManager.makeTaskNotification(
-                    jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""),
+                    jQuery.i18n.prop("assistant.taskmanager.completed.title", "", fetchedTask.name || ""),
                     jQuery.i18n.map["assistant.taskmanager.completed.message"],
                     jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
-                    [res1.view + id, res1.name || ""], 3, "assistant.taskmanager.completed", 1);
+                    [fetchedTask.view + id, fetchedTask.name || ""], 3, "assistant.taskmanager.completed", 1);
             }
         },
-        errored: function(id, res1) {
+        errored: function(id, fetchedTask) {
             var assistantAvailable = typeof countlyAssistant !== "undefined";
             if (!assistantAvailable) {
                 CountlyHelpers.notify({
-                    title: jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
+                    title: jQuery.i18n.prop("assistant.taskmanager.errored.title", fetchedTask.name || ""),
                     message: jQuery.i18n.map["assistant.taskmanager.errored.message"],
                     info: jQuery.i18n.map["assistant.taskmanager.errored.info"],
                     type: "error",
@@ -359,10 +359,10 @@
             }
             else {
                 countlyTaskManager.makeTaskNotification(
-                    jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
+                    jQuery.i18n.prop("assistant.taskmanager.errored.title", fetchedTask.name || ""),
                     jQuery.i18n.map["assistant.taskmanager.errored.message"],
                     jQuery.i18n.map["assistant.taskmanager.errored.info"],
-                    [res1.name || ""], 4, "assistant.taskmanager.errored", 1);
+                    [fetchedTask.name || ""], 4, "assistant.taskmanager.errored", 1);
             }
         }
     };
@@ -443,8 +443,8 @@
         var monitor = store.get("countly_task_monitor") || {};
         if (monitor[countlyCommon.ACTIVE_APP_ID] && monitor[countlyCommon.ACTIVE_APP_ID][curTask]) {
             var id = monitor[countlyCommon.ACTIVE_APP_ID][curTask];
-            countlyTaskManager.check(id, function(res) {
-                if (res === false || res.result === "completed" || res.result === "errored") {
+            countlyTaskManager.check(id, function(checkedTask) {
+                if (checkedTask === false || checkedTask.result === "completed" || checkedTask.result === "errored") {
 
                     //get it from storage again, in case it has changed
                     monitor = store.get("countly_task_monitor") || {};
@@ -457,31 +457,31 @@
                     }
 
                     //notify task completed
-                    if (res && res.result) {
-                        countlyTaskManager.fetchTaskInfo(id, function(res1) {
-                            if (res1 && res1.type === "tableExport") {
-                                if (res1.report_name) {
-                                    res1.name = "<span style='overflow-wrap: break-word;'>" + res1.report_name + "</span>";
+                    if (checkedTask && checkedTask.result) {
+                        countlyTaskManager.fetchTaskInfo(id, function(fetchedTask) {
+                            if (fetchedTask && fetchedTask.type === "tableExport") {
+                                if (fetchedTask.report_name) {
+                                    fetchedTask.name = "<span style='overflow-wrap: break-word;'>" + fetchedTask.report_name + "</span>";
                                 }
                             }
-                            if (res.result === "completed") {
-                                if (res1 && res1.manually_create === false) {
+                            if (checkedTask.result === "completed") {
+                                if (fetchedTask && fetchedTask.manually_create === false) {
                                     $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
                                     app.haveUnreadReports = true;
                                     app.updateLongTaskViewsNotification();
                                 }
-                                if (res1 && res1.view) {
-                                    notifiers.completed(id, res1);
+                                if (fetchedTask && fetchedTask.view) {
+                                    notifiers.completed(id, fetchedTask);
                                 }
                             }
-                            else if (res.result === "errored") {
-                                if (res1 && res1.view) {
-                                    if (res1.manually_create === false) {
+                            else if (checkedTask.result === "errored") {
+                                if (fetchedTask && fetchedTask.view) {
+                                    if (fetchedTask.manually_create === false) {
                                         $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
                                         app.haveUnreadReports = true;
                                         app.updateLongTaskViewsNotification();
                                     }
-                                    notifiers.errored(id, res1);
+                                    notifiers.errored(id, fetchedTask);
                                 }
                             }
                         });
