@@ -306,6 +306,49 @@
                 message: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.message"),
                 info: CV.i18n("assistant.taskmanager.longTaskTooLong.info")
             });
+        },
+        completed: function(id, res1) {
+            var assistantAvailable = typeof countlyAssistant !== "undefined";
+            if (!assistantAvailable) {
+                CountlyHelpers.notify({
+                    title: jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""),
+                    message: jQuery.i18n.map["assistant.taskmanager.completed.message"],
+                    info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
+                    sticky: true,
+                    onClick: function() {
+                        app.navigate(res1.view + id, true);
+                    }
+                });
+            }
+            else {
+                countlyTaskManager.makeTaskNotification(
+                    jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""),
+                    jQuery.i18n.map["assistant.taskmanager.completed.message"],
+                    jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
+                    [res1.view + id, res1.name || ""], 3, "assistant.taskmanager.completed", 1);
+            }
+        },
+        errored: function(id, res1) {
+            var assistantAvailable = typeof countlyAssistant !== "undefined";
+            if (!assistantAvailable) {
+                CountlyHelpers.notify({
+                    title: jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
+                    message: jQuery.i18n.map["assistant.taskmanager.errored.message"],
+                    info: jQuery.i18n.map["assistant.taskmanager.errored.info"],
+                    type: "error",
+                    sticky: true,
+                    onClick: function() {
+                        app.navigate("#/manage/tasks", true);
+                    }
+                });
+            }
+            else {
+                countlyTaskManager.makeTaskNotification(
+                    jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
+                    jQuery.i18n.map["assistant.taskmanager.errored.message"],
+                    jQuery.i18n.map["assistant.taskmanager.errored.info"],
+                    [res1.name || ""], 4, "assistant.taskmanager.errored", 1);
+            }
         }
     };
 
@@ -392,11 +435,7 @@
     };
 
     countlyTaskManager.tick = function() {
-        var assistantAvailable = true;
         app.updateLongTaskViewsNotification();
-        if (typeof countlyAssistant === "undefined") {
-            assistantAvailable = false;
-        }
         var monitor = store.get("countly_task_monitor") || {};
         if (monitor[countlyCommon.ACTIVE_APP_ID] && monitor[countlyCommon.ACTIVE_APP_ID][curTask]) {
             var id = monitor[countlyCommon.ACTIVE_APP_ID][curTask];
@@ -427,24 +466,7 @@
                                 app.updateLongTaskViewsNotification();
                             }
                             if (res1 && res1.view) {
-                                if (!assistantAvailable) {
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""),
-                                        message: jQuery.i18n.map["assistant.taskmanager.completed.message"],
-                                        info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
-                                        sticky: true,
-                                        onClick: function() {
-                                            app.navigate(res1.view + id, true);
-                                        }
-                                    });
-                                }
-                                else {
-                                    countlyTaskManager.makeTaskNotification(
-                                        jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""),
-                                        jQuery.i18n.map["assistant.taskmanager.completed.message"],
-                                        jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
-                                        [res1.view + id, res1.name || ""], 3, "assistant.taskmanager.completed", 1);
-                                }
+                                notifiers.completed(id, res1);
                             }
                         });
                     }
@@ -461,25 +483,7 @@
                                     app.haveUnreadReports = true;
                                     app.updateLongTaskViewsNotification();
                                 }
-                                if (!assistantAvailable) {
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
-                                        message: jQuery.i18n.map["assistant.taskmanager.errored.message"],
-                                        info: jQuery.i18n.map["assistant.taskmanager.errored.info"],
-                                        type: "error",
-                                        sticky: true,
-                                        onClick: function() {
-                                            app.navigate("#/manage/tasks", true);
-                                        }
-                                    });
-                                }
-                                else {
-                                    countlyTaskManager.makeTaskNotification(
-                                        jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
-                                        jQuery.i18n.map["assistant.taskmanager.errored.message"],
-                                        jQuery.i18n.map["assistant.taskmanager.errored.info"],
-                                        [res1.name || ""], 4, "assistant.taskmanager.errored", 1);
-                                }
+                                notifiers.errored(id, res1);
                             }
                         });
                     }
