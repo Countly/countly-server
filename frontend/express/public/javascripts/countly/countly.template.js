@@ -2417,11 +2417,12 @@ var AppRouter = Backbone.Router.extend({
 
             $topbar.on("click", ".dropdown", function(e) {
                 var wasActive = $(this).hasClass("clicked");
-                if ($(this).hasClass('manage-long-tasks-menu-dropdown')) {
-                    $("#manage-long-tasks-icon").removeClass('unread');
-                    app.haveUnreadReports = false;
-                    $(".orange-side-notification-banner-wrapper").css("display", "none");
-                }
+                // TODO(vck)
+                // if ($(this).hasClass('manage-long-tasks-menu-dropdown')) {
+                //     $("#manage-long-tasks-icon").removeClass('unread');
+                //     app.haveUnreadReports = false;
+                //     $(".orange-side-notification-banner-wrapper").css("display", "none");
+                // }
                 $topbar.find(".dropdown").removeClass("clicked");
 
                 if (wasActive) {
