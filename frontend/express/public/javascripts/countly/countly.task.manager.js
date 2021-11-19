@@ -290,8 +290,23 @@
         return _resultData;
     };
 
+    countlyTaskManager.makeTaskNotification = function(title, message, info, data, notifSubType, i18nId, notificationVersion) {
+        var contentData = data;
+        var ownerName = "ReportManager";
+        var notifType = 4;//informational notification, check assistant.js for additional types
+        countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function(res) {
+            if (!res) {
+                CountlyHelpers.notify({
+                    title: title,
+                    message: message,
+                    info: info
+                });
+            }
+        });
+    };
+
     var notifiers = {
-        dispatch: function() {
+        dispatched: function() {
             $(".orange-side-notification-banner-wrapper").css("display", "block");
             app.updateLongTaskViewsNotification();
             CountlyHelpers.notify({
@@ -368,6 +383,9 @@
                 var monitored = store.get("countly_task_monitor") || {};
                 state.monitored = monitored;
             },
+            persist: function(state) {
+                store.set("countly_task_monitor", state.monitored);
+            },
             registerTask: function(state, payload) {
                 var monitored = state.monitored,
                     appId = payload.appId,
@@ -378,7 +396,7 @@
                 }
                 if (monitored[appId].indexOf(taskId) === -1) {
                     monitored[appId].push(taskId);
-                    store.set("countly_task_monitor", monitored);
+                    state.commit("persist");
                 }
             }
         },
@@ -398,7 +416,7 @@
                         taskId: payload.taskId
                     });
                     if (!payload.silent) {
-                        notifiers.dispatch();
+                        notifiers.dispatched();
                     }
                 }
                 else if (!payload.silent) {
@@ -411,21 +429,6 @@
     countlyVue.vuex.registerGlobally(taskManagerVuex);
 
     var vuexStore = countlyVue.vuex.getGlobalStore();
-
-    countlyTaskManager.makeTaskNotification = function(title, message, info, data, notifSubType, i18nId, notificationVersion) {
-        var contentData = data;
-        var ownerName = "ReportManager";
-        var notifType = 4;//informational notification, check assistant.js for additional types
-        countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function(res) {
-            if (!res) {
-                CountlyHelpers.notify({
-                    title: title,
-                    message: message,
-                    info: info
-                });
-            }
-        });
-    };
 
     countlyTaskManager.monitor = function(id, silent) {
         vuexStore.dispatch("countlyTaskManager/monitor", {
