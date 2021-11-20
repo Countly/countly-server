@@ -41,7 +41,7 @@ class HTTPEffect {
                     }
                 });
                 break;
-            case 'post':
+            case 'post': {
                 //support post formData
                 let parsedJSON = {};
                 try {
@@ -68,6 +68,7 @@ class HTTPEffect {
 
                 });
                 break;
+            }
             }
         }
         catch (e) {

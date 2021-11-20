@@ -331,19 +331,19 @@ plugins.register("/i/hook/test", function(ob) {
             const trigger = hookConfig.trigger;
             hookConfig._id = null;
             log.d("[hook test mock data]", mockData);
-            const ob = {
+            const obj = {
                 is_mock: true,
                 params: mockData,
                 rule: hookConfig
             };
 
-            log.d("[hook test config data]", ob);
+            log.d("[hook test config data]", obj);
             const t = new Triggers[trigger.type]({
                 rules: [hookConfig],
             });
 
             // out put trigger result
-            const triggerResult = await t.process(ob);
+            const triggerResult = await t.process(obj);
             log.d("[hook trigger test result]", triggerResult);
             results.push(JSON.parse(JSON.stringify(triggerResult)));
 

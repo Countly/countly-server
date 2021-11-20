@@ -1,7 +1,6 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
-const log = common.log("hooks:api:api_endpoint_trigger");
 /**
  * API endpoint  trigger
  */

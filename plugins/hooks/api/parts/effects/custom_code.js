@@ -26,8 +26,11 @@ class CustomCodeEffect {
         let logs = [];
         await new Promise(CUSTOM_CODE_RESOLVER => {
             const code = effect.configuration.code;
+            /**
+             * function for rejection of effect
+             * @param {object} e - error object
+             */
             const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
-                console.log(e, "eee, exech333333!!");
                 utils.addErrorRecord(rule._id, e);
             };
 

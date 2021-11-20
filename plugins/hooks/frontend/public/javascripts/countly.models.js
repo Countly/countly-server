@@ -1,9 +1,13 @@
 /*global
-    jQuery, $,
+    jQuery, 
+    CV,
+    countlyVue,
+    countlyGlobal,
+    _,
+    moment,
  */
 
 (function(hooksPlugin, jQuery) {
-    var _hookList = [];
     var countlyCommon = window.countlyCommon;
 
 
@@ -19,55 +23,55 @@
         var mockUser = {
             _id: "*****",
             name: "foobar",
-            did: "****", 
-        }
+            did: "****",
+        };
         switch (triggerType) {
-            case 'APIEndPointTrigger':
-                data = {
-                    qstring: {"paramA": "abc", "paramB": 123,  "paramC": [1,2,3]}, 
-                    paths: ("localhost/o/hooks/" + hookConfig.trigger.configuration.path).split("/") 
+        case 'APIEndPointTrigger':
+            data = {
+                qstring: {"paramA": "abc", "paramB": 123, "paramC": [1, 2, 3]},
+                paths: ("localhost/o/hooks/" + hookConfig.trigger.configuration.path).split("/")
+            };
+            break;
+        case 'IncomingDataTrigger':
+            data = {
+                events: [
+                    {
+                        key: "eventA",
+                        count: 1,
+                        segmentation: {
+                            "a": "1",
+                            "b": "2",
+                        }
+                    },
+                    {
+                        key: "eventB",
+                        count: 1,
+                        segmentation: {
+                            "a": "1",
+                            "b": "2",
+                        }
+                    },
+                ],
+                user: mockUser,
+            };
+            break;
+        case 'InternalEventTrigger':
+            var eventType = hookConfig.trigger.configuration.eventType;
+            data = {
+                user: mockUser,
+            };
+            if (eventType.indexOf('cohort') >= 0) {
+                data.corhort = {
+                    _id: "****",
+                    name: "corhort A",
                 };
-                break;
-            case 'IncomingDataTrigger':
-                data = {
-                    events: [
-                        {
-                            key: "eventA",
-                            count: 1,
-                            segmentation: {
-                                "a":"1",
-                                "b":"2",
-                            }
-                        },
-                        {
-                            key: "eventB",
-                            count: 1,
-                            segmentation: {
-                                "a":"1",
-                                "b":"2",
-                            }
-                        },
-                    ],
-                    user: mockUser,
-                };
-                break;
-            case 'InternalEventTrigger':
-                var eventType = hookConfig.trigger.configuration.eventType
-                data = {
-                    user: mockUser, 
-                }
-                if (eventType.indexOf('cohort') >= 0) {
-                    data.corhort = {
-                        _id: "****",
-                        name: "corhort A",
-                    }
-                }
-                break;
+            }
+            break;
         }
         return data;
-    }
+    };
 
-    hooksPlugin.generateTriggerActionsTreeDom = function (row) {
+    hooksPlugin.generateTriggerActionsTreeDom = function(row) {
         var triggerNames = {
             "APIEndPointTrigger": jQuery.i18n.map["hooks.trigger-api-endpoint-uri"],
             "IncomingDataTrigger": jQuery.i18n.map["hooks.IncomingData"],
@@ -105,7 +109,7 @@
         var effectList = "";
         var arrow = '<div class="is-effect-col-arrow"><svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.25 8.25L6.75 12.75L5.685 11.685L8.3775 9H0V0H1.5V7.5H8.3775L5.685 4.815L6.75 3.75L11.25 8.25Z" fill="#CDAD7A"/></svg></div>';
         row.effects.forEach(function(effect) {
-            effectList +="<div class='is-effect-col'>" + arrow + '<div class="is-trigger-col-tag">'+ effectNames[effect.type] + '</div> </div>';
+            effectList += "<div class='is-effect-col'>" + arrow + '<div class="is-trigger-col-tag">' + effectNames[effect.type] + '</div> </div>';
             if (effect.type === "EmailEffect") {
                 effectList += '<div class="is-trigger-effect-desc">' + effect.configuration.address + '</div>';
             }
@@ -117,13 +121,13 @@
             }
         });
 
-        var triggerEffectDom= '<div class="is-trigger-col-tag">' + triggerText + '</div>';
+        var triggerEffectDom = '<div class="is-trigger-col-tag">' + triggerText + '</div>';
         triggerEffectDom += triggerDesc;
         triggerEffectDom += '<div style="margin:5px 0 0 2px;">';
         triggerEffectDom += effectList;
         triggerEffectDom += '</div>';
         return triggerEffectDom;
-    }
+    };
 
     hooksPlugin.getVuexModule = function() {
         var getEmptyState = function() {
@@ -133,33 +137,30 @@
             };
         };
 
-        var state = function() {
-            return {
-                hookDetail: [],
-                testResult: [],
-            };
-        };
+
 
         var getters = {
-            hookDetail(state) {
+            hookDetail: function(state) {
                 return state.hookDetail;
             },
-            testResult(state) {
+            testResult: function(state) {
                 return state.testResult;
             }
         };
 
         var mutations = {
-            setDetail: function (state, detail) {
+            setDetail: function(state, detail) {
                 state.hookDetail = detail;
             },
-            setTestResult: function (state, result) {
+            setTestResult: function(state, result) {
                 state.testResult = result;
             },
-            resetTestResult: function (state) {
+            resetTestResult: function(state) {
                 state.testResult = [];
             }
         };
+
+
 
         var actions = {
             initialize: function(context) {
@@ -174,17 +175,17 @@
                     },
                     dataType: "json",
                     success: function(data) {
-                        if(data.hooksList && data.hooksList.length === 1) {
+                        if (data.hooksList && data.hooksList.length === 1) {
                             data.hooksList[0].triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(data.hooksList[0]);
                             context.commit("setDetail", data.hooksList[0]);
                         }
                     },
-                }) 
+                });
             },
             refresh: function(context) {
                 context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
             },
-            saveHook: function (context, record) {
+            saveHook: function(context, record) {
                 return CV.$.ajax({
                     type: "POST",
                     url: countlyCommon.API_PARTS.data.w + "/hook/save",
@@ -192,9 +193,12 @@
                         "hook_config": JSON.stringify(record)
                     },
                     dataType: "json",
+                    success: function() {
+                        context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
+                    }
                 });
             },
-            testHook: function (context, hookConfig) {
+            testHook: function(context, hookConfig) {
                 delete hookConfig.error_logs;
                 var mockData = hooksPlugin.mockDataGenerator(hookConfig);
                 context.commit("resetTestResult");
@@ -207,19 +211,19 @@
                     },
                     dataType: "json",
                     success: function(res) {
-                        if (res.result){
+                        if (res.result) {
                             res.result = res.result.map(function(data, idx) {
-                                    data.t = idx === 0? data.rule.trigger.type : data.rule.effects[idx-1].type;
-                                    data.i = idx === 0? data.params : res.result[idx-1].params;
-                                    data.o = data.params;
-                                    return data;
+                                data.t = idx === 0 ? data.rule.trigger.type : data.rule.effects[idx - 1].type;
+                                data.i = idx === 0 ? data.params : res.result[idx - 1].params;
+                                data.o = data.params;
+                                return data;
                             });
                             context.commit("setTestResult", res.result);
                         }
                     }
                 });
             }
-        }
+        };
 
         var tableResource = countlyVue.vuex.Module("table", {
             state: function() {
@@ -246,29 +250,32 @@
                             "status": JSON.stringify(status)
                         },
                         dataType: "json",
-                    })
+                        success: function() {
+                            context.dispatch("countlyHooks/table/fetchAll");
+                        }
+                    });
                 },
                 fetchAll: function(context) {
                     return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r + "/hook/list",
                         data: {preventGlobalAbort: true},
-                    },).then(function(res) {
-                        const hookList = res && res.hooksList || [];
-                        const tableData = [];
+                    }).then(function(res) {
+                        var hookList = res && res.hooksList || [];
+                        var tableData = [];
                         for (var i = 0; i < hookList.length; i++) {
-                            const row = hookList[i];
+                            var row = hookList[i];
                             var appNameList = [];
                             if (hookList[i].apps) {
                                 appNameList = _.map(hookList[i].apps, function(appID) {
                                     return countlyGlobal.apps[appID] && countlyGlobal.apps[appID].name;
                                 });
                             }
-                            let nameDescColumn = '<div class="is-name-col">' + row.name + '</div>'
+                            var nameDescColumn = '<div class="is-name-col">' + row.name + '</div>';
                             if (row.description) {
                                 nameDescColumn += '<div class="is-desc-col">' + row.description + '</div>';
                             }
-                            
+
                             var triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(row);
                             tableData.push({
                                 _id: hookList[i]._id,
@@ -288,7 +295,7 @@
                                 created_at_string: moment(hookList[i].created_at).fromNow(),
                                 triggerEffectColumn: triggerEffectDom || "",
                             });
-                        };
+                        }
                         if (tableData && tableData.length > 0) {
                             context.commit("setAll", tableData);
                         }
@@ -296,6 +303,13 @@
                 },
             }
         });
+
+        var state = function() {
+            return {
+                hookDetail: [],
+                testResult: [],
+            };
+        };
         return countlyVue.vuex.Module("countlyHooks", {
             resetFn: getEmptyState,
             getters: getters,
@@ -304,25 +318,25 @@
             state: state,
             submodules: [tableResource]
         });
-    }
+    };
 
-    hooksPlugin.defaultDrawerConfigValue = function () {
-        const data = {
+    hooksPlugin.defaultDrawerConfigValue = function() {
+        var data = {
             _id: null,
             name: "",
             description: "",
             apps: [""],
-            trigger:{
+            trigger: {
                 type: null,
-                configuration: null, 
+                configuration: null,
             },
-            createdBy:'',
-            createdByUser:'',
-            effects:[{type:null, configuration: null}],
-            enabled: true, 
-        }
+            createdBy: '',
+            createdByUser: '',
+            effects: [{type: null, configuration: null}],
+            enabled: true,
+        };
         return data;
-    }
+    };
 
- 
+
 }(window.hooksPlugin = window.hooksPlugin || {}, jQuery));

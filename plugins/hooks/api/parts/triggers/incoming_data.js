@@ -46,10 +46,9 @@ class IncomingDataTrigger {
 
     /**
      * process pipeline feed, pick out matched record with rule
-     * @param {string} eventType - internal event types
      * @param {object} ob - trggered out from pipeline
      */
-    async process(ob, eventType) {
+    async process(ob) {
         let rule = null;
         if (ob.is_mock === true) {
             return ob;

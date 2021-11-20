@@ -34,8 +34,8 @@ class InternalEventTrigger {
 
     /**
      * process pipeline feed, pick out matched record with rule
-     * @param {string} eventType - internal event types
      * @param {object} ob - trggered out from pipeline
+     * @param {string} eventType - internal event types
      */
     async process(ob, eventType) {
         let rule = null;
@@ -102,10 +102,11 @@ class InternalEventTrigger {
                 rule: rule,
                 eventType,
             });
+            break;
         case '/i/apps/create':
         case '/i/apps/update':
         case '/i/apps/delete':
-        case '/i/apps/reset':
+        case '/i/apps/reset': {
             const {appId, data} = ob;
             try {
                 if (eventType === '/i/apps/create') {
@@ -130,6 +131,7 @@ class InternalEventTrigger {
             }
 
             break;
+        }
         case "/i/app_users/create":
         case "/i/app_users/update":
         case "/i/app_users/delete": {

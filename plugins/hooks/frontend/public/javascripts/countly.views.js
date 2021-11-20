@@ -1,37 +1,37 @@
 /*global
-  DrillQueryBuilder, countlyView, $, jQuery,countlyGlobal, app, T, Handlebars, hooksPlugin, _, moment, CountlyHelpers,  countlyEvent, Vue, T
+  DrillQueryBuilder, countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
  */
-(function(){
+(function() {
     var FEATURE_NAME = "hooks";
 
     var TableView = countlyVue.views.BaseView.extend({
         template: '#hooks-table',
         computed: {
-            tableRows: function () {
+            tableRows: function() {
                 var rows = this.$store.getters["countlyHooks/table/all"];
-                if (this.filterStatus != "all") {
+                if (this.filterStatus !== "all") {
                     var enabled = this.filterStatus === "enabled" ? true : false;
-                    rows = rows.filter(function (r) {
+                    rows = rows.filter(function(r) {
                         return r.enabled === enabled;
                     });
-                };
+                }
 
                 if (this.filteredApps.length > 0) {
                     var self = this;
-                    rows = rows.filter(function (r) {
+                    rows = rows.filter(function(r) {
                         var matched = false;
                         self.filteredApps.forEach(function(a) {
-                            if ( r.apps.indexOf(a) >= 0) {
+                            if (r.apps.indexOf(a) >= 0) {
                                 matched = true;
                             }
-                        })
-                        return matched; 
+                        });
+                        return matched;
                     });
                 }
                 return rows;
             },
         },
-        data: function () {
+        data: function() {
             var appsSelectorOption = [];
             for (var id in countlyGlobal.apps) {
                 appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
@@ -64,8 +64,8 @@
         methods: {
             handleHookEditCommand: function(command, scope) {
                 if (command === "edit-comment") {
-                    /* eslint-disable no-spreading */
-                    var data = {...scope.row};
+                    /* eslint-disable */
+                     var data = Object.assign({}, scope.row);
                     /* eslint-enable */
 
                     delete data.operation;
@@ -78,26 +78,26 @@
                     var hookID = scope._id;
                     var name = scope.name;
                     var self = this;
-                    return CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function (result) {
+                    return CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
                         if (result) {
-                            hooksPlugin.deleteHook(hookID, function () {
-                                self.$store.dispatch("countlyHooks/table/fetchAll")
+                            hooksPlugin.deleteHook(hookID, function() {
+                                self.$store.dispatch("countlyHooks/table/fetchAll");
                             });
                         }
                     }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-an-event"});
                 }
             },
-            updateStatus:  async function (scope) {
+            updateStatus: function(scope) {
                 var diff = scope.diff;
-                var status = {}
-                diff.forEach(function (item) {
+                var status = {};
+                diff.forEach(function(item) {
                     status[item.key] = item.newValue;
                 });
-                await this.$store.dispatch("countlyHooks/table/updateStatus", status);
-                await this.$store.dispatch("countlyHooks/table/fetchAll");
+                this.$store.dispatch("countlyHooks/table/updateStatus", status);
+
                 scope.unpatch();
             },
-            refresh: function () {
+            refresh: function() {
             // this.$store.dispatch("countlyHooks/table/fetchAll");
             },
             onRowClick: function(params, target) {
@@ -116,13 +116,13 @@
             {label: jQuery.i18n.map["hooks.CustomCodeEffect"], value: 'CustomCodeEffect'},
             {label: jQuery.i18n.map["hooks.HTTPEffect"], value: 'HTTPEffect'},
         ]
-    }
+    };
 
     var HTTPEffect = countlyVue.views.BaseView.extend({
-        template:'#hooks-effect-HTTPEffect',
-        data: function () {
+        template: '#hooks-effect-HTTPEffect',
+        data: function() {
             return {
-                methodOptions: [{label:'GET', value:'GET'}, {label: 'POST', value: 'POST'}],
+                methodOptions: [{label: 'GET', value: 'GET'}, {label: 'POST', value: 'POST'}],
             };
         },
         props: {
@@ -132,12 +132,12 @@
         },
         methods: {
         }
-    })
+    });
 
 
     var EmailEffect = countlyVue.views.BaseView.extend({
-        template:'#hooks-effect-EmailEffect',
-        data: function () {
+        template: '#hooks-effect-EmailEffect',
+        data: function() {
             return {
             };
         },
@@ -147,13 +147,8 @@
             },
         },
         watch: {
-            ["value.address"] : function() {
-                //this.emailInput.selectize.setValue(this.value.address, false);
-            },
-            ["value.emailTemplate"] : function() {
-            }
         },
-        mounted: function () {
+        mounted: function() {
             var self = this;
             var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
             self.emailInput = $(this.$el).find('select.email-list-input').selectize({
@@ -229,11 +224,11 @@
         },
         methods: {
         }
-    })
+    });
 
     var CustomCodeEffect = countlyVue.views.BaseView.extend({
-        template:'#hooks-effect-CustomCode',
-        data: function () {
+        template: '#hooks-effect-CustomCode',
+        data: function() {
             return {
                 code: ''
             };
@@ -245,15 +240,15 @@
         },
         methods: {
         }
-    })
+    });
 
     var EffectViews = countlyVue.views.BaseView.extend({
         template: '#hooks-effects',
-        data: function () {
+        data: function() {
             return {
                 selectedEffect: null,
                 effectsOption: EffectFactory.options,
-            }
+            };
         },
         props: {
             value: {
@@ -265,19 +260,17 @@
                 if (!oldValue && this.value.configuration) { // edit record
                     return;
                 }
-                if (1 ||!oldValue) {
-                    switch(newValue) {
-                        case 'EmailEffect': 
-                            this.value.configuration={address:[], emailTemplate:''};
-                            break;
-                        case 'CustomCodeEffect':
-                            this.value.configuration = {code:''};
-                            break;
-                        case 'HTTPEffect':
-                            this.value.configuration = {url:'', method:'', requestData:''};
-                        default:
-                            return;
-                    }
+                switch(newValue) {
+                    case 'EmailEffect': 
+                        this.value.configuration={address:[], emailTemplate:''};
+                        break;
+                    case 'CustomCodeEffect':
+                        this.value.configuration = {code:''};
+                        break;
+                    case 'HTTPEffect':
+                        this.value.configuration = {url:'', method:'', requestData:''};
+                    default:
+                        return;
                 }
             },
 
@@ -285,12 +278,12 @@
         computed: {
         },
         components: {
-            EmailEffect,
-            CustomCodeEffect,
-            HTTPEffect,
+            EmailEffect: EmailEffect,
+            CustomCodeEffect: CustomCodeEffect,
+            HTTPEffect: HTTPEffect,
         },
         methods: {
-            removeEffect: function () {
+            removeEffect: function() {
                 this.$emit('removeEffect', this.$attrs.index);
             },
         }
@@ -304,21 +297,24 @@
             {label: jQuery.i18n.map["hooks.internal-event-selector-title"], value: 'InternalEventTrigger'},
             {label: jQuery.i18n.map["hooks.ScheduledTrigger"], value: 'ScheduledTrigger'},
         ]
-    }
+    };
 
-    var IncomingDataTrigger =  countlyVue.views.BaseView.extend({
+    var IncomingDataTrigger = countlyVue.views.BaseView.extend({
         template: '#hooks-IncomingDataTrigger',
-        data: function (){
-            var defaultFilter = {}
+        data: function() {
+            var defaultFilter = {};
+            var result = {};
             try {
                 defaultFilter = JSON.parse(this.$props.value.filter) || {};
-            } catch(e) {}
-
-            return {
-                eventOptions:[],
-                hiddenFields: [],
-                query: defaultFilter.dbFilter,
             }
+            finally {
+                result = {
+                    eventOptions: [],
+                    hiddenFields: [],
+                    query: defaultFilter.dbFilter,
+                };
+            }
+            return result;
         },
         components: {
             "segmentation-filter": DrillQueryBuilder.genericSegmentation,
@@ -331,28 +327,28 @@
                 type: String,
             }
         },
-        mounted: function () {
+        mounted: function() {
             this.getEventOptions();
         },
-        computed:{
+        computed: {
             selectedEvent: function() {
                 var event = this.$props.value.event[0];
-                if ( event && event.indexOf("***") > 0) {
+                if (event && event.indexOf("***") > 0) {
                     event = event.split("***")[1];
                     return event;
                 }
-                return ""
+                return "";
             },
-            queryObj: { 
-                set: function (newValue) {
-                   /* eslint-disable */
-                   this.$emit("input", Object.assign({},{...this.$props.value, filter: JSON.stringify({dbFilter: newValue})}));
-                   /* eslint-enable */
-                   this.query = newValue;
-                   return 
+            queryObj: {
+                set: function(newValue) {
+                    var queryData = Object.assign({}, this.$props.value);
+                    queryData.filter = JSON.stringify({dbFilter: newValue});
+                    this.$emit("input", queryData);
+                    this.query = newValue;
+                    return;
                 },
-                get: function () {
-                  return this.query;
+                get: function() {
+                    return this.query;
                 }
             }
         },
@@ -362,25 +358,29 @@
             }
         },
         methods: {
-            eventChange: function(e) {
-                var change = this.$refs.filterSegments.setQuery.bind(this.$refs.filterSegments, {},function(){});
-                setTimeout(function(){
-                    change({}, function(){});
+            eventChange: function() {
+                var change = this.$refs.filterSegments.setQuery.bind(this.$refs.filterSegments, {}, function() {});
+                setTimeout(function() {
+                    change({}, function() {});
                 }, 0);
-                
+
             },
-            queryChange: function (changedQueryWrapper, isQueryValid) {
+            queryChange: function(changedQueryWrapper, isQueryValid) {
                 if (isQueryValid) {
                     /* eslint-disable */
-                    this.$emit("input", Object.assign({},{...this.$props.value, filter: JSON.stringify({dbFilter: changedQueryWrapper.query})}));
+                    var queryObj = Object.assign({}, this.$props.value);
+                    queryObj.filter = JSON.stringify({dbFilter: changedQueryWrapper.query});
+                    this.$emit("input", Object.assign({}, queryObj));
                     /* eslint-enable */
                 }
             },
-            getEventOptions: function () {
+            getEventOptions: function() {
                 var self = this;
                 var apps = [this.$props.app];
                 countlyEvent.getEventsForApps(apps, function(events) {
-                    events = events.map(function(e) { e.label = e.name; return e;});
+                    events = events.map(function(e) {
+                        e.label = e.name; return e;
+                    });
                     $.ajax({
                         type: "GET",
                         url: countlyCommon.API_URL + '/o/internal-events',
@@ -394,7 +394,7 @@
                             });
                             events = events.concat(internal_events);
                             events.unshift({value: apps[0] + "****", label: jQuery.i18n.map["hooks.any-events"]});
-                            self.eventOptions = Object.assign([],events);
+                            self.eventOptions = Object.assign([], events);
                         }
                     });
                 });
@@ -405,31 +405,29 @@
 
 
     var InternalEventTrigger = countlyVue.views.BaseView.extend({
-        template:'#hooks-InternalEventTrigger',
-        data: function () {
+        template: '#hooks-InternalEventTrigger',
+        data: function() {
             return {
-                internalEventOptions:[
-                        {value: "/cohort/enter", label: "/cohort/enter"},
-                        {value: "/cohort/exit", label: "/cohort/exit"},
-                        {value: "/i/app_users/create", label: "/i/app_users/create"},
-                        {value: "/i/app_users/update", label: "/i/app_users/update"},
-                        {value: "/i/app_users/delete", label: "/i/app_users/delete"},
-                        {value: "/i/apps/create", label: "/i/apps/create"},
-                        {value: "/i/apps/update", label: "/i/apps/update"},
-                        {value: "/i/apps/delete", label: "/i/apps/delete"},
-                        {value: "/i/users/create", label: "/i/users/create"},
-                        {value: "/i/users/update", label: "/i/users/update"},
-                        {value: "/i/users/delete", label: "/i/users/delete"},
-                        {value: "/master", label: "/master"},
-                        {value: "/systemlogs", label: "/systemlogs"},
-                        {value: "/crashes/new", label: "/crashes/new"},
-                        {value: "/hooks/trigger", label: "/hooks/trigger"},
+                internalEventOptions: [
+                    {value: "/cohort/enter", label: "/cohort/enter"},
+                    {value: "/cohort/exit", label: "/cohort/exit"},
+                    {value: "/i/app_users/create", label: "/i/app_users/create"},
+                    {value: "/i/app_users/update", label: "/i/app_users/update"},
+                    {value: "/i/app_users/delete", label: "/i/app_users/delete"},
+                    {value: "/i/apps/create", label: "/i/apps/create"},
+                    {value: "/i/apps/update", label: "/i/apps/update"},
+                    {value: "/i/apps/delete", label: "/i/apps/delete"},
+                    {value: "/i/users/create", label: "/i/users/create"},
+                    {value: "/i/users/update", label: "/i/users/update"},
+                    {value: "/i/users/delete", label: "/i/users/delete"},
+                    {value: "/master", label: "/master"},
+                    {value: "/systemlogs", label: "/systemlogs"},
+                    {value: "/crashes/new", label: "/crashes/new"},
+                    {value: "/hooks/trigger", label: "/hooks/trigger"},
                 ],
                 cohortOptions: [],
                 hookOptions: [],
             };
-        },
-        mounted: function(){
         },
         computed: {
         },
@@ -441,7 +439,7 @@
                 type: String,
             }
         },
-        mounted: function () {
+        mounted: function() {
             this.getCohortOptioins();
             this.getHookOptions();
         },
@@ -452,7 +450,7 @@
             }
         },
         methods: {
-            getCohortOptioins: function () {
+            getCohortOptioins: function() {
                 var apps = [this.$props.app];
                 var data = {
                     "app_id": apps[0], //countlyCommon.ACTIVE_APP_ID,
@@ -470,11 +468,11 @@
                         cohorts.forEach(function(c) {
                             cohortItems.push({ value: c._id, label: c.name});
                         });
-                        self.cohortOptions = Object.assign([],cohortItems);
+                        self.cohortOptions = Object.assign([], cohortItems);
                     }
                 });
             },
-            getHookOptions: function () {
+            getHookOptions: function() {
                 var self = this;
                 var apps = [this.$props.app];
                 $.ajax({
@@ -498,28 +496,37 @@
     });
 
     var ScheduledTrigger = countlyVue.views.BaseView.extend({
-        template:'#hooks-ScheduledTrigger',
-        data: function () {
+        template: '#hooks-ScheduledTrigger',
+        data: function() {
             var zones = [];
+            /* eslint-disable  no-loop-func */
             for (var country in countlyGlobal.timezones) {
-                countlyGlobal.timezones[country].z.forEach((item) => {
+                var c = countlyGlobal.timezones[country];
+                c && c.z && c.z.forEach(function(item) {
                     for (var zone in item) {
                         zones.push({value: item[zone], label: countlyGlobal.timezones[country].n + ' ' + zone});
                     }
                 });
             }
+            /* eslint-enable  no-loop-func */
 
             return {
                 period1Options: [
-                    {value:'month', label: 'Every Month'},
-                    {value:'week', label: 'Every Week'},
-                    {value:'day', label: 'Every Day'},
+                    {value: 'month', label: 'Every Month'},
+                    {value: 'week', label: 'Every Week'},
+                    {value: 'day', label: 'Every Day'},
                 ],
-                periodDaysOptions: Array.from(Array(31).keys()).map((item, idx)=> {return {value:idx+1, label: idx+1}}),
+                periodDaysOptions: Array.from(Array(31).keys()).map(function(item, idx) {
+                    return {value: idx + 1, label: idx + 1};
+                }),
 
-                periodHoursOptions: Array.from(Array(24).keys()).map((item, idx)=> {return {value:idx, label: idx < 10 ? '0'+idx+':00' : idx +":00"}}),
+                periodHoursOptions: Array.from(Array(24).keys()).map(function(item, idx) {
+                    return {value: idx, label: idx < 10 ? '0' + idx + ':00' : idx + ":00"};
+                }),
 
-                periodWeekOptions: Array.from(Array(7).keys()).map((item, idx)=> {return {value:idx, label: ['Sunday','Monday', 'Tursday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][idx]}}),
+                periodWeekOptions: Array.from(Array(7).keys()).map(function(item, idx) {
+                    return {value: idx, label: ['Sunday', 'Monday', 'Tursday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][idx]};
+                }),
                 timezoneOptions: zones,
 
             };
@@ -530,55 +537,52 @@
             }
         },
         computed: {
-            cron: function () {
-                var cron = null; 
-                
-                const period1 = this.value.period1;
-                const period2 = this.value.period2;
-                const period3 = this.value.period3;
+            cron: function() {
+                var cron = null;
+
+                var period1 = this.value.period1;
+                var period2 = this.value.period2;
+                var period3 = this.value.period3;
 
                 switch (period1) {
-                    case "month": 
-                        cron = ["23", period3, period2, "*", "*"]; 
-                        break; 
-                    case "week":
-                        cron = ["0", period3, "*", "*", period2];
-                        break;
-                    case  "day":
-                        cron = ["0", period3, "*", "*", "*"];
-                        break;
-                    default:
-                        this.value.cron = null;
-                        return null;
+                case "month":
+                    cron = ["23", period3, period2, "*", "*"];
+                    break;
+                case "week":
+                    cron = ["0", period3, "*", "*", period2];
+                    break;
+                case "day":
+                    cron = ["0", period3, "*", "*", "*"];
+                    break;
+                default:
+                    this.value.cron = null;
+                    return null;
                 }
 
                 this.value.cron = cron.join(" ");
                 return cron.join(" ");
 
-                
-                this.value.cron = cron;
-                return cron;
             }
         }
     });
 
     var APIEndPointTrigger = countlyVue.views.BaseView.extend({
-        template:'#hooks-APIEndpointTrigger',
-        data: function () {
+        template: '#hooks-APIEndpointTrigger',
+        data: function() {
             return {
             };
         },
-        mounted: function(){
+        mounted: function() {
         },
         computed: {
-            url: function () {
-                if (!this.value.path) {
-                    var uri = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function (c) {
-                        return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
-                    });
-                //    this.$emit("input", {path:uri, method:'get'});
-                }
-                return  window.location.protocol + "//" + window.location.host + "/o/hooks/" + this.value.path;
+            url: function() {
+                // if (!this.value.path) {
+                //     // var uri = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function(c) {
+                //     //     return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
+                //     // });
+                // //    this.$emit("input", {path:uri, method:'get'});
+                // }
+                return window.location.protocol + "//" + window.location.host + "/o/hooks/" + this.value.path;
             },
         },
         props: {
@@ -597,7 +601,7 @@
             }
         },
         methods: {
-            copyURL: function () {
+            copyURL: function() {
                 var textbox = document.getElementById('url-box');
                 textbox.select();
                 document.execCommand("Copy");
@@ -608,10 +612,10 @@
 
     var TriggerViews = countlyVue.views.BaseView.extend({
         template: '#hooks-triggers',
-        data: function () {
+        data: function() {
             return {
                 triggersOption: TriggerFactory.options,
-            }
+            };
         },
         props: {
             value: {
@@ -645,10 +649,10 @@
 
         },
         components: {
-            APIEndPointTrigger,
-            IncomingDataTrigger,
-            InternalEventTrigger,
-            ScheduledTrigger,
+            APIEndPointTrigger: APIEndPointTrigger,
+            IncomingDataTrigger: IncomingDataTrigger,
+            InternalEventTrigger: InternalEventTrigger,
+            ScheduledTrigger: ScheduledTrigger,
         },
         methods: {
         }
@@ -660,21 +664,21 @@
             "hook-trigger": TriggerViews,
             "hook-effect": EffectViews,
         },
-        
-        data: function () {
-            const appsSelectorOption = [];
+
+        data: function() {
+            var appsSelectorOption = [];
             for (var id in countlyGlobal.apps) {
                 appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
             }
             return {
                 title: "",
                 saveButtonLabel: "",
-                appsSelectorOption,
+                appsSelectorOption: appsSelectorOption,
             };
         },
         computed: {
-            testResult: function () {
-                var testResult = this.$store.getters["countlyHooks/testResult"]; 
+            testResult: function() {
+                var testResult = this.$store.getters["countlyHooks/testResult"];
                 return testResult || [];
             },
         },
@@ -684,15 +688,13 @@
             }
         },
         methods: {
-            onSubmit: async function (doc) {
-                await this.$store.dispatch("countlyHooks/saveHook", doc);
-                await this.$store.dispatch("countlyHooks/table/fetchAll");
+            onSubmit: function(doc) {
+                this.$store.dispatch("countlyHooks/saveHook", doc);
             },
-            onClose: function ($event) {
+            onClose: function($event) {
                 this.$emit("close", $event);
             },
-            onCopy: function (newState) {
-                console.log(newState,"#$4444")
+            onCopy: function(newState) {
                 if (newState._id !== null) {
                     this.title = jQuery.i18n.map["hooks.edit-your-hook"];
                     this.saveButtonLabel = jQuery.i18n.map["hooks.save-hook"];
@@ -701,17 +703,17 @@
                 this.title = jQuery.i18n.map["hooks.drawer-create-title"];
                 this.saveButtonLabel = jQuery.i18n.map["hooks.create-hook"];
             },
-            addEffect: function(){
-                this.$refs.drawerData.editedObject.effects.push({type:null, configuration: null});
+            addEffect: function() {
+                this.$refs.drawerData.editedObject.effects.push({type: null, configuration: null});
             },
 
-            removeEffect: function (index) {
-                this.$refs.drawerData.editedObject.effects.splice(index,1);
+            removeEffect: function(index) {
+                this.$refs.drawerData.editedObject.effects.splice(index, 1);
             },
-            
-            testHook: async function () {
-               var hookData = this.$refs.drawerData.editedObject;
-               await this.$store.dispatch("countlyHooks/testHook", hookData);
+
+            testHook: function() {
+                var hookData = this.$refs.drawerData.editedObject;
+                this.$store.dispatch("countlyHooks/testHook", hookData);
             },
         }
     });
@@ -723,38 +725,38 @@
             "table-view": TableView,
             "drawer": HookDrawer,
         },
-        data: function () {
-        return {}; 
+        data: function() {
+            return {};
         },
-        beforeCreate: function () {
-        this.$store.dispatch("countlyHooks/initialize");
+        beforeCreate: function() {
+            this.$store.dispatch("countlyHooks/initialize");
         },
         methods: {
-            createHook: function () {
+            createHook: function() {
                 this.openDrawer("home", hooksPlugin.defaultDrawerConfigValue());
             },
         },
     });
 
-  
+
 
     var DetailErrorsTableView = countlyVue.views.BaseView.extend({
         template: '#hooks-detail-errors-table-view',
         computed: {
-            tableRows: function () {
-                var hookDetail = this.$store.getters["countlyHooks/hookDetail"]; 
+            tableRows: function() {
+                var hookDetail = this.$store.getters["countlyHooks/hookDetail"];
                 hookDetail.error_logs && hookDetail.error_logs.forEach(function(item) {
                     item.timestamp_string = moment(item.timestamp).format();
-                })
+                });
                 return hookDetail.error_logs || [];
             },
         },
-        data: function () {
+        data: function() {
             return {
             };
         },
         methods: {
-            refresh: function () {
+            refresh: function() {
             // this.$store.dispatch("countlyHooks/table/fetchAll");
             },
         }
@@ -768,20 +770,18 @@
             "drawer": HookDrawer,
         },
         computed: {
-            hookDetail: function () {
+            hookDetail: function() {
                 var hookDetail = this.$store.getters["countlyHooks/hookDetail"];
                 hookDetail.created_at_string = moment(hookDetail.created_at).fromNow();
                 hookDetail.lastTriggerTimestampString = moment(hookDetail.lastTriggerTimestamp).fromNow();
-                return hookDetail 
+                return hookDetail;
             }
         },
         methods: {
-    
+
             handleHookEditCommand: function(command, scope) {
                 if (command === "edit-comment") {
-                    /* eslint-disable */
-                    var data = {...scope};
-                    /* eslint-enable */
+                    var data = Object.assign({}, scope);
                     delete data.operation;
                     delete data.triggerEffectColumn;
                     delete data.nameDescColumn;
@@ -792,10 +792,10 @@
                     var hookID = scope._id;
                     var name = scope.name;
                     var self = this;
-                    return CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function (result) {
+                    return CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
                         if (result) {
-                            hooksPlugin.deleteHook(hookID, function () {
-                                self.$store.dispatch("countlyHooks/table/fetchAll")
+                            hooksPlugin.deleteHook(hookID, function() {
+                                self.$store.dispatch("countlyHooks/table/fetchAll");
                             });
                         }
                     }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-an-event"});
@@ -811,7 +811,7 @@
     var hooksView = new countlyVue.views.BackboneWrapper({
         component: HooksHomeViewComponent,
         vuex: [{
-            clyModel: hooksPlugin 
+            clyModel: hooksPlugin
         }],
         templates: [
             {
@@ -832,7 +832,7 @@
     var hooksDetailView = new countlyVue.views.BackboneWrapper({
         component: HooksDetailComponent,
         vuex: [{
-            clyModel: hooksPlugin 
+            clyModel: hooksPlugin
         }],
         templates: [
             {
@@ -842,18 +842,18 @@
                 },
             },
             "/hooks/templates/vue-hooks-detail.html",
-            "/hooks/templates/vue-hooks-detail-error-table.html", 
+            "/hooks/templates/vue-hooks-detail-error-table.html",
             "/hooks/templates/vue-triggers.html",
             "/hooks/templates/vue-effects.html",
             "/drill/templates/drill.query.builder.html",
             "/drill/templates/query.builder.v2.html",
-            
+
         ]
     });
 
 
     if (countlyAuth.validateRead(FEATURE_NAME)) {
-        app.route('/manage/hooks', 'hooks', function () {
+        app.route('/manage/hooks', 'hooks', function() {
             this.renderWhenReady(hooksView);
         });
 
@@ -867,16 +867,16 @@
         });
     }
 
-    $(document).ready(function () {
+    $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
             app.addSubMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 60});
-        
-              //check if configuration view exists
+
+            //check if configuration view exists
             if (app.configurationsView) {
                 app.configurationsView.registerLabel("hooks", "hooks.plugin-title");
                 app.configurationsView.registerLabel("hooks.batchSize", "hooks.batch-size");
             }
         }
-      
+
     });
 })();

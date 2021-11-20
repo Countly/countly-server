@@ -30,8 +30,13 @@ class EmailEffect {
         }
 
         const logs = [];
+        /**
+         * Promise for email sending
+         * @param {object} msg  - message object
+         * @returns {Promise} - promise object
+         */
         const promisifyEMailSending = (msg) => {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 mail.sendMail(msg, (e) => {
                     if (e) {
                         logs.push(`message:${e.message} \n stack: ${JSON.stringify(e.stack)}`);
