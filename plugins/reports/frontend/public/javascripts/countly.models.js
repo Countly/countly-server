@@ -1,7 +1,11 @@
 /*global
     countlyCommon,
     countlyGlobal,
-    jQuery
+    jQuery,
+    CV,
+    CountlyHelpers,
+    countlyVue,
+    app,
  */
 (function(countlyReporting, $) {
     //Private Properties
@@ -84,15 +88,6 @@
         });
     };
 
-    countlyReporting.updateStatus = function(args) {
-        return $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/reports/status",
-            data: {
-                args: JSON.stringify(args),
-            }
-        });
-    };
 
     countlyReporting.getReport = function(id) {
         for (var i = 0; i < _data.length; i++) {
@@ -118,7 +113,7 @@
 
 
 
-    countlyReporting.getDayName = function (day){
+    countlyReporting.getDayName = function(day) {
         switch (day) {
         case 1:
             return jQuery.i18n.map["reports.monday"];
@@ -137,7 +132,7 @@
         default:
             return "";
         }
-    }
+    };
 
     countlyReporting.getVuexModule = function() {
         var getEmptyState = function() {
@@ -147,13 +142,13 @@
         };
 
         var getters = {
-            tableData(state) {
+            tableData: function(state) {
                 return state.tableData;
             }
         };
 
         var mutations = {
-            setTableData: function (state, list) {
+            setTableData: function(state, list) {
                 state.tableData = list;
             }
         };
@@ -165,8 +160,22 @@
             refresh: function(context) {
                 context.dispatch("countlyReports/table/fetchAll", null, {root: true});
             },
-          
-            saveReport: function (context, args) {
+            deleteReport: function(context, reportId) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/reports/delete",
+                    data: {
+                        args: JSON.stringify({
+                            "_id": reportId
+                        }),
+                    },
+                    dataType: "json",
+                    success: function() {
+                        context.dispatch("countlyReports/table/fetchAll", null, {root: true});
+                    },
+                });
+            },
+            saveReport: function(context, args) {
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/reports/" + (args._id ? "update" : "create"),
@@ -175,12 +184,13 @@
                         app_id: countlyCommon.ACTIVE_APP_ID
                     },
                     dataType: "json",
-                    success: function(result) {
+                    success: function() {
                         CountlyHelpers.notify({message: jQuery.i18n.map['reports.save-report-success']});
+                        context.dispatch("countlyReports/table/fetchAll", null, {root: true});
                     }
                 });
             },
-        }
+        };
 
         var tableResource = countlyVue.vuex.Module("table", {
             state: function() {
@@ -208,10 +218,10 @@
                             args: JSON.stringify(status),
                         },
                         dataType: "json",
-                        success: function(result) {
+                        success: function() {
                             CountlyHelpers.notify({message: jQuery.i18n.map['reports.save-report-status-success']});
                         }
-                    })
+                    });
                 },
                 fetchAll: function(context) {
                     return CV.$.ajax({
@@ -221,22 +231,22 @@
                             preventGlobalAbort: true,
                             "app_id": countlyCommon.ACTIVE_APP_ID
                         },
-                    },).then(function(data) {
+                    }).then(function(data) {
                         if (data.length > 0) {
                             var cnts = app.manageAppsView.getTimeZones();
-                           // ReportingView.zones = {};
+                            // ReportingView.zones = {};
                             var zNames = {};
                             var zoneNames = [];
-                            for (var i in cnts) {
-                                for (var j = 0; j < cnts[i].z.length; j++) {
-                                    for (var k in cnts[i].z[j]) {
+                            for (var x in cnts) {
+                                for (var j = 0; j < cnts[x].z.length; j++) {
+                                    for (var k in cnts[x].z[j]) {
                                         zoneNames.push(k);
-                                       // ReportingView.zones[k] = cnts[i].z[j][k];
-                                        zNames[cnts[i].z[j][k]] = k;
+                                        // ReportingView.zones[k] = cnts[i].z[j][k];
+                                        zNames[cnts[x].z[j][k]] = k;
                                     }
                                 }
                             }
-                        
+
                             for (var i = 0; i < data.length; i++) {
                                 data[i].title = data[i].title ? data[i].title : '';
                                 data[i].report_type = data[i].report_type || "core";
@@ -245,7 +255,7 @@
                                 data[i].appNames = CountlyHelpers.appIdsToNames(data[i].apps || []).split(", ");
                                 data[i].dayname = countlyReporting.getDayName(data[i].day);
                                 data[i].zoneName = zNames[data[i].timezone] || "(GMT+00:00) GMT (no daylight saving)";
-                        
+
                                 zoneNames.sort(function(a, b) {
                                     a = parseFloat(a.split(")")[0].replace(":", ".").substring(4));
                                     b = parseFloat(b.split(")")[0].replace(":", ".").substring(4));
@@ -263,9 +273,9 @@
                                     for (var rowProp in data[i].metrics) {
                                         ret += jQuery.i18n.map["reports." + rowProp] + ", ";
                                     }
-                    
+
                                     ret = ret.substring(0, ret.length - 2);
-                    
+
                                     ret += " for " + data[i].appNames.join(", ");
                                 }
                                 else if (!data[i].pluginEnabled) {
@@ -281,12 +291,12 @@
                                     }
                                 }
                                 data[i].dataColumn = ret;
-                    
-                                var timeColumn = jQuery.i18n.map["reports.at"] + " " 
+
+                                var timeColumn = jQuery.i18n.map["reports.at"] + " "
                                      + (data[i].hour < 10 ? "0" + data[i].hour : data[i].hour)
                                      + ":" + (data[i].minute < 10 ? "0" + data[i].minute : data[i].minute)
                                      + ", " + data[i].zoneName;
-                                     
+
                                 if (data[i].frequency === "weekly") {
                                     timeColumn += ", " + jQuery.i18n.map["reports.on"] + " " + data[i].dayname;
                                 }
@@ -296,7 +306,7 @@
                                 data[i].timeColumn = timeColumn;
 
                                 data[i].createdByMe = true;
-                                if (countlyGlobal.member.global_admin === true || row.user === countlyGlobal.member._id) {
+                                if (countlyGlobal.member.global_admin === true || data[i].user === countlyGlobal.member._id) {
                                     data[i].createdByMe = false;
                                 }
                             }
@@ -313,15 +323,15 @@
             mutations: mutations,
             submodules: [tableResource]
         });
-    }
-    countlyReporting.defaultDrawerConfigValue = function () {
+    };
+    countlyReporting.defaultDrawerConfigValue = function() {
         return {
             _id: null,
             title: '',
             report_type: 'core',
             apps: [],
             metrics: {},
-            metricsArray:[],
+            metricsArray: [],
             frequency: null,
             timezone: null,
             day: null,
@@ -329,7 +339,7 @@
             minute: 0,
             dashboards: null,
             date_range: null,
-             
-        }
-    }
+
+        };
+    };
 }(window.countlyReporting = window.countlyReporting || {}, jQuery));
