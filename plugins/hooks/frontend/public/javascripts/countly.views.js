@@ -250,32 +250,36 @@
                 effectsOption: EffectFactory.options,
             };
         },
+        computed: {
+            effectType: function() {
+                return this.value.type;
+            }
+        },
         props: {
             value: {
                 type: Object
             },
         },
         watch: {
-            ["value.type"]: function(newValue, oldValue) {
+            effectType: function(newValue, oldValue) {
                 if (!oldValue && this.value.configuration) { // edit record
                     return;
                 }
-                switch(newValue) {
-                    case 'EmailEffect': 
-                        this.value.configuration={address:[], emailTemplate:''};
-                        break;
-                    case 'CustomCodeEffect':
-                        this.value.configuration = {code:''};
-                        break;
-                    case 'HTTPEffect':
-                        this.value.configuration = {url:'', method:'', requestData:''};
-                    default:
-                        return;
+                switch (newValue) {
+                case 'EmailEffect':
+                    this.value.configuration = {address: [], emailTemplate: ''};
+                    break;
+                case 'CustomCodeEffect':
+                    this.value.configuration = {code: ''};
+                    break;
+                case 'HTTPEffect':
+                    this.value.configuration = {url: '', method: '', requestData: ''};
+                    break;
+                default:
+                    return;
                 }
             },
 
-        },
-        computed: {
         },
         components: {
             EmailEffect: EmailEffect,
@@ -350,10 +354,13 @@
                 get: function() {
                     return this.query;
                 }
+            },
+            selectedApp: function() {
+                return this.$props.app;
             }
         },
         watch: {
-            ["$props.app"]: function() {
+            selectedApp: function() {
                 this.getEventOptions();
             }
         },
@@ -430,6 +437,9 @@
             };
         },
         computed: {
+            selectedApp: function() {
+                return this.$props.app;
+            }
         },
         props: {
             value: {
@@ -444,7 +454,7 @@
             this.getHookOptions();
         },
         watch: {
-            ["$props.app"]: function() {
+            selectedApp: function() {
                 this.getCohortOptioins();
                 this.getHookOptions();
             }
@@ -576,14 +586,12 @@
         },
         computed: {
             url: function() {
-                // if (!this.value.path) {
-                //     // var uri = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function(c) {
-                //     //     return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
-                //     // });
-                // //    this.$emit("input", {path:uri, method:'get'});
-                // }
                 return window.location.protocol + "//" + window.location.host + "/o/hooks/" + this.value.path;
             },
+            valuePath: function() {
+                return this.value.path;
+            }
+
         },
         props: {
             value: {
@@ -591,12 +599,12 @@
             },
         },
         watch: {
-            ["value.path"]: function() {
+            valuePath: function() {
                 if (!this.value.path) {
-                    var uri = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function (c) {
+                    var uri = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function(c) {
                         return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
                     });
-                    this.$emit("input", {path:uri, method:'get'});
+                    this.$emit("input", {path: uri, method: 'get'});
                 }
             }
         },
@@ -617,36 +625,40 @@
                 triggersOption: TriggerFactory.options,
             };
         },
+        computed: {
+            triggerType: function() {
+                return this.value.type;
+            }
+        },
         props: {
             value: {
                 type: Object
             },
+
         },
         watch: {
-            ["value.type"]: function(newValue, oldValue) {
+            triggerType: function(newValue, oldValue) {
                 if (!oldValue && this.value.configuration) { // edit record
                     return;
                 }
-                switch(newValue) {
-                    case 'APIEndPointTrigger':
-                        var uri = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function (c) {
-                            return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
-                        });
-                        this.value.configuration = {path:uri, method:'get'};
-                        break;
-                    case 'IncomingDataTrigger':
-                        this.value.configuration = {event: [null], filter: null};
-                        break;
-                    case 'InternalEventTrigger':
-                        this.value.configuration = {eventType: null, cohortID: null, hookID: null };
-                        break;
-                    case 'ScheduledTrigger':
-                        this.value.configuration = {period1: 'month', cron: null};
-                        break;
-
+                switch (newValue) {
+                case 'APIEndPointTrigger':
+                    var uri = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, function(c) {
+                        return (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
+                    });
+                    this.value.configuration = {path: uri, method: 'get'};
+                    break;
+                case 'IncomingDataTrigger':
+                    this.value.configuration = {event: [null], filter: null};
+                    break;
+                case 'InternalEventTrigger':
+                    this.value.configuration = {eventType: null, cohortID: null, hookID: null };
+                    break;
+                case 'ScheduledTrigger':
+                    this.value.configuration = {period1: 'month', cron: null};
+                    break;
                 }
             },
-
         },
         components: {
             APIEndPointTrigger: APIEndPointTrigger,
