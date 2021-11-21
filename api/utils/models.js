@@ -23,6 +23,15 @@ class Jsonable {
     }
 
     /**
+     * Update internal data doing any decoding / transformations along the way
+     * 
+     * @param {object} update data update
+     */
+    updateData(update) {
+        Object.assign(this._data, update);
+    }
+
+    /**
      * Get new object containing all fields ready for sending to client side
      */
     get json() {
@@ -42,6 +51,15 @@ class Jsonable {
                 }
             });
         return json;
+    }
+
+    /**
+     * Compatibility layer for cache & standard node.js functions IPC
+     * 
+     * @returns {string} json string
+     */
+    toJSON() {
+        return this.json;
     }
 }
 
