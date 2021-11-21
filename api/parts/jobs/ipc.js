@@ -257,15 +257,16 @@ class CentralSuper {
 class CentralMaster extends CentralSuper {
 
     /**
-    * Start handling forks and incoming IPC messages
+     * Start handling forks and incoming IPC messages
      * @param {Function} f function to all with every new worker
-    **/
+     **/
     attach(f) {
         this.workers = {}; // map of pid: worker
+        this.listeners = {}; // map of pid: listener
         cluster.on('online', (worker) => {
             log.i('Worker started: %d', worker.process.pid);
             this.workers[worker.process.pid] = worker;
-            worker.on('message', m => {
+            worker.on('message', this.listeners[worker.process.pid] = m => {
                 if (this.isForMe(m)) {
                     // log.d('handling', m);
                     let data = m[this.name];
@@ -291,6 +292,17 @@ class CentralMaster extends CentralSuper {
         });
 
         log.i('Attached to cluster in Central %d', process.pid);
+    }
+
+    /**
+     * Detach IPC request listener
+     */
+    detach() {
+        Object.keys(this.workers).forEach(pid => {
+            this.workers[pid].off('message', this.listeners[pid]);
+            delete this.workers[pid];
+            delete this.listeners[pid];
+        });
     }
 
     /**
@@ -373,6 +385,13 @@ class CentralWorker extends CentralSuper {
         };
         process.on('message', this.onMessageListener);
         return this;
+    }
+
+    /**
+     * Detach IPC request listener
+     */
+    detach() {
+        process.off('message', this.onMessageListener);
     }
 
     /**
