@@ -4,8 +4,6 @@ const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
 const log = common.log('hooks:incoming_data_trigger');
 
-
-
 /**
  * Incoming data from sdk event trigger
  */
@@ -49,9 +47,8 @@ class IncomingDataTrigger {
     /**
      * process pipeline feed, pick out matched record with rule
      * @param {object} ob - trggered out from pipeline
-     * @param {string} eventType - internal event types
      */
-    async process(ob/*, eventType*/) {
+    async process(ob) {
         let rule = null;
         if (ob.is_mock === true) {
             return ob;
@@ -73,10 +70,7 @@ class IncomingDataTrigger {
     register() {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
-                /*if (e === '/sdk' && ob.params.qstring.events && Array.isArray(ob.params.qstring.events) && ob.params.qstring.events.length) {
-                    ob.params.qstring.events = ob.params.qstring.events.filter((er) => er.key !== '[CLY]_view'); // ignore view events since it process by /plugins/drill
-                }*/
-                this.process(e, ob);
+                this.process(ob, e);
             });
         });
     }
@@ -90,7 +84,8 @@ class IncomingDataTrigger {
         const user = JSON.parse(JSON.stringify(params.app_user)) || {};
         let {filter, event} = rule.trigger.configuration;
         const targetEventKey = event[0].split("***")[1];
-        filter = filter.dbFilter;
+        filter = filter.dbFilter || {};
+        filter = filter.query ? filter.query : filter;
         log.d("[incoming data trigger]", params, rule);
 
         //process metrics before comparing
@@ -172,6 +167,21 @@ class IncomingDataTrigger {
             if (filterObj.$not && filterObj.$not.test && filterObj.$not.test(value)) {
                 matched = false;
             }
+            if (filterObj.rgxcn && (filterObj.rgxcn[0] !== undefined) && value.indexOf(filterObj.rgxcn[0]) === -1) {
+                matched = false;
+            }
+            if ((filterObj.$lte !== undefined) && value > filterObj.$lte) {
+                matched = false;
+            }
+            if ((filterObj.$gte !== undefined) && value < filterObj.$gte) {
+                matched = false;
+            }
+            if ((filterObj.$lt !== undefined) && value >= filterObj.$lt) {
+                matched = false;
+            }
+            if ((filterObj.$gt !== undefined) && value <= filterObj.$gt) {
+                matched = false;
+            }
             return matched;
         }
         /**
@@ -244,7 +254,6 @@ class IncomingDataTrigger {
                     catch (err) {
                         console.log(err, "[IncomingDataTrigger]");
                     }
-
                     // send to pipeline
                     this.pipeline({
                         params: {events, user},
@@ -259,5 +268,5 @@ class IncomingDataTrigger {
 module.exports = IncomingDataTrigger;
 const InternalEvents = [
     "/sdk",
-    "/hooks/incoming_data"
+    "/hooks/incoming_data",
 ];
