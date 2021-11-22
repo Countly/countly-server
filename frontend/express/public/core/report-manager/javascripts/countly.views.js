@@ -64,9 +64,9 @@
         methods: {
             checkAutoRead: function() {
                 if (this.autoRead && this.isMounted && this.isActive) {
-                    var store = self.$store,
-                        taskId = self.taskId,
-                        appId = self.appId;
+                    var store = this.$store,
+                        taskId = this.taskId,
+                        appId = this.appId;
 
                     setTimeout(function() {
                         store.commit("countlyTaskManager/setRead", {
