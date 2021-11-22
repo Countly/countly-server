@@ -1,114 +1,23 @@
 /*global
-    jQuery,
-    store
+   _,
+   eventMaps,
+   CV,
+   countlyCommon,
+   CountlyHelpers,
+   countlyVue,
+   jQuery,
+   countlyGlobal,
 */
 
-(function(alertsPlugin, $) {
-    var _alertsList = {};
-    var eventMaps = {};
-    var _count = {};
-    var countlyCommon = window.countlyCommon;
-    var _ = window._;
-    /**
-	* Save alert settings
-    * @param {object} alertConfig - alertConfig record
-    * @param {function} callback - callback function
-	*/
-    alertsPlugin.saveAlert = function saveAlert(alertConfig, callback) {
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/alert/save",
-            data: {
-                "alert_config": JSON.stringify(alertConfig),
-                "app_id": alertConfig.selectedApps[0]
-            },
-            dataType: "json",
-            success: function(res) {
-                if (callback) {
-                    callback(res);
-                }
-            }
-        });
-    };
+(function(countlyAlerts, $) {
 
-    /**
-	* request alert list
-    * @param {function} callback - callback function
-    * @returns {function} promise
-	*/
-    alertsPlugin.requestAlertsList = function requestAlertsList(callback) {
-        var dfd = jQuery.Deferred();
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r + '/alert/list',
-            data: {
-                app_id: store.get('countly_active_app')
-            },
-            dataType: "json",
-            success: function(data) {
-                _alertsList = data.alertsList;
-                _count = data.count;
-                if (callback) {
-                    callback();
-                }
-                dfd.resolve();
-            }
-        });
-
-        return dfd.promise();
-    };
-
-    alertsPlugin.getAlertsList = function getAlertsList() {
-        return _alertsList;
-    };
-    alertsPlugin.getCount = function getCount() {
-        return _count;
-    };
-
-    alertsPlugin.getAlert = function getAlert(alertID) {
-        for (var i = 0; i < _alertsList.length; i++) {
-            if (_alertsList[i]._id === alertID) {
-                return _alertsList[i];
-            }
-        }
-    };
-
-    alertsPlugin.deleteAlert = function deleteAlert(alertID, appId, callback) {
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/alert/delete",
-            data: {
-                "alertID": alertID,
-                "app_id": appId
-            },
-            dataType: "json",
-            success: function(res) {
-                if (callback) {
-                    callback(res);
-                }
-            }
-        });
-
-    };
-
-    alertsPlugin.updateAlertStatus = function deleteAlert(status, appId, callback) {
-        $.ajax({
-            type: "post",
-            url: countlyCommon.API_PARTS.data.w + "/alert/status",
-            data: {
-                "status": JSON.stringify(status),
-                "app_id": appId
-            },
-            dataType: "json",
-            success: function(res) {
-                if (callback) {
-                    callback(res);
-                }
-            }
-        });
-    };
-
-
+    countlyAlerts.RatingOptions = [
+        {value: 1, label: jQuery.i18n.map["star.one-star"]},
+        {value: 2, label: jQuery.i18n.map["star.two-star"]},
+        {value: 3, label: jQuery.i18n.map["star.three-star"]},
+        {value: 4, label: jQuery.i18n.map["star.four-star"]},
+        {value: 5, label: jQuery.i18n.map["star.five-star"]},
+    ];
     /**
 	* extract event name & value
     * @param {array} data - original event list
@@ -156,7 +65,7 @@
             dfd.resolve();
         }
         else {
-            $.ajax({
+            CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
@@ -177,17 +86,7 @@
         return dfd.promise();
     }
 
-    alertsPlugin.getEventName = function(eventId, callback) {
-        var eventKey = eventId.split("***")[1],
-            appId = eventId.split("***")[0],
-            results = [];
-
-        $.when(getEventsDfd(appId, results)).then(function() {
-            callback(getEventLongName(eventKey, (results[0].map) ? results[0].map : null));
-        });
-    };
-
-    alertsPlugin.getEventsForApps = function(appId, callback) {
+    countlyAlerts.getEventsForApps = function(appId, callback) {
         if (!appId) {
             callback([]);
             return;
@@ -200,7 +99,7 @@
         });
     };
 
-    alertsPlugin.getViewForApp = function(appId, callback) {
+    countlyAlerts.getViewForApp = function(appId, callback) {
         if (!appId) {
             callback([]);
             return;
@@ -228,4 +127,259 @@
             }
         });
     };
-}(window.alertsPlugin = window.alertsPlugin || {}, jQuery));
+
+    countlyAlerts.getVuexModule = function() {
+        var getEmptyState = function() {
+            return {
+                tableData: [],
+            };
+        };
+
+        var getters = {
+            tableData: function(state) {
+                return state.tableData;
+            }
+        };
+
+        var mutations = {
+            setTableData: function(state, list) {
+                state.tableData = list;
+            }
+        };
+
+        var actions = {
+            initialize: function(context) {
+                context.dispatch("refresh");
+            },
+            refresh: function(context) {
+                context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
+            },
+            saveAlert: function(context, alertConfig) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/alert/save",
+                    data: {
+                        "alert_config": JSON.stringify(alertConfig),
+                    },
+                    dataType: "json",
+                    success: function() {
+                        CountlyHelpers.notify({message: jQuery.i18n.map['alerts.save-alert-success']});
+                        context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
+                    }
+                }).then(function() {
+                });
+            },
+            deleteAlert: function(context, alertID) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/alert/delete",
+                    data: {
+                        "alertID": alertID,
+                    },
+                    dataType: "json",
+                    success: function() {
+                        context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
+                    },
+                });
+            },
+            deleteOnlineUsersAlert: function(context, alertConfig) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/delete",
+                    data: {
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "alertId": alertConfig._id,
+                    },
+                    dataType: "json",
+                    success: function() {
+                        context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
+                    },
+                });
+            },
+            saveOnlineUsersAlert: function(context, alertConfig) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/save",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        "alert": JSON.stringify(alertConfig),
+                    },
+                    dataType: "json",
+                    success: function() {
+                        CountlyHelpers.notify({message: jQuery.i18n.map['alerts.save-alert-success']});
+                        context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
+                    }
+                }).then(function() {
+                });
+            },
+        };
+
+        var tableResource = countlyVue.vuex.Module("table", {
+            state: function() {
+                return {
+                    all: [],
+                    count: {
+                        t: 0,
+                        r: 0,
+                        today: 0,
+                    },
+                };
+            },
+            getters: {
+                all: function(state) {
+                    return state.all;
+                },
+                count: function(state) {
+                    return state.count;
+                }
+            },
+            mutations: {
+                setAll: function(state, val) {
+                    state.all = val;
+                },
+                setCount: function(state, val) {
+                    state.count = val;
+                }
+            },
+            actions: {
+                updateStatus: function(context, status) {
+                    return CV.$.ajax({
+                        type: "post",
+                        url: countlyCommon.API_PARTS.data.w + "/alert/status",
+                        data: {
+                            "status": JSON.stringify(status),
+                        },
+                        dataType: "json",
+                        success: function() {
+                            CountlyHelpers.notify({message: jQuery.i18n.map['alerts.update-status-success']});
+                            context.dispatch("countlyAlerts/table/fetchAll");
+                        }
+                    });
+                },
+                updateOnlineusersAlertStatus: function(context, status) {
+                    return CV.$.ajax({
+                        type: "post",
+                        url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/status",
+                        data: {
+                            "status": JSON.stringify(status),
+                        },
+                        dataType: "json",
+                        success: function() {
+                            CountlyHelpers.notify({message: jQuery.i18n.map['alerts.update-status-success']});
+                            context.dispatch("countlyAlerts/table/fetchAll");
+                        }
+                    });
+                },
+                fetchAll: function(context) {
+                    return CV.$.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.r + "/alert/list",
+                        dataType: "json",
+                        data: {
+                            preventGlobalAbort: true,
+                        },
+                    }).then(function(data) {
+                        var alertsList = data.alertsList;
+                        var count = data.count;
+
+                        var tableData = [];
+                        for (var i = 0; i < alertsList.length; i++) {
+                            var appNameList = [];
+                            if (alertsList[i].selectedApps) {
+                                appNameList = _.map(alertsList[i].selectedApps, function(appID) {
+                                    if (appID === "all-apps") {
+                                        return "All apps";
+                                    }
+                                    return countlyGlobal.apps[appID] && countlyGlobal.apps[appID].name;
+                                });
+                            }
+                            /*eslint-disable */
+                            var rowData0 = Object.assign({}, alertsList[i]);
+                            raowData0 = Object.assign(rowData0, {
+                                _id: alertsList[i]._id,
+                                app_id: alertsList[i].selectedApps[0],
+                                appNameList: appNameList.join(', '),
+                                alertName: alertsList[i].alertName || '',
+                                type: alertsList[i].alertDataSubType || '',
+                                condtionText: alertsList[i].compareDescribe || '',
+                                enabled: alertsList[i].enabled || false,
+                                createdByUser: alertsList[i].createdByUser || ''
+                            });
+                            tableData.push(raowData0);
+                            /*eslint-enable */
+                        }
+
+
+                        if (countlyGlobal.plugins.indexOf("concurrent_users") < 0) {
+                            context.commit("setAll", tableData);
+                            context.commit("setCount", count);
+                            return;
+                        }
+                        CV.$.ajax({
+                            type: "GET",
+                            url: countlyCommon.API_PARTS.data.r,
+                            dataType: "json",
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                method: "concurrent_alerts",
+                                preventGlobalAbort: true,
+                            },
+                        }).then(function(list) {
+                            for (var j = 0; j < list.length; j++) {
+                                var rowData = Object.assign({}, list[j]);
+                                rowData = Object.assign(rowData, {
+                                    _id: list[j]._id,
+                                    alertName: list[j].name,
+                                    appNameList: countlyGlobal.apps[list[j].app].name,
+                                    condtionText: list[j].condition_title,
+                                    enabled: list[j].enabled,
+                                    selectedApps: [list[j].app],
+                                    alertDataType: "online-users",
+                                    alertDataSubType: list[j].type,
+                                    compareType: list[j].def,
+                                    compareValue: list[j].users,
+                                    compareValue2: list[j].minutes,
+                                    alertValues: list[j].email,
+                                });
+                                tableData.push(rowData);
+
+                            }
+                            context.commit("setAll", tableData);
+                            context.commit("setCount", count);
+                        });
+
+
+
+
+                    });
+                },
+            }
+        });
+        return countlyVue.vuex.Module("countlyAlerts", {
+            resetFn: getEmptyState,
+            getters: getters,
+            actions: actions,
+            mutations: mutations,
+            submodules: [tableResource]
+        });
+    };
+
+    countlyAlerts.defaultDrawerConfigValue = function() {
+        return {
+            _id: null,
+            alertName: null,
+            alertDataType: "metric",
+            alertDataSubType: null,
+            alertDataSubType2: null,
+            compareType: null,
+            compareValue: null,
+            selectedApps: [""],
+
+            period: "every 1 hour on the 59th min",
+            alertBy: "email",
+            enabled: true,
+            compareDescribe: '',
+            alertValues: [],
+        };
+    };
+}(window.countlyAlerts = window.countlyAlerts || {}, jQuery));
