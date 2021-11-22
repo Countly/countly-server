@@ -64,11 +64,14 @@
         methods: {
             checkAutoRead: function() {
                 if (this.autoRead && this.isMounted && this.isActive) {
-                    var self = this;
+                    var store = self.$store,
+                        taskId = self.taskId,
+                        appId = self.appId;
+
                     setTimeout(function() {
-                        self.$store.commit("countlyTaskManager/setRead", {
-                            taskId: self.taskId,
-                            appId: self.appId
+                        store.commit("countlyTaskManager/setRead", {
+                            taskId: taskId,
+                            appId: appId
                         });
                     }, 3000);
                 }
