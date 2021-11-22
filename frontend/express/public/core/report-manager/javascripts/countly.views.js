@@ -47,21 +47,39 @@
                 default: false
             }
         },
-        mounted: function() {
-            if (this.autoRead && this.isActive) {
-                var self = this;
-                setTimeout(function() {
-                    self.$store.commit("countlyTaskManager/setRead", {
-                        taskId: self.taskId,
-                        appId: self.appId
-                    });
-                }, 3000);
-            }
-        },
         computed: {
             isActive: function() {
                 var unread = this.$store.state.countlyTaskManager.unread;
                 return !!unread[this.appId][this.taskId];
+            }
+        },
+        data: function() {
+            return {
+                isMounted: false,
+            };
+        },
+        mounted: function() {
+            this.isMounted = true;
+        },
+        methods: {
+            checkAutoRead: function() {
+                if (this.autoRead && this.isMounted && this.isActive) {
+                    var self = this;
+                    setTimeout(function() {
+                        self.$store.commit("countlyTaskManager/setRead", {
+                            taskId: self.taskId,
+                            appId: self.appId
+                        });
+                    }, 3000);
+                }
+            }
+        },
+        watch: {
+            isActive: function() {
+                this.checkAutoRead();
+            },
+            isMounted: function() {
+                this.checkAutoRead();
             }
         }
     });
