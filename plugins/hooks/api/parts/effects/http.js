@@ -30,7 +30,7 @@ class HTTPEffect {
 
             // todo: assemble params for request;
             // const params = {}
-            let parsedJSON = {};
+
             switch (method) {
             case 'get':
                 await request.get({uri: parsedURL + "?" + parsedRequestData, timeout: this._timeout}, function(e, r, body) {
@@ -41,8 +41,9 @@ class HTTPEffect {
                     }
                 });
                 break;
-            case 'post':
+            case 'post': {
                 //support post formData
+                let parsedJSON = {};
                 try {
                     parsedJSON = JSON.parse(parsedRequestData);
                 }
@@ -67,6 +68,7 @@ class HTTPEffect {
 
                 });
                 break;
+            }
             }
         }
         catch (e) {
