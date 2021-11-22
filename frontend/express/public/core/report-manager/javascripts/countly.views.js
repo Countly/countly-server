@@ -31,8 +31,46 @@
         }
     });
 
+
+    var UnreadPin = countlyVue.views.create({
+        template: "<div v-if='isActive' class='cly-bullet cly-bullet--orange bu-mr-1'></div>",
+        props: {
+            appId: {
+                type: String
+            },
+            taskId: {
+                type: String,
+                default: null
+            },
+            autoRead: {
+                type: Boolean,
+                default: false
+            }
+        },
+        mounted: function() {
+            if (this.autoRead && this.isActive) {
+                var self = this;
+                setTimeout(function() {
+                    self.$store.commit("countlyTaskManager/setRead", {
+                        taskId: self.taskId,
+                        appId: self.appId
+                    });
+                }, 3000);
+            }
+        },
+        computed: {
+            isActive: function() {
+                var unread = this.$store.state.countlyTaskManager.unread;
+                return !!unread[this.appId][this.taskId];
+            }
+        }
+    });
+
     Vue.component("cly-report-manager-table", countlyVue.views.create({
         template: CV.T('/core/report-manager/templates/reportmanager-table.html'),
+        components: {
+            "unread-pin": UnreadPin
+        },
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
             reportType: {
@@ -263,6 +301,9 @@
 
     Vue.component("cly-report-manager-dialog", countlyVue.views.create({
         template: CV.T('/core/report-manager/templates/reportmanager-dialog.html'),
+        components: {
+            "unread-pin": UnreadPin
+        },
         props: {
             origin: {
                 type: String,

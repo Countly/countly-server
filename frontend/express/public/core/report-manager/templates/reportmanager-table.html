@@ -15,6 +15,11 @@
     <template>
         <el-table-column :label="i18n('report-manager.name-and-desc')">
             <template v-slot="scope">
+                <unread-pin 
+                    auto-read 
+                    :task-id="scope.row._id" 
+                    :app-id="scope.row.app_id">
+                </unread-pin>
                 {{ scope.row.report_name || "-" }}
                 <div class="report-manager-report-desc"> {{ scope.row.report_desc || "-" }}</div>
             </template>

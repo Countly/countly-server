@@ -1,6 +1,6 @@
 <div>
     <el-button @click="showDialog" :disabled="disabled" type="default" size="small">
-        ({{unread}}) Last queries
+        <div v-show="unread > 0" class="cly-bullet cly-bullet--orange bu-mr-1"></div> Last queries
     </el-button>
     <cly-dialog
         title="Recent reports"
