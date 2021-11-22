@@ -1103,7 +1103,7 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard: function() {
-        var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        var type = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
         if (countlyGlobal.member.restrict && countlyGlobal.member.restrict.indexOf("#/") !== -1) {
             return;
         }
