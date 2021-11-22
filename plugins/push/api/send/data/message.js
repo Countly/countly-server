@@ -44,7 +44,6 @@ class Message extends Mongoable {
             status: { type: 'String', in: Object.values(Status) },
             filter: {
                 type: Filter.scheme,
-                required: true,
             },
             triggers: {
                 type: Trigger.scheme,
@@ -56,6 +55,7 @@ class Message extends Mongoable {
                 type: Content.scheme,
                 array: true,
                 required: true,
+                nonempty: true,
                 'min-length': 1,
             },
             result: {

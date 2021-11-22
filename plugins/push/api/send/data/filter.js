@@ -24,11 +24,26 @@ class Filter extends Jsonable {
      */
     static get scheme() {
         return {
-            user: { type: 'JSON', required: false },
-            drill: { type: 'JSON', required: false },
-            geos: { type: 'ObjectID[]', required: false },
-            cohorts: { type: 'String[]', required: false },
+            user: { type: 'JSON', required: false, nonempty: true, custom: Filter.filterQueryValidator },
+            drill: { type: 'JSON', required: false, nonempty: true, custom: Filter.filterQueryValidator },
+            geos: { type: 'ObjectID[]', required: false, 'min-length': 1 },
+            cohorts: { type: 'String[]', required: false, 'min-length': 1 },
         };
+    }
+
+    /**
+     * Validator function for user & drill filter queries
+     * 
+     * @param {object} json filter object
+     * @returns {string|undefined} error sting in case of validation error
+     */
+    static filterQueryValidator(json) {
+        if (json === null || json === undefined) {
+            return;
+        }
+        if (typeof json !== 'object' || Array.isArray(json)) {
+            return 'Filter query must be a JSON string of an object';
+        }
     }
 
     /**
