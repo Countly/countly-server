@@ -439,7 +439,7 @@
                 if (!unread[appId]) {
                     Vue.set(unread, appId, {});
                 }
-                Vue.set(unread[appId], task._id, task);
+                Vue.set(unread[appId], task._id, {type: task.type});
                 store.set("countly_task_monitor_unread", unread);
             },
             setRead: function(state, payload) {
