@@ -299,7 +299,6 @@
 
     var notifiers = {
         dispatched: function() {
-            // TODO(vck): Replace app.updateLongTaskViewsNotification fn here
             CountlyHelpers.notify({
                 title: CV.i18n("assistant.taskmanager.longTaskTooLong.title"),
                 message: CV.i18n("assistant.taskmanager.longTaskTooLong.message"),
@@ -365,7 +364,7 @@
             return {
                 monitored: persistent,
                 unread: unreadPersistent,
-                ticks: 0,
+                opId: 0,
                 curTask: 0
             };
         },
@@ -393,8 +392,8 @@
             }
         },
         mutations: {
-            incrementTicks: function(state) {
-                state.ticks += 1;
+            incrementOpId: function(state) {
+                state.opId += 1;
             },
             incrementCurTask: function(state) {
                 state.curTask += 1;
@@ -457,8 +456,6 @@
             tick: function(context, payload) {
                 payload = payload || {};
                 return new Promise(function(resolve) {
-                    // TODO(vck): Replace app.updateLongTaskViewsNotification fn here
-                    context.commit("incrementTicks");
                     context.commit("reloadPersistent");
 
                     var monitored = context.state.monitored,
@@ -494,9 +491,6 @@
                                             context.commit("setUnread", {
                                                 task: fetchedTask
                                             });
-                                            // TODO(vck):Handle app.haveUnreadReports = true
-                                            // app.haveUnreadReports = true;
-                                            // app.updateLongTaskViewsNotification();
                                         }
                                         if (fetchedTask.view) {
                                             if (checkedTask.result === "completed") {
@@ -506,6 +500,7 @@
                                                 notifiers.errored(id, fetchedTask);
                                             }
                                         }
+                                        context.commit("incrementOpId");
                                     });
                                 }
                             }
@@ -537,6 +532,7 @@
                     if (!payload.silent) {
                         notifiers.dispatched();
                     }
+                    context.commit("incrementOpId");
                 }
                 else if (!payload.silent) {
                     notifiers.duplicate();
@@ -581,6 +577,7 @@
             }
             else {
                 countlyTaskManager.reset();
+                vuexStore.commit("countlyTaskManager/incrementOpId");
             }
         });
     });

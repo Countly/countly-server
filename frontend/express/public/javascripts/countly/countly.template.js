@@ -2420,7 +2420,6 @@ var AppRouter = Backbone.Router.extend({
                 // TODO(vck)
                 // if ($(this).hasClass('manage-long-tasks-menu-dropdown')) {
                 //     $("#manage-long-tasks-icon").removeClass('unread');
-                //     app.haveUnreadReports = false;
                 //     $(".orange-side-notification-banner-wrapper").css("display", "none");
                 // }
                 $topbar.find(".dropdown").removeClass("clicked");
@@ -3660,7 +3659,6 @@ var AppRouter = Backbone.Router.extend({
                 if (window.components && window.components.slider && window.components.slider.instance) {
                     window.components.slider.instance.close();
                 }
-                // TODO(vck): Replace app.updateLongTaskViewsNotification fn here
             }
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal.apps[appId].type;
