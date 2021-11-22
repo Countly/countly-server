@@ -25,13 +25,11 @@ async function validate(args, preparing = false) {
         msg.info.appName = app.name;
 
         if (!args.demo) {
-            msg.platforms = msg.platforms.filter(p => {
+            for (let p of msg.platforms) {
                 let id = common.dot(app, `plugins.push.${p}._id`);
-                return id && id !== 'demo';
-            });
-
-            if (!msg.platforms.length) {
-                throw new ValidationError('No push credentials for specified platforms');
+                if (!id || id === 'demo') {
+                    throw new ValidationError(`No push credentials for platform ${p}`);
+                }
             }
 
             let creds = await common.db.collection(Creds.collection).find({_id: {$in: msg.platforms.map(p => common.dot(app, `plugins.push.${p}._id`))}}).toArray();
@@ -262,6 +260,13 @@ module.exports.estimate = async params => {
     let app = await common.db.collection('apps').findOne({_id: data.app});
     if (!app) {
         return common.returnOutput(params, {errors: ['No such app']});
+    }
+
+    for (let p of data.platforms) {
+        let id = common.dot(app, `plugins.push.${p}._id`);
+        if (!id || id === 'demo') {
+            throw new ValidationError(`No push credentials for platform ${p}`);
+        }
     }
 
     let steps = await new Audience(log, new Message(data), app).steps({la: 1}),
