@@ -273,6 +273,18 @@
                 default: false
             }
         },
+        computed: {
+            unread: function() {
+                var unread = this.$store.getters["countlyTaskManager/unreadStats"];
+                if (unread[countlyCommon.ACTIVE_APP_ID]) {
+                    if (this.origin) {
+                        return unread[countlyCommon.ACTIVE_APP_ID][this.origin] || 0;
+                    }
+                    return unread[countlyCommon.ACTIVE_APP_ID]._total || 0;
+                }
+                return 0;
+            }
+        },
         data: function() {
             return {
                 isDialogVisible: false
