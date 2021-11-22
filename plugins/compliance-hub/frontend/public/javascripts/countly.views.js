@@ -1,6 +1,6 @@
 /*global CV, app, countlyVue, countlyConsentManager, countlyCommon, countlyConsentManager */
 (function() {
-    var userView = countlyVue.views.create({
+    var UserView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/user.html"),
         data: function() {
             return {
@@ -11,7 +11,7 @@
             this.$store.dispatch("countlyConsentManager/fetchUserDataResource");
         }
     });
-    var consentView = countlyVue.views.create({
+    var ConsentView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/consentHistory.html"),
         data: function() {
             return {
@@ -101,7 +101,7 @@
         }
 
     });
-    var exportView = countlyVue.views.create({
+    var ExportView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/exportHistory.html"),
         data: function() {
             return {
@@ -191,7 +191,7 @@
         }
 
     });
-    var metricsView = countlyVue.views.create({
+    var MetricsView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/metrics.html"),
         mixins: [countlyVue.mixins.i18n],
         data: function() {
@@ -388,7 +388,7 @@
         }
 
     });
-    var complianceMainView = countlyVue.views.create({
+    var ComplianceMainView = countlyVue.views.create({
         template: CV.T('/compliance-hub/templates/main.html'),
         data: function() {
             return {
@@ -398,25 +398,25 @@
                     {
                         title: "Metrics",
                         name: "metrics",
-                        component: metricsView,
+                        component: MetricsView,
                         route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/"
                     },
                     {
                         title: "Users",
                         name: "users",
-                        component: userView,
+                        component: UserView,
                         route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/users"
                     },
                     {
                         title: "Consent History",
                         name: "consent/history",
-                        component: consentView,
+                        component: ConsentView,
                         route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/consent/history"
                     },
                     {
                         title: "Export/Purge History",
                         name: "actionlogs",
-                        component: exportView,
+                        component: ExportView,
                         route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/compliance/actionlogs"
                     },
                 ]
@@ -435,7 +435,7 @@
         }];
 
         return new countlyVue.views.BackboneWrapper({
-            component: complianceMainView,
+            component: ComplianceMainView,
             vuex: vuex,
         });
     };
