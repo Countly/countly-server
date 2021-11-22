@@ -392,7 +392,7 @@
                         }
                     }, {disableAutoCatch: false})
                         .then(function(resp) {
-                            self.runningCount = resp && resp[0] && resp[0].c;
+                            self.runningCount = (resp && resp[0] && resp[0].c) || 0;
                         })
                         .catch(function() {})
                         .finally(function() {

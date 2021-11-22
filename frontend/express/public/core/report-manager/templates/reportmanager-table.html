@@ -2,14 +2,14 @@
     :default-sort="{prop: 'start', order: 'descending'}">
     <template v-slot:header-left>
         <el-select v-if="!fixedOrigin" class="bu-mr-2" v-model="selectedOrigin" style="width: 140px" :placeholder="i18n('taskmanager.select-origin')">
-            <el-option key="value" v-for="(label, value) in availableOrigins" :label="label" :value="value"></el-option>
+            <el-option :key="value" v-for="(label, value) in availableOrigins" :label="label" :value="value"></el-option>
         </el-select>
         <el-select class="bu-mr-2" style="width: 140px" v-if="isManual" v-model="selectedRunTimeType"
             :placeholder="i18n('common.select-type')">
-            <el-option key="value" v-for="(label, value) in availableRunTimeTypes" :label="label" :value="value"></el-option>
+            <el-option :key="value" v-for="(label, value) in availableRunTimeTypes" :label="label" :value="value"></el-option>
         </el-select>
         <el-select style="width: 140px" v-model="selectedState" :placeholder="i18n('common.select-status')">
-            <el-option key="value" v-for="(label, value) in availableStates" :label="label" :value="value"></el-option>
+            <el-option :key="value" v-for="(label, value) in availableStates" :label="label" :value="value"></el-option>
         </el-select>
     </template>
     <template>
