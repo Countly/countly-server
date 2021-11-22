@@ -44,236 +44,239 @@
         template: "#crashes-overview",
         components: {"crash-tab-label": CrashStatisticsTabLabelView, "crash-badge": CrashBadgeView},
         data: function() {
-            var filterProperties = [
-                new countlyQueryBuilder.Property({
-                    id: "nonfatal",
-                    name: "Fatality",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Main",
-                    getValueList: function() {
-                        return [
-                            {name: "Fatal", value: false},
-                            {name: "Non-fatal", value: true}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "is_hidden",
-                    name: "Visibility",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Main",
-                    getValueList: function() {
-                        return [
-                            {name: "Hidden", value: true},
-                            {name: "Shown", value: false}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "is_new",
-                    name: "Viewed",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Main",
-                    getValueList: function() {
-                        return [
-                            {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: false},
-                            {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: true}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "is_renewed",
-                    name: "Reoccured",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Main",
-                    getValueList: function() {
-                        return [
-                            {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: true},
-                            {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: false}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "is_resolved",
-                    name: "Resolved",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Main",
-                    getValueList: function() {
-                        return [
-                            {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: true},
-                            {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: false}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "is_resolving",
-                    name: "Resolving",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Main",
-                    getValueList: function() {
-                        return [
-                            {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: true},
-                            {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: false}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "error",
-                    name: "Crash",
-                    type: countlyQueryBuilder.PropertyType.STRING,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "users",
-                    name: "Affected Users",
-                    type: countlyQueryBuilder.PropertyType.NUMBER,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "reports",
-                    name: "Occurances",
-                    type: countlyQueryBuilder.PropertyType.NUMBER,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "device",
-                    name: "Device",
-                    type: countlyQueryBuilder.PropertyType.STRING,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "resolution",
-                    name: "Resolution",
-                    type: countlyQueryBuilder.PropertyType.STRING,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "startTs",
-                    name: "First Seen On",
-                    type: countlyQueryBuilder.PropertyType.DATE,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "lastTs",
-                    name: "Last Seen On",
-                    type: countlyQueryBuilder.PropertyType.DATE,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "background",
-                    name: "Background",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Detail",
-                    getValueList: function() {
-                        return [
-                            {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
-                            {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "online",
-                    name: "Online",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Detail",
-                    getValueList: function() {
-                        return [
-                            {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
-                            {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "root",
-                    name: "Rooted",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Detail",
-                    getValueList: function() {
-                        return [
-                            {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
-                            {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "signal",
-                    name: "Signal",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Detail",
-                    getValueList: function() {
-                        return [
-                            {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
-                            {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "muted",
-                    name: "Muted",
-                    type: countlyQueryBuilder.PropertyType.LIST,
-                    group: "Detail",
-                    getValueList: function() {
-                        return [
-                            {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
-                            {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
-                        ];
-                    }
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "os_version",
-                    name: "Platform Version",
-                    type: countlyQueryBuilder.PropertyType.STRING,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "bat.max",
-                    name: "Battery Max",
-                    type: countlyQueryBuilder.PropertyType.NUMBER,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "bat.min",
-                    name: "Battery Min",
-                    type: countlyQueryBuilder.PropertyType.NUMBER,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "disk.max",
-                    name: "Disk Max",
-                    type: countlyQueryBuilder.PropertyType.NUMBER,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "disk.min",
-                    name: "Disk Min",
-                    type: countlyQueryBuilder.PropertyType.NUMBER,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "ram.max",
-                    name: "RAM Max",
-                    type: countlyQueryBuilder.PropertyType.NUMBER,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "ram.min",
-                    name: "RAM Min",
-                    type: countlyQueryBuilder.PropertyType.NUMBER,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "run.max",
-                    name: "Running Max",
-                    type: countlyQueryBuilder.PropertyType.NUMBER,
-                    group: "Detail",
-                }),
-                new countlyQueryBuilder.Property({
-                    id: "run.min",
-                    name: "Running Min",
-                    type: countlyQueryBuilder.PropertyType.NUMBER,
-                    group: "Detail",
-                }),
-            ];
+            var filterProperties = [];
+            if (window.countlyQueryBuilder) {
+                filterProperties.push(
+                    new countlyQueryBuilder.Property({
+                        id: "nonfatal",
+                        name: "Fatality",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Main",
+                        getValueList: function() {
+                            return [
+                                {name: "Fatal", value: false},
+                                {name: "Non-fatal", value: true}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "is_hidden",
+                        name: "Visibility",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Main",
+                        getValueList: function() {
+                            return [
+                                {name: "Hidden", value: true},
+                                {name: "Shown", value: false}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "is_new",
+                        name: "Viewed",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Main",
+                        getValueList: function() {
+                            return [
+                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: false},
+                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: true}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "is_renewed",
+                        name: "Reoccured",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Main",
+                        getValueList: function() {
+                            return [
+                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: true},
+                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: false}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "is_resolved",
+                        name: "Resolved",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Main",
+                        getValueList: function() {
+                            return [
+                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: true},
+                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: false}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "is_resolving",
+                        name: "Resolving",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Main",
+                        getValueList: function() {
+                            return [
+                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: true},
+                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: false}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "error",
+                        name: "Crash",
+                        type: countlyQueryBuilder.PropertyType.STRING,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "users",
+                        name: "Affected Users",
+                        type: countlyQueryBuilder.PropertyType.NUMBER,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "reports",
+                        name: "Occurances",
+                        type: countlyQueryBuilder.PropertyType.NUMBER,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "device",
+                        name: "Device",
+                        type: countlyQueryBuilder.PropertyType.STRING,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "resolution",
+                        name: "Resolution",
+                        type: countlyQueryBuilder.PropertyType.STRING,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "startTs",
+                        name: "First Seen On",
+                        type: countlyQueryBuilder.PropertyType.DATE,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "lastTs",
+                        name: "Last Seen On",
+                        type: countlyQueryBuilder.PropertyType.DATE,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "background",
+                        name: "Background",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: function() {
+                            return [
+                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
+                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "online",
+                        name: "Online",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: function() {
+                            return [
+                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
+                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "root",
+                        name: "Rooted",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: function() {
+                            return [
+                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
+                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "signal",
+                        name: "Signal",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: function() {
+                            return [
+                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
+                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "muted",
+                        name: "Muted",
+                        type: countlyQueryBuilder.PropertyType.LIST,
+                        group: "Detail",
+                        getValueList: function() {
+                            return [
+                                {name: jQuery.i18n.prop("drill.opr.is-set-true"), value: "yes"},
+                                {name: jQuery.i18n.prop("drill.opr.is-set-false"), value: "no"}
+                            ];
+                        }
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "os_version",
+                        name: "Platform Version",
+                        type: countlyQueryBuilder.PropertyType.STRING,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "bat.max",
+                        name: "Battery Max",
+                        type: countlyQueryBuilder.PropertyType.NUMBER,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "bat.min",
+                        name: "Battery Min",
+                        type: countlyQueryBuilder.PropertyType.NUMBER,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "disk.max",
+                        name: "Disk Max",
+                        type: countlyQueryBuilder.PropertyType.NUMBER,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "disk.min",
+                        name: "Disk Min",
+                        type: countlyQueryBuilder.PropertyType.NUMBER,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "ram.max",
+                        name: "RAM Max",
+                        type: countlyQueryBuilder.PropertyType.NUMBER,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "ram.min",
+                        name: "RAM Min",
+                        type: countlyQueryBuilder.PropertyType.NUMBER,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "run.max",
+                        name: "Running Max",
+                        type: countlyQueryBuilder.PropertyType.NUMBER,
+                        group: "Detail",
+                    }),
+                    new countlyQueryBuilder.Property({
+                        id: "run.min",
+                        name: "Running Min",
+                        type: countlyQueryBuilder.PropertyType.NUMBER,
+                        group: "Detail",
+                    })
+                );
+            }
 
             if (typeof countlyDrillMeta !== "undefined") {
                 var crashMeta = countlyDrillMeta.getContext("[CLY]_crash");
@@ -287,41 +290,43 @@
                 };
 
                 crashMeta.initialize().then(function() {
-                    filterProperties.push({
-                        id: "app_version",
-                        name: "App Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
-                        group: "Detail",
-                        getValueList: getFilterValues("app_version")
-                    });
-                    filterProperties.push({
-                        id: "opengl",
-                        name: "OpenGL Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
-                        group: "Detail",
-                        getValueList: getFilterValues("opengl")
-                    });
-                    filterProperties.push({
-                        id: "orientation",
-                        name: "Orientation",
-                        type: countlyQueryBuilder.PropertyType.LIST,
-                        group: "Detail",
-                        getValueList: getFilterValues("orientation")
-                    });
-                    filterProperties.push({
-                        id: "os",
-                        name: "Platform",
-                        type: countlyQueryBuilder.PropertyType.LIST,
-                        group: "Detail",
-                        getValueList: getFilterValues("os")
-                    });
-                    filterProperties.push({
-                        id: "cpu",
-                        name: "CPU",
-                        type: countlyQueryBuilder.PropertyType.LIST,
-                        group: "Detail",
-                        getValueList: getFilterValues("cpu")
-                    });
+                    if (window.countlyQueryBuilder) {
+                        filterProperties.push({
+                            id: "app_version",
+                            name: "App Version",
+                            type: countlyQueryBuilder.PropertyType.LIST,
+                            group: "Detail",
+                            getValueList: getFilterValues("app_version")
+                        });
+                        filterProperties.push({
+                            id: "opengl",
+                            name: "OpenGL Version",
+                            type: countlyQueryBuilder.PropertyType.LIST,
+                            group: "Detail",
+                            getValueList: getFilterValues("opengl")
+                        });
+                        filterProperties.push({
+                            id: "orientation",
+                            name: "Orientation",
+                            type: countlyQueryBuilder.PropertyType.LIST,
+                            group: "Detail",
+                            getValueList: getFilterValues("orientation")
+                        });
+                        filterProperties.push({
+                            id: "os",
+                            name: "Platform",
+                            type: countlyQueryBuilder.PropertyType.LIST,
+                            group: "Detail",
+                            getValueList: getFilterValues("os")
+                        });
+                        filterProperties.push({
+                            id: "cpu",
+                            name: "CPU",
+                            type: countlyQueryBuilder.PropertyType.LIST,
+                            group: "Detail",
+                            getValueList: getFilterValues("cpu")
+                        });
+                    }
                 });
             }
 
@@ -335,7 +340,7 @@
                 },
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyCrashes", "crashgroups"),
                 crashgroupsFilterProperties: filterProperties,
-                crashgroupsFilterRules: [
+                crashgroupsFilterRules: (window.countlyQueryBuilder) ? [
                     new countlyQueryBuilder.RowRule({
                         name: "cly.crashes.no-math-ineq-for-strings",
                         selector: function(row) {
@@ -395,7 +400,7 @@
                             }
                         })]
                     }),
-                ]
+                ] : []
             };
         },
         computed: {
