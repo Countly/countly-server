@@ -312,9 +312,16 @@
             disabled: {
                 type: Boolean,
                 default: false
+            },
+            disableRunningCount: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
+            remoteOpId: function() {
+                return this.$store.state.countlyTaskManager.opId;
+            },
             unread: function() {
                 var unread = this.$store.getters["countlyTaskManager/unreadStats"];
                 if (unread[countlyCommon.ACTIVE_APP_ID]) {
@@ -328,10 +335,15 @@
         },
         data: function() {
             return {
-                isDialogVisible: false
+                isDialogVisible: false,
+                runningCount: 0,
+                fetchingCount: false
             };
         },
         watch: {
+            remoteOpId: function() {
+                this.fetchRunningCount();
+            },
             disabled: function(newVal) {
                 if (newVal) {
                     this.isDialogVisible = false;
@@ -339,6 +351,34 @@
             }
         },
         methods: {
+            fetchRunningCount: function() {
+                if (!this.disableRunningCount && !this.fetchingCount) {
+                    var q = {
+                            status: {$in: ["running", "rerunning"]},
+                            manually_create: {$ne: true}
+                        },
+                        self = this;
+
+                    if (this.fixedOrigin) {
+                        q.type = this.fixedOrigin;
+                    }
+                    this.fetchingCount = true;
+                    CV.$.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.r + "/tasks/count?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                        data: {
+                            query: JSON.stringify(q)
+                        }
+                    }, {disableAutoCatch: false})
+                        .then(function(resp) {
+                            self.runningCount = resp && resp[0] && resp[0].c;
+                        })
+                        .catch(function() {})
+                        .finally(function() {
+                            self.fetchingCount = false;
+                        });
+                }
+            },
             showDialog: function() {
                 if (!this.disabled) {
                     this.isDialogVisible = true;
