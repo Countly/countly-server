@@ -1,0 +1,47 @@
+    <cly-main>
+        <div class="bu-level bu-mb-3">
+            <div class="bu-level-left bu-my-3">
+                Consent Requests for
+                <cly-select-x
+                        class="bu-ml-3"
+                        :width="300"
+                        :borderless="true"
+                        :adaptiveLength="true"
+                        :auto-commit="true"
+                        :hide-default-tabs="true"
+                        :hide-all-options-tab="true"
+                        :options="filter0"
+                        v-model="selectedfilterforMetrics">
+                    </cly-select-x>
+            </div>
+            <cly-date-picker-g type="daterange" range-separator="To" start-placeholder="Start date"
+                end-placeholder="End date">
+            </cly-date-picker-g>
+        </div>
+        <cly-section>
+            <cly-chart-time :option="consentDpChart" :legend="consentDpChartlegend"> </cly-chart-time>
+
+        </cly-section>
+            <div class="bu-level">
+                <div class="white-bg bu-level-left cly-vue-compliance__user_chart bu-mr-2">
+                    <cly-chart-time :option="exportDpChart">
+                        <template v-slot:chart-left="scope">
+                            <div class="bu-level-item">
+                                <p class="bu-mr-2">User Data Exports</p>
+                                <cly-tooltip-icon></cly-tooltip-icon>
+                            </div>
+                        </template>
+                     </cly-chart-time>
+                </div>
+                <div class="white-bg bu-level-right cly-vue-compliance__user_chart">
+                    <cly-chart-time :option="purgeDpChart"> 
+                        <template v-slot:chart-left="scope">
+                            <div class="bu-level-item">
+                                <p class="bu-mr-2">User Data Purges</p>
+                                <cly-tooltip-icon></cly-tooltip-icon>
+                            </div>
+                            </template>
+                    </cly-chart-time>
+                </div>
+            </div>
+        </cly-main>

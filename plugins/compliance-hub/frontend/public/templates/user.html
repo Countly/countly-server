@@ -1,0 +1,38 @@
+<cly-main>
+    <cly-section>
+        <cly-datatable-n :data-source="userTableDataSource" :default-sort="{prop: 'lac', order: 'descending'}">
+            <template v-slot="scope">
+                <el-table-column sortable="custom" prop="_id" label="ID">
+                </el-table-column>
+                <el-table-column sortable="custom" prop="d" label="DEVICE">
+                </el-table-column>
+                <el-table-column sortable prop="av" label="APP VERSION">
+                </el-table-column>
+                <el-table-column width="400" prop="consent" label="consent">
+                    <template v-slot="rowScope">
+                        <div v-if="rowScope.row.consent">
+                            <p class="cly-trend-up text-medium">OPT IN</p>
+                            <span class="text-small" v-html="rowScope.row.optin.join(',')"></span>
+                            <p class="cly-trend-down text-medium">OPT OUT</p>
+                            <span class="text-small" v-html="rowScope.row.optout.join(',')"></span>
+                        </div>
+
+                    </template>
+
+                </el-table-column>
+
+                <el-table-column sortable="custom" prop="lac" label="TIME">
+                    <template v-slot="rowScope">
+                        {{rowScope.row.time}}
+
+                    </template>
+                </el-table-column>
+                <!-- <el-table-column sortable="custom" prop="p" :label="tableHeader[3]">
+            </el-table-column>
+            <el-table-column sortable="custom" prop="curr_paying_non_paying" :label="tableHeader[4]">
+            </el-table-column> -->
+            </template>
+        </cly-datatable-n>
+
+    </cly-section>
+</cly-main>
