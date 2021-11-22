@@ -137,7 +137,7 @@ const FEATURE_NAME = 'reports';
                     }
                 }
 
-                if (notPermitted) {
+                if (notPermitted && !params.member.global_admin) {
                     return common.returnMessage(params, 401, 'User does not have right to access this information');
                 }
 
@@ -187,7 +187,7 @@ const FEATURE_NAME = 'reports';
                     }
                 }
 
-                if (notPermitted) {
+                if (notPermitted && !params.member.global_admin) {
                     return common.returnMessage(params, 401, 'User does not have right to access this information');
                 }
                 common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err_update, report) {
@@ -223,7 +223,7 @@ const FEATURE_NAME = 'reports';
                 const adminApps = getAdminApps(params.member);
                 const notPermitted = adminApps.indexOf(id) === -1;
 
-                if (notPermitted) {
+                if (notPermitted && !params.member.global_admin) {
                     return common.returnMessage(params, 401, 'User does not have right to access this information');
                 }
                 common.db.collection('reports').findOne(recordUpdateOrDeleteQuery(params, id), function(err, props) {
@@ -262,7 +262,7 @@ const FEATURE_NAME = 'reports';
                     const adminApps = getAdminApps(params.member);
                     const notPermitted = adminApps.indexOf(id) === -1;
 
-                    if (notPermitted) {
+                    if (notPermitted && !params.member.global_admin) {
                         return common.returnMessage(params, 401, 'User does not have right to access this information');
                     }
 
@@ -300,7 +300,7 @@ const FEATURE_NAME = 'reports';
                     const userApps = getUserApps(params.member);
                     const notPermitted = userApps.indexOf(id) === -1;
 
-                    if (notPermitted) {
+                    if (notPermitted && !params.member.global_admin) {
                         return common.returnMessage(params, 401, 'User does not have right to access this information');
                     }
 
