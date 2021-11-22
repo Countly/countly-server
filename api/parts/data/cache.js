@@ -88,7 +88,7 @@ class DataStore {
      */
     write(id, data) {
         if (data) {
-            if (this.Clas && data && !(data instanceof this.Clas)) {
+            if (this.Clas && !(data instanceof this.Clas)) {
                 data = new this.Clas(data);
             }
             this.lru.set(id.toString(), data);
@@ -259,7 +259,7 @@ class CacheWorker {
             throw new Error('No such cache group');
         }
         log.d(`writing ${group}:${id}`);
-        let rsp = await this.ipc.request({o: OP.WRITE, g: group, k: id, d: data && (data instanceof Jsonable) ? data.json : data});
+        let rsp = await this.ipc.request({o: OP.WRITE, g: group, k: id, d: data instanceof Jsonable ? data.json : data});
         if (rsp) {
             this.data.read(group).write(id, rsp);
         }
@@ -733,7 +733,7 @@ class CacheMaster {
         else if (group in this.operators) {
             return this.operators[group].read(id).then(x => {
                 if (x) {
-                    this.ipc.send(-from, {o: OP.READ, g: group, k: id, d: x && (x instanceof Jsonable) ? x.json : x});
+                    this.ipc.send(-from, {o: OP.READ, g: group, k: id, d: x instanceof Jsonable ? x.json : x});
                     store.write(id, x);
                     return x;
                 }
