@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store, countlyAuth */
 
 (function(countlyVue, $) {
 
@@ -79,6 +79,26 @@
         }
     };
 
+    var authMixin = function(featureName) {
+        return {
+            // uses computed mainly to prevent mutations of these values
+            computed: {
+                canUserCreate: function() {
+                    return countlyAuth.validateCreate(featureName);
+                },
+                canUserRead: function() {
+                    return countlyAuth.validateRead(featureName);
+                },
+                canUserUpdate: function() {
+                    return countlyAuth.validateUpdate(featureName);
+                },
+                canUserDelete: function() {
+                    return countlyAuth.validateDelete(featureName);
+                }
+            }
+        };
+    };
+
     // @vue/component
     var i18nMixin = {
         methods: {
@@ -115,7 +135,8 @@
         'autoRefresh': autoRefreshMixin,
         'refreshOnParentActive': refreshOnParentActiveMixin,
         'i18n': i18nMixin,
-        'commonFormatters': commonFormattersMixin
+        'commonFormatters': commonFormattersMixin,
+        'auth': authMixin
     };
 
     var _globalVuexStore = new Vuex.Store({
