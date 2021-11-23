@@ -52,7 +52,7 @@
             <el-table-column width="200" prop="description" label="Description">
             </el-table-column>
 
-            <el-table-column v-if="isDrill" width="230" prop="category" label="Category">
+            <el-table-column width="230" prop="category" label="Category">
                 <template v-slot="rowScope">
                     {{rowScope.row.categoryName || 'Uncategorized'}}
                 </template>
@@ -132,7 +132,6 @@
         </template>
     </cly-confirm-dialog>
     <cly-form-dialog
-        v-if="isDrill"
         name="Manage Categories"
         title="Manage Categories"
         @submit="onSaveCategories"

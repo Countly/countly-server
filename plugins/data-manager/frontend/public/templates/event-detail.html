@@ -8,7 +8,7 @@
                 <div class="bu-mt-4">
                     <h3 class="bu-is-capitalized"> {{event.name || event.key}} </h3>
                     <div class="bu-mt-4 bu-mr-2">
-                        <span class="tag-container">
+                        <span v-if="isDrill" class="tag-container">
                             <span v-bind:class="statusClassObject(event.status)" class="bu-tag bu-mt-1"> 
                                 <span class="blinker"></span>
                                 <span>{{event.status || 'unplanned'}}</span>
@@ -61,7 +61,7 @@
                                 </td>
                                 <td>{{event.description}}</td>
                             </tr>
-                            <tr v-if="isDrill">
+                            <tr>
                                 <td><span>Category</span>
                                 </td>
                                 <td>{{categoriesMap[event.category] || 'Uncategorized'}}</td>
