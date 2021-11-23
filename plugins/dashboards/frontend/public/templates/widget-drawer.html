@@ -6,7 +6,11 @@
     v-bind="controls">
     <template v-slot:default="drawerScope">
         <cly-form-step id="widget-drawer">
-            <cly-form-field name="widget_type" rules="required" :label="i18nM('dashboards.widget-type')">
+            <cly-form-field
+                name="widget_type"
+                rules="required"
+                :subheading="i18nM('dashboards.widget-type-description')"
+                :label="i18nM('dashboards.widget-type')">
                 <el-radio-group
                     class="bu-columns bu-is-multiline bu-m-0"
                     v-model="drawerScope.editedObject.widget_type">

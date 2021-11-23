@@ -39,10 +39,10 @@
                     {{i18n('dashboards.user-permissions')}}
                     <cly-tooltip-icon tooltip="Set the User permissions"></cly-tooltip-icon>
                 </div>
-                <cly-form-field :label="i18n('dashboards.users-edit-permission')" :description="i18n('dashboards.users-edit-description')">
+                <cly-form-field :label="i18n('dashboards.users-edit-permission')" :subheading="i18n('dashboards.users-edit-description')">
                     <cly-select-email :disabled="!sharingAllowed" v-model="drawerScope.editedObject.shared_email_edit" :placeholder="sharingAllowed ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
                 </cly-form-field>
-                <cly-form-field :label="i18n('dashboards.users-view-permission')" :description="i18n('dashboards.users-view-description')">
+                <cly-form-field :label="i18n('dashboards.users-view-permission')" :subheading="i18n('dashboards.users-view-description')">
                     <cly-select-email :disabled="!sharingAllowed" v-model="drawerScope.editedObject.shared_email_view" :placeholder="sharingAllowed ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
                 </cly-form-field>
             </div>
@@ -55,7 +55,7 @@
                 <cly-form-field
                     name="shared_user_groups_edit"
                     :label="i18n('dashboards.users-edit-permission')"
-                    :description="i18n('dashboards.users-edit-description')">
+                    :subheading="i18n('dashboards.users-edit-description')">
                     <el-select
                         multiple
                         :disabled="!sharingAllowed"
@@ -73,7 +73,7 @@
                 <cly-form-field
                     name="shared_user_groups_view"
                     :label="i18n('dashboards.users-view-permission')"
-                    :description="i18n('dashboards.users-view-description')">
+                    :subheading="i18n('dashboards.users-view-description')">
                     <el-select
                         multiple
                         :disabled="!sharingAllowed"
