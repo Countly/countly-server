@@ -362,29 +362,29 @@
             },
             userDatalegend: function() {
                 var data = this.$store.getters["countlyConsentManager/_ePData"];
-                data.e.title = jQuery.i18n.map["consent.userdata-exports"];
-                data.p.title = jQuery.i18n.map["consent.userdata-purges"];
+                data.e.title = this.i18n("consent.userdata-exports");
+                data.p.title = this.i18n("consent.userdata-purges");
                 var legendData = {
-                        name: data.e.title,
-                        label: data.e.title,
-                        value: data.e.total,
-                        percentage: data.e.change,
-                        trend: data.e.trend,
-                        class: data.e.trend === 'u' ? 'cly-trend-up': 'cly-trend-down'
+                    name: data.e.title,
+                    label: data.e.title,
+                    value: data.e.total,
+                    percentage: data.e.change,
+                    trend: data.e.trend,
+                    class: data.e.trend === 'u' ? 'cly-trend-up' : 'cly-trend-down'
                 };
                 return legendData;
             },
             purgeDatalegend: function() {
                 var data = this.$store.getters["countlyConsentManager/_ePData"];
-                data.e.title = jQuery.i18n.map["consent.userdata-exports"];
-                data.p.title = jQuery.i18n.map["consent.userdata-purges"];
+                data.e.title = this.i18n("consent.userdata-exports");
+                data.p.title = this.i18n("consent.userdata-purges");
                 var legendData = {
-                        name: data.p.title,
-                        label: data.p.title,
-                        value: data.e.total,
-                        percentage: data.p.change,
-                        trend: data.p.trend,
-                        class: data.p.trend === 'u' ? 'cly-trend-up': 'cly-trend-down'
+                    name: data.p.title,
+                    label: data.p.title,
+                    value: data.e.total,
+                    percentage: data.p.change,
+                    trend: data.p.trend,
+                    class: data.p.trend === 'u' ? 'cly-trend-up' : 'cly-trend-down'
                 };
                 return legendData;
 
