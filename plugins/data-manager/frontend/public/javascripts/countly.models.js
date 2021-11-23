@@ -5,6 +5,7 @@
     var EXTENDED_MODELS = countlyDataManager.extended && countlyDataManager.extended.models || {};
     var EXTENDED_SERVICE = EXTENDED_MODELS.service || {};
     var EXTENDED_MODEL = EXTENDED_MODELS.model || {};
+    var isDrill = countlyGlobal.plugins.indexOf("drill") > -1;
 
     countlyDataManager.service = Object.assign({}, {
         loadEvents: function() {
@@ -108,7 +109,62 @@
                     "events": countlyCommon.decodeHtml(JSON.stringify(events))
                 }
             });
-        }
+        },
+        getCategories: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r + '/data-manager/category',
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "preventRequestAbort": true
+                },
+                dataType: "json"
+            });
+        },
+        createCategory: function(categories) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.w + '/data-manager/category/create',
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    categories: JSON.stringify(categories)
+                },
+                dataType: "json"
+            });
+        },
+        editCategories: function(categories) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.w + '/data-manager/category/edit',
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    categories: JSON.stringify(categories)
+                },
+                dataType: "json"
+            });
+        },
+        deleteCategories: function(categoryIds) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.w + '/data-manager/category/delete',
+                data: {
+                    categoryIds: JSON.stringify(categoryIds),
+                    "app_id": countlyCommon.ACTIVE_APP_ID
+                },
+                dataType: "json"
+            });
+        },
+        changeCategory: function(events, category) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.w + "/data-manager/event/change-category",
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "category": category,
+                    "events": JSON.stringify(events)
+                }
+            });
+        },
     }, EXTENDED_SERVICE);
 
     countlyDataManager.getVuexModule = function() {
@@ -125,6 +181,8 @@
                 events: [],
                 eventsMap: {},
                 eventGroups: [],
+                categories: [],
+                categoriesMap: [],
             }, EXTENDED_STATE);
         };
 
@@ -137,7 +195,13 @@
             },
             eventGroups: function(state) {
                 return state.eventGroups;
-            }
+            },
+            categories: function(state) {
+                return state.categories;
+            },
+            categoriesMap: function(state) {
+                return state.categoriesMap;
+            },
         };
 
         var mutations = {
@@ -150,12 +214,17 @@
             setEventGroups: function(state, val) {
                 state.eventGroups = val;
             },
+            setCategories: function(state, val) {
+                state.categories = val;
+            },
+            setCategoriesMap: function(state, val) {
+                state.categoriesMap = val;
+            },
         };
 
         var actions = {
             loadEventsData: function(context) {
                 var evenLoaderService = countlyDataManager.service.loadEvents;
-                var isDrill = countlyGlobal.plugins.indexOf("drill") > -1;
                 if (isDrill && countlyDataManager.service.loadEventsExtended) {
                     evenLoaderService = countlyDataManager.service.loadEventsExtended;
                 }
@@ -246,14 +315,22 @@
                     category: event.category
                 };
                 countlyDataManager.service.editEvent(eventMap, omittedSegments).then(function(err) {
-                    countlyDataManager.service.editEventMeta(eventMeta).then(function(errMeta) {
-                        if (err === 'Error' || errMeta === "Error") {
+                    if (isDrill) {
+                        countlyDataManager.service.editEventMeta(eventMeta).then(function(errMeta) {
+                            if (err === 'Error' || errMeta === "Error") {
+                                return 'Error';
+                            }
+                            context.dispatch('loadEventsData');
+                            context.dispatch('loadValidations');
+                            context.dispatch('loadSegmentsMap');
+                        });
+                    }
+                    else {
+                        if (err === 'Error') {
                             return 'Error';
                         }
                         context.dispatch('loadEventsData');
-                        context.dispatch('loadValidations');
-                        context.dispatch('loadSegmentsMap');
-                    });
+                    }
                 });
             },
             omitSegments: function(context, data) {
@@ -284,6 +361,43 @@
                         context.dispatch('loadEventsData');
                         context.dispatch('loadSegmentsMap');
                     });
+                });
+            },
+            loadCategories: function(context) {
+                countlyDataManager.service.getCategories().then(function(data) {
+                    var map = {};
+                    data.forEach(function(c) {
+                        map[c._id] = c.name;
+                    });
+                    context.commit('setCategories', data);
+                    context.commit('setCategoriesMap', map);
+                    return data;
+                });
+            },
+            saveCategories: function(context, categories) {
+                countlyDataManager.service.createCategory(categories).then(function(data) {
+                    context.dispatch('loadEventsData');
+                    context.dispatch('loadSegmentsMap');
+                    return data;
+                });
+            },
+            editCategories: function(context, categories) {
+                return countlyDataManager.service.editCategories(categories).then(function(data) {
+                    context.dispatch('loadEventsData');
+                    context.dispatch('loadSegmentsMap');
+                    return data;
+                });
+            },
+            deleteCategories: function(context, categories) {
+                countlyDataManager.service.deleteCategories(categories).then(function(data) {
+                    return data;
+                });
+            },
+            changeCategory: function(context, data) {
+                countlyDataManager.service.changeCategory(data.events, data.category).then(function(res) {
+                    context.dispatch('loadEventsData');
+                    context.dispatch('loadSegmentsMap');
+                    return res;
                 });
             },
         };

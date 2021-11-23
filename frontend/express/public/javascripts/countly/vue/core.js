@@ -29,7 +29,7 @@
     };
 
     var _i18n = function() {
-        var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        var appType = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
         arguments = arguments || [];
         if (arguments.length === 1) { //single arg. use map
             return _i18nM(arguments[0]);
@@ -53,7 +53,7 @@
     };
 
     var _i18nM = function(key) {
-        var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        var appType = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
         if (!appType || appType === "mobile") {
             return jQuery.i18n.map[key];
         }

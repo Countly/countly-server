@@ -1,0 +1,65 @@
+<script type="text/x-template" id="data-manager-manage-category-input">
+    <div class="cly-vue-data-manager__mci bg-white">
+        <div class="cly-vue-data-manager__mci--block bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-px-4"
+            v-if="!editing">
+            <div class="text-medium">
+                {{category.name}}
+            </div>
+            <div class="bu-is-flex">
+                <div @click="removeCategory" class="bu-mr-3"><i class="el-icon-delete color-cool-gray-50 bu-is-clickable"></i></div>
+                <div @click="editCategory"><i class="el-icon-edit color-cool-gray-50 bu-is-clickable"></i></div>
+            </div>
+        </div>
+        <div class="cly-vue-data-manager__mci--block bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-px-4"
+            v-if="editing">
+            <el-input class="bu-mr-3" v-model="categoryName">
+            </el-input>
+            <div class="bu-is-flex">
+                <el-button
+                    size="small"
+                    @click="saveCategory">
+                    Done
+                </el-button>
+                <el-button
+                    size="small"
+                    @click="cancelEdit">
+                    Cancel
+                </el-button>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-template" id="data-manager-manage-category">
+    <div style="height: 420px; overflow: auto">
+        <div class="text-big font-weight-bold bu-my-4">Add new category</div>
+        <div class="bu-mb-5">
+            <div class="text-small font-weight-bold bu-mb-1">Category name</div>
+            <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center bu-mb-3">
+                <el-input
+                    v-model="newCategoryName">
+                </el-input>
+                <el-button
+                    size="small bu-mx-3"
+                    type="text"
+                    :disabled="!newCategoryAllowed"
+                    @click="addNewCategory">
+                    Add Category
+                </el-button>
+            </div>
+        </div>
+	    <div v-if="categories.length" class="bu-mb-4">
+            <div class="text-big font-weight-bold bu-mb-1">Manage categories</div>
+	    	<data-manager-manage-category-input
+                ref="categoryInput"
+                v-for="(category, i) in categories"
+                @remove-me="removeCategoryAtIndex(i)"
+	    		:removable="categories.length > 1"
+	    		:key="i"
+	    		:segment-index="i"
+	    		:max-categories="maxCategories"
+	    		v-model="categories[i]">
+	    	</data-manager-manage-category-input>
+	    </div>
+    </div>
+ </script>
