@@ -1,15 +1,14 @@
-<div class="vue-compliance-wrapper" v-bind:class="[componentId]">
-            <div class="bu-is-flex bu-is-flex-direction-column">
-                    <div class="bu-is-flex bu-is-flex-direction-row white-bg bu-p-4 bu-mr-2 bu-ml-2">
-                        <div class="bu-is-flex bu-is-flex-direction-row title bu-mr-2">
-                            <h3>Compliance Hub </h3>
-                        </div>
-                        <cly-tooltip-icon></cly-tooltip-icon>
-                    </div>
-                <cly-dynamic-tabs skin="secondary" v-model="dynamicTab" :tabs="tabs">
-                    <template v-slot:tables="scope">
-                        <span>{{scope.tab.title}}</span>
-                    </template>
-                </cly-dynamic-tabs>
+<div v-bind:class="[componentId]">
+    <cly-header>
+        <template v-slot:header-left>
+            <div class="bu-is-flex bu-is-flex-direction-row title bu-mr-2">
+                <h3>Compliance Hub </h3>
             </div>
+            <cly-tooltip-icon></cly-tooltip-icon>
+        </template>
+        <template v-slot:header-tabs>
+            <cly-dynamic-tabs v-model="dynamicTab" skin="secondary" :tabs="tabs">
+            </cly-dynamic-tabs>
+        </template>
+    </cly-header>
 </div>

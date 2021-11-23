@@ -23,47 +23,47 @@
                     },
                     {
                         value: 'sessions',
-                        label: "Sessions"
+                        label: this.i18n("compliance_hub.Sessions")
                     },
                     {
                         value: "events",
-                        label: 'Events'
+                        label: this.i18n('compliance_hub.Events')
                     },
                     {
                         value: 'views',
-                        label: 'Views'
+                        label: this.i18n('compliance_hub.Views')
                     },
                     {
                         value: 'scrolls',
-                        label: 'Scrolls'
+                        label: this.i18n('compliance_hub.Scrolls')
                     },
                     {
                         value: 'clicks',
-                        label: 'Clicks'
+                        label: this.i18n('compliance_hub.Clicks')
                     },
                     {
                         value: 'forms',
-                        label: 'Forms'
+                        label: this.i18n('compliance_hub.Forms')
                     },
                     {
                         value: 'crashes',
-                        label: "Crashes"
+                        label: this.i18n("compliance_hub.Crashes")
                     },
                     {
                         value: 'push',
-                        label: 'Push'
+                        label: this.i18n('compliance_hub.Push')
                     },
                     {
                         value: 'attribution',
-                        label: 'Attribution'
+                        label: this.i18n('compliance_hub.Attribution')
                     },
                     {
                         value: 'users',
-                        label: 'Users'
+                        label: this.i18n('compliance_hub.Users')
                     },
                     {
                         value: 'star-rating',
-                        label: 'Star-rating'
+                        label: this.i18n('compliance_hub.Star-rating')
                     }
                 ],
                 filter1: [
@@ -113,47 +113,47 @@
                     },
                     {
                         value: 'sessions',
-                        label: "Sessions"
+                        label: this.i18n("compliance_hub.Sessions")
                     },
                     {
                         value: "events",
-                        label: 'Events'
+                        label: this.i18n('compliance_hub.Events')
                     },
                     {
                         value: 'views',
-                        label: 'Views'
+                        label: this.i18n('compliance_hub.Views')
                     },
                     {
                         value: 'scrolls',
-                        label: 'Scrolls'
+                        label: this.i18n('compliance_hub.Scrolls')
                     },
                     {
                         value: 'clicks',
-                        label: 'Clicks'
+                        label: this.i18n('compliance_hub.Clicks')
                     },
                     {
                         value: 'forms',
-                        label: 'Forms'
+                        label: this.i18n('compliance_hub.Forms')
                     },
                     {
                         value: 'crashes',
-                        label: "Crashes"
+                        label: this.i18n("compliance_hub.Crashes")
                     },
                     {
                         value: 'push',
-                        label: 'Push'
+                        label: this.i18n('compliance_hub.Push')
                     },
                     {
                         value: 'attribution',
-                        label: 'Attribution'
+                        label: this.i18n('compliance_hub.Attribution')
                     },
                     {
                         value: 'users',
-                        label: 'Users'
+                        label: this.i18n('compliance_hub.Users')
                     },
                     {
                         value: 'star-rating',
-                        label: 'Star-rating'
+                        label: this.i18n('compliance_hub.Star-rating')
                     }
                 ],
                 filter1: [
@@ -193,7 +193,6 @@
     });
     var MetricsView = countlyVue.views.create({
         template: CV.T("/compliance-hub/templates/metrics.html"),
-        mixins: [countlyVue.mixins.i18n],
         data: function() {
             return {
                 filter0: [
@@ -203,47 +202,47 @@
                     },
                     {
                         value: 'sessions',
-                        label: "Sessions"
+                        label: this.i18n("compliance_hub.Sessions")
                     },
                     {
                         value: "events",
-                        label: 'Events'
+                        label: this.i18n('compliance_hub.Events')
                     },
                     {
                         value: 'views',
-                        label: 'Views'
+                        label: this.i18n('compliance_hub.Views')
                     },
                     {
                         value: 'scrolls',
-                        label: 'Scrolls'
+                        label: this.i18n('compliance_hub.Scrolls')
                     },
                     {
                         value: 'clicks',
-                        label: 'Clicks'
+                        label: this.i18n('compliance_hub.Clicks')
                     },
                     {
                         value: 'forms',
-                        label: 'Forms'
+                        label: this.i18n('compliance_hub.Forms')
                     },
                     {
                         value: 'crashes',
-                        label: "Crashes"
+                        label: this.i18n("compliance_hub.Crashes")
                     },
                     {
                         value: 'push',
-                        label: 'Push'
+                        label: this.i18n('compliance_hub.Push')
                     },
                     {
                         value: 'attribution',
-                        label: 'Attribution'
+                        label: this.i18n('compliance_hub.Attribution')
                     },
                     {
                         value: 'users',
-                        label: 'Users'
+                        label: this.i18n('compliance_hub.Users')
                     },
                     {
                         value: 'star-rating',
-                        label: 'Star-rating'
+                        label: this.i18n('compliance_hub.Star-rating')
                     }
                 ],
                 selectedfilter0: 'sessions',
@@ -253,12 +252,14 @@
         beforeCreate: function() {
             countlyConsentManager.initialize();
             var payload = {
-                "segment": ""
+                "segment": "sessions"
             };
             this.$store.dispatch("countlyConsentManager/_bigNumberData", payload);
             this.$store.dispatch("countlyConsentManager/_consentDP", payload);
             this.$store.dispatch("countlyConsentManager/_exportDP", payload);
             this.$store.dispatch("countlyConsentManager/_purgeDP");
+            this.$store.dispatch("countlyConsentManager/_ePData");
+            console.log(this.$store.getters["countlyConsentManager/_ePData"]);
         },
         computed: {
             selectedfilterforMetrics: {
@@ -283,12 +284,10 @@
                 return {
                     series: [
                         {
-                            //name: "opt in", //This name will be shown in the legend and tooltip
                             data: optinYAxisData,
 
                         },
                         {
-                            //This name will be shown in the legend and tooltip
                             data: optoutYAxisData
                         }
                     ]
@@ -301,7 +300,7 @@
                     type: "primary",
                     data: [{
                         name: "opt-in",
-                        label: "opt-in",
+                        label: this.i18n("consent.opt-i"),
                         value: _bigNumberData.i.total,
                         percentage: _bigNumberData.i.change,
                         trend: _bigNumberData.i.trend === 'u' ? "up" : "down",
@@ -309,7 +308,7 @@
                     {
 
                         name: "opt-out",
-                        label: "opt-out",
+                        label: this.i18n("consent.opt-o"),
                         value: _bigNumberData.o.total,
                         percentage: _bigNumberData.o.change,
                         trend: _bigNumberData.o.trend === 'u' ? "up" : "down",
@@ -331,13 +330,10 @@
                 return {
                     series: [
                         {
-                            //This name will be shown in the legend and tooltip
                             data: presentYAxisData,
 
                         },
                         {
-                            //This name will be shown in the legend and tooltip
-                            //name: "opt out",
                             data: previousYAxisData
                         }
                     ]
@@ -354,24 +350,51 @@
                 return {
                     series: [
                         {
-                            //name: "opt in", //This name will be shown in the legend and tooltip
                             data: purgeDpPresent,
 
                         },
                         {
-                            //name: "opt in", //This name will be shown in the legend and tooltip
                             data: purgeDpPrevious,
 
                         },
                     ]
                 };
+            },
+            userDatalegend: function() {
+                var data = this.$store.getters["countlyConsentManager/_ePData"];
+                data.e.title = jQuery.i18n.map["consent.userdata-exports"];
+                data.p.title = jQuery.i18n.map["consent.userdata-purges"];
+                var legendData = {
+                        name: data.e.title,
+                        label: data.e.title,
+                        value: data.e.total,
+                        percentage: data.e.change,
+                        trend: data.e.trend,
+                        class: data.e.trend === 'u' ? 'cly-trend-up': 'cly-trend-down'
+                };
+                return legendData;
+            },
+            purgeDatalegend: function() {
+                var data = this.$store.getters["countlyConsentManager/_ePData"];
+                data.e.title = jQuery.i18n.map["consent.userdata-exports"];
+                data.p.title = jQuery.i18n.map["consent.userdata-purges"];
+                var legendData = {
+                        name: data.p.title,
+                        label: data.p.title,
+                        value: data.e.total,
+                        percentage: data.p.change,
+                        trend: data.p.trend,
+                        class: data.p.trend === 'u' ? 'cly-trend-up': 'cly-trend-down'
+                };
+                return legendData;
+
             }
 
         },
         methods: {
             initializeStoreData: function() {
                 var newValue = this.selectedfilter0;
-                if (this.selectedfilter0 === this.i18n("common.all")) {
+                if (this.selectedfilter0 === 'all') {
                     newValue = "";
                 }
                 countlyConsentManager.initialize();
@@ -382,8 +405,7 @@
                 this.$store.dispatch("countlyConsentManager/_consentDP", payload);
                 this.$store.dispatch("countlyConsentManager/_exportDP", payload);
                 this.$store.dispatch("countlyConsentManager/_purgeDP");
-
-
+                this.$store.dispatch("ountlyConsentManager/_ePData");
             },
         }
 
