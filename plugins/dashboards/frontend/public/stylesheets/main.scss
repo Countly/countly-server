@@ -1,0 +1,23 @@
+@use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
+@use "sass:map";
+
+.cly-vue-dashboards {
+    &__empty {
+        p {
+            text-align: center;
+        }
+
+        &--rounded-image{
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: map.get(c.$colors, "cool-gray-30");
+        }
+    }
+
+    .grid-stack-item-content {
+        background-color: map.get(c.$colors, "white");
+        border: 1px solid #E2E4E8;
+        border-radius: 4px;
+    }
+}

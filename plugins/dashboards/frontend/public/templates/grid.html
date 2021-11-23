@@ -1,0 +1,29 @@
+<div v-bind:class="[componentId, 'grid-stack']">
+    <div
+        class="grid-stack-item"
+        v-for="(widget, index) in allWidgets"
+        v-if="components[widget.widget_type]"
+        :key="index"
+        :gs-x="widget.position[0]"
+        :gs-y="widget.position[1]"
+        :gs-w="widget.size[0]"
+        :gs-h="widget.size[1]"
+        :gs-min-w="components[widget.widget_type].dimensions && components[widget.widget_type].dimensions().minWidth"
+        :gs-min-h="components[widget.widget_type].dimensions && components[widget.widget_type].dimensions().minHeight"
+    >
+        <div class="grid-stack-item-content bu-p-4">
+            <component :is="components[widget.widget_type].gridComponent" :data="widget">
+                <template v-slot:action v-if="canUpdate">
+                    <div class="bu-level-item">
+                        <cly-more-options @command="onWidgetAction($event, widget)">
+                            <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                            <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                        </cly-more-options>
+                    </div>
+                </template>
+            </component>
+        </div>
+    </div>
+    <widgets-drawer :controls="drawers.widgets"></widgets-drawer>
+</div>
+

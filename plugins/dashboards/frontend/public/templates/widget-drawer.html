@@ -1,0 +1,38 @@
+<cly-drawer
+    @submit="onSubmit"
+    @copy="onCopy"
+    :title="title"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="controls">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="widget-drawer">
+            <cly-form-field name="widget_type" rules="required" :label="i18nM('dashboards.widget-type')">
+                <el-radio-group
+                    class="bu-columns bu-is-multiline bu-m-0"
+                    v-model="drawerScope.editedObject.widget_type">
+                    <div
+                        v-for="(item, index) in widgetTypes"
+                        style="box-sizing: border-box;"
+                        :class="['bu-column bu-is-one-quarter bu-m-0 bu-p-0',
+                                {'bu-pr-2': ((index + 1) % 4 !== 0)},
+                                {'bu-mb-3': (index < (widgetTypes.length - (widgetTypes.length % 4)))}]">
+                        <el-radio
+                            style="width:100%"
+                            :label="item.type"
+                            :key="item.type"
+                            border>
+                            {{item.label}}
+                        </el-radio>
+                    </div>
+                </el-radio-group>
+            </cly-form-field>
+            <component
+                v-for="(item) in widgetTypes"
+                v-if="drawerScope.editedObject.widget_type === item.type"
+                :is="item.drawerComponent"
+                :key="item.type"
+                :scope="drawerScope">
+            </component>
+        </cly-form-step>
+    </template>
+</cly-drawer>
