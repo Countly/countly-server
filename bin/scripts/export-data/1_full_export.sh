@@ -23,9 +23,9 @@ fi
 
 tmp_file="fadlfhsdofheinwvw.js"
 echo "print('_ ' + db.getCollectionNames())" > $tmp_file
-cols=`mongo "${connection_string}/${db}" $tmp_file | grep '_' | awk '{print $2}' | tr ',' ' '`
+cols=$(mongo "${connection_string}/${db}" $tmp_file | grep '_' | awk '{print $2}' | tr ',' ' ')
 for c in $cols
 do
-    mongoexport --uri="${connection_string}" -d $db -c $c -o "$out_dir/${db}_${c}.json"
+    mongoexport --uri="${connection_string}" -d "$db" -c "$c" -o "$out_dir/${db}_${c}.json"
 done
 rm $tmp_file
