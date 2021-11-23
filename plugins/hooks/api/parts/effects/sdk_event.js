@@ -10,7 +10,7 @@ class SDKEventEffect {
      */
     constructor() {
         this._timeout = 5000;
-        this._url = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (common.config.path || "") + "/i";
+        this._url = `http://localhost:${common.config.api.port}/i`;
     }
 
     /**

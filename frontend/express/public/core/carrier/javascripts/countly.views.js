@@ -98,7 +98,7 @@ var AppCarrierView = countlyVue.views.create({
     ]
 });
 
-if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
+if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
     countlyVue.container.registerTab("/analytics/technology", {
         priority: 5,
         name: "carriers",

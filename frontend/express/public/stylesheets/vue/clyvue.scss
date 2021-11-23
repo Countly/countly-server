@@ -23,6 +23,40 @@
     }
 }
 
+.cly-bullet {
+    position: relative;
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+    padding: 0;
+    &--green{
+        background-color: #12AF51;
+    }
+    &--blue{
+        background-color: #017AFF;
+    }
+    &--yellow{
+        background-color: #CDAD7A;
+    }
+    &--red{
+        background-color: #D23F00;
+    }
+    &--orange {
+        background-color: #F96300;
+    }
+    &--blinking {
+        animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+    }
+    @keyframes blinker {
+        50% {
+            opacity: 0;
+        }
+    }
+}
+
 
 .cly-vue-status-tag {
     padding-right: 16.33px;
