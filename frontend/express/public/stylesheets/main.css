@@ -2628,95 +2628,6 @@ padding-top: 0;
 .extable-link i { margin-right:10px; font-size:13px !important; line-height: 18px !important;}
 #report-manager-view .left {width:500px;}
 
-#top-bar .dropdown .manage-long-tasks-menu {
-    background-color:#e9e9e9;
-}
-.manage-long-tasks-menu .menu-category-title{
-    background-color:#e9e9e9;
-    color:#636363;
-    position: relative;
-    text-transform:uppercase;
-    text-align:left;
-}
-.manage-long-tasks-menu .menu-category-title p {
-    font-size:17px;
-    padding: 20px;
-    line-height:17px;
-    margin:0px;
-    
-} 
-.manage-long-tasks-menu .menu-category-title a.see-all {
-    font-size:13px;
-    position:absolute;
-    right: 10px;
-    top:20px;
-} 
-.manage-long-tasks-menu .menu-category-title a.see-all:hover {
-    cursor:pointer;
-}
-.manage-long-tasks-menu .tasks{
-    padding: 0px 20px;
-}
-.manage-long-tasks-menu .tasks-wrapper{
-    margin-bottom:3px;
-    background-color:#ffffff;
-}
-
-.manage-long-tasks-menu .tasks-wrapper .graph-description{
-    text-align: center;
-    vertical-align: middle;
-    line-height: 140px;
-    height:140px;
-}
-
-.manage-long-tasks-menu .tasks table{
-    width:100%;
-    
-}
-.manage-long-tasks-menu .tasks table td {
-    font-size: 12px;
-    color:#636363;
-    border-bottom: 1px solid #d0d0d0;
-    text-align:left;
-    padding: 15px 0 15px 0;
-    font-family: Ubuntu,Helvetica,sans-serif;
-    
-}
-
-.manage-long-tasks-menu .tasks table tr:last-child td {
-    border-bottom: none;
-}
-.manage-long-tasks-menu .tasks table p {
-        line-height: normal;
-    margin: 0px;
-    padding: 0 0 7px 0;
-}
-
-.manage-long-tasks-menu .tasks table p.title {
-    color:#1e1e1e;
-}
-.manage-long-tasks-menu .tasks table p span{
-    padding-left:8px
-}
-.manage-long-tasks-menu .tasks table tr.completed td:hover {
-    cursor: pointer;
-}
-
-.manage-long-tasks-menu .tasks .circle-arrow {
-    border-radius: 50%;
-    width: 12px;
-    height: 10px;
-    background-color: #e8e8e8;
-    font-size: 8px;
-    text-align: center;
-    padding-top: 2px;
-    padding-left: 1px;
-    color: #636363;
-    vertical-align: middle;
-    margin-left:6px;
-    margin-top:-3px;
-}
-
 .orange-side-notification-banner-wrapper{
     position: absolute;
     width: 500px;
@@ -2763,33 +2674,6 @@ padding-top: 0;
     position: absolute;
     pointer-events: none;
     z-index: 2;
-}
-
-.manage-long-tasks-menu .tasks table tr:hover .title {
-    color:#2db52b;
-    cursor: pointer;
-}
-.manage-long-tasks-menu .tasks tr:hover .circle-arrow {
-    background-color:#2db52b;
-    color:#ffffff;
-}
-
-#top-bar .dropdown .manage-long-tasks-menu:before {
-    border-bottom-color: #e9e9e9;
-}
-
-#manage-long-tasks-icon {
-    position:relative;
-}
-#manage-long-tasks-icon.unread:after {
-    content: " ";
-    width: 4px;
-    height: 4px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    border-radius: 4px;
-    background-color: #FF8700;
 }
 
 .dashboard-summary .item .bar .bar-inner-new-e{
@@ -4333,6 +4217,20 @@ transform: rotate(45deg);
 }
 
 
+  
+  #event-groups-settings-table tr:hover .edit-event, #events-custom-settings-table tr:hover .edit-event {
+    width: 54px;
+    height: 29px;
+    border-radius: 2px;
+    border: solid 1px #d0d0d0;
+    background-color: #ffffff;
+    visibility: visible;
+    cursor: pointer;
+    margin-right: 15px;
+    color: #6B6B6B;
+  }
+
+  
 .user-config-danger-zone {
     display: none;
 }

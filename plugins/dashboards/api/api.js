@@ -69,8 +69,8 @@ plugins.setConfigs("dashboards", {
                             if (!dashboard.share_with) {
                                 if (dashboard.shared_with_edit && dashboard.shared_with_edit.length ||
                                     dashboard.shared_with_view && dashboard.shared_with_view.length ||
-                                    dashboard.shared_email_edit.length ||
-                                    dashboard.shared_email_view.length ||
+                                    dashboard.shared_email_edit && dashboard.shared_email_edit.length ||
+                                    dashboard.shared_email_view && dashboard.shared_email_view.length ||
                                     dashboard.shared_user_groups_edit && dashboard.shared_user_groups_edit.length ||
                                     dashboard.shared_user_groups_view && dashboard.shared_user_groups_view.length) {
                                     dashboard.share_with = "selected-users";
@@ -301,8 +301,8 @@ plugins.setConfigs("dashboards", {
                         if (!dashboard.share_with) {
                             if (dashboard.shared_with_edit && dashboard.shared_with_edit.length ||
                                 dashboard.shared_with_view && dashboard.shared_with_view.length ||
-                                dashboard.shared_email_edit.length ||
-                                dashboard.shared_email_view.length ||
+                                dashboard.shared_email_edit && dashboard.shared_email_edit.length ||
+                                dashboard.shared_email_view && dashboard.shared_email_view.length ||
                                 dashboard.shared_user_groups_edit && dashboard.shared_user_groups_edit.length ||
                                 dashboard.shared_user_groups_view && dashboard.shared_user_groups_view.length) {
                                 dashboard.share_with = "selected-users";

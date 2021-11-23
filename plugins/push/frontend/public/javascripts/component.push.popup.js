@@ -431,8 +431,8 @@ window.component('push.popup', function(popup) {
                         l.buttonUrl0 = buttonTitle(0, 'l', l.value);
                         l.buttonUrl1 = buttonTitle(1, 'l', l.value);
 
-                        var persOpts = push.PERS_OPTS.slice();
-                        if (message.auto() && message.autoOnEntry() === 'events') {
+                        var persOpts = push.PERS_OPTS && push.PERS_OPTS.slice() || undefined;
+                        if (persOpts && message.auto() && message.autoOnEntry() === 'events') {
                             message.autoEvents().forEach(function(key) {
                                 var data = push.PERS_EVENTS[key];
                                 if (data && data.length) {

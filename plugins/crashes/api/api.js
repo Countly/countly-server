@@ -619,12 +619,13 @@ plugins.setConfigs("crashes", {
                                     if (Object.keys(groupMax).length > 0) {
                                         update.$max = groupMax;
                                     }
+                                    plugins.dispatch("/crashes/new", {data: {crash: groupInsert, user: dbAppUser}});
 
                                     update.$addToSet = {groups: hash};
 
                                     common.db.collection('app_crashgroups' + params.app_id).findAndModify({'groups': {$elemMatch: {$eq: hash}} }, {}, update, {upsert: true, new: false}, function(crashGroupsErr, crashGroup) {
                                         crashGroup = crashGroup && crashGroup.ok ? crashGroup.value : null;
-                                        var isNew = (!crashGroup || !crashGroup.reports) ? true : false;
+                                        var isNew = ((!crashGroup || !crashGroup.reports) && !crashGroupsErr) ? true : false;
 
                                         var lastTs;
                                         if (crashGroup) {
@@ -661,6 +662,10 @@ plugins.setConfigs("crashes", {
                                             if (Object.keys(group).length > 0) {
                                                 common.db.collection('app_crashgroups' + params.app_id).update({'groups': hash }, {$set: group}, function() {});
                                             }
+                                        }
+
+                                        if (isNew) {
+                                            plugins.dispatch("/crashes/new", {crash: crashGroup, user: dbAppUser});
                                         }
 
                                         //update meta document

@@ -43,6 +43,10 @@
     width: 100%;
 }
 
+.populator-tab-switcher .float-cleaner {
+	clear:both;
+}
+
 .populator_modal {
     border-width: 0px !important;
     min-width: 600px;

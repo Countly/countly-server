@@ -375,7 +375,7 @@ const processRequest = (params) => {
                             }
                             countlyApi.mgmt.appUsers.update(params.qstring.app_id, params.qstring.query, params.qstring.update, params, function(err2) {
                                 if (err2) {
-                                    common.returnMessage(params, 400, err);
+                                    common.returnMessage(params, 400, err2);
                                 }
                                 else {
                                     common.returnMessage(params, 200, 'User Updated');
@@ -420,7 +420,7 @@ const processRequest = (params) => {
                             }
                             countlyApi.mgmt.appUsers.delete(params.qstring.app_id, params.qstring.query, params, function(err2) {
                                 if (err2) {
-                                    common.returnMessage(params, 400, err);
+                                    common.returnMessage(params, 400, err2);
                                 }
                                 else {
                                     common.returnMessage(params, 200, 'User deleted');
@@ -610,7 +610,8 @@ const processRequest = (params) => {
                         taskmanager.deleteResult({
                             db: common.db,
                             id: params.qstring.task_id
-                        }, () => {
+                        }, (err, task) => {
+                            plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_deleted", data: task});
                             common.returnMessage(params, 200, "Success");
                         });
                     });
@@ -639,14 +640,14 @@ const processRequest = (params) => {
                             db: common.db,
                             data: data,
                             id: params.qstring.task_id
-                        }, (err) => {
+                        }, (err, d) => {
                             if (err) {
                                 common.returnMessage(params, 503, "Error");
                             }
                             else {
                                 common.returnMessage(params, 200, "Success");
                             }
-
+                            plugins.dispatch("/systemlogs", {params: params, action: "task_manager_task_updated", data: d});
                         });
                     });
                     break;
