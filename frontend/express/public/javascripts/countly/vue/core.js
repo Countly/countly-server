@@ -329,7 +329,7 @@
 
     var VuexLoader = function(vuex) {
         this.vuex = vuex;
-        this.loadedModuleIds = [];
+        this.loadedModules = [];
     };
 
     VuexLoader.prototype.load = function() {
@@ -337,15 +337,18 @@
         this.vuex.forEach(function(item) {
             var module = item.clyModel.getVuexModule();
             _vuex.registerGlobally(module);
-            self.loadedModuleIds.push(module.name);
+            self.loadedModules.push(module);
         });
     };
 
     VuexLoader.prototype.destroy = function() {
-        this.loadedModuleIds.forEach(function(mid) {
-            _vuex.unregister(mid);
+        var self = this;
+        this.loadedModules.forEach(function(mid, index) {
+            if (mid.destroy !== false) {
+                _vuex.unregister(mid.name);
+                self.loadedModules.splice(index, 1);
+            }
         });
-        this.loadedModuleIds = [];
     };
 
     var countlyVueWrapperView = countlyView.extend({
