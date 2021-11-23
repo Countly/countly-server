@@ -50,7 +50,7 @@
         computed: {
             isActive: function() {
                 var unread = this.$store.state.countlyTaskManager.unread;
-                return !!unread[this.appId][this.taskId];
+                return !!(unread && unread[this.appId] && unread[this.appId][this.taskId]);
             }
         },
         data: function() {
