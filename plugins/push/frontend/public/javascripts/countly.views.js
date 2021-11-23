@@ -1084,6 +1084,7 @@
         data: function() {
             return {
                 StatusEnum: countlyPushNotification.service.StatusEnum,
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
                 platformFilters: platformFilterOptions,
                 selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
@@ -1155,6 +1156,13 @@
             },
             hasApproverPermission: function() {
                 return countlyPushNotification.service.hasApproverPermission();
+            },
+            previewMessageMedia: function() {
+                var result = {};
+                result[this.PlatformEnum.ALL] = {url: this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL, type: this.pushNotification.settings[this.PlatformEnum.ALL].mediaMime };
+                result[this.PlatformEnum.IOS] = {url: this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL, type: this.pushNotification.settings[this.PlatformEnum.IOS].mediaMime };
+                result[this.PlatformEnum.ANDROID] = {url: this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL, type: this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaMime};
+                return result;
             }
         },
         methods: {

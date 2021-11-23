@@ -633,8 +633,10 @@
                 });
             },
             reset: function(htmlContent, ids) {
+                this.disconnectMutationObserver();
                 this.$refs.element.innerHTML = htmlContent;
                 this.addEventListeners(ids);
+                this.startMutationObserver();
             },
             appendEmoji: function(emoji) {
                 this.insertEmojiAtCaretPosition(document.createTextNode(emoji));
@@ -759,9 +761,13 @@
         data: function() {
             return {
                 selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
             };
         },
         computed: {
+            pushNotification: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification;
+            },
             message: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
             },
@@ -773,6 +779,26 @@
             },
             previewMessageContent: function() {
                 return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.content);
+            },
+            previewAndroidMedia: function() {
+                var result = "";
+                if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL;
+                }
+                if (this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
+                }
+                return result;
+            },
+            previewIOSMedia: function() {
+                var result = "";
+                if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
+                }
+                if (this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
+                }
+                return result;
             }
         },
         components: {

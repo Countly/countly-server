@@ -410,7 +410,7 @@
                 return rowsModel;
             },
             mapTargeting: function(dto) {
-                if (dto.filter.cohorts && dto.filter.cohorts.length || dto.filter.geos && dto.filter.geos.length) {
+                if (dto.filter && dto.filter.cohorts && dto.filter.cohorts.length || dto.filter.geos && dto.filter.geos.length) {
                     return TargetingEnum.SEGMENTED;
                 }
                 return TargetingEnum.ALL;
@@ -421,25 +421,25 @@
             },
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
-                    soundFileName: androidSettingsDto.sound || "",
-                    badgeNumber: androidSettingsDto.badge,
-                    json: androidSettingsDto.data || null,
-                    userData: androidSettingsDto.extras || [],
-                    onClickURL: androidSettingsDto.url || '',
-                    mediaURL: androidSettingsDto.media || '',
-                    mediaMime: androidSettingsDto.mediaMime
+                    soundFileName: androidSettingsDto && androidSettingsDto.sound || "",
+                    badgeNumber: androidSettingsDto && androidSettingsDto.badge,
+                    json: androidSettingsDto && androidSettingsDto.data || null,
+                    userData: androidSettingsDto && androidSettingsDto.extras || [],
+                    onClickURL: androidSettingsDto && androidSettingsDto.url || '',
+                    mediaURL: androidSettingsDto && androidSettingsDto.media || '',
+                    mediaMime: androidSettingsDto && androidSettingsDto.mediaMime || '',
                 };
             },
             mapIOSSettings: function(iosSettingsDto) {
                 return {
                     subtitle: "",
-                    soundFileName: iosSettingsDto.sound || "",
-                    badgeNumber: iosSettingsDto.badge,
-                    json: iosSettingsDto.data || null,
-                    userData: iosSettingsDto.extras || [],
-                    onClickURL: iosSettingsDto.url || '',
-                    mediaURL: iosSettingsDto.media || '',
-                    mediaMime: iosSettingsDto.mediaMime
+                    soundFileName: iosSettingsDto && iosSettingsDto.sound || "",
+                    badgeNumber: iosSettingsDto && iosSettingsDto.badge,
+                    json: iosSettingsDto && iosSettingsDto.data || null,
+                    userData: iosSettingsDto && iosSettingsDto.extras || [],
+                    onClickURL: iosSettingsDto && iosSettingsDto.url || '',
+                    mediaURL: iosSettingsDto && iosSettingsDto.media || '',
+                    mediaMime: iosSettingsDto && iosSettingsDto.mediaMime || '',
                 };
             },
             mapEvents: function(eventsList) {
@@ -456,6 +456,23 @@
             findDefaultLocaleItem: function(contentDto) {
                 //NOTE: default locale always resides at index position 0 of contents array
                 return contentDto[0];
+            },
+            findPlatformSetting: function(platform, contentDto) {
+                var found = false;
+                var index = 0;
+                while (!found && index < contentDto.length) {
+                    var locale = contentDto[index];
+                    if (this.isPlatformSetting(locale) && locale.p === platform) {
+                        found = true;
+                    }
+                    else {
+                        index += 1;
+                    }
+                }
+                if (found) {
+                    return contentDto[index];
+                }
+                return null;
             },
             findNonDefaultLocaleItem: function(localeKey, contentDto) {
                 var found = false;
@@ -482,17 +499,16 @@
             },
             mapSettings: function(dto) {
                 var result = {};
-                dto.contents.forEach(function(contentItem) {
-                    if (this.isPlatformSetting(contentItem)) {
-                        if (contentItem.p === PlatformDtoEnum.IOS) {
-                            result[PlatformEnum.IOS] = this.mapIOSSettings(contentItem);
-                        }
-                        if (contentItem.p === PlatformDtoEnum.ANDROID) {
-                            result[PlatformEnum.ANDROID] = this.mapAndroidSettings(contentItem);
-                        }
-                    }
-                });
-                //TODO-LA: check if the ios and android media is the same for all platforms!
+                var iosSettingsDto = this.findPlatformSetting(PlatformDtoEnum.IOS, dto.contents);
+                var androidSetting = this.findPlatformSetting(PlatformDtoEnum.ANDROID, dto.contents);
+                result[PlatformEnum.IOS] = this.mapIOSSettings(iosSettingsDto);
+                result[PlatformEnum.ANDROID] = this.mapAndroidSettings(androidSetting);
+                result[PlatformEnum.ALL] = {};
+                result[PlatformEnum.ALL].mediaURL = "";
+                if (result[PlatformEnum.IOS].mediaURL === result[PlatformEnum.ANDROID].mediaURL) {
+                    result[PlatformEnum.ALL].mediaURL = result[PlatformEnum.ANDROID].mediaURL;
+                    result[PlatformEnum.ALL].mediaMime = result[PlatformEnum.ANDROID].mediaMime;
+                }
                 return result;
             },
             mapMessageLocalizationUserProperties: function(userPropertyDto) {
@@ -520,15 +536,19 @@
                 if (!localeItem) {
                     throw new Error('Unable to find locale item with key:', localeKey);
                 }
-                return {
+                var result = {
                     title: this.buildMessageText(localeItem.title, localeItem.titlePers),
                     content: this.buildMessageText(localeItem.message, localeItem.messagePers),
-                    buttons: this.mapMessageLocalizationButtons(localeItem.buttons),
                     properties: {
                         title: this.mapMessageLocalizationUserProperties(localeItem.titlePers),
                         content: this.mapMessageLocalizationUserProperties(localeItem.messagePers),
-                    }
+                    },
+                    buttons: []
                 };
+                if (localeItem.buttons) {
+                    result.buttons = this.mapMessageLocalizationButtons(localeItem.buttons);
+                }
+                return result;
             },
             mapMessageLocalizationsList: function(localizations, dto) {
                 var self = this;
@@ -574,7 +594,7 @@
                 };
             },
             mapDtoToBaseModel: function(dto) {
-                var localizations = this.mapLocalizations(dto.info.locales, dto.info.locales.count);
+                var localizations = this.mapLocalizations(dto.info.locales);
                 return {
                     id: dto._id,
                     status: dto.status,
@@ -595,10 +615,10 @@
                     settings: this.mapSettings(dto),
                     errors: this.mapErrors(dto),
                     sound: dto.sound,
-                    locations: dto.filter.geos || [],
-                    cohorts: dto.filter.cohorts || [],
-                    user: dto.filter.user,
-                    drill: dto.filter.drill,
+                    locations: dto.filter && dto.filter.geos || [],
+                    cohorts: dto.filter && dto.filter.cohorts || [],
+                    user: dto.filter && dto.filter.user,
+                    drill: dto.filter && dto.filter.drill,
                     expiration: countlyPushNotification.helper.convertMSToDaysAndHours(this.findDefaultLocaleItem(dto.contents).expiration),
                 };
             },
@@ -606,7 +626,7 @@
                 var model = this.mapDtoToBaseModel(dto);
                 model.targeting = this.mapTargeting(dto);
                 model.type = TypeEnum.ONE_TIME;
-                var triggerDto = dto.trigger[0];
+                var triggerDto = dto.triggers[0];
                 model.delivery = {
                     startDate: triggerDto.start,
                     endDate: "Never",
@@ -619,7 +639,7 @@
             mapDtoToAutomaticModel: function(dto) {
                 var model = this.mapDtoToBaseModel(dto);
                 model.type = TypeEnum.AUTOMATIC;
-                var triggerDto = dto.trigger[0];
+                var triggerDto = dto.triggers[0];
                 model.cohorts = triggerDto.cohorts || [];
                 model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
                 model.automatic = {
@@ -644,7 +664,7 @@
             mapDtoToTransactionalModel: function(dto) {
                 var model = this.mapDtoToBaseModel(dto);
                 model.type = TypeEnum.TRANSACTIONAL;
-                var triggerDto = dto.trigger[0];
+                var triggerDto = dto.triggers[0];
                 model.delivery = {
                     startDate: triggerDto.start,
                     endDate: "Never",
@@ -666,11 +686,12 @@
                 throw new Error('Unknown push notification type, ' + pushNotificationType);
             },
             mapMediaMetadata: function(metadataDto) {
-                var typeAndFileExtension = metadataDto['content-type'].split('/');
+                var typeAndFileExtension = metadataDto.mediaMime.split('/');
                 return {
                     type: typeAndFileExtension[0],
                     extension: typeAndFileExtension[1],
-                    size: metadataDto['content-length'] / MB_TO_BYTES_RATIO,
+                    mime: metadataDto.mediaMime,
+                    size: metadataDto.mediaSize / MB_TO_BYTES_RATIO,
                 };
             },
             mapLocalizationByKey: function(localizationKey) {
@@ -685,7 +706,7 @@
                 }
                 return false;
             },
-            mapLocalizations: function(localesDto, count) {
+            mapLocalizations: function(localesDto) {
                 var self = this;
                 if (!this.hasAnyLocales(localesDto)) {
                     return [countlyPushNotification.helper.getDefaultLocalization()];
@@ -693,9 +714,13 @@
                 var result = Object.keys(localesDto).reduce(function(allLocales, localeKey) {
                     if (localeKey !== DEFAULT_LOCALIZATION_VALUE && localeKey !== 'count') {
                         var localizationItem = self.mapLocalizationByKey(localeKey);
-                        localizationItem.percentage = localesDto[localeKey];
                         localizationItem.count = localesDto[localeKey];
-                        localizationItem.percentage = CountlyHelpers.formatPercentage(localesDto[localeKey] / count);
+                        if (localesDto.count && localesDto.count !== 0) {
+                            localizationItem.percentage = CountlyHelpers.formatPercentage(localesDto[localeKey] / localesDto.count);
+                        }
+                        else {
+                            localizationItem.percentage = 0;
+                        }
                         allLocales.push(localizationItem);
                     }
                     return allLocales;
@@ -877,6 +902,11 @@
                 });
                 return result;
             },
+            arePlatformSettingsEmpty: function(platform, settingDto) {
+                var emptySetting = {};
+                emptySetting.p = platform;
+                return JSON.stringify(emptySetting) === JSON.stringify(settingDto);
+            },
             mapIOSSettings: function(model) {
                 var iosSettings = model.settings[PlatformEnum.IOS];
                 var result = {};
@@ -1015,13 +1045,24 @@
             mapTransactionalTrigger: function(model) {
                 return [{kind: 'api', start: model.delivery.startDate}];
             },
+            areFiltersEmpty: function(dto) {
+                return Object.keys(dto).length === 0;
+            },
             mapFilters: function(model) {
-                return {
-                    user: model.user || [],
-                    cohorts: model.cohorts || [],
-                    geos: model.locations || [],
-                    drill: model.drill || [],
-                };
+                var result = {};
+                if (model.user) {
+                    result.user = model.user;
+                }
+                if (model.cohorts.length) {
+                    result.cohorts = model.cohorts;
+                }
+                if (model.locations.length) {
+                    result.geos = model.locations;
+                }
+                if (model.drill) {
+                    result.drill = model.drill;
+                }
+                return result;
             },
             getLocalizationsCount: function(locales) {
                 var count = 0;
@@ -1066,10 +1107,19 @@
                     resultDto._id = pushNotificationModel._id;
                 }
                 var contentsDto = this.mapMessageLocalization(pushNotificationModel);
-                contentsDto.push(this.mapAndroidSettings(pushNotificationModel));
-                contentsDto.push(this.mapIOSSettings(pushNotificationModel));
+                var androidSettingsDto = this.mapAndroidSettings(pushNotificationModel);
+                if (!this.arePlatformSettingsEmpty(PlatformDtoEnum.ANDROID, androidSettingsDto)) {
+                    contentsDto.push(androidSettingsDto);
+                }
+                var iosSettingsDto = this.mapIOSSettings(pushNotificationModel);
+                if (!this.arePlatformSettingsEmpty(PlatformDtoEnum.IOS, iosSettingsDto)) {
+                    contentsDto.push(iosSettingsDto);
+                }
                 resultDto.contents = contentsDto;
-                resultDto.filter = this.mapFilters(pushNotificationModel);
+                var filtersDto = this.mapFilters(pushNotificationModel);
+                // if (!this.areFiltersEmpty(filtersDto)) {
+                    resultDto.filter = filtersDto;
+                // }
                 resultDto.info = this.mapInfo(pushNotificationModel, options);
                 var expirationInMS = countlyPushNotification.helper.convertDateTimeToMS({
                     days: pushNotificationModel.expiration.days,
@@ -1245,11 +1295,11 @@
         fetchById: function(id) {
             return CV.$.ajax({
                 type: "GET",
-                url: window.countlyCommon.API_URL + "/i/push/message",
+                url: window.countlyCommon.API_URL + "/o/push/message/GET",
                 data: {
-                    args: JSON.stringify({_id: id, apps: [countlyCommon.ACTIVE_APP_ID]})
+                    _id: id,
                 },
-                dataType: "json"
+                contentType: "application/json",
             }, {disableAutoCatch: true});
         },
         fetchDashboard: function() {
@@ -1279,9 +1329,12 @@
             return new Promise(function(resolve, reject) {
                 CV.$.ajax({
                     method: 'GET',
-                    url: window.countlyCommon.API_URL + '/i/push/mime?url=' + url,
-                    success: function(data) {
-                        resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(data.headers));
+                    url: window.countlyCommon.API_URL + '/o/push/mime',
+                    data: {
+                        url: url
+                    },
+                    success: function(response) {
+                        resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(response));
                     },
                     error: function(error) {
                         reject(error);
@@ -1312,14 +1365,15 @@
                         }
                         if (response.error) {
                             reject(new Error('Unknown error occurred'));
-                            //TODO:log error
                             return;
                         }
-                        var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(response.locales, response.count);
+                        var localesDto = response.locales;
+                        localesDto.count = response.count;
+                        var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
                         resolve({localizations: localizations, total: response.count, _id: response._id});
                     },
-                    error: function(error) {
-                        reject(error);
+                    error: function() {
+                        reject(new Error('Unknown error occurred'));
                     }
                 }, {disableAutoCatch: true});
             });
@@ -1439,6 +1493,10 @@
     };
 
     var getDetailsInitialState = function() {
+        var messageSettings = {};
+        messageSettings[PlatformEnum.ALL] = {};
+        messageSettings[PlatformEnum.IOS] = {};
+        messageSettings[PlatformEnum.ANDROID] = {};
         return {
             pushNotification: {
                 message: {
@@ -1447,6 +1505,7 @@
                         media: countlyPushNotification.helper.getMessageMediaInitialState()
                     }
                 },
+                settings: messageSettings,
                 platforms: [],
                 processed: 0,
                 sent: 0,
@@ -1456,7 +1515,7 @@
                 cohorts: [],
                 locations: [],
                 events: [],
-                status: {}
+                status: {},
             },
             platformFilter: PlatformEnum.ALL,
             localFilter: "default"
@@ -1489,11 +1548,11 @@
                         model.locations = responses[1];
                         context.commit('setPushNotification', model);
                         context.dispatch('onFetchSuccess', {useLoader: true});
-                    }).catch(function(error) {
-                        context.dispatch('onFetchError', {error: error, useLoader: true});
                     });
                 }).catch(function(error) {
+                    console.log(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
+                    //Todo: log error
                 });
         },
         onSetLocalFilter: function(context, value) {

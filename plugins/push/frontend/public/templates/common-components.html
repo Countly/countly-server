@@ -274,7 +274,8 @@
                     <details-tab-row :label="index === 0?i18n('push-notification-details.message-first-button-url'):i18n('push-notification-details.message-second-button-url')" :value="button.url"></details-tab-row>
                 </template>
             </template>
-            <details-tab-row :label="i18n('push-notification-details.message-media-url')" :value="message.media"></details-tab-row>
+            <details-tab-row :label="i18n('push-notification-details.ios-message-media-url')" :value="previewIOSMedia"></details-tab-row>
+            <details-tab-row :label="i18n('push-notification-details.android-message-media-url')" :value="previewAndroidMedia"></details-tab-row>
         </div>
     </el-card>
 </script>
