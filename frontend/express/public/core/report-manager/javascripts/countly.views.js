@@ -361,9 +361,12 @@
                 fetchingCount: false
             };
         },
+        mounted: function() {
+            this.refresh();
+        },
         watch: {
             remoteOpId: function() {
-                this.fetchRunningCount();
+                this.refresh();
             },
             disabled: function(newVal) {
                 if (newVal) {
@@ -372,6 +375,9 @@
             }
         },
         methods: {
+            refresh: function() {
+                this.fetchRunningCount();
+            },
             fetchRunningCount: function() {
                 if (!this.disableRunningCount && !this.fetchingCount) {
                     var q = {
