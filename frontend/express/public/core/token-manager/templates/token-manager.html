@@ -4,42 +4,56 @@
             <h2> {{i18n('sidebar.management.token-manager')}} </h2>
         </template>
         <template v-slot:header-right>
-            <el-button type="success" icon="el-icon-circle-plus" @click="onCreateClick">Create New Token</el-button>
+            <el-button @click="onCreateClick" type="success" icon="el-icon-circle-plus">Create New Token</el-button>
         </template>
     </cly-header>
     <cly-main>
         <cly-section>
             <cly-datatable-n :rows="tableData">
                 <template v-slot="scope">
-                    <el-table-column sortable="custom" label="description">
+                    <el-table-column sortable prop="purpose" :label="i18n('token_manager.table.purpose')">
                         <template slot-scope="scope">
                             <p>{{scope.row.purpose}}</p>
-                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row._id}}</p>
+                            <p class="bu-is-size-7 color-cool-gray-40">{{scope.row._id}}</p>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" label="status">
+                    <el-table-column sortable prop="status" :label="i18n('token_manager.table.status')">
                         <template slot-scope="scope">
-                            <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
+                            <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)">
+                            </cly-status-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" label="valid until">
+                    <el-table-column sortable prop="end" :label="i18n('token_manager.table.ends')">
                         <template slot-scope="scope">
                             <p>{{scope.row.ttlDate}}</p>
-                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.ttlTime}}</p>
+                            <p class="bu-is-size-7 color-cool-gray-40">{{scope.row.ttlTime}}</p>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" label="multiple times"><template
-                            slot-scope="scope">{{scope.row.multi}}</template>
+                    <el-table-column sortable prop="multi" :label="i18n('token_manager.table.multi')">
+                        <template slot-scope="scope">
+                            {{scope.row.multi}}
+                        </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" label="app"><template
-                            slot-scope="scope">{{scope.row.app}}</template>
+                    <el-table-column sortable prop="app" :label="i18n('token_manager.table.app')">
+                        <template slot-scope="scope">
+                            {{scope.row.app}}
+                        </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" label="endpoint"><template
-                            slot-scope="scope">{{scope.row.endpoint}}</template>
+                    <el-table-column sortable prop="endpoint" :label="i18n('token_manager.table.endpoint')">
+                        <template slot-scope="scope">
+                            {{scope.row.endpoint}}
+                        </template>
+                    </el-table-column>
+                    <el-table-column>
+                        <template slot-scope="scope">
+                            <cly-more-options @command="onDelete(scope.row)" size="small" >
+                                <el-dropdown-item>{{i18n('token_manager.table.delete-token')}}</el-dropdown-item>
+                            </cly-more-options>
+                        </template>
                     </el-table-column>
                 </template>
             </cly-datatable-n>
         </cly-section>
-        <main-drawer :controls="drawers.main"></main-drawer>
+        <main-drawer :controls="drawers.main" @create="refresh"></main-drawer>
     </cly-main>
 </div>

@@ -9,9 +9,11 @@
                     "availableProps": [
                         { label: "hours", value: "hours" },
                         { label: "days", value: "days" },
-                        { label: "mounts", value: "mounts" }
+                        { label: "months", value: "months" }
                     ],
-                    "apps": this.appsData()
+                    "apps": this.appsData(),
+                    "endpoints": [],
+                    "parameters": []
                 }
             };
         },
@@ -22,6 +24,61 @@
                     apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
                 }
                 return apps;
+            },
+            addEndpoint: function(endpoints) {
+                endpoints.push({parameters: [{}]});
+            },
+            addParameter: function(parameters) {
+                parameters.push({});
+            },
+            removeEndpoint: function(endpoints, endpointIndex) {
+                if (endpoints.length > 1) {
+                    endpoints.splice(endpointIndex, 1);
+                }
+            },
+            removeParameter: function(parameters, parameterIndex) {
+                if (parameters.length > 1) {
+                    parameters.splice(parameterIndex, 1);
+                }
+            },
+            onSubmit: function(doc) {
+                var self = this;
+                var ttl = 0;
+                var selectApps = doc.selectApps;
+                var endpoints = doc.endpoints;
+                var newEndpoints = [];
+
+                endpoints.forEach(function(element) {
+                    if (element.endpointName !== "" && element.endpointName) {
+                        var obj = {params: {}} ;
+                        obj.endpoint = element.endpointName;
+                        element.parameters.forEach(function(item) {
+                            var key = item.queryParameters1;
+                            var value = item.queryParameters2;
+                            obj.params[key] = value;
+                        });
+                        newEndpoints.push(obj);
+                    }
+                });
+                endpoints = newEndpoints;
+                endpoints = JSON.stringify(endpoints);
+
+                if (doc.selectApps.length > 0) {
+                    selectApps = doc.selectApps.join(",");
+                }
+                if (doc.selectTime === "hours") {
+                    ttl = doc.timeInput * 3600;
+                }
+                else if (doc.selectTime === "days") {
+                    ttl = doc.timeInput * 3600 * 24;
+                }
+                else if (doc.selectTime === "months") {
+                    ttl = doc.timeInput * 3600 * 24 * 30;
+                }
+
+                countlyTokenManager.createTokenWithQuery(doc.description, endpoints, doc.checkboxMultipleTimes, selectApps, ttl, function() {
+                    self.$emit("create");
+                });
             }
         },
         props: {
@@ -73,7 +130,6 @@
                     if (row.ttl) {
                         row.ttlDate = countlyCommon.getDate(row.ends);
                         row.ttlTime = countlyCommon.getTime(row.ends);
-
                     }
                     else {
                         row.ttlDate = "No expiry";
@@ -118,7 +174,7 @@
                                 }
                             }
                         }
-                        row.endpoint = lines.join("</br>");
+                        row.endpoint = lines.join(", ");
                     }
                 }
                 this.tableData = tableData;
@@ -133,9 +189,24 @@
             },
             onCreateClick: function() {
                 this.openDrawer("main", {
-                    description: "-", elCheckboxValue: false, radioVal1: "0", radioVal2: "0", endpointName: " ", field1: " ", field2: " ",
+                    description: "", checkboxMultipleTimes: false, tokenUsage: "0", tokenExpiration: "0", endpoints: [{parameters: [{}]}], selectApps: []
                 });
-            }
+            },
+            onDelete: function(row) {
+                var self = this;
+                CountlyHelpers.confirm(CV.i18n("token_manager.delete-token-confirm"), "popStyleGreen", function(result) {
+                    if (!result) {
+                        return true;
+                    }
+                    countlyTokenManager.deleteToken(row._id, function(err) {
+                        if (err) {
+                            CountlyHelpers.alert(CV.i18n("token_manager.delete-error"), "red");
+                        }
+                        self.refresh(true);
+                    });
+                }, [CV.i18n("common.no-dont-delete"), CV.i18n("token_manager.yes-delete-token")], {title: CV.i18n("token_manager.delete-token-confirm-title"), image: "delete-token"});
+            },
+
         }
     });
 
