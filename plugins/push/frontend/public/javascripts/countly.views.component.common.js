@@ -121,21 +121,11 @@
         },
         data: function() {
             return {
-                innerInput: "",
-                innerToggle: false
             };
         },
         computed: {
             hasDefaultSlot: function() {
                 return Boolean(this.$slots.default);
-            }
-        },
-        watch: {
-            input: function(value) {
-                this.innerInput = value;
-            },
-            toggle: function(value) {
-                this.innerToggle = value;
             }
         },
         methods: {

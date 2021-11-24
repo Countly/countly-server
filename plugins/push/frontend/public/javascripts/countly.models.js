@@ -421,7 +421,7 @@
             },
             mapAndroidSettings: function(androidSettingsDto) {
                 return {
-                    soundFileName: androidSettingsDto && androidSettingsDto.sound || "",
+                    soundFilename: androidSettingsDto && androidSettingsDto.sound || "",
                     badgeNumber: androidSettingsDto && androidSettingsDto.badge,
                     json: androidSettingsDto && androidSettingsDto.data || null,
                     userData: androidSettingsDto && androidSettingsDto.extras || [],
@@ -433,7 +433,7 @@
             mapIOSSettings: function(iosSettingsDto) {
                 return {
                     subtitle: "",
-                    soundFileName: iosSettingsDto && iosSettingsDto.sound || "",
+                    soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge,
                     json: iosSettingsDto && iosSettingsDto.data || null,
                     userData: iosSettingsDto && iosSettingsDto.extras || [],
@@ -453,9 +453,9 @@
             isPlatformSetting: function(locale) {
                 return Boolean(locale.p);
             },
-            findDefaultLocaleItem: function(contentDto) {
+            findDefaultLocaleItem: function(contentsDto) {
                 //NOTE: default locale always resides at index position 0 of contents array
-                return contentDto[0];
+                return contentsDto[0];
             },
             findPlatformSetting: function(platform, contentDto) {
                 var found = false;
@@ -503,16 +503,17 @@
                 var androidSetting = this.findPlatformSetting(PlatformDtoEnum.ANDROID, dto.contents);
                 result[PlatformEnum.IOS] = this.mapIOSSettings(iosSettingsDto);
                 result[PlatformEnum.ANDROID] = this.mapAndroidSettings(androidSetting);
+                var defaultLocale = this.findDefaultLocaleItem(dto.contents);
                 result[PlatformEnum.ALL] = {};
-                result[PlatformEnum.ALL].mediaURL = "";
-                if (result[PlatformEnum.IOS].mediaURL === result[PlatformEnum.ANDROID].mediaURL) {
-                    result[PlatformEnum.ALL].mediaURL = result[PlatformEnum.ANDROID].mediaURL;
-                    result[PlatformEnum.ALL].mediaMime = result[PlatformEnum.ANDROID].mediaMime;
-                }
+                result[PlatformEnum.ALL].mediaURL = defaultLocale.mediaURL || "";
+                result[PlatformEnum.ALL].mediaMime = defaultLocale.mediaMime || "";
                 return result;
             },
             mapMessageLocalizationUserProperties: function(userPropertyDto) {
                 var userPropertyModel = {};
+                if (!userPropertyDto) {
+                    return userPropertyModel;
+                }
                 Object.keys(userPropertyDto).forEach(function(userPropertyKey) {
                     userPropertyModel[userPropertyKey] = {
                         id: userPropertyKey,
@@ -630,7 +631,7 @@
                 model.delivery = {
                     startDate: triggerDto.start,
                     endDate: "Never",
-                    type: SendEnum.NOW, //TODO-LA: check if start date is past then NOW, otherwise SCHEDULED
+                    type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 model.audienceSelection = triggerDto.delayed ? AudienceSelectionEnum.BEFORE : AudienceSelectionEnum.NOW;
                 model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
@@ -642,6 +643,11 @@
                 var triggerDto = dto.triggers[0];
                 model.cohorts = triggerDto.cohorts || [];
                 model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
+                model.delivery = {
+                    startDate: triggerDto.start,
+                    endDate: triggerDto.end || "Never",
+                    type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
+                };
                 model.automatic = {
                     deliveryMethod: triggerDto.delay ? DeliveryMethodEnum.DELAYED : DeliveryMethodEnum.IMMEDIATELY,
                     deliveryDateCalculation: triggerDto.actuals ? DeliveryDateCalculationEnum.EVENT_DEVICE_DATE : DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
@@ -668,7 +674,7 @@
                 model.delivery = {
                     startDate: triggerDto.start,
                     endDate: "Never",
-                    type: SendEnum.NOW, //TODO-LA: check if start date is past then NOW, otherwise SCHEDULED
+                    type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 return model;
             },
@@ -837,7 +843,7 @@
                 return indices;
             },
             hasUserProperties: function(localizedMessage, container) {
-                return localizedMessage.properties && localizedMessage.properties[container];
+                return localizedMessage.properties && Object.keys(localizedMessage.properties[container]).length > 0;
             },
             removeUserProperties: function(message, container) {
                 var element = document.createElement('div');
@@ -875,17 +881,15 @@
             },
             mapUserProperties: function(localizedMessage, container) {
                 var userPropertyDto = {};
-                if (this.hasUserProperties(localizedMessage, container)) {
-                    var indices = this.getUserPropertiesIndices(localizedMessage, container);
-                    var userPropertyIds = this.getUserPropertiesIds(localizedMessage, container);
-                    userPropertyIds.forEach(function(userPropertyId, index) {
-                        userPropertyDto[indices[index]] = {
-                            f: localizedMessage.properties[container][userPropertyId].fallback,
-                            c: localizedMessage.properties[container][userPropertyId].isUppercase,
-                            k: localizedMessage.properties[container][userPropertyId].value
-                        };
-                    });
-                }
+                var indices = this.getUserPropertiesIndices(localizedMessage, container);
+                var userPropertyIds = this.getUserPropertiesIds(localizedMessage, container);
+                userPropertyIds.forEach(function(userPropertyId, index) {
+                    userPropertyDto[indices[index]] = {
+                        f: localizedMessage.properties[container][userPropertyId].fallback,
+                        c: localizedMessage.properties[container][userPropertyId].isUppercase,
+                        k: localizedMessage.properties[container][userPropertyId].value
+                    };
+                });
                 return userPropertyDto;
             },
             mapButtons: function(localizedMessage) {
@@ -907,65 +911,64 @@
                 emptySetting.p = platform;
                 return JSON.stringify(emptySetting) === JSON.stringify(settingDto);
             },
-            mapIOSSettings: function(model) {
+            isPlatformSelected: function(platform, model) {
+                return model.platforms.some(function(selectedPlatform) {
+                    return selectedPlatform === platform;
+                });
+            },
+            mapIOSSettings: function(model, options) {
+                if (!this.isPlatformSelected(PlatformEnum.IOS, model)) {
+                    return null;
+                }
                 var iosSettings = model.settings[PlatformEnum.IOS];
                 var result = {};
                 result.p = PlatformDtoEnum.IOS;
-                if (iosSettings.soundFileName) {
-                    result.sound = iosSettings.soundFileName;
+                if (iosSettings.soundFilename && options.settings[PlatformEnum.IOS].isSoundFilenameEnabled) {
+                    result.sound = iosSettings.soundFilename;
                 }
-                if (iosSettings.badgeNumber) {
+                if (iosSettings.badgeNumber && options.settings[PlatformEnum.IOS].isBadgeNumberEnabled) {
                     result.badge = parseInt(iosSettings.badgeNumber);
                 }
-                if (iosSettings.json) {
+                if (iosSettings.json && options.settings[PlatformEnum.IOS].isJsonEnabled) {
                     result.data = iosSettings.json;
                 }
-                if (iosSettings.userData && iosSettings.userData.length) {
+                if (iosSettings.userData && iosSettings.userData.length && options.settings[PlatformEnum.IOS].isUserDataEnabled) {
                     result.extras = iosSettings.userData;
                 }
-                if (iosSettings.onClickURL) {
+                if (iosSettings.onClickURL && options.settings[PlatformEnum.IOS].isOnClickURLEnabled) {
                     result.url = iosSettings.onClickURL;
                 }
-                if (model.settings[PlatformEnum.ALL].mediaURL) {
-                    result.media = model.settings[PlatformEnum.ALL].mediaURL;
-                }
-                if (model.settings[PlatformEnum.ALL].mediaMime) {
-                    result.mediaMime = model.settings[PlatformEnum.ALL].mediaMime;
-                }
-                if (iosSettings.media) {
-                    result.media = iosSettings.media;
-                    result.mediaMime = iosSettings.mediaMime;
+                if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled) {
+                    result.media = model.settings[PlatformEnum.IOS].mediaURL;
+                    result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
                 }
                 return result;
             },
-            mapAndroidSettings: function(model) {
+            mapAndroidSettings: function(model, options) {
+                if (!this.isPlatformSelected(PlatformEnum.ANDROID, model)) {
+                    return null;
+                }
                 var androidSettings = model.settings[PlatformEnum.ANDROID];
                 var result = {};
                 result.p = PlatformDtoEnum.ANDROID;
-                if (androidSettings.soundFileName) {
-                    result.sound = androidSettings.soundFileName;
+                if (androidSettings.soundFilename && options.settings[PlatformEnum.ANDROID].isSoundFilenameEnabled) {
+                    result.sound = androidSettings.soundFilename;
                 }
-                if (androidSettings.badgeNumber) {
+                if (androidSettings.badgeNumber && options.settings[PlatformEnum.ANDROID].isBadgeNumberEnabled) {
                     result.badge = parseInt(androidSettings.badgeNumber);
                 }
-                if (androidSettings.json) {
+                if (androidSettings.json && options.settings[PlatformEnum.ANDROID].isJsonEnabled) {
                     result.data = androidSettings.json;
                 }
-                if (androidSettings.userData && androidSettings.userData.length) {
+                if (androidSettings.userData && androidSettings.userData.length && options.settings[PlatformEnum.ANDROID].isUserDataEnabled) {
                     result.extras = androidSettings.userData;
                 }
-                if (androidSettings.onClickURL) {
+                if (androidSettings.onClickURL && options.settings[PlatformEnum.ANDROID].isOnClickURLEnabled) {
                     result.url = androidSettings.onClickURL;
                 }
-                if (model.settings[PlatformEnum.ALL].mediaURL) {
-                    result.media = model.settings[PlatformEnum.ALL].mediaURL;
-                }
-                if (model.settings[PlatformEnum.ALL].mediaMime) {
-                    result.mediaMime = model.settings[PlatformEnum.ALL].mediaMime;
-                }
-                if (androidSettings.media) {
-                    result.media = androidSettings.media;
-                    result.mediaMime = androidSettings.mediaMime;
+                if (model.settings[PlatformEnum.ANDROID].mediaURL && options.settings[PlatformEnum.ANDROID].isMediaURLEnabled) {
+                    result.media = model.settings[PlatformEnum.ANDROID].mediaURL;
+                    result.mediaMime = model.settings[PlatformEnum.ANDROID].mediaMime;
                 }
                 return result;
             },
@@ -979,8 +982,12 @@
                     }
                     localeDto.message = self.getMessageText(pushNotificationModel.message[localizationKey], 'content');
                     localeDto.title = self.getMessageText(pushNotificationModel.message[localizationKey], 'title');
-                    localeDto.messagePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'content');
-                    localeDto.titlePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'title');
+                    if (self.hasUserProperties(pushNotificationModel.message[localizationKey], 'content')) {
+                        localeDto.messagePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'content');
+                    }
+                    if (self.hasUserProperties(pushNotificationModel.message[localizationKey], 'title')) {
+                        localeDto.titlePers = self.mapUserProperties(pushNotificationModel.message[localizationKey], 'title');
+                    }
                     if (pushNotificationModel.message[localizationKey].buttons.length) {
                         localeDto.buttons = self.mapButtons(pushNotificationModel.message[localizationKey]);
                     }
@@ -1096,6 +1103,7 @@
                     result.title = model.name;
                 }
                 result.locales = this.mapLocalizations(model.localizations, options.localizations);
+                result.scheduled = model.delivery.type === SendEnum.LATER;
                 return result;
             },
             mapModelToBaseDto: function(pushNotificationModel, options) {
@@ -1107,19 +1115,24 @@
                     resultDto._id = pushNotificationModel._id;
                 }
                 var contentsDto = this.mapMessageLocalization(pushNotificationModel);
-                var androidSettingsDto = this.mapAndroidSettings(pushNotificationModel);
-                if (!this.arePlatformSettingsEmpty(PlatformDtoEnum.ANDROID, androidSettingsDto)) {
+                if (pushNotificationModel.settings[PlatformEnum.ALL].mediaURL) {
+                    var defaultLocale = countlyPushNotification.mapper.incoming.findDefaultLocaleItem(contentsDto);
+                    defaultLocale.mediaURL = pushNotificationModel.settings[PlatformEnum.ALL].mediaURL;
+                    defaultLocale.mediaMime = pushNotificationModel.settings[PlatformEnum.ALL].mediaMime;
+                }
+                var androidSettingsDto = this.mapAndroidSettings(pushNotificationModel, options);
+                if (androidSettingsDto && !this.arePlatformSettingsEmpty(PlatformDtoEnum.ANDROID, androidSettingsDto)) {
                     contentsDto.push(androidSettingsDto);
                 }
-                var iosSettingsDto = this.mapIOSSettings(pushNotificationModel);
-                if (!this.arePlatformSettingsEmpty(PlatformDtoEnum.IOS, iosSettingsDto)) {
+                var iosSettingsDto = this.mapIOSSettings(pushNotificationModel, options);
+                if (iosSettingsDto && !this.arePlatformSettingsEmpty(PlatformDtoEnum.IOS, iosSettingsDto)) {
                     contentsDto.push(iosSettingsDto);
                 }
                 resultDto.contents = contentsDto;
                 var filtersDto = this.mapFilters(pushNotificationModel);
-                // if (!this.areFiltersEmpty(filtersDto)) {
+                if (!this.areFiltersEmpty(filtersDto)) {
                     resultDto.filter = filtersDto;
-                // }
+                }
                 resultDto.info = this.mapInfo(pushNotificationModel, options);
                 var expirationInMS = countlyPushNotification.helper.convertDateTimeToMS({
                     days: pushNotificationModel.expiration.days,

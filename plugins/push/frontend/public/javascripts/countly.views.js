@@ -67,7 +67,7 @@
                 subtitle: "",
                 mediaURL: "",
                 mediaMime: "",
-                soundFileName: "",
+                soundFilename: "default",
                 badgeNumber: "",
                 onClickURL: "",
                 json: null,
@@ -76,7 +76,7 @@
             android: {
                 mediaURL: "",
                 mediaMime: "",
-                soundFileName: "",
+                soundFilename: "default",
                 badgeNumber: "",
                 icon: "",
                 onClickURL: "",
@@ -135,7 +135,7 @@
         ios: {
             isSubtitleEnabled: false,
             isMediaURLEnabled: false,
-            isSoundFileNameEnabled: false,
+            isSoundFilenameEnabled: true,
             isBadgeNumberEnabled: false,
             isOnClickURLEnabled: false,
             isJsonEnabled: false,
@@ -143,7 +143,7 @@
         },
         android: {
             isMediaURLEnabled: false,
-            isSoundFileNameEnabled: false,
+            isSoundFilenameEnabled: true,
             isBadgeNumberEnabled: false,
             isIconEnabled: false,
             isOnClickURLEnabled: false,
@@ -453,6 +453,7 @@
                 var options = {};
                 options.totalAppUsers = this.totalAppUsers;
                 options.localizations = this.localizationOptions;
+                options.settings = this.settings;
                 this.addQueryFilterIfFound(model);
                 countlyPushNotification.service.save(model, options).then(function() {
                     done();

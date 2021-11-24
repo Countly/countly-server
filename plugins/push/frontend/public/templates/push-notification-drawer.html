@@ -629,11 +629,11 @@
                             </message-setting-element>
                             <message-setting-element 
                                 v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
-                                :input="pushNotificationUnderEdit.settings.ios.soundFileName"
-                                :toggle="settings.ios.isSoundFileNameEnabled"
+                                :input="pushNotificationUnderEdit.settings.ios.soundFilename"
+                                :toggle="settings.ios.isSoundFilenameEnabled"
                                 rules="required"
-                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'soundFileName',value)}"
-                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isSoundFileNameEnabled',value)}"
+                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'soundFilename',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isSoundFilenameEnabled',value)}"
                                 label="Sound File Name"
                                 placeholder="Enter sound file name"
                                 description="We can add some kind of description for platform settings.">
@@ -708,11 +708,11 @@
                             </message-setting-element>
                             <message-setting-element 
                                 v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
-                                :input="pushNotificationUnderEdit.settings.android.soundFileName"
-                                :toggle="settings.android.isSoundFileNameEnabled"
+                                :input="pushNotificationUnderEdit.settings.android.soundFilename"
+                                :toggle="settings.android.isSoundFilenameEnabled"
                                 rules="required"
-                                @onChange="function(value){onSettingChange(PlatformEnum.ANDROID,'soundFileName',value)}"
-                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isSoundFileNameEnabled',value)}"
+                                @onChange="function(value){onSettingChange(PlatformEnum.ANDROID,'soundFilename',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isSoundFilenameEnabled',value)}"
                                 label="Sound File Name"
                                 placeholder="Enter sound file name"
                                 description="We can add some kind of description for platform settings.">
