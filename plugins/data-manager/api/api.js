@@ -201,7 +201,7 @@ plugins.register("/i/data-manager/event/change-category", function(ob) {
 
             const eventsData = await common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)});
 
-            if(!eventsData.map) {
+            if (!eventsData.map) {
                 eventsData.map = {};
             }
 
