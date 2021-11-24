@@ -309,14 +309,29 @@
                 <div v-if="type === TypeEnum.AUTOMATIC" class="cly-vue-drawer-step__section">
                     <div class="bu-is-flex bu-is-flex-direction-column">
                         <div class="bu-is-flex bu-is-align-items-center">
-                            <el-switch v-model="pushNotificationUnderEdit.delivery.isEndDateSet" class="bu-mr-1"></el-switch>
+                            <el-switch v-model="isEndDateSet" class="bu-mr-1"></el-switch>
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                                 Set End Date
                                 <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                             </div>
                         </div>
                         <div style="width:200px">
-                            <cly-date-picker class="bu-ml-6" v-bind:disabled="!pushNotificationUnderEdit.delivery.isEndDateSet" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms" type="date" width="200" :select-time="true" :is-future="true"></cly-date-picker>
+                            <cly-date-picker class="bu-ml-6" v-bind:disabled="!isEndDateSet" v-model="pushNotificationUnderEdit.delivery.endDate" timestampFormat="ms" type="date" width="200" :select-time="true" :is-future="true"></cly-date-picker>
+                        </div>
+                    </div>
+                    <div class="bu-is-flex bu-is-flex-direction-column">
+                        <div class="bu-is-flex bu-is-align-items-center">
+                            <el-switch v-model="isUsersTimezoneSet" class="bu-mr-1"></el-switch>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                                Send in users' timezone
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-users-timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
+                        </div>
+                        <div style="width:200px">
+                            <cly-time-picker
+                                v-bind:disabled="!isUsersTimezoneSet"
+                                v-model="pushNotificationUnderEdit.automatic.usersTimezone">
+                            </cly-time-picker>
                         </div>
                     </div>
                 </div>

@@ -244,6 +244,9 @@
             if (datetime.hours) {
                 result += moment.duration(parseInt(datetime.hours, 10), 'h').asMilliseconds();
             }
+            if (datetime.minutes) {
+                result += moment.duration(parseInt(datetime.minutes, 10), 'm').asMilliseconds();
+            }
             return result;
         },
         convertMSToDaysAndHours: function(dateTimeInMs) {
@@ -1014,15 +1017,21 @@
                 }
                 return [result];
             },
-            mapAutomaticTrigger: function(model) {
+            mapAutomaticTrigger: function(model, options) {
                 var result = {
                     kind: model.automatic.trigger === TriggerEnum.EVENT ? 'event' : 'cohort',
                     start: model.delivery.startDate,
                     actuals: model.automatic.deliveryDateCalculation === DeliveryDateCalculationEnum.EVENT_DEVICE_DATE,
-                    time: '', //TODO-LA: time in ms when to send in user's timezome when it is seleced (needs to be added for automatic messages in UI)
                 };
-                if (model.delivery.isEndDateSet) {
+                if (options.isEndDateSet) {
                     result.end = model.delivery.endDate;
+                }
+                if (options.isUsersTimezoneSet) {
+                    var usersTimezone = {
+                        hours: model.automatic.usersTimezone.getHours(),
+                        minutes: model.automatic.usersTimezone.getMinutes()
+                    };
+                    result.time = countlyPushNotification.helper.convertDateTimeToMS(usersTimezone);
                 }
                 if (model.automatic.deliveryMethod === DeliveryMethodEnum.DELAYED) {
                     var deliveryDateTime = {
@@ -1149,7 +1158,7 @@
             },
             mapModelToAutomaticDto: function(pushNotificationModel, options) {
                 var dto = this.mapModelToBaseDto(pushNotificationModel, options);
-                dto.triggers = this.mapAutomaticTrigger(pushNotificationModel);
+                dto.triggers = this.mapAutomaticTrigger(pushNotificationModel, options);
                 return dto;
             },
             mapModelToTransactionalDto: function(pushNotificationModel, options) {
@@ -1563,7 +1572,6 @@
                         context.dispatch('onFetchSuccess', {useLoader: true});
                     });
                 }).catch(function(error) {
-                    console.log(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                     //Todo: log error
                 });
