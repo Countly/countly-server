@@ -2,26 +2,26 @@
     <cly-section>
         <cly-datatable-n :data-source="userTableDataSource" :default-sort="{prop: 'lac', order: 'descending'}">
             <template v-slot="scope">
-                <el-table-column sortable="custom" prop="_id" label="ID">
+                <el-table-column fixed="left" width="400" sortable="custom" prop="_id" label="ID">
                 </el-table-column>
-                <el-table-column sortable="custom" prop="d" label="DEVICE">
+                <el-table-column width="100" sortable="custom" prop="d" label="DEVICE">
                 </el-table-column>
-                <el-table-column sortable prop="av" label="APP VERSION">
+                <el-table-column width="200" sortable prop="av" label="APP VERSION">
                 </el-table-column>
-                <el-table-column width="400" prop="consent" label="consent">
+                <el-table-column width="550" prop="consent" label="consent">
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row.consent">
-                            <p class="cly-trend-up text-medium">OPT IN</p>
-                            <span class="text-small" v-html="rowScope.row.optin.join(',')"></span>
-                            <p class="cly-trend-down text-medium">OPT OUT</p>
-                            <span class="text-small" v-html="rowScope.row.optout.join(',')"></span>
+                            <p class="color-primary-green text-medium font-weight-bold">{{i18n("consent.opt-i")}}</p>
+                            <span class="text-medium" v-html="rowScope.row.optin.join(',')"></span>
+                            <p class="color-red-100 text-medium font-weight-bold">{{i18n("consent.opt-o")}}</p>
+                            <span class="text-medium" v-html="rowScope.row.optout.join(',')"></span>
                         </div>
 
                     </template>
 
                 </el-table-column>
 
-                <el-table-column sortable="custom" prop="lac" label="TIME">
+                <el-table-column width="250" sortable="custom" prop="lac" label="TIME">
                     <template v-slot="rowScope">
                         {{rowScope.row.time}}
 

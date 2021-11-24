@@ -1,12 +1,12 @@
 <cly-main>
     <div class="bu-level bu-my-3">
         <div class="bu-level-left bu-my-3">
-            Consent History for
+            <span class="text-big font-weight-bold">Consent History for </span>
             <cly-select-x class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :adaptiveLength="true"
                 :auto-commit="true" :hide-default-tabs="true" :arrow="false" :hide-all-options-tab="true" :options="filter1"
                 v-model="selectedfilterforConsent">
             </cly-select-x>
-            <span> and </span>
+            <span class="text-big font-weight-bold"> and </span>
             <cly-select-x class="bu-ml-3 bu-mr-3" :width="300" :borderless="true" :auto-commit="true"
                 :adaptiveLength="true" :arrow="false" :hide-default-tabs="true" :hide-all-options-tab="true" :options="filter0"
                 v-model="selectedfilterforMetrics">
@@ -19,18 +19,18 @@
     <cly-section>
         <cly-datatable-n :data-source="consentHistoryTableSource" :default-sort="{prop: 'ts', order: 'descending'}">
             <template v-slot="scope">
-                <el-table-column type="expand">
+                <el-table-column fixed type="expand">
                     <template slot-scope="props">
                         <div class="bu-level cly-vue-compliance__consent_history_expanded_column">
-                            <div class="bu-level-left">Device ID</div>
-                            <div style="width: 80%;" class="bu-level-right">
+                            <div class="bu-level-left text-big font-weight-bold">Device ID</div>
+                            <div style="width: 80%;" class="bu-level-right text-medium font-weight-bold">
                                 <p style="width: 100%;">{{props.row.device_id}}</p>
                             </div>
                         </div>
                         <div v-if="props.row.optin.length > 0"
                             class="bu-level cly-vue-compliance__consent_history_expanded_column">
-                            <div class="bu-level-left">Opt in</div>
-                            <div style="width: 80%;" class="bu-level-right">
+                            <div class="bu-level-left text-big font-weight-bold">{{i18n("consent.opt-i")}}</div>
+                            <div style="width: 80%;" class="bu-level-right text-medium font-weight-bold">
                                 <p style="width: 100%;">
                                     {{props.row.optin.join(',')}}
                                 </p>
@@ -38,72 +38,65 @@
                         </div>
                         <div v-if="props.row.optout.length > 0"
                             class="bu-level cly-vue-compliance__consent_history_expanded_column">
-                            <div class="bu-level-left">Opt out</div>
-                            <div style="width: 80%;" class="bu-level-right">
+                            <div class="bu-level-left text-big font-weight-bold">{{i18n("consent.opt-o")}}</div>
+                            <div style="width: 80%;" class="bu-level-right text-medium font-weight-bold">
                                 <p style="width: 100%;">
                                     {{props.row.optout.join(',')}}
                                 </p>
                             </div>
                         </div>
                         <div class="bu-level cly-vue-compliance__consent_history_expanded_column">
-                            <div class="bu-level-left">Device</div>
-                            <div style="width: 80%;" class="bu-level-right">
+                            <div class="bu-level-left text-big font-weight-bold">Device</div>
+                            <div style="width: 80%;" class="bu-level-right text-medium font-weight-bold">
                                 <p style="width: 100%;">
                                     {{props.row.d + "(" + props.row.p + " " + props.row.pv + ")"}}
                                 </p>
                             </div>
                         </div>
                         <div class="bu-level cly-vue-compliance__consent_history_expanded_column">
-                            <div class="bu-level-left">App version</div>
-                            <div style="width: 80%;" class="bu-level-right">
+                            <div class="bu-level-left text-big font-weight-bold">App version</div>
+                            <div style="width: 80%;" class="bu-level-right text-medium font-weight-bold">
                                 <p style="width: 100%;">
                                     {{props.row.av}}
                                 </p>
                             </div>
                         </div>
-                        <!-- <p>City: {{ props.row.city }}</p>
-                                              <p>Address: {{ props.row.address }}</p>
-                                              <p>Zip: {{ props.row.zip }}</p> -->
                     </template>
                 </el-table-column>
-                <el-table-column sortable="custom" prop="_id" label="ID">
+                <el-table-column fixed width="250" sortable="custom" prop="_id" label="ID">
                 </el-table-column>
                 <el-table-column sortable="custom" prop="uid" label="UID">
                 </el-table-column>
                 <el-table-column sortable="custom" label="CHANGES">
                     <template v-slot="rowScope">
                         <div>
-                            <p v-if="rowScope.row.type.includes('i')">Opt in</p>
-                            <p v-if="rowScope.row.type.includes('o')">Opt out</p>
+                            <p v-if="rowScope.row.type.includes('i')">{{i18n("consent.opt-i")}}</p>
+                            <p v-if="rowScope.row.type.includes('o')">{{i18n("consent.opt-o")}} </p>
                         </div>
 
                     </template>
 
                 </el-table-column>
-                <el-table-column sortable="custom" label="CONSENT">
+                <el-table-column width="250" sortable="custom" label="CONSENT">
                     <template v-slot="rowScope">
                         <div>
-                            <p v-if="rowScope.row.optin.length > 0">Opt in for {{rowScope.row.optin.length}} feature(s)
+                            <p v-if="rowScope.row.optin.length > 0">{{i18n("consent.opt-i")}} for {{rowScope.row.optin.length}} feature(s)
                             </p>
-                            <p v-if="rowScope.row.optout.length > 0">Opt out from {{rowScope.row.optout.length}}
+                            <p v-if="rowScope.row.optout.length > 0">{{i18n("consent.opt-o")}} from {{rowScope.row.optout.length}}
                                 feature(s)</p>
                         </div>
 
                     </template>
 
                 </el-table-column>
-                <el-table-column sortable="custom" prop="av" label="APP VERSION">
+                <el-table-column width="165" sortable="custom" prop="av" label="APP VERSION">
                 </el-table-column>
-                <el-table-column sortable="custom" prop="ts" label="TIME">
+                <el-table-column width="230" sortable="custom" prop="ts" label="TIME">
                     <template v-slot="rowScope">
                         {{rowScope.row.time}}
 
                     </template>
                 </el-table-column>
-                <!-- <el-table-column sortable="custom" prop="p" :label="tableHeader[3]">
-                </el-table-column>
-                <el-table-column sortable="custom" prop="curr_paying_non_paying" :label="tableHeader[4]">
-                </el-table-column> -->
             </template>
         </cly-datatable-n>
 

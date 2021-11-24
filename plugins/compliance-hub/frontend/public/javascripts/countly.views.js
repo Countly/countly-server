@@ -259,7 +259,6 @@
             this.$store.dispatch("countlyConsentManager/_exportDP", payload);
             this.$store.dispatch("countlyConsentManager/_purgeDP");
             this.$store.dispatch("countlyConsentManager/_ePData");
-            console.log(this.$store.getters["countlyConsentManager/_ePData"]);
         },
         computed: {
             selectedfilterforMetrics: {
@@ -276,7 +275,7 @@
                 var optinYAxisData = [];
                 var optoutYAxisData = [];
                 for (var key in consentDp.chartData) {
-                    optinYAxisData.push[consentDp.chartData[key].i];
+                    optinYAxisData.push(consentDp.chartData[key].i);
                     optoutYAxisData.push(consentDp.chartData[key].o);
 
 
@@ -284,10 +283,12 @@
                 return {
                     series: [
                         {
+                            name: "opt-in",
                             data: optinYAxisData,
 
                         },
                         {
+                            name: "opt-out",
                             data: optoutYAxisData
                         }
                     ]
