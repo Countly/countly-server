@@ -9,6 +9,7 @@
     countlyVue,
     countlyDashboards,
     app,
+    CV,
     $,
  */
 (function() {

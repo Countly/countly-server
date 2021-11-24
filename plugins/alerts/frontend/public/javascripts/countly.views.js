@@ -1,6 +1,5 @@
 /*global
     countlyGlobal,
-    CountlyHelpers,
     countlyAlerts,
     jQuery,
     countlyVue,
@@ -9,7 +8,8 @@
     countlyCommon,
     countlyEvent,
     alertDefine,
-    countlyAuth
+    countlyAuth,
+    CV,
  */
 (function() {
     var ALERTS_FEATURE_NAME = "alerts";
@@ -399,8 +399,8 @@
                     this.deleteElement = scope.row;
                     this.showDeleteDialog = true;
                     this.deleteMessage = CV.i18n("alert.delete-confirm", "<b>" + this.deleteElement.alertName + "</b>");
-                 }
-             },
+                }
+            },
             closeDeleteForm: function() {
                 this.deleteElement = null;
                 this.showDeleteDialog = false;

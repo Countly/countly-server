@@ -1,5 +1,5 @@
 /*global
-  DrillQueryBuilder, countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
+  DrillQueryBuilder, CV, countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
  */
 (function() {
     var FEATURE_NAME = "hooks";
@@ -61,22 +61,9 @@
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
-                    console.log("!!!");
                     this.deleteElement = scope.row;
                     this.showDeleteDialog = true;
                     this.deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
-                    return;
-
-                    var hookID = scope._id;
-                    var name = scope.name;
-                    var self = this;
-                    return CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
-                        if (result) {
-                            hooksPlugin.deleteHook(hookID, function() {
-                                self.$store.dispatch("countlyHooks/table/fetchAll");
-                            });
-                        }
-                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-an-event"});
                 }
             },
             closeDeleteForm: function() {
