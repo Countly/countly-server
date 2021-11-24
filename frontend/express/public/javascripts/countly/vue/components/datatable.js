@@ -84,10 +84,18 @@
 
                     currentArray = currentArray.slice();
                     currentArray.sort(function(a, b) {
-                        if (a[sorting.field] < b[sorting.field]) {
+                        var priA = a[sorting.field],
+                            priB = b[sorting.field];
+
+                        if (typeof priA === 'object' && priA !== null && priA.sortBy) {
+                            priA = priA.sortBy;
+                            priB = priB.sortBy;
+                        }
+
+                        if (priA < priB) {
                             return -dir;
                         }
-                        if (a[sorting.field] > b[sorting.field]) {
+                        if (priA > priB) {
                             return dir;
                         }
                         return 0;

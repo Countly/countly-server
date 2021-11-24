@@ -307,6 +307,31 @@
                     Form value: {{submittedForm}}
                 </div>
             </cly-section>
+            <cly-section title="Helpers (cly-event-select)">
+                <div class="example-cell">
+                    <cly-event-select v-model="selectedEvent" multiple></cly-event-select>
+                </div>
+                <div class="example-cell">
+                    Selected Event: {{selectedEvent}}
+                </div>
+            </cly-section>
+            <cly-section title="Helpers (cly-app-select, single)">
+                <div class="example-cell">
+                    <cly-app-select v-model="selectedApp"></cly-app-select>
+                    <cly-app-select v-model="selectedApp" allow-all></cly-app-select>
+                </div>
+                <div class="example-cell">
+                    Selected App: {{selectedApp}}
+                </div>
+            </cly-section>
+            <cly-section title="Helpers (cly-app-select, multiple)">
+                <div class="example-cell">
+                    <cly-app-select v-model="selectedApps" multiple></cly-app-select>
+                </div>
+                <div class="example-cell">
+                    Selected Apps: {{selectedApps}}
+                </div>
+            </cly-section>
         </cly-main>
     </div>
 </script>

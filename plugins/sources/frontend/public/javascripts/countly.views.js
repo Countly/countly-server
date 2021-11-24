@@ -388,7 +388,7 @@
         }
     });
 
-    if (countlyAuth.validateRead(FEATURE_NAME) && (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" || countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile")) {
+    if (countlyAuth.validateRead(FEATURE_NAME) && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" || countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile")) {
         countlyVue.container.registerData("/home/widgets", {
             _id: "sources-dashboard-widget",
             label: CV.i18n('sidebar.acquisition'),
@@ -401,7 +401,7 @@
             component: SourcesDashboardWidget
         });
 
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
             countlyVue.container.registerData("/home/widgets", {
                 _id: "keywords-dashboard-widget",
                 label: CV.i18n('keywords.top_terms'),

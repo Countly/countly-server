@@ -1,0 +1,31 @@
+<script type="text/x-template" id="hooks-detail-errors-table-view">
+<div>
+    <cly-datatable-n  
+        class="cly-vue-hook-table is-clickable"
+        :rows="tableRows" :resizable="false" >
+   
+        <template v-slot="scope">
+            <!-- <el-table-column fixed label="Tracked data" sortable="true"  min-width="100" :class="is-clickable">
+                <template slot-scope="scope">
+                    <div v-html="scope.row.a"></div>
+                </template>
+            </el-table-column>  -->
+            <el-table-column  label="Error Logs" sortable="true"  >
+                <template slot-scope="scope" sortable="true">
+                    <div class="bu-is-flex bu-flex-wrap">
+                        <pre class='code-pre-line'>{{scope.row.e}} </pre>
+                    </div>
+                </template>
+            </el-table-column> 
+            <el-table-column  label="Time Stamp" sortable="true" width="400" >
+                <template slot-scope="scope" sortable="true">
+                    <div>{{scope.row.timestamp_string}}</div>
+                </template>
+            </el-table-column>
+  
+           
+        </template>
+
+    </cly-datatable-n>
+</div>
+</script>

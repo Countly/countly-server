@@ -1,4 +1,4 @@
-/* global Backbone, countlyAuth, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyTaskManager, countlyVue*/
+/* global Backbone, countlyAuth, Handlebars, countlyEvent, countlyCommon, countlyGlobal, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyVue*/
 /**
 * Default Backbone View template from which all countly views should inherit.
 * A countly view is defined as a page corresponding to a url fragment such
@@ -766,73 +766,6 @@ var AppRouter = Backbone.Router.extend({
             node.callback(category, node, menu);
         }
     },
-    updateLongTaskViewsNofification: function(appChanged) {
-        countlyTaskManager.getLastReports(function(data) {
-            if (appChanged) {
-                app.haveUnreadReports = false;
-                $(".orange-side-notification-banner-wrapper").css("display", "none");
-            }
-            if (app.haveUnreadReports) {
-                $("#manage-long-tasks-icon").addClass('unread');
-            }
-            else {
-                $("#manage-long-tasks-icon").removeClass('unread');
-            }
-
-            var newHtml = "<table>";
-            for (var k = 0; k < data.length; k++) {
-                var color = "#E98010";
-                if (data[k].status === "completed") {
-                    color = "#2FA732";
-                }
-                if (data[k].status === "errored") {
-                    color = "#D63E40";
-                }
-                var name = data[k].name || "";
-                if (name.length > 30) {
-                    name = name.substring(0, 30) + "...";
-                }
-
-                var trclass = "";
-                var dataLink = '';
-                if (data[k].status === "completed") {
-                    name = name + '<i class="fa fa-chevron-right circle-arrow"></i>';
-                    trclass = " class='completed'";
-                    dataLink = ' data-link="' + data[k].view + data[k]._id + '" ';
-                }
-                newHtml = newHtml + "<tr" + trclass + dataLink + '><td><p class="title">' + name + '</p><p style="text-transform:capitalize">' + data[k].type + '<span>|</span>' + countlyCommon.formatTimeAgo(data[k].start) + '</p></td>' + '<td ><span class="status-color"><i class="fa fa-circle" style="color:' + color + ';"></i>' + data[k].status + '</span></td>';
-            }
-            newHtml += "<table>";
-
-            if (data.length === 0) {
-                $(".manage-long-tasks-menu .tasks-wrapper").html("<div class='graph-description' style='border:0'>" + jQuery.i18n.map["taskmanager.empty-warning"] + "</div>");
-            }
-            else {
-                $(".manage-long-tasks-menu .tasks-wrapper").html("<div class='tasks'>" + newHtml + "</div>");
-            }
-
-            $(".manage-long-tasks-menu .tasks tr").on("click", function() {
-                var link = $(this).data("link");
-                if (link && link !== "") {
-                    window.location.hash = link;
-                }
-            });
-
-            if (data.length > 5) {
-                $(".manage-long-tasks-menu .tasks-wrapper").css("height", "355px");
-                $(".manage-long-tasks-menu .tasks").first().slimScroll({
-                    height: '100%',
-                    start: 'top',
-                    wheelStep: 10,
-                    position: 'right',
-                    disableFadeOut: true
-                });
-            }
-            else {
-                $(".manage-long-tasks-menu .tasks-wrapper").css("height", "");
-            }
-        });
-    },
     /**
     * Add first level menu element for specific app type under specified category. You can only add app type specific menu to categories "understand", "explore", "reach", "improve", "utilities"
     * @memberof app
@@ -1170,7 +1103,7 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard: function() {
-        var type = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        var type = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
         if (countlyGlobal.member.restrict && countlyGlobal.member.restrict.indexOf("#/") !== -1) {
             return;
         }
@@ -2484,11 +2417,6 @@ var AppRouter = Backbone.Router.extend({
 
             $topbar.on("click", ".dropdown", function(e) {
                 var wasActive = $(this).hasClass("clicked");
-                if ($(this).hasClass('manage-long-tasks-menu-dropdown')) {
-                    $("#manage-long-tasks-icon").removeClass('unread');
-                    app.haveUnreadReports = false;
-                    $(".orange-side-notification-banner-wrapper").css("display", "none");
-                }
                 $topbar.find(".dropdown").removeClass("clicked");
 
                 if (wasActive) {
@@ -3132,6 +3060,10 @@ var AppRouter = Backbone.Router.extend({
             },
             "fnInitComplete": function(oSettings) {
                 var dtable = this;
+                dtable.fnSettings = dtable.fnSettings || function() {
+                    return oSettings;
+                };
+                oSettings.nTable = oSettings.nTable || dtable;
                 var saveHTML = "<div class='save-table-data' data-help='help.datatables-export'><i class='fa fa-download'></i></div>",
                     searchHTML = "<div class='search-table-data'><i class='fa fa-search'></i></div>",
                     tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
@@ -3204,7 +3136,7 @@ var AppRouter = Backbone.Router.extend({
                     }
                 });
                 var exportDrop;
-                if (oSettings.oFeatures.bServerSide) {
+                if (oSettings.oFeatures.bServerSide && !oSettings.oFeatures.localExport) {
                     //slowdown serverside filtering
                     tableWrapper.find('.dataTables_filter input').unbind();
                     var timeout = null;
@@ -3285,7 +3217,7 @@ var AppRouter = Backbone.Router.extend({
                         });
 
                         exportDrop.on("open", function() {
-                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }).removeClass("dialog"));
+                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, { api_key: countlyGlobal.member.api_key }, null, oSettings).removeClass("dialog"));
                             exportDrop.position();
                         });
                     }
@@ -3722,7 +3654,6 @@ var AppRouter = Backbone.Router.extend({
                 if (window.components && window.components.slider && window.components.slider.instance) {
                     window.components.slider.instance.close();
                 }
-                app.updateLongTaskViewsNofification(true);
             }
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal.apps[appId].type;

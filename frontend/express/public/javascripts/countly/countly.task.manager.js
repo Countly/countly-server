@@ -1,11 +1,10 @@
-/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery*/
+/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery, countlyVue, CV, Promise, Vue*/
 (function(countlyTaskManager, $) {
 
     //Private Properties
     var _resultData = [],
         _resultObj = {},
-        _data = {},
-        curTask = 0;
+        _data = {};
 
     //Public Methods
     countlyTaskManager.initialize = function(isRefresh, query) {
@@ -279,13 +278,6 @@
         });
     };
 
-    countlyTaskManager.reset = function() {
-        _resultData = [];
-        _resultObj = {};
-        _data = {};
-        curTask = 0;
-    };
-
     countlyTaskManager.getResults = function() {
         return _resultData;
     };
@@ -305,144 +297,274 @@
         });
     };
 
-    countlyTaskManager.monitor = function(id, silent) {
-        var monitor = store.get("countly_task_monitor") || {};
-        if (!monitor[countlyCommon.ACTIVE_APP_ID]) {
-            monitor[countlyCommon.ACTIVE_APP_ID] = [];
-        }
-        if (monitor[countlyCommon.ACTIVE_APP_ID].indexOf(id) === -1) {
-            monitor[countlyCommon.ACTIVE_APP_ID].push(id);
-            store.set("countly_task_monitor", monitor);
-            if (!silent) {
-                $(".orange-side-notification-banner-wrapper").css("display", "block");
-                app.updateLongTaskViewsNofification();
-                /*CountlyHelpers.notify({
-                    title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
-                    message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
-                    info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
-                });*/
-            }
-        }
-        else {
-            if (!silent) {
+    var notifiers = {
+        dispatched: function() {
+            CountlyHelpers.notify({
+                title: CV.i18n("assistant.taskmanager.longTaskTooLong.title"),
+                message: CV.i18n("assistant.taskmanager.longTaskTooLong.message"),
+                info: CV.i18n("assistant.taskmanager.longTaskTooLong.info")
+            });
+        },
+        duplicate: function() {
+            CountlyHelpers.notify({
+                title: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.title"),
+                message: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.message"),
+                info: CV.i18n("assistant.taskmanager.longTaskTooLong.info")
+            });
+        },
+        completed: function(id, fetchedTask) {
+            var assistantAvailable = typeof countlyAssistant !== "undefined";
+            if (!assistantAvailable) {
                 CountlyHelpers.notify({
-                    title: jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.title"],
-                    message: jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.message"],
-                    info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
+                    title: CV.i18n("assistant.taskmanager.completed.title", "", fetchedTask.name || ""),
+                    message: CV.i18n("assistant.taskmanager.completed.message"),
+                    info: CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
+                    sticky: true,
+                    onClick: function() {
+                        app.navigate(fetchedTask.view + id, true);
+                    }
                 });
+            }
+            else {
+                countlyTaskManager.makeTaskNotification(
+                    CV.i18n("assistant.taskmanager.completed.title", "", fetchedTask.name || ""),
+                    CV.i18n("assistant.taskmanager.completed.message"),
+                    CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
+                    [fetchedTask.view + id, fetchedTask.name || ""], 3, "assistant.taskmanager.completed", 1);
+            }
+        },
+        errored: function(id, fetchedTask) {
+            var assistantAvailable = typeof countlyAssistant !== "undefined";
+            if (!assistantAvailable) {
+                CountlyHelpers.notify({
+                    title: CV.i18n("assistant.taskmanager.errored.title", fetchedTask.name || ""),
+                    message: CV.i18n("assistant.taskmanager.errored.message"),
+                    info: CV.i18n("assistant.taskmanager.errored.info"),
+                    type: "error",
+                    sticky: true,
+                    onClick: function() {
+                        app.navigate("#/manage/tasks", true);
+                    }
+                });
+            }
+            else {
+                countlyTaskManager.makeTaskNotification(
+                    CV.i18n("assistant.taskmanager.errored.title", fetchedTask.name || ""),
+                    CV.i18n("assistant.taskmanager.errored.message"),
+                    CV.i18n("assistant.taskmanager.errored.info"),
+                    [fetchedTask.name || ""], 4, "assistant.taskmanager.errored", 1);
             }
         }
     };
 
+    var taskManagerVuex = countlyVue.vuex.Module("countlyTaskManager", {
+        state: function() {
+            var persistent = store.get("countly_task_monitor") || {};
+            var unreadPersistent = store.get("countly_task_monitor_unread") || {};
+            return {
+                monitored: persistent,
+                unread: unreadPersistent,
+                opId: 0,
+                curTask: 0
+            };
+        },
+        getters: {
+            unreadStats: function(state) {
+                var unread = state.unread;
+
+                return Object.keys(unread).reduce(function(acc, appId) {
+                    var appTasks = unread[appId],
+                        taskIds = Object.keys(appTasks),
+                        obj = {
+                            _total: taskIds.length
+                        };
+
+                    taskIds.forEach(function(taskId) {
+                        var origin = appTasks[taskId].type;
+                        if (!obj[origin]) {
+                            obj[origin] = 0;
+                        }
+                        obj[origin]++;
+                    });
+                    acc[appId] = obj;
+                    return acc;
+                }, {});
+            }
+        },
+        mutations: {
+            incrementOpId: function(state) {
+                state.opId += 1;
+            },
+            incrementCurTask: function(state) {
+                state.curTask += 1;
+            },
+            resetCurTask: function(state) {
+                state.curTask = 0;
+            },
+            reloadPersistent: function(state) {
+                state.monitored = store.get("countly_task_monitor") || {};
+                state.unread = store.get("countly_task_monitor_unread") || {};
+            },
+            registerTask: function(state, payload) {
+                var monitored = state.monitored,
+                    appId = payload.appId,
+                    taskId = payload.taskId;
+
+                if (!monitored[appId]) {
+                    monitored[appId] = [];
+                }
+                if (monitored[appId].indexOf(taskId) === -1) {
+                    monitored[appId].push(taskId);
+                    store.set("countly_task_monitor", state.monitored);
+                }
+            },
+            unregisterTask: function(state, payload) {
+                var monitored = state.monitored,
+                    appId = payload.appId,
+                    taskId = payload.taskId;
+
+                var index = monitored[appId].indexOf(taskId);
+
+                if (index !== -1) {
+                    monitored[appId].splice(index, 1);
+                    store.set("countly_task_monitor", state.monitored);
+                }
+            },
+            setUnread: function(state, payload) {
+                var unread = state.unread,
+                    task = payload.task,
+                    appId = task.app_id;
+
+                if (!unread[appId]) {
+                    Vue.set(unread, appId, {});
+                }
+                Vue.set(unread[appId], task._id, {type: task.type});
+                store.set("countly_task_monitor_unread", unread);
+            },
+            setRead: function(state, payload) {
+                var unread = state.unread,
+                    appId = payload.appId,
+                    taskId = payload.taskId;
+
+                if (unread[appId]) {
+                    Vue.delete(unread[appId], taskId);
+                    store.set("countly_task_monitor_unread", unread);
+                }
+            }
+        },
+        actions: {
+            tick: function(context, payload) {
+                payload = payload || {};
+                return new Promise(function(resolve) {
+                    context.commit("reloadPersistent");
+
+                    var monitored = context.state.monitored,
+                        appId = payload.appId || countlyCommon.ACTIVE_APP_ID,
+                        curTask = context.state.curTask;
+
+                    if (monitored[appId] && monitored[appId][curTask]) {
+                        var id = monitored[appId][curTask];
+                        countlyTaskManager.check(id, function(checkedTask) {
+                            if (checkedTask === false || checkedTask.result === "completed" || checkedTask.result === "errored") {
+
+                                //get it from storage again, in case it has changed
+                                context.commit("reloadPersistent");
+                                monitored = context.state.monitored;
+                                context.commit("unregisterTask", {
+                                    appId: appId,
+                                    taskId: id
+                                });
+
+                                //notify task completed
+                                if (checkedTask && checkedTask.result) {
+                                    countlyTaskManager.fetchTaskInfo(id, function(fetchedTask) {
+                                        if (!fetchedTask) {
+                                            return;
+                                        }
+                                        if (fetchedTask.type === "tableExport") {
+                                            if (fetchedTask.report_name) {
+                                                fetchedTask.name = "<span style='overflow-wrap: break-word;'>" + fetchedTask.report_name + "</span>";
+                                            }
+                                        }
+                                        if (fetchedTask.manually_create === false) {
+                                            context.commit("reloadPersistent");
+                                            context.commit("setUnread", {
+                                                task: fetchedTask
+                                            });
+                                        }
+                                        if (fetchedTask.view) {
+                                            if (checkedTask.result === "completed") {
+                                                notifiers.completed(id, fetchedTask);
+                                            }
+                                            else if (checkedTask.result === "errored") {
+                                                notifiers.errored(id, fetchedTask);
+                                            }
+                                        }
+                                        context.commit("incrementOpId");
+                                    });
+                                }
+                            }
+                            else {
+                                context.commit("incrementCurTask");
+                            }
+                            if (context.state.curTask >= monitored[appId].length) {
+                                context.commit("resetCurTask");
+                            }
+                            resolve();
+                        });
+                    }
+                    else {
+                        resolve();
+                    }
+                });
+            },
+            monitor: function(context, payload) {
+                context.commit("reloadPersistent");
+                var monitored = context.state.monitored,
+                    appId = payload.appId || countlyCommon.ACTIVE_APP_ID,
+                    taskId = payload.taskId;
+
+                if (!monitored[appId] || monitored[appId].indexOf(taskId) === -1) {
+                    context.commit("registerTask", {
+                        appId: countlyCommon.ACTIVE_APP_ID,
+                        taskId: payload.taskId
+                    });
+                    if (!payload.silent) {
+                        notifiers.dispatched();
+                    }
+                    context.commit("incrementOpId");
+                }
+                else if (!payload.silent) {
+                    notifiers.duplicate();
+                }
+            }
+        }
+    });
+
+    countlyVue.vuex.registerGlobally(taskManagerVuex);
+
+    var vuexStore = countlyVue.vuex.getGlobalStore();
+
+    countlyTaskManager.monitor = function(id, silent) {
+        vuexStore.dispatch("countlyTaskManager/monitor", {
+            taskId: id,
+            silent: silent
+        });
+    };
+
     countlyTaskManager.tick = function() {
-        var assistantAvailable = true;
-        app.updateLongTaskViewsNofification();
-        if (typeof countlyAssistant === "undefined") {
-            assistantAvailable = false;
-        }
-        var monitor = store.get("countly_task_monitor") || {};
-        if (monitor[countlyCommon.ACTIVE_APP_ID] && monitor[countlyCommon.ACTIVE_APP_ID][curTask]) {
-            var id = monitor[countlyCommon.ACTIVE_APP_ID][curTask];
-            countlyTaskManager.check(id, function(res) {
-                if (res === false || res.result === "completed" || res.result === "errored") {
-
-                    //get it from storage again, in case it has changed
-                    monitor = store.get("countly_task_monitor") || {};
-                    //get index of task, cause it might have been changed
-                    var index = monitor[countlyCommon.ACTIVE_APP_ID].indexOf(id);
-                    //remove item
-                    if (index !== -1) {
-                        monitor[countlyCommon.ACTIVE_APP_ID].splice(index, 1);
-                        store.set("countly_task_monitor", monitor);
-                    }
-
-                    //notify task completed
-                    if (res && res.result === "completed") {
-                        countlyTaskManager.fetchTaskInfo(id, function(res1) {
-                            if (res1 && res1.type === "tableExport") {
-                                if (res1.report_name) {
-                                    res1.name = "<span style='overflow-wrap: break-word;'>" + res1.report_name + "</span>";
-                                }
-                            }
-                            if (res1 && res1.manually_create === false) {
-                                $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
-                                app.haveUnreadReports = true;
-                                app.updateLongTaskViewsNofification();
-                            }
-                            if (res1 && res1.view) {
-                                if (!assistantAvailable) {
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""),
-                                        message: jQuery.i18n.map["assistant.taskmanager.completed.message"],
-                                        info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
-                                        sticky: true,
-                                        onClick: function() {
-                                            app.navigate(res1.view + id, true);
-                                        }
-                                    });
-                                }
-                                else {
-                                    countlyTaskManager.makeTaskNotification(
-                                        jQuery.i18n.prop("assistant.taskmanager.completed.title", "", res1.name || ""),
-                                        jQuery.i18n.map["assistant.taskmanager.completed.message"],
-                                        jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
-                                        [res1.view + id, res1.name || ""], 3, "assistant.taskmanager.completed", 1);
-                                }
-                            }
-                        });
-                    }
-                    else if (res && res.result === "errored") {
-                        countlyTaskManager.fetchTaskInfo(id, function(res1) {
-                            if (res1 && res1.type === "tableExport") {
-                                if (res1.report_name) {
-                                    res1.name = "<span style='overflow-wrap: break-word;'>" + res1.report_name + "</span>";
-                                }
-                            }
-                            if (res1 && res1.view) {
-                                if (res1.manually_create === false) {
-                                    $("#manage-long-tasks-icon").addClass('unread'); //new notification. Add unread
-                                    app.haveUnreadReports = true;
-                                    app.updateLongTaskViewsNofification();
-                                }
-                                if (!assistantAvailable) {
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
-                                        message: jQuery.i18n.map["assistant.taskmanager.errored.message"],
-                                        info: jQuery.i18n.map["assistant.taskmanager.errored.info"],
-                                        type: "error",
-                                        sticky: true,
-                                        onClick: function() {
-                                            app.navigate("#/manage/tasks", true);
-                                        }
-                                    });
-                                }
-                                else {
-                                    countlyTaskManager.makeTaskNotification(
-                                        jQuery.i18n.prop("assistant.taskmanager.errored.title", res1.name || ""),
-                                        jQuery.i18n.map["assistant.taskmanager.errored.message"],
-                                        jQuery.i18n.map["assistant.taskmanager.errored.info"],
-                                        [res1.name || ""], 4, "assistant.taskmanager.errored", 1);
-                                }
-                            }
-                        });
-                    }
-                }
-                else {
-                    curTask++;
-                }
-                if (curTask >= monitor[countlyCommon.ACTIVE_APP_ID].length) {
-                    curTask = 0;
-                }
-                setTimeout(function() {
-                    countlyTaskManager.tick();
-                }, countlyCommon.DASHBOARD_REFRESH_MS);
-            });
-        }
-        else {
+        vuexStore.dispatch("countlyTaskManager/tick").then(function() {
             setTimeout(function() {
                 countlyTaskManager.tick();
             }, countlyCommon.DASHBOARD_REFRESH_MS);
-        }
+        });
+    };
+
+    countlyTaskManager.reset = function() {
+        _resultData = [];
+        _resultObj = {};
+        _data = {};
+        vuexStore.commit("countlyTaskManager/resetCurTask");
     };
 
     $(document).ready(function() {
@@ -455,6 +577,7 @@
             }
             else {
                 countlyTaskManager.reset();
+                vuexStore.commit("countlyTaskManager/incrementOpId");
             }
         });
     });
