@@ -21,7 +21,6 @@
 <script  type="text/x-template" id="reports-table">
 <cly-section>
     <cly-datatable-n
-        :available-dynamic-cols="tableDynamicCols" 
         class="cly-vue-reports-table"
         :tracked-fields="localTableTrackedFields"
         :rows="tableRows" :resizable="false" >
@@ -96,6 +95,20 @@
             </cly-diff-helper>
         </template>
     </cly-datatable-n>
+    <cly-confirm-dialog 
+        @cancel="closeDeleteForm" 
+        @confirm="submitDeleteForm" 
+        :before-close="closeDeleteForm" 
+        ref="deleteConfirmDialog" 
+        :visible.sync="showDeleteDialog" 
+        dialogType="danger" 
+        :saveButtonLabel="i18n('common.delete')" 
+        :cancelButtonLabel="i18n('common.no-dont-delete')" 
+        :title="i18n('reports.delete')" >
+            <template slot-scope="scope">
+                <div v-html="deleteMessage"></div>
+            </template>
+    </cly-confirm-dialog>
 </cly-section>
 </script>
 
