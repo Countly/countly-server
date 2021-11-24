@@ -21,7 +21,7 @@
                 var rows = this.$store.getters["countlyReports/table/all"];
                 return rows;
             },
-         
+
         },
         data: function() {
             return {
@@ -306,7 +306,7 @@
             createReport: function() {
                 this.openDrawer("home", countlyReporting.defaultDrawerConfigValue());
             },
-            
+
         },
     });
 
