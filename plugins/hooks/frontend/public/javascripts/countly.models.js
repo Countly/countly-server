@@ -137,8 +137,6 @@
             };
         };
 
-
-
         var getters = {
             hookDetail: function(state) {
                 return state.hookDetail;
@@ -191,6 +189,19 @@
                     url: countlyCommon.API_PARTS.data.w + "/hook/save",
                     data: {
                         "hook_config": JSON.stringify(record)
+                    },
+                    dataType: "json",
+                    success: function() {
+                        context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
+                    }
+                });
+            },
+            deleteHook: function(context, id) {
+                return CV.$.ajax({
+                    type: "POST",
+                    url: countlyCommon.API_PARTS.data.w + "/hook/delete",
+                    data: {
+                        "hookID": id
                     },
                     dataType: "json",
                     success: function() {

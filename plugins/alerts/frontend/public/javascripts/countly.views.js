@@ -1,6 +1,5 @@
 /*global
     countlyGlobal,
-    CountlyHelpers,
     countlyAlerts,
     jQuery,
     countlyVue,
@@ -9,7 +8,8 @@
     countlyCommon,
     countlyEvent,
     alertDefine,
-    countlyAuth
+    countlyAuth,
+    CV,
  */
 (function() {
     var ALERTS_FEATURE_NAME = "alerts";
@@ -373,15 +373,6 @@
             for (var id in countlyGlobal.apps) {
                 appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
             }
-            var tableDynamicCols = [{
-                value: "alertName",
-                label: jQuery.i18n.map['alert.Alert_Name'],
-                required: true,
-            }, {
-                value: "appNameList",
-                label: jQuery.i18n.map['alert.Application'],
-                required: true,
-            }];
 
             return {
                 appsSelectorOption: appsSelectorOption,
@@ -391,7 +382,9 @@
                 isAdmin: countlyGlobal.member.global_admin,
                 canUpdate: countlyAuth.validateUpdate(ALERTS_FEATURE_NAME),
                 canDelete: countlyAuth.validateDelete(ALERTS_FEATURE_NAME),
-                tableDynamicCols: tableDynamicCols,
+                deleteElement: null,
+                showDeleteDialog: false,
+                deleteMessage: '',
             };
         },
         methods: {
@@ -403,19 +396,23 @@
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
-                    var alertID = scope.row._id;
-                    var self = this;
-                    CountlyHelpers.confirm(jQuery.i18n.prop("alert.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
-                        if (result) {
-                            if (scope.row.alertDataType === 'online-users') {
-                                self.$store.dispatch("countlyAlerts/deleteOnlineUsersAlert", scope.row);
-                            }
-                            else {
-                                self.$store.dispatch("countlyAlerts/deleteAlert", alertID);
-                            }
-                        }
-                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["alert.yes-delete-alert"]], {title: jQuery.i18n.map["alert.delete-confirm-title"], image: "delete-an-event"});
+                    this.deleteElement = scope.row;
+                    this.showDeleteDialog = true;
+                    this.deleteMessage = CV.i18n("alert.delete-confirm", "<b>" + this.deleteElement.alertName + "</b>");
                 }
+            },
+            closeDeleteForm: function() {
+                this.deleteElement = null;
+                this.showDeleteDialog = false;
+            },
+            submitDeleteForm: function() {
+                if (this.deleteElement.alertDataType === 'online-users') {
+                    this.$store.dispatch("countlyAlerts/deleteOnlineUsersAlert", this.deleteElement._id);
+                }
+                else {
+                    this.$store.dispatch("countlyAlerts/deleteAlert", this.deleteElement._id);
+                }
+                this.showDeleteDialog = false;
             },
             updateStatus: function(scope) {
                 var diff = scope.diff;
