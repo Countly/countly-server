@@ -342,7 +342,7 @@
                 var empty = countlyDashboards.factory.widgets.getEmpty();
                 var defaultEmpty = this.__widgets[empty.widget_type].drawer.getEmpty();
 
-                empty.__action === "create";
+                empty.__action = "create";
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
             }
         },
@@ -450,7 +450,7 @@
                 },
                 addDashboard: function() {
                     var empty = countlyDashboards.factory.dashboards.getEmpty();
-                    empty.__action === "create";
+                    empty.__action = "create";
                     this.openDrawer("dashboards", empty);
                 }
             },
