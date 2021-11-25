@@ -22,6 +22,34 @@
         }
     };
 
+    var EmptyDashboard = countlyVue.views.BaseView.extend({
+        template: '#dashboards-empty',
+    });
+
+    var DisabledWidget = countlyVue.views.BaseView.extend({
+        template: '#dashboards-disabled',
+        props: {
+            data: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        }
+    });
+
+    var InvalidWidget = countlyVue.views.BaseView.extend({
+        template: '#dashboards-invalid',
+        props: {
+            data: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        }
+    });
+
     var DashboardDrawer = countlyVue.views.create({
         template: CV.T('/dashboards/templates/dashboards-drawer.html'),
         props: {
@@ -159,15 +187,13 @@
         }
     });
 
-    var EmptyComponent = countlyVue.views.BaseView.extend({
-        template: '#dashboards-empty',
-    });
-
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
         mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
         components: {
-            "widgets-drawer": WidgetDrawer
+            "widgets-drawer": WidgetDrawer,
+            "widget-disabled": DisabledWidget,
+            "widget-invalid": InvalidWidget
         },
         data: function() {
             return {
@@ -238,6 +264,12 @@
                     break;
                 }
             },
+            isWidgetDisabled: function(widget) {
+                return widget.isPluginWidget && (countlyGlobal.plugins.indexOf(widget.widget_type) < 0);
+            },
+            isWidgetInvalid: function(widget) {
+                return widget.isPluginWidget && (widget.dashData && (widget.dashData.isValid === false));
+            }
         },
         mounted: function() {
             this.initGrid();
@@ -251,7 +283,7 @@
         template: "#dashboards-main",
         mixins: [countlyVue.mixins.hasDrawers("dashboards"), countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
         components: {
-            "dashboards-empty": EmptyComponent,
+            "dashboards-empty": EmptyDashboard,
             "dashboards-grid": GridComponent,
             "dashboards-drawer": DashboardDrawer,
             "widgets-drawer": WidgetDrawer
@@ -263,8 +295,7 @@
         },
         computed: {
             isEmpty: function() {
-                var allWidgets = !this.$store.getters["countlyDashboards/widgets/all"].length;
-                return allWidgets;
+                return !this.$store.getters["countlyDashboards/widgets/all"].length;
             },
             dashboard: function() {
                 var selected = this.$store.getters["countlyDashboards/selected"];
@@ -335,7 +366,9 @@
                     namespace: "dashboards",
                     mapping: {
                         main: "/dashboards/templates/index.html",
-                        empty: "/dashboards/templates/empty.html",
+                        empty: "/dashboards/templates/transient/empty-dashboard.html",
+                        disabled: "/dashboards/templates/transient/disabled-widget.html",
+                        invalid: "/dashboards/templates/transient/invalid-widget.html",
                         grid: "/dashboards/templates/grid.html"
                     }
                 }

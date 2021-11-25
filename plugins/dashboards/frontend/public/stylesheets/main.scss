@@ -15,6 +15,14 @@
         }
     }
 
+    &__null-widgets {
+        height: 100%;
+
+        p {
+            text-align: center;
+        }
+    }
+
     .grid-stack-item-content {
         background-color: map.get(c.$colors, "white");
         border: 1px solid #E2E4E8;
