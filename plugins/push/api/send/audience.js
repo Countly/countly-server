@@ -207,7 +207,7 @@ class Audience {
 
                 this.log.d('Drilling: %j', params);
                 let arr = await new Promise((resolve, reject) => drill().drill.fetchUsers(params, (err, uids) => {
-                    this.log.i('Done drilling: %j ' + (err ? 'error %j' : '%d uids'), err || (uids && uids.length) || 0);
+                    this.log.i('Done drilling: ' + (err ? 'error %j' : '%d uids'), err || (uids && uids.length) || 0);
                     if (err) {
                         reject(err);
                     }

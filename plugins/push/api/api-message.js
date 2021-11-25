@@ -277,7 +277,8 @@ module.exports.estimate = async params => {
             {$group: {_id: '$_id', count: {$sum: 1}}}
         ])).toArray(),
         locales = las.reduce((a, b) => {
-            a[b._id || 'default'] = b.count; return a;
+            a[b._id || 'default'] = b.count;
+            return a;
         }, {default: 0});
 
     common.returnOutput(params, {count, locales});
