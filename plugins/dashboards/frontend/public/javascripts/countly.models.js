@@ -155,6 +155,24 @@
             mutations: {
                 setAll: function(state, widgets) {
                     state.all = widgets;
+                },
+                updateWidget: function(state, widget) {
+                    var index = -1;
+                    widget = widget || {};
+
+                    for (var i = 0; i < state.all.length; i++) {
+                        if (state.all[i]._id === widget._id) {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    if (index > -1) {
+                        state.all.splice(index, 1, widget);
+                    }
+                    else if (widget._id) {
+                        state.all.push(widget);
+                    }
                 }
             },
             actions: {
@@ -164,7 +182,12 @@
                 get: function(context, widgetId) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
 
-                    return countlyDashboards.service.widgets.get(dashboardId, widgetId);
+                    return countlyDashboards.service.widgets.get(dashboardId, widgetId).then(function(w) {
+                        /*
+                            Update the widget in the widget store.
+                        */
+                        context.commit("updateWidget", w && w[0]);
+                    });
                 },
                 create: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
@@ -174,11 +197,14 @@
                 update: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
 
-                    return countlyDashboards.service.widgets.update(dashboardId, widget.id, widget);
+                    return countlyDashboards.service.widgets.update(dashboardId, widget.id, widget).then(function() {
+                        context.dispatch("get", widget.id);
+                    });
                 },
                 updatePosition: function(context, params) {
-                    var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
-                    var widget = {};
+                    var widget = {
+                        id: params.id
+                    };
 
                     if (!params.position && !params.size) {
                         return;
@@ -192,7 +218,7 @@
                         widget.size = params.size;
                     }
 
-                    return countlyDashboards.service.widgets.update(dashboardId, params.id, widget);
+                    return context.dispatch("update", widget);
                 },
                 delete: function(context, widgetId) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
@@ -230,6 +256,22 @@
                     id: dashboard.id,
                     data: dashboard.data
                 };
+            },
+            updateDashboard: function(state, dashboard) {
+                var index = -1;
+                for (var i = 0; i < state.all.length; i++) {
+                    if (state.all[i]._id === dashboard._id) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                if (index > -1) {
+                    state.all.splice(index, 1, dashboard);
+                }
+                else {
+                    state.all.push(dashboard);
+                }
             }
         };
 
@@ -243,8 +285,32 @@
                     context.dispatch("setAll", dashboards);
                 });
             },
+            getDashboard: function(context, params) {
+                var dashboardId = context.getters.selected.id;
+
+                countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(d) {
+                    /*
+                        On getting the dashboard, Set the selected dashboard data
+                        aswell as update the local list of all dashboards.
+                    */
+                    context.commit("setDashboard", {id: dashboardId, data: d});
+                    context.commit("updateDashboard", d);
+
+                    /*
+                        Set all widgets of this dashboard here in the vuex store - Start
+                    */
+                    context.dispatch("widgets/setAll", d && d.widgets || []);
+                    /*
+                        Set all widgets of this dashboard here in the vuex store - End
+                    */
+
+                    return d;
+                });
+            },
             setDashboard: function(context, data) {
-                var dash = context.state.all.find(function(dashboard) {
+                data = data || {};
+
+                var dash = context.getters.all.find(function(dashboard) {
                     return dashboard._id === data.id;
                 });
 
@@ -261,20 +327,15 @@
                 /*
                     We have already set the current dashboard and its widget data in the vuex store
                     But we will update it again after we have the updated data from the server
-                    Until the request is processing, we will show the loading states for the widgets
+                    Until the request is processing, we will show the loading states for the widgets if no data is available
                 */
 
-                countlyDashboards.service.dashboards.get(data.id, data.isRefresh).then(function(d) {
-                    context.commit("setDashboard", {id: data.id, data: d});
-
+                if (data.id) {
                     /*
-                        Set all widgets of this dashboard here in the vuex store - Start
+                        data.id will be null when the dashboard is deleted.
                     */
-                    context.dispatch("widgets/setAll", d && d.widgets || []);
-                    /*
-                        Set all widgets of this dashboard here in the vuex store - End
-                    */
-                });
+                    context.dispatch("getDashboard");
+                }
             },
 
             /*
@@ -306,9 +367,7 @@
                 var dashboardId = context.getters.selected.id;
 
                 return countlyDashboards.service.dashboards.update(dashboardId, settings).then(function() {
-                    context.dispatch("getAll").then(function() {
-                        context.dispatch("setDashboard", {id: dashboardId});
-                    });
+                    context.dispatch("getDashboard");
                 });
             },
             duplicate: function(context, settings) {
@@ -318,7 +377,7 @@
             delete: function(context, id) {
                 return countlyDashboards.service.dashboards.delete(id).then(function() {
                     context.dispatch("getAll").then(function() {
-                        context.commit("setDashboard", {id: null, data: null});
+                        context.dispatch("setDashboard", {id: null, data: null});
                     });
                 });
             }

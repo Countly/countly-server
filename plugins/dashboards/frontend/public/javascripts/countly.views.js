@@ -210,6 +210,9 @@
                     }, 1000);
                 });
             },
+            destroyGrid: function() {
+                this.grid.destroy();
+            },
             onWidgetAction: function(command, data) {
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
@@ -238,6 +241,9 @@
         },
         mounted: function() {
             this.initGrid();
+        },
+        beforeDestroy: function() {
+            this.destroyGrid();
         }
     });
 
@@ -257,7 +263,8 @@
         },
         computed: {
             isEmpty: function() {
-                return !this.$store.getters["countlyDashboards/widgets/all"].length;
+                var allWidgets = !this.$store.getters["countlyDashboards/widgets/all"].length;
+                return allWidgets;
             },
             dashboard: function() {
                 var selected = this.$store.getters["countlyDashboards/selected"];
@@ -269,7 +276,7 @@
         },
         methods: {
             refresh: function() {
-                //this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: true});
+                //this.$store.dispatch("countlyDashboards/getDashboard", {isRefresh: true});
             },
             onDashboardAction: function(command, data) {
                 var self = this;
@@ -308,7 +315,7 @@
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
             }
         },
-        mounted: function() {
+        beforeMount: function() {
             this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId});
         }
     });
@@ -418,7 +425,7 @@
                 this.module = countlyDashboards.getVuexModule();
                 CV.vuex.registerGlobally(this.module);
             },
-            mounted: function() {
+            beforeMount: function() {
                 this.$store.dispatch("countlyDashboards/getAll");
             }
         });
