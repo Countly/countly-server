@@ -64,7 +64,7 @@
             localSearchedRows: function() {
                 var currentArray = this.rows.slice();
                 if (this.displaySearch && this.controlParams.searchQuery) {
-                    var queryLc = this.controlParams.searchQuery.toLowerCase();
+                    var queryLc = (this.controlParams.searchQuery + "").toLowerCase();
                     currentArray = currentArray.filter(function(item) {
                         return Object.keys(item).some(function(fieldKey) {
                             if (item[fieldKey] === null || item[fieldKey] === undefined) {
