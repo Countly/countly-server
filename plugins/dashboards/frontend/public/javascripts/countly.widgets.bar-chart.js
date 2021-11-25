@@ -2,7 +2,7 @@
 
 (function() {
     var BarChartComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/bar-chart.html'),
+        template: CV.T('/dashboards/templates/widgets/bar-chart/widget.html'),
         props: {
             data: {
                 type: Object,
@@ -14,7 +14,7 @@
     });
 
     var DrawerComponent = countlyVue.views.create({
-        template: "<div>{{scope.editedObject.widget_type}}</div>",
+        template: CV.T('/dashboards/templates/widgets/bar-chart/drawer.html'),
         props: {
             scope: {
                 type: Object,
@@ -29,15 +29,22 @@
         type: "bar-chart",
         label: CV.i18nM("dashboards.bar-chart"),
         priority: 2,
-        dimensions: function() {
-            return {
-                minWidth: 6,
-                minHeight: 2,
-                width: 6,
-                height: 3
-            };
+        drawer: {
+            component: DrawerComponent,
+            getEmpty: function() {
+                return {};
+            },
         },
-        gridComponent: BarChartComponent,
-        drawerComponent: DrawerComponent
+        grid: {
+            component: BarChartComponent,
+            dimensions: function() {
+                return {
+                    minWidth: 6,
+                    minHeight: 2,
+                    width: 6,
+                    height: 3
+                };
+            }
+        }
     });
 })();

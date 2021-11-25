@@ -1,0 +1,9 @@
+<div>
+    <cly-form-field name="content" rules="required" :label="i18nM('dashboards.add-note')">
+        <el-input
+            type="textarea"
+            v-model="scope.editedObject.content"
+            :rows="6">
+        </el-input>
+    </cly-form-field>
+</div>

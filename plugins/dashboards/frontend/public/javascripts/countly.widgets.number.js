@@ -2,7 +2,7 @@
 
 (function() {
     var NumberComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/number.html'),
+        template: CV.T('/dashboards/templates/widgets/number/widget.html'),
         props: {
             data: {
                 type: Object,
@@ -14,7 +14,7 @@
     });
 
     var DrawerComponent = countlyVue.views.create({
-        template: "<div>{{scope.editedObject.widget_type}}</div>",
+        template: CV.T('/dashboards/templates/widgets/number/drawer.html'),
         props: {
             scope: {
                 type: Object,
@@ -29,15 +29,22 @@
         type: "number",
         label: CV.i18nM("dashboards.number"),
         priority: 3,
-        dimensions: function() {
-            return {
-                minWidth: 2,
-                minHeight: 2,
-                width: 2,
-                height: 3
-            };
+        drawer: {
+            component: DrawerComponent,
+            getEmpty: function() {
+                return {};
+            },
         },
-        gridComponent: NumberComponent,
-        drawerComponent: DrawerComponent,
+        grid: {
+            component: NumberComponent,
+            dimensions: function() {
+                return {
+                    minWidth: 2,
+                    minHeight: 2,
+                    width: 2,
+                    height: 3
+                };
+            }
+        }
     });
 })();

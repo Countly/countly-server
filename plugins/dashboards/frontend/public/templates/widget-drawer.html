@@ -33,7 +33,7 @@
             <component
                 v-for="(item) in widgetTypes"
                 v-if="drawerScope.editedObject.widget_type === item.type"
-                :is="item.drawerComponent"
+                :is="item.drawer.component"
                 :key="item.type"
                 :scope="drawerScope">
             </component>

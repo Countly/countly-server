@@ -2,7 +2,7 @@
 
 (function() {
     var TimeSeriesComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/time-series.html'),
+        template: CV.T('/dashboards/templates/widgets/time-series/widget.html'),
         props: {
             data: {
                 type: Object,
@@ -19,7 +19,7 @@
     });
 
     var DrawerComponent = countlyVue.views.create({
-        template: "<div>{{scope.editedObject.widget_type}}</div>",
+        template: CV.T('/dashboards/templates/widgets/time-series/drawer.html'),
         props: {
             scope: {
                 type: Object,
@@ -34,15 +34,22 @@
         type: "time-series",
         label: CV.i18nM("dashboards.time-series"),
         priority: 1,
-        dimensions: function() {
-            return {
-                minWidth: 6,
-                minHeight: 2,
-                width: 6,
-                height: 3
-            };
+        drawer: {
+            component: DrawerComponent,
+            getEmpty: function() {
+                return {};
+            },
         },
-        gridComponent: TimeSeriesComponent,
-        drawerComponent: DrawerComponent
+        grid: {
+            component: TimeSeriesComponent,
+            dimensions: function() {
+                return {
+                    minWidth: 6,
+                    minHeight: 2,
+                    width: 6,
+                    height: 3
+                };
+            }
+        }
     });
 })();

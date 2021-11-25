@@ -3,6 +3,25 @@
 (function() {
     var FEATURE_NAME = "dashboards";
 
+    var WidgetsMixin = {
+        computed: {
+            __widgets: function() {
+                var w = countlyVue.container.dataMixin({
+                    widgets: "/custom/dashboards/widget"
+                });
+
+                w = w.data().widgets;
+
+                w = w.reduce(function(acc, component) {
+                    acc[component.type] = component;
+                    return acc;
+                }, {});
+
+                return w;
+            }
+        }
+    };
+
     var DashboardDrawer = countlyVue.views.create({
         template: CV.T('/dashboards/templates/dashboards-drawer.html'),
         props: {
@@ -15,40 +34,29 @@
                 title: "",
                 saveButtonLabel: "",
                 sharingAllowed: countlyGlobal.sharing_status || (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0)),
-                groupSharingAllowed: countlyGlobal.plugins.indexOf("groups") > -1 && countlyGlobal.member.global_admin
+                groupSharingAllowed: countlyGlobal.plugins.indexOf("groups") > -1 && countlyGlobal.member.global_admin,
+                constants: {
+                    sharingOptions: [
+                        {
+                            value: "all-users",
+                            name: this.i18nM("dashboards.share.all-users"),
+                            description: this.i18nM("dashboards.share.all-users.description"),
+                        },
+                        {
+                            value: "selected-users",
+                            name: this.i18nM("dashboards.share.selected-users"),
+                            description: this.i18nM("dashboards.share.selected-users.description"),
+                        },
+                        {
+                            value: "none",
+                            name: this.i18nM("dashboards.share.none"),
+                            description: this.i18nM("dashboards.share.none.description"),
+                        }
+                    ]
+                }
             };
         },
         computed: {
-            sharingOptions: function() {
-                var options = countlyDashboards.factory.dashboards.sharingOptions();
-                var opt = [];
-                for (var i = 0; i < options.length; i++) {
-                    if (options[i] === "all-users") {
-                        opt.push({
-                            value: options[i],
-                            name: this.i18nM("dashboards.share.all-users"),
-                            description: this.i18nM("dashboards.share.all-users.description"),
-                        });
-                    }
-
-                    if (options[i] === "selected-users") {
-                        opt.push({
-                            value: options[i],
-                            name: this.i18nM("dashboards.share.selected-users"),
-                            description: this.i18nM("dashboards.share.selected-users.description"),
-                        });
-                    }
-
-                    if (options[i] === "none") {
-                        opt.push({
-                            value: options[i],
-                            name: this.i18nM("dashboards.share.none"),
-                            description: this.i18nM("dashboards.share.none.description"),
-                        });
-                    }
-                }
-                return opt;
-            },
             allGroups: function() {
                 return [];
             }
@@ -94,6 +102,7 @@
 
     var WidgetDrawer = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widget-drawer.html'),
+        mixins: [WidgetsMixin],
         props: {
             controls: {
                 type: Object
@@ -107,11 +116,11 @@
         },
         computed: {
             widgetTypes: function() {
-                var c = countlyVue.container.dataMixin({
-                    components: "/custom/dashboards/widget"
-                });
+                var widgetTypes = [];
 
-                var widgetTypes = c.data().components;
+                for (var key in this.__widgets) {
+                    widgetTypes.push(this.__widgets[key]);
+                }
 
                 widgetTypes.sort(function(a, b) {
                     return a.priority - b.priority;
@@ -134,7 +143,7 @@
 
                 this.$store.dispatch(action, doc).then(function(id) {
                     self.$store.dispatch("countlyDashboards/widgets/get", id).then(function() {
-
+                        //Add widet to grid ?
                     });
                 });
             },
@@ -156,30 +165,18 @@
 
     var GridComponent = countlyVue.views.BaseView.extend({
         template: '#dashboards-grid',
-        mixins: [countlyVue.mixins.hasDrawers("widgets")],
+        mixins: [countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
         components: {
             "widgets-drawer": WidgetDrawer
         },
         data: function() {
-            return {};
+            return {
+                grid: null
+            };
         },
         computed: {
             allWidgets: function() {
                 return this.$store.getters["countlyDashboards/widgets/all"];
-            },
-            components: function() {
-                var c = countlyVue.container.dataMixin({
-                    components: "/custom/dashboards/widget"
-                });
-
-                c = c.data().components;
-
-                var components = c.reduce(function(acc, component) {
-                    acc[component.type] = component;
-                    return acc;
-                }, {});
-
-                return components;
             },
             canUpdate: function() {
                 var dashboard = this.$store.getters["countlyDashboards/selected"];
@@ -188,25 +185,41 @@
         },
         methods: {
             initGrid: function() {
+                var self = this;
                 this.grid = GridStack.init({
                     cellHeight: 100,
                     margin: 10,
                     animate: true,
                 });
 
+                this.grid.on("resizestop", function(event, element) {
+                    var node = element.gridstackNode;
+                    var widgetId = node.id;
+                    var size = [node.w, node.h];
+                    setTimeout(function() {
+                        self.$store.dispatch("countlyDashboards/widgets/updatePosition", {id: widgetId, size: size});
+                    }, 1000);
+                });
+
                 this.grid.on("dragstop", function(event, element) {
                     var node = element.gridstackNode;
-                    console.log(node);
+                    var widgetId = node.id;
+                    var position = [node.x, node.y];
+                    setTimeout(function() {
+                        self.$store.dispatch("countlyDashboards/widgets/updatePosition", {id: widgetId, position: position});
+                    }, 1000);
                 });
             },
             onWidgetAction: function(command, data) {
                 var self = this;
                 var d = JSON.parse(JSON.stringify(data));
 
+                var empty = this.__widgets[d.widget_type].drawer.getEmpty();
+
                 switch (command) {
                 case "edit":
                     d.__action = "edit";
-                    self.openDrawer("widgets", d);
+                    self.openDrawer("widgets", Object.assign({}, empty, d));
                     break;
 
                 case "delete":
@@ -230,7 +243,7 @@
 
     var HomeComponent = countlyVue.views.BaseView.extend({
         template: "#dashboards-main",
-        mixins: [countlyVue.mixins.hasDrawers("dashboards"), countlyVue.mixins.hasDrawers("widgets")],
+        mixins: [countlyVue.mixins.hasDrawers("dashboards"), countlyVue.mixins.hasDrawers("widgets"), WidgetsMixin],
         components: {
             "dashboards-empty": EmptyComponent,
             "dashboards-grid": GridComponent,
@@ -256,7 +269,7 @@
         },
         methods: {
             refresh: function() {
-                //this.$store.dispatch("countlyDashboards/setDashboard", this.dashboardId, true);
+                //this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: true});
             },
             onDashboardAction: function(command, data) {
                 var self = this;
@@ -289,12 +302,14 @@
             },
             addWidget: function() {
                 var empty = countlyDashboards.factory.widgets.getEmpty();
+                var defaultEmpty = this.__widgets[empty.widget_type].drawer.getEmpty();
+
                 empty.__action === "create";
-                this.openDrawer("widgets", empty);
+                this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
             }
         },
         mounted: function() {
-            this.$store.dispatch("countlyDashboards/setDashboard", this.dashboardId);
+            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId});
         }
     });
 

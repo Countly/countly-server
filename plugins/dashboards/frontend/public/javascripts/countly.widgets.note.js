@@ -2,7 +2,7 @@
 
 (function() {
     var NoteComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/note.html'),
+        template: CV.T('/dashboards/templates/widgets/note/widget.html'),
         props: {
             data: {
                 type: Object,
@@ -14,7 +14,7 @@
     });
 
     var DrawerComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/widgets/note-drawer.html'),
+        template: CV.T('/dashboards/templates/widgets/note/drawer.html'),
         props: {
             scope: {
                 type: Object,
@@ -22,6 +22,26 @@
                     return {};
                 }
             }
+        },
+        data: function() {
+            return {
+                constants: {
+                    textDecorations: [
+                        {
+                            name: this.i18nM["dashboards.bold"],
+                            value: "b"
+                        },
+                        {
+                            name: this.i18nM["dashboards.italic"],
+                            value: "i"
+                        },
+                        {
+                            name: this.i18nM["dashboards.underline"],
+                            value: "u"
+                        }
+                    ]
+                }
+            };
         }
     });
 
@@ -29,15 +49,24 @@
         type: "note",
         label: CV.i18nM("dashboards.note"),
         priority: 5,
-        dimensions: function() {
-            return {
-                minWidth: 6,
-                minHeight: 2,
-                width: 6,
-                height: 3
-            };
+        drawer: {
+            component: DrawerComponent,
+            getEmpty: function() {
+                return {
+                    content: ""
+                };
+            },
         },
-        gridComponent: NoteComponent,
-        drawerComponent: DrawerComponent
+        grid: {
+            component: NoteComponent,
+            dimensions: function() {
+                return {
+                    minWidth: 6,
+                    minHeight: 2,
+                    width: 6,
+                    height: 3
+                };
+            }
+        }
     });
 })();

@@ -1,4 +1,4 @@
-/*global countlyCommon,jQuery, CV, countlyVue, _ */
+/*global countlyCommon, CV, countlyVue, _ */
 
 (function(countlyDashboards) {
 
@@ -14,33 +14,13 @@
                     share_with: "all-users",
                     theme: 0
                 };
-            },
-            sharingOptions: function() {
-                return ["all-users", "selected-users", "none"];
             }
         },
         widgets: {
             getEmpty: function() {
                 return {
-                    widget_type: "time-series",
-                    content: ""
+                    widget_type: "time-series"
                 };
-            },
-            note: {
-                textDecorations: [
-                    {
-                        name: jQuery.i18n.map["dashboards.bold"],
-                        value: "b"
-                    },
-                    {
-                        name: jQuery.i18n.map["dashboards.italic"],
-                        value: "i"
-                    },
-                    {
-                        name: jQuery.i18n.map["dashboards.underline"],
-                        value: "u"
-                    }
-                ]
             }
         }
     };
@@ -196,23 +176,23 @@
 
                     return countlyDashboards.service.widgets.update(dashboardId, widget.id, widget);
                 },
-                updatePosition: function(context, widgetId, position, size) {
+                updatePosition: function(context, params) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var widget = {};
 
-                    if (!position && !size) {
+                    if (!params.position && !params.size) {
                         return;
                     }
 
-                    if (position) {
-                        widget.position = position;
+                    if (params.position) {
+                        widget.position = params.position;
                     }
 
-                    if (size) {
-                        widget.size = size;
+                    if (params.size) {
+                        widget.size = params.size;
                     }
 
-                    return countlyDashboards.service.widgets.update(dashboardId, widgetId, widget);
+                    return countlyDashboards.service.widgets.update(dashboardId, params.id, widget);
                 },
                 delete: function(context, widgetId) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
@@ -263,12 +243,12 @@
                     context.dispatch("setAll", dashboards);
                 });
             },
-            setDashboard: function(context, id, isRefresh) {
+            setDashboard: function(context, data) {
                 var dash = context.state.all.find(function(dashboard) {
-                    return dashboard._id === id;
+                    return dashboard._id === data.id;
                 });
 
-                context.commit("setDashboard", {id: id, data: dash});
+                context.commit("setDashboard", {id: data.id, data: dash});
 
                 /*
                     Set all widgets of this dashboard here in the vuex store - Start
@@ -284,8 +264,8 @@
                     Until the request is processing, we will show the loading states for the widgets
                 */
 
-                countlyDashboards.service.dashboards.get(id, isRefresh).then(function(d) {
-                    context.commit("setDashboard", {id: id, data: d});
+                countlyDashboards.service.dashboards.get(data.id, data.isRefresh).then(function(d) {
+                    context.commit("setDashboard", {id: data.id, data: d});
 
                     /*
                         Set all widgets of this dashboard here in the vuex store - Start
@@ -327,7 +307,7 @@
 
                 return countlyDashboards.service.dashboards.update(dashboardId, settings).then(function() {
                     context.dispatch("getAll").then(function() {
-                        context.dispatch("setDashboard", dashboardId);
+                        context.dispatch("setDashboard", {id: dashboardId});
                     });
                 });
             },

@@ -2,17 +2,18 @@
     <div
         class="grid-stack-item"
         v-for="(widget, index) in allWidgets"
-        v-if="components[widget.widget_type]"
+        v-if="__widgets[widget.widget_type]"
         :key="index"
+        :gs-id="widget._id"
         :gs-x="widget.position[0]"
         :gs-y="widget.position[1]"
         :gs-w="widget.size[0]"
         :gs-h="widget.size[1]"
-        :gs-min-w="components[widget.widget_type].dimensions && components[widget.widget_type].dimensions().minWidth"
-        :gs-min-h="components[widget.widget_type].dimensions && components[widget.widget_type].dimensions().minHeight"
+        :gs-min-w="__widgets[widget.widget_type].grid.dimensions().minWidth"
+        :gs-min-h="__widgets[widget.widget_type].grid.dimensions().minHeight"
     >
         <div class="grid-stack-item-content bu-p-4">
-            <component :is="components[widget.widget_type].gridComponent" :data="widget">
+            <component :is="__widgets[widget.widget_type].grid.component" :data="widget">
                 <template v-slot:action v-if="canUpdate">
                     <div class="bu-level-item">
                         <cly-more-options @command="onWidgetAction($event, widget)">
