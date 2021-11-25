@@ -259,6 +259,15 @@ class ValidationError extends PushError {
         super('Validation error', ERROR.DATA_COUNTLY);
         this.errors = typeof errors === 'string' ? [errors] : errors;
     }
+
+    /**
+     * toString override
+     * 
+     * @returns {string} string representation of the error
+     */
+    toString() {
+        return `${super.message}: ${this.errors.join('; ')}`;
+    }
 }
 
 /**

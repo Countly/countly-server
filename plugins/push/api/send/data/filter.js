@@ -41,8 +41,14 @@ class Filter extends Jsonable {
         if (json === null || json === undefined) {
             return;
         }
-        if (typeof json !== 'object' || Array.isArray(json)) {
-            return 'Filter query must be a JSON string of an object';
+        try {
+            json = JSON.parse(json);
+            if (typeof json !== 'object' || Array.isArray(json)) {
+                return 'Filter user/drill must be a JSON string of an object';
+            }
+        }
+        catch (ignored) {
+            return 'Filter user/drill must be a valid JSON string of an object';
         }
     }
 
