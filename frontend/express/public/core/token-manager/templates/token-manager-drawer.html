@@ -1,6 +1,7 @@
 
 <cly-drawer 
-    @submit="onSubmit" 
+    @submit="onSubmit"
+    @close="onClose" 
     v-bind="$props.controls" 
     :title="i18n('token_manager.create-new-token')" 
     :saveButtonLabel="i18n('token_manager.create-token')">
@@ -48,15 +49,15 @@
                     <p class="text-big color-cool-gray-100">{{i18n('token_manager.table.apps-title')}}<i class="el-icon-question bu-ml-2"></i></p>
                 </div>
                 <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-0">
-                    <el-radio v-model="formScope.editedObject.tokenUsage" class="is-autosized bu-p-4" label="0" border>
+                    <el-radio v-model="tokenUsage" label="0" class="is-autosized bu-p-4" border>
                         {{i18n('token_manager.table.apps-allow')}}
                     </el-radio>
-                    <el-radio v-model="formScope.editedObject.tokenUsage" class="is-autosized bu-p-4" label="1" border>
+                    <el-radio v-model="tokenUsage" label="1" class="is-autosized bu-p-4" border>
                         {{i18n('token_manager.table.apps-limit')}}
                     </el-radio>
                 </div>
             </cly-form-field>
-            <cly-form-field v-if="formScope.editedObject.tokenUsage == '1'" class="bu-p-0">
+            <cly-form-field v-if="tokenUsage === '1'" class="bu-p-0">
                 <div class="bu-is-flex bu-mt-4">
                     <p class="text-small color-cool-gray-100">{{i18n('token_manager.select-apps')}}<i class="el-icon-question bu-ml-2"></i></p>
                 </div>
@@ -70,17 +71,17 @@
                     <p class="text-big color-cool-gray-100">{{i18n('token_manager.table.limit-title')}}<i class="el-icon-question bu-ml-2"></i></p>
                 </div>
                 <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
-                    <el-radio class="is-autosized color-cool-gray-100 bu-p-4" v-model="formScope.editedObject.tokenExpiration" label="0" border>
+                    <el-radio class="is-autosized color-cool-gray-100 bu-p-4" v-model="tokenExpiration" label="0" border>
                         {{i18n('token_manager.table.limit-allow.label')}}
                         <p class="text-small color-cool-gray-50 bu-mt-1">{{i18n('token_manager.table.limit-allow.text')}}</p>
                     </el-radio>
-                    <el-radio class="is-autosized color-cool-gray-100 bu-p-4" v-model="formScope.editedObject.tokenExpiration" label="1" border>
+                    <el-radio class="is-autosized color-cool-gray-100 bu-p-4" v-model="tokenExpiration" label="1" border>
                         {{i18n('token_manager.table.limit-limit.label')}}
                         <p class="text-small color-cool-gray-50 bu-mt-1">{{i18n('token_manager.table.limit-limit.text')}}</p>
                     </el-radio>
                 </div>
             </cly-form-field>
-            <cly-form-field v-if="formScope.editedObject.tokenExpiration == '1'" class="bu-p-0">
+            <cly-form-field v-if="tokenExpiration === '1'" class="bu-p-0">
                 <div class="bu-is-flex bu-mt-2">
                     <p class="text-big color-cool-gray-100">{{i18n('token_manager.token-expiration-time')}}<i class="el-icon-question bu-ml-2"></i></p>
                 </div>

@@ -19,7 +19,7 @@
                     </el-table-column>
                     <el-table-column sortable="custom" prop="status" :label="i18n('token_manager.table.status')">
                         <template slot-scope="scope">
-                            <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)">
+                            <cly-status-tag :text="i18n('token_manager.table.status-' + scope.row.status)" :color="getColor(scope.row.status)">
                             </cly-status-tag>
                         </template>
                     </el-table-column>

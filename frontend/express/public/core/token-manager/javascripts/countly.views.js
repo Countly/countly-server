@@ -4,16 +4,16 @@
         template: CV.T('/core/token-manager/templates/token-manager-drawer.html'),
         data: function() {
             return {
+                tokenUsage: '0',
+                tokenExpiration: '0',
                 title: '',
                 constants: {
                     "availableProps": [
-                        { label: "hours", value: "hours" },
-                        { label: "days", value: "days" },
-                        { label: "months", value: "months" }
+                        { label: CV.i18n('token_manager.limit.h'), value: "hours" },
+                        { label: CV.i18n('token_manager.limit.d'), value: "days" },
+                        { label: CV.i18n('token_manager.limit.m'), value: "months" }
                     ],
                     "apps": this.appsData(),
-                    "endpoints": [],
-                    "parameters": []
                 }
             };
         },
@@ -41,13 +41,16 @@
                     parameters.splice(parameterIndex, 1);
                 }
             },
+            onClose: function() {
+                this.tokenUsage = '0';
+                this.tokenExpiration = '0';
+            },
             onSubmit: function(doc) {
                 var self = this;
                 var ttl = 0;
                 var selectApps = doc.selectApps;
                 var endpoints = doc.endpoints;
                 var newEndpoints = [];
-
                 endpoints.forEach(function(element) {
                     if (element.endpointName !== "" && element.endpointName) {
                         var obj = {params: {}} ;
@@ -60,22 +63,24 @@
                         newEndpoints.push(obj);
                     }
                 });
-                endpoints = newEndpoints;
-                endpoints = JSON.stringify(endpoints);
+                endpoints = JSON.stringify(newEndpoints);
 
-                if (doc.selectApps.length > 0) {
-                    selectApps = doc.selectApps.join(",");
+                if (self.tokenUsage === "1") {
+                    if (doc.selectApps.length > 0) {
+                        selectApps = doc.selectApps.join(",");
+                    }
                 }
-                if (doc.selectTime === "hours") {
-                    ttl = doc.timeInput * 3600;
+                if (self.tokenExpiration === "1") {
+                    if (doc.selectTime === "hours") {
+                        ttl = doc.timeInput * 3600;
+                    }
+                    else if (doc.selectTime === "days") {
+                        ttl = doc.timeInput * 3600 * 24;
+                    }
+                    else if (doc.selectTime === "months") {
+                        ttl = doc.timeInput * 3600 * 24 * 30;
+                    }
                 }
-                else if (doc.selectTime === "days") {
-                    ttl = doc.timeInput * 3600 * 24;
-                }
-                else if (doc.selectTime === "months") {
-                    ttl = doc.timeInput * 3600 * 24 * 30;
-                }
-
                 countlyTokenManager.createTokenWithQuery(doc.description, endpoints, doc.checkboxMultipleTimes, selectApps, ttl, function() {
                     self.$emit("create");
                 });
@@ -122,10 +127,10 @@
                 for (var i = 0; i < tableData.length; i++) {
                     row = tableData[i];
                     if (row.ttl && ((row.ends * 1000) - Date.now()) < 0) {
-                        row.status = "Expired";
+                        row.status = "expired";
                     }
                     else {
-                        row.status = "Active";
+                        row.status = "active";
                     }
                     if (row.ttl) {
                         row.ttlDate = countlyCommon.getDate(row.ends);
@@ -179,17 +184,17 @@
                 }
                 this.tableData = tableData;
             },
-            getColor: function(row) {
-                if (row.status === "Active") {
+            getColor: function(status) {
+                if (status === "active") {
                     return "green";
                 }
-                else if (row.status === "Expired") {
+                else if (status === "expired") {
                     return "red";
                 }
             },
             onCreateClick: function() {
                 this.openDrawer("main", {
-                    description: "", checkboxMultipleTimes: false, tokenUsage: "0", tokenExpiration: "0", endpoints: [{parameters: [{}]}], selectApps: []
+                    description: "", checkboxMultipleTimes: false, endpoints: [{parameters: [{}]}], selectApps: []
                 });
             },
             onDelete: function(row) {
