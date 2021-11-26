@@ -3341,13 +3341,13 @@
 
         .message {
             float: left;
-            padding: 21px;
+            padding: 22px 24px;
             font-style: normal;
             font-weight: normal;
-            font-size: 17px;
+            font-size: 14px;
             line-height: 20px;
             .text-dark {
-                color: #444444;
+                color: #333C48;
             }
             .text-light {
                 color: #636363;
@@ -3355,7 +3355,7 @@
         }
         .buttons {
             float: right;
-            padding: 16px;
+            padding: 16px 24px;
             .cly-vue-button {
                 padding: 8px 14px;
             }

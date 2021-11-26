@@ -137,11 +137,11 @@
                     '<slot name="main">\n' +
                       '<div class="message">\n' +
                           '<span class="text-dark">{{madeChanges}}</span>\n' +
-                          '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+                          '<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
                       '</div>\n' +
                       '<div class="buttons">\n' +
-                          '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
-                         '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" :disabled="disabled" @click="save"></cly-button>\n' +
+                          '<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+                         '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
                       '</div>\n' +
                     '</slot>\n' +
                   '</div>'
