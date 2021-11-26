@@ -14,6 +14,7 @@ var ejs = require("ejs"),
     reportUtils = require('../../reports/api/utils.js');
 
 var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
+var surveysEnabled = plugins.getPlugins().indexOf('surveys') > -1;
 
 if (cohortsEnabled) {
     var cohorts = require('../../cohorts/api/parts/cohorts');
@@ -238,23 +239,43 @@ function uploadFile(myfile, id, callback) {
         ob.features.push(FEATURE_NAME);
     });
 
-    // Api call to get all ratings widgets
+    /*
+    * we have two different /o/sdk handler endpoint in surveys and ratings
+    * this one is non-dominant
+    * if surveys enabled, this will ignore requests, if not, this will handle
+    */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
-
-        if (params.qstring.method !== "feedback" || (params.qstring.method === "feedback" && params.qstring.type !== "rating")) {
+        if (params.qstring.method !== "widgets" || surveysEnabled) {
             return false;
         }
 
-        return new Promise(function(resolve/*, reject*/) {
+        return new Promise(function(resolve) {
+            var widgets = [];
+            plugins.dispatch("/feedback/widgets/ratings", { params: params, widgets: widgets }, function() {
+                common.returnOutput(params, widgets);
+                return resolve(true);
+            });
+        });
+    });
+
+    /*
+    * internal event that fetch ratings widget
+    * and push them to passed widgets array.
+    */
+    plugins.register("/feedback/widgets/ratings", function(ob) {
+        return new Promise(function(resolve, reject) {
+            var params = ob.params;
             params.qstring.app_id = params.app_id;
             params.app_user = params.app_user || {};
-            var user = JSON.parse(JSON.stringify(params.app_user));
 
-            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating" }, { _id: 1, cohortID: 1 }).toArray(function(err, widgets) {
+            var user = JSON.parse(JSON.stringify(params.app_user));
+            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, cohortID: 1}).toArray(function(err, widgets) {
                 if (err) {
                     log.e(err);
+                    reject(err);
                 }
+
                 if (widgets && widgets.length > 0) {
                     //filter out based on cohorts
                     if (cohortsEnabled) {
@@ -274,13 +295,10 @@ function uploadFile(myfile, id, callback) {
                             }
                         });
                     }
-                    common.returnMessage(params, 200, widgets);
-                    return resolve(true);
+                    // concat with tricky way
+                    ob.widgets.push.apply(ob.widgets, widgets);
                 }
-                else {
-                    common.returnMessage(params, 200, []);
-                    return resolve(true);
-                }
+                resolve();
             });
         });
     });
