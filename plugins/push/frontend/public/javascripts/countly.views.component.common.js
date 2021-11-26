@@ -1,4 +1,4 @@
-/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise*/
+/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise, Map*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
         props: {
@@ -493,6 +493,7 @@
                 defaultLocalizationValidationErrors: [],
                 selectionRange: null,
                 mutationObserver: null,
+                userPropertyEvents: new Map(),
             };
         },
         computed: {
@@ -578,7 +579,9 @@
                 newElement.setAttribute("data-user-property-value", "");
                 newElement.setAttribute("data-user-property-fallback", "");
                 newElement.innerText = this.defaultLabelPreview;
-                newElement.onclick = this.getOnUserPropertyClickEventListener(id);
+                var onClickListener = this.getOnUserPropertyClickEventListener(id);
+                this.userPropertyEvents.set(id, onClickListener);
+                newElement.onclick = onClickListener;
                 this.insertNodeAtCaretPosition(newElement);
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.onUserPropertyClick(id, newElement);
@@ -587,7 +590,9 @@
             removeUserProperty: function(id) {
                 var userProperty = this.$refs.element.querySelector("#id-" + id);
                 if (userProperty) {
+                    userProperty.removeEventListener('click', this.userPropertyEvents.get(id));
                     userProperty.remove();
+                    this.userPropertyEvents.delete(id);
                     this.$emit('change', this.$refs.element.innerHTML);
                     this.validate();
                 }
@@ -619,7 +624,15 @@
             addEventListeners: function(ids) {
                 var self = this;
                 ids.forEach(function(id) {
-                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id);
+                    var elementEvent = self.userPropertyEvents.get(id);
+                    if (elementEvent) {
+                        document.querySelector("#id-" + id).onclick = elementEvent;
+                    }
+                    else {
+                        var newElementEvent = self.getOnUserPropertyClickEventListener(id);
+                        self.userPropertyEvents.set(id, newElementEvent);
+                        document.querySelector("#id-" + id).onclick = newElementEvent;
+                    }
                 });
             },
             reset: function(htmlContent, ids) {
@@ -664,6 +677,8 @@
                 nodesList.forEach(function(removedNode) {
                     if (removedNode.id) {
                         var idValue = removedNode.id.split('-')[1];
+                        removedNode.removeEventListener('click', self.userPropertyEvents.get(idValue));
+                        self.userPropertyEvents.delete(idValue);
                         self.$emit('delete', {id: idValue, container: self.container});
                     }
                 });
@@ -701,6 +716,16 @@
             },
             removePasteEventListener: function(callback) {
                 this.$refs.element.removeEventListener('paste', callback);
+            },
+            removeUserPropertyEventListeners: function() {
+                var self = this;
+                this.userPropertyEvents.forEach(function(value, key) {
+                    var userProperty = self.$refs.element.querySelector("#id-" + key);
+                    if (userProperty) {
+                        userProperty.removeEventListener('click', value);
+                    }
+                });
+                this.userPropertyEvents.clear();
             }
         },
         mounted: function() {
@@ -718,7 +743,7 @@
             this.addPasteEventListener(this.onPaste);
         },
         beforeDestroy: function() {
-            //TODO-LA: remove all user properties elements' event listeners
+            this.removeUserPropertyEventListeners();
             this.disconnectMutationObserver();
             this.removePasteEventListener(this.onPaste);
         },
