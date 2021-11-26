@@ -10,7 +10,6 @@
 
     var DEFAULT_LOCALIZATION_VALUE = 'default';
     var DEFAULT_LOCALIZATION_LABEL = 'Default';
-    var USER_PROPERTY_SUBSTITUE_CHAR = '\u200B';
 
     var TypeEnum = Object.freeze({
         ONE_TIME: "oneTime",
@@ -305,12 +304,15 @@
                     return firstUserPropertyId - secondUserPropertyId;
                 });
             },
+            isAdjacentIndex: function(previousIndex, currentIndex) {
+                return (parseInt(currentIndex) - 1) === parseInt(previousIndex);
+            },
             buildMessageText: function(message, userPropertiesDto) {
+                var self = this;
                 if (!message || !userPropertiesDto) {
                     return message || "";
                 }
-                var self = this;
-                var messageInHTMLString = this.decodeMessage(message);
+                var messageInHTMLString = message;
                 var buildMessageLength = 0;
                 var previousIndex = undefined;
                 this.sortUserProperties(userPropertiesDto).forEach(function(currentUserPropertyIndex, index) {
@@ -321,6 +323,9 @@
                     }
                     else {
                         var addedStringLength = currentUserPropertyIndex - previousIndex;
+                        if (self.isAdjacentIndex(previousIndex, currentUserPropertyIndex)) {
+                            addedStringLength = 0;
+                        }
                         var newIndex = buildMessageLength + addedStringLength;
                         messageInHTMLString = self.insertUserPropertyAtIndex(messageInHTMLString, newIndex, userPropertyStringElement);
                         buildMessageLength += userPropertyStringElement.length + addedStringLength;
@@ -822,27 +827,32 @@
                 }
                 return userPropertyIds;
             },
-            replaceUserProperties: function(localizedMessage, container) {
-                var element = document.createElement('div');
-                element.innerHTML = localizedMessage[container];
-                Object.keys(localizedMessage.properties[container]).forEach(function(propertyId) {
-                    var userPropElement = element.querySelector("#id-" + propertyId);
-                    element.replaceChild(document.createTextNode(USER_PROPERTY_SUBSTITUE_CHAR), userPropElement);
-                });
-                return element.innerHTML;
+            isAdjacentUserProperty: function(firstNodeIndex, secondNodeIndex) {
+                return firstNodeIndex === secondNodeIndex;
             },
             getUserPropertiesIndices: function(localizedMessage, container) {
+                var self = this;
                 var indices = [];
                 var element = document.createElement('div');
-                element.innerHTML = this.replaceUserProperties(localizedMessage, container);
-                var substitutedUserPropertyRegexp = new RegExp(USER_PROPERTY_SUBSTITUE_CHAR, 'g');
-                var match = substitutedUserPropertyRegexp.exec(element.textContent);
-                var userPropertyIndexCounter = 0;
-                while (match) {
-                    indices.push(match.index - userPropertyIndexCounter);
-                    userPropertyIndexCounter += 1;
-                    match = substitutedUserPropertyRegexp.exec(element.textContent);
-                }
+                element.innerHTML = localizedMessage[container];
+                var currentIndex = 0;
+                element.childNodes.forEach(function(node) {
+                    if (node.hasChildNodes()) {
+                        //NOTE:this is a user property node
+                        var previousIndex = indices[indices.length - 1];
+                        if (self.isAdjacentUserProperty(previousIndex, currentIndex)) {
+                            currentIndex += 1 ;
+                            indices.push(currentIndex);
+                        }
+                        else {
+                            indices.push(currentIndex);
+                        }
+                    }
+                    else {
+                        //NOTE:this is a text content node;
+                        currentIndex += node.textContent.length;
+                    }
+                });
                 return indices;
             },
             hasUserProperties: function(localizedMessage, container) {
