@@ -246,14 +246,14 @@ function uploadFile(myfile, id, callback) {
     */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
-        if (params.qstring.method !== "widgets" || surveysEnabled) {
+        if (params.qstring.method !== "feedback" || surveysEnabled) {
             return false;
         }
 
         return new Promise(function(resolve) {
             var widgets = [];
             plugins.dispatch("/feedback/widgets/ratings", { params: params, widgets: widgets }, function() {
-                common.returnOutput(params, widgets);
+                common.returnMessage(params, 200, widgets);
                 return resolve(true);
             });
         });
