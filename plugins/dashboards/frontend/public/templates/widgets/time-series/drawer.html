@@ -1,1 +1,7 @@
-<div></div>
+<div>
+    <app-count :apps="scope.editedObject.apps"></app-count>
+    <!-- <source-apps v-model="scope.editedObject.apps" :multiple="(scope.editedObject.apps.length > 1) ? true : false"></source-apps> -->
+    <select-data-type v-model="scope.editedObject.data_type"></select-data-type>
+    <select-metric v-model="scope.editedObject.metrics" :data-type="scope.editedObject.data_type"></select-metric>
+    <select-metric v-model="scope.editedObject.metrics" :data-type="scope.editedObject.data_type" multiple></select-metric>
+</div>

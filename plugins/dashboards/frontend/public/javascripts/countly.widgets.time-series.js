@@ -20,12 +20,15 @@
 
     var DrawerComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/time-series/drawer.html'),
+        components: {
+            'select-metric': countlyDashboards.helpers.MetricComponent,
+            'select-data-type': countlyDashboards.helpers.DataTypeComponent,
+            'app-count': countlyDashboards.helpers.AppCountComponent,
+            'source-apps': countlyDashboards.helpers.SourceAppsComponent
+        },
         props: {
             scope: {
-                type: Object,
-                default: function() {
-                    return {};
-                }
+                type: Object
             }
         }
     });
@@ -37,7 +40,11 @@
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
-                return {};
+                return {
+                    data_type: "",
+                    metrics: [],
+                    apps: []
+                };
             },
         },
         grid: {
