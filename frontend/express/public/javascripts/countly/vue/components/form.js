@@ -175,8 +175,12 @@
                 this.setStep(this.currentStepIndex + 1, 'next', !this.isCurrentStepValid);
             },
             reset: function() {
-                this.callValidators("reset");
+                var self = this;
+                // this.callValidators("reset");
                 this.setStep(0, 'reset');
+                this.$nextTick(function() {
+                    self.callValidators("reset");
+                });
             },
             submit: function(force) {
                 this.beforeLeavingStep();

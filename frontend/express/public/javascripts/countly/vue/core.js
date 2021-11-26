@@ -55,10 +55,10 @@
     var _i18nM = function(key) {
         var appType = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
         if (!appType || appType === "mobile") {
-            return jQuery.i18n.map[key];
+            return jQuery.i18n.map[key] || key;
         }
         else {
-            return jQuery.i18n.map[appType + "." + key] || jQuery.i18n.map[key];
+            return jQuery.i18n.map[appType + "." + key] || jQuery.i18n.map[key] || key;
         }
     };
 
