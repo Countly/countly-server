@@ -104,21 +104,22 @@
                 tableData: []
             };
         },
-        mounted: function(row) {
+        mounted: function() {
             var self = this;
             $.when(countlyTokenManager.initialize()).then(function() {
-                self.prepareTableData(row);
+                self.prepareTableData();
             });
         },
         methods: {
-            refresh: function(row) {
+            refresh: function() {
                 var self = this;
                 $.when(countlyTokenManager.initialize()).then(function() {
-                    self.prepareTableData(row);
+                    self.prepareTableData();
                 });
             },
-            prepareTableData: function(row) {
+            prepareTableData: function() {
                 var tableData = countlyTokenManager.getData();
+                var row;
                 for (var j = 0; j < tableData.length; j++) {
                     if (tableData[j]._id === countlyGlobal.auth_token) {
                         tableData.splice(j, 1);
@@ -137,18 +138,18 @@
                         row.ttlTime = countlyCommon.getTime(row.ends);
                     }
                     else {
-                        row.ttlDate = "No expiry";
+                        row.ttlDate = CV.i18n('token_manager.table.not-expire');
                     }
                     if (row.app) {
                         if (row.app.length === 0) {
-                            row.app = "All apps";
+                            row.app = CV.i18n('token_manager.table.all-apps');
                         }
                         else {
                             row.app = CountlyHelpers.appIdsToNames(row.app);
                         }
                     }
                     else {
-                        row.app = "All apps";
+                        row.app = CV.i18n('token_manager.table.all-apps');
                     }
                     if (row.purpose !== "") {
                         row.purpose = row.purpose[0].toUpperCase() + row.purpose.substring(1);
