@@ -15,7 +15,7 @@ var reportsInstance = {},
     log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info'),
     countlyConfig = require('../../../frontend/express/config.js');
-
+var pdf = require('html-pdf');
 countlyConfig.passwordSecret || "";
 
 plugins.setConfigs("reports", {
@@ -649,21 +649,27 @@ var metricProps = {
                     html: report.messages && report.messages[i] && report.messages[i].html || message,
                 };
 
-                if (report.messages && report.messages[i]) {
-                    msg.list = {
-                        unsubscribe: {
-                            url: report.messages[i].unsubscribeLink,
-                            comment: report.unsubscribe_local_string || 'Unsubscribe'
-                        }
-                    };
-                }
-
-                if (mail.sendPoolMail) {
-                    mail.sendPoolMail(msg);
-                }
-                else {
-                    mail.sendMail(msg);
-                }
+                var options = { "directory": "/tmp", "width": "1028px", height: "1000px" };
+                pdf.create(msg.html, options).toFile('/tmp/email_report_' + new Date().getTime() + '.pdf', function(err, res) {
+                    if (err) {
+                        return console.log(err);
+                    }
+                    msg.attachments = [{filename: "Countly_Report.pdf", path: res.filename}];
+                    if (report.messages && report.messages[i]) {
+                        msg.list = {
+                            unsubscribe: {
+                                url: report.messages[i].unsubscribeLink,
+                                comment: report.unsubscribe_local_string || 'Unsubscribe'
+                            }
+                        };
+                    }
+                    if (mail.sendPoolMail) {
+                        mail.sendPoolMail(msg);
+                    }
+                    else {
+                        mail.sendMail(msg);
+                    }
+                });
             }
         }
         callback();
