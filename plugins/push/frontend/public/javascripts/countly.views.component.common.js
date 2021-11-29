@@ -814,6 +814,9 @@
                     result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
                 }
                 return result;
+            },
+            hasAllPlatformMediaOnly: function() {
+                return !this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL && !this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
             }
         },
         components: {

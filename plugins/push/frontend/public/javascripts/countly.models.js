@@ -470,7 +470,7 @@
                 });
             },
             isNonDefaultLocale: function(locale) {
-                return Boolean(locale.la) && Boolean(locale.p);
+                return Boolean(locale.la) && !locale.p;
             },
             isPlatformSetting: function(locale) {
                 return !locale.la && Boolean(locale.p);

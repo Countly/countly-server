@@ -844,7 +844,11 @@
                         <review-section-row label="Button Text" :value="button.label"></review-section-row>
                         <review-section-row label="Button URL" :value="button.url"></review-section-row>
                     </template>
-                    <review-section-row label="Media URL" :value="pushNotificationUnderEdit.settings.all.mediaURL"></review-section-row>
+                    <review-section-row v-if="hasAllPlatformMediaOnly" label="Media URL" :value="pushNotificationUnderEdit.settings[PlatformEnum.ALL].mediaURL"></review-section-row>
+                    <template v-else>
+                        <review-section-row label="IOS Media URL" :value="previewIOSMediaURL"></review-section-row>
+                        <review-section-row label="Android Media URL" :value="previewAndroidMediaURL"></review-section-row>
+                    </template>
                 </div>
                 <template v-if="type === TypeEnum.ONE_TIME | type === TypeEnum.AUTOMATIC">
                     <div  class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">

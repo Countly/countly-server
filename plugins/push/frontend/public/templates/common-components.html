@@ -274,8 +274,11 @@
                     <details-tab-row :label="index === 0?i18n('push-notification-details.message-first-button-url'):i18n('push-notification-details.message-second-button-url')" :value="button.url"></details-tab-row>
                 </template>
             </template>
-            <details-tab-row :label="i18n('push-notification-details.ios-message-media-url')" :value="previewIOSMedia"></details-tab-row>
-            <details-tab-row :label="i18n('push-notification-details.android-message-media-url')" :value="previewAndroidMedia"></details-tab-row>
+            <details-tab-row v-if="hasAllPlatformMediaOnly" :label="i18n('push-notification-details.message-media-url')" :value="this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL"> </details-tab-row>
+            <template v-else>
+                <details-tab-row :label="i18n('push-notification-details.ios-message-media-url')" :value="previewIOSMedia"></details-tab-row>
+                <details-tab-row :label="i18n('push-notification-details.android-message-media-url')" :value="previewAndroidMedia"></details-tab-row>
+            </template>
         </div>
     </el-card>
 </script>

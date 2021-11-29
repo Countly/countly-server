@@ -306,16 +306,42 @@
                     return this.areCohortsAndLocationsRequired;
                 }
             },
+            hasAllPlatformMediaOnly: function() {
+                return (!this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL &&
+                !this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaURL) ||
+                (!this.settings[this.PlatformEnum.IOS].isMediaURLEnabled &&
+                !this.settings[this.PlatformEnum.ANDROID].isMediaURLEnabled);
+            },
+            previewIOSMediaURL: function() {
+                var result = "";
+                if (this.pushNotificationUnderEdit.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotificationUnderEdit.settings[this.PlatformEnum.ALL].mediaURL;
+                }
+                if (this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL && this.settings[this.PlatformEnum.IOS].isMediaURLEnabled) {
+                    result = this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL;
+                }
+                return result;
+            },
+            previewAndroidMediaURL: function() {
+                var result = "";
+                if (this.pushNotificationUnderEdit.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotificationUnderEdit.settings[this.PlatformEnum.ALL].mediaURL;
+                }
+                if (this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaURL && this.settings[this.PlatformEnum.ANDROID].isMediaURLEnabled) {
+                    result = this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaURL;
+                }
+                return result;
+            },
             previewMessageMedia: function() {
                 var result = {};
-                if (this.mediaMetadata[this.PlatformEnum.ANDROID]) {
+                if (this.mediaMetadata[this.PlatformEnum.ANDROID] && this.settings[this.PlatformEnum.ANDROID].isMediaURLEnabled) {
                     result[this.PlatformEnum.ANDROID] = {url: this.pushNotificationUnderEdit.settings.android.mediaURL, type: this.MediaTypeEnum.IMAGE};
                 }
-                if (this.mediaMetadata[this.PlatformEnum.IOS]) {
-                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.settings.ios.mediaURL, type: this.mediaMetadata.ios.type };
+                if (this.mediaMetadata[this.PlatformEnum.IOS] && this.settings[this.PlatformEnum.IOS].isMediaURLEnabled) {
+                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.settings.ios.mediaURL, type: this.mediaMetadata.ios.type};
                 }
                 if (this.mediaMetadata[this.PlatformEnum.ALL]) {
-                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE };
+                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE};
                 }
                 return result;
             },
@@ -407,8 +433,8 @@
             },
             dispatchUnknownErrorNotification: function() {
                 CountlyHelpers.notify({
-                    title: "Unknown error occurred",
-                    message: "Please try again later.",
+                    title: "Push Notification Error",
+                    message: "Unknown error occurred. Please try again later.",
                     type: "error"
                 });
             },
@@ -590,9 +616,6 @@
             },
             onSettingToggle: function(platform, property, value) {
                 this.settings[platform][property] = value;
-                if (!value) {
-                    this.pushNotificationUnderEdit.settings[platform][property] = "";
-                }
             },
             onTitleChange: function(value) {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].title = value;
