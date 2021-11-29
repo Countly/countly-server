@@ -230,7 +230,12 @@
             return infoDto.count === 0;
         },
         isNoPushCredentialsError: function(error) {
-            return error === 'No push credentials in db';
+            if (error.responseJSON) {
+                return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
+                    return message === 'No push credentials in db';
+                });
+            }
+            return false;
         },
         isNoUsersFoundError: function(error) {
             return error.message === 'No users were found from selected configuration';
@@ -276,6 +281,15 @@
                 }
             });
             return result;
+        },
+        shouldAddFilter: function(model) {
+            if (model.type === TypeEnum.ONE_TIME) {
+                return model.oneTime.targeting === TargetingEnum.SEGMENTED;
+            }
+            if (model.type === TypeEnum.AUTOMATIC) {
+                return true;
+            }
+            return false;
         }
     };
 
@@ -455,11 +469,11 @@
                     return {label: event, value: event};
                 });
             },
-            isDefaultLocale: function(locale) {
-                return !locale.la && !locale.p;
+            isNonDefaultLocale: function(locale) {
+                return Boolean(locale.la) && Boolean(locale.p);
             },
             isPlatformSetting: function(locale) {
-                return Boolean(locale.p);
+                return !locale.la && Boolean(locale.p);
             },
             findDefaultLocaleItem: function(contentsDto) {
                 //NOTE: default locale always resides at index position 0 of contents array
@@ -487,7 +501,7 @@
                 var index = 0;
                 while (!found && index < contentDto.length) {
                     var locale = contentDto[index];
-                    if (!this.isDefaultLocale(locale) && locale.la === localeKey) {
+                    if (this.isNonDefaultLocale(locale) && locale.la === localeKey) {
                         found = true;
                     }
                     else {
@@ -1379,12 +1393,15 @@
         }, DEBOUNCE_TIME_IN_MS),
         prepare: function(pushNotificationModel) {
             return new Promise(function(resolve, reject) {
-                var platforms = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
-                // var filters = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel);
+                var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
                 var data = {
                     app: countlyCommon.ACTIVE_APP_ID,
-                    platforms: platforms,
+                    platforms: platformsDto,
                 };
+                var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel);
+                if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel) && !countlyPushNotification.mapper.outgoing.areFiltersEmpty(filtersDto)) {
+                    data.filter = filtersDto;
+                }
                 CV.$.ajax({
                     type: "POST",
                     url: window.countlyCommon.API_URL + '/o/push/message/estimate',
@@ -1404,8 +1421,13 @@
                         var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
                         resolve({localizations: localizations, total: response.count, _id: response._id});
                     },
-                    error: function() {
+                    error: function(error) {
+                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
+                            reject(new Error('No push notification credentials were found'));
+                            return;
+                        }
                         reject(new Error('Unknown error occurred'));
+                        //TODO:log error
                     }
                 }, {disableAutoCatch: true});
             });
@@ -1430,13 +1452,9 @@
                         resolve();
                     },
                     error: function(error) {
-                        if (error.responseJSON && error.responseJSON.result) {
-                            if (error.responseJSON.result.errors && error.responseJSON.result.errors.some(function(message) {
-                                return countlyPushNotification.helper.isNoPushCredentialsError(message);
-                            })) {
-                                reject(new Error('No push notification credentials were found'));
-                                return;
-                            }
+                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
+                            reject(new Error('No push notification credentials were found'));
+                            return;
                         }
                         reject(new Error('Unknown error occurred.Please try again later.'));
                         //TODO:log error

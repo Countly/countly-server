@@ -45,11 +45,8 @@
 
     var InitialEditedPushNotification = {
         _id: null,
-        activePlatformSettings: [],
-        multipleLocalizations: false,
         name: "",
         platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
-        targeting: countlyPushNotification.service.TargetingEnum.ALL,
         audienceSelection: countlyPushNotification.service.AudienceSelectionEnum.BEFORE,
         message: {
             default: {
@@ -104,6 +101,9 @@
             days: 7,
             hours: 0
         },
+        oneTime: {
+            targeting: countlyPushNotification.service.TargetingEnum.ALL,
+        },
         automatic: {
             deliveryMethod: countlyPushNotification.service.DeliveryMethodEnum.IMMEDIATELY,
             delayed: {
@@ -129,7 +129,6 @@
         ios: 0,
         android: 0,
     };
-
 
     var InitialPushNotificationDrawerSettingsState = {
         ios: {
@@ -200,6 +199,7 @@
                 isAddUserPropertyPopoverOpen: false,
                 isUsersTimezoneSet: false,
                 isEndDateSet: false,
+                multipleLocalizations: false,
                 urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
                 addUserPropertyPopoverPosition: {
                     top: 0,
@@ -472,10 +472,11 @@
                 });
             },
             resetState: function() {
-                this.activeLocalization = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
-                this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
-                this.isConfirmed = false,
-                this.expandedPlatformSettings = [],
+                this.activeLocalization = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+                this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+                this.isConfirmed = false;
+                this.multipleLocalizations = false;
+                this.expandedPlatformSettings = [];
                 this.selectedUserPropertyContainer = "title";
                 this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
                 this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(InitialEditedPushNotification));
@@ -512,7 +513,7 @@
                 });
             },
             onMultipleLocalizationChange: function(isChecked) {
-                this.pushNotificationUnderEdit.multipleLocalizations = isChecked;
+                this.multipleLocalizations = isChecked;
                 if (!isChecked) {
                     this.setActiveLocalization(countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE);
                     this.resetMessageInHTMLToActiveLocalization();

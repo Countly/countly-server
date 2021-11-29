@@ -63,7 +63,7 @@
                         <div class="bu-level bu-is-flex-wrap-wrap">
                             <large-radio-button-with-description
                                 :label="TargetingEnum.ALL"  
-                                v-model="pushNotificationUnderEdit.targeting"
+                                v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting"
                                 title="All push-enabled users">   
                                 <div class="bu-is-flex bu-is-justify-content-flex-start bu-is-align-items-center">
                                     <span class="cly-vue-push-notification-large-radio-button-with-description__content-header">{{totalEnabledUsers}}</span> 
@@ -72,14 +72,14 @@
                             </large-radio-button-with-description>
                             <large-radio-button-with-description
                                 :label="TargetingEnum.SEGMENTED" 
-                                v-model="pushNotificationUnderEdit.targeting"
+                                v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting"
                                 title="Use segmentation"
                                 description="Some description for option goes here"
                                 :hasTopMargin="true">                        
                             </large-radio-button-with-description>
                         </div>
                     </div>
-                    <template v-if="pushNotificationUnderEdit.targeting === TargetingEnum.SEGMENTED">
+                    <template v-if="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED">
                         <div class="cly-vue-drawer-step__section">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Send to the users currently in selected cohorts(s)</div>
                             <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for message name</div>
@@ -518,12 +518,12 @@
                         <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-compose-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                     </div>
                     <div class="cly-vue-drawer-step__section">
-                        <el-checkbox :value="pushNotificationUnderEdit.multipleLocalizations" @change="onMultipleLocalizationChange">
+                        <el-checkbox :value="multipleLocalizations" @change="onMultipleLocalizationChange">
                             <div class="cly-vue-push-notification-drawer__checkbox-text">Allow to set different message content for different localizations</div>
                         </el-checkbox>
                     </div>
                     <div class="cly-vue-drawer-step__section bu-is-flex">
-                        <div class="cly-vue-push-notification-drawer__subsection-left " v-if="pushNotificationUnderEdit.multipleLocalizations">
+                        <div class="cly-vue-push-notification-drawer__subsection-left " v-if="multipleLocalizations">
                             <div v-for="localization in localizationOptions" v-bind:class="['bu-is-flex','bu-is-align-items-center','cly-vue-push-notification-drawer__subsection-left-row',activeLocalization === localization.value?'cly-vue-push-notification-drawer__subsection-left-row-active':null]">
                                 <el-checkbox 
                                     class="bu-ml-1"                        
@@ -538,7 +538,7 @@
                                 </li>
                             </div>
                         </div>
-                        <div v-bind:class="['bu-is-flex-grow-1','bu-p-1', pushNotificationUnderEdit.multipleLocalizations?'cly-vue-push-notification-drawer__subsection-right':'cly-vue-push-notification-drawer__subsection-border']">
+                        <div v-bind:class="['bu-is-flex-grow-1','bu-p-1', multipleLocalizations?'cly-vue-push-notification-drawer__subsection-right':'cly-vue-push-notification-drawer__subsection-border']">
                             <div class="cly-vue-drawer-step__section">
                                 <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
                                     <div class="cly-vue-push-notification-drawer__input-label">
@@ -853,8 +853,8 @@
                     <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
                         <template v-if="type === TypeEnum.ONE_TIME">
                             <review-section-row label="Targeted users">
-                                <template v-if="pushNotificationUnderEdit.targeting === TargetingEnum.ALL">
-                                    {{targetingOptions[pushNotificationUnderEdit.targeting].label}}
+                                <template v-if="pushNotificationUnderEdit[TypeEnum.ONE_TIME].targeting === TargetingEnum.ALL">
+                                    {{targetingOptions[pushNotificationUnderEdit.oneTime.targeting].label}}
                                 </template>
                                 <template v-else>
                                     {{previewCohorts(pushNotificationUnderEdit.cohorts).join(', ')}}
