@@ -72,9 +72,9 @@ class IncomingDataTrigger {
                     const ob = {
                         params: {
                             app_user: JSON.parse(JSON.stringify(obj.params.app_user)),
-                            app_id:  common.db.ObjectID(obj.params.app_id.toString()),
+                            app_id: common.db.ObjectID(obj.params.app_id.toString()),
                             req: {
-                                header: JSON.parse(JSON.stringify(obj.params.req.headers||{})),
+                                header: JSON.parse(JSON.stringify(obj.params.req.headers || {})),
                             },
                             ip_address: obj.params.ip_address,
                             qstring: JSON.parse(JSON.stringify(obj.params.qstring || {})),
@@ -93,10 +93,11 @@ class IncomingDataTrigger {
                         return;
                     }
                     this.process(e, ob);
-                } catch (err) {
+                }
+                catch (err) {
                     console.log(err);
                 }
-                
+
             });
         });
     }
