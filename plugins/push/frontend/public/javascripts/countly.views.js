@@ -386,7 +386,7 @@
             },
             onStepClick: function(nextStep, currentStep) {
                 if (this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep)) {
-                    return this.prepareMessage();
+                    return this.prepare();
                 }
                 if (this.isReviewNextStepFromContentStep(nextStep, currentStep)) {
                     return this.$refs.content.validate();
@@ -423,7 +423,7 @@
                     model.queryFilter = this.getQueryFilter();
                 }
             },
-            prepareMessage: function() {
+            prepare: function() {
                 var self = this;
                 this.setIsLoading(true);
                 return new Promise(function(resolve) {
@@ -720,6 +720,9 @@
                     this.mediaMetadata[platform] = null;
                 }
             },
+            setMediaMime: function(platform, value) {
+                this.pushNotificationUnderEdit.settings[platform].mediaMime = value;
+            },
             setMediaMetadata: function(platform, metadata) {
                 this.mediaMetadata[platform] = metadata;
             },
@@ -727,8 +730,10 @@
                 var self = this;
                 countlyPushNotification.service.fetchMediaMetadata(url).then(function(mediaMetadata) {
                     self.setMediaMetadata(platform, mediaMetadata);
+                    self.setMediaMime(platform, mediaMetadata.mime);
                 }).catch(function() {
                     self.setMediaMetadata(platform, {});
+                    self.setMediaMime(platform, "");
                 });
             },
             setCohortOptions: function(cohorts) {

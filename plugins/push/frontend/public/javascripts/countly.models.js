@@ -527,7 +527,7 @@
                 result[PlatformEnum.ANDROID] = this.mapAndroidSettings(androidSetting);
                 var defaultLocale = this.findDefaultLocaleItem(dto.contents);
                 result[PlatformEnum.ALL] = {};
-                result[PlatformEnum.ALL].mediaURL = defaultLocale.mediaURL || "";
+                result[PlatformEnum.ALL].mediaURL = defaultLocale.media || "";
                 result[PlatformEnum.ALL].mediaMime = defaultLocale.mediaMime || "";
                 return result;
             },
@@ -1150,7 +1150,7 @@
                 var contentsDto = this.mapMessageLocalization(pushNotificationModel);
                 if (pushNotificationModel.settings[PlatformEnum.ALL].mediaURL) {
                     var defaultLocale = countlyPushNotification.mapper.incoming.findDefaultLocaleItem(contentsDto);
-                    defaultLocale.mediaURL = pushNotificationModel.settings[PlatformEnum.ALL].mediaURL;
+                    defaultLocale.media = pushNotificationModel.settings[PlatformEnum.ALL].mediaURL;
                     defaultLocale.mediaMime = pushNotificationModel.settings[PlatformEnum.ALL].mediaMime;
                 }
                 var androidSettingsDto = this.mapAndroidSettings(pushNotificationModel, options);
