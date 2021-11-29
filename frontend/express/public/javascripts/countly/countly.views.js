@@ -8486,7 +8486,7 @@ app.addAppSwitchCallback(function(appId) {
             versions[z] = versions[z].join(".");
         }
 
-        if (versions[0] !== versions[1] || versions[1] !== versions[2]) {
+        if (versions[1] !== versions[2]) {
             CountlyHelpers.notify({
                 title: jQuery.i18n.map["version_history.alert-title"],
                 message: jQuery.i18n.map["version_history.alert-message"]
