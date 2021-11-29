@@ -67,8 +67,8 @@ class IncomingDataTrigger {
      */
     register() {
         InternalEvents.forEach((e) => {
-            plugins.register(e, (obj) => {
-                const ob = Object.assign({}, obj);
+            plugins.register(e, (/*obj*/) => {
+                /*const ob = JSON.parse(JSON.stringify(obj));
                 console.log(e, ob, "?##33333433");
                 if (e === '/plugins/drill') {
                     const hooksData = {
@@ -80,7 +80,7 @@ class IncomingDataTrigger {
                     this.process(e, hooksData);
                     return;
                 }
-                this.process(e, ob);
+                this.process(e, ob);*/
             });
         });
     }
