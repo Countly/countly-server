@@ -97,7 +97,6 @@ class IncomingDataTrigger {
                 catch (err) {
                     console.log(err);
                 }
-
             });
         });
     }
