@@ -31,9 +31,11 @@
             </div>
         </div>
         <slot v-if="hasDefaultSlot && toggle"></slot>
-        <validation-provider v-slot="validation" v-else-if="toggle" :rules="rules">
-            <el-input :value="input" @input="onInput" :placeholder="placeholder" :class="{'is-error': validation.errors.length > 0}" ></el-input>
-        </validation-provider>
+        <template v-else> 
+            <validation-provider v-slot="validation" v-if="toggle" :rules="rules">
+                <el-input :value="input" @input="onInput" :placeholder="placeholder" :class="{'is-error': validation.errors.length > 0}" ></el-input>
+            </validation-provider>
+        </template>
     </div>
 </script>
 
@@ -246,40 +248,52 @@
 
 <script type="text/x-template" id="details-message-tab">
     <el-card class="box-card cly-vue-push-notification-details-summary-card">
-        <div slot="header" class="clearfix">
-            <span>{{i18n('push-notification-details.localization-filter-label')}}</span>
-            <el-select v-model="selectedLocalization">
-                <el-option v-for="item in localizations" :key="item.value" :value="item.value" :label="item.label">
-                </el-option>
-            </el-select>
-        </div>
+        <template v-if="pushNotification.messageType === MessageTypeEnum.CONTENT">
+            <div slot="header" class="clearfix">
+                <span>{{i18n('push-notification-details.localization-filter-label')}}</span>
+                <el-select v-model="selectedLocalization">
+                    <el-option v-for="item in localizations" :key="item.value" :value="item.value" :label="item.label">
+                    </el-option>
+                </el-select>
+            </div>
+            <div>
+                <details-tab-row :label="i18n('push-notification-details.message-title')">
+                    <template v-for="(component) in previewMessageTitle">
+                        <keep-alive>
+                            <component v-bind:is="component.name" :value="component.value"></component>
+                        </keep-alive>
+                    </template>
+                </details-tab-row>
+                <details-tab-row :label="i18n('push-notification-details.message-content')">
+                    <template v-for="(component) in previewMessageContent">
+                        <keep-alive>
+                            <component v-bind:is="component.name" :value="component.value"></component>
+                        </keep-alive>
+                    </template>
+                </details-tab-row>
+                <template v-if="message.numberOfButtons>0">
+                    <template v-for="(button,index) in message.buttons">
+                        <details-tab-row :label="index === 0?i18n('push-notification-details.message-first-button-label'):i18n('push-notification-details.message-second-button-label')" :value="button.label"></details-tab-row>
+                        <details-tab-row :label="index === 0?i18n('push-notification-details.message-first-button-url'):i18n('push-notification-details.message-second-button-url')" :value="button.url"></details-tab-row>
+                    </template>
+                </template>
+                <details-tab-row v-if="hasAllPlatformMediaOnly" :label="i18n('push-notification-details.message-media-url')" :value="this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL"> </details-tab-row>
+                <template v-else>
+                    <details-tab-row :label="i18n('push-notification-details.ios-message-media-url')" :value="previewIOSMedia"></details-tab-row>
+                    <details-tab-row :label="i18n('push-notification-details.android-message-media-url')" :value="previewAndroidMedia"></details-tab-row>
+                </template>
+            </div>
+        </template>
+    <template v-if="pushNotification.messageType === MessageTypeEnum.SILENT">
         <div>
-            <details-tab-row :label="i18n('push-notification-details.message-title')">
-                <template v-for="(component) in previewMessageTitle">
-                    <keep-alive>
-                        <component v-bind:is="component.name" :value="component.value"></component>
-                    </keep-alive>
-                </template>
-            </details-tab-row>
-            <details-tab-row :label="i18n('push-notification-details.message-content')">
-                <template v-for="(component) in previewMessageContent">
-                    <keep-alive>
-                        <component v-bind:is="component.name" :value="component.value"></component>
-                    </keep-alive>
-                </template>
-            </details-tab-row>
-            <template v-if="message.numberOfButtons>0">
-                <template v-for="(button,index) in message.buttons">
-                    <details-tab-row :label="index === 0?i18n('push-notification-details.message-first-button-label'):i18n('push-notification-details.message-second-button-label')" :value="button.label"></details-tab-row>
-                    <details-tab-row :label="index === 0?i18n('push-notification-details.message-first-button-url'):i18n('push-notification-details.message-second-button-url')" :value="button.url"></details-tab-row>
-                </template>
-            </template>
-            <details-tab-row v-if="hasAllPlatformMediaOnly" :label="i18n('push-notification-details.message-media-url')" :value="this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL"> </details-tab-row>
-            <template v-else>
-                <details-tab-row :label="i18n('push-notification-details.ios-message-media-url')" :value="previewIOSMedia"></details-tab-row>
-                <details-tab-row :label="i18n('push-notification-details.android-message-media-url')" :value="previewAndroidMedia"></details-tab-row>
-            </template>
+            <details-tab-row :label="i18n('push-notification.ios-badge-number-setting')" :value="pushNotification.settings[PlatformEnum.IOS].badgeNumber"> </details-tab-row>
+            <details-tab-row :label="i18n('push-notification.ios-json-data-setting')" :value="pushNotification.settings[PlatformEnum.IOS].json"> </details-tab-row>
+            <details-tab-row :label="i18n('push-notification.ios-user-data-setting')" :value="pushNotification.settings[PlatformEnum.IOS].userData.join(', ')"> </details-tab-row>
+            <details-tab-row :label="i18n('push-notification.android-badge-number-setting')" :value="pushNotification.settings[PlatformEnum.ANDROID].badgeNumber"> </details-tab-row>
+            <details-tab-row :label="i18n('push-notification.android-json-data-setting')" :value="pushNotification.settings[PlatformEnum.ANDROID].json"> </details-tab-row>
+            <details-tab-row :label="i18n('push-notification.android-user-data-setting')" :value="pushNotification.settings[PlatformEnum.ANDROID].userData.join(', ')"> </details-tab-row>
         </div>
+    </template>
     </el-card>
 </script>
 

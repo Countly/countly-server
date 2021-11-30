@@ -507,7 +507,7 @@
                 <div class="cly-vue-drawer-step__section">
                     <div class="bu-is-flex bu-is-align-items-center">
                         <div class="bu-py-1 bu-my-1 bu-mr-1 cly-vue-push-notification-drawer__checkbox-label">NOTIFICATION TYPE</div>
-                        <el-select v-model="pushNotificationUnderEdit.messageType">
+                        <el-select :value="pushNotificationUnderEdit.messageType" @change="onMessageTypeChange">
                             <el-option v-for="item in messageTypeFilterOptions" :key="item.value" :value="item.value" :label="item.label"></el-option>
                         </el-select>
                     </div>
@@ -617,18 +617,18 @@
                     <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for platform settings.</div>
                 </div>
                 <div class="cly-vue-drawer-step__section">
-                    <el-collapse v-if="shouldDisplayIOSSettings" v-model="pushNotificationUnderEdit.expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow ">
-                        <el-collapse-item  name="PlatformEnum.IOS">
+                    <el-collapse v-if="shouldDisplayIOSSettings" v-model="expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow ">
+                        <el-collapse-item  :name="PlatformEnum.IOS">
                             <span class="collapse-title" slot="title"> IOS</span>
                             <message-setting-element 
                                 v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
-                                :input="pushNotificationUnderEdit.settings.ios.subtitle"
-                                :toggle="settings.ios.isSubtitleEnabled"
+                                :input="pushNotificationUnderEdit.settings.ios.soundFilename"
+                                :toggle="settings.ios.isSoundFilenameEnabled"
                                 rules="required"
-                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'subtitle',value)}"
-                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isSubtitleEnabled',value)}"
-                                label="Subtitle"
-                                placeholder="Enter your subtitle"
+                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'soundFilename',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isSoundFilenameEnabled',value)}"
+                                label="Sound File Name"
+                                placeholder="Enter sound file name"
                                 description="We can add some kind of description for platform settings.">
                             </message-setting-element>
                             <message-setting-element 
@@ -643,17 +643,6 @@
                                 </validation-provider>
                             </message-setting-element>
                             <message-setting-element 
-                                v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
-                                :input="pushNotificationUnderEdit.settings.ios.soundFilename"
-                                :toggle="settings.ios.isSoundFilenameEnabled"
-                                rules="required"
-                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'soundFilename',value)}"
-                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isSoundFilenameEnabled',value)}"
-                                label="Sound File Name"
-                                placeholder="Enter sound file name"
-                                description="We can add some kind of description for platform settings.">
-                            </message-setting-element>
-                            <message-setting-element 
                                 :input="pushNotificationUnderEdit.settings.ios.badgeNumber"
                                 :toggle="settings.ios.isBadgeNumberEnabled"
                                 rules="required|integer"
@@ -662,6 +651,17 @@
                                 label="Add Badge Number"
                                 placeholder="Enter badge number"
                                 description="We can add some kind of description for adding badge number">
+                            </message-setting-element>
+                            <message-setting-element 
+                                v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
+                                :input="pushNotificationUnderEdit.settings.ios.subtitle"
+                                :toggle="settings.ios.isSubtitleEnabled"
+                                rules="required"
+                                @onChange="function(value){onSettingChange(PlatformEnum.IOS,'subtitle',value)}"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isSubtitleEnabled',value)}"
+                                label="Subtitle"
+                                placeholder="Enter your subtitle"
+                                description="We can add some kind of description for platform settings.">
                             </message-setting-element>
                             <message-setting-element 
                                 v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
@@ -679,7 +679,7 @@
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isJsonEnabled',value)}"
                                 label="Send JSON"
                                 description="We can add some kind of description for sending JSON data">
-                                <validation-provider rules="json" v-slot="validation">
+                                <validation-provider rules="json|required" v-slot="validation">
                                     <el-input v-model="pushNotificationUnderEdit.settings.ios.json" type="textarea" @input="function(value){onSettingChange(PlatformEnum.IOS,'json',value)}" placeholder="Enter JSON data" :class="{'is-error': validation.errors.length > 0}"></el-input>
                                 </validation-provider>
                             </message-setting-element>
@@ -688,12 +688,14 @@
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isUserDataEnabled',value)}"
                                 label="Send User Data"
                                 description="We can add some kind of description for sending user data">
+                                <validation-provider rules="required" v-slot="validation">
                                     <el-select 
                                         v-model="pushNotificationUnderEdit.settings.ios.userData" 
                                         multiple 
                                         filterable
                                         reserve-keyword
                                         style="width:100%;"
+                                        :class="{'is-error': validation.errors.length > 0}"
                                         placeholder="Select user data">
                                             <el-option
                                             v-for="item in userPropertiesOptions"
@@ -702,25 +704,15 @@
                                             :value="item.value">
                                             </el-option>
                                     </el-select>
+                                </validation-provider>
                             </message-setting-element>
                         </el-collapse-item>
                     </el-collapse>
                 </div>
                 <div class="cly-vue-drawer-step__section">
-                    <el-collapse v-if="shouldDisplayAndroidSettings" v-model="pushNotificationUnderEdit.expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow ">
+                    <el-collapse v-if="shouldDisplayAndroidSettings" v-model="expandedPlatformSettings" class="cly-vue-push-notification-accordion-with-left-side-arrow ">
                         <el-collapse-item  :name="PlatformEnum.ANDROID">
                             <span class="collapse-title" slot="title"> Android</span>
-                            <message-setting-element
-                                v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
-                                :toggle="settings.android.isMediaURLEnabled"
-                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isMediaURLEnabled',value)}"
-                                label="Media URL"
-                                placeholder="Enter media URL"
-                                description="We can add some kind of description for platform settings.">
-                                <validation-provider v-slot="validation" ref="androidMediaURLValidationProvider" :rules="{required:true,push_notification_message_media_url:PlatformEnum.ANDROID}" mode="passive">
-                                    <el-input :value="pushNotificationUnderEdit.settings.android.mediaURL" @input="onAndroidMediaURLInput" placeholder="Enter Media URL" :class="{'is-error':validation.errors.length > 0}"></el-input>
-                                </validation-provider>
-                            </message-setting-element>
                             <message-setting-element 
                                 v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
                                 :input="pushNotificationUnderEdit.settings.android.soundFilename"
@@ -731,6 +723,17 @@
                                 label="Sound File Name"
                                 placeholder="Enter sound file name"
                                 description="We can add some kind of description for platform settings.">
+                            </message-setting-element>
+                            <message-setting-element
+                                v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
+                                :toggle="settings.android.isMediaURLEnabled"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isMediaURLEnabled',value)}"
+                                label="Media URL"
+                                placeholder="Enter media URL"
+                                description="We can add some kind of description for platform settings.">
+                                <validation-provider v-slot="validation" ref="androidMediaURLValidationProvider" :rules="{required:true,push_notification_message_media_url:PlatformEnum.ANDROID}" mode="passive">
+                                    <el-input :value="pushNotificationUnderEdit.settings.android.mediaURL" @input="onAndroidMediaURLInput" placeholder="Enter Media URL" :class="{'is-error':validation.errors.length > 0}"></el-input>
+                                </validation-provider>
                             </message-setting-element>
                             <message-setting-element 
                                 :input="pushNotificationUnderEdit.settings.android.badgeNumber"
@@ -750,7 +753,7 @@
                                 @onChange="function(value){onSettingChange(PlatformEnum.ANDROID,'icon',value)}"
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isIconEnabled',value)}"
                                 label="Icon"
-                                placeholder=""
+                                placeholder="Enter icon"
                                 description="We can add some kind of description for adding icon">
                             </message-setting-element>
                             <message-setting-element
@@ -769,7 +772,7 @@
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isJsonEnabled',value)}"
                                 label="Send JSON"
                                 description="We can add some kind of description for sending JSON data">
-                                <validation-provider rules="json" v-slot="validation">
+                                <validation-provider rules="json|required" v-slot="validation">
                                     <el-input v-model="pushNotificationUnderEdit.settings.android.json" type="textarea" @input="function(value){onSettingChange(PlatformEnum.ANDROID,'json',value)}" placeholder="Enter JSON data" :class="{'is-error': validation.errors.length > 0}"></el-input>
                                 </validation-provider>
                             </message-setting-element>
@@ -779,12 +782,14 @@
                                 @onToggle="function(value){onSettingToggle(PlatformEnum.ANDROID,'isUserDataEnabled',value)}"
                                 label="Send User Data"
                                 description="We can add some kind of description for sending user data">
+                                <validation-provider rules="required" v-slot="validation">
                                     <el-select 
                                         v-model="pushNotificationUnderEdit.settings.android.userData" 
                                         multiple 
                                         filterable
                                         reserve-keyword
                                         style="width:100%;"
+                                        :class="{'is-error': validation.errors.length > 0}"
                                         placeholder="Select user data">
                                         <el-option
                                             v-for="item in userPropertiesOptions"
@@ -793,6 +798,7 @@
                                             :value="item.value">
                                         </el-option>
                                     </el-select>
+                                </validation-provider>
                             </message-setting-element>
                         </el-collapse-item>
                     </el-collapse>
@@ -806,7 +812,7 @@
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
                     Message Content
                 </div>
-                <div class="cly-vue-drawer-step__section">
+                <div class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT">
                     <div class="bu-is-flex bu-is-align-items-center">
                         <div class="bu-py-1 bu-my-1 bu-mr-1 cly-vue-push-notification-drawer__checkbox-label">                                
                             {{i18n('push-notification-details.localization-filter-label')}}                          
@@ -820,34 +826,45 @@
                     </div>
                 </div>
                 <div class="cly-vue-push-notification-drawer__section-group bu-mb-3">
-                    <review-section-row label="Message name" :value="pushNotificationUnderEdit.name"></review-section-row>
-                    <review-section-row label="Platforms" :value="previewPlatforms.join(', ')"></review-section-row>
-                    <review-section-row label="Title">
-                        <div>
-                            <template v-for="(component) in previewMessageTitle">
-                                <keep-alive>
-                                    <component v-bind:is="component.name" :value="component.value"></component>
-                                </keep-alive>
-                            </template>
-                        </div>
-                    </review-section-row>
-                    <review-section-row label="Content">
-                        <div>
-                            <template v-for="(component) in previewMessageContent">
-                                <keep-alive>
-                                    <component v-bind:is="component.name" :value="component.value"></component>
-                                </keep-alive>
-                            </template>
-                        </div>
-                    </review-section-row>
-                    <template v-for="(button,index) in pushNotificationUnderEdit.message[selectedLocalizationFilter].buttons">
-                        <review-section-row label="Button Text" :value="button.label"></review-section-row>
-                        <review-section-row label="Button URL" :value="button.url"></review-section-row>
+                    <template v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT">
+                        <review-section-row label="Message name" :value="pushNotificationUnderEdit.name"></review-section-row>
+                        <review-section-row label="Platforms" :value="previewPlatforms.join(', ')"></review-section-row>
+                        <review-section-row label="Title">
+                            <div>
+                                <template v-for="(component) in previewMessageTitle">
+                                    <keep-alive>
+                                        <component v-bind:is="component.name" :value="component.value"></component>
+                                    </keep-alive>
+                                </template>
+                            </div>
+                        </review-section-row>
+                        <review-section-row label="Content">
+                            <div>
+                                <template v-for="(component) in previewMessageContent">
+                                    <keep-alive>
+                                        <component v-bind:is="component.name" :value="component.value"></component>
+                                    </keep-alive>
+                                </template>
+                            </div>
+                        </review-section-row>
+                        <template v-for="(button,index) in pushNotificationUnderEdit.message[selectedLocalizationFilter].buttons">
+                            <review-section-row label="Button Text" :value="button.label"></review-section-row>
+                            <review-section-row label="Button URL" :value="button.url"></review-section-row>
+                        </template>
+                        <review-section-row v-if="hasAllPlatformMediaOnly" label="Media URL" :value="pushNotificationUnderEdit.settings[PlatformEnum.ALL].mediaURL"></review-section-row>
+                        <template v-else>
+                            <review-section-row label="IOS Media URL" :value="previewIOSMediaURL"></review-section-row>
+                            <review-section-row label="Android Media URL" :value="previewAndroidMediaURL"></review-section-row>
+                        </template>
                     </template>
-                    <review-section-row v-if="hasAllPlatformMediaOnly" label="Media URL" :value="pushNotificationUnderEdit.settings[PlatformEnum.ALL].mediaURL"></review-section-row>
-                    <template v-else>
-                        <review-section-row label="IOS Media URL" :value="previewIOSMediaURL"></review-section-row>
-                        <review-section-row label="Android Media URL" :value="previewAndroidMediaURL"></review-section-row>
+                    <template v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.SILENT">
+                        <review-section-row label="IOS badge number" :value="pushNotificationUnderEdit.settings[PlatformEnum.IOS].badgeNumber"></review-section-row>
+                        <review-section-row label="IOS JSON data" :value="pushNotificationUnderEdit.settings[PlatformEnum.IOS].json"></review-section-row>
+                        <review-section-row label="IOS user data" :value="pushNotificationUnderEdit.settings[PlatformEnum.IOS].userData.join(', ')"></review-section-row>
+
+                        <review-section-row label="Android badge number" :value="pushNotificationUnderEdit.settings[PlatformEnum.ANDROID].badgeNumber"></review-section-row>
+                        <review-section-row label="Android JSON data" :value="pushNotificationUnderEdit.settings[PlatformEnum.ANDROID].json"></review-section-row>
+                        <review-section-row label="Android user data" :value="pushNotificationUnderEdit.settings[PlatformEnum.ANDROID].userData.join(', ')"></review-section-row>
                     </template>
                 </div>
                 <template v-if="type === TypeEnum.ONE_TIME | type === TypeEnum.AUTOMATIC">

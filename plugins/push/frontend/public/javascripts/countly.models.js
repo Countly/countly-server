@@ -636,6 +636,7 @@
                     localizations: localizations,
                     message: this.mapMessageLocalizationsList(localizations, dto),
                     settings: this.mapSettings(dto),
+                    messageType: dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
                     errors: this.mapErrors(dto),
                     sound: dto.sound,
                     locations: dto.filter && dto.filter.geos || [],
@@ -950,7 +951,7 @@
                 var iosSettings = model.settings[PlatformEnum.IOS];
                 var result = {};
                 result.p = PlatformDtoEnum.IOS;
-                if (iosSettings.soundFilename && options.settings[PlatformEnum.IOS].isSoundFilenameEnabled) {
+                if (iosSettings.soundFilename && options.settings[PlatformEnum.IOS].isSoundFilenameEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.sound = iosSettings.soundFilename;
                 }
                 if (iosSettings.badgeNumber && options.settings[PlatformEnum.IOS].isBadgeNumberEnabled) {
@@ -962,10 +963,10 @@
                 if (iosSettings.userData && iosSettings.userData.length && options.settings[PlatformEnum.IOS].isUserDataEnabled) {
                     result.extras = iosSettings.userData;
                 }
-                if (iosSettings.onClickURL && options.settings[PlatformEnum.IOS].isOnClickURLEnabled) {
+                if (iosSettings.onClickURL && options.settings[PlatformEnum.IOS].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.url = iosSettings.onClickURL;
                 }
-                if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled) {
+                if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = model.settings[PlatformEnum.IOS].mediaURL;
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
                 }
@@ -978,7 +979,7 @@
                 var androidSettings = model.settings[PlatformEnum.ANDROID];
                 var result = {};
                 result.p = PlatformDtoEnum.ANDROID;
-                if (androidSettings.soundFilename && options.settings[PlatformEnum.ANDROID].isSoundFilenameEnabled) {
+                if (androidSettings.soundFilename && options.settings[PlatformEnum.ANDROID].isSoundFilenameEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.sound = androidSettings.soundFilename;
                 }
                 if (androidSettings.badgeNumber && options.settings[PlatformEnum.ANDROID].isBadgeNumberEnabled) {
@@ -990,10 +991,10 @@
                 if (androidSettings.userData && androidSettings.userData.length && options.settings[PlatformEnum.ANDROID].isUserDataEnabled) {
                     result.extras = androidSettings.userData;
                 }
-                if (androidSettings.onClickURL && options.settings[PlatformEnum.ANDROID].isOnClickURLEnabled) {
+                if (androidSettings.onClickURL && options.settings[PlatformEnum.ANDROID].isOnClickURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.url = androidSettings.onClickURL;
                 }
-                if (model.settings[PlatformEnum.ANDROID].mediaURL && options.settings[PlatformEnum.ANDROID].isMediaURLEnabled) {
+                if (model.settings[PlatformEnum.ANDROID].mediaURL && options.settings[PlatformEnum.ANDROID].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = model.settings[PlatformEnum.ANDROID].mediaURL;
                     result.mediaMime = model.settings[PlatformEnum.ANDROID].mediaMime;
                 }
@@ -1001,6 +1002,9 @@
             },
             mapMessageLocalization: function(pushNotificationModel) {
                 var self = this;
+                if (pushNotificationModel.messageType === MessageTypeEnum.SILENT) {
+                    return [{}];
+                }
                 var content = [];
                 Object.keys(pushNotificationModel.message).forEach(function(localizationKey) {
                     var localeDto = {};
@@ -1137,6 +1141,7 @@
                 }
                 result.locales = this.mapLocalizations(model.localizations, options.localizations);
                 result.scheduled = model.delivery.type === SendEnum.LATER;
+                result.silent = model.messageType === MessageTypeEnum.SILENT;
                 return result;
             },
             mapModelToBaseDto: function(pushNotificationModel, options) {
@@ -1148,7 +1153,7 @@
                     resultDto._id = pushNotificationModel._id;
                 }
                 var contentsDto = this.mapMessageLocalization(pushNotificationModel);
-                if (pushNotificationModel.settings[PlatformEnum.ALL].mediaURL) {
+                if (pushNotificationModel.settings[PlatformEnum.ALL].mediaURL && pushNotificationModel.messageType === MessageTypeEnum.CONTENT) {
                     var defaultLocale = countlyPushNotification.mapper.incoming.findDefaultLocaleItem(contentsDto);
                     defaultLocale.media = pushNotificationModel.settings[PlatformEnum.ALL].mediaURL;
                     defaultLocale.mediaMime = pushNotificationModel.settings[PlatformEnum.ALL].mediaMime;

@@ -777,6 +777,7 @@
             return {
                 selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                MessageTypeEnum: countlyPushNotification.service.MessageTypeEnum,
             };
         },
         computed: {

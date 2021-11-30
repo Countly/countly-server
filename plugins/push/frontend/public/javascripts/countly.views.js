@@ -414,7 +414,7 @@
                 if (this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep)) {
                     return this.prepare();
                 }
-                if (this.isReviewNextStepFromContentStep(nextStep, currentStep)) {
+                if (this.isReviewNextStepFromContentStep(nextStep, currentStep) && this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.CONTENT) {
                     return this.$refs.content.validate();
                 }
                 return Promise.resolve(true);
@@ -537,6 +537,15 @@
                         self.$delete(self.pushNotificationUnderEdit.message, key);
                     }
                 });
+            },
+            expandPlatformSettingsIfSilentMessage: function() {
+                if (this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.SILENT) {
+                    this.expandedPlatformSettings = [].concat(this.pushNotificationUnderEdit.platforms);
+                }
+            },
+            onMessageTypeChange: function(value) {
+                this.pushNotificationUnderEdit.messageType = value;
+                this.expandPlatformSettingsIfSilentMessage();
             },
             onMultipleLocalizationChange: function(isChecked) {
                 this.multipleLocalizations = isChecked;
