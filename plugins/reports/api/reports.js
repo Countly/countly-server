@@ -649,8 +649,9 @@ var metricProps = {
                     html: report.messages && report.messages[i] && report.messages[i].html || message,
                 };
 
-                var options = { "directory": "/tmp", "width": "1028px", height: "1000px", phantomArgs: ["--ignore-ssl-errors=yes"] };
-                pdf.create(msg.html, options).toFile('/tmp/email_report_' + new Date().getTime() + '.pdf', function(err, res) {
+                const options = { "directory": "/tmp", "width": "1028px", height: "1000px", phantomArgs: ["--ignore-ssl-errors=yes"] };
+                const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
+                pdf.create(msg.html, options).toFile(filePath, function(err, res) {
                     if (err) {
                         return log.d(err);
                     }
@@ -664,10 +665,14 @@ var metricProps = {
                         };
                     }
                     if (mail.sendPoolMail) {
-                        mail.sendPoolMail(msg);
+                        mail.sendPoolMail(msg, function() {
+                            fs.unlink(filePath);
+                        });
                     }
                     else {
-                        mail.sendMail(msg);
+                        mail.sendMail(msg, function() {
+                            fs.unlink(filePath);
+                        });
                     }
                 });
             }
