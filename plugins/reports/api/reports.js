@@ -664,15 +664,25 @@ var metricProps = {
                             }
                         };
                     }
+
+
+                    /**
+                     * callback function after sending email to delete pdf file
+                     */
+                    const deletePDFCallback = function() {
+                        if (fs.existsSync(filePath)) {
+                            fs.unlink(filePath, (e) => {
+                                if (e) {
+                                    log.d(e);
+                                }
+                            });
+                        }
+                    };
                     if (mail.sendPoolMail) {
-                        mail.sendPoolMail(msg, function() {
-                            fs.unlink(filePath);
-                        });
+                        mail.sendPoolMail(msg, deletePDFCallback);
                     }
                     else {
-                        mail.sendMail(msg, function() {
-                            fs.unlink(filePath);
-                        });
+                        mail.sendMail(msg, deletePDFCallback);
                     }
                 });
             }
