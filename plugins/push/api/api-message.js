@@ -99,7 +99,11 @@ module.exports.create = async params => {
     msg.info.createdBy = params.member._id;
     msg.info.createdByName = params.member.full_name;
 
-    if (msg.triggerAutoOrApi()) {
+    if (msg.status === Status.Draft) {
+        msg.state = State.Inactive;
+        await msg.save();
+    }
+    else if (msg.triggerAutoOrApi()) {
         msg.state = State.Streamable;
         msg.status = Status.Scheduled;
         await msg.save();
@@ -130,6 +134,11 @@ module.exports.update = async params => {
         }
         else {
             throw new ValidationError('Wrong trigger kind');
+        }
+    }
+    else {
+        if (msg.triggerPlain() && (msg.is(State.Streamable) || msg.is(State.Created))) {
+            await msg.schedule();
         }
     }
 
@@ -395,7 +404,7 @@ module.exports.all = async params => {
             cursor.sort({[data.iSortCol_0]: data.sSortDir_0 === 'asc' ? -1 : 1});
         }
         else {
-            cursor.sort({'info.created': -1});
+            cursor.sort({'trigger.start': -1});
         }
 
         let items = await cursor.toArray();

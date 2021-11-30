@@ -558,7 +558,7 @@ class Message extends Mongoable {
         let plain = this.triggerPlain();
         if (plain) {
             let date = plain.delayed ? plain.start.getTime() - DEFAULTS.schedule_ahead : Date.now();
-            await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id}).replace().once(date, true);
+            await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id}).replace().once(date);
         }
     }
 }
