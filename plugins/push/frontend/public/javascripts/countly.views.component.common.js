@@ -149,6 +149,10 @@
                 type: String,
                 default: ""
             },
+            usePre: {
+                type: Boolean,
+                default: false
+            }
         },
         computed: {
             hasDefaultSlot: function() {
@@ -763,6 +767,10 @@
                 type: String,
                 default: ""
             },
+            usePre: {
+                type: Boolean,
+                default: false,
+            }
         },
         computed: {
             hasDefaultSlot: function() {
@@ -818,6 +826,11 @@
             },
             hasAllPlatformMediaOnly: function() {
                 return !this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL && !this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
+            }
+        },
+        methods: {
+            prettifyJSON: function(value) {
+                return countlyPushNotification.helper.prettifyJSON(value, 2);
             }
         },
         components: {

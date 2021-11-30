@@ -290,7 +290,16 @@
                 return true;
             }
             return false;
-        }
+        },
+        prettifyJSON: function(value, indentation) {
+            if (!value) {
+                return value;
+            }
+            if (!indentation) {
+                indentation = 2;
+            }
+            return JSON.stringify(JSON.parse(value), null, indentation);
+        },
     };
 
     countlyPushNotification.mapper = {
@@ -636,7 +645,7 @@
                     localizations: localizations,
                     message: this.mapMessageLocalizationsList(localizations, dto),
                     settings: this.mapSettings(dto),
-                    messageType: dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
+                    messageType: MessageTypeEnum.SILENT,
                     errors: this.mapErrors(dto),
                     sound: dto.sound,
                     locations: dto.filter && dto.filter.geos || [],
@@ -958,7 +967,7 @@
                     result.badge = parseInt(iosSettings.badgeNumber);
                 }
                 if (iosSettings.json && options.settings[PlatformEnum.IOS].isJsonEnabled) {
-                    result.data = iosSettings.json;
+                    result.data = countlyPushNotification.helper.prettifyJSON(iosSettings.json, 0);
                 }
                 if (iosSettings.userData && iosSettings.userData.length && options.settings[PlatformEnum.IOS].isUserDataEnabled) {
                     result.extras = iosSettings.userData;
@@ -986,7 +995,7 @@
                     result.badge = parseInt(androidSettings.badgeNumber);
                 }
                 if (androidSettings.json && options.settings[PlatformEnum.ANDROID].isJsonEnabled) {
-                    result.data = androidSettings.json;
+                    result.data = countlyPushNotification.helper.prettifyJSON(androidSettings.json, 0);
                 }
                 if (androidSettings.userData && androidSettings.userData.length && options.settings[PlatformEnum.ANDROID].isUserDataEnabled) {
                     result.extras = androidSettings.userData;

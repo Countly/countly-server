@@ -859,11 +859,11 @@
                     </template>
                     <template v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.SILENT">
                         <review-section-row label="IOS badge number" :value="pushNotificationUnderEdit.settings[PlatformEnum.IOS].badgeNumber"></review-section-row>
-                        <review-section-row label="IOS JSON data" :value="pushNotificationUnderEdit.settings[PlatformEnum.IOS].json"></review-section-row>
+                        <review-section-row label="IOS JSON data" :value="prettifyJSON(pushNotificationUnderEdit.settings[PlatformEnum.IOS].json)" :usePre="true"></review-section-row>
                         <review-section-row label="IOS user data" :value="pushNotificationUnderEdit.settings[PlatformEnum.IOS].userData.join(', ')"></review-section-row>
 
                         <review-section-row label="Android badge number" :value="pushNotificationUnderEdit.settings[PlatformEnum.ANDROID].badgeNumber"></review-section-row>
-                        <review-section-row label="Android JSON data" :value="pushNotificationUnderEdit.settings[PlatformEnum.ANDROID].json"></review-section-row>
+                        <review-section-row label="Android JSON data" :value="prettifyJSON(pushNotificationUnderEdit.settings[PlatformEnum.ANDROID].json)" :usePre="true"></review-section-row>
                         <review-section-row label="Android user data" :value="pushNotificationUnderEdit.settings[PlatformEnum.ANDROID].userData.join(', ')"></review-section-row>
                     </template>
                 </div>

@@ -626,6 +626,9 @@
             onSettingToggle: function(platform, property, value) {
                 this.settings[platform][property] = value;
             },
+            prettifyJSON: function(value) {
+                return countlyPushNotification.helper.prettifyJSON(value, 2);
+            },
             onTitleChange: function(value) {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].title = value;
             },
