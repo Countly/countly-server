@@ -649,10 +649,10 @@ var metricProps = {
                     html: report.messages && report.messages[i] && report.messages[i].html || message,
                 };
 
-                var options = { "directory": "/tmp", "width": "1028px", height: "1000px" };
+                var options = { "directory": "/tmp", "width": "1028px", height: "1000px", phantomArgs:["--ignore-ssl-errors=yes"] };
                 pdf.create(msg.html, options).toFile('/tmp/email_report_' + new Date().getTime() + '.pdf', function(err, res) {
                     if (err) {
-                        return console.log(err);
+                        return log.d(err);
                     }
                     msg.attachments = [{filename: "Countly_Report.pdf", path: res.filename}];
                     if (report.messages && report.messages[i]) {
