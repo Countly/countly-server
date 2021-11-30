@@ -3,11 +3,26 @@
 (function() {
     var TimeSeriesComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/time-series/widget.html'),
+        mixins: [countlyDashboards.mixins.AppsMixin],
         props: {
             data: {
                 type: Object,
                 default: function() {
                     return {};
+                }
+            }
+        },
+        computed: {
+            apps: function() {
+                var apps = this.data.apps;
+                var appData = [];
+
+                for (var i = 0; i < apps.length; i++) {
+                    var appId = apps[i];
+                    appData.push({
+                        id: appId,
+                        name: this.getAppName(appId)
+                    });
                 }
             }
         },
@@ -21,10 +36,10 @@
     var DrawerComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/time-series/drawer.html'),
         components: {
-            'select-metric': countlyDashboards.helpers.MetricComponent,
-            'select-data-type': countlyDashboards.helpers.DataTypeComponent,
-            'app-count': countlyDashboards.helpers.AppCountComponent,
-            'source-apps': countlyDashboards.helpers.SourceAppsComponent
+            'select-metric': countlyDashboards.components.MetricComponent,
+            'select-data-type': countlyDashboards.components.DataTypeComponent,
+            'app-count': countlyDashboards.components.AppCountComponent,
+            'source-apps': countlyDashboards.components.SourceAppsComponent
         },
         props: {
             scope: {

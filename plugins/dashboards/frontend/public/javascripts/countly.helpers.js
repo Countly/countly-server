@@ -1,4 +1,4 @@
-/*global countlyVue, CV */
+/*global countlyVue, CV, countlyGlobal */
 
 (function(countlyDashboards) {
 
@@ -210,11 +210,60 @@
         }
     });
 
-    countlyDashboards.helpers = {
+    var WidgetsMixin = {
+        computed: {
+            __widgets: function() {
+                var w = countlyVue.container.dataMixin({
+                    widgets: "/custom/dashboards/widget"
+                });
+
+                w = w.data().widgets;
+
+                w = w.reduce(function(acc, component) {
+                    acc[component.type] = component;
+                    return acc;
+                }, {});
+
+                return w;
+            }
+        }
+    };
+
+    var AppsMixin = {
+        methods: {
+            getAppname: function(appId) {
+                var selected = this.$store.getters["countlyDashboards/selected"];
+                var dash = selected.data || {};
+
+                var dashboardApps = dash.apps || [];
+
+                var appName = "Unknown";
+
+                var appObj = dashboardApps.find(function(app) {
+                    return app._id === appId;
+                });
+
+                if (appObj && appObj.name) {
+                    appName = appObj.name;
+                }
+                else if (countlyGlobal.apps[appId]) {
+                    appName = countlyGlobal.apps[appId].name;
+                }
+
+                return appName;
+            }
+        }
+    };
+
+    countlyDashboards.components = {
         MetricComponent: MetricComponent,
         DataTypeComponent: DataTypeComponent,
         AppCountComponent: AppCountComponent,
         SourceAppsComponent: SourceAppsComponent
+    };
+
+    countlyDashboards.mixins = {
+        AppsMixin: AppsMixin
     };
 
 })(window.countlyDashboards = window.countlyDashboards || {});

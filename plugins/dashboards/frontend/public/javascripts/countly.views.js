@@ -202,7 +202,8 @@
         },
         computed: {
             allWidgets: function() {
-                return this.$store.getters["countlyDashboards/widgets/all"];
+                var widgets = this.$store.getters["countlyDashboards/widgets/all"];
+                return widgets;
             },
             canUpdate: function() {
                 var dashboard = this.$store.getters["countlyDashboards/selected"];
