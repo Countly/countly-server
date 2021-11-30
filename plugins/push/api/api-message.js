@@ -7,17 +7,25 @@ const { Message, Creds, State, Status, platforms, Audience, ValidationError, Tri
  * Validate data & construct message out of it, throw in case of error
  * 
  * @param {object} args plain object to construct Message from
- * @param {boolean} preparing true if we need to skip checking triggers/contents presense
+ * @param {boolean} draft true if we need to skip checking data for validity
  * @returns {PostMessageOptions} Message instance in case validation passed, array of error messages otherwise
  * @throws {ValidationError} in case of error
  */
-async function validate(args, preparing = false) {
-    let msg = Message.validate(args);
-    if (msg.result) {
-        msg = new Message(msg.obj);
+async function validate(args, draft = false) {
+    let msg;
+    if (draft) {
+        msg = new Message(args);
+        msg.state = State.Inactive;
+        msg.status = Status.Draft;
     }
     else {
-        throw new ValidationError(msg.errors);
+        msg = Message.validate(args);
+        if (msg.result) {
+            msg = new Message(msg.obj);
+        }
+        else {
+            throw new ValidationError(msg.errors);
+        }
     }
 
     let app = await common.db.collection('apps').findOne(msg.app);
@@ -77,30 +85,17 @@ async function validate(args, preparing = false) {
         msg.result = existing.result;
     }
 
-    if (!preparing) {
-        if (!msg.triggers.length) {
-            throw new ValidationError('Message must have at least one Trigger');
-        }
-        if (!msg.contents.length) {
-            throw new ValidationError('Message must have at least one Content');
-        }
-        if (!msg.contents[0].expiration) {
-            throw new ValidationError('Default Content must have expiration value');
-        }
-    }
-
     return msg;
 }
 
 module.exports.create = async params => {
-    let msg = await validate(params.qstring);
+    let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
     msg._id = common.db.ObjectID();
     msg.info.created = new Date();
     msg.info.createdBy = params.member._id;
     msg.info.createdByName = params.member.full_name;
 
-    if (msg.status === Status.Draft) {
-        msg.state = State.Inactive;
+    if (params.qstring.status === Status.Draft) {
         await msg.save();
     }
     else if (msg.triggerAutoOrApi()) {
@@ -122,7 +117,7 @@ module.exports.create = async params => {
 };
 
 module.exports.update = async params => {
-    let msg = await validate(params.qstring);
+    let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
 
     if (msg.is(State.Done)) {
         if (msg.triggerAutoOrApi()) {
@@ -137,8 +132,13 @@ module.exports.update = async params => {
         }
     }
     else {
-        if (msg.triggerPlain() && (msg.is(State.Streamable) || msg.is(State.Created))) {
-            await msg.schedule();
+        if (msg.triggerPlain()) {
+            if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
+                await msg.schedule();
+            }
+            else if (msg.is(State.Streamable) || msg.is(State.Created)) {
+                await msg.schedule();
+            }
         }
     }
 
