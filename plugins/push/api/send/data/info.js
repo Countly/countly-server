@@ -9,6 +9,7 @@ class Info extends Jsonable {
      * @param {object}      data                message info data
      * @param {string}      data.title          message title if any
      * @param {string}      data.appName        app name
+     * @param {boolean}     data.silent         silent message switch, UI-only
      * @param {object}      data.locales        locales object ({en: .3, de: 0.01, fr: 0.5})
      * @param {Date}        data.created        date of creation
      * @param {string}      data.createdBy      user who created
@@ -31,6 +32,7 @@ class Info extends Jsonable {
         return {
             title: {type: 'String', required: false},
             appName: {type: 'String', required: false},
+            silent: {type: 'Boolean', required: false},
             locales: {type: 'Object', required: false},
             created: {type: 'Date', required: false},
             createdBy: {type: 'String', required: false},
@@ -90,6 +92,29 @@ class Info extends Jsonable {
         }
         else {
             delete this._data.appName;
+        }
+    }
+
+    /**
+     * Getter for silent
+     * 
+     * @returns {string|undefined} message silent
+     */
+    get silent() {
+        return this._data.silent;
+    }
+
+    /**
+     * Setter for silent
+     * 
+     * @param {string|undefined} silent message silent
+     */
+    set silent(silent) {
+        if (silent !== null && silent !== undefined) {
+            this._data.silent = silent;
+        }
+        else {
+            delete this._data.silent;
         }
     }
 
