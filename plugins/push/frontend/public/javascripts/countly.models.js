@@ -645,7 +645,7 @@
                     localizations: localizations,
                     message: this.mapMessageLocalizationsList(localizations, dto),
                     settings: this.mapSettings(dto),
-                    messageType: MessageTypeEnum.SILENT,
+                    messageType: dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
                     errors: this.mapErrors(dto),
                     sound: dto.sound,
                     locations: dto.filter && dto.filter.geos || [],
