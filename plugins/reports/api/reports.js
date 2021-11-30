@@ -640,8 +640,8 @@ var metricProps = {
 
     reports.send = function(report, message, callback) {
         if (report.emails) {
-            for (var i = 0; i < report.emails.length; i++) {
-                var msg = {
+            for (let i = 0; i < report.emails.length; i++) {
+                const msg = {
                     to: report.emails[i],
                     from: versionInfo.title,
                     subject: report.subject,
