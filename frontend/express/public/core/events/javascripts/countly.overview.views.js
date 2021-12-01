@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCommon, countlyEventsOverview,CV,app*/
+/* global countlyVue, countlyCommon, countlyEventsOverview,CV,app,setTimeout*/
 (function() {
     var EventsTable = countlyVue.views.BaseView.extend({
         mixins: [countlyVue.mixins.i18n],
@@ -263,13 +263,20 @@
         data: function() {
             return {
                 items: [],
-                linkTo: {"label": CV.i18n('events.go-to-events'), "href": "#/analytics/events/overview"}
+                linkTo: {"label": CV.i18n('events.go-to-events'), "href": "#/analytics/events/overview"},
+                isLoading: false,
+                isLoadedOnce: false
             };
         },
         mounted: function() {
             var self = this;
+            this.isLoading = true;
             this.$store.dispatch('countlyEventsOverview/fetchTopEvents', 5).then(function() {
                 self.calculateAllData();
+                self.isLoading = false;
+                self.isLoadedOnce = true;
+            }).catch(function(errored) {
+                self.dealWithError(errored);
             });
         },
         beforeCreate: function() {
@@ -280,10 +287,33 @@
             CV.vuex.unregister(this.module.name);
         },
         methods: {
+            dealWithError: function(errored) {
+                var self = this;
+                if (errored && errored.abort_reason === "duplicate") {
+                    if (self.isLoadedOnce) { //we have something, show that.
+                        self.calculateAllData();
+                        self.isLoading = false;
+                    }
+                    else {
+                        setTimeout(self.refresh(), 1000); //we have nothing retry.
+                    }
+                }
+                else {
+                    this.vm.$root.$emit("cly-error", {message: errored});//show error
+                }
+
+            },
             refresh: function() {
                 var self = this;
+                if (this.isLoadedOnce === false) {
+                    self.isLoading = false;
+                }
                 this.$store.dispatch('countlyEventsOverview/fetchTopEvents', 5).then(function() {
                     self.calculateAllData();
+                    self.isLoading = false;
+                    self.isLoadedOnce = true;
+                }).catch(function(errored) {
+                    self.dealWithError(errored);
                 });
             },
             calculateAllData: function() {
