@@ -122,6 +122,20 @@
                             parameter.status = "Expired";
                         }
                     });
+                    if (conditions.length > 0) {
+                        var map = {};
+                        conditions.forEach(function(c) {
+                            map[c._id] = {
+                                "condition": c.condition,
+                                "condition_color": c.condition_color,
+                                "condition_definition": c.condition_definition,
+                                "condition_name": c.condition_name,
+                                "seed_value": c.seed_value,
+                                "used_in_parameters": c.used_in_parameters
+                            };
+                        });
+                        context.dispatch("countlyRemoteConfig/parameters/conditionsMap", map, {root: true});
+                    }
                     context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
                     context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
                 });
@@ -132,7 +146,10 @@
             state: function() {
                 return {
                     all: [],
-                    showJsonEditor: false
+                    showJsonEditor: false,
+                    showJsonEditorForCondition: false,
+                    conditionsMap: {},
+                    showConditionDialog: false
                 };
             },
             getters: {
@@ -141,6 +158,15 @@
                 },
                 showJsonEditor: function(state) {
                     return state.showJsonEditor;
+                },
+                showJsonEditorForCondition: function(state) {
+                    return state.showJsonEditorForCondition;
+                },
+                conditionsMap: function(state) {
+                    return state.conditionsMap;
+                },
+                showConditionDialog: function(state) {
+                    return state.showConditionDialog;
                 }
             },
             mutations: {
@@ -149,14 +175,32 @@
                 },
                 setShowJsonEditor: function(state, val) {
                     state.showJsonEditor = val;
+                },
+                setConditionsMap: function(state, val) {
+                    state.conditionsMap = val;
+                },
+                setShowJsonEditorForCondition: function(state, val) {
+                    state.showJsonEditorForCondition = val;
+                },
+                setConditionDialog: function(state, val) {
+                    state.showConditionDialog = val;
                 }
             },
             actions: {
+                conditionsMap: function(context, map) {
+                    context.commit("setConditionsMap", map);
+                },
                 all: function(context, parameters) {
                     context.commit("setAll", parameters);
                 },
                 showJsonEditor: function(context, parameter) {
                     context.commit("setShowJsonEditor", parameter);
+                },
+                showJsonEditorForCondition: function(context, parameter) {
+                    context.commit("setShowJsonEditorForCondition", parameter);
+                },
+                showConditionDialog: function(context, parameter) {
+                    context.commit("setConditionDialog", parameter);
                 },
                 create: function(context, parameter) {
                     return countlyRemoteConfig.service.createParameter(parameter).then(function() {

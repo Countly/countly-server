@@ -61,6 +61,13 @@
         background-color: transparent;
       }
 
+    &__condition {
+        border-radius: 4px;
+        display: inline-block;
+        padding: 10px;
+        border: 1px solid #ddd;
+    }
+
 }
 .cly-vue-remote-config {
     	  &__header {
@@ -69,4 +76,36 @@
 			letter-spacing: 0.003em;
             font-family:  t.$font-family;
 		  }
+}
+.cly-vue-remote-config-percentages-breakdown {
+    width:100%;
+    &__data {
+        width: max-content;
+        border-radius: 4px;
+    }
+    &__default-value {
+        background-color: map.get(c.$colors, "cool-gray-20");
+        &__value{
+            background-color: map.get(c.$colors, "white");
+            border-radius: 4px;
+        }
+    }
+    &__condition {
+        &__value{
+            background-color: map.get(c.$colors, "white");
+            border-radius: 4px;
+        }
+    }
+    th {
+        background-color: transparent !important;
+    }
+    &__sequence {
+        &__heading{
+            width:10%;
+        }
+        display: inline-block;
+        font-size: t.$text-smaller-size;
+        border-radius: 4px;
+        background-color: map.get(c.$colors, "warm-gray-20");
+    }
 }
