@@ -1450,6 +1450,9 @@
             }
             .cly-vue-drawer__footer {
                 padding: 16px;
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
             }
             @for $i from 1 through 12 {
                 &-#{$i}{
@@ -1596,11 +1599,11 @@
             width: 100%;
         }
 
-        &__controls-left-pc {
-            display: inline-block;
-            height: 30px;
-            padding-top: 10px;
-        }
+        // &__controls-left-pc {
+        //     display: inline-block;
+        //     height: 30px;
+        //     padding-top: 10px;
+        // }
         &__header:not(.is-full-screen) {
             border-bottom: 1px solid #CFD6E4;
         }
@@ -1641,7 +1644,7 @@
         border-radius: 2px;
         box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
         box-sizing: border-box;
-        top: 100px;
+        top: 15vh;
         left: calc(50% - 260px);
 
         &__header {
@@ -1650,16 +1653,19 @@
 
         &__footer {
             border-top: 2px solid #ECECEC;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
         }
 
-        &__steps-container {
-        }
+        // &__steps-container {
+        // }
 
-        &__controls-left-pc {
-            display: inline-block;
-            height: 30px;
-            padding-top: 10px;
-        }
+        // &__controls-left-pc {
+        //     display: inline-block;
+        //     height: 30px;
+        //     padding-top: 10px;
+        // }
     }
 
     .cly-vue-form {
