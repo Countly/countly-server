@@ -77,6 +77,32 @@ class Validatable extends Jsonable {
     }
 
     /**
+     * Override Jsonable logic allowing only valid data to be saved
+     */
+    get json() {
+        let json = {},
+            scheme = this.constructor.scheme;
+        Object.keys(scheme)
+            .filter(k => this._data[k] !== null && this._data[k] !== undefined)
+            .forEach(k => {
+                let v = this._data[k];
+                if (v instanceof Validatable) {
+                    json[k] = v.json;
+                }
+                else if (Array.isArray(v)) {
+                    json[k] = v.map(x => x instanceof Validatable ? x.json : x);
+                }
+                else {
+                    let valid = require('./common').validateArgs({data: this._data[k]}, {data: scheme[k]});
+                    if (valid) {
+                        json[k] = valid.data;
+                    }
+                }
+            });
+        return json;
+    }
+
+    /**
      * Validate data 
      * 
      * @param {object} data data to validate
