@@ -596,17 +596,17 @@
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
                             '<div class="bu-is-flex bu-is-justify-content-space-between" style="overflow-wrap:anywhere;">\n' +
                                 '<img :src="image" class="bu-mr-4 bu-my-1 bu-ml-1 alert-image">\n' +
-                                '<span class="alert-text bu-my-auto">{{text}}</span>\n' +
+                                '<slot><span class="alert-text bu-my-auto">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div @click="closeModal" class="bu-mr-3 bu-ml-6" style="margin:auto">\n' +
-                                '<slot><i class="el-icon-close"></i></slot>\n' +
+                                '<slot name="close"><i class="el-icon-close"></i></slot>\n' +
                             '</div>\n' +
                         '</div>\n' +
                     '</div>\n',
         mixins: [countlyVue.mixins.i18n],
         props: {
-            text: { required: true, type: String },
-            color: { default: "green", type: String},
+            text: { default: "", type: String },
+            color: { default: "light-warning", type: String},
             size: {default: "fullScreen", type: String},
             visible: {default: true, type: Boolean}
         },

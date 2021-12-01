@@ -31,15 +31,13 @@
         border-radius: 12px;
         min-height: 48px;
         font-weight: 400;
-        &--fullScreen {
+        &--full {
             width: 100%
         }
-        &--inlineBlock {
+        &--inline {
             display: inline-block;
         }
         &__alert-text {
-            font-family: Inter;
-            font-style: normal;
             font-size: 16px;
             line-height: 22px;
             &--light-informational {
