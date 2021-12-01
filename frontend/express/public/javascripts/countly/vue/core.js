@@ -1,4 +1,4 @@
-/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store */
+/* global countlyCommon, jQuery, Vue, Vuex, T, countlyView, Promise, VueCompositionAPI, app, countlyGlobal, store, countlyAuth */
 
 (function(countlyVue, $) {
 
@@ -29,7 +29,7 @@
     };
 
     var _i18n = function() {
-        var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        var appType = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
         arguments = arguments || [];
         if (arguments.length === 1) { //single arg. use map
             return _i18nM(arguments[0]);
@@ -53,12 +53,12 @@
     };
 
     var _i18nM = function(key) {
-        var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+        var appType = (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type) || "mobile";
         if (!appType || appType === "mobile") {
-            return jQuery.i18n.map[key];
+            return jQuery.i18n.map[key] || key;
         }
         else {
-            return jQuery.i18n.map[appType + "." + key] || jQuery.i18n.map[key];
+            return jQuery.i18n.map[appType + "." + key] || jQuery.i18n.map[key] || key;
         }
     };
 
@@ -77,6 +77,26 @@
             }
             return ajaxP;
         }
+    };
+
+    var authMixin = function(featureName) {
+        return {
+            // uses computed mainly to prevent mutations of these values
+            computed: {
+                canUserCreate: function() {
+                    return countlyAuth.validateCreate(featureName);
+                },
+                canUserRead: function() {
+                    return countlyAuth.validateRead(featureName);
+                },
+                canUserUpdate: function() {
+                    return countlyAuth.validateUpdate(featureName);
+                },
+                canUserDelete: function() {
+                    return countlyAuth.validateDelete(featureName);
+                }
+            }
+        };
     };
 
     // @vue/component
@@ -115,7 +135,8 @@
         'autoRefresh': autoRefreshMixin,
         'refreshOnParentActive': refreshOnParentActiveMixin,
         'i18n': i18nMixin,
-        'commonFormatters': commonFormattersMixin
+        'commonFormatters': commonFormattersMixin,
+        'auth': authMixin
     };
 
     var _globalVuexStore = new Vuex.Store({

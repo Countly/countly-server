@@ -15,7 +15,7 @@ var reportsInstance = {},
     log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info'),
     countlyConfig = require('../../../frontend/express/config.js');
-
+var pdf = require('html-pdf');
 countlyConfig.passwordSecret || "";
 
 plugins.setConfigs("reports", {
@@ -640,8 +640,8 @@ var metricProps = {
 
     reports.send = function(report, message, callback) {
         if (report.emails) {
-            for (var i = 0; i < report.emails.length; i++) {
-                var msg = {
+            for (let i = 0; i < report.emails.length; i++) {
+                const msg = {
                     to: report.emails[i],
                     from: versionInfo.title,
                     subject: report.subject,
@@ -649,21 +649,42 @@ var metricProps = {
                     html: report.messages && report.messages[i] && report.messages[i].html || message,
                 };
 
-                if (report.messages && report.messages[i]) {
-                    msg.list = {
-                        unsubscribe: {
-                            url: report.messages[i].unsubscribeLink,
-                            comment: report.unsubscribe_local_string || 'Unsubscribe'
+                const options = { "directory": "/tmp", "width": "1028px", height: "1000px", phantomArgs: ["--ignore-ssl-errors=yes"] };
+                const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
+                pdf.create(msg.html, options).toFile(filePath, function(err, res) {
+                    if (err) {
+                        return log.d(err);
+                    }
+                    msg.attachments = [{filename: "Countly_Report.pdf", path: res.filename}];
+                    if (report.messages && report.messages[i]) {
+                        msg.list = {
+                            unsubscribe: {
+                                url: report.messages[i].unsubscribeLink,
+                                comment: report.unsubscribe_local_string || 'Unsubscribe'
+                            }
+                        };
+                    }
+
+
+                    /**
+                     * callback function after sending email to delete pdf file
+                     */
+                    const deletePDFCallback = function() {
+                        if (fs.existsSync(filePath)) {
+                            fs.unlink(filePath, (e) => {
+                                if (e) {
+                                    log.d(e);
+                                }
+                            });
                         }
                     };
-                }
-
-                if (mail.sendPoolMail) {
-                    mail.sendPoolMail(msg);
-                }
-                else {
-                    mail.sendMail(msg);
-                }
+                    if (mail.sendPoolMail) {
+                        mail.sendPoolMail(msg, deletePDFCallback);
+                    }
+                    else {
+                        mail.sendMail(msg, deletePDFCallback);
+                    }
+                });
             }
         }
         callback();

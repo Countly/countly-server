@@ -49,15 +49,15 @@
                 <cly-section class="dbviewer-tab__result-table bu-mt-3">
                     <cly-datatable-n :rows="collectionData">
                         <template v-slot="scope">
+                            <el-table-column fixed type="expand">
+                                <template v-slot="rowScope">
+                                    {{ rowScope.row }}
+                                </template>
+                            </el-table-column>
                             <el-table-column fixed>
                                 <template v-slot="rowScope">
                                     <span v-if="!index">_id: {{ rowScope.row._id }}</span>
                                     <span v-if="index">{{ rowScope.row.name }}</span>
-                                </template>
-                            </el-table-column>
-                            <el-table-column fixed type="expand">
-                                <template v-slot="rowScope">
-                                    {{ rowScope.row }}
                                 </template>
                             </el-table-column>
                         </template>

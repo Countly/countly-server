@@ -1,0 +1,127 @@
+<div id="dashboard-drawer" class="cly-drawer">
+    <div class="title">
+        <span id="dashboard-drawer-create-title" data-localize="dashboards.create-new-dashboard-heading"></span>
+        <span id="dashboard-drawer-edit-title" data-localize="dashboards.edit-dashboard-heading"></span>
+        <span id="dashboard-drawer-duplicate-title" data-localize="dashboards.duplicate-dashboard"></span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <div class="details">
+        <div class="section">
+            <div class="label" data-localize="dashboards.dashboard-name"></div>
+            <div>
+                <input id="dashboard-name-input" class="input" type="text">
+            </div>
+        </div>
+        <!-- <div class="section">
+            <div class="label" data-localize="dashboards.user-edit-permission"></div>
+            <div id="share-with-edit-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text"></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+            <div class="description" data-localize="dashboards.select-users-description"></div>
+        </div> -->
+        <div class="section">
+            <div class="label" data-localize="dashboards.share-with"></div>
+            <div id="share-with" class="checks">
+                <div data-share-with="all-users" class="check selected">
+                    <div class="box"></div>
+                    <div class="text" data-localize="dashboards.share.all-users"></div>
+                    <div class="description" data-localize="dashboards.share.all-users.description"></div>
+                </div>
+                <div data-share-with="selected-users" class="check">
+                    <div class="box"></div>
+                    <div class="text" data-localize="dashboards.share.some-users"></div>
+                    <div class="description" data-localize="dashboards.share.some-users.description"></div>
+                </div>
+                <div data-share-with="none" class="check">
+                    <div class="box"></div>
+                    <div class="text" data-localize="dashboards.share.none"></div>
+                    <div class="description" data-localize="dashboards.share.none.description"></div>
+                </div>
+            </div>
+            <div style="display: none;" class="description" data-localize="dashbaords.add-edit-disabled"></div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize='dashboards.user-edit-permission' ></div>
+            <select id="email-share-with-edit" placeholder="{{email-placeholder}}">
+            </select>
+        </div>
+
+        <!-- <div class="section">
+            <div class="label" data-localize="dashboards.users-view-permission"></div>
+            <div id="share-with-view-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text"></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+            <div class="description" data-localize="dashboards.select-users-view-description"></div>
+        </div> -->
+        <div class="section">
+            <div class="label" data-localize='dashboards.users-view-permission' ></div>
+            <select id="email-share-with-view" placeholder="{{email-placeholder}}">
+            </select>
+            <div class="description" data-localize="dashboards.select-users-view-description"></div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize="dashboards.user-group-edit-permission"></div>
+            <div id="multi-user-group-edit-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize="dashboards.select-user-group"></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize="dashboards.user-group-view-permission"></div>
+            <div id="multi-user-group-view-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize="dashboards.select-user-group"></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize="dashboards.dashboard-theme"></div>
+            <div id="dashboard-themes" class="themes">
+                <div data-theme="1" class="theme alt1 selected"></div>
+                <div data-theme="2" class="theme alt2"></div>
+                <div data-theme="3" class="theme alt3"></div>
+                <div data-theme="4" class="theme alt4"></div>
+                <div data-theme="5" class="theme alt5"></div>
+                <div data-theme="6" class="theme alt6"></div>
+                <div data-theme="7" class="theme alt7"></div>
+            </div>
+        </div>
+    </div>
+    <div class="buttons">
+        <div id="create-dashboard" class="icon-button green disabled" data-localize="common.create"></div>
+        <div id="save-dashboard" class="icon-button green" data-localize="dashboards.save-dashboard"></div>
+    </div>
+</div>

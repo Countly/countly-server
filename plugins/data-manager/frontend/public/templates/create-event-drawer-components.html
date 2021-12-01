@@ -1,0 +1,67 @@
+<script type="text/x-template" id="data-manager-create-segment-input">
+	<div class="data-manager-create-event__segment bu-my-5 bg-cool-gray-10">
+        <div class="bu-px-5 bu-py-5">
+            <div class="bu-level">
+                <div class="text-small text-heading bu-level-left bu-level-item text-uppercase">Segmentation Details</div>
+                <div @click="removeSegment" class="bu-is-clickable text-small bu-level-item bu-level-right color-red-100">Delete Segmentation</div>
+            </div>
+
+            <div class="text-medium text-heading bu-mt-4">Event Key</div>
+            <el-input
+            v-model="segment.name" 
+		    placeholder="Enter Segmentation Key">
+		    </el-input>
+
+            <div class="text-medium text-heading bu-mt-4">Segmentation Type</div>
+            <el-select v-model="segment.type" placeholder="Select Segmentation Type">
+                <el-option
+                  v-for="item in dataTypes"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+            </el-select>
+
+
+            <div class="bu-my-4">
+                <el-checkbox v-model="segment.required" size="medium">
+                    <span class="color-cool-gray-100">Segmentation Required?</span>
+                </el-checkbox>
+            </div>
+
+            <div v-if="segment.required" class="text-medium text-heading bu-mt-4">Segmentation Description</div>
+            <el-input
+            v-if="segment.required"
+            type="textarea"
+            :rows="2"
+            v-model="segment.description" 
+		    placeholder="Enter Segmentation description">
+		    </el-input>
+
+        </div>
+	</div>
+ </script>
+
+ <script type="text/x-template" id="data-manager-create-segment">
+	<div>
+		<data-manager-create-segment-input
+			ref="segmentInput"
+			v-for="(segment, i) in segments"
+			@remove-me="removeSegmentAtIndex(i)"
+			:removable="segments.length > 1"
+			:key="i"
+			:segment-index="i"
+			:max-choices="10"
+			v-model="segments[i]">
+		</data-manager-create-segment-input>
+		<el-button
+            class="bg-light-blue-100 color-blue-100"
+			size="small"
+			type="text"
+            :disabled="!newSegmentAllowed"
+			@click="addNewSegment">
+			+ Add Event Segmentation
+		</el-button>
+
+	</div>
+ </script>

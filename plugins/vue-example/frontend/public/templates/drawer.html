@@ -12,6 +12,9 @@
             </div>
         </cly-content>
     </template>
+    <template v-slot:controls-left="formScope">
+        Some extra stuff here
+    </template>
     <template v-slot:default="formScope">
         <cly-form-step id="step1" name="First Step">
             <cly-form-field name="name" label="Name" rules="required">

@@ -146,7 +146,7 @@
             stopAutoRefresh: function() {
                 this.autoRefresh = false;
             },
-            fetchRequestLogs: function(isRefreshing = false) {
+            fetchRequestLogs: function(isRefreshing) {
                 var vm = this;
 
                 if (!isRefreshing) {

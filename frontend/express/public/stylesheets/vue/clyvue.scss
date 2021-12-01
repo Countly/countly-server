@@ -23,6 +23,41 @@
     }
 }
 
+.cly-bullet {
+    position: relative;
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+    padding: 0;
+    &--green{
+        background-color: #12AF51;
+    }
+    &--blue{
+        background-color: #017AFF;
+    }
+    &--yellow{
+        background-color: #CDAD7A;
+    }
+    &--red{
+        background-color: #D23F00;
+    }
+    &--orange {
+        background-color: #F96300;
+    }
+    &--blinking {
+        animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+    }
+    @keyframes blinker {
+        50% {
+            opacity: 0;
+        }
+    }
+}
+
+
 .cly-vue-status-tag {
     padding-right: 16.33px;
     border-radius: 4px;
@@ -1415,6 +1450,9 @@
             }
             .cly-vue-drawer__footer {
                 padding: 16px;
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
             }
             @for $i from 1 through 12 {
                 &-#{$i}{
@@ -1561,11 +1599,11 @@
             width: 100%;
         }
 
-        &__controls-left-pc {
-            display: inline-block;
-            height: 30px;
-            padding-top: 10px;
-        }
+        // &__controls-left-pc {
+        //     display: inline-block;
+        //     height: 30px;
+        //     padding-top: 10px;
+        // }
         &__header:not(.is-full-screen) {
             border-bottom: 1px solid #CFD6E4;
         }
@@ -1606,7 +1644,7 @@
         border-radius: 2px;
         box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
         box-sizing: border-box;
-        top: 100px;
+        top: 15vh;
         left: calc(50% - 260px);
 
         &__header {
@@ -1615,16 +1653,19 @@
 
         &__footer {
             border-top: 2px solid #ECECEC;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
         }
 
-        &__steps-container {
-        }
+        // &__steps-container {
+        // }
 
-        &__controls-left-pc {
-            display: inline-block;
-            height: 30px;
-            padding-top: 10px;
-        }
+        // &__controls-left-pc {
+        //     display: inline-block;
+        //     height: 30px;
+        //     padding-top: 10px;
+        // }
     }
 
     .cly-vue-form {
@@ -3349,13 +3390,13 @@
 
         .message {
             float: left;
-            padding: 21px;
+            padding: 22px 24px;
             font-style: normal;
             font-weight: normal;
-            font-size: 17px;
+            font-size: 14px;
             line-height: 20px;
             .text-dark {
-                color: #444444;
+                color: #333C48;
             }
             .text-light {
                 color: #636363;
@@ -3363,7 +3404,7 @@
         }
         .buttons {
             float: right;
-            padding: 16px;
+            padding: 16px 24px;
             .cly-vue-button {
                 padding: 8px 14px;
             }
@@ -3375,11 +3416,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
+        text-align: center;
         background-color: #fff;
 
+        .image {
+            width: 100px;
+            height: 100px;
+        }
+
         .info {
-            width: 250px;
-            margin-right: 40px;
+            width: 327px;
 
             .title {
                 color: #3a3a3a;
@@ -3389,17 +3436,17 @@
             }
 
             .text {
-                font-size: 13px;
+                font-size: 14px;
                 line-height: 20px;
+                color: #81868D;
             }
         }
-
-        .circle {
-            width: 250px;
-            height: 250px;
-            border-radius: 125px;
-            background-color: #e8e8e8;
-        }
+        // .circle {
+        //     width: 250px;
+        //     height: 250px;
+        //     border-radius: 125px;
+        //     background-color: #e8e8e8;
+        // }
     }
 
     .dropzone,

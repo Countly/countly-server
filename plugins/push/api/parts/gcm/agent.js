@@ -3,8 +3,8 @@ var Http = require('http');
 var Https = require('https');
 var Tls = require('tls');
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-Https.globalAgent.options.secureProtocol = 'SSLv3_method';
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+// Https.globalAgent.options.secureProtocol = 'SSLv3_method';
 
 /** HttpsProxyAgent
  * @param {object} options - call options

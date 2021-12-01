@@ -740,6 +740,9 @@ function uploadFile(myfile, id, callback) {
                 return true;
             }
         }
+        if (params.qstring.uid) {
+            query.uid = params.qstring.uid;
+        }
 
         validateRead(params, FEATURE_NAME, function() {
             query.ts = countlyCommon.getTimestampRangeQuery(params, true);
@@ -1294,9 +1297,8 @@ function uploadFile(myfile, id, callback) {
                 steps: JSON.parse(newAtt.steps),
                 user_segmentation: JSON.parse(newAtt.user_segmentation)
             }, function(cohortResult) {
-                cohorts.calculateSteps(params, common, cohortResult, function() {
-                    return callback(cohortResult._id);
-                });
+                cohorts.calculateSteps(params, common, cohortResult, function() {});
+                return callback(cohortResult._id);
             });
         }
 

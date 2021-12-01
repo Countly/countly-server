@@ -344,7 +344,6 @@ $(document).ready(function() {
         app.addAppSwitchCallback(function(appId) {
             if (countlyGlobal.apps[appId].type === "mobile") {
                 //revenue = IAP
-                jQuery.i18n.map["revenue.iap"] = jQuery.i18n.map["mobile.revenue.iap"];
                 jQuery.i18n.map["systemlogs.action.iap_updated"] = jQuery.i18n.map["mobile.systemlogs.action.iap_updated"];
             }
             app.appTypes.mobile.origLangs = {

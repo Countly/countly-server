@@ -175,8 +175,12 @@
                 this.setStep(this.currentStepIndex + 1, 'next', !this.isCurrentStepValid);
             },
             reset: function() {
-                this.callValidators("reset");
+                var self = this;
+                // this.callValidators("reset");
                 this.setStep(0, 'reset');
+                this.$nextTick(function() {
+                    self.callValidators("reset");
+                });
             },
             submit: function(force) {
                 this.beforeLeavingStep();
@@ -323,6 +327,7 @@
 
     Vue.component("cly-form-field", countlyBaseComponent.extend({
         props: {
+            subheading: String,
             label: String,
             optional: {
                 type: Boolean,
@@ -355,8 +360,11 @@
         mixins: [countlyVue.mixins.i18n],
         template: '<div class="cly-vue-form-field" :class="topClasses">\
                         <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || label || optional">\
-                            <div class="text-small text-heading">{{label}}</div>\
+                            <div class="text-smallish font-weight-bold bu-mb-1">{{label}}</div>\
                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
+                        </div>\
+                        <div v-if="subheading" class="color-cool-gray-50 text-small bu-mb-1">\
+                            {{subheading}}\
                         </div>\
                         <component :is="wrapperElement">\
                             <validation-provider v-bind="$attrs" v-on="$listeners" v-slot="validation">\
