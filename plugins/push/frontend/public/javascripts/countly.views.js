@@ -474,20 +474,80 @@
                     });
                 });
             },
-            onSubmit: function(_, done) {
-                var self = this;
+            save: function(options) {
+                if (!options) {
+                    options = {};
+                }
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                var options = {};
                 options.totalAppUsers = this.totalAppUsers;
                 options.localizations = this.localizationOptions;
                 options.settings = this.settings;
                 options.isUsersTimezoneSet = this.isUsersTimezoneSet;
                 options.isEndDateSet = this.isEndDateSet;
                 this.addQueryFilterIfFound(model);
-                countlyPushNotification.service.save(model, options).then(function() {
+                return countlyPushNotification.service.save(model, options);
+            },
+            update: function(options) {
+                if (!options) {
+                    options = {};
+                }
+                var model = Object.assign({}, this.pushNotificationUnderEdit);
+                model.type = this.type;
+                options.totalAppUsers = this.totalAppUsers;
+                options.localizations = this.localizationOptions;
+                options.settings = this.settings;
+                options.isUsersTimezoneSet = this.isUsersTimezoneSet;
+                options.isEndDateSet = this.isEndDateSet;
+                this.addQueryFilterIfFound(model);
+                return countlyPushNotification.service.update(model, options);
+            },
+            saveDraft: function() {
+                var options = {};
+                options.isDraft = true;
+                options.isCreated = false;
+                return this.save(options);
+            },
+            saveFromDraft: function() {
+                var options = {};
+                options.isDraft = true;
+                options.isCreated = true;
+                return this.update(options);
+            },
+            onDraft: function() {
+                var self = this;
+                this.saveDraft().then(function() {
+                    self.$store.dispatch("countlyPushNotification/main/fetchAll", true);
+                    //TODO-LA:close the drawer and dispatch success toast
+                    self.$refs.drawer.doClose();
+                    CountlyHelpers.notify({
+                        title: "Push notification",
+                        message: "Push notification draft message was successfully saved."
+                    });
+                }).catch(function(error) {
+                    CountlyHelpers.notify({
+                        title: "Push notification error",
+                        message: error.message,
+                        type: "error"
+                    });
+                });
+            },
+            onSubmit: function(_, done) {
+                var self = this;
+                var promiseMethod = null;
+                if (this.pushNotificationUnderEdit._id) {
+                    promiseMethod = this.saveFromDraft;
+                }
+                else {
+                    promiseMethod = this.save;
+                }
+                promiseMethod().then(function() {
                     done();
                     self.$store.dispatch("countlyPushNotification/main/fetchAll", true);
+                    CountlyHelpers.notify({
+                        title: "Push notification",
+                        message: "Push notification message was successfully saved."
+                    });
                 }).catch(function(error) {
                     CountlyHelpers.notify({
                         title: "Push notification error",

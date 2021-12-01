@@ -628,7 +628,7 @@
             mapDtoToBaseModel: function(dto) {
                 var localizations = this.mapLocalizations(dto.info.locales);
                 return {
-                    id: dto._id,
+                    id: dto._id || null,
                     status: dto.status,
                     createdDateTime: {
                         date: moment(dto.created).valueOf(),
@@ -797,7 +797,6 @@
                     };
                 }
                 return null;
-
             },
             mapAndroidAppLevelConfig: function(dto) {
                 if (this.hasAppLevelPlatformConfig(dto, PlatformDtoEnum.ANDROID)) {
@@ -1098,9 +1097,6 @@
             mapTransactionalTrigger: function(model) {
                 return [{kind: 'api', start: model.delivery.startDate}];
             },
-            areFiltersEmpty: function(dto) {
-                return Object.keys(dto).length === 0;
-            },
             mapFilters: function(model) {
                 var result = {};
                 if (model.user) {
@@ -1115,7 +1111,7 @@
                 if (model.drill) {
                     result.drill = model.drill;
                 }
-                return result;
+                return Object.keys(result).length === 0 ? null : result;
             },
             getLocalizationsCount: function(locales) {
                 var count = 0;
@@ -1126,6 +1122,15 @@
                     count += currentItem.count;
                 });
                 return count;
+            },
+            mapStatus: function(options) {
+                if (options.isDraft && options.isCreated) {
+                    return StatusEnum.CREATED;
+                }
+                if (options.isDraft && !options.isCreated) {
+                    return StatusEnum.DRAFT;
+                }
+                return null;
             },
             mapLocalizations: function(selectedLocalizations, allLocalizations) {
                 var result = {};
@@ -1177,7 +1182,7 @@
                 }
                 resultDto.contents = contentsDto;
                 var filtersDto = this.mapFilters(pushNotificationModel);
-                if (!this.areFiltersEmpty(filtersDto)) {
+                if (filtersDto) {
                     resultDto.filter = filtersDto;
                 }
                 resultDto.info = this.mapInfo(pushNotificationModel, options);
@@ -1187,6 +1192,10 @@
                 });
                 //NOTE:expiration is set/found in default locale
                 contentsDto[0].expiration = expirationInMS;
+                var statusDto = this.mapStatus(options);
+                if (statusDto) {
+                    resultDto.status = statusDto;
+                }
                 return resultDto;
             },
             mapModelToOneTimeDto: function(pushNotificationModel, options) {
@@ -1452,6 +1461,43 @@
                 CV.$.ajax({
                     type: "POST",
                     url: window.countlyCommon.API_URL + '/i/push/message/create',
+                    data: JSON.stringify(dto),
+                    contentType: "application/json",
+                    success: function(response) {
+                        if (response.error) {
+                            reject(new Error(response.error));
+                            return;
+                        }
+                        if (response.result.errors) {
+                            reject(response.result.errors);
+                            return;
+                        }
+                        resolve();
+                    },
+                    error: function(error) {
+                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
+                            reject(new Error('No push notification credentials were found'));
+                            return;
+                        }
+                        reject(new Error('Unknown error occurred.Please try again later.'));
+                        //TODO:log error
+                    }
+                }, {disableAutoCatch: true});
+            });
+        },
+        update: function(model, options) {
+            return new Promise(function(resolve, reject) {
+                try {
+                    var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+                }
+                catch (error) {
+                    reject(new Error('Unknown error occurred.Please try again later.'));
+                    //TODO:log error
+                    return;
+                }
+                CV.$.ajax({
+                    type: "POST",
+                    url: window.countlyCommon.API_URL + '/i/push/message/PUT',
                     data: JSON.stringify(dto),
                     contentType: "application/json",
                     success: function(response) {
