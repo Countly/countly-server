@@ -98,6 +98,14 @@ const widgetProperties = {
     logo: {
         required: false,
         type: "String"
+    },
+    appearance: {
+        required: false,
+        type: "Object"
+    },
+    showPolicy: {
+        required: false,
+        type: "String"
     }
 };
 
@@ -270,11 +278,26 @@ function uploadFile(myfile, id, callback) {
             params.app_user = params.app_user || {};
 
             var user = JSON.parse(JSON.stringify(params.app_user));
-            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, cohortID: 1}).toArray(function(err, widgets) {
+            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, cohortID: 1, type: 1, appearance: 1, showPolicy: 1, trigger_position: 1, trigger_bg_color: 1, trigger_font_color: 1, trigger_button_text: 1, trigger_size: 1}).toArray(function(err, widgets) {
                 if (err) {
                     log.e(err);
                     reject(err);
                 }
+
+                widgets = widgets.map((widget) => {
+                    widget.appearance = {};
+                    widget.appearance.position = widget.trigger_position;
+                    widget.appearance.bg_color = widget.trigger_bg_color;
+                    widget.appearance.text_color = widget.trigger_font_color;
+                    widget.appearance.text = widget.trigger_button_text;
+                    widget.appearance.size = widget.trigger_size;
+                    delete widget.trigger_position;
+                    delete widget.trigger_bg_color;
+                    delete widget.trigger_font_color;
+                    delete widget.trigger_button_text;
+                    delete widget.trigger_size;
+                    return widget;
+                });
 
                 if (widgets && widgets.length > 0) {
                     //filter out based on cohorts
@@ -328,6 +351,9 @@ function uploadFile(myfile, id, callback) {
         widget.timesShown = 0;
         widget.ratingsCount = 0;
         widget.ratingsSum = 0;
+        widget.showPolicy = "afterPageLoad";
+        widget.appearance = {};
+
         //widget.created_by = common.db.ObjectID(obParams.member._id);
 
         validateCreate(obParams, FEATURE_NAME, function(params) {
