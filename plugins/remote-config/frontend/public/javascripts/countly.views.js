@@ -195,7 +195,7 @@
             };
         },
         computed: {
-            isOpen() {
+            isOpen: function() {
                 return this.$store.getters["countlyRemoteConfig/parameters/showConditionDialog"];
             },
             showSeedValue: function() {
@@ -289,7 +289,7 @@
             condition: function() {
                 return this.value;
             },
-            isOpen() {
+            isOpen: function() {
                 var val = this.$store.getters["countlyRemoteConfig/parameters/showJsonEditorForCondition"];
                 if (this.currentId === this.condition.condition_id) {
                     this.condition.open = val;
@@ -319,7 +319,7 @@
 
         },
         computed: {
-            isOpen() {
+            isOpen: function() {
                 return this.$store.getters["countlyRemoteConfig/parameters/showJsonEditor"];
             },
             isDrillEnabled: function() {
