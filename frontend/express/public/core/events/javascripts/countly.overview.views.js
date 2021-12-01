@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCommon, countlyEventsOverview,CV,app,setTimeout*/
+/* global countlyVue, countlyCommon, countlyEventsOverview,CV,app*/
 (function() {
     var EventsTable = countlyVue.views.BaseView.extend({
         mixins: [countlyVue.mixins.i18n],
