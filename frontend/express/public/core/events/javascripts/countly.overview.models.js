@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon */
+/*global countlyVue, CV, countlyCommon,Promise */
 (function(countlyEventsOverview) {
 
     countlyEventsOverview.helpers = {
@@ -273,7 +273,7 @@
                     "limit": limit
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});//to be able to see if discarded
         },
         fetchMonitorEvents: function(context) {
             return CV.$.ajax({
@@ -383,6 +383,9 @@
                                         return context.commit("setTopEvents", countlyEventsOverview.helpers.getTopEvents(resp, res.map) || []);
 
                                     }
+                                }).catch(function(/*error*/) {
+                                    //catched error. Could be duplicate warning.
+                                    //return Promise.reject(error);
                                 });
                             countlyEventsOverview.service.fetchEvents()
                                 .then(function(response) {
@@ -403,6 +406,8 @@
                             if (resp) {
                                 return context.commit("setTopEvents", countlyEventsOverview.helpers.getTopEvents(resp, res.map) || []);
                             }
+                        }).catch(function(error) {
+                            return Promise.reject(error);
                         });
                     }
                 });

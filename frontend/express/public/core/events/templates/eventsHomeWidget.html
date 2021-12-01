@@ -8,9 +8,9 @@
 		<div class="bu-level-right">
 			<a v-if="linkTo" class="cly-back-link text-medium" :href="linkTo.href"><span>{{linkTo.label}}<i class="fas fa-arrow-right bu-pl-3"></i></span></a>
 		</div>
-	</div>		
+	</div>
 	<cly-section>
-		<cly-metric-cards>
+		<cly-metric-cards v-loading="isLoading">
 			<cly-metric-card formatting="long" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in items">
 				{{item.name}}
 				<cly-tooltip-icon v-if="item.info" icon="ion-help-circled" :tooltip="item.info"></cly-tooltip-icon>
