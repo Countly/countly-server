@@ -10,7 +10,7 @@
                     {'bu-pr-2': ((index + 1) % 3 !== 0)},
                     {'bu-mb-3': (index < (visualizationTypes.length - (visualizationTypes.length % 3)))}]">
             <div style="height: 100%;"
-                :class="['clyd-visualization__item',
+                :class="['clyd-visualization__item bu-is-clickable',
                         'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center bu-is-align-items-center',
                         {'selected': item.value === selectedType}]"
                 @click="onClick(item)">
