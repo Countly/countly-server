@@ -79,7 +79,7 @@ apt-get -y install numactl
 apt-get -y install sendmail
 
 #install npm modules
-( cd "$DIR/.."; sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
+( cd "$DIR/.."; sudo npm install --unsafe-perm=true --allow-root; sudo npm install argon2 --build-from-source; )
 
 #install mongodb
 bash "$DIR/scripts/mongodb.install.sh"
