@@ -15,13 +15,6 @@
                     theme: 0
                 };
             }
-        },
-        widgets: {
-            getEmpty: function() {
-                return {
-                    widget_type: "time-series"
-                };
-            }
         }
     };
 
@@ -210,9 +203,11 @@
                 },
                 update: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
+                    var widgetId = widget.id;
+                    delete widget.id;
 
-                    return countlyDashboards.service.widgets.update(dashboardId, widget.id, widget).then(function() {
-                        context.dispatch("get", widget.id);
+                    return countlyDashboards.service.widgets.update(dashboardId, widgetId, widget).then(function() {
+                        context.dispatch("get", widgetId);
                     });
                 },
                 updatePosition: function(context, params) {

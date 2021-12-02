@@ -49,6 +49,7 @@
             component: DrawerComponent,
             getEmpty: function() {
                 return {
+                    widget_type: "time-series",
                     data_type: "",
                     metrics: [],
                     apps: [],

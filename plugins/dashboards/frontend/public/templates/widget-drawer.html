@@ -13,7 +13,8 @@
                 :label="i18nM('dashboards.widget-type')">
                 <el-radio-group
                     class="bu-columns bu-is-multiline bu-m-0"
-                    v-model="drawerScope.editedObject.widget_type">
+                    v-model="drawerScope.editedObject.widget_type"
+                    @change="onReset">
                     <div
                         v-for="(item, index) in widgetTypes"
                         style="box-sizing: border-box;"

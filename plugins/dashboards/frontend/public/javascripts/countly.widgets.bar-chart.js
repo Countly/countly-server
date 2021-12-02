@@ -32,7 +32,9 @@
         drawer: {
             component: DrawerComponent,
             getEmpty: function() {
-                return {};
+                return {
+                    widget_type: "bar-chart"
+                };
             },
         },
         grid: {

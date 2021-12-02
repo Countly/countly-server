@@ -53,6 +53,7 @@
             component: DrawerComponent,
             getEmpty: function() {
                 return {
+                    widget_type: "note",
                     content: ""
                 };
             },

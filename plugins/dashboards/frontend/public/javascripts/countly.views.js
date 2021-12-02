@@ -19,6 +19,13 @@
 
                 return w;
             }
+        },
+        methods: {
+            onReset: function(widgetType) {
+                var defaultEmpty = this.__widgets[widgetType].drawer.getEmpty();
+
+                this.loadDrawer("widgets", Object.assign({}, defaultEmpty));
+            }
         }
     };
 
@@ -183,6 +190,9 @@
                     this.title = this.i18nM("dashboards.edit-widget-heading");
                     this.saveButtonLabel = this.i18nM("dashboards.save-widget");
                 }
+            },
+            onReset: function(v) {
+                this.$emit("reset", v);
             }
         }
     });
@@ -342,8 +352,8 @@
                 }
             },
             addWidget: function() {
-                var empty = countlyDashboards.factory.widgets.getEmpty();
-                var defaultEmpty = this.__widgets[empty.widget_type].drawer.getEmpty();
+                var empty = {};
+                var defaultEmpty = this.__widgets["time-series"].drawer.getEmpty();
 
                 empty.__action = "create";
                 this.openDrawer("widgets", Object.assign({}, empty, defaultEmpty));
