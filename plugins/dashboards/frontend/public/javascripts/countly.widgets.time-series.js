@@ -1,4 +1,4 @@
-/*global countlyVue, CV, app */
+/*global countlyVue, CV */
 
 (function() {
     var TimeSeriesComponent = countlyVue.views.create({

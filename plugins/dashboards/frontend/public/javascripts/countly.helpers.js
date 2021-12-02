@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyGlobal, Vue */
+/*global countlyVue, CV, Vue */
 
 (function() {
 
@@ -263,31 +263,31 @@
         }
     });
 
-    var AppsMixin = {
-        methods: {
-            getAppname: function(appId) {
-                var selected = this.$store.getters["countlyDashboards/selected"];
-                var dash = selected.data || {};
+    // var AppsMixin = {
+    //     methods: {
+    //         getAppname: function(appId) {
+    //             var selected = this.$store.getters["countlyDashboards/selected"];
+    //             var dash = selected.data || {};
 
-                var dashboardApps = dash.apps || [];
+    //             var dashboardApps = dash.apps || [];
 
-                var appName = "Unknown";
+    //             var appName = "Unknown";
 
-                var appObj = dashboardApps.find(function(app) {
-                    return app._id === appId;
-                });
+    //             var appObj = dashboardApps.find(function(app) {
+    //                 return app._id === appId;
+    //             });
 
-                if (appObj && appObj.name) {
-                    appName = appObj.name;
-                }
-                else if (countlyGlobal.apps[appId]) {
-                    appName = countlyGlobal.apps[appId].name;
-                }
+    //             if (appObj && appObj.name) {
+    //                 appName = appObj.name;
+    //             }
+    //             else if (countlyGlobal.apps[appId]) {
+    //                 appName = countlyGlobal.apps[appId].name;
+    //             }
 
-                return appName;
-            }
-        }
-    };
+    //             return appName;
+    //         }
+    //     }
+    // };
 
     Vue.component("clyd-metric", MetricComponent);
     Vue.component("clyd-datatype", DataTypeComponent);

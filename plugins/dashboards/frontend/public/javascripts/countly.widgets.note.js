@@ -1,4 +1,4 @@
-/*global countlyVue, countlyDashboards, CV */
+/*global countlyVue, CV */
 
 (function() {
     var NoteComponent = countlyVue.views.create({

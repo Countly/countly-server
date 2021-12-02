@@ -1,4 +1,4 @@
-/*global countlyVue, countlyDashboards, CV */
+/*global countlyVue, CV */
 
 (function() {
     var NumberComponent = countlyVue.views.create({
