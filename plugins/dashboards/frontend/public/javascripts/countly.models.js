@@ -156,7 +156,7 @@
                 setAll: function(state, widgets) {
                     state.all = widgets;
                 },
-                updateWidget: function(state, widget) {
+                update: function(state, widget) {
                     var index = -1;
                     widget = widget || {};
 
@@ -173,6 +173,20 @@
                     else if (widget._id) {
                         state.all.push(widget);
                     }
+                },
+                remove: function(state, widgetId) {
+                    var index = -1;
+
+                    for (var i = 0; i < state.all.length; i++) {
+                        if (state.all[i]._id === widgetId) {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    if (index > -1) {
+                        state.all.splice(index, 1);
+                    }
                 }
             },
             actions: {
@@ -186,7 +200,7 @@
                         /*
                             Update the widget in the widget store.
                         */
-                        context.commit("updateWidget", w && w[0]);
+                        context.commit("update", w && w[0]);
                     });
                 },
                 create: function(context, widget) {
@@ -223,7 +237,9 @@
                 delete: function(context, widgetId) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
 
-                    return countlyDashboards.service.widgets.delete(dashboardId, widgetId);
+                    return countlyDashboards.service.widgets.delete(dashboardId, widgetId).then(function() {
+                        context.commit("remove", widgetId);
+                    });
                 }
             }
         });
@@ -291,7 +307,7 @@
                 countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(d) {
                     /*
                         On getting the dashboard, Set the selected dashboard data
-                        aswell as update the local list of all dashboards.
+                        as well as update the local list of all dashboards.
                     */
                     context.commit("setDashboard", {id: dashboardId, data: d});
                     context.commit("updateDashboard", d);

@@ -259,7 +259,9 @@
                             return false;
                         }
 
-                        self.$store.dispatch("countlyDashboards/widgets/delete", d._id);
+                        self.$store.dispatch("countlyDashboards/widgets/delete", d._id).then(function() {
+                            // self.grid.removeWidget(document.querySelector("[data-id='" + d._id + "']"));
+                        });
 
                     }, [this.i18nM("common.no-dont-delete"), this.i18nM("dashboards.delete-widget")], {title: this.i18nM("dashboards.delete-widget-title")});
                     break;
