@@ -286,7 +286,7 @@
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});//to be able to see if discarded
         },
         fetchMonitorEventsData: function(my_events, context) {
             return CV.$.ajax({
@@ -397,6 +397,9 @@
                                     }
                                 });
                         }
+                    }).catch(function(/*error*/) {
+                        //catched error. Could be duplicate warning.
+                        //return Promise.reject(error);
                     });
             },
             fetchTopEvents: function(context, count) {
@@ -410,6 +413,8 @@
                             return Promise.reject(error);
                         });
                     }
+                }).catch(function(error) {
+                    return Promise.reject(error);
                 });
             },
             fetchMonitorEvents: function(context) {
@@ -439,6 +444,8 @@
                                     }
                                 });
                         }
+                    }).catch(function(error) {
+                        return Promise.reject(error);
                     });
             },
             fetchSelectedDatePeriod: function(context, period) {
