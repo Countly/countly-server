@@ -208,6 +208,12 @@
                 $('#cf-email-text').html(response.popup_email_callout);
                 $('#cf-submit-button').html(response.popup_button_callout);
                 $('#thanks-area').html(response.popup_thanks_message);
+
+                if (response.logo) {
+                    $('#powered-by-countly').attr('src', url + '/star-rating/images/star-rating/' + response.logo);
+                    $('#powered-by-countly').parent().attr('href', 'void(0)');
+                    $('#powered-by-countly').css({'width':'100px'});
+                }
                 if (response.comment_enable === "false") {
                     $('#comment-section').hide();
                 }
