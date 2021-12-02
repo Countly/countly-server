@@ -5,8 +5,7 @@
     <cly-app-select
         style="width: 100%;"
         v-bind="$attrs"
-        :value="val"
-        @input="change"
+        v-model="selectedApps"
         :multiple="multiple"
         :multiple-limit="multipleLimit"
         :placeholder="placeholderText">

@@ -28,4 +28,16 @@
         border: 1px solid #E2E4E8;
         border-radius: 4px;
     }
+
+    .clyd-visualization {
+        &__item {
+            border: 1px solid map.get(c.$colors, "cool-gray-30");
+            border-radius: 4px;
+
+            &.selected {
+                border: 1px solid map.get(c.$colors, "blue-100");
+                background-color: map.get(c.$colors, "light-blue-100");
+            }
+        }
+    }
 }

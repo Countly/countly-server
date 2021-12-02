@@ -1,6 +1,6 @@
-/*global countlyVue, CV, countlyGlobal */
+/*global countlyVue, CV, countlyGlobal, Vue */
 
-(function(countlyDashboards) {
+(function() {
 
     var MetricComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/metric.html'),
@@ -155,6 +155,9 @@
         }
     });
 
+    /**
+     * Source app component returns the selected apps in an array even if single app is selected
+     */
     var SourceAppsComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/helpers/source-apps.html'),
         props: {
@@ -189,45 +192,76 @@
                     return this.i18n("placeholder.dashboards.select-applications-single");
                 }
             },
-            val: function() {
-                if (!this.multiple) {
-                    return this.value && this.value[0] || "";
+            selectedApps: {
+                get: function() {
+                    if (!this.multiple) {
+                        return this.value && this.value[0] || "";
+                    }
+
+                    return this.value;
+                },
+                set: function(item) {
+                    var i = item;
+                    if (!this.multiple) {
+                        i = [item];
+                    }
+
+                    this.$emit("input", i);
                 }
-
-                return this.value;
-            }
-        },
-        methods: {
-            change: function(item) {
-                var i = item;
-
-                if (!this.multiple) {
-                    i = [item];
-                }
-
-                this.$emit("input", i);
             }
         }
     });
 
-    var WidgetsMixin = {
+    var VisualizationComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/visualization.html'),
+        props: {
+            extraTypes: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            value: String
+        },
+        data: function() {
+            return {
+                types: [
+                    {
+                        value: "time-series",
+                        label: this.i18n("dashboards.visualization.time-series")
+                    },
+                    {
+                        value: "bar-chart",
+                        label: this.i18n("dashboards.visualization.bar-chart")
+                    },
+                    {
+                        value: "number",
+                        label: this.i18n("dashboards.visualization.number")
+                    },
+                    {
+                        value: "table",
+                        label: this.i18n("dashboards.visualization.table")
+                    }
+                ]
+            };
+        },
         computed: {
-            __widgets: function() {
-                var w = countlyVue.container.dataMixin({
-                    widgets: "/custom/dashboards/widget"
-                });
-
-                w = w.data().widgets;
-
-                w = w.reduce(function(acc, component) {
-                    acc[component.type] = component;
-                    return acc;
-                }, {});
-
-                return w;
+            visualizationTypes: function() {
+                return this.types.concat(this.extraTypes);
+            },
+            selectedType: function() {
+                return this.value;
+            },
+            isSelected: function() {
+                return this.selectedType ? true : false;
+            }
+        },
+        methods: {
+            onClick: function(item) {
+                this.$emit("input", item.value);
             }
         }
-    };
+    });
 
     var AppsMixin = {
         methods: {
@@ -255,15 +289,10 @@
         }
     };
 
-    countlyDashboards.components = {
-        MetricComponent: MetricComponent,
-        DataTypeComponent: DataTypeComponent,
-        AppCountComponent: AppCountComponent,
-        SourceAppsComponent: SourceAppsComponent
-    };
+    Vue.component("clyd-metric", MetricComponent);
+    Vue.component("clyd-datatype", DataTypeComponent);
+    Vue.component("clyd-appcount", AppCountComponent);
+    Vue.component("clyd-sourceapps", SourceAppsComponent);
+    Vue.component("clyd-visualization", VisualizationComponent);
 
-    countlyDashboards.mixins = {
-        AppsMixin: AppsMixin
-    };
-
-})(window.countlyDashboards = window.countlyDashboards || {});
+})();

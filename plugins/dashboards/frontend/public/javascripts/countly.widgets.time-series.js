@@ -1,9 +1,8 @@
-/*global countlyVue, countlyDashboards, CV */
+/*global countlyVue, CV */
 
 (function() {
     var TimeSeriesComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/time-series/widget.html'),
-        mixins: [countlyDashboards.mixins.AppsMixin],
         props: {
             data: {
                 type: Object,
@@ -35,12 +34,6 @@
 
     var DrawerComponent = countlyVue.views.create({
         template: CV.T('/dashboards/templates/widgets/time-series/drawer.html'),
-        components: {
-            'select-metric': countlyDashboards.components.MetricComponent,
-            'select-data-type': countlyDashboards.components.DataTypeComponent,
-            'app-count': countlyDashboards.components.AppCountComponent,
-            'source-apps': countlyDashboards.components.SourceAppsComponent
-        },
         props: {
             scope: {
                 type: Object
@@ -58,7 +51,8 @@
                 return {
                     data_type: "",
                     metrics: [],
-                    apps: []
+                    apps: [],
+                    visualization: ""
                 };
             },
         },
