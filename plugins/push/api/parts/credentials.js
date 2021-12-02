@@ -138,7 +138,7 @@ class Credentials {
                                             tpks = tpks.value.replace(/0[\x00-\x1f\(\)!]/gi, '') //eslint-disable-line no-useless-escape
                                                 .replace('\f\f', '\f')
                                                 .split('\f')
-                                                .map(s => s.replace(/[^A-Za-z0-9\-\.]/gi, '').trim()); //eslint-disable-line  no-useless-escape
+                                                .map(s => s.replace(/[^A-Za-z\-\.]/gi, '').trim()); //eslint-disable-line  no-useless-escape
                                             tpks.shift();
 
                                             for (var i = 0; i < tpks.length; i++) {

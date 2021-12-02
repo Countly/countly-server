@@ -73,10 +73,35 @@ class IncomingDataTrigger {
     register() {
         InternalEvents.forEach((e) => {
             plugins.register(e, (ob) => {
-                /*if (e === '/sdk' && ob.params.qstring.events && Array.isArray(ob.params.qstring.events) && ob.params.qstring.events.length) {
-                    ob.params.qstring.events = ob.params.qstring.events.filter((er) => er.key !== '[CLY]_view'); // ignore view events since it process by /plugins/drill
-                }*/
-                this.process(e, ob);
+                try {
+                    const ob = {
+                        params: {
+                            app_user: JSON.parse(JSON.stringify(obj.params.app_user)),
+                            app_id: common.db.ObjectID(obj.params.app_id.toString()),
+                            req: {
+                                header: JSON.parse(JSON.stringify(obj.params.req.headers || {})),
+                            },
+                            ip_address: obj.params.ip_address,
+                            qstring: JSON.parse(JSON.stringify(obj.params.qstring || {})),
+                        },
+                        events: JSON.parse(JSON.stringify(obj.events || [])),
+                    };
+                    log.d(e, ob, "[Incoming data capture]");
+                    if (e === '/plugins/drill') {
+                        const hooksData = {
+                            params: {...ob.params}
+                        };
+                        if (ob.events) {
+                            hooksData.params.qstring.events = ob.events;
+                        }
+                        this.process(e, hooksData);
+                        return;
+                    }
+                    this.process(e, ob);
+                }
+                catch (err) {
+                    console.log(err);
+                }
             });
         });
     }

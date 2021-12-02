@@ -145,58 +145,60 @@ const PUSH_CACHE_GROUP = 'P';
     });
 
     plugins.register('/drill/preprocess_query', ({query, params}) => {
-        if (query.push) {
-            if (query.push.$nin) {
-                query.$and = query.push.$nin.map(tk => {
-                    return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
-                });
-            }
-            if (query.push.$in) {
-                let q = query.push.$in.map(tk => {
-                    return {[tk]: true};
-                });
-                query.$or = q;
-            }
-            delete query.push;
-        }
-
-        if (query.message) {
-            let mid = query.message.$in || query.message.$nin,
-                not = !!query.message.$nin;
-
-            if (!mid) {
-                return;
+        if (query) {
+            if (query.push) {
+                if (query.push.$nin) {
+                    query.$and = query.push.$nin.map(tk => {
+                        return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
+                    });
+                }
+                if (query.push.$in) {
+                    let q = query.push.$in.map(tk => {
+                        return {[tk]: true};
+                    });
+                    query.$or = q;
+                }
+                delete query.push;
             }
 
-            log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
-            delete query.message;
+            if (query.message) {
+                let mid = query.message.$in || query.message.$nin,
+                    not = !!query.message.$nin;
 
-            if (params && params.qstring.method === 'user_details') {
-                return new Promise((res, rej) => {
-                    try {
-                        mid = mid.map(common.db.ObjectID);
+                if (!mid) {
+                    return;
+                }
 
-                        let q = {msgs: {$elemMatch: {'0': {$in: mid}}}};
-                        if (not) {
-                            q = {msgs: {$not: q.msgs}};
+                log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
+                delete query.message;
+
+                if (params && params.qstring.method === 'user_details') {
+                    return new Promise((res, rej) => {
+                        try {
+                            mid = mid.map(common.db.ObjectID);
+
+                            let q = {msgs: {$elemMatch: {'0': {$in: mid}}}};
+                            if (not) {
+                                q = {msgs: {$not: q.msgs}};
+                            }
+                            common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
+                                if (err) {
+                                    rej(err);
+                                }
+                                else {
+                                    ids = (ids || []).map(id => id._id);
+                                    query.uid = {$in: ids};
+                                    log.d(`filtered by message: uids out of ${ids.length}`);
+                                    res();
+                                }
+                            });
                         }
-                        common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
-                            if (err) {
-                                rej(err);
-                            }
-                            else {
-                                ids = (ids || []).map(id => id._id);
-                                query.uid = {$in: ids};
-                                log.d(`filtered by message: uids out of ${ids.length}`);
-                                res();
-                            }
-                        });
-                    }
-                    catch (e) {
-                        console.log(e);
-                        rej(e);
-                    }
-                });
+                        catch (e) {
+                            console.log(e);
+                            rej(e);
+                        }
+                    });
+                }
             }
         }
     });
