@@ -86,23 +86,23 @@ module.exports.drillPreprocessQuery = ({query, params}) => {
             }
             delete query.push;
         }
-    
+
         if (query.message) {
             let mid = query.message.$in || query.message.$nin,
                 not = !!query.message.$nin;
-    
+
             if (!mid) {
                 return;
             }
-    
+
             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
             delete query.message;
-    
+
             if (params && params.qstring.method === 'user_details') {
                 return new Promise((res, rej) => {
                     try {
                         mid = mid.map(common.db.ObjectID);
-    
+
                         let q = {msgs: {$elemMatch: {'0': {$in: mid}}}};
                         if (not) {
                             q = {msgs: {$not: q.msgs}};
