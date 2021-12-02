@@ -192,6 +192,112 @@
                 periods: {daily: []},
             };
         },
+        getInitialBaseModel: function() {
+            return {
+                _id: null,
+                name: "",
+                platforms: [PlatformEnum.ANDROID],
+                audienceSelection: AudienceSelectionEnum.BEFORE,
+                message: {
+                    default: {
+                        title: "",
+                        content: "",
+                        buttons: [],
+                        properties: {
+                            title: {},
+                            content: {}
+                        }
+                    },
+                },
+                settings: {
+                    ios: {
+                        subtitle: "",
+                        mediaURL: "",
+                        mediaMime: "",
+                        soundFilename: "default",
+                        badgeNumber: "",
+                        onClickURL: "",
+                        json: null,
+                        userData: []
+                    },
+                    android: {
+                        mediaURL: "",
+                        mediaMime: "",
+                        soundFilename: "default",
+                        badgeNumber: "",
+                        icon: "",
+                        onClickURL: "",
+                        json: null,
+                        userData: []
+                    },
+                    all: {
+                        mediaURL: "",
+                        mediaMime: "",
+                    }
+                },
+                queryFilter: null,
+                messageType: MessageTypeEnum.CONTENT,
+                localizations: [DEFAULT_LOCALIZATION_VALUE],
+                cohorts: [],
+                locations: [],
+                delivery: {
+                    type: SendEnum.NOW,
+                    startDate: moment().valueOf(),
+                    endDate: moment().valueOf(),
+                },
+                timezone: TimezoneEnum.SAME,
+                pastSchedule: PastScheduleEnum.SKIP,
+                expiration: {
+                    days: 7,
+                    hours: 0
+                },
+            };
+        },
+        getInitialOneTimeModel: function() {
+            var baseModel = this.getInitialBaseModel();
+            baseModel.oneTime = {
+                targeting: TargetingEnum.ALL,
+            };
+            return baseModel;
+        },
+        getInitialAutomaticModel: function() {
+            var baseModel = this.getInitialBaseModel();
+            baseModel.automatic = {
+                deliveryMethod: DeliveryMethodEnum.IMMEDIATELY,
+                delayed: {
+                    days: 0,
+                    hours: 0
+                },
+                deliveryDateCalculation: DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
+                trigger: TriggerEnum.COHORT_ENTRY,
+                triggerNotMet: TriggerNotMetEnum.SEND_ANYWAY,
+                events: [],
+                cohorts: [],
+                capping: false,
+                maximumMessagesPerUser: 1,
+                minimumTimeBetweenMessages: {
+                    days: 0,
+                    hours: 0
+                },
+                usersTimezone: "00"
+            };
+            return baseModel;
+        },
+        getInitialTransactionalModel: function() {
+            return this.getInitialBaseModel();
+        },
+        getInitialModel: function(type) {
+            if (type === TypeEnum.ONE_TIME) {
+                return this.getInitialOneTimeModel();
+            }
+            if (type === TypeEnum.AUTOMATIC) {
+                return this.getInitialAutomaticModel();
+            }
+            if (type === TypeEnum.TRANSACTIONAL) {
+                return this.getInitialTransactionalModel();
+            }
+            throw new Error('Unknown push notification type:' + type);
+        },
         replaceTagElements: function(htmlString) {
             if (htmlString) {
                 return htmlString.replace(/(<([^>]+)>)/gi, "");
@@ -361,7 +467,7 @@
                 if (dto.triggers[0].kind === 'plain') {
                     return TypeEnum.ONE_TIME;
                 }
-                if (dto.triggers[0].kind === 'cohort' || dto.triggers[0].kind === 'events') {
+                if (dto.triggers[0].kind === 'cohort' || dto.triggers[0].kind === 'event') {
                     return TypeEnum.AUTOMATIC;
                 }
                 if (dto.triggers[0].kind === 'api') {
@@ -1422,7 +1528,7 @@
                     platforms: platformsDto,
                 };
                 var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel);
-                if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel) && !countlyPushNotification.mapper.outgoing.areFiltersEmpty(filtersDto)) {
+                if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel) && filtersDto) {
                     data.filter = filtersDto;
                 }
                 CV.$.ajax({

@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,moment,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,Promise*/
 
 (function() {
 
@@ -43,88 +43,6 @@
         {label: "Silent message", value: countlyPushNotification.service.MessageTypeEnum.SILENT}
     ];
 
-    var InitialEditedPushNotification = {
-        _id: null,
-        name: "",
-        platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
-        audienceSelection: countlyPushNotification.service.AudienceSelectionEnum.BEFORE,
-        message: {
-            default: {
-                title: "",
-                content: "",
-                buttons: [],
-                properties: {
-                    title: {},
-                    content: {}
-                }
-            },
-        },
-        settings: {
-            ios: {
-                subtitle: "",
-                mediaURL: "",
-                mediaMime: "",
-                soundFilename: "default",
-                badgeNumber: "",
-                onClickURL: "",
-                json: null,
-                userData: []
-            },
-            android: {
-                mediaURL: "",
-                mediaMime: "",
-                soundFilename: "default",
-                badgeNumber: "",
-                icon: "",
-                onClickURL: "",
-                json: null,
-                userData: []
-            },
-            all: {
-                mediaURL: "",
-                mediaMime: "",
-            }
-        },
-        queryFilter: null,
-        messageType: countlyPushNotification.service.MessageTypeEnum.CONTENT,
-        localizations: [countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE],
-        cohorts: [],
-        locations: [],
-        delivery: {
-            type: countlyPushNotification.service.SendEnum.NOW,
-            startDate: moment().valueOf(),
-            endDate: moment().valueOf(),
-        },
-        timezone: countlyPushNotification.service.TimezoneEnum.SAME,
-        pastSchedule: countlyPushNotification.service.PastScheduleEnum.SKIP,
-        expiration: {
-            days: 7,
-            hours: 0
-        },
-        oneTime: {
-            targeting: countlyPushNotification.service.TargetingEnum.ALL,
-        },
-        automatic: {
-            deliveryMethod: countlyPushNotification.service.DeliveryMethodEnum.IMMEDIATELY,
-            delayed: {
-                days: 0,
-                hours: 0
-            },
-            deliveryDateCalculation: countlyPushNotification.service.DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
-            trigger: countlyPushNotification.service.TriggerEnum.COHORT_ENTRY,
-            triggerNotMet: countlyPushNotification.service.TriggerNotMetEnum.SEND_ANYWAY,
-            events: [],
-            cohorts: [],
-            capping: false,
-            maximumMessagesPerUser: 1,
-            minimumTimeBetweenMessages: {
-                days: 0,
-                hours: 0
-            },
-            usersTimezone: "00"
-        },
-    };
-
     var InitialEnabledUsers = {
         ios: 0,
         android: 0,
@@ -157,6 +75,24 @@
     var PushNotificationDrawer = countlyVue.views.create({
         template: CV.T("/push/templates/push-notification-drawer.html"),
         mixins: [countlyVue.mixins.i18n],
+        props: {
+            type: {
+                type: String,
+                default: countlyPushNotification.service.TypeEnum.ONE_TIME
+            },
+            controls: {
+                type: Object
+            },
+            queryFilter: {
+                type: Object,
+                default: null,
+            },
+            wrappedUserProperties: {
+                type: Boolean,
+                default: false,
+                required: false
+            }
+        },
         data: function() {
             return {
                 isLoading: false,
@@ -210,26 +146,13 @@
                     ios: null,
                     android: null
                 },
-                pushNotificationUnderEdit: JSON.parse(JSON.stringify(InitialEditedPushNotification)),
+                pushNotificationUnderEdit: JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type))),
                 currentNumberOfUsers: 0,
             };
         },
-        props: {
-            type: {
-                type: String,
-                default: countlyPushNotification.service.TypeEnum.ONE_TIME
-            },
-            controls: {
-                type: Object
-            },
-            queryFilter: {
-                type: Object,
-                default: null,
-            },
-            wrappedUserProperties: {
-                type: Boolean,
-                default: false,
-                required: false
+        watch: {
+            type: function() {
+                this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
             }
         },
         computed: {
@@ -462,6 +385,7 @@
                         self.setCurrentNumberOfUsers(response.total);
                         resolve(true);
                     }).catch(function(error) {
+                        console.log(error);
                         self.setLocalizationOptions([]);
                         CountlyHelpers.notify({
                             title: "Push notification error",
@@ -518,7 +442,6 @@
                 var self = this;
                 this.saveDraft().then(function() {
                     self.$store.dispatch("countlyPushNotification/main/fetchAll", true);
-                    //TODO-LA:close the drawer and dispatch success toast
                     self.$refs.drawer.doClose();
                     CountlyHelpers.notify({
                         title: "Push notification",
@@ -565,7 +488,7 @@
                 this.expandedPlatformSettings = [];
                 this.selectedUserPropertyContainer = "title";
                 this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
-                this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(InitialEditedPushNotification));
+                this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
             },
             onClose: function() {
                 this.resetState();
@@ -574,8 +497,6 @@
             onOpen: function() {
                 this.fetchUserPropertiesOptionsIfEmpty();
             },
-            onInfoAndTargetFormSubmit: function() {},
-            remoteMethod: function() {},
             addButton: function() {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.push({label: "", url: ""});
             },
