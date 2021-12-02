@@ -16,6 +16,7 @@
         :gs-no-move="isWidgetDisabled(widget) || isWidgetInvalid(widget)"
         :gs-min-w="__widgets[widget.widget_type].grid.dimensions().minWidth"
         :gs-min-h="__widgets[widget.widget_type].grid.dimensions().minHeight"
+        @click="__widgets[widget.widget_type].grid.onClick && __widgets[widget.widget_type].grid.onClick(widget)"
     >
         <div class="grid-stack-item-content bu-p-4">
             <widget-disabled v-if="isWidgetDisabled(widget)" :data="widget">

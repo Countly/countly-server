@@ -1,4 +1,4 @@
-/*global countlyVue, CV */
+/*global countlyVue, CV, app */
 
 (function() {
     var TimeSeriesComponent = countlyVue.views.create({
@@ -65,7 +65,8 @@
                     width: 6,
                     height: 3
                 };
-            }
+            },
+            onClick: function() {}
         }
     });
 })();
