@@ -19,7 +19,7 @@
                             <div class="bu-column cly-vue-metric-breakdown__numbers">
                                 <span v-if="item.description">{{item.description}} | </span>
                                 <span>{{item.percent}} % </span>
-                                <a v-if="item.link" :href="item.link">--></a>
+                                <a v-if="item.link" :href="item.link"><i class="fas fa-arrow-circle-right color-cool-gray-40"></i></a>
                             </div>
                         </div>
                         <cly-progress-bar :entities="getProgressBarEntities(item)" :height=8></cly-progress-bar>

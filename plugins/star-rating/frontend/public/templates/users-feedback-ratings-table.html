@@ -1,0 +1,27 @@
+<div>
+    <cly-datatable-n :rows="ratings">
+        <el-table-column prop="widget" :label="i18n('feedback.widget-id')">
+            <template v-slot="rowScope">
+              <div class="text-medium">
+                {{ rowScope.row.widgetTitle }}
+              </div>
+              <div>
+                <span style="color:#A7AEB8" class="text-small bu-has-text-weight-semibold"> {{ i18n('feedback.widget-id') }} </span>
+                <span style="color:#A7AEB8" class="text-small">{{ rowScope.row.widget_id }}</span>
+              </div>
+            </template>
+        </el-table-column>
+        <el-table-column prop="rating" :label="i18n('feedback.rating')">
+          <template v-slot="rowScope">
+              <span class="text-medium">
+                {{ rowScope.row.rating }}
+              </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="time" :label="i18n('feedback.time')">
+          <template v-slot="rowScope">
+              <span v-html="rowScope.row.ts" class="text-medium"></span>
+          </template>
+        </el-table-column>
+    </cly-datatable-n>
+</div>

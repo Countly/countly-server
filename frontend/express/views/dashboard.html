@@ -1603,166 +1603,6 @@
     </script>
 
 
-	<script id="report-manager-template" type="text/x-handlebars-template">
-        <div class="widget" id="report-manager-view">
-			<div id="reports-manager-tabs">
-				<ul>
-					<li><a href="#report-manaully"   data-localize="report-maanger.manually-created"></a></li>
-					<li><a href="#report-automatically" data-localize="report-maanger.automatically-created"></a></li>
-				</ul>
-				<div id="report-manaully" class='user-tab'></div>
-				<div id="report-automatically" class='user-tab'></div>
-			</div>
-
-            <div class="widget-header report-manager-widget-header">
-                <div class="left">
-                    <div style="overflow: auto">
-                        {{#if filter1}}
-                        <div class="title small" id="report-manager-table-title">{{page-title}}</div>
-                        {{else}}
-                        <div class="title">{{page-title}}</div>
-                        {{/if}}
-                    </div>
-                    {{#if filter1}}
-                    <div class="cly-select float filter1-segmentation">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">{{active-filter1}}</div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width:220px;">
-                            <div>
-                                {{#eachOfObject filter1}}
-                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
-                                {{/eachOfObject}}
-                            </div>
-                        </div>
-                    </div>
-                    {{#if filter2}}
-                    <div class="cly-select float filter2-segmentation">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">{{active-filter2}}</div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width:220px;">
-                            <div>
-                                {{#eachOfObject filter2}}
-                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
-                                {{/eachOfObject}}
-                            </div>
-                        </div>
-                    </div>
-					{{/if}}
-					{{#if filter3}}
-                    <div class="cly-select float filter3-segmentation">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">{{active-filter3}}</div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width:220px;">
-                            <div>
-                                {{#eachOfObject filter3}}
-                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
-                                {{/eachOfObject}}
-                            </div>
-                        </div>
-                    </div>
-					{{/if}}
-                    {{/if}}
-				</div>
-			</div>
-			{{#if graph-description}}
-			<div id="report-manager-graph-description" class="graph-description" style="border-bottom-width: 0px;">{{graph-description}}</div>
-			{{/if}}
-        </div>
-        <div class="report-manager-table data-table table-template" data-help-localize="help.{{{chart-helper}}}">
-            <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-        </div>
-
-		<div id="report-widget-drawer" class="cly-drawer">
-			<div class="title">
-				<span data-localize='drill.reportmanager-title'></span>
-					<div class="close"><i id='report-widge-close' class="ion-ios-close-empty"></i></div>
-			</div>
-
-			<div class="details">
-				<input type="text" id="current_report_id" hidden/>
-
-				<div class="section">
-					<div class="label" data-localize='drill.report-name'></div>
-					<div>
-						<input id="report-name-input" class="input" type="text" placeholder="Enter report name">
-					</div>
-				</div>
-
-				<div class="section">
-					<div class="label" data-localize='drill.report-desc' ></div>
-					<div>
-						<input id="report-desc-input" class="input" type="text" placeholder="Enter report description">
-					</div>
-				</div>
-
-				<div class="section">
-					<div class="label" data-localize='drill.report-visibility' ></div>
-					<div class="checks">
-						<div id="report-global-option" class="check selected">
-							<div class="box"></div>
-							<div class="text"  data-localize='drill.report-global-option'></div>
-							<div class="description" data-localize="drill.report-global-option-desc"></div>
-						</div>
-						<div id="report-private-option" class="check">
-							<div class="box"></div>
-							<div class="text"  data-localize='drill.report-private-option'></div>
-							<div class="description" data-localize="drill.report-private-option-desc"></div>
-						</div>
-					</div>
-
-				</div>
-
-				<div class="section" id="report-data-block">
-					<div class="label" data-localize='drill.report-data' ></div>
-					<div class="checks">
-						<div id="report-refresh-option" class="check selected">
-							<div class="box"></div>
-							<div class="text"  data-localize = 'drill.report-auto-refresh'></div>
-							<div class="description" data-localize = "drill.report-auto-refresh-desc"></div>
-						</div>
-						<div id="report-onetime-option" class="check">
-							<div class="box"></div>
-							<div class="text"  data-localize='drill.report-onetime-option'></div>
-							<div class="description" data-localozie="drill.report-oentime-option-desc"></div>
-						</div>
-					</div>
-					<div class="description" data-localize="drill.report-data-desc">
-
-					</div>
-				</div>
-
-				<div  class="section" id="report-period-block">
-					<div class="label" data-localize='drill.report-period' ></div>
-					<div id="single-period-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-						<div class="select-inner">
-							<div class="text-container">
-								<div class="text">
-									<div class="default-text" data-localize='drill.report-period-remind'></div>
-								</div>
-							</div>
-							<div class="right combo"></div>
-						</div>
-						<div class="select-items square" style="width: 100%;"></div>
-					</div>
-				</div>
-			</div>
-			<div class="buttons">
-					<div id="create-report" class="icon-button green disabled" data-localize='drill.report-save'></div>
-			</div>
-		</div>
-    </script>
     <script id="version-history-template" type="text/x-handlebars-template">
 		<div class="widget">
             <div>{{ package-version }}</div>
@@ -1779,134 +1619,6 @@
 			</div>
             <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
                 <table id="data-table-db" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-            </div>
-        </div>
-    </script>
-    <script id="token-manager-template" type="text/x-handlebars-template">
-        <div class="widget" id="token-manager-view">
-            <div class="widget-header">
-                <div class="left">
-                    <div style="overflow: auto">
-                        {{#if filter1}}
-                            <div class="title small">{{page-title}}</div>
-                        {{else}}
-                            <div class="title">{{page-title}}</div>
-                        {{/if}}
-                    </div>
-                </div>
-                <div class="right btn-header" >
-                    <div class="icon-button green configs-changes" data-localize="token_manager.create-token" id="show_token_form"></div>
-                </div>
-            </div>
-            <div class="data-table table-template"  data-help-localize="help.{{{chart-helper}}}">
-                <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-            </div>
-        </div>
-        <div id="create-token-drawer" class="cly-drawer">
-            <div class="title">
-                <span data-localize="token_manager.create-token">Create token</span>
-                <div class="close"><i class="ion-ios-close-empty"></i></div>
-            </div>
-            <div class="details">
-                <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.purpose"></div>
-                    <input type="text" class="input" id="token_purpose" placeholder="{{purpose-desc}}" />
-                </div>
-                <div class="settings section">
-                    <div class="label"><span data-localize="token_manager.table.endpoint"></span><span style="float:right; color:#A0A0A0;" data-localize="common.optional"></span></div>
-                    <div class="desc" data-localize="token_manager.table.endpoint-desc"></div>
-                    <div class="endpoint_blocks_wrapper">
-                        <div class="token_endpoint_block" >
-                            <div class="delete-endpoint-block"><a class="cly-list-options"></a></div>
-                            <div class="label" data-localize="token_manager.table.endpoint-name"></div>
-                            <input type="text" class="input endpoint-text"  placeholder="{{endpoint}}" style="margin-bottom:10px;" />
-                            <div class="label" data-localize="token_manager.query-param"></div>
-                            <div class="param_blocks_wrapper">
-                                <div class="param_block">
-                                    <table>
-                                        <tr>
-                                            <td><input type="text" class="input param-key-input" placeholder="{{query-param}}" /></td>
-                                            <td ><input type="text" class="input param-value-input" placeholder="{{query-param-value}}" /></td>
-                                            <td style="padding-top:2px;"><i class="delete-param material-icons">highlight_off</i></td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-                            <a class="text-orange add-query-block">+ <span data-localize="token_manager.add-param"></span></a>
-                        </div>
-                        <div class="delete-new-endpoint-block-menu" tabindex="1">
-                            <a class="item clear-endpoint-block-item"><span data-localize="common.clear-values"></span></a>
-                            <a class="item delete-endpoint-block-item"><i class="fa fa-trash"></i><span data-localize="common.delete"></span></a>
-                        </div>
-                    </div>
-                    <div class="btn btn-orange add-endpoint-block" > + <span data-localize="token_manager.add-new-endpoint"></span></div>
-                    <div style="clear:both;"></div>
-                </div>
-                <div class="settings section">
-                    <a class="fa check-green check-header fa-square-o" id="use_multi" style="float:left; margin-right: 5px;"></a>
-                    <div class="label" data-localize="token_manager.table.multi-desc"></div>
-                </div>
-                <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.apps-title">Token exp</div>
-                    <div id="data-token-apps-selector" class="checks">
-                        <div data-from="apps-allow" class="check">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.apps-allow"></div>
-                        </div>
-                        <div data-from="apps-limit" class="check selected">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.apps-limit"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings section" id="limit_apps">
-                    <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
-                        <div class="select-inner">
-                            <div class="text-container">
-                                <div class="text">
-                                    <div class="default-text" data-localize="token_manager.select-apps"></div>
-                                </div>
-                            </div>
-                            <div class="right combo"></div>
-                        </div>
-                        <div class="select-items square" style="width: 100%;"></div>
-                    </div>
-                </div>
-                <div class="settings section">
-                    <div class="label" data-localize="token_manager.table.limit-title">Token exp</div>
-                    <div id="data-token-exp-selector" class="checks">
-                        <div data-from="time-allow" class="check selected">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.limit-allow"></div>
-                        </div>
-                        <div data-from="time-limit" class="check">
-                            <div class="box"></div>
-                            <div class="text" data-localize="token_manager.table.limit-limit">Token will expire after some time</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings section" id="limit_life" style="display:none;">
-                    <div class="label" data-localize="token_manager.token-expiration-time"></div>
-                    <div><input type="text" class="input" placeholder="{{enter-number}}" id="select_limit_value" /></div>
-                    <div>
-                        <div id="select_limit_span" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                            <div class="select-inner">
-                                <div class="text-container">
-                                    <div class="text">
-                                        <div class="default-text" data-localize="token_manager.select-time-unit"></div>
-                                    </div>
-                                </div>
-                                <div class="right combo"></div>
-                            </div>
-                            <div class="select-items square" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="buttons">
-                <div class="icon-button green disabled" id='create_new_token' data-localize="token_manager.create-token">Create token</div>
             </div>
         </div>
     </script>
@@ -2095,7 +1807,6 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.users.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.token.manager.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.version.history.js?<%= countlyVersion %>"></script>
@@ -2104,6 +1815,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/container.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/helpers.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/data/vuex.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/imports.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/nav.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/components/layout.js?<%= countlyVersion %>"></script>
@@ -2127,6 +1839,8 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/app-resolution/javascripts/countly.views.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>core/app-version/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/jobs/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/token-manager/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/report-manager/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/platform/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/carrier/javascripts/countly.models.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/carrier/javascripts/countly.views.js?<%= countlyVersion %>"></script>

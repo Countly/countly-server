@@ -1,0 +1,99 @@
+<cly-drawer 
+    @submit="onSubmit"
+    @close="onClose"
+    @copy="onCopy"
+    :title="title"
+    :size="5"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="$props.controls">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="edit-event-group-step" name="First Step">
+
+            <div class="text-medium text-heading bu-mt-45">Event Group Name</div>
+            <!-- validation for event group name -->
+            <validation-provider name="name" rules="required" v-slot="v">
+                <el-input
+                    :class="{'is-error': v.errors.length > 0}"
+                    v-model="drawerScope.editedObject.name"
+                    placeholder="Name your event group">
+                </el-input>
+            </validation-provider>
+                <div class="bu-my-4">
+                    <el-checkbox v-model="drawerScope.editedObject.needDescription" size="medium">
+                        <span class="color-cool-gray-100">Use Description</span>
+                    </el-checkbox>
+                </div>
+    
+                <div v-if="drawerScope.editedObject.needDescription || drawerScope.editedObject.description" class="text-medium text-heading bu-mt-4">Event Group Description</div>
+                <!-- validation for description when it is selected -->
+                <validation-provider v-if="drawerScope.editedObject.needDescription || drawerScope.editedObject.description"
+                name="desc" rules="required" v-slot="v">
+                    <el-input
+                    v-if="drawerScope.editedObject.needDescription || drawerScope.editedObject.description"
+                    type="textarea"
+                    :rows="2"
+                    v-model="drawerScope.editedObject.description"
+                    :class="{'is-error': v.errors.length > 0}"
+                    placeholder="Enter your description">
+                    </el-input>
+                </validation-provider>
+                <div class="text-big font-weight-bold bu-mt-5">
+                    Included Events
+                </div>
+                <div class="text-medium text-heading bu-mt-5">Select Events</div>
+                <!-- validation for selecting from events -->
+                <validation-provider name="allEvents" rules="required" v-slot="v">
+                    <el-select multiple style="width:100%" v-model="drawerScope.editedObject.source_events" >
+                        <el-option v-for="item in eventList" :key="item.value" :value="item.value">
+                        </el-option>
+                    </el-select>
+                </validation-provider>
+
+                <div class="bu-my-4">
+                    <div class="text-big text-heading bu-mt-5">Event Group Visibility</div>
+                    <div class="text-medium color-cool-gray-50">If an event group is invisible server will continue to record data for it but it will not be displayed in the user interface.</div>
+                    <el-switch v-model="drawerScope.editedObject.status">
+                </el-switch>
+                </div>
+
+                <div v-if="drawerScope.editedObject.display_map">
+                    <div class="text-big text-heading bu-mt-5">Event Group Properties</div>
+                    <div class="bu-mt-3">
+                        <div class="text-medium text-heading">Display Name for Count</div>
+                        <div class="text-medium color-cool-gray-50">A display name for the count property of this event</div>
+                    </div>
+                    <el-input
+                    class="bu-mb-3" 
+                    v-model="drawerScope.editedObject.display_map.c" 
+			        placeholder="Count">
+			        </el-input>
+                    <div class="bu-mt-3">
+                        <div class="text-medium text-heading">Display Name for Sum</div>
+                        <div class="bu-level">
+                            <div class="text-medium text-heading bu-level-left bu-level-item color-cool-gray-50">A display name for the sum property of this event</div>
+                            <div class="text-medium bu-level-item bu-level-right color-cool-gray-50">Optional</div>
+                        </div>
+                    </div>
+                    <el-input
+                    class="bu-mb-3" 
+                    v-model="drawerScope.editedObject.display_map.s" 
+                    placeholder="Sum">
+                    </el-input>
+                    <div class="bu-mt-3">
+                        <div class="text-medium text-heading">Display Name for Duration</div>
+                        <div class="bu-level">
+                            <div class="text-medium text-heading bu-level-left bu-level-item color-cool-gray-50">A display name for the duration property of this event</div>
+                            <div class="text-medium bu-level-item bu-level-right color-cool-gray-50">Optional</div>
+                        </div>
+                    </div>
+                    <el-input
+                    class="bu-mb-3" 
+                    v-model="drawerScope.editedObject.display_map.d" 
+                    placeholder="Duration">
+                    </el-input>
+                </div>
+            </div>
+            
+        </cly-form-step>
+    </template>
+</cly-drawer>

@@ -1,0 +1,81 @@
+<div>
+    <cly-datatable-n
+    ref="eventGroupsTable"
+    :rows="eventGroups"
+    @row-click="onRowClick"
+    :indent=0
+    :height=550
+    :tracked-fields="trackedFields"
+    @select-all="handleAllChange"
+    @select="handleCurrentChange"
+    :persist-key="eventsGroupTablePersistKey"
+    class="bu-mx-5">
+    <template v-slot:header-left>
+        <el-select v-model="selectedFilter" >
+            <el-option
+                :key="item.value"
+                :value="item.value"
+                :label="item.label"
+                v-for="item in eventGroupFilters">
+            </el-option>
+        </el-select>
+    </template>
+        <el-table-column fixed="left" type="selection" :reserve-selection="true" width="55">
+        </el-table-column>
+
+        <el-table-column fixed="left" sortable="custom" prop="name" label="Event Group Name">
+            <template v-slot="rowScope">
+                {{rowScope.row.name}}
+                <div class="text-small color-cool-gray-50" v-if="rowScope.row.source_events">{{rowScope.row.source_events.length || 0}} Events</div>
+                <span v-if="rowScope.row.status === false" class="bu-tag"><i class="fa fa-eye-slash"></i></span>
+                <span v-else class="bu-tag"><i class="fa fa-eye"></i></ion-icon></span>
+            </template>
+        </el-table-column>
+
+        <el-table-column sortable="custom"  prop="description" label="Description">
+            <template v-slot="rowScope">
+                {{rowScope.row.description}}
+            </template>
+        </el-table-column>
+
+        <el-table-column fixed="right" width="100" align="center">
+            <template v-slot="rowScope">
+                <cly-more-options size="small" @command="handleCommand($event, rowScope.row)">
+                    <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                    <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                </cly-more-options>
+            </template>
+        </el-table-column>
+        <template v-slot:bottomline="scope">
+            <cly-diff-helper class="action-bar" :diff="scope.diff" @discard="scope.unpatch()">
+                <template v-slot:main>
+                    <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center" style="height: 100%;">
+                        <cly-more-options class="bu-mr-3" size="small" text="Change Visibility" type="default" icon="el-icon-view" @command="handleChangeVisibility($event, scope.diff)">
+                            <el-dropdown-item command="visible">Visibile</el-dropdown-item>
+                            <el-dropdown-item command="hidden">Hidden</el-dropdown-item>
+                        </cly-more-options>
+                        
+                        <el-button class="bu-mr-3" size="small" type="default" icon="el-icon-delete-solid" @click="handleDelete(scope.diff)">Delete</el-button>
+                    </div>
+                </template>
+            </cly-diff-helper>
+        </template>
+    </cly-datatable-n>
+    <cly-confirm-dialog 
+    @cancel="closeDeleteForm" 
+    @confirm="submitDeleteForm" 
+    :before-close="closeDeleteForm" 
+    ref="deleteConfirmDialog" 
+    :visible.sync="showDeleteDialog" 
+    dialogType="danger" 
+    :saveButtonLabel="i18n('common.delete')" 
+    :cancelButtonLabel="i18n('common.no-dont-delete')" 
+    title="Delete Event Group" >
+        <template slot-scope="scope">
+            Delete Event Group permanently?<br/> <small class="color-red-100">Warning: This is not reversible</small>
+            <ul>
+             <li v-if="deleteElement">{{deleteElement.name}}</li>
+            </ul>
+        </template>
+    </cly-confirm-dialog>
+</div>

@@ -1735,6 +1735,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         params.viewsNamingMap[currEvent.segmentation.name] = view._id;
                         var escapedMetricVal = common.db.encode(view._id + "");
                         currEvent.viewAlias = escapedMetricVal;
+                        currEvent.segmentation._id = escapedMetricVal;
                         resolve(currEvent);
                     }
                 });
@@ -1744,6 +1745,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, null, null, function(err, view) {
                     if (view) {
                         currEvent.viewAlias = common.db.encode(view._id + "");
+                        currEvent.segmentation._id = currEvent.viewAlias;
                         resolve(currEvent);
                     }
                 });
@@ -1782,42 +1784,44 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
         if (currEvent.segmentation) {
             for (let segKey in currEvent.segmentation) {
-                let tmpSegKey = "";
-                if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
-                    tmpSegKey = segKey.replace(/^\$|\./g, "");
-                    currEvent.segmentation[tmpSegKey] = currEvent.segmentation[segKey];
-                    delete currEvent.segmentation[segKey];
-                    segKey = tmpSegKey;
-                }
-                if (segKey === "segment") {
-                    //backwards compability
-                    currEvent.segmentation.platform = currEvent.segmentation[segKey];
-                    segKey = "platform";
-                }
-                let tmpSegVal = currEvent.segmentation[segKey] + "";
-                if (!(escapedViewSegments[segKey] === true)) {
-                    if (!viewInfo.segments[segKey] && (segKey === 'platform' || Object.keys(viewInfo.segments).length < plugins.getConfig("views").segment_limit)) {
-                        viewInfo.segments[segKey] = {};
+                if (segKey !== "_id") {
+                    let tmpSegKey = "";
+                    if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
+                        tmpSegKey = segKey.replace(/^\$|\./g, "");
+                        currEvent.segmentation[tmpSegKey] = currEvent.segmentation[segKey];
+                        delete currEvent.segmentation[segKey];
+                        segKey = tmpSegKey;
                     }
-                    tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
-                    if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
-                        tmpSegVal = "[CLY]" + tmpSegVal;
+                    if (segKey === "segment") {
+                        //backwards compability
+                        currEvent.segmentation.platform = currEvent.segmentation[segKey];
+                        segKey = "platform";
                     }
-                    currEvent.segmentation[segKey] = tmpSegVal;
-
-                    if (viewInfo.segments[segKey]) {
-                        if (viewInfo.segments[segKey][tmpSegVal]) {
-                            segmentList.push(segKey);
+                    let tmpSegVal = currEvent.segmentation[segKey] + "";
+                    if (!(escapedViewSegments[segKey] === true)) {
+                        if (!viewInfo.segments[segKey] && (segKey === 'platform' || Object.keys(viewInfo.segments).length < plugins.getConfig("views").segment_limit)) {
+                            viewInfo.segments[segKey] = {};
                         }
-                        else {
-                            if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
-                                delete currEvent.segmentation[segKey];
+                        tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
+                        if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                            tmpSegVal = "[CLY]" + tmpSegVal;
+                        }
+                        currEvent.segmentation[segKey] = tmpSegVal;
+
+                        if (viewInfo.segments[segKey]) {
+                            if (viewInfo.segments[segKey][tmpSegVal]) {
+                                segmentList.push(segKey);
                             }
                             else {
-                                viewInfo.segments[segKey][segKey] = true;
-                                segmentList.push(segKey);
-                                addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
-                                save_structure = true;
+                                if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
+                                    delete currEvent.segmentation[segKey];
+                                }
+                                else {
+                                    viewInfo.segments[segKey][segKey] = true;
+                                    segmentList.push(segKey);
+                                    addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
+                                    save_structure = true;
+                                }
                             }
                         }
                     }

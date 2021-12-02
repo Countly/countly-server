@@ -17,4 +17,11 @@
         width: 1em;
         border-radius: 3px;
     }
+    &.is-curved {
+        border-radius: 67px;
+        height: 16px;
+        padding-left: 4px;
+        padding-right: 4px;
+        min-width: 12px;
+    }
 }

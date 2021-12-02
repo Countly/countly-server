@@ -1,4 +1,4 @@
-/* global Vue, app, countlyEvent */
+/* global Vue, app, countlyEvent, countlyGlobal*/
 
 (function(countlyVue) {
 
@@ -34,7 +34,7 @@
                 }
             },
             template: '<a @click="back" class="cly-vue-back-link"> \n' +
-                            '<span><i class="fas fa-arrow-left bu-pr-3"></i>{{innerTitle}}</span>\n' +
+                            '<span class="text-medium bu-is-capitalized"><i class="fas fa-arrow-left bu-pr-3"></i>{{innerTitle}}</span>\n' +
                         '</a>'
         }
     ));
@@ -60,14 +60,16 @@
 
     Vue.component("cly-empty-home", countlyBaseComponent.extend({
         template: '<div class="cly-vue-empty-home">\n' +
-                    '<div class="info">\n' +
-                        '<div class="title">{{title}}</div>\n' +
-                        '<div class="text">\n' +
-                            '{{body}}\n' +
-                        '</div>\n' +
+                    '<div class="bu-mb-3" v-if="image">\n' +
+                        '<img :src="image" class="image">\n' +
                     '</div>\n' +
-                    '<div v-if="image">\n' +
-                        '<img :src="image">\n' +
+                    '<div class="info">\n' +
+                        '<div class="title">\n' +
+                            '<h3>{{title}}</h3>\n' +
+                        '</div>\n' +
+                        '<div class="text">\n' +
+                            '<span v-html="body"></span>\n' +
+                        '</div>\n' +
                     '</div>\n' +
                 '</div>',
         mixins: [countlyVue.mixins.i18n],
@@ -137,11 +139,11 @@
                     '<slot name="main">\n' +
                       '<div class="message">\n' +
                           '<span class="text-dark">{{madeChanges}}</span>\n' +
-                          '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+                          '<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
                       '</div>\n' +
                       '<div class="buttons">\n' +
-                          '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
-                         '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" :disabled="disabled" @click="save"></cly-button>\n' +
+                          '<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+                         '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
                       '</div>\n' +
                     '</slot>\n' +
                   '</div>'
@@ -376,10 +378,16 @@
     }));
 
     Vue.component("cly-blank", countlyBaseComponent.extend({
-        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center">\
-                        <h3 class="color-cool-gray-50">{{text}}</h3>\
+        "template": '<div class="cly-vue-blank bu-is-align-items-center bu-is-flex bu-is-justify-content-center bu-is-flex-direction-column">\
+                        <h3 class="color-cool-gray-50">{{title}}</h3>\
+                        <div v-if="text"><p class="text-medium">{{text}}</p></div>\
                     </div>',
         props: {
+            title: {
+                type: String,
+                default: '',
+                required: false
+            },
             text: {
                 type: String,
                 default: '',
@@ -387,6 +395,40 @@
             }
         }
     }));
+
+    Vue.component("cly-app-select", {
+        template: '<el-select v-bind="$attrs" v-on="$listeners">\
+                        <el-option\
+                            v-if="allowAll"\
+                            key="all"\
+                            label="All apps"\
+                            value="all">\
+                        </el-option>\
+                        <el-option\
+                            v-for="app in apps"\
+                            :key="app.value"\
+                            :label="app.label"\
+                            :value="app.value">\
+                        </el-option>\
+                    </el-select>',
+        props: {
+            allowAll: {
+                type: Boolean,
+                default: false
+            }
+        },
+        computed: {
+            apps: function() {
+                var apps = countlyGlobal.apps || {};
+                return Object.keys(apps).map(function(key) {
+                    return {
+                        label: apps[key].name,
+                        value: apps[key]._id
+                    };
+                });
+            }
+        }
+    });
 
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
@@ -650,6 +692,44 @@
                 this.isModalVisible = false;
             },
         }
+    }));
+
+    Vue.component("cly-color-tag", countlyBaseComponent.extend({
+        data: function() {
+            return {
+                selectedTag: this.defaultTag
+            };
+        },
+        methods: {
+            click: function(tag) {
+                this.selectedTag = tag;
+                this.$emit("input", tag);
+            },
+        },
+
+        props: {
+            value: Object,
+            tags: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            defaultTag: {
+                type: Object,
+                default: function() {
+                    return {};
+                }
+            }
+        },
+        template: '<div class="bu-is-flex bu-is-flex-wrap-wrap bu-is-align-items-center">\
+                                <div class="cly-vue-color-tag__color-tag-wrapper"  v-for="(tag,idx) in tags">\
+                                <div v-if="tag.value == selectedTag.value" @click="click(tag)" class="cly-vue-color-tag__color-tag cly-vue-color-tag__color-tag__selected bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}">\
+                                    <i class="ion-checkmark cly-vue-color-tag__checkmark"></i>\
+                                </div>\
+                                <div v-else @click="click(tag)" class="cly-vue-color-tag__color-tag bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}"></div>\
+                                </div>\
+                    </div>'
     }));
 
 }(window.countlyVue = window.countlyVue || {}));
