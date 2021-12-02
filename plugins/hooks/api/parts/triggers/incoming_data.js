@@ -72,7 +72,7 @@ class IncomingDataTrigger {
      */
     register() {
         InternalEvents.forEach((e) => {
-            plugins.register(e, (ob) => {
+            plugins.register(e, (obj) => {
                 try {
                     const ob = {
                         params: {
