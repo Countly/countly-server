@@ -607,7 +607,7 @@
         props: {
             text: { default: "", type: String },
             color: { default: "light-warning", type: String},
-            size: {default: "fullScreen", type: String},
+            size: {default: "full", type: String},
             visible: {default: true, type: Boolean}
         },
         watch: {
