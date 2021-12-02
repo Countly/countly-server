@@ -1,272 +1,42 @@
-<div id="widget-drawer" class="cly-drawer widget-width">
-    <div class="title">
-        <span id="widget-drawer-create-title" data-localize="dashboards.add-new-widget-heading"></span>
-        <span id="widget-drawer-edit-title" data-localize="dashboards.edit-widget-heading"></span>
-        <div class="close"><i class="ion-ios-close-empty"></i></div>
-    </div>
-    <div class="details">
-        <div class="section">
-            <div class="label" data-localize="dashboards.widget-type"></div>
-            <div id="widget-types">
-                <div class="opts">
-                    <div data-widget-type="time-series" class="opt cly-grid-4 selected">
-                            <div class="inner">
-                                <span class="icon time-series"></span>
-                                <span data-localize="dashboards.time-series"></span>
-                            </div>
+<cly-drawer
+    @submit="onSubmit"
+    @copy="onCopy"
+    :title="title"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="controls">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="widget-drawer">
+            <cly-form-field
+                name="widget_type"
+                rules="required"
+                :subheading="i18nM('dashboards.widget-type-description')"
+                :label="i18nM('dashboards.widget-type')">
+                <el-radio-group
+                    class="bu-columns bu-is-multiline bu-m-0"
+                    v-model="drawerScope.editedObject.widget_type">
+                    <div
+                        v-for="(item, index) in widgetTypes"
+                        style="box-sizing: border-box;"
+                        :class="['bu-column bu-is-one-quarter bu-m-0 bu-p-0',
+                                {'bu-pr-2': ((index + 1) % 4 !== 0)},
+                                {'bu-mb-3': (index < (widgetTypes.length - (widgetTypes.length % 4)))}]">
+                        <el-radio
+                            style="width:100%"
+                            :label="item.type"
+                            :key="item.type"
+                            border>
+                            {{item.label}}
+                        </el-radio>
                     </div>
-                    <div data-widget-type="bar-chart" class="opt cly-grid-4">
-                        <div class="inner">
-                            <span class="icon bar-chart"></span>
-                            <span data-localize="dashboards.bar-chart"></span>                            
-                        </div>
-                    </div>
-                    <div data-widget-type="number" class="opt cly-grid-4">
-                        <div class="inner">
-                            <span class="icon number"></span>
-                            <span data-localize="dashboards.number"></span>                            
-                        </div>
-                    </div>
-                    <div data-widget-type="table" class="opt cly-grid-4">
-                        <div class="inner">
-                            <span class="icon table"></span>
-                            <span data-localize="dashboards.table"></span>                            
-                        </div>
-                    </div>
-                    <div data-widget-type="note" class="opt cly-grid-4">
-                        <div class="inner">
-                            <span class="icon note"></span>
-                            <span data-localize="dashboards.note"></span>                            
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="section">
-            <div class="label" data-localize="dashboards.data-type"></div>
-            <div id="data-types" class="opts">
-                <div data-data-type="session" class="opt cly-grid-4 selected">
-                    <div class="inner" data-localize="dashboards.session"></div>
-                </div>
-                <div data-data-type="event" class="opt cly-grid-4">
-                    <div class="inner" data-localize="events.general.event"></div>
-                </div>
-                <div data-data-type="push" class="opt cly-grid-4">
-                    <div class="inner" data-localize="dashboards.push"></div>
-                </div>
-                <div data-data-type="crash" class="opt cly-grid-4">
-                    <div class="inner" data-localize="dashboards.crash"></div>
-                </div>
-            </div>
-        </div>
-        <div id="widget-section-app-count" class="settings section">
-            <div class="label" data-localize="dashboards.source"></div>
-            <div id="app-count" class="checks">
-                <div data-from="multi-app" class="check selected">
-                    <div class="box"></div>
-                    <div class="text" data-localize="dashboards.multiple-apps"></div>
-                    <div class="description" data-localize="dashboards.multiple-apps-description"></div>
-                </div>
-                <div data-from="single-app" class="check">
-                    <div class="box"></div>
-                    <div class="text" data-localize="dashboards.single-app">Single app</div>
-                    <div class="description" data-localize="dashboards.single-app-description"></div>
-                </div>
-            </div>
-        </div>
-        <div id="widget-section-multi-app" class="settings section">
-            <div class="label" data-localize="sidebar.management.applications"></div>
-            <div id="multi-app-dropdown" class="cly-multi-select" data-max="4" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text" data-localize="dashboards.select-applications-multi"></div>
-                        </div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width: 100%;"></div>
-            </div>
-        </div>
-        <div id="widget-section-single-app" class="settings section">
-            <div class="label" data-localize="dashboards.application-single"></div>
-            <div id="single-app-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text" data-localize="dashboards.select-applications-single"></div>
-                        </div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width: 100%;"></div>
-            </div>
-        </div>
-        <div id="widget-section-multi-event" class="settings section">
-            <div class="label" data-localize="sidebar.events"></div>
-            <div id="multi-event-dropdown" class="cly-multi-select" data-max="5" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text" data-localize="dashboards.select-event-multi"></div>
-                        </div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width: 100%;"></div>
-            </div>
-        </div>
-        <div id="widget-section-single-event" class="settings section">
-            <div class="label" data-localize="events.general.event"></div>
-            <div id="single-event-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text" data-localize="dashboards.select-event-single"></div>
-                        </div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width: 100%;"></div>
-            </div>
-        </div>
-        <div id="widget-section-breakdown" class="settings section">
-            <div class="label" data-localize="dashboards.breakdown"></div>
-            <div id="widget-breakdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text" data-localize="dashboards.select-breakdown"></div>
-                        </div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width: 100%;"></div>
-            </div>
-        </div>
-        <div id="widget-section-multi-metric" class="settings section">
-            <div class="label" data-localize="dashboards.metrics-multi"></div>
-            <div id="multi-metric-dropdown" class="cly-multi-select" data-max="3" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text" data-localize="dashboards.select-metric-multi"></div>
-                        </div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width: 100%;"></div>
-            </div>
-        </div>
-        <div id="widget-section-single-metric" class="settings section">
-            <div class="label" data-localize="dashboards.metrics-single"></div>
-            <div id="single-metric-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">
-                            <div class="default-text" data-localize="dashboards.select-metric-single"></div>
-                        </div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width: 100%;"></div>
-            </div>
-        </div>
-        <div id="widget-section-bar-color" class="settings section" style="margin-bottom: 55px;">
-            <div class="label" data-localize="dashboards.bar-color"></div>
-            <div id="bar-colors" class="colors">
-                <div data-color="1" class="color selected"></div>
-                <div data-color="2" class="color"></div>
-                <div data-color="3" class="color"></div>
-                <div data-color="4" class="color"></div>
-            </div>
-        </div>
-        <div id="widget-section-note" class="settings section" data-gs-min-width="200">
-             <div class="label" style="position: relative">
-                <span data-localize="dashboards.add-note"></span>
-            </div> 
-            <textarea id="widget-note"  maxlength="1000"  rows="10" class="input" type="text" style="border-radius: 2px; border-color: #dcdbdb;display: block; width: 100%;" />
-		</div>
-		<div id="widget-section-font-size" class="settings section">
-			<div class="label" style="position: relative">
-			   <span data-localize="dashboards.font-size"></span>
-		   </div>
-		   <input id="font-size" class="input" type="text"/>
-	   </div>
-	   <div id="widget-section-text-decoration" class="settings section">
-			<div class="label" data-localize="dashboards.text-style"></div>
-			<div id="multi-text-decor-dropdown" class="cly-multi-select" data-max="10" style="width: 100%; box-sizing: border-box;">
-				<div class="select-inner">
-					<div class="text-container">
-						<div class="text">
-							<div class="default-text" data-localize="dashboards.select-text-decorations"></div>
-						</div>
-					</div>
-					<div class="right combo"></div>
-				</div>
-				<div class="select-items square" style="width: 100%;"></div>
-			</div>
-		</div>
-        <div id="widget-section-widget-title" class="section">
-            <div class="label" style="position: relative">
-                <a class='fa fa-square-o check-green' id="widget-title-checkbox" style="position:relative; vertical-align:middle; bottom: 1px"></a>
-                <span data-localize="dashboards.custom-widget-title" style="position: absolute; left: 20px"></span>
-            </div>
-            <input id="widget-name" class="input" type="text" style="display: none;" />
-		</div>
-		<div id="widget-section-custom-period" class="section">
-            <div class="label" style="position: relative">
-                <a class='fa fa-square-o check-green' id="widget-custom-period-checkbox" style="position:relative; vertical-align:middle; bottom: 1px"></a>
-                <span data-localize="dashboards.custom-period" style="position: absolute; left: 20px"></span>
-			</div>
-			<div id="custom-period-selector-block" style="display: none;">
-				<cly-dashbaords-custom-period v-bind:selected-period="selectedPeriod" v-bind:on-changed="onTimePeriodChanged"></cly-dashbaords-custom-period>
-			</div>
-        </div>
-    </div>
-    <div class="buttons">
-        <div id="create-widget" class="icon-button green disabled" data-localize="dashboards.create-and-add"></div>
-        <div id="save-widget" class="icon-button green" data-localize="dashboards.save-changes">Save Changes</div>
-    </div>
-</div>
-
-<script type="text/x-template" id="cly-dashbaords-custom-period-template">
-    <div class="has-data float cly-time-period text-align-left float" data-name="period" ref="cly-time-period">
-        <cly-menu
-            v-on:toggler-clicked="onTogglerClicked"
-            v-bind:is-shown="isMenuShown"
-            v-bind:is-empty="isEmpty"
-            v-bind:label="label"
-            v-click-outside="abortEditing">
-            <div class="type-selector">
-                <cly-select
-                    v-bind:items="rangeTypes"
-                    v-bind:selected-item="currentType"
-					v-bind:on-selection-change="onTypeChanged">
-				</cly-select>
-            </div>
-            <div>
-                <div class="last-n-selector" v-show="currentType.value === 'last-n'">
-                    <input type="number" v-model="currentNumber" max="1000" min="2" />
-                    <cly-select
-                        v-bind:items="levels"
-                        v-bind:selected-item="currentLevel"
-                        v-bind:on-selection-change="onLevelChanged"></cly-select>
-                </div>
-                <cly-datepicker-ext
-                    v-show="currentType.value === 'range'"
-                    v-bind:on-value-changed="onRangeChanged"
-                    v-bind:value="currentRange"
-                    v-bind:collapsible="false"
-                    v-bind:hideOnSelect="false"
-                    v-bind:isRangePicker="true"
-                    v-bind:isTextEditAllowed="true"
-                    v-bind:aborted="aborted">
-                </cly-datepicker-ext>
-            </div>
-            <div class="time-buttons">
-                <div class="icon-button green apply-button" v-on:click="commit">Apply</div>
-            </div>
-        </cly-menu>
-    </div>
-</script>
+                </el-radio-group>
+            </cly-form-field>
+            <component
+                v-for="(item) in widgetTypes"
+                v-if="drawerScope.editedObject.widget_type === item.type"
+                :is="item.drawer.component"
+                :key="item.type"
+                :scope="drawerScope">
+            </component>
+        </cly-form-step>
+    </template>
+</cly-drawer>

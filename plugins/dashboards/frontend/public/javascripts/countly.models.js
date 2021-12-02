@@ -1,653 +1,412 @@
-/*global countlyGlobal,countlyCommon,jQuery,_ */
+/*global countlyCommon, CV, countlyVue, _ */
 
-(function(countlyDashboards, $) {
+(function(countlyDashboards) {
 
-    var metrics = {
-        session: [
-            { name: jQuery.i18n.prop("sidebar.analytics.sessions"), value: "t" },
-            { name: jQuery.i18n.prop("sidebar.analytics.users"), value: "u" },
-            { name: jQuery.i18n.prop("common.table.new-users"), value: "n" }
-        ],
-        event: [
-            { name: jQuery.i18n.prop("events.table.count"), value: "c" },
-            { name: jQuery.i18n.prop("events.table.sum"), value: "s" },
-            { name: jQuery.i18n.prop("events.table.dur"), value: "dur" }
-        ],
-        push: [
-            { name: jQuery.i18n.prop("dashboards.sent"), value: "sent" },
-            { name: jQuery.i18n.prop("dashboards.actioned"), value: "actioned" }
-        ],
-        crash: [
-            { name: jQuery.i18n.prop("dashboards.crf"), value: "crf" },
-            { name: jQuery.i18n.prop("dashboards.crnf"), value: "crnf" },
-            { name: jQuery.i18n.prop("dashboards.cruf"), value: "cruf" },
-            { name: jQuery.i18n.prop("dashboards.crunf"), value: "crunf" }
-        ]
-    };
-
-    var reportDateRanges = {
-        daily: [
-            {name: jQuery.i18n.map["common.yesterday"], value: "yesterday"},
-            {name: jQuery.i18n.map["common.7days"], value: "7days"},
-            {name: jQuery.i18n.map["common.30days"], value: "30days"},
-            {name: jQuery.i18n.map["common.60days"], value: "60days"}
-        ],
-        weekly: [
-            {name: jQuery.i18n.map["common.7days"], value: "7days"},
-            {name: jQuery.i18n.map["common.30days"], value: "30days"},
-            {name: jQuery.i18n.map["common.60days"], value: "60days"}
-        ],
-        monthly: [
-            {name: jQuery.i18n.map["common.30days"], value: "30days"},
-            {name: jQuery.i18n.map["common.60days"], value: "60days"}
-        ]
-    };
-
-    var _dashboards = [],
-        _currDashWidgets = [],
-        _currDashApps = [],
-        _eventMaps = {},
-        _initialised = false;
-
-    countlyDashboards.initialize = function(dashboardId, force) {
-        if (_initialised && !force) {
-            if (dashboardId) {
-                setDashWidgetsAndApps(dashboardId);
+    countlyDashboards.factory = {
+        dashboards: {
+            getEmpty: function() {
+                return {
+                    name: "",
+                    shared_email_edit: [],
+                    shared_email_view: [],
+                    shared_user_groups_edit: [],
+                    shared_user_groups_view: [],
+                    share_with: "all-users",
+                    theme: 0
+                };
             }
-
-            return true;
+        },
+        widgets: {
+            getEmpty: function() {
+                return {
+                    widget_type: "time-series"
+                };
+            }
         }
+    };
 
-        _initialised = true;
-
-        return $.when(
-            $.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r + "/dashboards/all",
-                data: {},
-                dataType: "json",
-                success: function(data) {
-                    _dashboards = data;
-                    if (dashboardId) {
-                        setDashWidgetsAndApps(dashboardId);
+    countlyDashboards.service = {
+        dashboards: {
+            getAll: function() {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + "/dashboards/all",
+                    data: {},
+                    dataType: "json"
+                });
+            },
+            get: function(dashboardId, isRefresh) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + "/dashboards",
+                    data: {
+                        "dashboard_id": dashboardId,
+                        "period": countlyCommon.getPeriodForAjax(),
+                        "action": (isRefresh) ? "refresh" : ""
+                    },
+                    dataType: "json",
+                });
+            },
+            create: function(settings) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/dashboards/create",
+                    data: {
+                        "name": settings.name,
+                        "shared_email_edit": JSON.stringify(settings.shared_email_edit) || [],
+                        "shared_email_view": JSON.stringify(settings.shared_email_view) || [],
+                        "shared_user_groups_edit": JSON.stringify(settings.shared_user_groups_edit) || [],
+                        "shared_user_groups_view": JSON.stringify(settings.shared_user_groups_view) || [],
+                        "copy_dash_id": settings.copyDashId,
+                        "share_with": settings.share_with,
+                        "theme": settings.theme
+                    },
+                    dataType: "json"
+                });
+            },
+            update: function(dashboardId, settings) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/dashboards/update",
+                    data: {
+                        "dashboard_id": dashboardId,
+                        "name": settings.name,
+                        "shared_email_edit": JSON.stringify(settings.shared_email_edit),
+                        "shared_email_view": JSON.stringify(settings.shared_email_view),
+                        "shared_user_groups_edit": JSON.stringify(settings.shared_user_groups_edit),
+                        "shared_user_groups_view": JSON.stringify(settings.shared_user_groups_view),
+                        "share_with": settings.share_with,
+                        "theme": settings.theme
+                    },
+                    dataType: "json"
+                });
+            },
+            delete: function(dashboardId) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/dashboards/delete",
+                    data: {
+                        "dashboard_id": dashboardId
+                    },
+                    dataType: "json"
+                });
+            }
+        },
+        widgets: {
+            get: function(dashboardId, widgetId) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + "/dashboards/widget",
+                    data: {
+                        "period": "",
+                        "dashboard_id": dashboardId,
+                        "widget_id": widgetId
                     }
+                });
+            },
+            create: function(dashboardId, widget) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/dashboards/add-widget",
+                    data: {
+                        "dashboard_id": dashboardId,
+                        "widget": JSON.stringify(widget)
+                    },
+                    dataType: "json",
+                });
+            },
+            update: function(dashboardId, widgetId, widget) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/dashboards/update-widget",
+                    data: {
+                        "dashboard_id": dashboardId,
+                        "widget_id": widgetId,
+                        "widget": JSON.stringify(widget)
+                    },
+                });
+            },
+            delete: function(dashboardId, widgetId) {
+                return CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.w + "/dashboards/remove-widget",
+                    data: {
+                        "dashboard_id": dashboardId,
+                        "widget_id": widgetId
+                    },
+                    dataType: "json"
+                });
+            }
+        }
+    };
+
+    countlyDashboards.getVuexModule = function() {
+        var widgetsResource = countlyVue.vuex.Module("widgets", {
+            state: function() {
+                return {
+                    all: []
+                };
+            },
+            getters: {
+                all: function(state) {
+                    return state.all;
                 }
-            })
-        );
-
-        /**
-         * Function to set dashbaord widgets and apps
-         * @param  {String} id - dashbaord id
-         */
-        function setDashWidgetsAndApps(id) {
-            var dashboard = _.find(_dashboards, function(d) {
-                return d._id === id;
-            }) || {};
-
-            _currDashWidgets = dashboard.widgets || [];
-            _currDashApps = dashboard.apps || [];
-        }
-    };
-
-    countlyDashboards.getAllDashboardsAjax = function() {
-        var dfd = jQuery.Deferred();
-
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r + "/dashboards/all",
-            data: {},
-            dataType: "json",
-            success: function(data) {
-                _dashboards = data;
-                dfd.resolve();
-            }
-        });
-
-        return dfd.promise();
-    };
-
-    countlyDashboards.getAllDashboards = function() {
-        var ret = [];
-
-        for (var i = 0; i < _dashboards.length; i++) {
-            ret.push({
-                id: _dashboards[i]._id,
-                name: _dashboards[i].name
-            });
-        }
-
-        return _.sortBy(ret, "name");
-    };
-
-    countlyDashboards.getDashboard = function(dashboardId) {
-        var retDash = _.find(_dashboards, function(dashboard) {
-                return dashboard._id === dashboardId;
-            }) || {},
-            retDashClone = $.extend({}, retDash);
-
-        retDashClone.name = countlyCommon.decodeHtml(retDashClone.name);
-
-        return retDashClone;
-    };
-
-    countlyDashboards.createDashboard = function(settings, callback) {
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/dashboards/create",
-            data: {
-                "name": settings.name,
-                "shared_email_edit": JSON.stringify(settings.shared_email_edit) || [],
-                "shared_email_view": JSON.stringify(settings.shared_email_view) || [],
-                "shared_user_groups_edit": JSON.stringify(settings.shared_user_groups_edit) || [],
-                "shared_user_groups_view": JSON.stringify(settings.shared_user_groups_view) || [],
-                "copy_dash_id": settings.copyDashId,
-                "share_with": settings.share_with,
-                "theme": settings.theme
             },
-            dataType: "json",
-            success: function(dashboardId) {
-                $.when(countlyDashboards.initialize(dashboardId, true)).then(function() {
-                    callback(dashboardId);
-                });
-            }
-        });
-    };
-
-    countlyDashboards.updateDashboard = function(dashboardId, settings, callback) {
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/dashboards/update",
-            data: {
-                "dashboard_id": dashboardId,
-                "name": settings.name,
-                "shared_email_edit": JSON.stringify(settings.shared_email_edit),
-                "shared_email_view": JSON.stringify(settings.shared_email_view),
-                "shared_user_groups_edit": JSON.stringify(settings.shared_user_groups_edit),
-                "shared_user_groups_view": JSON.stringify(settings.shared_user_groups_view),
-                "share_with": settings.share_with,
-                "theme": settings.theme
-            },
-            dataType: "json",
-            success: function(result) {
-                $.when(countlyDashboards.initialize(dashboardId, true)).then(function() {
-                    callback(result);
-                });
-            }
-        });
-    };
-
-    countlyDashboards.deleteDashboard = function(dashboardId, callback) {
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/dashboards/delete",
-            data: {
-                "dashboard_id": dashboardId
-            },
-            dataType: "json",
-            success: function(result) {
-                $.when(countlyDashboards.initialize(null, true)).then(function() {
-                    callback(result);
-                });
-            }
-        });
-    };
-
-    countlyDashboards.loadDashboard = function(dashboardId, isRefresh) {
-        if (!dashboardId) {
-            _currDashWidgets = [];
-            _currDashApps = [];
-            return true;
-        }
-        else {
-            return $.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r + "/dashboards",
-                data: {
-                    "dashboard_id": dashboardId,
-                    "period": countlyCommon.getPeriodForAjax(),
-                    "action": (isRefresh) ? "refresh" : ""
+            mutations: {
+                setAll: function(state, widgets) {
+                    state.all = widgets;
                 },
-                dataType: "json",
-                success: function(data) {
-                    var dashboard = _.find(_dashboards, function(d) {
-                        return d._id === dashboardId;
-                    }) || {};
+                update: function(state, widget) {
+                    var index = -1;
+                    widget = widget || {};
 
-                    if (data && data.error) {
-                        dashboard.widgets = [];
-                        dashboard.apps = [];
-                    }
-                    else {
-                        dashboard = Object.assign(dashboard, data);
-                    }
-
-                    for (var i = 0; i < dashboard.widgets.length; i++) {
-                        var widget = dashboard.widgets[i];
-                        var currWidget = _currDashWidgets.filter(function(w) { //eslint-disable-line no-loop-func
-                            return w.widget_id === widget._id;
-                        });
-
-                        if (!currWidget.length) {
-                            //If new widget added somehow
-                            continue;
+                    for (var i = 0; i < state.all.length; i++) {
+                        if (state.all[i]._id === widget._id) {
+                            index = i;
+                            break;
                         }
-
-                        currWidget = currWidget[0];
-
-                        for (var key in currWidget) {
-                            //Copy the keys from the stale widget object to the new updated widget object.
-                            //Because the new updated widget object is used as a reference everywhere.
-                            //Mainly this copies the dashData field and any other field added by the plugin
-                            //If the ajax call finishes before.
-
-                            if (!widget[key]) {
-                                widget[key] = currWidget[key];
-                            }
-                        }
-
-                        //Delete plaecholder and orchestration
-                        //Because we will recreate the widget
-                        //This will also recreate the client fetch widget even if its already created
-                        //No check for that yet in widgets module
-                        delete widget.placeholder;
-                        delete widget.orchestration;
                     }
 
-                    _currDashWidgets = dashboard.widgets;
-                    _currDashApps = dashboard.apps;
+                    if (index > -1) {
+                        state.all.splice(index, 1, widget);
+                    }
+                    else if (widget._id) {
+                        state.all.push(widget);
+                    }
+                },
+                remove: function(state, widgetId) {
+                    var index = -1;
+
+                    for (var i = 0; i < state.all.length; i++) {
+                        if (state.all[i]._id === widgetId) {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    if (index > -1) {
+                        state.all.splice(index, 1);
+                    }
                 }
-            });
-        }
-    };
-
-    countlyDashboards.hasWidgets = function() {
-        return (_currDashWidgets.length > 0);
-    };
-
-    countlyDashboards.getWidgets = function() {
-        return _currDashWidgets;
-    };
-
-    countlyDashboards.getWidget = function(widgetId) {
-        return _.find(_currDashWidgets, function(widget) {
-            return widget._id === widgetId;
-        }) || {};
-    };
-
-    countlyDashboards.addWidgetToDashboard = function(dashboardId, widget, callback) {
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/dashboards/add-widget",
-            data: {
-                "dashboard_id": dashboardId,
-                "widget": JSON.stringify(widget)
             },
-            dataType: "json",
-            success: function(res) {
-                callback(res);
+            actions: {
+                setAll: function(context, widgets) {
+                    context.commit("setAll", widgets);
+                },
+                get: function(context, widgetId) {
+                    var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
+
+                    return countlyDashboards.service.widgets.get(dashboardId, widgetId).then(function(w) {
+                        /*
+                            Update the widget in the widget store.
+                        */
+                        context.commit("update", w && w[0]);
+                    });
+                },
+                create: function(context, widget) {
+                    var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
+
+                    return countlyDashboards.service.widgets.create(dashboardId, widget);
+                },
+                update: function(context, widget) {
+                    var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
+
+                    return countlyDashboards.service.widgets.update(dashboardId, widget.id, widget).then(function() {
+                        context.dispatch("get", widget.id);
+                    });
+                },
+                updatePosition: function(context, params) {
+                    var widget = {
+                        id: params.id
+                    };
+
+                    if (!params.position && !params.size) {
+                        return;
+                    }
+
+                    if (params.position) {
+                        widget.position = params.position;
+                    }
+
+                    if (params.size) {
+                        widget.size = params.size;
+                    }
+
+                    return context.dispatch("update", widget);
+                },
+                delete: function(context, widgetId) {
+                    var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
+
+                    return countlyDashboards.service.widgets.delete(dashboardId, widgetId).then(function() {
+                        context.commit("remove", widgetId);
+                    });
+                }
             }
         });
-    };
 
-    countlyDashboards.removeWidgetFromDashboard = function(dashboardId, widgetId, callback) {
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.w + "/dashboards/remove-widget",
-            data: {
-                "dashboard_id": dashboardId,
-                "widget_id": widgetId
-            },
-            dataType: "json",
-            success: function(res) {
-                if (res && res.error) {
-                    return callback(res);
+        var getEmptyState = function() {
+            return {
+                all: [],
+                selected: {
+                    id: null,
+                    data: null
                 }
+            };
+        };
 
-                var widgetIndex = -1;
+        var getters = {
+            all: function(state) {
+                return _.sortBy(state.all, "name");
+            },
+            selected: function(state) {
+                return state.selected;
+            }
+        };
 
-                for (var i = 0; i < _currDashWidgets.length; i++) {
-                    if (_currDashWidgets[i]._id === widgetId) {
-                        widgetIndex = i;
+        var mutations = {
+            setAll: function(state, dashboards) {
+                state.all = dashboards;
+            },
+            setDashboard: function(state, dashboard) {
+                state.selected = {
+                    id: dashboard.id,
+                    data: dashboard.data
+                };
+            },
+            updateDashboard: function(state, dashboard) {
+                var index = -1;
+                for (var i = 0; i < state.all.length; i++) {
+                    if (state.all[i]._id === dashboard._id) {
+                        index = i;
                         break;
                     }
                 }
 
-                _currDashWidgets.splice(widgetIndex, 1);
-
-                callback(res);
-            }
-        });
-    };
-
-    countlyDashboards.registerWidgetToDashboard = function(widget) {
-        _currDashWidgets.push(widget);
-    };
-
-    countlyDashboards.updateWidgetOnDashboard = function(widgetId, widget) {
-        var widgetIndex = -1;
-
-        for (var i = 0; i < _currDashWidgets.length; i++) {
-            if (_currDashWidgets[i]._id === widgetId) {
-                widgetIndex = i;
-                break;
-            }
-        }
-
-        _currDashWidgets[widgetIndex] = widget;
-    };
-
-    countlyDashboards.getAppName = function(appId) {
-        var appName = "Unknown";
-        var appObj = _.find(_currDashApps, function(app) {
-            return app._id === appId;
-        });
-        if (appObj && appObj.name) {
-            appName = appObj.name;
-        }
-        else if (countlyGlobal.apps[appId]) {
-            appName = countlyGlobal.apps[appId].name;
-        }
-
-        return appName;
-    };
-
-    countlyDashboards.getEventsForApps = function(appIds, callback) {
-        if (!appIds || appIds.length === 0) {
-            callback([]);
-            return;
-        }
-
-        var requests = [],
-            results = [],
-            i = 0;
-
-        for (i = 0; i < appIds.length; i++) {
-            requests.push(getEventsDfd(appIds[i], results));
-        }
-
-        $.when.apply(null, requests).done(function() {
-            var ret = [];
-
-            for (i = 0; i < results.length; i++) {
-                extractEvents(results[i], ret);
-            }
-
-            callback(ret);
-        });
-
-        /**
-         * Function to extract event
-         * @param  {Array} data - data array
-         * @param  {Array} returnArray - return data array
-         */
-        function extractEvents(data, returnArray) {
-            var eventData = (_.isArray(data)) ? data[0] : data;
-            if (eventData && eventData.list) {
-                for (var j = 0; j < eventData.list.length; j++) {
-                    var eventNamePostfix = (appIds.length > 1) ? " (" + ((countlyGlobal.apps[eventData._id] && countlyGlobal.apps[eventData._id].name) || "Unknown") + ")" : "";
-                    if (eventData.map && eventData.map[eventData.list[j]] && eventData.map[eventData.list[j]].is_group_event) {
-                        eventNamePostfix += "<div class='group-badge'><span> (</span>" + jQuery.i18n.prop("common.group") + "<span>)</span></div>";
-                    }
-
-                    returnArray.push({
-                        value: eventData._id + "***" + eventData.list[j],
-                        name: getEventLongName(eventData.list[j], eventData.map) + eventNamePostfix
-                    });
+                if (index > -1) {
+                    state.all.splice(index, 1, dashboard);
+                }
+                else {
+                    state.all.push(dashboard);
                 }
             }
-        }
-    };
-
-    countlyDashboards.getSegmentsForEvent = function(eventId, callback) {
-        if (!eventId) {
-            callback([]);
-            return;
-        }
-
-        var eventKey = eventId.split("***")[1],
-            appId = eventId.split("***")[0],
-            results = [];
-
-        $.when(getEventsDfd(appId, results)).then(function() {
-            var ret = [];
-
-            if (results[0] && results[0].segments && results[0].segments[eventKey]) {
-                for (var i = 0; i < results[0].segments[eventKey].length; i++) {
-                    ret.push({
-                        value: results[0].segments[eventKey][i],
-                        name: results[0].segments[eventKey][i]
-                    });
-                }
-            }
-
-            callback(ret);
-        });
-    };
-
-    countlyDashboards.getSessionBreakdowns = function(appId) {
-        var app = countlyGlobal.apps[appId];
-
-        if (!app || !app.type) {
-            return [];
-        }
-
-        var ret = [
-            { name: "Countries", value: "countries"},
-            { name: "Devices", value: "devices"},
-            { name: "App Versions", value: "versions"},
-            { name: "Platforms", value: "platforms"}
-        ];
-
-        if (app.type === "mobile") {
-            ret.push({ name: "Carriers", value: "carriers"});
-            ret.push({ name: "Resolutions", value: "resolutions"});
-
-            if (typeof countlyDensity !== "undefined") {
-                ret.push({ name: "Densities", value: "density"});
-            }
-
-            if (typeof countlyLanguage !== "undefined") {
-                ret.push({ name: "Languages", value: "langs"});
-            }
-
-            if (typeof countlySources !== "undefined") {
-                ret.push({ name: "Sources", value: "sources"});
-            }
-
-        }
-        else if (app.type === "web") {
-            ret.push({ name: "Resolutions", value: "resolutions"});
-
-            if (typeof countlyDensity !== "undefined") {
-                ret.push({ name: "Densities", value: "density"});
-            }
-
-            if (typeof countlyBrowser !== "undefined") {
-                ret.push({ name: "Browsers", value: "browser"});
-            }
-
-            if (typeof countlyLanguage !== "undefined") {
-                ret.push({ name: "Languages", value: "langs"});
-            }
-
-            if (typeof countlySources !== "undefined") {
-                ret.push({ name: "Sources", value: "sources"});
-            }
-        }
-        else if (app.type === "desktop") {
-            ret.push({ name: "Resolutions", value: "resolutions"});
-
-            if (typeof countlyDensity !== "undefined") {
-                ret.push({ name: "Densities", value: "density"});
-            }
-
-            if (typeof countlyLanguage !== "undefined") {
-                ret.push({ name: "Languages", value: "langs"});
-            }
-        }
-
-        return ret;
-    };
-
-    countlyDashboards.getMetrics = function(dataType) {
-        return metrics[dataType] || [];
-    };
-
-    countlyDashboards.getReportDateRanges = function(frequency) {
-        return reportDateRanges[frequency] || [];
-    };
-
-    countlyDashboards.getMetricLongName = function(shortCode) {
-        var metricLongName = shortCode;
-
-        for (var dataType in metrics) {
-            for (var i = 0; i < metrics[dataType].length; i++) {
-                if (metrics[dataType][i].value === shortCode) {
-                    metricLongName = metrics[dataType][i].name;
-                    break;
-                }
-            }
-        }
-
-        return metricLongName;
-    };
-
-    countlyDashboards.getBreakdownLongName = function(shortcode) {
-        var breakdownMap = {
-            "countries": "Countries",
-            "devices": "Devices",
-            "versions": "App Versions",
-            "platforms": "Platforms",
-            "carriers": "Carriers",
-            "resolutions": "Resolutions",
-            "density": "Densities",
-            "langs": "Languages",
-            "sources": "Sources",
-            "browser": "Browsers"
         };
 
-        return breakdownMap[shortcode] || shortcode;
-    };
-
-    countlyDashboards.getEventName = function(eventId, callback) {
-        var eventKey = eventId.split("***")[1],
-            appId = eventId.split("***")[0],
-            results = [];
-
-        $.when(getEventsDfd(appId, results)).then(function() {
-            callback(getEventLongName(eventKey, (results[0].map) ? results[0].map : null));
-        });
-    };
-
-    countlyDashboards.getEventNameDfd = function(eventId, results) {
-        var dfd = jQuery.Deferred();
-
-        countlyDashboards.getEventName(eventId, function(eventName) {
-            results[eventId] = eventName;
-            dfd.resolve();
-        });
-
-        return dfd.promise();
-    };
-
-    countlyDashboards.getTextDecorations = function() {
-        return [
-            {
-                name: jQuery.i18n.map["dashboards.bold"],
-                value: "b"
+        var actions = {
+            /*
+                Public actions
+            */
+            getAll: function(context) {
+                return countlyDashboards.service.dashboards.getAll().then(function(res) {
+                    var dashboards = res || [];
+                    context.dispatch("setAll", dashboards);
+                });
             },
-            {
-                name: jQuery.i18n.map["dashboards.italic"],
-                value: "i"
+            getDashboard: function(context, params) {
+                var dashboardId = context.getters.selected.id;
+
+                countlyDashboards.service.dashboards.get(dashboardId, params && params.isRefresh).then(function(d) {
+                    /*
+                        On getting the dashboard, Set the selected dashboard data
+                        as well as update the local list of all dashboards.
+                    */
+                    context.commit("setDashboard", {id: dashboardId, data: d});
+                    context.commit("updateDashboard", d);
+
+                    /*
+                        Set all widgets of this dashboard here in the vuex store - Start
+                    */
+                    context.dispatch("widgets/setAll", d && d.widgets || []);
+                    /*
+                        Set all widgets of this dashboard here in the vuex store - End
+                    */
+
+                    return d;
+                });
             },
-            {
-                name: jQuery.i18n.map["dashboards.underline"],
-                value: "u"
-            }
-        ];
-    };
+            setDashboard: function(context, data) {
+                data = data || {};
 
-    /**
-     * Deferred function to get events
-     * @param  {String} appId - app id
-     * @param  {Array} results - results array
-     * @returns {Promise} - deferred promise
-     */
-    function getEventsDfd(appId, results) {
-        var dfd = jQuery.Deferred();
+                var dash = context.getters.all.find(function(dashboard) {
+                    return dashboard._id === data.id;
+                });
 
-        if (_eventMaps[appId]) {
-            results.push(_eventMaps[appId]);
-            dfd.resolve();
-        }
-        else {
-            $.ajax({
-                type: "GET",
-                url: countlyCommon.API_PARTS.data.r,
-                data: {
-                    "app_id": appId,
-                    "method": "get_events",
-                    "timestamp": +new Date()
-                },
-                dataType: "json",
-                success: function(data) {
-                    if (data && data._id) {
-                        _eventMaps[data._id] = data;
-                    }
-                    results.push(data);
-                    $.ajax({
-                        type: "GET",
-                        url: countlyCommon.API_PARTS.data.r,
-                        data: {
-                            "app_id": appId,
-                            "method": "get_event_groups",
-                            "preventRequestAbort": true,
-                            "timestamp": +new Date()
-                        },
-                        dataType: "json",
-                        success: function(groups_json) {
-                            if (groups_json) {
-                                for (var group in groups_json) {
-                                    if (groups_json[group].status) {
-                                        data.list = data.list || [];
-                                        data.list.push(groups_json[group]._id);
-                                        data.segments = data.segments || {};
-                                        data.segments[groups_json[group]._id] = groups_json[group].source_events;
-                                        data.map = data.map || {};
-                                        data.map[groups_json[group]._id] = {
-                                            name: groups_json[group].name,
-                                            count: groups_json[group].display_map.c,
-                                            sum: groups_json[group].display_map.s,
-                                            dur: groups_json[group].display_map.d,
-                                            is_group_event: true
-                                        };
-                                    }
-                                }
-                            }
-                            dfd.resolve();
-                        }
-                    });
+                context.commit("setDashboard", {id: data.id, data: dash});
+
+                /*
+                    Set all widgets of this dashboard here in the vuex store - Start
+                */
+                context.dispatch("widgets/setAll", dash && dash.widgets || []);
+                /*
+                    Set all widgets of this dashboard here in the vuex store - End
+                */
+
+                /*
+                    We have already set the current dashboard and its widget data in the vuex store
+                    But we will update it again after we have the updated data from the server
+                    Until the request is processing, we will show the loading states for the widgets if no data is available
+                */
+
+                if (data.id) {
+                    /*
+                        data.id will be null when the dashboard is deleted.
+                    */
+                    context.dispatch("getDashboard");
                 }
-            });
-        }
+            },
 
-        return dfd.promise();
-    }
+            /*
+                Private actions
+            */
+            setAll: function(context, dashboards) {
+                context.commit("setAll", dashboards);
+            },
+            create: function(context, settings) {
+                return countlyDashboards.service.dashboards.create(settings).then(function(id) {
+                    /*
+                        Dispatching getAll so that the list of dashboards in the sidebar gets updated.
+                        This is required because we navigate the new dashboard after creating it.
+                        And when we navigate, the sidebar component is not remounted as its already mounted.
+                        Basically its out of the backbone render view.
+                        However, the sidebar will react to the all getter whenever all state changes.
 
-    /**
-     * Function to get the events long name
-     * @param  {String} eventKey - event name
-     * @param  {Object} eventMap - event map object
-     * @returns {String} event name
-     */
-    function getEventLongName(eventKey, eventMap) {
-        var mapKey = eventKey.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
-        if (eventMap && eventMap[mapKey] && eventMap[mapKey].name) {
-            return eventMap[mapKey].name;
-        }
-        else {
-            return eventKey;
-        }
-    }
+                        We could have also dispatched the setDashboard action here itself, but then
+                        the url would not be updated in the browser. To update that we navigate the new url
+                        resolved promise and that inturn sets the dashboard data automatically.
+                    */
 
-})(window.countlyDashboards = window.countlyDashboards || {}, jQuery);
+                    return context.dispatch("getAll").then(function() {
+                        return id;
+                    });
+                });
+            },
+            update: function(context, settings) {
+                var dashboardId = context.getters.selected.id;
+
+                return countlyDashboards.service.dashboards.update(dashboardId, settings).then(function() {
+                    context.dispatch("getDashboard");
+                });
+            },
+            duplicate: function(context, settings) {
+                settings.copyDashId = context.getters.selected.id;
+                return context.dispatch("create", settings);
+            },
+            delete: function(context, id) {
+                return countlyDashboards.service.dashboards.delete(id).then(function() {
+                    context.dispatch("getAll").then(function() {
+                        context.dispatch("setDashboard", {id: null, data: null});
+                    });
+                });
+            }
+        };
+
+        return countlyVue.vuex.Module("countlyDashboards", {
+            state: getEmptyState,
+            getters: getters,
+            mutations: mutations,
+            actions: actions,
+            submodules: [widgetsResource],
+            destroy: false
+        });
+    };
+
+})(window.countlyDashboards = window.countlyDashboards || {});

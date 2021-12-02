@@ -1,0 +1,43 @@
+@use "../../../../../frontend/express/public/stylesheets/styles/base/colors" as c;
+@use "sass:map";
+
+.cly-vue-dashboards {
+    &__empty {
+        p {
+            text-align: center;
+        }
+
+        &--rounded-image{
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: map.get(c.$colors, "cool-gray-30");
+        }
+    }
+
+    &__null-widgets {
+        height: 100%;
+
+        p {
+            text-align: center;
+        }
+    }
+
+    .grid-stack-item-content {
+        background-color: map.get(c.$colors, "white");
+        border: 1px solid #E2E4E8;
+        border-radius: 4px;
+    }
+
+    .clyd-visualization {
+        &__item {
+            border: 1px solid map.get(c.$colors, "cool-gray-30");
+            border-radius: 4px;
+
+            &.selected {
+                border: 1px solid map.get(c.$colors, "blue-100");
+                background-color: map.get(c.$colors, "light-blue-100");
+            }
+        }
+    }
+}
