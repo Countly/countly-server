@@ -1,5 +1,5 @@
 /*global
-  DrillQueryBuilder, CV, countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
+   CV, countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
  */
 (function() {
     var FEATURE_NAME = "hooks";
@@ -302,14 +302,14 @@
                 result = {
                     eventOptions: [],
                     hiddenFields: [],
-                    openSegmentTab:  this.$props.value.filter ? true : false,
+                    openSegmentTab: this.$props.value.filter ? true : false,
                     query: defaultFilter.dbFilter,
                 };
             }
             return result;
         },
         components: {
-            
+
         },
         props: {
             value: {
@@ -355,7 +355,7 @@
                 deep: true,
                 handler: function(newVal) {
                     if (!newVal) {
-                        this.queryObj = {} ; 
+                        this.queryObj = {} ;
                     }
                 }
             },
@@ -777,7 +777,7 @@
             "error-table-view": DetailErrorsTableView,
             "drawer": HookDrawer,
         },
-        data: function () {
+        data: function() {
             return {
                 deleteElement: null,
                 showDeleteDialog: false,
@@ -803,8 +803,6 @@
                     this.openDrawer("detail", data);
                 }
                 else if (command === "delete-comment") {
-                    var hookID = scope._id;
-                    var name = scope.name;
                     this.deleteElement = scope;
                     this.showDeleteDialog = true;
                     this.deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
