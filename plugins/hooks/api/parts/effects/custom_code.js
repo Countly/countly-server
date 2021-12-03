@@ -59,7 +59,7 @@ class CustomCodeEffect {
             utils.addErrorRecord(rule._id, e);
             console.log(e, "eee, exech!!");
         });
-        return runtimePassed ? options : {params: null, logs};
+        return runtimePassed ? options : {...options, logs};
     }
 }
 

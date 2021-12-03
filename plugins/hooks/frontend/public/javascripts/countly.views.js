@@ -302,13 +302,14 @@
                 result = {
                     eventOptions: [],
                     hiddenFields: [],
+                    openSegmentTab:  this.$props.value.filter ? true : false,
                     query: defaultFilter.dbFilter,
                 };
             }
             return result;
         },
         components: {
-            "segmentation-filter": DrillQueryBuilder.genericSegmentation,
+            
         },
         props: {
             value: {
@@ -349,7 +350,15 @@
         watch: {
             selectedApp: function() {
                 this.getEventOptions();
-            }
+            },
+            'openSegmentTab': {
+                deep: true,
+                handler: function(newVal) {
+                    if (!newVal) {
+                        this.queryObj = {} ; 
+                    }
+                }
+            },
         },
         methods: {
             eventChange: function() {
@@ -768,6 +777,13 @@
             "error-table-view": DetailErrorsTableView,
             "drawer": HookDrawer,
         },
+        data: function () {
+            return {
+                deleteElement: null,
+                showDeleteDialog: false,
+                deleteMessage: '',
+            };
+        },
         computed: {
             hookDetail: function() {
                 var hookDetail = this.$store.getters["countlyHooks/hookDetail"];
@@ -789,15 +805,18 @@
                 else if (command === "delete-comment") {
                     var hookID = scope._id;
                     var name = scope.name;
-                    var self = this;
-                    return CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
-                        if (result) {
-                            hooksPlugin.deleteHook(hookID, function() {
-                                self.$store.dispatch("countlyHooks/table/fetchAll");
-                            });
-                        }
-                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-an-event"});
+                    this.deleteElement = scope;
+                    this.showDeleteDialog = true;
+                    this.deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
                 }
+            },
+            closeDeleteForm: function() {
+                this.deleteElement = null;
+                this.showDeleteDialog = false;
+            },
+            submitDeleteForm: function() {
+                this.$store.dispatch("countlyHooks/deleteHook", this.deleteElement._id);
+                this.showDeleteDialog = false;
             },
         },
         beforeCreate: function() {

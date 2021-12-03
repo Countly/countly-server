@@ -193,6 +193,7 @@
                     dataType: "json",
                     success: function() {
                         context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
+                        context.dispatch("countlyHooks/initializeDetail", record._id, {root: true});
                     }
                 });
             },
@@ -206,6 +207,7 @@
                     dataType: "json",
                     success: function() {
                         context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
+                        window.app.navigate("/manage/hooks", true);
                     }
                 });
             },
