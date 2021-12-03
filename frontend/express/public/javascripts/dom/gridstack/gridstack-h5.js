@@ -1743,7 +1743,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                   }) : t.style[_i15] = e[_i15]);
                 };
 
-                for (const _i15 in e) {
+                for (var _i15 in e) {
                   _loop3(_i15);
                 }
               }
