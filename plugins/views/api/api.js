@@ -12,8 +12,7 @@ var pluginOb = {},
     { validateCreate, validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'views';
-
-const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true};
+const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true};
 //keys to not use as segmentation
 (function() {
     plugins.register("/permissions/features", function(ob) {
@@ -1781,47 +1780,44 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         var segmentList = [""];
         var addToSetRules = {};
-
         if (currEvent.segmentation) {
             for (let segKey in currEvent.segmentation) {
-                if (segKey !== "_id") {
-                    let tmpSegKey = "";
-                    if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
-                        tmpSegKey = segKey.replace(/^\$|\./g, "");
-                        currEvent.segmentation[tmpSegKey] = currEvent.segmentation[segKey];
-                        delete currEvent.segmentation[segKey];
-                        segKey = tmpSegKey;
+                let tmpSegKey = "";
+                if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
+                    tmpSegKey = segKey.replace(/^\$|\./g, "");
+                    currEvent.segmentation[tmpSegKey] = currEvent.segmentation[segKey];
+                    delete currEvent.segmentation[segKey];
+                    segKey = tmpSegKey;
+                }
+                if (segKey === "segment") {
+                    //backwards compability
+                    currEvent.segmentation.platform = currEvent.segmentation[segKey];
+                    segKey = "platform";
+                }
+                let tmpSegVal = currEvent.segmentation[segKey] + "";
+                if (!(escapedViewSegments[segKey] === true)) {
+                    if (!viewInfo.segments[segKey] && (segKey === 'platform' || Object.keys(viewInfo.segments).length < plugins.getConfig("views").segment_limit)) {
+                        viewInfo.segments[segKey] = {};
                     }
-                    if (segKey === "segment") {
-                        //backwards compability
-                        currEvent.segmentation.platform = currEvent.segmentation[segKey];
-                        segKey = "platform";
+                    tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
+                    if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                        tmpSegVal = "[CLY]" + tmpSegVal;
                     }
-                    let tmpSegVal = currEvent.segmentation[segKey] + "";
-                    if (!(escapedViewSegments[segKey] === true)) {
-                        if (!viewInfo.segments[segKey] && (segKey === 'platform' || Object.keys(viewInfo.segments).length < plugins.getConfig("views").segment_limit)) {
-                            viewInfo.segments[segKey] = {};
-                        }
-                        tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
-                        if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
-                            tmpSegVal = "[CLY]" + tmpSegVal;
-                        }
-                        currEvent.segmentation[segKey] = tmpSegVal;
+                    currEvent.segmentation[segKey] = tmpSegVal;
 
-                        if (viewInfo.segments[segKey]) {
-                            if (viewInfo.segments[segKey][tmpSegVal]) {
-                                segmentList.push(segKey);
+                    if (viewInfo.segments[segKey]) {
+                        if (viewInfo.segments[segKey][tmpSegVal]) {
+                            segmentList.push(segKey);
+                        }
+                        else {
+                            if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
+                                delete currEvent.segmentation[segKey];
                             }
                             else {
-                                if (Object.keys(viewInfo.segments[segKey]).length >= plugins.getConfig("views").segment_value_limit) {
-                                    delete currEvent.segmentation[segKey];
-                                }
-                                else {
-                                    viewInfo.segments[segKey][segKey] = true;
-                                    segmentList.push(segKey);
-                                    addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
-                                    save_structure = true;
-                                }
+                                viewInfo.segments[segKey][segKey] = true;
+                                segmentList.push(segKey);
+                                addToSetRules["segments." + segKey + "." + tmpSegVal] = true;
+                                save_structure = true;
                             }
                         }
                     }
