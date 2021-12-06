@@ -285,10 +285,10 @@
                                     ret = jQuery.i18n.prop("reports.not-valid");
                                 }
                                 else {
-                                    var report = app.getReportsCallbacks()[data[i].report_type];
-                                    if (report && report.tableData) {
-                                        ret = report.tableData(data[i]);
-                                    }
+                                    // var report = app.getReportsCallbacks()[data[i].report_type];
+                                    // if (report && report.tableData) {
+                                    //     ret = report.tableData(data[i]);
+                                    // }
                                 }
                                 data[i].dataColumn = ret;
 
@@ -339,7 +339,6 @@
             minute: 0,
             dashboards: null,
             date_range: null,
-
         };
     };
 }(window.countlyReporting = window.countlyReporting || {}, jQuery));
