@@ -1,4 +1,4 @@
-/*global countlyCommon, CV, countlyVue, _ */
+/*global jQuery, countlyCommon, CV, countlyVue, _ */
 
 (function(countlyDashboards) {
 
@@ -255,6 +255,25 @@
             },
             selected: function(state) {
                 return state.selected;
+            },
+            reportDateRangeDict: function() {
+                return {
+                    daily: [
+                        {name: jQuery.i18n.map["common.yesterday"], value: "yesterday"},
+                        {name: jQuery.i18n.map["common.7days"], value: "7days"},
+                        {name: jQuery.i18n.map["common.30days"], value: "30days"},
+                        {name: jQuery.i18n.map["common.60days"], value: "60days"}
+                    ],
+                    weekly: [
+                        {name: jQuery.i18n.map["common.7days"], value: "7days"},
+                        {name: jQuery.i18n.map["common.30days"], value: "30days"},
+                        {name: jQuery.i18n.map["common.60days"], value: "60days"}
+                    ],
+                    monthly: [
+                        {name: jQuery.i18n.map["common.30days"], value: "30days"},
+                        {name: jQuery.i18n.map["common.60days"], value: "60days"}
+                    ]
+                };
             }
         };
 
