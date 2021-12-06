@@ -256,6 +256,7 @@ plugins.setConfigs("dashboards", {
                 filterCond = {};
 
             if (!member.global_admin) {
+                var groups = (member.group_id || []).map(group_id => group_id + "");
                 filterCond = {
                     $or: [
                         {owner_id: memberId},
@@ -264,8 +265,8 @@ plugins.setConfigs("dashboards", {
                         {shared_with_view: memberId},
                         {shared_email_view: memberEmail},
                         {shared_email_edit: memberEmail},
-                        {shared_user_groups_edit: {$in: member.group_id || []}},
-                        {shared_user_groups_view: {$in: member.group_id || []}}
+                        {shared_user_groups_edit: {$in: groups}},
+                        {shared_user_groups_view: {$in: groups}}
                     ]
                 };
             }
