@@ -67,6 +67,11 @@
                 };
             }
             break;
+        case 'ScheduledTrigger':
+            data = {};
+            break;
+        default:
+            data = {};
         }
         return data;
     };
