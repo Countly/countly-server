@@ -256,7 +256,11 @@ plugins.setConfigs("dashboards", {
                 filterCond = {};
 
             if (!member.global_admin) {
-                var groups = (member.group_id || []).map(group_id => group_id + "");
+                var groups = member.group_id || [];
+                if (!Array.isArray(groups)) {
+                    groups = [groups];
+                }
+                groups = groups.map(group_id => group_id + "");
                 filterCond = {
                     $or: [
                         {owner_id: memberId},
