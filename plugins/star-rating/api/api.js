@@ -242,7 +242,6 @@ function uploadFile(myfile, id, callback) {
 }
 
 (function() {
-
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
@@ -254,13 +253,15 @@ function uploadFile(myfile, id, callback) {
     */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
+        // do not respond if this isn't feedback fetch request 
+        // or surveys plugin enabled
         if (params.qstring.method !== "feedback" || surveysEnabled) {
             return false;
         }
 
         return new Promise(function(resolve) {
             var widgets = [];
-            plugins.dispatch("/feedback/widgets/ratings", { params: params, widgets: widgets }, function() {
+            plugins.dispatch("/feedback/widgets", { params: params, widgets: widgets }, function() {
                 common.returnMessage(params, 200, widgets);
                 return resolve(true);
             });
@@ -271,14 +272,14 @@ function uploadFile(myfile, id, callback) {
     * internal event that fetch ratings widget
     * and push them to passed widgets array.
     */
-    plugins.register("/feedback/widgets/ratings", function(ob) {
+    plugins.register("/feedback/widgets", function(ob) {
         return new Promise(function(resolve, reject) {
             var params = ob.params;
             params.qstring.app_id = params.app_id;
             params.app_user = params.app_user || {};
 
             var user = JSON.parse(JSON.stringify(params.app_user));
-            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, cohortID: 1, type: 1, appearance: 1, showPolicy: 1, trigger_position: 1, hide_sticker:1, trigger_bg_color: 1, trigger_font_color: 1, trigger_button_text: 1, trigger_size: 1}).toArray(function(err, widgets) {
+            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, cohortID: 1, type: 1, appearance: 1, showPolicy: 1, trigger_position: 1, hide_sticker: 1, trigger_bg_color: 1, trigger_font_color: 1, trigger_button_text: 1, trigger_size: 1}).toArray(function(err, widgets) {
                 if (err) {
                     log.e(err);
                     reject(err);
