@@ -80,7 +80,10 @@ class ScheduledTrigger {
     }
 }
 
-JOB.job('hooks:schedule', {type: 'ScheduledTrigger'}).replace().schedule("every 10 s");
+
+plugins.register("/master", function() {
+    JOB.job('hooks:schedule', {type: 'ScheduledTrigger'}).replace().schedule("every 10 s");
+});
 
 
 module.exports = ScheduledTrigger;
