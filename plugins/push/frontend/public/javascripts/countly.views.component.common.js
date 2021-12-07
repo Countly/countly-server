@@ -1,4 +1,4 @@
-/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise*/
+/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise, Map*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
         props: {
@@ -121,21 +121,11 @@
         },
         data: function() {
             return {
-                innerInput: "",
-                innerToggle: false
             };
         },
         computed: {
             hasDefaultSlot: function() {
                 return Boolean(this.$slots.default);
-            }
-        },
-        watch: {
-            input: function(value) {
-                this.innerInput = value;
-            },
-            toggle: function(value) {
-                this.innerToggle = value;
             }
         },
         methods: {
@@ -159,6 +149,10 @@
                 type: String,
                 default: ""
             },
+            usePre: {
+                type: Boolean,
+                default: false
+            }
         },
         computed: {
             hasDefaultSlot: function() {
@@ -503,6 +497,7 @@
                 defaultLocalizationValidationErrors: [],
                 selectionRange: null,
                 mutationObserver: null,
+                userPropertyEvents: new Map(),
             };
         },
         computed: {
@@ -588,7 +583,9 @@
                 newElement.setAttribute("data-user-property-value", "");
                 newElement.setAttribute("data-user-property-fallback", "");
                 newElement.innerText = this.defaultLabelPreview;
-                newElement.onclick = this.getOnUserPropertyClickEventListener(id);
+                var onClickListener = this.getOnUserPropertyClickEventListener(id);
+                this.userPropertyEvents.set(id, onClickListener);
+                newElement.onclick = onClickListener;
                 this.insertNodeAtCaretPosition(newElement);
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.onUserPropertyClick(id, newElement);
@@ -597,7 +594,9 @@
             removeUserProperty: function(id) {
                 var userProperty = this.$refs.element.querySelector("#id-" + id);
                 if (userProperty) {
+                    userProperty.removeEventListener('click', this.userPropertyEvents.get(id));
                     userProperty.remove();
+                    this.userPropertyEvents.delete(id);
                     this.$emit('change', this.$refs.element.innerHTML);
                     this.validate();
                 }
@@ -629,12 +628,22 @@
             addEventListeners: function(ids) {
                 var self = this;
                 ids.forEach(function(id) {
-                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id);
+                    var elementEvent = self.userPropertyEvents.get(id);
+                    if (elementEvent) {
+                        document.querySelector("#id-" + id).onclick = elementEvent;
+                    }
+                    else {
+                        var newElementEvent = self.getOnUserPropertyClickEventListener(id);
+                        self.userPropertyEvents.set(id, newElementEvent);
+                        document.querySelector("#id-" + id).onclick = newElementEvent;
+                    }
                 });
             },
             reset: function(htmlContent, ids) {
+                this.disconnectMutationObserver();
                 this.$refs.element.innerHTML = htmlContent;
                 this.addEventListeners(ids);
+                this.startMutationObserver();
             },
             appendEmoji: function(emoji) {
                 this.insertEmojiAtCaretPosition(document.createTextNode(emoji));
@@ -672,6 +681,8 @@
                 nodesList.forEach(function(removedNode) {
                     if (removedNode.id) {
                         var idValue = removedNode.id.split('-')[1];
+                        removedNode.removeEventListener('click', self.userPropertyEvents.get(idValue));
+                        self.userPropertyEvents.delete(idValue);
                         self.$emit('delete', {id: idValue, container: self.container});
                     }
                 });
@@ -709,6 +720,16 @@
             },
             removePasteEventListener: function(callback) {
                 this.$refs.element.removeEventListener('paste', callback);
+            },
+            removeUserPropertyEventListeners: function() {
+                var self = this;
+                this.userPropertyEvents.forEach(function(value, key) {
+                    var userProperty = self.$refs.element.querySelector("#id-" + key);
+                    if (userProperty) {
+                        userProperty.removeEventListener('click', value);
+                    }
+                });
+                this.userPropertyEvents.clear();
             }
         },
         mounted: function() {
@@ -726,7 +747,7 @@
             this.addPasteEventListener(this.onPaste);
         },
         beforeDestroy: function() {
-            //TODO-LA: remove all user properties elements' event listeners
+            this.removeUserPropertyEventListeners();
             this.disconnectMutationObserver();
             this.removePasteEventListener(this.onPaste);
         },
@@ -746,6 +767,10 @@
                 type: String,
                 default: ""
             },
+            usePre: {
+                type: Boolean,
+                default: false,
+            }
         },
         computed: {
             hasDefaultSlot: function() {
@@ -759,9 +784,14 @@
         data: function() {
             return {
                 selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                MessageTypeEnum: countlyPushNotification.service.MessageTypeEnum,
             };
         },
         computed: {
+            pushNotification: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification;
+            },
             message: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
             },
@@ -773,6 +803,34 @@
             },
             previewMessageContent: function() {
                 return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.content);
+            },
+            previewAndroidMedia: function() {
+                var result = "";
+                if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL;
+                }
+                if (this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
+                }
+                return result;
+            },
+            previewIOSMedia: function() {
+                var result = "";
+                if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
+                }
+                if (this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
+                }
+                return result;
+            },
+            hasAllPlatformMediaOnly: function() {
+                return !this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL && !this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
+            }
+        },
+        methods: {
+            prettifyJSON: function(value) {
+                return countlyPushNotification.helper.prettifyJSON(value, 2);
             }
         },
         components: {
