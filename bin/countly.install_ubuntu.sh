@@ -84,6 +84,18 @@ apt-get -y install sendmail
 #install mongodb
 bash "$DIR/scripts/mongodb.install.sh"
 
+if [ "$INSIDE_DOCKER" == "1" ]
+then
+	bash "$DIR/commands/docker/mongodb.sh" &
+    until mongo --eval "db.stats()" | grep "collections"
+    do
+        echo
+        echo "waiting for MongoDB to allocate files..."
+        sleep 1
+    done
+    sleep 3
+fi
+
 bash "$DIR/scripts/detect.init.sh"
 
 #configure and start nginx
@@ -148,3 +160,8 @@ then
 fi
 
 bash "$DIR/scripts/done.sh";
+
+if [ "$INSIDE_DOCKER" == "1" ]
+then
+	kill -2 `pgrep mongo`
+fi
