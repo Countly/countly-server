@@ -1,6 +1,6 @@
 const common = require('../../../../api/utils/common'),
     { PushError, ERROR } = require('./data/error'),
-    { State, TriggerKind } = require('./data'),
+    { Message, State, TriggerKind } = require('./data'),
     { DEFAULTS } = require('./data/const'),
     { PLATFORM } = require('./platforms'),
     { Push } = require('./data/message'),
@@ -96,17 +96,6 @@ class Audience {
         return new Popper(this, trigger);
     }
 
-    /**
-     * Create new SchedulePusher
-     * 
-     * @param {Trigger} trigger effective trigger
-     * @param {Date} date override
-     * @returns {SchedulePusher} popper instance bound to this audience
-     */
-    schedule(trigger, date) {
-        return new SchedulePusher(this, trigger).setStart(date);
-    }
-
     // /**
     //  * Find users defined by message filter and put corresponding records into queue
     //  * 
@@ -125,31 +114,86 @@ class Audience {
      * @returns {object[]} array of aggregation pipeline steps
      */
     async steps(project = {uid: 1}) {
-        let flds = fields(this.message.platforms, true).map(f => ({[f]: true})),
-            steps = [];
+        let steps = [];
 
         // We have a token
-        steps.push({$match: {$or: flds}});
+        this.addFields(steps);
 
+        // Add message filter steps
+        await this.addFilter(steps, this.message.filter);
+
+        // Decrease amount of data we process here
+        this.addProjection(steps, project);
+
+        this.log.d('steps: %j', steps);
+
+        // TODO: add steps optimisation (i.e. merge uid: $in)
+
+        return steps;
+    }
+
+    /**
+     * Add token existence filter to `steps` array
+     * 
+     * @param {Object[]} steps aggregation steps array to add steps to
+     */
+    async addFields(steps) {
+        let flds = fields(this.message.platforms, true).map(f => ({[f]: true}));
+        steps.push({$match: {$or: flds}});
+    }
+
+
+    /**
+     * Add projection to `steps` array
+     * 
+     * @param {Object[]} steps aggregation steps array to add steps to
+     * @param {string[]|Object} project app_users projection (array of field names or object of {field: 1} form)
+     */
+    async addProjection(steps, project) {
+        if (Array.isArray(project)) {
+            if (project.length) {
+                let tmp = {};
+                project.forEach(x => tmp[x] = 1);
+                project = tmp;
+            }
+            else {
+                project = {uid: 1};
+            }
+        }
+        if (!project.uid) {
+            project.uid = 1;
+        }
+        if (!project.tk) {
+            project.tk = 1;
+        }
+        steps.push({$project: project});
+    }
+
+    /**
+     * Add aggregation steps to `steps` array from filter
+     * 
+     * @param {Object[]} steps aggregation steps array to add steps to
+     * @param {Filter} filter filter instance
+     */
+    async addFilter(steps, filter) {
         // Geos
-        if (this.message.filter.geos.length && geo()) {
-            let geos = await common.db.collection('geos').find({_id: {$in: this.message.filter.geos}}).toArray();
+        if (filter.geos.length && geo()) {
+            let geos = await common.db.collection('geos').find({_id: {$in: filter.geos}}).toArray();
             steps.push({$match: {$or: geos.map(g => geo().conds(g))}});
         }
 
         // Cohorts
-        if (this.message.filter.cohorts.length) {
+        if (filter.cohorts.length) {
             let chr = {};
-            this.message.filter.cohorts.forEach(id => {
+            filter.cohorts.forEach(id => {
                 chr[`chr.${id}.in`] = 'true';
             });
             steps.push({$match: chr});
         }
 
         // User query
-        if (this.message.filter.user) {
-            let query = this.message.filter.user;
-
+        let query = filter.user;
+        if (query) {
             if (query.message) {
                 let filtered = await this.filterMessage(query.message);
                 delete query.message;
@@ -177,9 +221,8 @@ class Audience {
         }
 
         // Drill query
-        if (this.message.filter.drill && drill()) {
-            let query = this.message.filter.drill;
-
+        query = filter.drill;
+        if (query && drill()) {
             if (query.queryObject && query.queryObject.chr && Object.keys(query.queryObject).length === 1) {
                 let cohorts = {}, chr = query.queryObject.chr, i;
 
@@ -219,14 +262,6 @@ class Audience {
                 steps.push({$match: {uid: {$in: arr}}});
             }
         }
-
-        steps.push({$project: project});
-
-        this.log.d('steps: %j', steps);
-
-        // TODO: add steps optimisation (i.e. merge uid: $in)
-
-        return steps;
     }
 
     /**
@@ -266,7 +301,8 @@ class Audience {
         else {
             query = {msgs: {$elemMatch: {'0': query}}};
         }
-        return await common.db.collection(`push_${this.app._id}`).find(query, {projection: {_id: 1}}).toArray();
+        let arr = await common.db.collection(`push_${this.app._id}`).find(query, {projection: {_id: 1}}).toArray();
+        return arr.map(x => x._id);
     }
 }
 
@@ -292,7 +328,8 @@ class Mapper {
         this.p = p;
         this.f = f;
         this.pf = p + f;
-        this.userFields = message.userFields;
+        this.topUserFields = [];
+        message.userFields.forEach(k => this.topUserFields.push(k.indexOf('.') === -1 ? k : k.substr(0, k.indexOf('.')))); // make sure we have 'custom', not 'custom.x'
     }
 
     /**
@@ -311,24 +348,29 @@ class Mapper {
      * 
      * @param {object} user app_user object
      * @param {number} date notification date as ms timestamp
-     * @param {object} pr user props object
      * @param {object[]} c [Content.json] overrides
      * @returns {object} push object ready to be inserted
      */
-    map(user, date, pr, c) {
+    map(user, date, c) {
         let ret = {
             _id: common.db.oidWithDate(date),
+            a: this.message.app,
             m: this.message._id,
             p: this.p,
             f: this.f,
             u: user.uid,
-            t: user[TK][this.pf],
-            pr
+            t: user[TK][0][TK][this.pf],
+            pr: {}
         };
         if (c) {
             ret.c = c;
         }
-        return c;
+        this.topUserFields.forEach(k => {
+            if (user[k] !== undefined) {
+                ret.pr[k] = user[k];
+            }
+        });
+        return ret;
     }
 }
 
@@ -420,18 +462,58 @@ class PusherPopper {
     constructor(audience, trigger) {
         this.audience = audience;
         this.trigger = trigger;
-        this.mappers = this.audience.message.platforms.map(p => {
+        this.mappers = {};
+        this.audience.message.platforms.map(p => {
             return Object.values(PLATFORM[p].FIELDS).map(f => {
                 if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
-                    return new PlainApiMapper(audience.app, audience.message, trigger, p, f);
+                    this.mappers[p + f] = new PlainApiMapper(audience.app, audience.message, trigger, p, f);
                 }
                 else {
-                    return new CohortsEventsMapper(audience.app, audience.message, trigger, p, f);
+                    this.mappers[p + f] = new CohortsEventsMapper(audience.app, audience.message, trigger, p, f);
                 }
             });
-        }).flat();
+        });
         // this.date = {
         //     [Trigger]: this.datathis.audience.message.triggerFind(t => t.kind === TriggerKind.API || t.kind === TriggerKind.Plain) ? this.datePlainAPI.bind(this) : this.dateCohortsEvents.bind(this);
+    }
+
+    /**
+     * Get steps from audience and add local filter/uids
+     * 
+     * @returns {object[]} array of aggregation steps
+     */
+    async steps() {
+        let steps = [];
+
+        // We have a token
+        this.audience.addFields(steps);
+
+        // Add filter steps
+        if (this.uids) {
+            steps.push({$match: {uid: {$in: this.uids}}});
+        }
+        if (this.filter) {
+            await this.setFilter(steps, this.filter);
+        }
+
+        let userFields = Message.userFieldsFor(this.audience.message.contents.concat(this.contents || []));
+
+        // Decrease amount of data we process here
+        this.audience.addProjection(steps, userFields);
+
+        // Lookup for tokens & msgs
+        steps.push({
+            $lookup: {
+                from: `push_${this.audience.app._id}`,
+                localField: 'uid',
+                foreignField: '_id',
+                as: TK
+            }
+        });
+
+        this.log.d('steps: %j', steps);
+
+        return steps;
     }
 
     /**
@@ -446,13 +528,13 @@ class PusherPopper {
     }
 
     /**
-     * Set custom data
+     * Set Filter which would override message filter
      * 
-     * @param {Object} data notification data
+     * @param {Filter} filter message filter
      * @returns {Pusher} this instance for easy method chaining
      */
-    setData(data) {
-        this.data = data;
+    setFilter(filter) {
+        this.filter = filter;
         return this;
     }
 
@@ -498,29 +580,40 @@ class PusherPopper {
 }
 
 /**
- * Scheduler, that is pusher for all notes given message filter
+ * Pushing notes into queue logic
  */
-class SchedulePusher extends PusherPopper {
+class Pusher extends PusherPopper {
     /**
      * Insert records into db
      */
     async run() {
-        this.audience.log.f('d', log => log('scheduling %s date %s data %j', this.audience.message._id, this.date ? this.date : '', this.data ? this.data : ''),
-            'i', 'scheduling %s', this.audience.message._id);
+        this.audience.log.f('d', log => log('pushing ' + (this.uids ? '%d uids' : 'filter %j') + ' into %s date %s variables %j', this.uids ? this.uids.length : this.filter, this.audience.message._id, this.date ? this.date : '', this.variables ? this.variables : '-')) ||
+            this.audience.log.i('pushing ' + (this.uids ? '%d uids' : 'filter %j') + ' into %s %s %j', this.uids ? this.uids.length : this.filter, this.audience.message._id);
 
         let batchSize = DEFAULTS.queue_insert_batch,
-            steps = await this.audience.steps(this.audience.message.userFields),
+            steps = await this.steps(),
             stream = common.db.collection(`app_users${this.audience.app._id}`).aggregate(steps).stream(),
             batch = Push.batchInsert(batchSize),
-            start = this.start || this.audience.message.triggerPlain().start; // plain trigger is supposed to be set here as SchedulePusher is only used for plain triggers
+            start = this.start || this.audience.message.triggerPlain().start, // plain trigger is supposed to be set here as SchedulePusher is only used for plain triggers
+            next = null;
 
         for await (let user of stream) {
-            for (let mapper of this.mappers) {
-                let push = mapper.map(user, start, this.contents);
-                if (!push) {
+            let push = user[TK][0];
+            for (let pf in push[TK]) {
+                if (!(pf in this.mappers)) {
                     continue;
                 }
-                if (batch.pushSync(push)) {
+
+                let note = this.mappers[pf].map(user, start, this.contents);
+                if (!note) {
+                    continue;
+                }
+
+                let d = note._id.getTimestamp().getTime();
+                if (!next || d < next) {
+                    next = d;
+                }
+                if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);
                     await batch.flush();
                 }
@@ -529,19 +622,8 @@ class SchedulePusher extends PusherPopper {
 
         this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
         await batch.flush();
-    }
-}
 
-/**
- * Pushing notes into queue logic
- */
-class Pusher extends PusherPopper {
-    /**
-     * Insert records into db
-     */
-    async run() {
-        this.audience.log.f('d', log => log('pushing %d uids into %s date %s data %j', this.uids.length, this.audience.message._id, this.date ? this.date : '', this.data ? this.data : '')) ||
-            this.audience.log.i('pushing %d uids into %s %s %j', this.uids.length, this.audience.message._id);
+        return {next: next && next * 1000 || next, total: batch.total};
     }
 }
 

@@ -373,7 +373,7 @@ class CentralWorker extends CentralSuper {
                         resolve(data);
                     }
                     else {
-                        log.e('No promise for reply request: %j / %j', m.date, data);
+                        log.e('No promise for reply request: %j / %j', m, data);
                     }
                 }
                 else {

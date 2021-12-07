@@ -5,6 +5,7 @@ const plugins = require('../../pluginManager'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
     { onTokenSession, onSessionUser, onAppPluginsUpdate } = require('./api-push'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
+    { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
     { estimate, create, update, toggle, remove, all, one, mime } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
@@ -28,8 +29,10 @@ const plugins = require('../../pluginManager'),
                 update: [validateUpdate, update],
                 toggle: [validateUpdate, toggle],
                 remove: [validateDelete, remove],
-                PUT: [validateCreate, create],
-                POST: [validateUpdate, update, '_id'],
+                push: [validateDelete, apiPush],
+                pop: [validateDelete, apiPop],
+                // PUT: [validateCreate, create],
+                // POST: [validateUpdate, update, '_id'],
             }
         }
     };
@@ -141,22 +144,28 @@ function apiCall(apisObj, ob) {
     log.d('handling api request %s%s', method, sub ? `/${sub}` : '');
     if (method in apisObj) {
         if (!sub) {
-            let [check, fn] = apisObj[method];
-            check(params, FEATURE_NAME, endpoint(method, fn));
-            return true;
+            if (Array.isArray(apisObj[method])) {
+                let [check, fn] = apisObj[method];
+                check(params, FEATURE_NAME, endpoint(method, fn));
+                return true;
+            }
         }
         else if (sub in apisObj[method]) {
-            let [check, fn] = apisObj[method][sub];
-            check(params, FEATURE_NAME, endpoint(method + '/' + sub, fn));
-            return true;
+            if (Array.isArray(apisObj[method][sub])) {
+                let [check, fn] = apisObj[method][sub];
+                check(params, FEATURE_NAME, endpoint(method + '/' + sub, fn));
+                return true;
+            }
         }
         else if (params.method in apisObj[method]) {
-            let [check, fn, key] = apisObj[method][sub];
-            if (key) {
-                params.qstring[key] = sub;
+            if (Array.isArray(apisObj[method][sub])) {
+                let [check, fn, key] = apisObj[method][sub];
+                if (key) {
+                    params.qstring[key] = sub;
+                }
+                check(params, FEATURE_NAME, endpoint(method, fn));
+                return true;
             }
-            check(params, FEATURE_NAME, endpoint(method, fn));
-            return true;
         }
     }
 

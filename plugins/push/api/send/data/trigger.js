@@ -1,12 +1,12 @@
 'use strict';
 
 const { PushError } = require('./error'),
-    { toDate, TriggerKind, Jsonable } = require('./const');
+    { toDate, TriggerKind, Validatable } = require('./const');
 
 /**
  * Base clsss for message triggers
  */
-class Trigger extends Jsonable {
+class Trigger extends Validatable {
     /**
      * Constructor
      * 

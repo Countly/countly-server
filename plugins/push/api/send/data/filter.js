@@ -1,11 +1,11 @@
 'use strict';
 
-const { Jsonable } = require('./const');
+const { Validatable } = require('./const');
 
 /**
  * Class for storing and handling user filters
  */
-class Filter extends Jsonable {
+class Filter extends Validatable {
     /**
      * Constructor
      * 
