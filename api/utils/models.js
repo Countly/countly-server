@@ -224,7 +224,11 @@ class Mongoable extends Validatable {
      * Pass current data to mongo's save
      */
     async save() {
-        await require('./common').db.collection(this.constructor.collection).save(this.json);
+        let json = this.json;
+        await require('./common').db.collection(this.constructor.collection).save(json);
+        if (this.constructor.cache) {
+            this.constructor.cache.write(this._id.toString(), json);
+        }
     }
 
     /**
@@ -235,7 +239,11 @@ class Mongoable extends Validatable {
      */
     async update(update, op) {
         await require('./common').db.collection(this.constructor.collection).updateOne({_id: this._id}, update);
-        return op(this);
+        let ret = op(this);
+        if (this.constructor.cache) {
+            this.constructor.cache.update(this._id.toString(), update);
+        }
+        return ret;
     }
 
     /**

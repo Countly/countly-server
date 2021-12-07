@@ -1,4 +1,4 @@
-const { Jsonable, Mongoable } = require('../../../../../api/utils/models');
+const { Jsonable, Validatable, Mongoable } = require('../../../../../api/utils/models');
 
 /* eslint-disable key-spacing, no-multi-spaces */
 
@@ -174,4 +174,4 @@ function toDate(date) {
     }
 }
 
-module.exports = { S, State, Status, STATUSES: Object.values(Status), TriggerKind, toDate, DEFAULTS, MEDIA_MIME_ALL, MEDIA_MIME_IOS, MEDIA_MIME_ANDROID, Jsonable, Mongoable };
+module.exports = { S, State, Status, STATUSES: Object.values(Status), TriggerKind, toDate, DEFAULTS, MEDIA_MIME_ALL, MEDIA_MIME_IOS, MEDIA_MIME_ANDROID, Jsonable, Validatable, Mongoable };

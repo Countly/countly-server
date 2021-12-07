@@ -61,7 +61,7 @@ class ScheduleJob extends J.Job {
         }
         else {
             let trigger = this.message.triggerPlain(),
-                {total, next} = await this.audience.schedule(trigger, this.data.start).run(); // this.data.start is supposed to be undefined for now
+                {total, next} = await this.audience.push(trigger).setStart(this.data.start).run(); // this.data.start is supposed to be undefined for now
 
             if (total === 0) {
                 update = {

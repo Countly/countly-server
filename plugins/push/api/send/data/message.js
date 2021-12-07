@@ -370,7 +370,17 @@ class Message extends Mongoable {
      * @returns {string[]} array of app user field names
      */
     get userFields() {
-        let keys = this.contents.map(c => Object.values(c.messagePers || {}).concat(Object.values(c.titlePers || {})).map(obj => obj.k).concat(c.extras || []).map(Message.decodeFieldKey)).flat();
+        return Message.userFieldsFor(this.contents);
+    }
+
+    /**
+     * Get user fields used in a Content
+     * 
+     * @param {Content[]} contents array of Content instances
+     * @returns {string[]} array of app user field names
+     */
+    static userFieldsFor(contents) {
+        let keys = contents.map(content => Object.values(content.messagePers || {}).concat(Object.values(content.titlePers || {})).map(obj => obj.k).concat(content.extras || []).map(Message.decodeFieldKey)).flat();
         if (this.contents.length > 1) {
             keys.push('la');
         }

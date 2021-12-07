@@ -404,10 +404,40 @@ module.exports.all = async params => {
             cursor.sort({[data.iSortCol_0]: data.sSortDir_0 === 'asc' ? -1 : 1});
         }
         else {
-            cursor.sort({'trigger.start': -1});
+            cursor.sort({'triggers.start': -1});
         }
 
         let items = await cursor.toArray();
+
+        // mongo sort doesn't work for selected array elements
+        if (!data.iSortCol_0 || data.iSortCol_0 === 'triggers.start') {
+            items.sort((a, b) => {
+                a = a.triggers.filter(t => {
+                    if (data.auto) {
+                        return [TriggerKind.Event, TriggerKind.Cohort].includes(t.kind);
+                    }
+                    else if (data.api) {
+                        return t.kind === TriggerKind.API;
+                    }
+                    else {
+                        return t.kind === TriggerKind.Plain;
+                    }
+                })[0];
+                b = b.triggers.filter(t => {
+                    if (data.auto) {
+                        return [TriggerKind.Event, TriggerKind.Cohort].includes(t.kind);
+                    }
+                    else if (data.api) {
+                        return t.kind === TriggerKind.API;
+                    }
+                    else {
+                        return t.kind === TriggerKind.Plain;
+                    }
+                })[0];
+
+                return new Date(b.start).getTime() - new Date(a.start).getTime();
+            });
+        }
 
         common.returnOutput(params, {
             sEcho: data.sEcho,

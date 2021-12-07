@@ -5,20 +5,29 @@ const testUtils = require('../../../test/testUtils'),
     supertest = require('supertest').agent('http://localhost:3001'),
     should = require('should');
 
-// let aid = '617e6cf3cd001aac73834e18',
-//     app_key = '78fb16cbaa61399d0f13f9e96961bd9983a0a416',
-//     api_key = '4438dfdece5eaa6b796db9baf58ecbc4',
-let aid,
-    app_key,
-    api_key,
+// let aid,
+//     app_key,
+//     api_key,
+let aid = '617e6cf3cd001aac73834e18',
+    app_key = '78fb16cbaa61399d0f13f9e96961bd9983a0a416',
+    api_key = '4438dfdece5eaa6b796db9baf58ecbc4',
     users = {
-        did0: {device_id: 'did0', tokens: [{ios_token: 'token0', test_mode: 1}], events: [{key: 'cart'}, {key: 'buy'}]},
+        did0: {device_id: 'did0', tokens: [{ios_token: 'token0', test_mode: 1}], events: [{key: 'push_cart'}, {key: 'push_buy', count: 1, sum: 200, segmentation: {product: 'carrot'}}]},
         did1: {device_id: 'did1', tokens: [{ios_token: 'token0', test_mode: 0}], locale: 'en_US'},
-        did2: {device_id: 'did2', tokens: [{android_token: 'token0', test_mode: 2}], locale: 'en_US', events: [{key: 'cart'}, {key: 'buy'}]},
-        did3: {device_id: 'did3', tokens: [{ios_token: 'token0', test_mode: 2}, {android_token: 'token0', test_mode: 0}], locale: 'ru_RU', events: [{key: 'subscribe'}]},
+        did2: {device_id: 'did2', tokens: [{android_token: 'token0', test_mode: 2}], locale: 'en_US', events: [{key: 'push_cart'}, {key: 'push_buy', count: 1, sum: 200, segmentation: {product: 'carrot'}}]},
+        did3: {device_id: 'did3', tokens: [{ios_token: 'token0', test_mode: 2}, {android_token: 'token0', test_mode: 0}], locale: 'ru_RU', events: [{key: 'push_subscribe', segmentation: {topic: 'carrots'}}]},
+    },
+    users2 = {
+        did0: {device_id: 'did0', events: [{key: 'push_cart'}, {key: 'push_buy', count: 2, sum: 400, segmentation: {product: 'pineapple'}}]},
+        did1: {device_id: 'did1', tokens: [{ios_token: 'token0', test_mode: 0}], locale: 'en_US'},
+        did2: {device_id: 'did2', tokens: [{android_token: 'token0', test_mode: 2}], locale: 'en_US', events: [{key: 'push_cart'}, {key: 'push_buy', count: 1, sum: 200, segmentation: {product: 'carrot'}}]},
+        did3: {device_id: 'did3', tokens: [{ios_token: 'token0', test_mode: 2}, {android_token: 'token0', test_mode: 0}], locale: 'ru_RU', events: [{key: 'push_subscribe', segmentation: {topic: 'carrots'}}]},
     };
 
 describe('PUSH INTEGRATION TESTS', () => {
+    let cohort,
+        m1, m2, m3, m4;
+
     it('should reset the app', async() => {
         aid = aid || testUtils.get('APP_ID');
         api_key = api_key || testUtils.get('API_KEY_ADMIN');
@@ -50,44 +59,44 @@ describe('PUSH INTEGRATION TESTS', () => {
 
         await new Promise(res => setTimeout(res, 1000));
     }).timeout(2000);
-    it('mime works with 200', async() => {
-        await supertest.get(`/o/push/mime?api_key=${api_key}&app_id=${aid}&url=${encodeURIComponent('https://count.ly/images/plugins/push-approver/screenshots/1_push-approver.png')}`)
-            .expect('Content-Type', /json/)
-            .expect(res => {
-                should.equal(res.status, 200);
-                should.ok(res.body.media);
-                should.ok(res.body.mediaMime);
-                should.ok(res.body.mediaSize);
-                should.equal(res.body.media, 'https://count.ly/images/plugins/push-approver/screenshots/1_push-approver.png');
-                should.equal(res.body.mediaMime, 'image/png');
-            });
+    // it('mime works with 200', async() => {
+    //     await supertest.get(`/o/push/mime?api_key=${api_key}&app_id=${aid}&url=${encodeURIComponent('https://count.ly/images/plugins/push-approver/screenshots/1_push-approver.png')}`)
+    //         .expect('Content-Type', /json/)
+    //         .expect(res => {
+    //             should.equal(res.status, 200);
+    //             should.ok(res.body.media);
+    //             should.ok(res.body.mediaMime);
+    //             should.ok(res.body.mediaSize);
+    //             should.equal(res.body.media, 'https://count.ly/images/plugins/push-approver/screenshots/1_push-approver.png');
+    //             should.equal(res.body.mediaMime, 'image/png');
+    //         });
 
-        await new Promise(res => setTimeout(res, 1000));
-    });
-    it('mime follows redirects', async() => {
-        await supertest.get(`/o/push/mime?api_key=${api_key}&app_id=${aid}&url=${encodeURIComponent('http://count.ly/images/plugins/push-approver/screenshots/1_push-approver.png')}`)
-            .expect('Content-Type', /json/)
-            .expect(res => {
-                should.equal(res.status, 200);
-                should.ok(res.body.media);
-                should.ok(res.body.mediaMime);
-                should.ok(res.body.mediaSize);
-                should.equal(res.body.media, 'https://count.ly/images/plugins/push-approver/screenshots/1_push-approver.png');
-                should.equal(res.body.mediaMime, 'image/png');
-            });
+    //     await new Promise(res => setTimeout(res, 1000));
+    // });
+    // it('mime follows redirects', async() => {
+    //     await supertest.get(`/o/push/mime?api_key=${api_key}&app_id=${aid}&url=${encodeURIComponent('http://count.ly/images/plugins/push-approver/screenshots/1_push-approver.png')}`)
+    //         .expect('Content-Type', /json/)
+    //         .expect(res => {
+    //             should.equal(res.status, 200);
+    //             should.ok(res.body.media);
+    //             should.ok(res.body.mediaMime);
+    //             should.ok(res.body.mediaSize);
+    //             should.equal(res.body.media, 'https://count.ly/images/plugins/push-approver/screenshots/1_push-approver.png');
+    //             should.equal(res.body.mediaMime, 'image/png');
+    //         });
 
-        await new Promise(res => setTimeout(res, 1000));
-    });
-    it('mime works with 404', async() => {
-        await supertest.get(`/o/push/mime?api_key=${api_key}&app_id=${aid}&url=${encodeURIComponent('https://count.ly/images/plugins/push-approver/screenshots/INVALID.png')}`)
-            .expect('Content-Type', /json/)
-            .expect(res => {
-                should.equal(res.status, 400);
-                should.deepEqual(res.body.errors, ['Invalid status 404']);
-            });
+    //     await new Promise(res => setTimeout(res, 1000));
+    // });
+    // it('mime works with 404', async() => {
+    //     await supertest.get(`/o/push/mime?api_key=${api_key}&app_id=${aid}&url=${encodeURIComponent('https://count.ly/images/plugins/push-approver/screenshots/INVALID.png')}`)
+    //         .expect('Content-Type', /json/)
+    //         .expect(res => {
+    //             should.equal(res.status, 400);
+    //             should.deepEqual(res.body.errors, ['Invalid status 404']);
+    //         });
 
-        await new Promise(res => setTimeout(res, 1000));
-    });
+    //     await new Promise(res => setTimeout(res, 1000));
+    // });
     it('should return 0 dashboard', async() => {
         aid = aid || testUtils.get('APP_ID');
         api_key = api_key || testUtils.get('API_KEY_ADMIN');
@@ -113,6 +122,19 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.deepEqual(res.body.locales, {default: 0});
             });
     });
+    if (plugins.isPluginEnabled('cohorts')) {
+        it('should create push_bought cohort', async() => {
+            await supertest
+                .get(`/i/cohorts/add?api_key=${api_key}&app_id=${aid}&cohort_name=push_bought&steps=${JSON.stringify([
+                    {event: 'push_buy', type: 'did', period: '7days'}
+                ])}`)
+                .expect('Content-Type', /json/)
+                .expect(res => {
+                    should.equal(res.status, 200);
+                    cohort = res.body.result;
+                });
+        });
+    }
     it('should correctly process new tokens', async() => {
         for (let did in users) {
             let user = users[did];
@@ -219,14 +241,8 @@ describe('PUSH INTEGRATION TESTS', () => {
             });
     });
     it('should create a few simple messages', async() => {
-        // await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
-        //     .send({"app":"609bd78d90d7a416d4dfb984","platforms":["a","i"],"contents":[{"message":"test def content ","title":"test title ","messagePers":{"17":{"f":"vz","c":false,"k":"up.c"}},"titlePers":{"11":{"f":"chrome","c":true,"k":"up.brw"}},"expiration":604800000},{"extras":[]},{"extras":[]}],"filter":{"user":[],"cohorts":[],"geos":[],"drill":[]},"triggers":[{"kind":"plain","start":1637139813993,"delayed":"before","tz":true,"sctz":"-180"}]})
-        //     .expect('Content-Type', /json/)
-        //     .expect(res => {
-        //         should.equal(res.status, 200);
-        //         should.ok(res.body._id);
-        //         should.equal(res.body.app, aid);
-        //     });
+        let now = Date.now();
+
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
                 demo: true,
@@ -239,7 +255,7 @@ describe('PUSH INTEGRATION TESTS', () => {
                     {message: 'message', expiration: 120000},
                 ],
                 triggers: [
-                    {kind: 'plain', start: new Date(Date.now() + 3600000)}
+                    {kind: 'plain', start: new Date(now + 3600000)}
                 ]
             })
             .expect('Content-Type', /json/)
@@ -247,6 +263,7 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.equal(res.status, 200);
                 should.ok(res.body._id);
                 should.equal(res.body.app, aid);
+                m1 = res.body;
             });
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
@@ -261,7 +278,7 @@ describe('PUSH INTEGRATION TESTS', () => {
                     {la: 'ru', title: 'Заголовок'}
                 ],
                 triggers: [
-                    {kind: 'plain', start: new Date(Date.now() + 3600001)}
+                    {kind: 'plain', start: new Date(now + 3600001)}
                 ]
             })
             .expect('Content-Type', /json/)
@@ -269,6 +286,7 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.equal(res.status, 200);
                 should.ok(res.body._id);
                 should.equal(res.body.app, aid);
+                m2 = res.body;
             });
         await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
             .send({
@@ -280,7 +298,8 @@ describe('PUSH INTEGRATION TESTS', () => {
                     {message: 'notification', title: 'title', expiration: 120000},
                 ],
                 triggers: [
-                    {kind: 'api', start: new Date(Date.now() + 3600000)}
+                    {kind: 'api', start: new Date(now + 3600000)},
+                    {kind: 'cohort', start: new Date(now), cohorts: [cohort]},
                 ]
             })
             .expect('Content-Type', /json/)
@@ -288,30 +307,104 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.equal(res.status, 200);
                 should.ok(res.body._id);
                 should.equal(res.body.app, aid);
+                m3 = res.body;
             });
-    });
+
+        await supertest.post(`/i/push/message/create?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                demo: true,
+                app: aid,
+                platforms,
+                filter: {
+                    drill: JSON.stringify({
+                        app_id: aid,
+                        bucket: 'daily',
+                        event: '[CLY]_session',
+                        method: 'segmentation_users',
+                        period: '30days',
+                        projectionKey: '',
+                        queryObject: JSON.stringify({'up.la': {$in: ['ru', 'en']}})
+                    })
+                },
+                contents: [
+                    {message: 'notification', title: 'title', expiration: 120000},
+                ],
+                triggers: [
+                    {kind: 'plain', start: new Date(now + 3600002)},
+                    {kind: 'event', start: new Date(now + 100), events: ['push_buy']},
+                ]
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.equal(res.status, 200);
+                should.ok(res.body._id);
+                should.equal(res.body.app, aid);
+                m4 = res.body;
+            });
+
+        // wait for schedule jobs to run
+        await new Promise(res => setTimeout(res, 5000));
+
+        let db = await plugins.dbConnection(),
+            users = await db.collection(`app_users${aid}`).find().toArray(),
+            uids = {},
+            pushes = await db.collection('push').find().toArray(),
+            pushes1 = pushes.filter(p => p.m.toString() === m1._id),
+            pushes2 = pushes.filter(p => p.m.toString() === m2._id),
+            pushes3 = pushes.filter(p => p.m.toString() === m3._id),
+            pushes4 = pushes.filter(p => p.m.toString() === m4._id);
+
+        should.equal(users.length, 4);
+        users.forEach(u => uids[u.did] = u.uid);
+
+        should.equal(pushes1.length, 2);
+        should.equal(pushes1.filter(p => p.u === uids.did1 || p.u === uids.did2).length, 2);
+
+        should.equal(pushes2.length, 4);
+        should.equal(pushes2.filter(p => p.u === uids.did1 || p.u === uids.did2 || p.u === uids.did3).length, 4);
+        should.equal(pushes2.filter(p => p.u === uids.did3).length, 2);
+
+        should.equal(pushes3.length, 0);
+        should.equal(pushes4.length, 0);
+
+
+        await supertest.post(`/o/push/message/estimate?api_key=${api_key}&app_id=${aid}`)
+            .send({
+                app: aid.substr(0, 10),
+                platforms: ['x'],
+                filter: {
+                    user: JSON.stringify({la: {$in: ['en', 'ru']}}).substr(0, 10)
+                }
+            })
+            .expect('Content-Type', /json/)
+            .expect(res => {
+                should.deepEqual(res.body.errors, ['Incorrect ObjectID for app', 'Value of platforms is invalid', 'filter: Invalid JSON for user']);
+            });
+
+        db.close();
+    }).timeout(100000);
 
     it('should return message table', async() => {
-        let message, title, api;
-
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}`)
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 2);
-                should.equal(res.body.iTotalDisplayRecords, 2);
+                should.equal(res.body.iTotalRecords, 3);
+                should.equal(res.body.iTotalDisplayRecords, 3);
                 should.ok(res.body.aaData);
-                should.equal(res.body.aaData.length, 2);
-                message = res.body.aaData.filter(m => m.contents.length === 1 && m.filter.user)[0]._id;
-                title = res.body.aaData.filter(m => m.contents.length === 2)[0]._id;
+                should.equal(res.body.aaData.length, 3);
+                should.equal(res.body.aaData.filter(m => m._id === m1._id).length, 1);
+                should.equal(res.body.aaData.filter(m => m._id === m2._id).length, 1);
+                should.equal(res.body.aaData.filter(m => m._id === m4._id).length, 1);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&auto=true`)
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 0);
-                should.equal(res.body.iTotalDisplayRecords, 0);
-                should.deepEqual(res.body.aaData, []);
+                should.equal(res.body.iTotalRecords, 2);
+                should.equal(res.body.iTotalDisplayRecords, 2);
+                should.equal(res.body.aaData[0]._id, m4._id);
+                should.equal(res.body.aaData[1]._id, m3._id);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&api=true`)
             .expect('Content-Type', /json/)
@@ -321,47 +414,49 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.equal(res.body.iTotalDisplayRecords, 1);
                 should.ok(res.body.aaData);
                 should.equal(res.body.aaData.length, 1);
-                api = res.body.aaData[0]._id;
+                should.equal(res.body.aaData[0]._id, m3._id);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&iDisplayStart=1`)
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 2);
-                should.equal(res.body.iTotalDisplayRecords, 2);
+                should.equal(res.body.iTotalRecords, 3);
+                should.equal(res.body.iTotalDisplayRecords, 3);
                 should.ok(res.body.aaData);
-                should.equal(res.body.aaData.length, 1);
-                should.equal(res.body.aaData[0]._id, message);
+                should.equal(res.body.aaData.length, 2);
+                should.equal(res.body.aaData[0]._id, m2._id);
+                should.equal(res.body.aaData[1]._id, m1._id);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&sSearch=message`)
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 2);
+                should.equal(res.body.iTotalRecords, 3);
                 should.equal(res.body.iTotalDisplayRecords, 1);
                 should.ok(res.body.aaData);
                 should.equal(res.body.aaData.length, 1);
-                should.equal(res.body.aaData[0]._id, message);
+                should.equal(res.body.aaData[0]._id, m1._id);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&sSearch=${encodeURIComponent('заголо')}`)
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 2);
+                should.equal(res.body.iTotalRecords, 3);
                 should.equal(res.body.iTotalDisplayRecords, 1);
                 should.ok(res.body.aaData);
                 should.equal(res.body.aaData.length, 1);
-                should.equal(res.body.aaData[0]._id, title);
+                should.equal(res.body.aaData[0]._id, m2._id);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&sSearch=notif`)
             .expect('Content-Type', /json/)
             .expect(res => {
                 should.equal(res.status, 200);
-                should.equal(res.body.iTotalRecords, 2);
-                should.equal(res.body.iTotalDisplayRecords, 1);
+                should.equal(res.body.iTotalRecords, 3);
+                should.equal(res.body.iTotalDisplayRecords, 2);
                 should.ok(res.body.aaData);
-                should.equal(res.body.aaData.length, 1);
-                should.equal(res.body.aaData[0]._id, title);
+                should.equal(res.body.aaData.length, 2);
+                should.equal(res.body.aaData[0]._id, m4._id);
+                should.equal(res.body.aaData[1]._id, m2._id);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&api=true&sSearch=notif`)
             .expect('Content-Type', /json/)
@@ -371,7 +466,7 @@ describe('PUSH INTEGRATION TESTS', () => {
                 should.equal(res.body.iTotalDisplayRecords, 1);
                 should.ok(res.body.aaData);
                 should.equal(res.body.aaData.length, 1);
-                should.equal(res.body.aaData[0]._id, api);
+                should.equal(res.body.aaData[0]._id, m3._id);
             });
         await supertest.get(`/o/push/message/all?api_key=${api_key}&app_id=${aid}&api=true&sSearch=notiffffffff`)
             .expect('Content-Type', /json/)

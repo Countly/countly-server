@@ -1,7 +1,7 @@
 'use strict';
 
 const { PushError } = require('./error'),
-    { S, Jsonable } = require('./const');
+    { S, Validatable } = require('./const');
 
 /**
  * Message `contents` array consists of Content objects, it's to be defined the following way (each line below is an element of `contents` array):
@@ -10,7 +10,7 @@ const { PushError } = require('./error'),
  * 2. {p: 'a', la: 'de'} - another override for Android devices with german locale, other locales would still use 0.
  * 3. {p: 'i', la: 'fr'} - applies on top of 'i' override for iOS devices with french locale, other locales would use 1.
  */
-class Content extends Jsonable {
+class Content extends Validatable {
     /**
      * Constructor
      * 
