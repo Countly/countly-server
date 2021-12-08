@@ -27,7 +27,9 @@ RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
     mkdir -p /etc/sudoers.d && \
 	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/sv restart countly-api countly-dashboard" >> /etc/sudoers.d/countly && \
     apt-get update && apt-get -y install sudo && \
+    ln -T /bin/true /usr/bin/systemctl && \
 	/opt/countly/bin/countly.install.sh && \
+    rm /usr/bin/systemctl && \
     chown -R mongodb:mongodb /var/lib/mongodb && \
     \
     mkdir /etc/service/mongodb && \
