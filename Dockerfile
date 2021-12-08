@@ -1,9 +1,20 @@
 FROM phusion/baseimage:0.11
 
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,video-intelligence-monetization,alerts,onboarding,consolidate
+# Enterprise Edition:
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,restrict,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards
+
+ARG COUNTLY_CONFIG_API_MONGODB_HOST=localhost
+ARG COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=localhost
+
 CMD ["/sbin/my_init"]
 
 ## Setup Countly
-ENV INSIDE_DOCKER 1
+ENV COUNTLY_CONTAINER="both" \
+    COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
+    COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
+    COUNTLY_CONFIG_FRONTEND_WEB_HOST="0.0.0.0" \
+    INSIDE_DOCKER=1
 
 EXPOSE 80
 
@@ -16,7 +27,9 @@ RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
     mkdir -p /etc/sudoers.d && \
 	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/sv restart countly-api countly-dashboard" >> /etc/sudoers.d/countly && \
     apt-get update && apt-get -y install sudo && \
+    ln -T /bin/true /usr/bin/systemctl && \
 	/opt/countly/bin/countly.install.sh && \
+    rm /usr/bin/systemctl && \
     chown -R mongodb:mongodb /var/lib/mongodb && \
     \
     mkdir /etc/service/mongodb && \
