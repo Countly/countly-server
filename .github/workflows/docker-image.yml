@@ -26,7 +26,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: countly/countly-server:test,countly/countly-server:0.0.0
+          tags: countly/countly-server:latest,countly/countly-server:21.11.0
           
   push_api:
     name: Push Countly API Image
@@ -46,7 +46,7 @@ jobs:
         with:
           push: true
           file: ./Dockerfile-api
-          tags: countly/api:test,countly/api:0.0.0
+          tags: countly/api:latest,countly/api:21.11.0
 
   push_frontend:
     name: Push Countly Frontend Image
@@ -66,4 +66,4 @@ jobs:
         with:
           push: true
           file: ./Dockerfile-frontend
-          tags: countly/frontend:test,countly/frontend:0.0.0
+          tags: countly/frontend:latest,countly/frontend:21.11.0
