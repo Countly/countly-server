@@ -1,9 +1,6 @@
 name: Publish Docker image
 
 on:
-  push:
-    branches:
-      - 'master'
   release:
     types: [published]
 
@@ -14,6 +11,17 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+        
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      
+      - name: Check output
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ steps.vars.outputs.tag }}
       
       - name: Log in to Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
@@ -26,7 +34,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: countly/countly-server:latest,countly/countly-server:21.11.0
+          tags: countly/countly-server:latest,countly/countly-server:${{ steps.vars.outputs.tag }}
           
   push_api:
     name: Push Countly API Image
@@ -34,6 +42,17 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+        
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      
+      - name: Check output
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ steps.vars.outputs.tag }}
       
       - name: Log in to Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
@@ -46,7 +65,7 @@ jobs:
         with:
           push: true
           file: ./Dockerfile-api
-          tags: countly/api:latest,countly/api:21.11.0
+          tags: countly/api:latest,countly/api:${{ steps.vars.outputs.tag }}
 
   push_frontend:
     name: Push Countly Frontend Image
@@ -54,6 +73,17 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+        
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      
+      - name: Check output
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ steps.vars.outputs.tag }}
       
       - name: Log in to Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
@@ -66,4 +96,4 @@ jobs:
         with:
           push: true
           file: ./Dockerfile-frontend
-          tags: countly/frontend:latest,countly/frontend:21.11.0
+          tags: countly/frontend:latest,countly/frontend:${{ steps.vars.outputs.tag }}
