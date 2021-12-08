@@ -1038,11 +1038,17 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                     userOfApps = user_of;
 
                                     for (let i = 0; i < user_of.length; i++) {
-                                        if (user_of[i].apn) {
-                                            user_of[i].apn.forEach(a => a._id = '' + a._id);
+                                        if (user_of[i].a) {
+                                            user_of[i].a.forEach(a => a._id = '' + a._id);
                                         }
-                                        if (user_of[i].gcm) {
-                                            user_of[i].gcm.forEach(a => a._id = '' + a._id);
+                                        if (user_of[i].i) {
+                                            user_of[i].i.forEach(a => a._id = '' + a._id);
+                                        }
+                                        if (user_of[i].h) {
+                                            user_of[i].h.forEach(a => a._id = '' + a._id);
+                                        }
+                                        if (user_of[i].t) {
+                                            user_of[i].t.forEach(a => a._id = '' + a._id);
                                         }
                                         countlyGlobalApps[user_of[i]._id] = user_of[i];
                                         countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
@@ -1075,11 +1081,17 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                     userOfApps = readableApps.concat(writableApps);
 
                                     for (let i = 0; i < userOfApps.length; i++) {
-                                        if (userOfApps[i].apn) {
-                                            userOfApps[i].apn.forEach(a => a._id = '' + a._id);
+                                        if (userOfApps[i].a) {
+                                            userOfApps[i].a.forEach(a => a._id = '' + a._id);
                                         }
-                                        if (userOfApps[i].gcm) {
-                                            userOfApps[i].gcm.forEach(a => a._id = '' + a._id);
+                                        if (userOfApps[i].i) {
+                                            userOfApps[i].i.forEach(a => a._id = '' + a._id);
+                                        }
+                                        if (userOfApps[i].h) {
+                                            userOfApps[i].h.forEach(a => a._id = '' + a._id);
+                                        }
+                                        if (userOfApps[i].t) {
+                                            userOfApps[i].t.forEach(a => a._id = '' + a._id);
                                         }
                                         countlyGlobalApps[userOfApps[i]._id] = userOfApps[i];
                                         countlyGlobalApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
