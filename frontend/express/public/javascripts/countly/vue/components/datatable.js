@@ -64,7 +64,7 @@
             localSearchedRows: function() {
                 var currentArray = this.rows.slice();
                 if (this.displaySearch && this.controlParams.searchQuery) {
-                    var queryLc = this.controlParams.searchQuery.toLowerCase();
+                    var queryLc = (this.controlParams.searchQuery + "").toLowerCase();
                     currentArray = currentArray.filter(function(item) {
                         return Object.keys(item).some(function(fieldKey) {
                             if (item[fieldKey] === null || item[fieldKey] === undefined) {
@@ -84,10 +84,18 @@
 
                     currentArray = currentArray.slice();
                     currentArray.sort(function(a, b) {
-                        if (a[sorting.field] < b[sorting.field]) {
+                        var priA = a[sorting.field],
+                            priB = b[sorting.field];
+
+                        if (typeof priA === 'object' && priA !== null && priA.sortBy) {
+                            priA = priA.sortBy;
+                            priB = priB.sortBy;
+                        }
+
+                        if (priA < priB) {
                             return -dir;
                         }
-                        if (a[sorting.field] > b[sorting.field]) {
+                        if (priA > priB) {
                             return dir;
                         }
                         return 0;

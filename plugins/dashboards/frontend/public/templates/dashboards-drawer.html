@@ -1,0 +1,94 @@
+<cly-drawer
+    @submit="onSubmit"
+    @copy="onCopy"
+    :title="title"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="controls">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="dashboards-drawer">
+            <cly-form-field :label="i18n('dashboards.dashboard-name')" name="name" rules="required" v-slot:default>
+                <el-input
+                    v-model="drawerScope.editedObject.name"
+                    :placeholder="i18n('placeholder.dashboards.dashboard-name')">
+                </el-input>
+            </cly-form-field>
+            <div class="text-big font-weight-bold">
+                {{i18n('dashboards.share-with')}}
+                <cly-tooltip-icon tooltip="Select the dashboard sharing option"></cly-tooltip-icon>
+            </div>
+            <cly-form-field name="share_with" rules="required">
+                <el-radio-group v-model="drawerScope.editedObject.share_with" style="width: 100%;">
+                    <el-radio
+                        border
+                        class="is-autosized-vstack"
+                        v-for="(item) in constants.sharingOptions"
+                        :label="item.value"
+                        :key="item.value">
+                        <div>
+                            {{item.name}}
+                        </div>
+                        <div class="text-small">
+                            {{item.description}}
+                        </div>
+                    </el-radio>
+                </el-radio-group>
+            </cly-form-field>
+            
+            <div v-if="drawerScope.editedObject.share_with === 'selected-users'">
+                <div class="text-big font-weight-bold">
+                    {{i18n('dashboards.user-permissions')}}
+                    <cly-tooltip-icon tooltip="Set the User permissions"></cly-tooltip-icon>
+                </div>
+                <cly-form-field :label="i18n('dashboards.users-edit-permission')" :subheading="i18n('dashboards.users-edit-description')">
+                    <cly-select-email :disabled="!sharingAllowed" v-model="drawerScope.editedObject.shared_email_edit" :placeholder="sharingAllowed ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
+                </cly-form-field>
+                <cly-form-field :label="i18n('dashboards.users-view-permission')" :subheading="i18n('dashboards.users-view-description')">
+                    <cly-select-email :disabled="!sharingAllowed" v-model="drawerScope.editedObject.shared_email_view" :placeholder="sharingAllowed ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
+                </cly-form-field>
+            </div>
+
+            <div v-if="(drawerScope.editedObject.share_with === 'selected-users') && groupSharingAllowed">
+                <div class="text-big font-weight-bold">
+                    {{i18n('dashboards.user-group-permission')}}
+                    <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
+                </div>
+                <cly-form-field
+                    name="shared_user_groups_edit"
+                    :label="i18n('dashboards.users-edit-permission')"
+                    :subheading="i18n('dashboards.users-edit-description')">
+                    <el-select
+                        multiple
+                        :disabled="!sharingAllowed"
+                        v-model="drawerScope.editedObject.shared_user_groups_edit"
+                        :placeholder="sharingAllowed ? i18n('placeholder.dashboards.select-user-group') : i18n('dashbaords.sharing-disabled')"
+                        style="width: 100%;">
+                        <el-option
+                            v-for="(item) in allGroups"
+                            :value="item._id"
+                            :label="item.name"
+                            :key="item.id">
+                        </el-option>
+                    </el-select>
+                </cly-form-field>
+                <cly-form-field
+                    name="shared_user_groups_view"
+                    :label="i18n('dashboards.users-view-permission')"
+                    :subheading="i18n('dashboards.users-view-description')">
+                    <el-select
+                        multiple
+                        :disabled="!sharingAllowed"
+                        v-model="drawerScope.editedObject.shared_user_groups_view"
+                        :placeholder="sharingAllowed ? i18n('placeholder.dashboards.select-user-group') : i18n('dashbaords.sharing-disabled')"
+                        style="width: 100%;">
+                        <el-option
+                            v-for="(item) in allGroups"
+                            :value="item._id"
+                            :label="item.name"
+                            :key="item.id">
+                        </el-option>
+                    </el-select>
+                </cly-form-field>
+            </div>
+        </cly-form-step>
+    </template>
+</cly-drawer>

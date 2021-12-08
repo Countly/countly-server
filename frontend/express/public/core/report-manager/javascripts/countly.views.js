@@ -31,8 +31,67 @@
         }
     });
 
+
+    var UnreadPin = countlyVue.views.create({
+        template: "<div v-if='isActive' class='cly-bullet cly-bullet--orange bu-mr-1'></div>",
+        props: {
+            appId: {
+                type: String
+            },
+            taskId: {
+                type: String,
+                default: null
+            },
+            autoRead: {
+                type: Boolean,
+                default: false
+            }
+        },
+        computed: {
+            isActive: function() {
+                var unread = this.$store.state.countlyTaskManager.unread;
+                return !!(unread && unread[this.appId] && unread[this.appId][this.taskId]);
+            }
+        },
+        data: function() {
+            return {
+                isMounted: false,
+            };
+        },
+        mounted: function() {
+            this.isMounted = true;
+        },
+        methods: {
+            checkAutoRead: function() {
+                if (this.autoRead && this.isMounted && this.isActive) {
+                    var store = this.$store,
+                        taskId = this.taskId,
+                        appId = this.appId;
+
+                    setTimeout(function() {
+                        store.commit("countlyTaskManager/setRead", {
+                            taskId: taskId,
+                            appId: appId
+                        });
+                    }, 3000);
+                }
+            }
+        },
+        watch: {
+            isActive: function() {
+                this.checkAutoRead();
+            },
+            isMounted: function() {
+                this.checkAutoRead();
+            }
+        }
+    });
+
     Vue.component("cly-report-manager-table", countlyVue.views.create({
         template: CV.T('/core/report-manager/templates/reportmanager-table.html'),
+        components: {
+            "unread-pin": UnreadPin
+        },
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
             reportType: {
@@ -263,6 +322,9 @@
 
     Vue.component("cly-report-manager-dialog", countlyVue.views.create({
         template: CV.T('/core/report-manager/templates/reportmanager-dialog.html'),
+        components: {
+            "unread-pin": UnreadPin
+        },
         props: {
             origin: {
                 type: String,
@@ -271,14 +333,41 @@
             disabled: {
                 type: Boolean,
                 default: false
+            },
+            disableRunningCount: {
+                type: Boolean,
+                default: false
+            }
+        },
+        computed: {
+            remoteOpId: function() {
+                return this.$store.state.countlyTaskManager.opId;
+            },
+            unread: function() {
+                var unread = this.$store.getters["countlyTaskManager/unreadStats"];
+                if (unread[countlyCommon.ACTIVE_APP_ID]) {
+                    if (this.origin) {
+                        return unread[countlyCommon.ACTIVE_APP_ID][this.origin] || 0;
+                    }
+                    return unread[countlyCommon.ACTIVE_APP_ID]._total || 0;
+                }
+                return 0;
             }
         },
         data: function() {
             return {
-                isDialogVisible: false
+                isDialogVisible: false,
+                runningCount: 0,
+                fetchingCount: false
             };
         },
+        mounted: function() {
+            this.refresh();
+        },
         watch: {
+            remoteOpId: function() {
+                this.refresh();
+            },
             disabled: function(newVal) {
                 if (newVal) {
                     this.isDialogVisible = false;
@@ -286,6 +375,37 @@
             }
         },
         methods: {
+            refresh: function() {
+                this.fetchRunningCount();
+            },
+            fetchRunningCount: function() {
+                if (!this.disableRunningCount && !this.fetchingCount) {
+                    var q = {
+                            status: {$in: ["running", "rerunning"]},
+                            manually_create: {$ne: true}
+                        },
+                        self = this;
+
+                    if (this.fixedOrigin) {
+                        q.type = this.fixedOrigin;
+                    }
+                    this.fetchingCount = true;
+                    CV.$.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.data.r + "/tasks/count?api_key=" + countlyGlobal.member.api_key + "&app_id=" + countlyCommon.ACTIVE_APP_ID,
+                        data: {
+                            query: JSON.stringify(q)
+                        }
+                    }, {disableAutoCatch: false})
+                        .then(function(resp) {
+                            self.runningCount = (resp && resp[0] && resp[0].c) || 0;
+                        })
+                        .catch(function() {})
+                        .finally(function() {
+                            self.fetchingCount = false;
+                        });
+                }
+            },
             showDialog: function() {
                 if (!this.disabled) {
                     this.isDialogVisible = true;

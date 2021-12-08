@@ -7,8 +7,8 @@
     countlyReporting,
     jQuery,
     countlyVue,
-    countlyDashboards,
     app,
+    CV,
     $,
  */
 (function() {
@@ -21,21 +21,15 @@
                 var rows = this.$store.getters["countlyReports/table/all"];
                 return rows;
             },
+
         },
         data: function() {
-            var tableDynamicCols = [{
-                value: "emails",
-                label: jQuery.i18n.map['reports.emails'],
-                required: true,
-            }, {
-                value: "timeColumn",
-                label: jQuery.i18n.map['reports.time'],
-                required: true,
-            }];
             return {
                 localTableTrackedFields: ['enabled'],
                 isAdmin: countlyGlobal.member.global_admin,
-                tableDynamicCols: tableDynamicCols,
+                deleteElement: null,
+                showDeleteDialog: false,
+                deleteMessage: '',
             };
         },
         methods: {
@@ -49,14 +43,9 @@
                     this.$parent.$parent.openDrawer("home", data);
                     break;
                 case "delete-comment":
-                    var reportId = scope.row._id;
-                    var name = scope.row.name;
-                    var self = this;
-                    CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
-                        if (result) {
-                            self.$store.dispatch("countlyReports/deleteReport", reportId);
-                        }
-                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-an-event"});
+                    this.deleteElement = scope.row;
+                    this.showDeleteDialog = true;
+                    this.deleteMessage = CV.i18n("reports.confirm", "<b>" + this.deleteElement.title + "</b>");
                     break;
                 case "send-comment":
                     var overlay = $("#overlay").clone();
@@ -83,6 +72,14 @@
                 default:
                     return;
                 }
+            },
+            closeDeleteForm: function() {
+                this.deleteElement = null;
+                this.showDeleteDialog = false;
+            },
+            submitDeleteForm: function() {
+                this.$store.dispatch("countlyReports/deleteReport", this.deleteElement._id);
+                this.showDeleteDialog = false;
             },
             updateStatus: function(scope) {
                 var diff = scope.diff;
@@ -198,10 +195,10 @@
                 return options;
             },
             dashboardsOptions: function() {
-                var dashboardsList = countlyDashboards.getAllDashboards();
+                var dashboardsList = this.$store.getters["countlyDashboards/all"];
                 var dashboardsOptions = [];
                 for (var i = 0; i < dashboardsList.length; i++) {
-                    dashboardsOptions.push({ value: dashboardsList[i].id, label: dashboardsList[i].name });
+                    dashboardsOptions.push({ value: dashboardsList[i]._id, label: dashboardsList[i].name });
                 }
                 countlyVue.container.registerData("/reports/dashboards-option", dashboardsOptions);
                 return dashboardsOptions;
@@ -229,7 +226,8 @@
                 }
             },
             reportFrequencyChange: function(reportFrequency) {
-                var reportDateRanges = countlyDashboards.getReportDateRanges(reportFrequency);
+                var dashboardRangesDict = this.$store.getters["countlyDashboards/reportDateRangeDict"];
+                var reportDateRanges = dashboardRangesDict[reportFrequency] || [];
                 this.reportDateRangesOptions = reportDateRanges.map(function(r) {
                     return {value: r.value, label: r.name};
                 });
@@ -309,6 +307,7 @@
             createReport: function() {
                 this.openDrawer("home", countlyReporting.defaultDrawerConfigValue());
             },
+
         },
     });
 

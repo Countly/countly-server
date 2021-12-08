@@ -139,11 +139,11 @@
                     '<slot name="main">\n' +
                       '<div class="message">\n' +
                           '<span class="text-dark">{{madeChanges}}</span>\n' +
-                          '<span class="text-light">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+                          '<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
                       '</div>\n' +
                       '<div class="buttons">\n' +
-                          '<cly-button :label="i18n(\'common.discard-changes\')" skin="light" class="discard-btn" @click="discard"></cly-button>\n' +
-                         '<cly-button :label="i18n(\'common.save-changes\')" skin="green" class="save-btn" :disabled="disabled" @click="save"></cly-button>\n' +
+                          '<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+                         '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
                       '</div>\n' +
                     '</slot>\n' +
                   '</div>'
@@ -669,6 +669,67 @@
                                 <div v-else @click="click(tag)" class="cly-vue-color-tag__color-tag bu-is-flex bu-is-align-items-center bu-is-justify-content-center" :style="{backgroundColor: tag.label}"></div>\
                                 </div>\
                     </div>'
+    }));
+
+    Vue.component("cly-notification", countlyBaseComponent.extend({
+        template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
+                        '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
+                            '<div class="bu-is-flex bu-is-justify-content-space-between" style="overflow-wrap:anywhere;">\n' +
+                                '<img :src="image" class="bu-mr-4 bu-my-1 bu-ml-1 alert-image">\n' +
+                                '<slot><span class="alert-text bu-my-auto">{{text}}</span></slot>\n' +
+                            '</div>\n' +
+                            '<div @click="closeModal" class="bu-mr-3 bu-ml-6" style="margin:auto">\n' +
+                                '<slot name="close"><i class="el-icon-close"></i></slot>\n' +
+                            '</div>\n' +
+                        '</div>\n' +
+                    '</div>\n',
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            text: { default: "", type: String },
+            color: { default: "light-warning", type: String},
+            size: {default: "full", type: String},
+            visible: {default: true, type: Boolean}
+        },
+        watch: {
+            visible: {
+                immediate: true,
+                handler: function(newVisible) {
+                    this.isModalVisible = newVisible;
+                }
+            },
+            isModalVisible: function(newVisible) {
+                this.$emit("update:visible", newVisible);
+            }
+        },
+        computed: {
+            dynamicClasses: function() {
+                return ["cly-vue-notification__alert-box__alert-text--" + this.color, "cly-vue-notification__alert-box--" + this.size];
+            },
+            image: function() {
+                if (this.color === "dark-informational" || this.color === "light-informational") {
+                    return "images/icons/notification-toast-informational.svg";
+                }
+                else if (this.color === "light-successful" || this.color === "dark-successful") {
+                    return "images/icons/notification-toast-successful.svg";
+                }
+                else if (this.color === "light-destructive" || this.color === "dark-destructive") {
+                    return "images/icons/notification-toast-destructive.svg";
+                }
+                else if (this.color === "light-warning" || this.color === "dark-warning") {
+                    return "images/icons/notification-toast-warning.svg";
+                }
+            }
+        },
+        data: function() {
+            return {
+                isModalVisible: true,
+            };
+        },
+        methods: {
+            closeModal: function() {
+                this.isModalVisible = false;
+            },
+        }
     }));
 
 }(window.countlyVue = window.countlyVue || {}));

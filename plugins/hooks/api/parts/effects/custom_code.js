@@ -1,7 +1,7 @@
 const vm = require('vm');
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
-const log = common.log("hooks:api:api_endpoint_trigger");
+const log = common.log("hooks:api:api_custom_code_effect");
 
 const request = require("request");
 /**
@@ -27,9 +27,9 @@ class CustomCodeEffect {
         await new Promise(CUSTOM_CODE_RESOLVER => {
             const code = effect.configuration.code;
             /**
-            * log error
-            * @param {object} e - error object
-            */
+             * function for rejection of effect
+             * @param {object} e - error object
+             */
             const CUSTOM_CODE_ERROR_CALLBACK = (e) => {
                 utils.addErrorRecord(rule._id, e);
             };
@@ -54,10 +54,12 @@ class CustomCodeEffect {
             runtimePassed = false;
             log.e("got error when executing custom code", e, genCode, options);
             logs.push(`message:${e.message}
-            stack: ${JSON.stringify(e.stack)}
-                `);
+                stack: ${JSON.stringify(e.stack)}
+            `);
+            utils.addErrorRecord(rule._id, e);
+            console.log(e, "eee, exech!!");
         });
-        return runtimePassed ? options : {params: null, logs};
+        return runtimePassed ? options : {...options, logs};
     }
 }
 

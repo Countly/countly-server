@@ -9,10 +9,6 @@ const log = common.log('hooks:api');
 const _ = require('lodash');
 const utils = require('./utils');
 
-const { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
-
-const FEATURE_NAME = 'hooks';
-
 
 plugins.setConfigs("hooks", {
     batchActionSize: 0, // size for processing actions each time
@@ -28,6 +24,7 @@ plugins.setConfigs("hooks", {
     refreshRulesPeriod: 3000, // miliseconds to fetch hook records
     pipelineInterval: 1000, // milliseconds to batch process pipeline
 });
+
 
 /**
 * Hooks Class definition 
@@ -46,7 +43,6 @@ class Hooks {
         setInterval(() => {
             this.fetchRules();
         }, plugins.getConfig("hooks").refreshRulesPeriod);
-
         this.registerEffects();
         this.registerTriggers();
 
@@ -166,11 +162,6 @@ class Hooks {
     }
 }
 
-// push surveys to feature list
-plugins.register("/permissions/features", function(ob) {
-    ob.features.push(FEATURE_NAME);
-});
-
 const CheckHookProperties = function(hookConfig) {
     const rules = {
         'name': { 'required': hookConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
@@ -186,8 +177,9 @@ const CheckHookProperties = function(hookConfig) {
 
 plugins.register("/i/hook/save", function(ob) {
     let paramsInstance = ob.params;
+    let validateUserForWriteAPI = ob.validateUserForWriteAPI;
 
-    validateCreate(paramsInstance, FEATURE_NAME, function(params) {
+    validateUserForWriteAPI(function(params) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
@@ -230,15 +222,19 @@ plugins.register("/i/hook/save", function(ob) {
             log.e('Parse hook failed', hookConfig);
             common.returnMessage(params, 500, "Failed to create an hook");
         }
-    });
+    }, paramsInstance);
     return true;
 });
 
 plugins.register("/o/hook/list", function(ob) {
     const paramsInstance = ob.params;
-    validateRead(paramsInstance, FEATURE_NAME, function(params) {
+    let validateUserForWriteAPI = ob.validateUserForWriteAPI;
+    validateUserForWriteAPI(function(params) {
         try {
             let query = { $query: {}, $orderby: { created_at: -1 } };
+            if (paramsInstance.qstring && paramsInstance.qstring.id) {
+                query.$query._id = common.db.ObjectID(paramsInstance.qstring.id);
+            }
             common.db.collection("hooks").find(query).sort({created_at: -1}).toArray(function(err, hooksList) {
                 if (err) {
                     return log.e('got error in listing hooks: %j', err);
@@ -259,14 +255,14 @@ plugins.register("/o/hook/list", function(ob) {
             log.e('get hook list failed');
             common.returnMessage(params, 500, "Failed to get hook list");
         }
-    });
+    }, paramsInstance);
     return true;
 });
 
 plugins.register("/i/hook/status", function(ob) {
     let paramsInstance = ob.params;
-
-    validateUpdate(paramsInstance, FEATURE_NAME, function(params) {
+    let validateUserForWriteAPI = ob.validateUserForWriteAPI;
+    validateUserForWriteAPI(function(params) {
         const statusList = JSON.parse(params.qstring.status);
         const batch = [];
         for (const appID in statusList) {
@@ -283,15 +279,16 @@ plugins.register("/i/hook/status", function(ob) {
             log.d("hooks all updated.");
             common.returnOutput(params, true);
         });
-    });
+    }, paramsInstance);
     return true;
 });
 
 
 plugins.register("/i/hook/delete", function(ob) {
     let paramsInstance = ob.params;
+    let validateUserForWriteAPI = ob.validateUserForWriteAPI;
 
-    validateDelete(paramsInstance, FEATURE_NAME, function(params) {
+    validateUserForWriteAPI(function(params) {
         let hookID = params.qstring.hookID;
         try {
             common.db.collection("hooks").remove(
@@ -308,7 +305,7 @@ plugins.register("/i/hook/delete", function(ob) {
             log.e('delete hook failed', hookID);
             common.returnMessage(params, 500, "Failed to delete an hook");
         }
-    });
+    }, paramsInstance);
     return true;
 });
 
@@ -383,6 +380,7 @@ plugins.register("/i/hook/test", function(ob) {
     }, paramsInstance);
     return true;
 });
+
 
 // init instnace;
 new Hooks();

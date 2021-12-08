@@ -168,9 +168,13 @@
                     return options;
                 }
                 var self = this;
-                var query = self.searchQuery.toLowerCase();
+                var query = (self.searchQuery + "").toLowerCase();
                 return options.filter(function(option) {
-                    return option.label.toLowerCase().indexOf(query) > -1;
+                    if (!option) {
+                        return false;
+                    }
+                    var compareTo = option.label || option.value || "";
+                    return compareTo.toLowerCase().indexOf(query) > -1;
                 });
             }
         }

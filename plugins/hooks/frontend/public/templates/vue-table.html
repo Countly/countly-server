@@ -1,0 +1,96 @@
+<cly-section>
+    <cly-datatable-n
+        class="cly-vue-hook-table is-clickable"
+        :tracked-fields="localTableTrackedFields"
+        @row-click="onRowClick" 
+        :rows="tableRows" :resizable="false" >
+        <template v-slot:header-left="scope">
+            <div>
+                <el-button-group>
+                  <el-button type="primary" @click="filterStatus='all'" size="small" class="hooks-button-group">{{i18n('hooks.status-all')}}</el-button>
+                  <el-button type="primary" @click="filterStatus='enabled'" size="small" class="hooks-button-group">{{i18n('hooks.status-enabled')}}</el-button>
+                  <el-button type="primary" @click="filterStatus='disabled'" size="small" class="hooks-button-group">{{i18n('hooks.status-disabled')}}</el-button>
+                </el-button-group>
+
+                <cly-select-x
+                   :placeholder="i18n('hooks.all-applications')"
+                   mode="multi-check"
+                   v-model="filteredApps"
+                   :options="appsSelectorOption">
+                </cly-select-x>
+            </div>
+        </template>
+        <template v-slot="scope">
+            <el-table-column fixed="left" width="100" label="">
+                <template v-slot="rowScope">
+                    <el-switch :value="rowScope.row.enabled"
+                        @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
+                    </el-switch>
+                </template>
+            </el-table-column>
+           
+            <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  min-width="100" :class="is-clickable">
+                <template slot-scope="scope">
+                    <div v-html="scope.row.nameDescColumn"></div>
+                </template>
+            </el-table-column> 
+
+            <el-table-column  :label="(i18n('hooks.trigger') + ' -> '+ i18n('hooks.effects'))" sortable="true" width="400" >
+            <template slot-scope="scope" sortable="true">
+                <div v-html="scope.row.triggerEffectColumn"></div>
+            </template>
+                
+            </el-table-column>
+
+            <el-table-column sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" min-width="150" >
+                
+            </el-table-column>
+
+            <el-table-column sortable="true" align="center" prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" min-width="150" >
+            </el-table-column>
+
+            <el-table-column :label="i18n('hooks.create-by')" width="200" sortable="true">
+                <template slot-scope="scope">
+                    <div class="is-last-col">
+                        <div class="flex-grow">
+                            <div class="is-created-by-col">
+                                {{scope.row.createdByUser}}
+                             </div>
+                             <div class="is-created-by-desc-col">
+                                 {{ scope.row.created_at_string }}
+                             </div>
+                        </div> 
+                      <div class="is-option-button">
+                         <cly-more-options size="small" @command="handleHookEditCommand($event, scope)">
+                            <el-dropdown-item  icon="el-icon-document-copy" command="edit-comment">
+                                Edit
+                            </el-dropdown-item>
+                            <el-dropdown-item icon="el-icon-delete" command="delete-comment">
+                                Delete
+                            </el-dropdown-item>
+                        </cly-more-options>
+                      </div>
+                    </div>
+                </template>
+            </el-table-column>
+        </template>
+        <template v-slot:bottomline="scope">
+            <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateStatus(scope)">
+            </cly-diff-helper>
+        </template>
+    </cly-datatable-n>
+    <cly-confirm-dialog 
+        @cancel="closeDeleteForm" 
+        @confirm="submitDeleteForm" 
+        :before-close="closeDeleteForm" 
+        ref="deleteConfirmDialog" 
+        :visible.sync="showDeleteDialog" 
+        dialogType="danger" 
+        :saveButtonLabel="i18n('common.delete')" 
+        :cancelButtonLabel="i18n('common.no-dont-delete')" 
+        :title="i18n('hooks.delete-confirm-title')" >
+            <template slot-scope="scope">
+                <div v-html="deleteMessage"></div>
+            </template>
+    </cly-confirm-dialog>
+</cly-section>

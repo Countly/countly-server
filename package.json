@@ -1,6 +1,6 @@
 {
   "name": "countly-server",
-  "version": "20.11.2",
+  "version": "21.11.0",
   "description": "innovative, real-time, open source mobile analytics application",
   "keywords": [
     "analytics",
@@ -26,7 +26,7 @@
   "scripts": {
     "test": "grunt --verbose"
   },
-  "dependencies": {   
+  "dependencies": {
     "all-the-cities": "^3.1.0",
     "apidoc": "^0.29.0",
     "apidoc-template": "github:kanwarujjaval/dash-apidoc-template",
@@ -61,6 +61,7 @@
     "grunt-contrib-cssmin": "4.0.0",
     "grunt-contrib-sass": "^2.0.0",
     "grunt-contrib-uglify": "5.0.0",
+    "html-pdf": "^3.0.1",
     "jimp": "0.16.1",
     "jsdoc": "3.6.7",
     "json2csv": "5.0.6",
@@ -71,7 +72,7 @@
     "mcc-mnc-list": "1.1.7",
     "method-override": "3.0.0",
     "moment": "2.29.1",
-    "moment-timezone": "0.5.33",
+    "moment-timezone": "0.5.34",
     "mongodb": "3.6.10",
     "nginx-conf": "1.5.0",
     "node-xlsx-stream": "^0.1.8",

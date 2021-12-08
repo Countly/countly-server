@@ -1,0 +1,71 @@
+<script type="text/x-template" id="hooks-detail-view">
+<div v-bind:class="[componentId]">
+   <cly-header v-if="hookDetail">
+      <cly-back-link slot="header-top" :title="i18n('hooks.back-to-hooks')" link="/manage/hooks"></cly-back-link>
+      <template v-slot:header-left>
+        <div>
+          <h3 class="cly-vue-surveys-detail-header">{{hookDetail.name}}</h3>
+          <div class="bu-mt-4">
+            <i class="bu-is-size-7 el-icon-time"></i> <span class="bu-is-size-7	color-cool-gray-50">Created at {{hookDetail.created_at_string}} by {{hookDetail.createdByUser}}</span>
+         
+          </div>
+        </div>
+      </template>
+      <template v-slot:header-right>
+        <div>
+          <div class="is-option-button">
+            <cly-more-options size="small" @command="handleHookEditCommand($event, hookDetail)">
+               <el-dropdown-item  icon="el-icon-document-copy" command="edit-comment">
+                   Edit
+               </el-dropdown-item>
+               <el-dropdown-item icon="el-icon-delete" command="delete-comment">
+                   Delete
+               </el-dropdown-item>
+           </cly-more-options>
+         </div>
+        </div>
+      </template>
+    </cly-header>
+    <cly-main>
+      <cly-section>
+        <div class="bu-mx-5 white-bg bu-p-5 detail-info">
+          <div class="text-medium color-cool-gray-100">HOOK DETAILS</div>
+          <div class="bu-mt-5">
+            <div class="bu-columns">
+              <div  class="bu-column bu-is-2 text-medium bu-has-text-weight-medium">Trigger Count</div>
+              <div class="bu-column">{{hookDetail.triggerCount}}</div>
+            </div>
+            <div class="bu-columns">
+              <div  class="bu-column bu-is-2 text-medium bu-has-text-weight-medium">Last Trigger Time</div>
+              <div class="bu-column">{{hookDetail.lastTriggerTimestampString}}</div>
+            </div>
+            <div class="bu-columns cly-vue-hook-table">
+              <div  class="bu-column bu-is-2 text-medium bu-has-text-weight-medium">Trigger and Effects</div>
+              <div class="bu-column" v-html="hookDetail.triggerEffectDom"></div>
+            </div>
+          </div>
+        </div>
+      </cly-section>
+
+      <div class="text-medium bu-my-4 bu-has-text-weight-medium color-cool-gray-100"> Last 10 Failed Triggers</div>
+      <cly-section>
+        <error-table-view ></error-table-view>
+      </cly-section>
+      <drawer @close="closeDrawer" :controls="drawers.detail"></drawer>
+      <cly-confirm-dialog 
+        @cancel="closeDeleteForm" 
+        @confirm="submitDeleteForm" 
+        :before-close="closeDeleteForm" 
+        ref="deleteConfirmDialog" 
+        :visible.sync="showDeleteDialog" 
+        dialogType="danger" 
+        :saveButtonLabel="i18n('common.delete')" 
+        :cancelButtonLabel="i18n('common.no-dont-delete')" 
+        :title="i18n('hooks.delete-confirm-title')" >
+            <template slot-scope="scope">
+                <div v-html="deleteMessage"></div>
+            </template>
+    </cly-confirm-dialog>
+    </cly-main>
+</div>
+</script>   

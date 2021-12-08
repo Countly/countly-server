@@ -6,7 +6,10 @@
 
     var EXTENDED_VIEWS = countlyDataManager.extended && countlyDataManager.extended.views || {};
     var COMPONENTS = EXTENDED_VIEWS.components || {};
-    var defaultTemplates = EXTENDED_VIEWS.defaultTemplates || ["/data-manager/templates/create-event-drawer-components.html"];
+    var defaultTemplates = EXTENDED_VIEWS.defaultTemplates || [
+        "/data-manager/templates/create-event-drawer-components.html",
+        "/data-manager/templates/manage-category-components.html"
+    ];
 
     //This is a redundant function in both the versions
     var statusClassObject = function(status) {
@@ -17,6 +20,122 @@
         classObject['tag--' + status] = true;
         return classObject;
     };
+
+    var ManageCategoryInput = countlyVue.views.create({
+        template: "#data-manager-manage-category-input",
+        props: {
+            value: {
+                type: Object
+            },
+            label: {
+                type: String
+            },
+            removable: {
+                type: Boolean,
+                default: true
+            },
+            categoryIndex: {
+                type: Number,
+                default: -1
+            }
+        },
+        data: function() {
+            return {
+                editing: false,
+                editedCategoryName: null
+            };
+        },
+        computed: {
+            category: function() {
+                return this.value;
+            },
+            categoryName: {
+                get: function() {
+                    return (this.editedCategoryName === null) ? this.category.name : this.editedCategoryName;
+                },
+                set: function(val) {
+                    this.editedCategoryName = val;
+                },
+                cache: false
+            }
+        },
+        methods: {
+            removeCategory: function() {
+                this.$emit("remove-me");
+            },
+            editCategory: function() {
+                this.editing = true;
+            },
+            saveCategory: function() {
+                if (this.editedCategoryName) {
+                    this.category.name = this.editedCategoryName;
+                    this.category.edited = true;
+                    this.editing = false;
+                    this.editedCategoryName = null;
+                }
+            },
+            cancelEdit: function() {
+                this.editedCategoryName = null;
+                this.editing = false;
+            }
+        }
+    });
+
+    var ManageCategory = countlyVue.views.create({
+        template: "#data-manager-manage-category",
+        data: function() {
+            return {
+                newCategoryName: null
+            };
+        },
+        props: {
+            value: {
+                type: Array
+            },
+            deletedCategories: {
+                type: Array
+            },
+            maxCategories: {
+                type: Number,
+                default: 10
+            },
+            focusedItemIdentifier: {
+                type: [String, Number],
+                default: ''
+            }
+        },
+        components: {
+            "data-manager-manage-category-input": ManageCategoryInput
+        },
+        methods: {
+            addNewCategory: function() {
+                if (this.newCategoryAllowed && this.newCategoryName) {
+                    this.categories.push({name: this.newCategoryName});
+                    this.newCategoryName = null;
+                }
+            },
+            removeCategoryAtIndex: function(index) {
+                // this.categories[index].isDeleted = true;
+                if (this.categories[index]._id) {
+                    this.deletedCategories.push(this.categories[index]);
+                }
+                this.$delete(this.categories, index);
+            }
+        },
+        computed: {
+            newCategoryAllowed: function() {
+                return this.categories.length < this.maxCategories;
+            },
+            categories: {
+                get: function() {
+                    return this.value;
+                },
+                set: function(value) {
+                    this.$emit("input", value);
+                }
+            }
+        }
+    });
 
     var EventsDrawer = countlyVue.views.create({
         template: CV.T('/data-manager/templates/create-events-drawer.html'),
@@ -241,7 +360,7 @@
     var EventsDefaultTabView = countlyVue.views.create({
         template: CV.T('/data-manager/templates/events-default.html'),
         components: {
-            'data-manager-manage-category': COMPONENTS.ManageCategory
+            'data-manager-manage-category': ManageCategory
         },
         data: function() {
             return {
@@ -327,9 +446,7 @@
                         if (e.isSelected === undefined) {
                             e.isSelected = false;
                         }
-                        if (self.isDrill) {
-                            e.categoryName = self.categoriesMap[e.category] || 'Uncategorized';
-                        }
+                        e.categoryName = self.categoriesMap[e.category] || 'Uncategorized';
                         e.lastModifiedts = e.audit && e.audit.ts ? e.audit.ts * 1000 : null;
                         e.lastModifiedDate = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("MMM DD,YYYY") : null;
                         e.lastModifiedTime = e.audit && e.audit.ts ? moment(e.audit.ts * 1000).format("H:mm:ss") : null;
@@ -392,6 +509,16 @@
                 }
                 else {
                     return [{
+                        label: "Category",
+                        key: "category",
+                        options: [
+                            {value: "all", label: "All Categories"},
+                        ].concat(this.categories.map(function(c) {
+                            return {value: c.name, label: c.name};
+                        })),
+                        default: "all",
+                        action: true
+                    }, {
                         label: "Visibility",
                         key: "visibility",
                         options: [
@@ -703,8 +830,8 @@
             initialize: function() {
                 this.$store.dispatch('countlyDataManager/loadEventsData');
                 this.$store.dispatch('countlyDataManager/loadEventGroups');
+                this.$store.dispatch('countlyDataManager/loadCategories');
                 if (this.isDrill) {
-                    this.$store.dispatch('countlyDataManager/loadCategories');
                     this.$store.dispatch('countlyDataManager/loadTransformations');
                     this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                     this.$store.dispatch('countlyDataManager/loadValidations');
@@ -952,9 +1079,11 @@
             },
             initialize: function() {
                 this.$store.dispatch('countlyDataManager/loadCategories');
-                this.$store.dispatch('countlyDataManager/loadTransformations');
-                this.$store.dispatch('countlyDataManager/loadSegmentsMap');
                 this.$store.dispatch('countlyDataManager/loadEventsData');
+                if (this.isDrill) {
+                    this.$store.dispatch('countlyDataManager/loadTransformations');
+                    this.$store.dispatch('countlyDataManager/loadSegmentsMap');
+                }
                 // this.$store.dispatch('countlyDataManager/loadEventGroups');
                 // this.$store.dispatch('countlyDataManager/loadValidations');
             },

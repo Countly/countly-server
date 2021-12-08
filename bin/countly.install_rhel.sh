@@ -104,7 +104,7 @@ yum -y install sendmail
 service sendmail start
 
 #install npm modules
-( cd "$DIR/..";  sudo npm install --unsafe-perm; sudo npm install argon2 --build-from-source; )
+( cd "$DIR/..";  sudo npm install -g npm@6.14.13;  sudo npm install --unsafe-perm=true --allow-root; sudo npm install argon2 --build-from-source; )
 
 #install numactl
 yum install numactl -y

@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery, countlyVue, CV, Promise*/
+/* global countlyCommon, countlyGlobal, countlyAssistant, CountlyHelpers, store, app, jQuery, countlyVue, CV, Promise, Vue*/
 (function(countlyTaskManager, $) {
 
     //Private Properties
@@ -299,7 +299,6 @@
 
     var notifiers = {
         dispatched: function() {
-            // TODO(vck): Replace app.updateLongTaskViewsNotification fn here
             CountlyHelpers.notify({
                 title: CV.i18n("assistant.taskmanager.longTaskTooLong.title"),
                 message: CV.i18n("assistant.taskmanager.longTaskTooLong.message"),
@@ -361,15 +360,40 @@
     var taskManagerVuex = countlyVue.vuex.Module("countlyTaskManager", {
         state: function() {
             var persistent = store.get("countly_task_monitor") || {};
+            var unreadPersistent = store.get("countly_task_monitor_unread") || {};
             return {
                 monitored: persistent,
-                ticks: 0,
+                unread: unreadPersistent,
+                opId: 0,
                 curTask: 0
             };
         },
+        getters: {
+            unreadStats: function(state) {
+                var unread = state.unread;
+
+                return Object.keys(unread).reduce(function(acc, appId) {
+                    var appTasks = unread[appId],
+                        taskIds = Object.keys(appTasks),
+                        obj = {
+                            _total: taskIds.length
+                        };
+
+                    taskIds.forEach(function(taskId) {
+                        var origin = appTasks[taskId].type;
+                        if (!obj[origin]) {
+                            obj[origin] = 0;
+                        }
+                        obj[origin]++;
+                    });
+                    acc[appId] = obj;
+                    return acc;
+                }, {});
+            }
+        },
         mutations: {
-            incrementTicks: function(state) {
-                state.ticks += 1;
+            incrementOpId: function(state) {
+                state.opId += 1;
             },
             incrementCurTask: function(state) {
                 state.curTask += 1;
@@ -378,8 +402,8 @@
                 state.curTask = 0;
             },
             reloadPersistent: function(state) {
-                var monitored = store.get("countly_task_monitor") || {};
-                state.monitored = monitored;
+                state.monitored = store.get("countly_task_monitor") || {};
+                state.unread = store.get("countly_task_monitor_unread") || {};
             },
             registerTask: function(state, payload) {
                 var monitored = state.monitored,
@@ -405,14 +429,33 @@
                     monitored[appId].splice(index, 1);
                     store.set("countly_task_monitor", state.monitored);
                 }
+            },
+            setUnread: function(state, payload) {
+                var unread = state.unread,
+                    task = payload.task,
+                    appId = task.app_id;
+
+                if (!unread[appId]) {
+                    Vue.set(unread, appId, {});
+                }
+                Vue.set(unread[appId], task._id, {type: task.type});
+                store.set("countly_task_monitor_unread", unread);
+            },
+            setRead: function(state, payload) {
+                var unread = state.unread,
+                    appId = payload.appId,
+                    taskId = payload.taskId;
+
+                if (unread[appId]) {
+                    Vue.delete(unread[appId], taskId);
+                    store.set("countly_task_monitor_unread", unread);
+                }
             }
         },
         actions: {
             tick: function(context, payload) {
                 payload = payload || {};
                 return new Promise(function(resolve) {
-                    // TODO(vck): Replace app.updateLongTaskViewsNotification fn here
-                    context.commit("incrementTicks");
                     context.commit("reloadPersistent");
 
                     var monitored = context.state.monitored,
@@ -428,7 +471,7 @@
                                 context.commit("reloadPersistent");
                                 monitored = context.state.monitored;
                                 context.commit("unregisterTask", {
-                                    appId: countlyCommon.ACTIVE_APP_ID,
+                                    appId: appId,
                                     taskId: id
                                 });
 
@@ -444,9 +487,10 @@
                                             }
                                         }
                                         if (fetchedTask.manually_create === false) {
-                                            // TODO(vck):Handle app.haveUnreadReports = true
-                                            // app.haveUnreadReports = true;
-                                            // app.updateLongTaskViewsNotification();
+                                            context.commit("reloadPersistent");
+                                            context.commit("setUnread", {
+                                                task: fetchedTask
+                                            });
                                         }
                                         if (fetchedTask.view) {
                                             if (checkedTask.result === "completed") {
@@ -456,6 +500,7 @@
                                                 notifiers.errored(id, fetchedTask);
                                             }
                                         }
+                                        context.commit("incrementOpId");
                                     });
                                 }
                             }
@@ -487,6 +532,7 @@
                     if (!payload.silent) {
                         notifiers.dispatched();
                     }
+                    context.commit("incrementOpId");
                 }
                 else if (!payload.silent) {
                     notifiers.duplicate();
@@ -531,6 +577,7 @@
             }
             else {
                 countlyTaskManager.reset();
+                vuexStore.commit("countlyTaskManager/incrementOpId");
             }
         });
     });

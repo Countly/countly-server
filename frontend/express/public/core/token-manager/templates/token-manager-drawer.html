@@ -1,0 +1,104 @@
+
+<cly-drawer 
+    @submit="onSubmit"
+    @close="onClose" 
+    v-bind="$props.controls" 
+    :title="i18n('token_manager.create-new-token')" 
+    :saveButtonLabel="i18n('token_manager.create-token')">
+    <template v-slot:default="formScope">
+        <cly-form-step id="step1" name="First Step">
+            <cly-form-field name="description" :label="i18n('token_manager.table.token-description')">
+                <el-input v-model="formScope.editedObject.description" placeholder="Enter token description"></el-input>
+            </cly-form-field>
+            <cly-form-field class="bu-p-0">
+                <div class="bu-is-flex bu-is-justify-content-space-between">
+                    <p class="text-big color-cool-gray-100">{{i18n('token_manager.table.endpoints')}}<i class="el-icon-question bu-ml-2"></i></p>
+                    <p class="text-small color-cool-gray-50">{{i18n('common.optional')}}</p>
+                </div>
+                <p class="text-small color-cool-gray-50" style="margin-top: -10px;">{{i18n('token_manager.table.endpoints-description')}}</p>
+            </cly-form-field>
+            <cly-form-field-group highlight v-for = "(endpoint, endpointIndex) in formScope.editedObject.endpoints" :key="endpoint.value">
+                <div class="bu-is-flex bu-is-justify-content-space-between">
+                    <p class="bu-mt-1 text-small color-cool-gray-100">{{i18n('token_manager.table.endpoint-detail')}}</p>
+                    <el-button @click="removeEndpoint(formScope.editedObject.endpoints,endpointIndex)"
+                        v-if="formScope.editedObject.endpoints.length > '1'" class="text-small color-red-100" type="text" plain>
+                        Remove
+                    </el-button>
+                </div>
+                <cly-form-field name="endpointName" :label="i18n('token_manager.table.endpoint-name')" class="bu-mb-3">
+                    <el-input v-model="endpoint.endpointName" placeholder="Enter a value"></el-input>
+                </cly-form-field>
+                <cly-form-field :label="i18n('token_manager.query-param')">
+                    <div v-for = "(item, parameterIndex) in endpoint.parameters" :key="item.value" class="bu-is-flex">
+                        <el-input v-model="item.queryParameters1" class="column is-half" placeholder="Parameter">
+                        </el-input>
+                        <el-input v-model="item.queryParameters2" class="bu-ml-2 bu-mr-4 column is-half" placeholder="Parameter">
+                        </el-input>
+                        <i @click="removeParameter(endpoint.parameters, parameterIndex)" class="el-icon-close bu-mt-3 text-small"></i>
+                    </div>
+                    <el-link @click="addParameter(endpoint.parameters)" type="primary" class="bu-mt-4">+ {{i18n('token_manager.add-param')}}</el-link>
+                </cly-form-field>
+            </cly-form-field-group>
+            <cly-form-field class="bu-p-0">
+                <el-button @click="addEndpoint(formScope.editedObject.endpoints)" class="bg-light-blue-100 color-blue-100 bu-mt-4" type="text" plain>
+                    + {{i18n('token_manager.add-new-endpoint')}}
+                </el-button>
+            </cly-form-field>
+            <cly-form-field class="bu-p-0">
+                <div class="bu-is-flex bu-mt-4">
+                    <p class="text-big color-cool-gray-100">{{i18n('token_manager.table.apps-title')}}<i class="el-icon-question bu-ml-2"></i></p>
+                </div>
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-0">
+                    <el-radio v-model="tokenUsage" label="0" class="is-autosized bu-p-4" border>
+                        {{i18n('token_manager.table.apps-allow')}}
+                    </el-radio>
+                    <el-radio v-model="tokenUsage" label="1" class="is-autosized bu-p-4" border>
+                        {{i18n('token_manager.table.apps-limit')}}
+                    </el-radio>
+                </div>
+            </cly-form-field>
+            <cly-form-field v-if="tokenUsage === '1'" class="bu-p-0">
+                <div class="bu-is-flex bu-mt-4">
+                    <p class="text-small color-cool-gray-100">{{i18n('token_manager.select-apps')}}<i class="el-icon-question bu-ml-2"></i></p>
+                </div>
+                <el-select v-model="formScope.editedObject.selectApps" class="bu-is-block" :multiple="true"  placeholder="Select apps to allow token">
+                    <el-option v-for="item in constants.apps" :label="item.name" :key="item.value" :value="item.value">
+                    </el-option>
+                </el-select>
+            </cly-form-field>
+            <cly-form-field class="bu-p-0">
+                <div class="bu-is-flex bu-mt-4">
+                    <p class="text-big color-cool-gray-100">{{i18n('token_manager.table.limit-title')}}<i class="el-icon-question bu-ml-2"></i></p>
+                </div>
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
+                    <el-radio class="is-autosized color-cool-gray-100 bu-p-4" v-model="tokenExpiration" label="0" border>
+                        {{i18n('token_manager.table.limit-allow.label')}}
+                        <p class="text-small color-cool-gray-50 bu-mt-1">{{i18n('token_manager.table.limit-allow.text')}}</p>
+                    </el-radio>
+                    <el-radio class="is-autosized color-cool-gray-100 bu-p-4" v-model="tokenExpiration" label="1" border>
+                        {{i18n('token_manager.table.limit-limit.label')}}
+                        <p class="text-small color-cool-gray-50 bu-mt-1">{{i18n('token_manager.table.limit-limit.text')}}</p>
+                    </el-radio>
+                </div>
+            </cly-form-field>
+            <cly-form-field v-if="tokenExpiration === '1'" class="bu-p-0">
+                <div class="bu-is-flex bu-mt-2">
+                    <p class="text-big color-cool-gray-100">{{i18n('token_manager.token-expiration-time')}}<i class="el-icon-question bu-ml-2"></i></p>
+                </div>
+                <p class="text-small color-cool-gray-50" style="margin-top: -10px;">{{i18n('token_manager.table.expiration-description')}}</p>
+                <div class="bu-is-flex" style="max-width: 240px;">
+                    <el-input v-model="formScope.editedObject.timeInput"></el-input>
+                    <el-select v-model="formScope.editedObject.selectTime" :multiple="false">
+                        <el-option v-for="item in constants.availableProps" :key="item.value" :value="item.value" :label="item.label">
+                        </el-option>
+                    </el-select>
+                </div>
+            </cly-form-field>
+            <cly-form-field class="bu-p-0">
+                <el-checkbox v-model="formScope.editedObject.checkboxMultipleTimes" class="bu-mt-5 color-cool-gray-100">
+                    {{i18n('token_manager.table.multi-desc')}}
+                </el-checkbox>
+            </cly-form-field>
+        </cly-form-step>
+    </template>
+</cly-drawer>

@@ -1,0 +1,21 @@
+<div id="hooks-view" v-bind:class="[componentId]">
+ <cly-header>
+     <template v-slot:header-left>
+        <h2> {{i18n('hooks.plugin-title')}}
+        </h2>
+
+        <span class="cly-vue-tooltip-icon ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('hooks.plugin-title-desc')">
+        </span>
+     </template>
+     <template v-slot:header-right>
+        <el-button type="success" icon="el-icon-circle-plus" v-on:click="createHook()">{{i18n('hooks.new-hook')}}</el-button>
+
+   </template>
+  </cly-header>
+
+  <cly-main>
+     <table-view v-on:open-drawer="openDrawer"></table-view>
+  </cly-main>
+  <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
+</div>
+

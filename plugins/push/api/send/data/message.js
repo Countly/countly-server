@@ -44,6 +44,7 @@ class Message extends Mongoable {
             status: { type: 'String', in: Object.values(Status) },
             filter: {
                 type: Filter.scheme,
+                required: false,
             },
             triggers: {
                 type: Trigger.scheme,
