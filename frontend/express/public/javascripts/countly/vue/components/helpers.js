@@ -673,9 +673,11 @@
 
     Vue.component("cly-notification", countlyBaseComponent.extend({
         template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
-                        '<div class="bu-is-flex" style="overflow-wrap:anywhere;">\n' +
-                            '<img :src="image" class="alert-image bu-mr-4 bu-my-1 bu-ml-1">\n' +
-                            '<slot><span class="alert-text bu-my-3">{{text}}</span></slot>\n' +
+                        '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
+                            '<div class="bu-is-flex">\n' +
+                                '<img :src="image" class="alert-image bu-mr-4 bu-my-1 bu-ml-1">\n' +
+                                '<slot><span class="alert-text bu-my-3" style="word-break:break-word">{{text}}</span></slot>\n' +
+                            '</div>\n' +
                             '<div v-if="closable" style="margin-block:auto">\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-5" >\n' +
                                     '<slot name="close"><i class="el-icon-close"></i></slot>\n' +
@@ -684,7 +686,7 @@
                                     '<slot name="close"><i class="el-icon-close"></i></slot>\n' +
                                 '</div>\n' +
                             '</div>\n' +
-                            '<div v-if="!closable" class="bu-ml-5">\n' +
+                            '<div v-else class="bu-ml-5">\n' +
                             '</div>\n' +
                         '</div>\n' +
                   '</div>\n',
