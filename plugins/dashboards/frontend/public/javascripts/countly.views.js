@@ -169,15 +169,16 @@
                 var action = "countlyDashboards/widgets/create";
                 var __action = doc.__action;
                 var self = this;
+                var isEdited = __action === "edit";
 
-                if (__action === "edit") {
+                if (isEdited) {
                     action = "countlyDashboards/widgets/update";
                 }
 
                 delete doc.__action;
 
                 if (this.__widgets[doc.widget_type].drawer.beforeSaveFn) {
-                    var returnVal = this.__widgets[doc.widget_type].drawer.beforeSaveFn(doc);
+                    var returnVal = this.__widgets[doc.widget_type].drawer.beforeSaveFn(doc, isEdited);
                     if (returnVal) {
                         doc = returnVal;
                     }
@@ -199,7 +200,7 @@
                 }
 
                 if (this.__widgets[doc.widget_type].drawer.beforeLoadFn) {
-                    var returnVal = this.__widgets[doc.widget_type].drawer.beforeLoadFn(doc);
+                    var returnVal = this.__widgets[doc.widget_type].drawer.beforeLoadFn(doc, doc.__action === "edit");
                     if (returnVal) {
                         return returnVal;
                     }
