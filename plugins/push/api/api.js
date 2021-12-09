@@ -20,7 +20,7 @@ const plugins = require('../../pluginManager'),
             message: {
                 estimate: [validateRead, estimate],
                 all: [validateRead, all],
-                GET: [validateCreate, one, '_id'],
+                GET: [validateRead, one, '_id'],
             }
         },
         i: {
