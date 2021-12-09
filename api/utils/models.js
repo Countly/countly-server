@@ -184,6 +184,22 @@ class Mongoable extends Validatable {
     }
 
     /**
+     * Refresh current instance with data from the database 
+     * 
+     * @returns {This|boolean} this instance of this class if the record is found in database, false otherwise
+     */
+    async refresh() {
+        let data = await require('./common').db.collection(this.collection).findOne({_id: this._id});
+        if (data) {
+            this.setData(data);
+            return this;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
      * Find multiple records in db and map them to instances of this class
      * 
      * @param {object|string} query query for find
@@ -226,9 +242,6 @@ class Mongoable extends Validatable {
     async save() {
         let json = this.json;
         await require('./common').db.collection(this.constructor.collection).save(json);
-        if (this.constructor.cache) {
-            this.constructor.cache.write(this._id.toString(), json);
-        }
     }
 
     /**
@@ -239,11 +252,7 @@ class Mongoable extends Validatable {
      */
     async update(update, op) {
         await require('./common').db.collection(this.constructor.collection).updateOne({_id: this._id}, update);
-        let ret = op(this);
-        if (this.constructor.cache) {
-            this.constructor.cache.update(this._id.toString(), update);
-        }
-        return ret;
+        return op(this);
     }
 
     /**
