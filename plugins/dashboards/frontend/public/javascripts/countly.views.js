@@ -176,6 +176,13 @@
 
                 delete doc.__action;
 
+                if (this.__widgets[doc.widget_type].drawer.beforeSaveFn) {
+                    var returnVal = this.__widgets[doc.widget_type].drawer.beforeSaveFn(doc);
+                    if (returnVal) {
+                        doc = returnVal;
+                    }
+                }
+
                 this.$store.dispatch(action, doc).then(function(id) {
                     self.$store.dispatch("countlyDashboards/widgets/get", id).then(function() {
                         //Add widet to grid ?
@@ -189,6 +196,13 @@
                 if (doc.__action === "edit") {
                     this.title = this.i18nM("dashboards.edit-widget-heading");
                     this.saveButtonLabel = this.i18nM("dashboards.save-widget");
+                }
+
+                if (this.__widgets[doc.widget_type].drawer.beforeLoadFn) {
+                    var returnVal = this.__widgets[doc.widget_type].drawer.beforeLoadFn(doc);
+                    if (returnVal) {
+                        return returnVal;
+                    }
                 }
             },
             onReset: function(v) {
