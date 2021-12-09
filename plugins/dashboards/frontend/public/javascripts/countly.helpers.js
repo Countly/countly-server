@@ -221,6 +221,10 @@
                     return [];
                 }
             },
+            enabledTypes: {
+                type: Array,
+                default: null
+            },
             value: String
         },
         data: function() {
@@ -247,7 +251,17 @@
         },
         computed: {
             visualizationTypes: function() {
-                return this.types.concat(this.extraTypes);
+                var fullList = this.types.concat(this.extraTypes);
+                fullList.sort(function(a, b) {
+                    return (a.priority || 0) - (b.priority || 0);
+                });
+                if (this.enabledTypes) {
+                    var self = this;
+                    return fullList.filter(function(item) {
+                        return self.enabledTypes.includes(item.value);
+                    });
+                }
+                return fullList;
             },
             selectedType: function() {
                 return this.value;
