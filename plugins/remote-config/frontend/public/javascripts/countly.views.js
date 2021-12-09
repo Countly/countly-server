@@ -52,10 +52,10 @@
 			</thead>\
 			<tbody>\
                 <tr><td><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2">1</div></td><td><div class="bu-is-align-items-center	bu-is-flex cly-vue-remote-config-percentages-breakdown__data bu-p-1 cly-vue-remote-config-percentages-breakdown__default-value"><span class="bu-ml-2 bu-mr-3">{{i18n("remote-config.default-value")}}</span><span class="cly-vue-remote-config-percentages-breakdown__default-value__value bu-py-1 bu-px-2">{{defaultValue.value}}</span></div></td><td>{{defaultValue.percentage}} {{i18n("remote-config.percent.of.total")}}</td></tr>\
-				<tr v-for="(condition, i) in conditions" :key="i">\
+				<tr v-if="isDrillEnabled" v-for="(condition, i) in conditions" :key="i">\
                     <td><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2">{{i+2}}</div>\
                     </td>\
-					     <td><div class="bu-is-align-items-center	bu-is-flex cly-vue-remote-config-percentages-breakdown__data bu-p-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span><i class="ion ion-git" style="transform:rotate(90deg)"></i></span><span class="bu-ml-2 bu-mr-3">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2">{{condition.value}}</span></div></td>\
+					     <td><div class="bu-is-align-items-center	bu-is-flex cly-vue-remote-config-percentages-breakdown__data bu-p-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span><img src="/remote-config/images/call_split.svg"/></span><span class="bu-ml-2 bu-mr-3">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2">{{condition.value}}</span></div></td>\
 					<td>\
                     {{condition.percentage}} {{i18n("remote-config.percent.of.total")}}\
 					</td>\
@@ -71,6 +71,9 @@
             }
         },
         computed: {
+            isDrillEnabled: function() {
+                return countlyGlobal.plugins.indexOf("drill") > -1 ? true : false;
+            },
             conditions: function() {
                 var conditions = [];
                 var conditionsMap = this.$store.getters["countlyRemoteConfig/parameters/conditionsMap"];
@@ -90,7 +93,7 @@
                 return conditions;
             },
             totalConditions: function() {
-                var total = 0;
+                var total = this.parameter.c ? this.parameter.c : 0;
                 if (this.parameter.conditions.length > 0) {
                     this.parameter.conditions.forEach(function(condition) {
                         total = total + condition.c ? condition.c : 0;
@@ -519,7 +522,8 @@
                         }
                     }
                 })]
-            })];
+            })
+            ];
             additionalProperties.push(new countlyQueryBuilder.Property({
                 id: 'up.random_percentile',
                 name: CV.i18n("remote-config.conditions.random.percentile"),
@@ -790,9 +794,8 @@
         ];
         if (countlyGlobal.plugins.indexOf("drill") > -1) {
             templates.push("/drill/templates/query.builder.v2.html");
+            templates.push("/remote-config/templates/create-condition.html");
         }
-        templates.push("/remote-config/templates/create-condition.html");
-
         return new countlyVue.views.BackboneWrapper({
             component: MainComponent,
             vuex: vuex,
