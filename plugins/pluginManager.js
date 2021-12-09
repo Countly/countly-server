@@ -1340,6 +1340,15 @@ var pluginManager = function pluginManager() {
         }
         if (!countlyDb.oid) {
             /**
+             * Check if passed value is an ObjectId
+             * 
+             * @param {any} id value
+             * @returns {boolean} true if id is instance of ObjectId
+             */
+            countlyDb.isoid = function(id) {
+                return id && (id instanceof mongodb.ObjectId);
+            };
+            /**
              * Decode string to ObjectID if needed
              * 
              * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
