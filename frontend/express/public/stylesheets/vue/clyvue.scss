@@ -66,13 +66,14 @@
         min-height: 48px;
         font-weight: 400;
         &--full {
-            width: 100%
+            width: 100%;
+            font-size: 14px;
         }
         &--inline {
             display: inline-block;
+            font-size: 16px;
         }
         &__alert-text {
-            font-size: 16px;
             line-height: 22px;
             &--light-informational {
                 background-color: #E1EFFF;
