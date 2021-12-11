@@ -3715,7 +3715,12 @@ $.extend(Template.prototype, {
      */
     store: function(name, raw) {
         T.raw[name] = raw;
-        T.cached[name] = Handlebars.compile(raw);
+        try {
+            T.cached[name] = Handlebars.compile(raw);
+        }
+        catch (ex) {
+            T.cached[name] = raw;
+        }
     },
     /**
      *  Generate request URL for template
