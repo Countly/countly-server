@@ -107,7 +107,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
         if (c === null) { // delete credentials
             log.d('Unsetting %s config for app %s', p, app._id);
             if (pushcfg[p] && pushcfg[p]._id) {
-                await Creds.deleteOne(pushcfg[p]._id);
+                await Creds.deleteOne({_id: common.db.ObjectID(pushcfg[p]._id)});
             }
             pushcfg[p] = {};
             await common.db.collection('apps').updateOne({_id: app._id}, {$set: {[`plugins.push.${p}`]: {}}});
@@ -136,7 +136,7 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
 
                 // insert/update new credentials while removing old ones
                 if (pushcfg[p] && pushcfg[p]._id) {
-                    await Creds.deleteOne(pushcfg[p]._id);
+                    await Creds.deleteOne({_id: common.db.ObjectID(pushcfg[p]._id)});
                 }
                 creds._id = common.db.ObjectID();
                 pushcfg[p] = creds.view;

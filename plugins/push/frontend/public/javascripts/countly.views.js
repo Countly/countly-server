@@ -45,17 +45,13 @@
 
     var InitialEditedPushNotification = {
         _id: null,
-        activePlatformSettings: [],
-        multipleLocalizations: false,
         name: "",
         platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
-        targeting: countlyPushNotification.service.TargetingEnum.ALL,
         audienceSelection: countlyPushNotification.service.AudienceSelectionEnum.BEFORE,
         message: {
             default: {
                 title: "",
                 content: "",
-                localizationLabel: countlyPushNotification.service.DEFAULT_LOCALIZATION_LABEL,
                 buttons: [],
                 properties: {
                     title: {},
@@ -67,7 +63,8 @@
             ios: {
                 subtitle: "",
                 mediaURL: "",
-                soundFileName: "",
+                mediaMime: "",
+                soundFilename: "default",
                 badgeNumber: "",
                 onClickURL: "",
                 json: null,
@@ -75,7 +72,8 @@
             },
             android: {
                 mediaURL: "",
-                soundFileName: "",
+                mediaMime: "",
+                soundFilename: "default",
                 badgeNumber: "",
                 icon: "",
                 onClickURL: "",
@@ -83,7 +81,8 @@
                 userData: []
             },
             all: {
-                mediaURL: ""
+                mediaURL: "",
+                mediaMime: "",
             }
         },
         queryFilter: null,
@@ -95,13 +94,15 @@
             type: countlyPushNotification.service.SendEnum.NOW,
             startDate: moment().valueOf(),
             endDate: moment().valueOf(),
-            isEndDateSet: false
         },
         timezone: countlyPushNotification.service.TimezoneEnum.SAME,
         pastSchedule: countlyPushNotification.service.PastScheduleEnum.SKIP,
         expiration: {
             days: 7,
             hours: 0
+        },
+        oneTime: {
+            targeting: countlyPushNotification.service.TargetingEnum.ALL,
         },
         automatic: {
             deliveryMethod: countlyPushNotification.service.DeliveryMethodEnum.IMMEDIATELY,
@@ -113,12 +114,14 @@
             trigger: countlyPushNotification.service.TriggerEnum.COHORT_ENTRY,
             triggerNotMet: countlyPushNotification.service.TriggerNotMetEnum.SEND_ANYWAY,
             events: [],
+            cohorts: [],
             capping: false,
             maximumMessagesPerUser: 1,
             minimumTimeBetweenMessages: {
                 days: 0,
                 hours: 0
             },
+            usersTimezone: "00"
         },
     };
 
@@ -127,12 +130,11 @@
         android: 0,
     };
 
-
     var InitialPushNotificationDrawerSettingsState = {
         ios: {
             isSubtitleEnabled: false,
             isMediaURLEnabled: false,
-            isSoundFileNameEnabled: false,
+            isSoundFilenameEnabled: true,
             isBadgeNumberEnabled: false,
             isOnClickURLEnabled: false,
             isJsonEnabled: false,
@@ -140,7 +142,7 @@
         },
         android: {
             isMediaURLEnabled: false,
-            isSoundFileNameEnabled: false,
+            isSoundFilenameEnabled: true,
             isBadgeNumberEnabled: false,
             isIconEnabled: false,
             isOnClickURLEnabled: false,
@@ -195,6 +197,9 @@
                 selectedUserPropertyId: null,
                 selectedUserPropertyContainer: "title",
                 isAddUserPropertyPopoverOpen: false,
+                isUsersTimezoneSet: false,
+                isEndDateSet: false,
+                multipleLocalizations: false,
                 urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
                 addUserPropertyPopoverPosition: {
                     top: 0,
@@ -301,16 +306,42 @@
                     return this.areCohortsAndLocationsRequired;
                 }
             },
+            hasAllPlatformMediaOnly: function() {
+                return (!this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL &&
+                !this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaURL) ||
+                (!this.settings[this.PlatformEnum.IOS].isMediaURLEnabled &&
+                !this.settings[this.PlatformEnum.ANDROID].isMediaURLEnabled);
+            },
+            previewIOSMediaURL: function() {
+                var result = "";
+                if (this.pushNotificationUnderEdit.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotificationUnderEdit.settings[this.PlatformEnum.ALL].mediaURL;
+                }
+                if (this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL && this.settings[this.PlatformEnum.IOS].isMediaURLEnabled) {
+                    result = this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL;
+                }
+                return result;
+            },
+            previewAndroidMediaURL: function() {
+                var result = "";
+                if (this.pushNotificationUnderEdit.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotificationUnderEdit.settings[this.PlatformEnum.ALL].mediaURL;
+                }
+                if (this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaURL && this.settings[this.PlatformEnum.ANDROID].isMediaURLEnabled) {
+                    result = this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaURL;
+                }
+                return result;
+            },
             previewMessageMedia: function() {
                 var result = {};
-                if (this.mediaMetadata[this.PlatformEnum.ANDROID]) {
+                if (this.mediaMetadata[this.PlatformEnum.ANDROID] && this.settings[this.PlatformEnum.ANDROID].isMediaURLEnabled) {
                     result[this.PlatformEnum.ANDROID] = {url: this.pushNotificationUnderEdit.settings.android.mediaURL, type: this.MediaTypeEnum.IMAGE};
                 }
-                if (this.mediaMetadata[this.PlatformEnum.IOS]) {
-                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.settings.ios.mediaURL, type: this.mediaMetadata.ios.type };
+                if (this.mediaMetadata[this.PlatformEnum.IOS] && this.settings[this.PlatformEnum.IOS].isMediaURLEnabled) {
+                    result[this.PlatformEnum.IOS] = {url: this.pushNotificationUnderEdit.settings.ios.mediaURL, type: this.mediaMetadata.ios.type};
                 }
                 if (this.mediaMetadata[this.PlatformEnum.ALL]) {
-                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE };
+                    result[this.PlatformEnum.ALL] = {url: this.pushNotificationUnderEdit.settings.all.mediaURL, type: this.MediaTypeEnum.IMAGE};
                 }
                 return result;
             },
@@ -331,17 +362,6 @@
                     return countlyPushNotification.service.platformOptions[selectedPlatform].label;
                 });
             },
-            previewCohorts: function() {
-                var self = this;
-                var selectedCohorts = this.cohortOptions.filter(function(cohort) {
-                    return self.pushNotificationUnderEdit.cohorts.some(function(selectedCohortId) {
-                        return cohort._id === selectedCohortId;
-                    });
-                });
-                return selectedCohorts.map(function(cohort) {
-                    return cohort.name.replace(/&quot;/g, '\\"');
-                });
-            },
             previewLocations: function() {
                 var self = this;
                 return this.locationOptions.filter(function(location) {
@@ -352,6 +372,16 @@
             }
         },
         methods: {
+            previewCohorts: function(cohorts) {
+                var selectedCohorts = this.cohortOptions.filter(function(cohort) {
+                    return cohorts.some(function(selectedCohortId) {
+                        return cohort._id === selectedCohortId;
+                    });
+                });
+                return selectedCohorts.map(function(cohort) {
+                    return cohort.name.replace(/&quot;/g, '\\"');
+                });
+            },
             formatDateTime: function(dateTime, format) {
                 return countlyPushNotification.helper.formatDateTime(dateTime, format);
             },
@@ -382,9 +412,9 @@
             },
             onStepClick: function(nextStep, currentStep) {
                 if (this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep)) {
-                    return this.prepareMessage();
+                    return this.prepare();
                 }
-                if (this.isReviewNextStepFromContentStep(nextStep, currentStep)) {
+                if (this.isReviewNextStepFromContentStep(nextStep, currentStep) && this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.CONTENT) {
                     return this.$refs.content.validate();
                 }
                 return Promise.resolve(true);
@@ -403,8 +433,8 @@
             },
             dispatchUnknownErrorNotification: function() {
                 CountlyHelpers.notify({
-                    title: "Unknown error occurred",
-                    message: "Please try again later.",
+                    title: "Push Notification Error",
+                    message: "Unknown error occurred. Please try again later.",
                     type: "error"
                 });
             },
@@ -419,7 +449,7 @@
                     model.queryFilter = this.getQueryFilter();
                 }
             },
-            prepareMessage: function() {
+            prepare: function() {
                 var self = this;
                 this.setIsLoading(true);
                 return new Promise(function(resolve) {
@@ -433,17 +463,11 @@
                         resolve(true);
                     }).catch(function(error) {
                         self.setLocalizationOptions([]);
-                        if (countlyPushNotification.helper.isNoUsersFoundError(error)) {
-                            CountlyHelpers.notify({
-                                title: "No users were found with selected configuration",
-                                message: "Selected cohort and location target options resulted in zero users found. Please try a different configuration.",
-                                type: "warning"
-                            });
-                        }
-                        else {
-                            this.dispatchUnknownErrorNotification();
-                        }
-                        //TODO:log error
+                        CountlyHelpers.notify({
+                            title: "Push notification error",
+                            message: error.message,
+                            type: "error"
+                        });
                         resolve(false);
                     }).finally(function() {
                         self.setIsLoading(false);
@@ -457,30 +481,28 @@
                 var options = {};
                 options.totalAppUsers = this.totalAppUsers;
                 options.localizations = this.localizationOptions;
+                options.settings = this.settings;
+                options.isUsersTimezoneSet = this.isUsersTimezoneSet;
+                options.isEndDateSet = this.isEndDateSet;
                 this.addQueryFilterIfFound(model);
                 countlyPushNotification.service.save(model, options).then(function() {
                     done();
                     self.$store.dispatch("countlyPushNotification/main/fetchAll", true);
                 }).catch(function(error) {
-                    if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
-                        CountlyHelpers.notify({
-                            title: "No Push credentials",
-                            message: "There were no push credentials found for selected platform/s.",
-                            type: "error"
-                        });
-                    }
-                    else {
-                        this.dispatchUnknownErrorNotification();
-                    }
-                    //TODO:log error
+                    CountlyHelpers.notify({
+                        title: "Push notification error",
+                        message: error.message,
+                        type: "error"
+                    });
                     done(true);
                 });
             },
             resetState: function() {
-                this.activeLocalization = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
-                this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
-                this.isConfirmed = false,
-                this.expandedPlatformSettings = [],
+                this.activeLocalization = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+                this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+                this.isConfirmed = false;
+                this.multipleLocalizations = false;
+                this.expandedPlatformSettings = [];
                 this.selectedUserPropertyContainer = "title";
                 this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
                 this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(InitialEditedPushNotification));
@@ -516,8 +538,17 @@
                     }
                 });
             },
+            expandPlatformSettingsIfSilentMessage: function() {
+                if (this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.SILENT) {
+                    this.expandedPlatformSettings = [].concat(this.pushNotificationUnderEdit.platforms);
+                }
+            },
+            onMessageTypeChange: function(value) {
+                this.pushNotificationUnderEdit.messageType = value;
+                this.expandPlatformSettingsIfSilentMessage();
+            },
             onMultipleLocalizationChange: function(isChecked) {
-                this.pushNotificationUnderEdit.multipleLocalizations = isChecked;
+                this.multipleLocalizations = isChecked;
                 if (!isChecked) {
                     this.setActiveLocalization(countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE);
                     this.resetMessageInHTMLToActiveLocalization();
@@ -535,12 +566,10 @@
             },
             addEmptyLocalizationMessageIfNotFound: function(localization) {
                 var value = localization.value;
-                var label = localization.label;
                 if (!this.pushNotificationUnderEdit.message[value]) {
                     this.$set(this.pushNotificationUnderEdit.message, value, {
                         title: "",
                         content: "",
-                        localizationLabel: label,
                         buttons: [],
                         properties: {
                             title: {},
@@ -596,9 +625,9 @@
             },
             onSettingToggle: function(platform, property, value) {
                 this.settings[platform][property] = value;
-                if (!value) {
-                    this.pushNotificationUnderEdit.settings[platform][property] = "";
-                }
+            },
+            prettifyJSON: function(value) {
+                return countlyPushNotification.helper.prettifyJSON(value, 2);
             },
             onTitleChange: function(value) {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].title = value;
@@ -726,6 +755,9 @@
                     this.mediaMetadata[platform] = null;
                 }
             },
+            setMediaMime: function(platform, value) {
+                this.pushNotificationUnderEdit.settings[platform].mediaMime = value;
+            },
             setMediaMetadata: function(platform, metadata) {
                 this.mediaMetadata[platform] = metadata;
             },
@@ -733,8 +765,10 @@
                 var self = this;
                 countlyPushNotification.service.fetchMediaMetadata(url).then(function(mediaMetadata) {
                     self.setMediaMetadata(platform, mediaMetadata);
+                    self.setMediaMime(platform, mediaMetadata.mime);
                 }).catch(function() {
                     self.setMediaMetadata(platform, {});
+                    self.setMediaMime(platform, "");
                 });
             },
             setCohortOptions: function(cohorts) {
@@ -1096,6 +1130,7 @@
         data: function() {
             return {
                 StatusEnum: countlyPushNotification.service.StatusEnum,
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
                 platformFilters: platformFilterOptions,
                 selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
@@ -1167,6 +1202,13 @@
             },
             hasApproverPermission: function() {
                 return countlyPushNotification.service.hasApproverPermission();
+            },
+            previewMessageMedia: function() {
+                var result = {};
+                result[this.PlatformEnum.ALL] = {url: this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL, type: this.pushNotification.settings[this.PlatformEnum.ALL].mediaMime };
+                result[this.PlatformEnum.IOS] = {url: this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL, type: this.pushNotification.settings[this.PlatformEnum.IOS].mediaMime };
+                result[this.PlatformEnum.ANDROID] = {url: this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL, type: this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaMime};
+                return result;
             }
         },
         methods: {

@@ -2,7 +2,7 @@
     <div class="cly-vue-sidebar__header">
         <span class="cly-vue-sidebar__header-title">Dashboards</span>
         <span class="cly-vue-sidebar__header-button" v-if="canCreate">
-            <el-button type="success" size="small" @click="onCreate">
+            <el-button type="success" size="small" @click="addDashboard">
                 <i class="ion-plus-circled"></i>
                 <span>New</span>
             </el-button>
@@ -13,11 +13,14 @@
             <li v-for="dashboard in allDashboards" :key="dashboard.id" class="bu-px-3 bu-my-1 bu-is-clickable">
                 <div
                     :class="['cly-vue-sidebar__menu-items',
-                    {'cly-vue-sidebar__menu-items--selected': selectedDashboard.id === dashboard.id}]"
+                    {'cly-vue-sidebar__menu-items--selected': selectedDashboard._id === dashboard._id}]"
                     @click="onDashboardMenuItemClick(dashboard)">
                     <div class="has-ellipsis">{{dashboard.name}}</div>
                 </div>
             </li>
         </ul>
     </div>
+
+    <dashboards-drawer :controls="drawers.dashboards"></dashboards-drawer>
+
 </div>

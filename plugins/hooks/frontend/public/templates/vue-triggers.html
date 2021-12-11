@@ -59,19 +59,32 @@
             </cly-select-x>
             
         </div>
-        <div class="cly-vue-hook-drawer-action-card">
-            <div class="text-medium text-heading">
-               {{i18n('hooks.filter-rule')}}
+
+        <cly-form-field-group  highlight>
+            <div class="bu-level">
+                <div class="bu-level bu-level-left">
+                    <el-switch
+                        :active-text="i18n('hooks.filter-rule')"
+                        v-model="openSegmentTab"
+                        active-color="#2FA732">
+                    </el-switch>
+                </div>
+                <div class="bu-level bu-level-right">
+                   <span class="text-medium color-cool-gray-50">{{i18n("hooks.filtering-tips")}}</span> 
+                </div>
             </div>
-            <cly-qb-bar class="bu-is-inline-block"  v-model="queryObj" queryStore="hooks" format="mongo" :event="selectedEvent"></cly-qb-bar>
-            <!-- <segmentation-filter
-                    v-bind:event-name="selectedEvent"
-                    v-bind:initial-query="query"
-                    v-bind:hidden-fields="hiddenFields"
-                    v-on:query_changed="queryChange"
-                    ref="filterSegments"
-                    /> -->
-         </div>
+            
+            <cly-form-field name="exclude"  v-slot:default v-if="openSegmentTab">
+                <cly-qb-segmentation
+                            ref="qb"
+                            :allowBreakdown="false"
+                            :requires-minimal-segmentation="true"
+                            v-model="queryObj"
+                            :event="selectedEvent"
+                    >
+                </cly-qb-segmentation>
+            </cly-form-field>
+        </cly-form-field-group>
     </div>
 </script>
 

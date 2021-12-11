@@ -183,6 +183,12 @@
         box-sizing: border-box;
         box-shadow: 0px 2px 4px rgb(1 122 255 / 7%);
     }
+    &.el-button--text.is-danger {
+        color: #D23F00;
+        &:hover {
+            background-color: #F6F6F6;
+        }
+    }
 }
 
 .el-button-group  {

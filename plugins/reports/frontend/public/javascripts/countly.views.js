@@ -7,7 +7,6 @@
     countlyReporting,
     jQuery,
     countlyVue,
-    countlyDashboards,
     app,
     CV,
     $,
@@ -196,10 +195,10 @@
                 return options;
             },
             dashboardsOptions: function() {
-                var dashboardsList = countlyDashboards.getAllDashboards();
+                var dashboardsList = this.$store.getters["countlyDashboards/all"];
                 var dashboardsOptions = [];
                 for (var i = 0; i < dashboardsList.length; i++) {
-                    dashboardsOptions.push({ value: dashboardsList[i].id, label: dashboardsList[i].name });
+                    dashboardsOptions.push({ value: dashboardsList[i]._id, label: dashboardsList[i].name });
                 }
                 countlyVue.container.registerData("/reports/dashboards-option", dashboardsOptions);
                 return dashboardsOptions;
@@ -227,7 +226,8 @@
                 }
             },
             reportFrequencyChange: function(reportFrequency) {
-                var reportDateRanges = countlyDashboards.getReportDateRanges(reportFrequency);
+                var dashboardRangesDict = this.$store.getters["countlyDashboards/reportDateRangeDict"];
+                var reportDateRanges = dashboardRangesDict[reportFrequency] || [];
                 this.reportDateRangesOptions = reportDateRanges.map(function(r) {
                     return {value: r.value, label: r.name};
                 });
