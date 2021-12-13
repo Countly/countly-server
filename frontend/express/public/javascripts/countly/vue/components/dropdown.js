@@ -369,8 +369,8 @@
                                     </table>\
                                 </div>\
                                 <div class="cly-multi-select__controls">\
-                                    <el-button v-bind="$attrs" class="cly-multi-select__cancel" @click="close">{{cancelLabel}}</el-button>\
-                                    <el-button v-bind="$attrs" class="cly-multi-select__confirm" @click="save">{{confirmLabel}}</el-button>\
+                                    <el-button v-bind="$attrs" class="el-button el-button--secondary el-button--small" @click="close">{{cancelLabel}}</el-button>\
+                                    <el-button v-bind="$attrs" class="el-button el-button--success el-button--small" @click="save">{{confirmLabel}}</el-button>\
                                 </div>\
                             </div>\
                         </div>\
