@@ -31,10 +31,16 @@
     <cly-section>
       <cly-metric-cards class="ratings-wrapper__cards bu-has-background-white">
         <cly-metric-card :number="count">
-          {{ i18n('feedback.total-ratings') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          <span class="ratings-section-title">
+            {{ i18n('feedback.total-ratings') }}
+          </span>
+          <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
         <cly-metric-card :number="avg">
-          {{ i18n('feedback.average-ratings-score') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          <span class="ratings-section-title">
+            {{ i18n('feedback.average-ratings-score') }}
+          </span>
+          <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
       </cly-metric-cards>
     </cly-section>

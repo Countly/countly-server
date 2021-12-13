@@ -53,13 +53,13 @@
     <cly-section>
       <cly-metric-cards class="ratings-widget-detail-view__cards bu-has-background-white">
         <cly-metric-card :number="count">
-          {{ i18n('feedback.ratings') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          <span class="ratings-section-title">{{ i18n('feedback.ratings') }}</span><cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
         <cly-metric-card :number="ratingRate" :is-percentage="true">
-          {{ i18n('feedback.ratings-rate') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          <span class="ratings-section-title">{{ i18n('feedback.ratings-rate') }}</span><cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
         <cly-metric-card :number="widget.timesShown">
-          {{ i18n('feedback.times-shown') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          <span class="ratings-section-title">{{ i18n('feedback.times-shown') }}</span><cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
       </cly-metric-cards>
     </cly-section>
