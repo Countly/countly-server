@@ -303,8 +303,9 @@
         },
         methods: {
             onChange: function(b) {
+                var self = this;
                 this.$store.dispatch("countlyDashboards/widgets/update", {id: this.widgetId, settings: {"bucket": b}}).then(function() {
-                    self.$store.dispatch("countlyDashboards/widgets/get", this.widgetId);
+                    self.$store.dispatch("countlyDashboards/widgets/get", self.widgetId);
                 });
             }
         }
