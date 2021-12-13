@@ -1,4 +1,4 @@
-const { Message, State, Status, platforms, Audience, ValidationError, TriggerKind, MEDIA_MIME_ALL } = require('./send'),
+const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, MEDIA_MIME_ALL } = require('./send'),
     { DEFAULTS } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message');
@@ -34,7 +34,7 @@ async function validate(args, preparing = false) {
                 throw new ValidationError('No push credentials for specified platforms');
             }
 
-            let creds = await common.db.collection('credentials').find({_id: {$in: msg.platforms.map(p => common.dot(app, `plugins.push.${p}._id`))}}).toArray();
+            let creds = await common.db.collection(Creds.collection).find({_id: {$in: msg.platforms.map(p => common.dot(app, `plugins.push.${p}._id`))}}).toArray();
             if (creds.length !== msg.platforms.length) {
                 throw new ValidationError('No push credentials in db');
             }
