@@ -1527,6 +1527,10 @@ common.getIpAddress = function(req) {
     /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
     var ips = ipAddress.split(',');
 
+    if (req.headers['x-real-ip']) {
+        ips.push(req.headers['x-real-ip']);
+    }
+
     //if ignoreProxies not setup, use outmost left ip address
     if (!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length) {
         ipLogger.d("From %s found ip %s", ipAddress, ips[0]);
