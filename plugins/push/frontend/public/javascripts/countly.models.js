@@ -786,7 +786,7 @@
                 if (hasIOSConfig) {
                     return {
                         _id: dto[PlatformDtoEnum.IOS]._id || '',
-                        keyId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].fileType : '',
+                        keyId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].key : '',
                         keyFile: '',
                         bundleId: dto[PlatformDtoEnum.IOS].bundle,
                         authType: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? IOSAuthConfigTypeEnum.P12 : IOSAuthConfigTypeEnum.P8,
