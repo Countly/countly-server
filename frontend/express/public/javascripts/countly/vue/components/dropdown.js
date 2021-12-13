@@ -342,7 +342,7 @@
                         <div class="cly-multi-select default-skin">\
                             <div class="cly-multi-select__body">\
                                 <div>\
-                                    <div>\
+                                    <div class="cly-multi-select__title-wrapper">\
                                         <span class="cly-multi-select__title">{{title}}</span>\
                                         <el-button class="cly-multi-select__reset" @click="reset" type="text">{{resetLabel}}</el-button>\
                                     </div>\
