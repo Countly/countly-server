@@ -1,0 +1,8 @@
+<el-select v-model="selected" :adaptive-length="true" @change="onChange">
+    <el-option
+        v-for="bucket in allBuckets"
+        :key="bucket.value"
+        :label="bucket.label"
+        :value="bucket.value">
+    </el-option>
+</el-select>
