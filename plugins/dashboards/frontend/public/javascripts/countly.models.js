@@ -198,8 +198,9 @@
                 },
                 create: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
+                    var settings = widget.settings || {};
 
-                    return countlyDashboards.service.widgets.create(dashboardId, widget);
+                    return countlyDashboards.service.widgets.create(dashboardId, settings);
                 },
                 update: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
