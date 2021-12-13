@@ -176,7 +176,7 @@
                                     row.hasStatusDifferences = true;
                                 }
                                 stat = row.subtasks[k].status;
-                                if (row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
+                                if (row.subtasks[k].status === "errored" || row.subtasks[k].status === "running" || row.subtasks[k].status === "rerunning") {
                                     row.status = row.subtasks[k].status;
                                     row.start = row.subtasks[k].start || row.start;
                                 }
