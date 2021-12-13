@@ -11,6 +11,11 @@
                 }
             }
         },
+        data: function() {
+            return {
+                selectedBucket: "daily"
+            };
+        },
         computed: {
             apps: function() {
                 var apps = this.data.apps;

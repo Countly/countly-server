@@ -281,10 +281,10 @@
         template: CV.T('/dashboards/templates/helpers/bucket.html'),
         props: {
             widgetId: {type: String, required: true},
+            value: {type: String, required: true}
         },
         data: function() {
             return {
-                selected: "daily",
                 allBuckets: [
                     {
                         value: "daily",
@@ -301,12 +301,19 @@
                 ]
             };
         },
+        computed: {
+            val: function() {
+                return this.value;
+            }
+        },
         methods: {
             onChange: function(b) {
                 var self = this;
                 this.$store.dispatch("countlyDashboards/widgets/update", {id: this.widgetId, settings: {"bucket": b}}).then(function() {
                     self.$store.dispatch("countlyDashboards/widgets/get", self.widgetId);
                 });
+
+                this.$emit("input", b);
             }
         }
     });
