@@ -1,4 +1,5 @@
-const common = require('../../../api/utils/common');
+const common = require('../../../api/utils/common'),
+    { Creds } = require('./send');
 
 /**
  * Reset the app by removing all push artifacts
@@ -15,7 +16,7 @@ async function reset(ob) {
             if (app && app.plugins && app.plugins.push) {
                 return Promise.all(Object.values(app.plugins.push).map(async cfg => {
                     if (cfg && cfg._id) {
-                        return common.db.collection('credentials').deleteOne({_id: cfg._id});
+                        return common.db.collection(Creds.collection).deleteOne({_id: cfg._id});
                     }
                 }).concat([
                     common.db.collection('apps').updateOne({a: aid}, {$unset: {'plugins.push': 1}}).catch(() => {})

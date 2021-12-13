@@ -277,6 +277,47 @@
         }
     });
 
+    var BucketComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/bucket.html'),
+        props: {
+            widgetId: {type: String, required: true},
+            value: {type: String, required: true}
+        },
+        data: function() {
+            return {
+                allBuckets: [
+                    {
+                        value: "daily",
+                        label: this.i18nM("drill.daily")
+                    },
+                    {
+                        value: "weekly",
+                        label: this.i18nM("drill.weekly")
+                    },
+                    {
+                        value: "monthly",
+                        label: this.i18nM("drill.monthly")
+                    }
+                ]
+            };
+        },
+        computed: {
+            val: function() {
+                return this.value;
+            }
+        },
+        methods: {
+            onChange: function(b) {
+                var self = this;
+                this.$store.dispatch("countlyDashboards/widgets/update", {id: this.widgetId, settings: {"bucket": b}}).then(function() {
+                    self.$store.dispatch("countlyDashboards/widgets/get", self.widgetId);
+                });
+
+                this.$emit("input", b);
+            }
+        }
+    });
+
     // var AppsMixin = {
     //     methods: {
     //         getAppname: function(appId) {
@@ -308,5 +349,6 @@
     Vue.component("clyd-appcount", AppCountComponent);
     Vue.component("clyd-sourceapps", SourceAppsComponent);
     Vue.component("clyd-visualization", VisualizationComponent);
+    Vue.component("clyd-bucket", BucketComponent);
 
 })();

@@ -109,9 +109,14 @@
                     action = "countlyDashboards/duplicate";
                 }
 
-                delete doc.__action;
+                var empty = countlyDashboards.factory.dashboards.getEmpty();
+                var obj = {};
 
-                this.$store.dispatch(action, doc).then(function(id) {
+                for (var key in empty) {
+                    obj[key] = doc[key];
+                }
+
+                this.$store.dispatch(action, obj).then(function(id) {
                     if (__action === "duplicate" ||
                         __action === "create") {
                         app.navigate('#/custom/' + id, true);
@@ -175,8 +180,6 @@
                     action = "countlyDashboards/widgets/update";
                 }
 
-                delete doc.__action;
-
                 if (this.__widgets[doc.widget_type].drawer.beforeSaveFn) {
                     var returnVal = this.__widgets[doc.widget_type].drawer.beforeSaveFn(doc, isEdited);
                     if (returnVal) {
@@ -184,8 +187,17 @@
                     }
                 }
 
-                this.$store.dispatch(action, doc).then(function(id) {
-                    self.$store.dispatch("countlyDashboards/widgets/get", id).then(function() {
+                var empty = this.__widgets[doc.widget_type].drawer.getEmpty();
+                var obj = {};
+
+                //Don't send all widget properties to the server.
+                //Send only the ones specified in the widget's drawer settings (getEmpty)
+                for (var key in empty) {
+                    obj[key] = doc[key];
+                }
+
+                this.$store.dispatch(action, {id: doc._id, settings: obj}).then(function() {
+                    self.$store.dispatch("countlyDashboards/widgets/get", doc._id).then(function() {
                         //Add widet to grid ?
                     });
                 });
@@ -249,7 +261,7 @@
                     var widgetId = node.id;
                     var size = [node.w, node.h];
                     setTimeout(function() {
-                        self.$store.dispatch("countlyDashboards/widgets/updatePosition", {id: widgetId, size: size});
+                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {size: size}});
                     }, 1000);
                 });
 
@@ -258,7 +270,7 @@
                     var widgetId = node.id;
                     var position = [node.x, node.y];
                     setTimeout(function() {
-                        self.$store.dispatch("countlyDashboards/widgets/updatePosition", {id: widgetId, position: position});
+                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: {position: position}});
                     }, 1000);
                 });
             },

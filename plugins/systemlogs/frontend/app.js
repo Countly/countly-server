@@ -1,33 +1,9 @@
 var exported = {},
-    countlyConfig = require('../../../api/config', 'dont-enclose'),
+    common = require('../../../api/utils/common'),
     plugins = require('../../../plugins/pluginManager');
 
 (function(plugin) {
     var countlyDb;
-    /**
-     * Function to get ip address
-     * @param  {Object} req - req object
-     * @returns {string} ip
-     */
-    function getIpAddress(req) {
-        var ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '');
-        /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
-        var ips = ipAddress.split(',');
-
-        //if ignoreProxies not setup, use outmost left ip address
-        if (!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length) {
-            return ips[0];
-        }
-        //search for the outmost right ip address ignoring provided proxies
-        var ip = "";
-        for (var i = ips.length - 1; i >= 0; i--) {
-            if (ips[i].trim() !== "127.0.0.1" && (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)) {
-                ip = ips[i].trim();
-                break;
-            }
-        }
-        return ip;
-    }
     /**
      * Function to get timestamp
      * @returns {number} timestamp
@@ -229,7 +205,7 @@ var exported = {},
             log.ip = null;
         }
         else {
-            log.ip = getIpAddress(req);
+            log.ip = common.getIpAddress(req);
         }
         if (typeof data.app_id !== "undefined") {
             log.app_id = data.app_id;

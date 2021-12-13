@@ -1,5 +1,5 @@
 const { SynFlushTransform } = require('./syn'),
-    { Message, pools, FRAME } = require('../../send');
+    { Message, Creds, pools, FRAME } = require('../../send');
 
 /**
  * Stream responsible for handling sending results:
@@ -76,7 +76,7 @@ class Connector extends SynFlushTransform {
                         let id = a.plugins.push[p]._id;
                         if (id) {
                             this.log.d('Loading credentials %s', id);
-                            promises.push(this.db.collection('credentials').findOne(id).then(cred => {
+                            promises.push(this.db.collection(Creds.collection).findOne(id).then(cred => {
                                 if (cred) {
                                     a.creds[p] = cred;
                                 }
