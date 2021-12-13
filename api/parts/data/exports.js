@@ -441,45 +441,52 @@ exports.fromDatabase = function(options) {
     }
     alternateName += "_exported_on_" + moment().format("DD-MMM-YYYY");
     options.filename = options.filename || alternateName;
+
+    if (options.collection.startsWith("app_users")) {
+        options.params.qstring.method = "user_details";
+        options.params.app_id = options.collection.replace("app_users", "");
+    }
     plugin.dispatch("/drill/preprocess_query", {
-        query: options.query
+        query: options.query,
+        params: options.params
+    }, ()=>{
+        var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
+        if (options.sort) {
+            cursor.sort(options.sort);
+        }
+        if (options.limit) {
+            cursor.limit(parseInt(options.limit));
+        }
+        if (options.skip) {
+            cursor.skip(parseInt(options.skip));
+        }
+
+        if (options.type === "stream" || options.type === "json") {
+            options.output = options.output || function(stream) {
+                exports.stream(options.params, stream, options);
+            };
+            cursor.stream({
+                transform: function(doc) {
+                    doc = transformValuesInObject(doc, options.mapper);
+                    return JSON.stringify(doc);
+                }
+            });
+            options.output(cursor);
+        }
+        else if (options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
+            options.output = options.output || function(stream) {
+                exports.stream(options.params, stream, options);
+            };
+            cursor.stream();
+            options.output(cursor);
+        }
+        else {
+            cursor.toArray(function(err, data) {
+                exports.fromData(data, options);
+            });
+        }
+
     });
-
-    var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
-    if (options.sort) {
-        cursor.sort(options.sort);
-    }
-    if (options.limit) {
-        cursor.limit(parseInt(options.limit));
-    }
-    if (options.skip) {
-        cursor.skip(parseInt(options.skip));
-    }
-
-    if (options.type === "stream" || options.type === "json") {
-        options.output = options.output || function(stream) {
-            exports.stream(options.params, stream, options);
-        };
-        cursor.stream({
-            transform: function(doc) {
-                doc = transformValuesInObject(doc, options.mapper);
-                return JSON.stringify(doc);
-            }
-        });
-        options.output(cursor);
-    }
-    else if (options.type === "xls" || options.type === "xlsx" || options.type === "csv") {
-        options.output = options.output || function(stream) {
-            exports.stream(options.params, stream, options);
-        };
-        cursor.stream();
-        options.output(cursor);
-    }
-    else {
-        cursor.toArray(function(err, data) {
-            exports.fromData(data, options);
-        });
-    }
 };
 
 /**

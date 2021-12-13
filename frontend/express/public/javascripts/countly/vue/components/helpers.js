@@ -671,4 +671,73 @@
                     </div>'
     }));
 
+    Vue.component("cly-notification", countlyBaseComponent.extend({
+        template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
+                        '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
+                            '<div class="bu-is-flex">\n' +
+                                '<img :src="image" class="alert-image bu-mr-4 bu-my-1 bu-ml-1">\n' +
+                                '<slot><span class="alert-text bu-my-3" style="word-break:break-word">{{text}}</span></slot>\n' +
+                            '</div>\n' +
+                            '<div v-if="closable" style="margin-block:auto">\n' +
+                                '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-5" >\n' +
+                                    '<slot name="close"><i class="el-icon-close"></i></slot>\n' +
+                                '</div>\n' +
+                                '<div v-else @click="closeModal" class="bu-mr-2 bu-ml-6">\n' +
+                                    '<slot name="close"><i class="el-icon-close"></i></slot>\n' +
+                                '</div>\n' +
+                            '</div>\n' +
+                            '<div v-else class="bu-ml-5">\n' +
+                            '</div>\n' +
+                        '</div>\n' +
+                  '</div>\n',
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            text: { default: "", type: String },
+            color: { default: "light-warning", type: String},
+            size: {default: "full", type: String},
+            visible: {default: true, type: Boolean},
+            closable: {default: true, type: Boolean}
+        },
+        watch: {
+            visible: {
+                immediate: true,
+                handler: function(newVisible) {
+                    this.isModalVisible = newVisible;
+                }
+            },
+            isModalVisible: function(newVisible) {
+                this.$emit("update:visible", newVisible);
+            }
+        },
+        computed: {
+            dynamicClasses: function() {
+                return ["cly-vue-notification__alert-box__alert-text--" + this.color, "cly-vue-notification__alert-box--" + this.size];
+            },
+            image: function() {
+                if (this.color === "dark-informational" || this.color === "light-informational") {
+                    return "images/icons/notification-toast-informational.svg";
+                }
+                else if (this.color === "light-successful" || this.color === "dark-successful") {
+                    return "images/icons/notification-toast-successful.svg";
+                }
+                else if (this.color === "light-destructive" || this.color === "dark-destructive") {
+                    return "images/icons/notification-toast-destructive.svg";
+                }
+                else if (this.color === "light-warning" || this.color === "dark-warning") {
+                    return "images/icons/notification-toast-warning.svg";
+                }
+            }
+        },
+        data: function() {
+            return {
+                isModalVisible: true,
+            };
+        },
+        methods: {
+            closeModal: function() {
+                this.isModalVisible = false;
+            },
+        }
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));

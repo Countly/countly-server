@@ -57,6 +57,74 @@
     }
 }
 
+.cly-vue-notification {
+    &__alert-box {
+        align-items: center;
+        border: 1px solid;
+        box-sizing: border-box;
+        border-radius: 12px;
+        min-height: 48px;
+        font-weight: 400;
+        &--full {
+            width: 100%;
+            font-size: 14px;
+        }
+        &--inline {
+            display: inline-block;
+            font-size: 16px;
+        }
+        &__alert-text {
+            line-height: 22px;
+            &--light-informational {
+                background-color: #E1EFFF;
+                border-color: rgba(1, 102, 214, 0.25);
+                box-shadow: 0px 5px 8px rgba(1, 102, 214, 0.09);
+                color: #333C48;
+            }
+            &--light-successful {
+                background-color: #EBFAEE;
+                border-color: rgba(55, 176, 87, 0.25);
+                box-shadow: 0px 5px 8px rgba(55, 176, 87, 0.09);
+                color: #333C48;
+            }
+            &--light-destructive {
+                background-color: #FBECE5;
+                border-color:rgba(227, 79, 47, 0.25);
+                box-shadow: 0px 5px 8px rgba(227, 79, 47, 0.09);
+                color: #333C48;
+            }
+            &--light-warning {
+                background-color: #FCF5E5;
+                border-color: rgba(239, 148, 0, 0.25);
+                box-shadow: 0px 5px 8px rgba(239, 148, 0, 0.09);
+                color: #333C48;
+            }            
+            &--dark-successful {
+                background-color: #24292E;
+                border-color: rgba(1, 102, 214, 0.25);
+                color: #FFFFFF;
+            }
+            &--dark-informational {
+                background-color: #24292E;
+                border-color: rgba(1, 102, 214, 0.25);
+                color: #FFFFFF;
+            }
+            &--dark-warning {
+                background-color: #24292E;
+                border-color: rgba(1, 102, 214, 0.25);
+                color: #FFFFFF;
+            }
+            &--dark-destructive {
+                background-color: #24292E;
+                border-color: rgba(1, 102, 214, 0.25);
+                color: #FFFFFF;
+            }
+        }    
+        .alert-image {
+            height: 36px;
+        }
+    }
+}  
 
 .cly-vue-status-tag {
     padding-right: 16.33px;
