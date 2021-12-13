@@ -368,12 +368,12 @@
                         <div class="bu-is-flex bu-is-flex-direction-column">
                             <line-radio-button-with-description 
                                 :label="PastScheduleEnum.SKIP"
-                                v-model="pushNotificationUnderEdit.pastSchedule"
+                                v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].pastSchedule"
                                 title="Do not send the message">
                             </line-radio-button-with-description>
                             <line-radio-button-with-description 
                                 :label="PastScheduleEnum.NEXT_DAY"
-                                v-model="pushNotificationUnderEdit.pastSchedule"
+                                v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].pastSchedule"
                                 title="Deliver the message next day">
                             </line-radio-button-with-description>
                         </div>
@@ -532,8 +532,8 @@
                                 <el-checkbox 
                                     class="bu-ml-1"                        
                                     v-tooltip.top-left="isDefaultLocalizationActive?'Default message is required':null"
-                                    :checked="isLocalizationSelected(localization.value)" 
-                                    :disabled="isDefaultLocalization(localization.value)" 
+                                    :checked="isLocalizationSelected(localization)" 
+                                    :disabled="isDefaultLocalization(localization)" 
                                     :key="localization.value" 
                                     @change="onLocalizationChange(localization)">
                                 </el-checkbox>

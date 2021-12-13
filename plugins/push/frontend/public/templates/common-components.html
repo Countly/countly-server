@@ -310,8 +310,8 @@
             <div>
                 <template v-if="pushNotification.type === TypeEnum.ONE_TIME">
                     <details-tab-row :label="i18n('push-notification-details.targeted-users')"> 
-                        <template v-if="pushNotification.targeting === TargetingEnum.ALL">
-                            {{targetingOptions[pushNotification.targeting].label}}
+                        <template v-if="pushNotification[TypeEnum.ONE_TIME].targeting === TargetingEnum.ALL">
+                            {{targetingOptions[pushNotification[TypeEnum.ONE_TIME].targeting].label}}
                         </template>
                         <template v-else>
                             <div class="bu-is-flex bu-is-flex-direction-column">
@@ -372,7 +372,7 @@
                 <details-tab-row label="Start date" :value="pushNotification.delivery.startDate"></details-tab-row>
                 <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" label="End date" :value="pushNotification.delivery.endDate"></details-tab-row>
                 <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" label="Delivery Method" :value="deliveryMethodOptions[pushNotification.automatic.deliveryMethod].label"></details-tab-row>
-                <details-tab-row label="Capping">
+                <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" label="Capping">
                     <template v-if="pushNotification.automatic.capping">
                         Maximum {{pushNotification.automatic.maximumMessagesPerUser}} messages <br />
                         Minimum {{pushNotification.automatic.minimumTimeBetweenMessages.days}} days and {{pushNotification.automatic.minimumTimeBetweenMessages.hours}} hours between messages 

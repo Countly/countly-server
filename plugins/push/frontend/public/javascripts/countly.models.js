@@ -29,7 +29,7 @@
     });
     var StatusEnum = Object.freeze({
         CREATED: "created",
-        NOT_APPROVED: "not_approved",
+        PENDING_APPROVAL: "pending_approval",
         DRAFT: "draft",
         SCHEDULED: "scheduled",
         SENDING: "sending",
@@ -37,12 +37,15 @@
         STOPPED: "stopped",
         FAILED: "failed",
     });
-    var UserEventEnum = Object.freeze({
+    var UserCommandEnum = Object.freeze({
         RESEND: 'resend',
         DUPLICATE: 'duplicate',
         DELETE: 'delete',
         REJECT: 'reject',
-        APPROVE: 'approve'
+        APPROVE: 'approve',
+        EDIT_DRAFT: 'edit_draft',
+        CREATE: 'create',
+        EDIT: 'edit'
     });
     var MediaTypeEnum = Object.freeze({
         IMAGE: 'image',
@@ -130,7 +133,7 @@
 
     var statusOptions = {};
     statusOptions[StatusEnum.CREATED] = {label: "Created", value: StatusEnum.CREATED};
-    statusOptions[StatusEnum.NOT_APPROVED] = {label: "Not approved", value: StatusEnum.NOT_APPROVED};
+    statusOptions[StatusEnum.PENDING_APPROVAL] = {label: "Waiting for approval", value: StatusEnum.PENDING_APPROVAL};
     statusOptions[StatusEnum.DRAFT] = {label: "Draft", value: StatusEnum.DRAFT};
     statusOptions[StatusEnum.SCHEDULED] = {label: "Scheduled", value: StatusEnum.SCHEDULED};
     statusOptions[StatusEnum.SENDING] = {label: "Sending", value: StatusEnum.SENDING};
@@ -237,7 +240,7 @@
                 },
                 queryFilter: null,
                 messageType: MessageTypeEnum.CONTENT,
-                localizations: [DEFAULT_LOCALIZATION_VALUE],
+                localizations: [this.getDefaultLocalization()],
                 cohorts: [],
                 locations: [],
                 delivery: {
@@ -246,7 +249,6 @@
                     endDate: moment().valueOf(),
                 },
                 timezone: TimezoneEnum.SAME,
-                pastSchedule: PastScheduleEnum.SKIP,
                 expiration: {
                     days: 7,
                     hours: 0
@@ -257,6 +259,7 @@
             var baseModel = this.getInitialBaseModel();
             baseModel.oneTime = {
                 targeting: TargetingEnum.ALL,
+                pastSchedule: PastScheduleEnum.SKIP,
             };
             return baseModel;
         },
@@ -360,6 +363,12 @@
             return result;
         },
         convertMSToDaysAndHours: function(dateTimeInMs) {
+            if (!dateTimeInMs) {
+                return {
+                    days: 0,
+                    hours: 0
+                };
+            }
             var days = parseInt(dateTimeInMs / DAY_TO_MS_RATIO, 10);
             var remainingTime = (dateTimeInMs % DAY_TO_MS_RATIO);
             var hours = parseInt(remainingTime / HOUR_TO_MS_RATIO, 10);
@@ -414,6 +423,7 @@
                 var newElement = document.createElement("span");
                 newElement.setAttribute("id", "id-" + index);
                 newElement.setAttribute("contentEditable", false);
+                newElement.setAttribute("class", "cly-vue-push-notification-message-editor-with-emoji-picker__user-property");
                 newElement.setAttribute("data-user-property-label", userProperty.k);
                 newElement.setAttribute("data-user-property-value", userProperty.k);
                 newElement.setAttribute("data-user-property-fallback", userProperty.f);
@@ -507,19 +517,19 @@
             mapPlatforms: function(dto) {
                 return dto.reduce(function(allPlatformItems, currentPlatformItem) {
                     if (currentPlatformItem === PlatformDtoEnum.IOS) {
-                        allPlatformItems.push({label: CV.i18n("push-notification.platform-filter-ios"), value: PlatformEnum.IOS});
+                        allPlatformItems.push(PlatformEnum.IOS);
                     }
                     if (currentPlatformItem === PlatformDtoEnum.ANDROID) {
-                        allPlatformItems.push({label: CV.i18n("push-notification.platform-filter-android"), value: PlatformEnum.ANDROID});
+                        allPlatformItems.push(PlatformEnum.ANDROID);
                     }
                     return allPlatformItems;
                 }, []);
             },
             mapStatus: function(dto) {
                 if (dto.status === 'inactive') {
-                    return statusOptions[StatusEnum.NOT_APPROVED];
+                    return statusOptions[StatusEnum.PENDING_APPROVAL];
                 }
-                return statusOptions[dto.status];
+                return dto.status;
             },
             mapRows: function(dto) {
                 var self = this;
@@ -734,8 +744,8 @@
             mapDtoToBaseModel: function(dto) {
                 var localizations = this.mapLocalizations(dto.info.locales);
                 return {
-                    id: dto._id || null,
-                    status: dto.status,
+                    _id: dto._id || null,
+                    status: this.mapStatus(dto),
                     createdDateTime: {
                         date: moment(dto.created).valueOf(),
                         time: moment(dto.created).format("H:mm")
@@ -753,7 +763,6 @@
                     settings: this.mapSettings(dto),
                     messageType: dto.info.silent ? MessageTypeEnum.SILENT : MessageTypeEnum.CONTENT,
                     errors: this.mapErrors(dto),
-                    sound: dto.sound,
                     locations: dto.filter && dto.filter.geos || [],
                     cohorts: dto.filter && dto.filter.cohorts || [],
                     user: dto.filter && dto.filter.user,
@@ -763,11 +772,13 @@
             },
             mapDtoToOneTimeModel: function(dto) {
                 var model = this.mapDtoToBaseModel(dto);
-                model.targeting = this.mapTargeting(dto);
+                model[TypeEnum.ONE_TIME] = {};
+                model[TypeEnum.ONE_TIME].targeting = this.mapTargeting(dto);
+                model[TypeEnum.ONE_TIME].pastSchedule = PastScheduleEnum.SKIP; //NOTE: past schedule is not supported at the moment. Auto trigger reschedule is not used anywhere.
                 model.type = TypeEnum.ONE_TIME;
                 var triggerDto = dto.triggers[0];
                 model.delivery = {
-                    startDate: triggerDto.start,
+                    startDate: moment(triggerDto.start).valueOf(),
                     endDate: "Never",
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
@@ -782,8 +793,8 @@
                 model.cohorts = triggerDto.cohorts || [];
                 model.timezone = triggerDto.tz ? TimezoneEnum.SAME : TimezoneEnum.DEVICE;
                 model.delivery = {
-                    startDate: triggerDto.start,
-                    endDate: triggerDto.end || "Never",
+                    startDate: moment(triggerDto.start).valueOf(),
+                    endDate: moment(triggerDto.end).valueOf() || "Never",
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };
                 model.automatic = {
@@ -794,15 +805,10 @@
                     cohorts: triggerDto.cohorts || [],
                     events: triggerDto.events || [],
                     capping: Boolean(triggerDto.cap) && Boolean(triggerDto.sleep),
-                    pastSchedule: triggerDto.reschedule
                 };
-                if (model.automatic.deliveryMethod === DeliveryMethodEnum.DELAYED) {
-                    model.automatic.delayed = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.delay);
-                }
-                if (model.automatic.capping) {
-                    model.automatic.maximumMessagesPerUser = triggerDto.cap,
-                    model.automatic.minimumTimeBetweenMessages = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.sleep);
-                }
+                model.automatic.delayed = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.delay);
+                model.automatic.maximumMessagesPerUser = triggerDto.cap || 1,
+                model.automatic.minimumTimeBetweenMessages = countlyPushNotification.helper.convertMSToDaysAndHours(triggerDto.sleep);
                 return model;
             },
             mapDtoToTransactionalModel: function(dto) {
@@ -892,7 +898,7 @@
                 if (hasIOSConfig) {
                     return {
                         _id: dto[PlatformDtoEnum.IOS]._id || '',
-                        keyId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].fileType : '',
+                        keyId: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P8 ? dto[PlatformDtoEnum.IOS].key : '',
                         keyFile: '',
                         bundleId: dto[PlatformDtoEnum.IOS].bundle,
                         authType: dto[PlatformDtoEnum.IOS].fileType === IOSAuthConfigTypeEnum.P12 ? IOSAuthConfigTypeEnum.P12 : IOSAuthConfigTypeEnum.P8,
@@ -1245,7 +1251,7 @@
                         return;
                     }
                     if (selectedLocalizations.some(function(selectedLocaleKey) {
-                        return Boolean(currentItem.value === selectedLocaleKey);
+                        return Boolean(currentItem.value === selectedLocaleKey.value);
                     })) {
                         result[currentItem.value] = currentItem.count;
                     }
@@ -1404,7 +1410,7 @@
         PeriodEnum: PeriodEnum,
         PlatformEnum: PlatformEnum,
         StatusEnum: StatusEnum,
-        UserEventEnum: UserEventEnum,
+        UserCommandEnum: UserCommandEnum,
         MediaTypeEnum: MediaTypeEnum,
         TargetingEnum: TargetingEnum,
         AudienceSelectionEnum: AudienceSelectionEnum,
@@ -1468,14 +1474,40 @@
             }, {disableAutoCatch: true});
         },
         fetchById: function(id) {
-            return CV.$.ajax({
-                type: "GET",
-                url: window.countlyCommon.API_URL + "/o/push/message/GET",
-                data: {
-                    _id: id,
-                },
-                contentType: "application/json",
-            }, {disableAutoCatch: true});
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: window.countlyCommon.API_URL + "/o/push/message/GET",
+                    data: {
+                        _id: id,
+                    },
+                    contentType: "application/json",
+                }).then(function(response) {
+                    var model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
+                    var cohorts = [];
+                    if (model.type === TypeEnum.ONE_TIME) {
+                        cohorts = model.cohorts;
+                    }
+                    if (model.type === TypeEnum.AUTOMATIC) {
+                        cohorts = model.automatic.cohorts;
+                    }
+                    Promise.all(
+                        [countlyPushNotification.service.fetchCohorts(cohorts, false),
+                            countlyPushNotification.service.fetchLocations(model.locations, false)]
+                    ).then(function(responses) {
+                        if (model.type === TypeEnum.ONE_TIME) {
+                            model.cohorts = responses[0];
+                        }
+                        if (model.type === TypeEnum.AUTOMATIC) {
+                            model.automatic.cohorts = responses[0];
+                        }
+                        model.locations = responses[1];
+                        resolve(model);
+                    });
+                }).catch(function(error) {
+                    reject(error);
+                });
+            });
         },
         fetchDashboard: function() {
             var data = {
@@ -1597,13 +1629,14 @@
                     var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
                 }
                 catch (error) {
+                    console.log(error);
                     reject(new Error('Unknown error occurred.Please try again later.'));
                     //TODO:log error
                     return;
                 }
                 CV.$.ajax({
                     type: "POST",
-                    url: window.countlyCommon.API_URL + '/i/push/message/PUT',
+                    url: window.countlyCommon.API_URL + '/i/push/message/update',
                     data: JSON.stringify(dto),
                     contentType: "application/json",
                     success: function(response) {
@@ -1732,9 +1765,15 @@
                 locations: [],
                 events: [],
                 status: {},
+                type: countlyPushNotification.service.TypeEnum.ONE_TIME
             },
             platformFilter: PlatformEnum.ALL,
-            localFilter: "default"
+            localFilter: "default",
+            userCommand: {
+                type: null,
+                pushNotificationId: null
+            },
+            isDrawerOpen: false,
         };
     };
 
@@ -1742,33 +1781,29 @@
         fetchById: function(context, id) {
             context.dispatch('onFetchInit', {useLoader: true});
             countlyPushNotification.service.fetchById(id)
-                .then(function(response) {
-                    var model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
-                    var cohorts = [];
-                    if (model.type === TypeEnum.ONE_TIME) {
-                        cohorts = model.cohorts;
-                    }
-                    if (model.type === TypeEnum.AUTOMATIC) {
-                        cohorts = model.automatic.cohorts;
-                    }
-                    Promise.all(
-                        [countlyPushNotification.service.fetchCohorts(cohorts, false),
-                            countlyPushNotification.service.fetchLocations(model.locations, false)]
-                    ).then(function(responses) {
-                        if (model.type === TypeEnum.ONE_TIME) {
-                            model.cohorts = responses[0];
-                        }
-                        if (model.type === TypeEnum.AUTOMATIC) {
-                            model.automatic.cohorts = responses[0];
-                        }
-                        model.locations = responses[1];
-                        context.commit('setPushNotification', model);
-                        context.dispatch('onFetchSuccess', {useLoader: true});
-                    });
+                .then(function(model) {
+                    context.commit('setPushNotification', model);
+                    context.dispatch('onFetchSuccess', {useLoader: true});
                 }).catch(function(error) {
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                     //Todo: log error
                 });
+        },
+        onUserCommand: function(context, payload) {
+            context.commit('setUserCommand', payload);
+        },
+        onSetIsDrawerOpen: function(context, value) {
+            context.commit('setIsDrawerOpen', value);
+        },
+        // onApprove: function(context,payload) {
+
+        // },
+        // onReject: function(context,payload) {
+
+        // },
+        // eslint-disable-next-line no-unused-vars
+        onResend: function(context, payload) {
+            //TODO: resend push notification
         },
         onSetLocalFilter: function(context, value) {
             context.commit('setLocalFilter', value);
@@ -1781,6 +1816,12 @@
     var detailsMutations = {
         setPushNotification: function(state, value) {
             state.pushNotification = value;
+        },
+        setUserCommand: function(state, value) {
+            state.userCommand = value;
+        },
+        setIsDrawerOpen: function(state, value) {
+            state.isDrawerOpen = value;
         },
         setLocalFilter: function(state, value) {
             state.localFilter = value;
@@ -1829,6 +1870,11 @@
             platformFilter: countlyPushNotification.service.PlatformEnum.ALL,
             totalPushMessagesSent: 0,
             totalUserActionsPerformed: 0,
+            userCommand: {
+                type: null,
+                pushNotificationId: null
+            },
+            isDrawerOpen: false,
         };
     };
 
@@ -1853,12 +1899,20 @@
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                 });
         },
-        // eslint-disable-next-line no-unused-vars
-        onDuplicate: function(context, id) {
-            //TODO: open create push notification drawer
+        onUserCommand: function(context, payload) {
+            context.commit('setUserCommand', payload);
         },
+        onSetIsDrawerOpen: function(context, value) {
+            context.commit('setIsDrawerOpen', value);
+        },
+        // onApprove: function(context,payload) {
+
+        // },
+        // onReject: function(context,payload) {
+
+        // },
         // eslint-disable-next-line no-unused-vars
-        onResend: function(context, id) {
+        onResend: function(context, payload) {
             //TODO: resend push notification
         },
         onSetPushNotificationType: function(context, value) {
@@ -1884,6 +1938,12 @@
         },
         setPushNotifications: function(state, value) {
             Object.assign(state, value);
+        },
+        setUserCommand: function(state, value) {
+            state.userCommand = value;
+        },
+        setIsDrawerOpen: function(state, value) {
+            state.isDrawerOpen = value;
         },
         setStatusFilter: function(state, value) {
             state.statusFilter = value;
