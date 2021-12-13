@@ -32,7 +32,7 @@
     "async": "3.2.2",
     "basic-auth": "2.0.1",
     "bluebird": "3.7.2",
-    "body-parser": "1.19.0",
+    "body-parser": "1.19.1",
     "bunyan": "1.8.15",
     "colors": "^1.4.0",
     "connect-flash": "0.1.1",
