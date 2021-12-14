@@ -530,7 +530,7 @@
                 if (dto.status === 'inactive') {
                     return statusOptions[StatusEnum.PENDING_APPROVAL];
                 }
-                return dto.status;
+                return StatusEnum.DRAFT;
             },
             mapRows: function(dto) {
                 var self = this;
@@ -817,7 +817,7 @@
                 model.type = TypeEnum.TRANSACTIONAL;
                 var triggerDto = dto.triggers[0];
                 model.delivery = {
-                    startDate: triggerDto.start,
+                    startDate: moment(triggerDto.start).valueOf(),
                     endDate: "Never",
                     type: dto.info && dto.info.scheduled ? SendEnum.LATER : SendEnum.NOW,
                 };

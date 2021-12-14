@@ -1411,7 +1411,7 @@
                 }
                 }
             },
-            formatDateAgoText: function(date) {
+            formatTimeAgoText: function(date) {
                 return countlyCommon.formatTimeAgoText(date).text;
             },
             getDetailsBaseChartOptions: function(seriesData) {

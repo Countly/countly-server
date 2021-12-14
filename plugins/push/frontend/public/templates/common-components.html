@@ -374,13 +374,13 @@
         <div>
             <template v-if="pushNotification.type === TypeEnum.ONE_TIME">
                 <details-tab-row :label="i18n('push-notification.delivery-type')" :value="startDateOptions[pushNotification.delivery.type].label"> </details-tab-row>
-                <details-tab-row :label="i18n('push-notification-details.scheduled-for')" :value="pushNotification.delivery.startDate"> </details-tab-row>
+                <details-tab-row :label="i18n('push-notification-details.scheduled-for')" :value="formatDateAndTime(pushNotification.delivery.startDate)"> </details-tab-row>
                 <details-tab-row :label="i18n('push-notification-details.expiration-time')" :value="i18n('push-notification-details.message-expires-after', pushNotification.expiration.days, pushNotification.expiration.hours)"> </details-tab-row>
             </template>
             <template v-if="pushNotification.type === TypeEnum.AUTOMATIC || pushNotification.type === TypeEnum.TRANSACTIONAL">
                 <details-tab-row :label="i18n('push-notification.delivery-timeframe')" :value="startDateOptions[pushNotification.delivery.type].label"> </details-tab-row>
-                <details-tab-row label="Start date" :value="pushNotification.delivery.startDate"></details-tab-row>
-                <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" label="End date" :value="pushNotification.delivery.endDate"></details-tab-row>
+                <details-tab-row label="Start date" :value="formatDateAndTime(pushNotification.delivery.startDate)"></details-tab-row>
+                <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" label="End date" :value="formatDateAndTime(pushNotification.delivery.endDate)"></details-tab-row>
                 <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" label="Delivery Method" :value="deliveryMethodOptions[pushNotification.automatic.deliveryMethod].label"></details-tab-row>
                 <details-tab-row v-if="pushNotification.type === TypeEnum.AUTOMATIC" label="Capping">
                     <template v-if="pushNotification.automatic.capping">

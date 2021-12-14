@@ -870,7 +870,10 @@
         methods: {
             convertDaysInMsToDays: function(daysInMs) {
                 return daysInMs / this.DAY_TO_MS_RATIO;
-            }
+            },
+            formatDateAndTime: function(date) {
+                return countlyPushNotification.helper.formatDateTime(date, 'MMMM Do, YYYY, h:mm a');
+            },
         },
         components: {
             'details-tab-row': countlyPushNotificationComponent.DetailsTabRow
