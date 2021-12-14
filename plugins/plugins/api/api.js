@@ -5,7 +5,7 @@ var plugin = {},
     parser = require('properties-parser'),
     mail = require('../../../api/parts/mgmt/mail.js'),
     plugins = require('../../pluginManager.js'),
-    { validateRead, validateUpdate, validateCreate, validateUser } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateCreate, validateUser, validateGlobalAdmin } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'global_plugins';
 
@@ -243,7 +243,7 @@ const FEATURE_NAME = 'global_plugins';
 
     plugins.register("/o/configs", function(ob) {
         var params = ob.params;
-        validateRead(params, FEATURE_NAME, function() {
+        validateGlobalAdmin(params, function() {
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getAllConfigs();
                 delete confs.services;
