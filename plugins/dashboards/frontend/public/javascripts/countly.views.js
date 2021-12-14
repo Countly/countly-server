@@ -347,7 +347,13 @@
         },
         methods: {
             refresh: function() {
-                //this.$store.dispatch("countlyDashboards/getDashboard", {isRefresh: true});
+                this.getDashboardData(true);
+            },
+            dateChanged: function() {
+                this.getDashboardData(true);
+            },
+            getDashboardData: function(isRefresh) {
+                this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId, isRefresh: isRefresh});
             },
             onDashboardAction: function(command, data) {
                 var self = this;
@@ -387,7 +393,7 @@
             }
         },
         beforeMount: function() {
-            this.$store.dispatch("countlyDashboards/setDashboard", {id: this.dashboardId});
+            this.getDashboardData();
         }
     });
 

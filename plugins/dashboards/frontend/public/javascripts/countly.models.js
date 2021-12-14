@@ -346,7 +346,7 @@
                     /*
                         data.id will be null when the dashboard is deleted.
                     */
-                    context.dispatch("getDashboard");
+                    context.dispatch("getDashboard", data);
                 }
             },
 
