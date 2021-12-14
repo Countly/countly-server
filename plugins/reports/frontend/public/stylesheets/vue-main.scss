@@ -1,19 +1,32 @@
 #reports-view {
+    .empty-view {
+        height: calc(100vh - 193px);
+        .no-content-circle {
+            margin-top: 122px;
+            background: gray;
+            border-radius: 50%;
+            width: 96px;
+            height: 96px;
+            background-image: url("../images/empty.svg");
+        }
+        .pointer {
+            cursor: pointer;
+        }
+    }
+    
     .text-heading.title {
         font-size: 13px;
     }
     .cly-vue-reports-table {
-        .is-option-button {
-            visibility: hidden;
-            .el-select {
-                -webkit-box-shadow: unset;
-                box-shadow: unset;
-                border-radius: unset;
-            }
-            
+        .no-search-circle {
+            border-radius: 50%;
+            width: 96px;
+            height: 96px;
+            background-image: url("../images/search-empty.svg");
         }
-        tr:hover .is-option-button {
-            visibility: visible;
+        .switch-column {
+            padding-left: 16px;
+            padding-right: 26px;
         }
     }
 

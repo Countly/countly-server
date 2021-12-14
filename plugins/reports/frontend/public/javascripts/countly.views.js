@@ -21,7 +21,6 @@
                 var rows = this.$store.getters["countlyReports/table/all"];
                 return rows;
             },
-
         },
         data: function() {
             return {
@@ -33,6 +32,9 @@
             };
         },
         methods: {
+            createReport: function() {
+                $("#create-report-button").click();
+            },
             handleReportEditCommand: function(command, scope) {
                 switch (command) {
                 case "edit-comment":
@@ -177,7 +179,7 @@
                 dayOfWeekOptions: dayOfWeekOptions,
                 timeListOptions: timeListOptions,
                 timezoneOptions: zones,
-                emailOptions: [{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
+                // emailOptions: [{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
                 showApps: true,
                 showMetrics: true,
                 showDashboards: false,
@@ -212,6 +214,7 @@
             }
         },
         methods: {
+
             reportTypeChange: function(type) {
                 if (type === 'dashboards') {
                     this.showApps = false;
@@ -259,6 +262,7 @@
                     doc.metrics[m] = true;
                 });
                 delete doc.metricsArray;
+                delete doc.hover;
                 this.$store.dispatch("countlyReports/saveReport", doc);
             },
             onClose: function($event) {
