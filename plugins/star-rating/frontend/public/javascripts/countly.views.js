@@ -102,6 +102,14 @@ var CommentsTable = countlyVue.views.create({
     template: CV.T("/star-rating/templates/comments-table.html"),
     props: {
         comments: Array
+    },
+    computed: {
+        preparedRows() {
+            return this.comments.map((comment) => {
+                comment.cd = countlyCommon.formatTimeAgo(comment.cd);
+                return comment;
+            });
+        }
     }
 });
 
