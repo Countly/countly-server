@@ -340,11 +340,28 @@
             isContentNextStepFromInfoStep: function(nextStep, currentStep) {
                 return nextStep === 2 && currentStep === 0;
             },
+            isContentNextStepFromAnyPreviousStep: function(nextStep, currentStep) {
+                return nextStep === 2 && currentStep < 2;
+            },
+            isEditMode: function() {
+                return this.userCommand === this.UserCommandEnum.DUPLICATE || this.userCommand === this.UserCommandEnum.EDIT_DRAFT || this.userCommand === this.UserCommandEnum.EDIT;
+            },
+            shouldRunPrepare: function(nextStep, currentStep) {
+                return this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep);
+            },
+            shouldRunContentValidator: function(nextStep, currentStep) {
+                return (this.isContentNextStepFromAnyPreviousStep(nextStep, currentStep) && this.isEditMode()) ||
+                (this.isReviewNextStepFromContentStep(nextStep, currentStep) && this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.CONTENT);
+            },
             onStepClick: function(nextStep, currentStep) {
-                if (this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep)) {
+                if (this.shouldRunPrepare(nextStep, currentStep) && this.shouldRunContentValidator(nextStep, currentStep)) {
+                    this.$refs.content.validate();
                     return this.prepare();
                 }
-                if (this.isReviewNextStepFromContentStep(nextStep, currentStep) && this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.CONTENT) {
+                if (this.shouldRunPrepare(nextStep, currentStep)) {
+                    return this.prepare();
+                }
+                if (this.shouldRunContentValidator(nextStep, currentStep)) {
                     return this.$refs.content.validate();
                 }
                 return Promise.resolve(true);
@@ -856,6 +873,7 @@
                         if (self.userCommand === self.UserCommandEnum.DUPLICATE) {
                             self.setId(null);
                         }
+                        self.resetMessageInHTMLToActiveLocalization();
                     })
                     .catch(function() {
                         var initialModel = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
