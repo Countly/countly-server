@@ -100,7 +100,7 @@
                         </template>
                         <el-table-column width="220" sortable="custom" prop="status" :label="i18n('push-notification.table-status')">
                             <template slot-scope="scope">
-                                <cly-status-tag :text="scope.row.status" :color="getStatusBackgroundColor(scope.row.status)"> </cly-status-tag>
+                                <cly-status-tag :text="statusOptions[scope.row.status] && statusOptions[scope.row.status].label || '' " :color="getStatusBackgroundColor(scope.row.status)"> </cly-status-tag>
                             </template>
                         </el-table-column>
                         <el-table-column width="220" sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')"  class="cly-vue-push-notification-table-column">

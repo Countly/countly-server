@@ -914,6 +914,7 @@
                 oneTimePeriodFilters: oneTimePeriodFilterOptions,
                 selectedOneTimePeriodFilter: countlyPushNotification.service.PeriodEnum.WEEKLY,
                 automaticPeriodFilters: automaticPeriodFilterOptions,
+                statusOptions: countlyPushNotification.service.statusOptions,
                 selectedAutomaticPeriodFilter: countlyPushNotification.service.PeriodEnum.DAILY,
                 transactionalPeriodFilters: transactionalPeriodFilterOptions,
                 selectedTransactionalPeriodFilter: countlyPushNotification.service.PeriodEnum.DAILY,
@@ -1221,6 +1222,7 @@
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
                 platformFilters: platformFilterOptions,
+                statusOptions: countlyPushNotification.service.statusOptions,
                 selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
                 currentSummaryTab: "message",
@@ -1327,7 +1329,7 @@
                     break;
                 }
                 case this.UserCommandEnum.DUPLICATE: {
-                    this.$store.dispatch('countlyPushNotification/details/onDuplicate', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.DELETE: {

@@ -530,7 +530,7 @@
                 if (dto.status === 'inactive') {
                     return statusOptions[StatusEnum.PENDING_APPROVAL];
                 }
-                return StatusEnum.DRAFT;
+                return dto.status;
             },
             mapRows: function(dto) {
                 var self = this;
@@ -1432,6 +1432,7 @@
         triggerNotMetOptions: triggerNotMetOptions,
         deliveryDateCalculationOptions: deliveryDateCalculationOptions,
         deliveryMethodOptions: deliveryMethodOptions,
+        statusOptions: statusOptions,
         iosAuthConfigTypeOptions: iosAuthConfigTypeOptions,
         isPushNotificationApproverPluginEnabled: function() {
             return Boolean(window.countlyPushNotificationApprover);

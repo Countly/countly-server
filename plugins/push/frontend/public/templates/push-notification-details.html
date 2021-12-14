@@ -12,7 +12,7 @@
                     <el-button @click="onReject(pushNotification._id)" class="bu-mr-2"> <i class="ion-close-circled" ></i> Reject </el-button>
                     <el-button @click="onApprove(pushNotification._id)" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> Approve </el-button>
                 </template>
-                <cly-more-options size="small" @command="handleUserCommands($event, pushNotification.id)">
+                <cly-more-options size="small" @command="handleUserCommands($event, pushNotification._id)">
                     <el-dropdown-item v-if="shouldShowDuplicateUserCommand(pushNotification.status)" :command="UserCommandEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowDeleteUserCommand(pushNotification.status)"  :command="UserCommandEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
                     <el-dropdown-item v-if="shouldShowResendUserCommand(pushNotification.status)" :command="UserCommandEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
@@ -24,7 +24,7 @@
             </template>
             <template v-slot:header-bottom>
                 <div class="bu-level-item cly-vue-push-notification-details-sub-header">
-                    <cly-status-tag :text="pushNotification.status" :color="getStatusBackgroundColor(pushNotification.status)"> </cly-status-tag>
+                    <cly-status-tag :text="statusOptions[pushNotification.status] && statusOptions[pushNotification.status].label || '' " :color="getStatusBackgroundColor(pushNotification.status)"> </cly-status-tag>
                 </div>
                 <div class="bu-level-item cly-vue-push-notification-details-sub-header">
                     <div class="ion ion-ios-time-outline cly-vue-push-notification-details-sub-header-icon"></div>
