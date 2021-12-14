@@ -1,4 +1,4 @@
-/*global countlyCommon, CV, countlyVue, _ */
+/*global jQuery, countlyCommon, CV, countlyVue, _ */
 
 (function(countlyDashboards) {
 
@@ -256,7 +256,7 @@
             selected: function(state) {
                 return state.selected;
             },
-            reportDateRangeDict: function(state) {
+            reportDateRangeDict: function() {
                 return {
                     daily: [
                         {name: jQuery.i18n.map["common.yesterday"], value: "yesterday"},
