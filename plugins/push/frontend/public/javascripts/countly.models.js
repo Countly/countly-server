@@ -238,6 +238,7 @@
                         mediaMime: "",
                     }
                 },
+                status: "",
                 queryFilter: null,
                 messageType: MessageTypeEnum.CONTENT,
                 localizations: [this.getDefaultLocalization()],
@@ -1629,7 +1630,6 @@
                     var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
                 }
                 catch (error) {
-                    console.log(error);
                     reject(new Error('Unknown error occurred.Please try again later.'));
                     //TODO:log error
                     return;
@@ -1660,6 +1660,12 @@
                     }
                 }, {disableAutoCatch: true});
             });
+        },
+        approve: function(messageId) {
+            if (!this.isPushNotificationApproverPluginEnabled()) {
+                throw new Error('Push approver plugin is not enabled');
+            }
+            return countlyPushNotificationApprover.service.approve(messageId);
         },
         fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty) {
             if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
@@ -1732,12 +1738,6 @@
                         reject(error);
                     });
             });
-        },
-        approve: function(messageId) {
-            if (!this.isPushNotificationApproverPluginEnabled()) {
-                throw new Error('Push approver plugin is not enabled');
-            }
-            return countlyPushNotificationApprover.service.approve(messageId);
         }
     };
 
@@ -1747,26 +1747,7 @@
         messageSettings[PlatformEnum.IOS] = {};
         messageSettings[PlatformEnum.ANDROID] = {};
         return {
-            pushNotification: {
-                message: {
-                    default: {
-                        buttons: [],
-                        media: countlyPushNotification.helper.getMessageMediaInitialState()
-                    }
-                },
-                settings: messageSettings,
-                platforms: [],
-                processed: 0,
-                sent: 0,
-                total: 0,
-                errors: {},
-                actioned: {},
-                cohorts: [],
-                locations: [],
-                events: [],
-                status: {},
-                type: countlyPushNotification.service.TypeEnum.ONE_TIME
-            },
+            pushNotification: countlyPushNotification.helper.getInitialModel(TypeEnum.ONE_TIME),
             platformFilter: PlatformEnum.ALL,
             localFilter: "default",
             userCommand: {
@@ -1786,7 +1767,7 @@
                     context.dispatch('onFetchSuccess', {useLoader: true});
                 }).catch(function(error) {
                     context.dispatch('onFetchError', {error: error, useLoader: true});
-                    //Todo: log error
+                    //TODO: log error
                 });
         },
         onUserCommand: function(context, payload) {
@@ -1795,12 +1776,24 @@
         onSetIsDrawerOpen: function(context, value) {
             context.commit('setIsDrawerOpen', value);
         },
-        // onApprove: function(context,payload) {
-
-        // },
-        // onReject: function(context,payload) {
-
-        // },
+        onApprove: function(context, id) {
+            context.dispatch('onFetchInit', {useLoader: false});
+            countlyPushNotification.service.approve(id).then(function() {
+                context.dispatch('onFetchSuccess', {useLoader: false});
+                CountlyHelpers.notify({
+                    title: "Push notification approver",
+                    message: "Push notification has been successfully sent for approval.",
+                });
+            }).catch(function(error) {
+                context.dispatch('onFetchError', {error: error, useLoader: false});
+                CountlyHelpers.notify({
+                    title: "Push notification approver error",
+                    message: error.message,
+                    type: "error"
+                });
+                //TODO: log error
+            });
+        },
         // eslint-disable-next-line no-unused-vars
         onResend: function(context, payload) {
             //TODO: resend push notification
@@ -1905,12 +1898,25 @@
         onSetIsDrawerOpen: function(context, value) {
             context.commit('setIsDrawerOpen', value);
         },
-        // onApprove: function(context,payload) {
-
-        // },
-        // onReject: function(context,payload) {
-
-        // },
+        onApprove: function(context, id) {
+            context.dispatch('onFetchInit', {useLoader: true});
+            countlyPushNotification.service.approve(id).then(function() {
+                context.dispatch('fetchAll', false);
+                context.dispatch('onFetchSuccess', {useLoader: true});
+                CountlyHelpers.notify({
+                    title: "Push notification approver",
+                    message: "Push notification has been successfully sent for approval.",
+                });
+            }).catch(function(error) {
+                context.dispatch('onFetchError', {error: error, useLoader: true});
+                CountlyHelpers.notify({
+                    title: "Push notification approver error",
+                    message: error.message,
+                    type: "error"
+                });
+                //TODO: log error
+            });
+        },
         // eslint-disable-next-line no-unused-vars
         onResend: function(context, payload) {
             //TODO: resend push notification

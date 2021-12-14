@@ -261,20 +261,30 @@
                 </el-select>
             </div>
             <div>
-                <details-tab-row :label="i18n('push-notification-details.message-title')">
-                    <template v-for="(component) in previewMessageTitle">
-                        <keep-alive>
-                            <component v-bind:is="component.name" :value="component.value"></component>
-                        </keep-alive>
-                    </template>
-                </details-tab-row>
-                <details-tab-row :label="i18n('push-notification-details.message-content')">
-                    <template v-for="(component) in previewMessageContent">
-                        <keep-alive>
-                            <component v-bind:is="component.name" :value="component.value"></component>
-                        </keep-alive>
-                    </template>
-                </details-tab-row>
+                <div class="bu-level bu-ml-5 bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
+                    <div class="bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__label">
+                        {{i18n('push-notification-details.message-title')}}
+                    </div>
+                    <div class="bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__value">
+                        <template v-for="(component) in previewMessageTitle">
+                            <keep-alive>
+                                <component v-bind:is="component.name" :value="component.value"></component>
+                            </keep-alive>
+                        </template>    
+                    </div>
+                </div>
+                <div class="bu-level bu-ml-5 bu-mb-4 bu-is-justify-content-flex-start bu-is-align-items-flex-start">
+                    <div class="bu-is-flex-grow-0 bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__label">
+                        {{i18n('push-notification-details.message-content')}}
+                    </div>
+                    <div class="bu-is-justify-content-flex-start cly-vue-push-notification-details-summary__value">
+                        <template v-for="(component) in previewMessageContent">
+                            <keep-alive>
+                                <component v-bind:is="component.name" :value="component.value"></component>
+                            </keep-alive>
+                        </template>    
+                    </div>
+                </div>
                 <template v-if="message.numberOfButtons>0">
                     <template v-for="(button,index) in message.buttons">
                         <details-tab-row :label="index === 0?i18n('push-notification-details.message-first-button-label'):i18n('push-notification-details.message-second-button-label')" :value="button.label"></details-tab-row>

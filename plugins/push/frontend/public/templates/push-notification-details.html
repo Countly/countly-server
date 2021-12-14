@@ -8,9 +8,9 @@
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>
             </template>
             <template v-slot:header-right>
-                <template v-if="pushNotification.status.value === StatusEnum.NOT_APPROVED && hasApproverPermission">
-                    <el-button @click="onReject" class="bu-mr-2"> <i class="ion-close-circled" ></i> Reject </el-button>
-                    <el-button @click="onApprove" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> Approve </el-button>
+                <template v-if="pushNotification.status === StatusEnum.PENDING_APPROVAL && hasApproverPermission">
+                    <el-button @click="onReject(pushNotification._id)" class="bu-mr-2"> <i class="ion-close-circled" ></i> Reject </el-button>
+                    <el-button @click="onApprove(pushNotification._id)" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> Approve </el-button>
                 </template>
                 <cly-more-options size="small" @command="handleUserCommands($event, pushNotification.id)">
                     <el-dropdown-item v-if="shouldShowDuplicateUserCommand(pushNotification.status)" :command="UserCommandEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
@@ -30,13 +30,12 @@
                     <div class="ion ion-ios-time-outline cly-vue-push-notification-details-sub-header-icon"></div>
                     <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.created')}} {{pushNotification.createdDateTime && formatDateAgoText(pushNotification.createdDateTime.date)}} by  {{pushNotification.createdBy}}  </span>
                 </div>
-                <div class="bu-level-item cly-vue-push-notification-details-sub-header" >
+                <div class="bu-level-item cly-vue-push-notification-details-sub-header">
                     <div class="ion ion-pricetag cly-vue-push-notification-details-sub-header-icon"></div>
                     <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.message-id')}} {{pushNotification.id}} </span>
                 </div>
             </template>
         </cly-header>
-
         <cly-main>
             <div>
                 <div class="bu-level-left" style="margin-bottom:32px">

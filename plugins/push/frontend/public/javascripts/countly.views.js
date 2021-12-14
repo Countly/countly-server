@@ -1039,18 +1039,7 @@
                 }).sort().join(', ');
             },
             onApprove: function(id) {
-                //TODO-LA: replace onApprove() with vuex module action method.
-                var self = this;
-                countlyPushNotification.service.approve(id)
-                    .then(function() {
-                        self.$store.dispatch('countlyPushNotification/main/fetchAll', false);
-                    }).catch(function(error) {
-                        CountlyHelpers.notify({
-                            title: "Push notification approver error",
-                            message: error.message,
-                            type: "error"
-                        });
-                    });
+                this.handleUserCommands(this.UserCommandEnum.APPROVE, id);
             },
             handleUserCommands: function(command, pushNotificationId) {
                 this.$store.dispatch('countlyPushNotification/main/onUserCommand', {type: command, pushNotificationId: pushNotificationId});
@@ -1115,28 +1104,28 @@
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
-                case countlyPushNotification.service.StatusEnum.CREATED: {
+                case this.StatusEnum.CREATED: {
                     return "green";
                 }
-                case countlyPushNotification.service.PENDING_APPROVAL: {
-                    return "orange";
-                }
-                case countlyPushNotification.service.DRAFT: {
-                    return "lightgrey";
-                }
-                case countlyPushNotification.service.StatusEnum.SCHEDULED: {
+                case this.StatusEnum.PENDING_APPROVAL: {
                     return "yellow";
                 }
-                case countlyPushNotification.service.StatusEnum.SENDING: {
-                    return "lightgrey";
+                case this.StatusEnum.DRAFT: {
+                    return "yellow";
                 }
-                case countlyPushNotification.service.StatusEnum.SENT: {
+                case this.StatusEnum.SCHEDULED: {
+                    return "yellow";
+                }
+                case this.StatusEnum.SENDING: {
+                    return "blue";
+                }
+                case this.StatusEnum.SENT: {
                     return "green";
                 }
-                case countlyPushNotification.service.StatusEnum.STOPPED: {
+                case this.StatusEnum.STOPPED: {
                     return "red";
                 }
-                case countlyPushNotification.service.StatusEnum.FAILED: {
+                case this.StatusEnum.FAILED: {
                     return "red";
                 }
                 default: {
@@ -1324,22 +1313,11 @@
             }
         },
         methods: {
-            onApprove: function() {
-                //TODO-LA: replace onApprove() with vuex module action method.
-                var self = this;
-                countlyPushNotification.service.approve(this.pushNotification.id)
-                    .then(function() {
-                        self.$store.dispatch('countlyPushNotification/details/fetchById', self.pushNotification.id);
-                    }).catch(function(error) {
-                        CountlyHelpers.notify({
-                            title: "Push notification approver error",
-                            message: error.message,
-                            type: "error"
-                        });
-                    });
+            onApprove: function(id) {
+                this.handleUserCommands(this.UserCommandEnum.APPROVE, id);
             },
-            onReject: function(pushNotificationId) {
-                this.handleUserCommands(this.UserCommandEnum.REJECT, pushNotificationId);
+            onReject: function(id) {
+                this.handleUserCommands(this.UserCommandEnum.REJECT, id);
             },
             handleUserCommands: function(command, pushNotificationId) {
                 this.$store.dispatch('countlyPushNotification/details/onUserCommand', {type: command, pushNotificationId: pushNotificationId});
@@ -1404,28 +1382,28 @@
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
-                case countlyPushNotification.service.StatusEnum.CREATED: {
+                case this.StatusEnum.CREATED: {
                     return "green";
                 }
-                case countlyPushNotification.service.PENDING_APPROVAL: {
-                    return "orange";
-                }
-                case countlyPushNotification.service.DRAFT: {
-                    return "lightgrey";
-                }
-                case countlyPushNotification.service.StatusEnum.SCHEDULED: {
+                case this.StatusEnum.PENDING_APPROVAL: {
                     return "yellow";
                 }
-                case countlyPushNotification.service.StatusEnum.SENDING: {
-                    return "lightgrey";
+                case this.StatusEnum.DRAFT: {
+                    return "yellow";
                 }
-                case countlyPushNotification.service.StatusEnum.SENT: {
+                case this.StatusEnum.SCHEDULED: {
+                    return "yellow";
+                }
+                case this.StatusEnum.SENDING: {
+                    return "blue";
+                }
+                case this.StatusEnum.SENT: {
                     return "green";
                 }
-                case countlyPushNotification.service.StatusEnum.STOPPED: {
+                case this.StatusEnum.STOPPED: {
                     return "red";
                 }
-                case countlyPushNotification.service.StatusEnum.FAILED: {
+                case this.StatusEnum.FAILED: {
                     return "red";
                 }
                 default: {
