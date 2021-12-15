@@ -18,6 +18,6 @@
                 </cly-dynamic-tabs>
             </template>
         </cly-header>
-        <push-notification-drawer @onClose="onDrawerClose" :controls="drawers.pushNotificationDrawer" :type="selectedPushNotificationTab" :userCommand="userCommand.type" :id="userCommand.pushNotificationId" :isOpened="isDrawerOpen"></push-notification-drawer>
+        <push-notification-drawer @onClose="onDrawerClose" @save="onSave" :controls="drawers.pushNotificationDrawer" :type="selectedPushNotificationTab" :userCommand="userCommand.type" :id="userCommand.pushNotificationId" :isOpened="isDrawerOpen"></push-notification-drawer>
     </div>
 </script>

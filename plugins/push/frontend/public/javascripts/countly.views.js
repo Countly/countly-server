@@ -509,6 +509,7 @@
                         title: "Push notification",
                         message: "Push notification message was successfully saved."
                     });
+                    self.$emit('save');
                 }).catch(function(error) {
                     CountlyHelpers.notify({
                         title: "Push notification error",
@@ -543,6 +544,7 @@
                         title: "Push notification",
                         message: "Push notification message was successfully saved."
                     });
+                    self.$emit('save');
                 }).catch(function(error) {
                     CountlyHelpers.notify({
                         title: "Push notification error",
@@ -1229,6 +1231,9 @@
             },
             onDrawerClose: function() {
                 this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', false);
+            },
+            onSave: function() {
+                this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
             }
         },
         components: {
