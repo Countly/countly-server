@@ -192,6 +192,11 @@
                 }
                 return "+Add Second button";
             },
+            isDraftButtonEnabled: function() {
+                return this.userCommand === this.UserCommandEnum.EDIT_DRAFT ||
+                this.userCommand === this.UserCommandEnum.CREATE ||
+                this.userCommand === this.UserCommandEnum.DUPLICATE;
+            },
             isDefaultLocalizationActive: function() {
                 return this.activeLocalization === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
             },
@@ -433,12 +438,13 @@
                 options.settings = this.settings;
                 options.isUsersTimezoneSet = this.isUsersTimezoneSet;
                 options.isEndDateSet = this.isEndDateSet;
+                return options;
             },
             save: function(options) {
                 if (!options) {
                     options = {};
                 }
-                Object.assign(options, this.getBaseOptions());
+                options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
                 this.addQueryFilterIfFound(model);
@@ -448,7 +454,7 @@
                 if (!options) {
                     options = {};
                 }
-                Object.assign(options, this.getBaseOptions());
+                options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
                 this.addQueryFilterIfFound(model);
@@ -458,7 +464,7 @@
                 if (!options) {
                     options = {};
                 }
-                Object.assign(options, this.getBaseOptions());
+                options = Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
                 this.addQueryFilterIfFound(model);

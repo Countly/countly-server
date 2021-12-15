@@ -22,7 +22,7 @@
         </cly-content>
     </template>
     <template v-slot:controls-left="controlsLeft">
-        <cly-button skin="light" @click="onDraft" label="Save as draft"></cly-button>
+        <el-button size="small" @click="onDraft" type="default" :disabled="!isDraftButtonEnabled">Save as draft</el-button>
     </template>
     <template v-slot:default="drawerScope">
         <add-user-property-popover 
