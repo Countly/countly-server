@@ -1164,7 +1164,7 @@
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-							<div class="chart-wrapper">\
+							<div class="chart-wrapper" :style="{height: (chartOptions.chartheight) + \'px\'}">\
 							<vue-scroll :ops="scrollOptions" >\
 								<div :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
 										<echarts\
