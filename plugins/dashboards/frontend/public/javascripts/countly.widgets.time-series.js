@@ -17,6 +17,10 @@
             };
         },
         computed: {
+            title: function() {
+                var autoTitle = "Time series";
+                return this.data.title || autoTitle;
+            },
             apps: function() {
                 var apps = this.data.apps;
                 var appData = [];
@@ -58,7 +62,8 @@
                     data_type: "",
                     metrics: [],
                     apps: [],
-                    visualization: ""
+                    visualization: "",
+                    title: ""
                 };
             },
         },

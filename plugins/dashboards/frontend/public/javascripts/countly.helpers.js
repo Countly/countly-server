@@ -2,8 +2,12 @@
 
 (function() {
 
+    /**
+     * DRAWER HELPERS
+     */
+
     var MetricComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/helpers/metric.html'),
+        template: CV.T('/dashboards/templates/helpers/drawer/metric.html'),
         props: {
             dataType: {
                 type: String
@@ -87,7 +91,7 @@
     });
 
     var DataTypeComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/helpers/data-type.html'),
+        template: CV.T('/dashboards/templates/helpers/drawer/data-type.html'),
         props: {
             placeholder: {
                 type: String
@@ -127,7 +131,7 @@
     });
 
     var AppCountComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/helpers/app-count.html'),
+        template: CV.T('/dashboards/templates/helpers/drawer/app-count.html'),
         props: {
             apps: {
                 type: Array,
@@ -159,7 +163,7 @@
      * Source app component returns the selected apps in an array even if single app is selected
      */
     var SourceAppsComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/helpers/source-apps.html'),
+        template: CV.T('/dashboards/templates/helpers/drawer/source-apps.html'),
         props: {
             multiple: {
                 type: Boolean,
@@ -213,7 +217,7 @@
     });
 
     var VisualizationComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/helpers/visualization.html'),
+        template: CV.T('/dashboards/templates/helpers/drawer/visualization.html'),
         props: {
             extraTypes: {
                 type: Array,
@@ -277,8 +281,54 @@
         }
     });
 
+    var TitleComponent = countlyVue.views.create({
+        template: CV.T('/dashboards/templates/helpers/drawer/title.html'),
+        props: {
+            value: {type: String}
+        },
+        data: function() {
+            return {
+                titleCheckbox: null
+            };
+        },
+        computed: {
+            title: {
+                get: function() {
+                    return this.value;
+                },
+                set: function(t) {
+                    this.$emit("input", t);
+                }
+            },
+            checkbox: {
+                get: function() {
+                    if (this.titleCheckbox !== null) {
+                        return this.titleCheckbox;
+                    }
+
+                    if (this.value && this.value.length) {
+                        return true;
+                    }
+
+                    return false;
+                },
+                set: function(v) {
+                    if (v === false && this.value && this.value.length) {
+                        this.$emit("input", "");
+                    }
+
+                    this.titleCheckbox = v;
+                }
+            }
+        }
+    });
+
+    /**
+     * WIDGET HELPERS
+     */
+
     var BucketComponent = countlyVue.views.create({
-        template: CV.T('/dashboards/templates/helpers/bucket.html'),
+        template: CV.T('/dashboards/templates/helpers/widget/bucket.html'),
         props: {
             widgetId: {type: String, required: true},
             value: {type: String, required: true}
@@ -344,11 +394,19 @@
     //     }
     // };
 
+    /**
+     * DRAWER HELPERS REGISTRATION
+     */
     Vue.component("clyd-metric", MetricComponent);
     Vue.component("clyd-datatype", DataTypeComponent);
     Vue.component("clyd-appcount", AppCountComponent);
     Vue.component("clyd-sourceapps", SourceAppsComponent);
     Vue.component("clyd-visualization", VisualizationComponent);
+    Vue.component("clyd-title", TitleComponent);
+
+    /**
+     * WIDGET HELPERS REGISTRATION
+     */
     Vue.component("clyd-bucket", BucketComponent);
 
 })();

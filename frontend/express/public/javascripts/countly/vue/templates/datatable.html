@@ -61,6 +61,7 @@
             v-bind="$attrs"
             v-on="$listeners"
             @sort-change="onSortChange"
+            @selection-change="onSelectionChange"
             @cell-mouse-enter="onCellMouseEnter"
             ref="elTable">
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
