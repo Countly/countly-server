@@ -45,7 +45,7 @@
 		<cly-section>
 			<cly-datatable-n :default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols"  :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
 				<template v-slot:header-left>
-					<a href="#/analytics/views/manage" class="cly-vue-button button-light-skin ToLink">{{i18n('views.table.edit-views')}}</a>
+					<a href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
 				</template>
 				<template v-slot="scope">
 					<el-table-column width="65"  fixed="left">
