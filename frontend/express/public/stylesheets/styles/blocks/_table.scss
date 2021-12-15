@@ -80,6 +80,11 @@
         top: calc(50% - 16px);
         right: calc(50% - 20px);
     }
+
+	div.cell {
+		padding-left:16px;
+		padding-right: 8px;
+	}
 }
 
 //plain table
