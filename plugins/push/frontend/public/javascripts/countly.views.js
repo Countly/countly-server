@@ -426,17 +426,21 @@
                     });
                 });
             },
-            save: function(options) {
-                if (!options) {
-                    options = {};
-                }
-                var model = Object.assign({}, this.pushNotificationUnderEdit);
-                model.type = this.type;
+            getBaseOptions: function() {
+                var options = {};
                 options.totalAppUsers = this.totalAppUsers;
                 options.localizations = this.localizationOptions;
                 options.settings = this.settings;
                 options.isUsersTimezoneSet = this.isUsersTimezoneSet;
                 options.isEndDateSet = this.isEndDateSet;
+            },
+            save: function(options) {
+                if (!options) {
+                    options = {};
+                }
+                Object.assign(options, this.getBaseOptions());
+                var model = Object.assign({}, this.pushNotificationUnderEdit);
+                model.type = this.type;
                 this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.save(model, options);
             },
@@ -444,13 +448,9 @@
                 if (!options) {
                     options = {};
                 }
+                Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                options.totalAppUsers = this.totalAppUsers;
-                options.localizations = this.localizationOptions;
-                options.settings = this.settings;
-                options.isUsersTimezoneSet = this.isUsersTimezoneSet;
-                options.isEndDateSet = this.isEndDateSet;
                 this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.update(model, options);
             },
@@ -458,13 +458,9 @@
                 if (!options) {
                     options = {};
                 }
+                Object.assign(options, this.getBaseOptions());
                 var model = Object.assign({}, this.pushNotificationUnderEdit);
                 model.type = this.type;
-                options.totalAppUsers = this.totalAppUsers;
-                options.localizations = this.localizationOptions;
-                options.settings = this.settings;
-                options.isUsersTimezoneSet = this.isUsersTimezoneSet;
-                options.isEndDateSet = this.isEndDateSet;
                 this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.resend(model, options);
             },
