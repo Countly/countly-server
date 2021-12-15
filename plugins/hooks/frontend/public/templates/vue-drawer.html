@@ -106,9 +106,14 @@
                         <div>
                             <section v-for="item, idx in testResult">
                                 <el-collapse v-model="idx"> 
-                                    <el-collapse-item :title="i18n('hooks.' + item.t)" name="idx">
+                                    <el-collapse-item  name="idx">  
+                                        <template slot="title">
+                                            <span class="done-icon text-small color-white cly-bullet--green"><i class="fa fa-check"></i></span>
+                                            {{i18n('hooks.' + item.t)}}
+                                        </template>
                                         <div>Input: {{item.i}}</div>
                                         <div>Output: {{item.o}}</div>
+                                        <div v-if="item.logs">Error Logs: {{item.logs}}</div>
                                     </el-collapse-item>
                                 </el-collapse>
                             </section>

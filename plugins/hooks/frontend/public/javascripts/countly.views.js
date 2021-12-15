@@ -109,7 +109,7 @@
         template: '#hooks-effect-HTTPEffect',
         data: function() {
             return {
-                methodOptions: [{label: 'GET', value: 'GET'}, {label: 'POST', value: 'POST'}],
+                methodOptions: [{label: 'GET', value: 'get'}, {label: 'POST', value: 'post'}],
             };
         },
         props: {
