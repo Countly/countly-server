@@ -1125,11 +1125,11 @@
     Vue.component("cly-flow-chart", BaseChart.extend({
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right","chart-header-left-input"],
+                forwardedSlots: ["chart-left", "chart-right", "chart-header-left-input"],
                 scrollOptions: {
                     vuescroll: {},
                     scrollPanel: {
-						scrollingY:false
+                        scrollingY: false
                     },
                     rail: {
                         gutterOfSide: "1px",
