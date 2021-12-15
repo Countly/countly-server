@@ -418,6 +418,141 @@
         },
     };
 
+    //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
+    countlyPushNotification.api = {
+        findById: function(id) {
+            return CV.$.ajax({
+                type: "GET",
+                url: window.countlyCommon.API_URL + "/o/push/message/GET",
+                data: {
+                    _id: id,
+                },
+                contentType: "application/json",
+            }, {disableAutoCatch: true});
+        },
+        findAll: function(data) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.r + "/push/message/all",
+                data: data,
+                dataType: "json"
+            }, {disableAutoCatch: true});
+        },
+        getDashboard: function(data) {
+            return CV.$.ajax({
+                type: "GET",
+                url: window.countlyCommon.API_URL + '/o/push/dashboard',
+                data: data,
+                dataType: "json"
+            }, {disableAutoCatch: true});
+        },
+        delete: function(data) {
+            return CV.$.ajax({
+                method: 'GET',
+                url: window.countlyCommon.API_URL + '/i/push/message/remove',
+                data: data,
+                dataType: "json"
+            }, {disableAutoCatch: true});
+        },
+        save: function(dto) {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: window.countlyCommon.API_URL + '/i/push/message/create',
+                    data: JSON.stringify(dto),
+                    contentType: "application/json",
+                    success: function(response) {
+                        if (response.error) {
+                            reject(new Error(response.error));
+                            return;
+                        }
+                        if (response.result.errors) {
+                            reject(response.result.errors);
+                            return;
+                        }
+                        resolve();
+                    },
+                    error: function(error) {
+                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
+                            reject(new Error('No push notification credentials were found'));
+                            return;
+                        }
+                        reject(new Error('Unknown error occurred.Please try again later.'));
+                        //TODO:log error
+                    }
+                }, {disableAutoCatch: true});
+            });
+
+        },
+        update: function(dto) {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: window.countlyCommon.API_URL + '/i/push/message/update',
+                    data: JSON.stringify(dto),
+                    contentType: "application/json",
+                    success: function(response) {
+                        if (response.error) {
+                            reject(new Error(response.error));
+                            return;
+                        }
+                        if (response.result.errors) {
+                            reject(response.result.errors);
+                            return;
+                        }
+                        resolve();
+                    },
+                    error: function(error) {
+                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
+                            reject(new Error('No push notification credentials were found'));
+                            return;
+                        }
+                        reject(new Error('Unknown error occurred.Please try again later.'));
+                        //TODO:log error
+                    }
+                }, {disableAutoCatch: true});
+            });
+        },
+        estimate: function(data) {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "POST",
+                    url: window.countlyCommon.API_URL + '/o/push/message/estimate',
+                    data: JSON.stringify(data),
+                    contentType: "application/json",
+                    success: function(response) {
+                        if (countlyPushNotification.helper.hasNoUsersToSendPushNotification(response)) {
+                            reject(new Error('No users were found from selected configuration'));
+                            return;
+                        }
+                        if (response.error) {
+                            reject(new Error('Unknown error occurred'));
+                            return;
+                        }
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
+                            reject(new Error('No push notification credentials were found'));
+                            return;
+                        }
+                        reject(new Error('Unknown error occurred'));
+                        //TODO:log error
+                    }
+                }, {disableAutoCatch: true});
+            });
+        },
+        getMime: function(url) {
+            return CV.$.ajax({
+                method: 'GET',
+                url: window.countlyCommon.API_URL + '/o/push/mime',
+                data: {
+                    url: url
+                },
+            }, {disableAutoCatch: true});
+        }
+    };
+
     countlyPushNotification.mapper = {
         incoming: {
             getUserPropertyElement: function(index, userProperty) {
@@ -1452,222 +1587,6 @@
             }
             return {};
         },
-        fetchAll: function(type) {
-            var self = this;
-            return new Promise(function(resolve, reject) {
-                Promise.all([self.fetchByType(type), self.fetchDashboard(type)])
-                    .then(function(responses) {
-                        resolve(countlyPushNotification.mapper.incoming.mapMainDtoToModel(responses[0], responses[1], type));
-                    }).catch(function(error) {
-                        reject(error);
-                    });
-            });
-        },
-        fetchByType: function(type) {
-            var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-            };
-            Object.assign(data, this.getTypeUrlParameter(type));
-            return CV.$.ajax({
-                type: "POST",
-                url: countlyCommon.API_PARTS.data.r + "/push/message/all",
-                data: data,
-                dataType: "json"
-            }, {disableAutoCatch: true});
-        },
-        fetchById: function(id) {
-            return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    type: "GET",
-                    url: window.countlyCommon.API_URL + "/o/push/message/GET",
-                    data: {
-                        _id: id,
-                    },
-                    contentType: "application/json",
-                }).then(function(response) {
-                    var model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
-                    var cohorts = [];
-                    if (model.type === TypeEnum.ONE_TIME) {
-                        cohorts = model.cohorts;
-                    }
-                    if (model.type === TypeEnum.AUTOMATIC) {
-                        cohorts = model.automatic.cohorts;
-                    }
-                    Promise.all(
-                        [countlyPushNotification.service.fetchCohorts(cohorts, false),
-                            countlyPushNotification.service.fetchLocations(model.locations, false)]
-                    ).then(function(responses) {
-                        if (model.type === TypeEnum.ONE_TIME) {
-                            model.cohorts = responses[0];
-                        }
-                        if (model.type === TypeEnum.AUTOMATIC) {
-                            model.automatic.cohorts = responses[0];
-                        }
-                        model.locations = responses[1];
-                        resolve(model);
-                    });
-                }).catch(function(error) {
-                    reject(error);
-                });
-            });
-        },
-        fetchDashboard: function() {
-            var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-            };
-            return CV.$.ajax({
-                type: "GET",
-                url: window.countlyCommon.API_URL + '/o/push/dashboard',
-                data: data,
-                dataType: "json"
-            }, {disableAutoCatch: true});
-        },
-        deleteById: function(id) {
-            var data = {
-                app_id: countlyCommon.ACTIVE_APP_ID,
-                _id: id
-            };
-            return CV.$.ajax({
-                method: 'GET',
-                url: window.countlyCommon.API_URL + '/i/push/message/remove',
-                data: data,
-                dataType: "json"
-            }, {disableAutoCatch: true});
-        },
-        fetchMediaMetadata: function(url) {
-            return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    method: 'GET',
-                    url: window.countlyCommon.API_URL + '/o/push/mime',
-                    data: {
-                        url: url
-                    },
-                    success: function(response) {
-                        resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(response));
-                    },
-                    error: function(error) {
-                        reject(error);
-                    }
-                }, {disableAutoCatch: true});
-            });
-        },
-        fetchMediaMetadataWithDebounce: _.debounce(function(url, resolveCallback, rejectCallback) {
-            this.fetchMediaMetadata(url).then(resolveCallback).catch(rejectCallback);
-        }, DEBOUNCE_TIME_IN_MS),
-        prepare: function(pushNotificationModel) {
-            return new Promise(function(resolve, reject) {
-                var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
-                var data = {
-                    app: countlyCommon.ACTIVE_APP_ID,
-                    platforms: platformsDto,
-                };
-                var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel);
-                if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel) && filtersDto) {
-                    data.filter = filtersDto;
-                }
-                CV.$.ajax({
-                    type: "POST",
-                    url: window.countlyCommon.API_URL + '/o/push/message/estimate',
-                    data: JSON.stringify(data),
-                    contentType: "application/json",
-                    success: function(response) {
-                        if (countlyPushNotification.helper.hasNoUsersToSendPushNotification(response)) {
-                            reject(new Error('No users were found from selected configuration'));
-                            return;
-                        }
-                        if (response.error) {
-                            reject(new Error('Unknown error occurred'));
-                            return;
-                        }
-                        var localesDto = response.locales;
-                        localesDto.count = response.count;
-                        var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
-                        resolve({localizations: localizations, total: response.count, _id: response._id});
-                    },
-                    error: function(error) {
-                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
-                            reject(new Error('No push notification credentials were found'));
-                            return;
-                        }
-                        reject(new Error('Unknown error occurred'));
-                        //TODO:log error
-                    }
-                }, {disableAutoCatch: true});
-            });
-        },
-        save: function(pushNotificationModel, options) {
-            var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(pushNotificationModel, options);
-            return new Promise(function(resolve, reject) {
-                CV.$.ajax({
-                    type: "POST",
-                    url: window.countlyCommon.API_URL + '/i/push/message/create',
-                    data: JSON.stringify(dto),
-                    contentType: "application/json",
-                    success: function(response) {
-                        if (response.error) {
-                            reject(new Error(response.error));
-                            return;
-                        }
-                        if (response.result.errors) {
-                            reject(response.result.errors);
-                            return;
-                        }
-                        resolve();
-                    },
-                    error: function(error) {
-                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
-                            reject(new Error('No push notification credentials were found'));
-                            return;
-                        }
-                        reject(new Error('Unknown error occurred.Please try again later.'));
-                        //TODO:log error
-                    }
-                }, {disableAutoCatch: true});
-            });
-        },
-        update: function(model, options) {
-            return new Promise(function(resolve, reject) {
-                try {
-                    var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
-                }
-                catch (error) {
-                    reject(new Error('Unknown error occurred.Please try again later.'));
-                    //TODO:log error
-                    return;
-                }
-                CV.$.ajax({
-                    type: "POST",
-                    url: window.countlyCommon.API_URL + '/i/push/message/update',
-                    data: JSON.stringify(dto),
-                    contentType: "application/json",
-                    success: function(response) {
-                        if (response.error) {
-                            reject(new Error(response.error));
-                            return;
-                        }
-                        if (response.result.errors) {
-                            reject(response.result.errors);
-                            return;
-                        }
-                        resolve();
-                    },
-                    error: function(error) {
-                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
-                            reject(new Error('No push notification credentials were found'));
-                            return;
-                        }
-                        reject(new Error('Unknown error occurred.Please try again later.'));
-                        //TODO:log error
-                    }
-                }, {disableAutoCatch: true});
-            });
-        },
-        approve: function(messageId) {
-            if (!this.isPushNotificationApproverPluginEnabled()) {
-                throw new Error('Push approver plugin is not enabled');
-            }
-            return countlyPushNotificationApprover.service.approve(messageId);
-        },
         fetchCohorts: function(cohortIdsList, shouldFetchIfEmpty) {
             if (!shouldFetchIfEmpty && cohortIdsList && !cohortIdsList.length) {
                 return Promise.resolve([]);
@@ -1739,7 +1658,154 @@
                         reject(error);
                     });
             });
-        }
+        },
+        fetchAll: function(type) {
+            var self = this;
+            return new Promise(function(resolve, reject) {
+                Promise.all([self.fetchByType(type), self.fetchDashboard(type)])
+                    .then(function(responses) {
+                        resolve(countlyPushNotification.mapper.incoming.mapMainDtoToModel(responses[0], responses[1], type));
+                    }).catch(function(error) {
+                        reject(error);
+                    });
+            });
+        },
+        fetchByType: function(type) {
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+            };
+            Object.assign(data, this.getTypeUrlParameter(type));
+            return countlyPushNotification.api.findAll(data);
+        },
+        fetchById: function(id) {
+            return new Promise(function(resolve, reject) {
+                countlyPushNotification.api.findById(id).then(function(response) {
+                    var model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
+                    var cohorts = [];
+                    if (model.type === TypeEnum.ONE_TIME) {
+                        cohorts = model.cohorts;
+                    }
+                    if (model.type === TypeEnum.AUTOMATIC) {
+                        cohorts = model.automatic.cohorts;
+                    }
+                    Promise.all(
+                        [countlyPushNotification.service.fetchCohorts(cohorts, false),
+                            countlyPushNotification.service.fetchLocations(model.locations, false)]
+                    ).then(function(responses) {
+                        if (model.type === TypeEnum.ONE_TIME) {
+                            model.cohorts = responses[0];
+                        }
+                        if (model.type === TypeEnum.AUTOMATIC) {
+                            model.automatic.cohorts = responses[0];
+                        }
+                        model.locations = responses[1];
+                        resolve(model);
+                    });
+                }).catch(function(error) {
+                    reject(error);
+                });
+            });
+        },
+        fetchDashboard: function() {
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+            };
+            return countlyPushNotification.api.getDashboard(data);
+        },
+        fetchMediaMetadata: function(url) {
+            return new Promise(function(resolve, reject) {
+                countlyPushNotification.api.getMime(url).then(function(response) {
+                    resolve(countlyPushNotification.mapper.incoming.mapMediaMetadata(response));
+                }).catch(function(error) {
+                    reject(error);
+                });
+            });
+        },
+        fetchMediaMetadataWithDebounce: _.debounce(function(url, resolveCallback, rejectCallback) {
+            this.fetchMediaMetadata(url).then(resolveCallback).catch(rejectCallback);
+        }, DEBOUNCE_TIME_IN_MS),
+        prepare: function(pushNotificationModel) {
+            return new Promise(function(resolve, reject) {
+                var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
+                var data = {
+                    app: countlyCommon.ACTIVE_APP_ID,
+                    platforms: platformsDto,
+                };
+                var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel);
+                if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel) && filtersDto) {
+                    data.filter = filtersDto;
+                }
+                countlyPushNotification.api.estimate(data).then(function(response) {
+                    var localesDto = response.locales;
+                    localesDto.count = response.count;
+                    var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
+                    resolve({localizations: localizations, total: response.count, _id: response._id});
+                }).catch(function(error) {
+                    reject(error);
+                });
+            });
+        },
+        delete: function(id) {
+            var data = {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                _id: id
+            };
+            return countlyPushNotification.api.delete(data);
+        },
+        save: function(model, options) {
+            try {
+                var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+            }
+            catch (error) {
+                //TODO:log error;
+                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
+            }
+            return countlyPushNotification.api.save(dto);
+        },
+        update: function(model, options) {
+            try {
+                var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+            }
+            catch (error) {
+                //TODO:log error
+                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
+            }
+            return countlyPushNotification.api.update(dto);
+        },
+        resend: function(model, options) {
+            try {
+                var dto = countlyPushNotification.mapper.outgoing.mapModelToDto(model, options);
+            }
+            catch (error) {
+                //TODO:log error
+                return Promise.reject(new Error('Unknown error occurred.Please try again later.'));
+            }
+            var resendUserFilter = {message: {$nin: [model._id]}};
+            if (!dto.filter) {
+                dto.filter = {};
+            }
+            if (!dto.filter.user) {
+                dto.filter.user = resendUserFilter;
+            }
+            else {
+                if (typeof dto.filter.user === 'string') {
+                    dto.filter.user = JSON.parse(dto.filter.user);
+                }
+                if (dto.filter.user.$and) {
+                    dto.filter.user.push(resendUserFilter);
+                }
+                else {
+                    dto.filter.user.message = resendUserFilter.message;
+                }
+            }
+            return countlyPushNotification.api.save(dto);
+        },
+        approve: function(messageId) {
+            if (!this.isPushNotificationApproverPluginEnabled()) {
+                throw new Error('Push approver plugin is not enabled');
+            }
+            return countlyPushNotificationApprover.service.approve(messageId);
+        },
     };
 
     var getDetailsInitialState = function() {
@@ -1794,10 +1860,6 @@
                 });
                 //TODO: log error
             });
-        },
-        // eslint-disable-next-line no-unused-vars
-        onResend: function(context, payload) {
-            //TODO: resend push notification
         },
         onSetLocalFilter: function(context, value) {
             context.commit('setLocalFilter', value);
@@ -1885,7 +1947,7 @@
         },
         onDelete: function(context, id) {
             context.dispatch('onFetchInit', {useLoader: true});
-            countlyPushNotification.service.deleteById(id)
+            countlyPushNotification.service.delete(id)
                 .then(function() {
                     context.dispatch('fetchAll');
                     context.dispatch('onFetchSuccess', {useLoader: true});
@@ -1917,10 +1979,6 @@
                 });
                 //TODO: log error
             });
-        },
-        // eslint-disable-next-line no-unused-vars
-        onResend: function(context, payload) {
-            //TODO: resend push notification
         },
         onSetPushNotificationType: function(context, value) {
             context.commit('setPushNotificationType', value);

@@ -344,7 +344,10 @@
                 return nextStep === 2 && currentStep < 2;
             },
             isEditMode: function() {
-                return this.userCommand === this.UserCommandEnum.DUPLICATE || this.userCommand === this.UserCommandEnum.EDIT_DRAFT || this.userCommand === this.UserCommandEnum.EDIT;
+                return this.userCommand === this.UserCommandEnum.DUPLICATE ||
+                this.userCommand === this.UserCommandEnum.EDIT_DRAFT ||
+                this.userCommand === this.UserCommandEnum.EDIT ||
+                this.userCommand === this.UserCommandEnum.RESEND;
             },
             shouldRunPrepare: function(nextStep, currentStep) {
                 return this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep);
@@ -405,7 +408,9 @@
                     self.addQueryFilterIfFound(preparePushNotificationModel);
                     countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
-                        self.setId(response._id);
+                        if (response._id) {
+                            self.setId(response._id);
+                        }
                         self.setCurrentNumberOfUsers(response.total);
                         resolve(true);
                     }).catch(function(error) {
@@ -448,6 +453,20 @@
                 options.isEndDateSet = this.isEndDateSet;
                 this.addQueryFilterIfFound(model);
                 return countlyPushNotification.service.update(model, options);
+            },
+            resend: function(options) {
+                if (!options) {
+                    options = {};
+                }
+                var model = Object.assign({}, this.pushNotificationUnderEdit);
+                model.type = this.type;
+                options.totalAppUsers = this.totalAppUsers;
+                options.localizations = this.localizationOptions;
+                options.settings = this.settings;
+                options.isUsersTimezoneSet = this.isUsersTimezoneSet;
+                options.isEndDateSet = this.isEndDateSet;
+                this.addQueryFilterIfFound(model);
+                return countlyPushNotification.service.resend(model, options);
             },
             saveDraft: function() {
                 var options = {};
@@ -509,6 +528,9 @@
                 }
                 if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
                     promiseMethod = this.save;
+                }
+                if (this.userCommand === this.UserCommandEnum.RESEND) {
+                    promiseMethod = this.resend;
                 }
                 if (!promiseMethod) {
                     throw new Error('Invalid user command:' + this.userCommand);
@@ -1064,7 +1086,7 @@
                 this.$store.dispatch('countlyPushNotification/main/onUserCommand', {type: command, pushNotificationId: pushNotificationId});
                 switch (command) {
                 case this.UserCommandEnum.RESEND: {
-                    this.$store.dispatch('countlyPushNotification/main/onResend', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.DUPLICATE: {
@@ -1343,7 +1365,7 @@
                 this.$store.dispatch('countlyPushNotification/details/onUserCommand', {type: command, pushNotificationId: pushNotificationId});
                 switch (command) {
                 case this.UserCommandEnum.RESEND: {
-                    this.$store.dispatch('countlyPushNotification/details/onResend', pushNotificationId);
+                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
                     break;
                 }
                 case this.UserCommandEnum.DUPLICATE: {
