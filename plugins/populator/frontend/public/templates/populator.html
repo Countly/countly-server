@@ -11,10 +11,7 @@
             </cly-header>
             <cly-main>
                 <div>
-                    <div class="populator-wrapper__alert-box">
-                        <img class="alert-image" src="populator/images/warning.png">
-                        <span class="alert-text"> {{ description }} </span>
-                    </div>
+                    <cly-notification :closable="false">{{ description }}</cly-notification>
                 </div>
                 <cly-section class="bu-mt-5">
                     <cly-sub-section>
