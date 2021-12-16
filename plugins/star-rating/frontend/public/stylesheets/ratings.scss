@@ -11,9 +11,15 @@
   .cly-vue-cohorts-targeting__seg-hsection {
     padding: 0px !important;
   }
+
+  .ratings-drawer-dropzone {
+    border-color: #0166D6;
+    border-radius: 4px;
+  }
 }
 
 .ratings-drawer {
+
   &__ratings-texts-input {
     margin: 5px 0px;
   }
@@ -236,11 +242,6 @@
 
   .cly-vue-drawer-step__section {
     padding: 12px 16px;
-  }
-
-  .ratings-drawer-dropzone {
-    border-color: #0166D6;
-    border-radius: 4px;
   }
 }
 

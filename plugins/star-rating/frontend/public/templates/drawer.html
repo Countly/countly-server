@@ -228,7 +228,17 @@
               id="logo-dropzone"
               @vdropzone-file-added="onFileAdded"
               @vdropzone-complete="onComplete"
-              :options="logoDropzoneOptions">
+              :options="logoDropzoneOptions"
+              :useCustomSlot="true">
+                <div class="dropzone-custom-content">
+                  <h3 class="dropzone-custom-title">
+                    <img src="star-rating/images/star-rating/folder-icon.svg" alt="">
+                  </h3>
+                  <div class="subtitle text-medium bu-mt-2">
+                    <span class="bu-has-text-weight-light bu-has-text-grey">{{ i18n('feedback.drop-message') }}</span>
+                    <span class="bu-has-text-link bu-has-text-weight-medium">{{ i18n('feedback.click-to-upload') }}</span>
+                  </div>
+                </div>
             </cly-dropzone>
           </div>
           <div class="cly-vue-drawer-step__section">
