@@ -740,9 +740,13 @@
                             </div>\
                         </slot>\
                         <div style="width: 400px;">\
-                            <slot name="content">\
+                            <slot name="title">\
                                 <h3 class="color-cool-gray-100 bu-mt-5 bu-mb-4 bu-has-text-centered">{{title}}</h3>\
+                            </slot>\
+                            <slot name="subTitle">\
                                 <div class="color-cool-gray-50 text-medium bu-has-text-centered">{{subTitle}}</div> \
+                            </slot>\
+                            <slot name="action">\
                                 <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered bu-mt-5 color-blue-100 pointer">{{actionTitle}}</div>\
                             </slot>\
                         </div>\
