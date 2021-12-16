@@ -76,11 +76,14 @@
             },
             conditions: function() {
                 var conditions = [];
-                var conditionsMap = this.$store.getters["countlyRemoteConfig/parameters/conditionsMap"];
+                var allConditions = this.$store.getters["countlyRemoteConfig/conditions/all"];
                 var self = this;
                 if (this.parameter.conditions.length > 0) {
                     this.parameter.conditions.forEach(function(condition) {
-                        var conditionProperties = conditionsMap[condition.condition_id];
+                        var conditionsArr = allConditions.filter(function(item) {
+                            return item._id === condition.condition_id;
+                        });
+                        var conditionProperties = conditionsArr[0];
                         var ob = {
                             color: self.getColor(conditionProperties.condition_color),
                             percentage: condition.c ? ((condition.c) / self.totalConditions).toFixed(2) : 0,
@@ -453,10 +456,13 @@
                         this.showExpirationDate = true;
                     }
                     if (doc.conditions) {
-                        var conditionsMap = this.$store.getters["countlyRemoteConfig/parameters/conditionsMap"];
+                        var allConditions = this.$store.getters["countlyRemoteConfig/conditions/all"];
                         doc.conditions.forEach(function(item) {
-                            if (conditionsMap[item.condition_id]) {
-                                item.name = conditionsMap[item.condition_id].condition_name;
+                            var conditionsArr = allConditions.filter(function(ob) {
+                                return ob._id === item.condition_id;
+                            });
+                            if (conditionsArr.length > 0) {
+                                item.name = conditionsArr[0].condition_name;
                             }
                         });
                         this.conditions = doc.conditions;
@@ -639,7 +645,7 @@
                 if (conditions.length === 1) {
                     return "1 condition";
                 }
-                return conditions.length + "conditions";
+                return conditions.length + " conditions";
             },
             getDate: function(ts) {
                 if (!ts) {

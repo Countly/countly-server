@@ -122,20 +122,6 @@
                             parameter.status = "Expired";
                         }
                     });
-                    if (conditions.length > 0) {
-                        var map = {};
-                        conditions.forEach(function(c) {
-                            map[c._id] = {
-                                "condition": c.condition,
-                                "condition_color": c.condition_color,
-                                "condition_definition": c.condition_definition,
-                                "condition_name": c.condition_name,
-                                "seed_value": c.seed_value,
-                                "used_in_parameters": c.used_in_parameters
-                            };
-                        });
-                        context.dispatch("countlyRemoteConfig/parameters/conditionsMap", map, {root: true});
-                    }
                     context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
                     context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
                 });
@@ -148,7 +134,6 @@
                     all: [],
                     showJsonEditor: false,
                     showJsonEditorForCondition: false,
-                    conditionsMap: {},
                     showConditionDialog: false
                 };
             },
@@ -162,9 +147,6 @@
                 showJsonEditorForCondition: function(state) {
                     return state.showJsonEditorForCondition;
                 },
-                conditionsMap: function(state) {
-                    return state.conditionsMap;
-                },
                 showConditionDialog: function(state) {
                     return state.showConditionDialog;
                 }
@@ -176,9 +158,6 @@
                 setShowJsonEditor: function(state, val) {
                     state.showJsonEditor = val;
                 },
-                setConditionsMap: function(state, val) {
-                    state.conditionsMap = val;
-                },
                 setShowJsonEditorForCondition: function(state, val) {
                     state.showJsonEditorForCondition = val;
                 },
@@ -187,9 +166,6 @@
                 }
             },
             actions: {
-                conditionsMap: function(context, map) {
-                    context.commit("setConditionsMap", map);
-                },
                 all: function(context, parameters) {
                     context.commit("setAll", parameters);
                 },
