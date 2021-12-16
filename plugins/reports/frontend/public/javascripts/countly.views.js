@@ -31,9 +31,12 @@
                 deleteMessage: '',
             };
         },
+        props: {
+            callCreateReportDrawer: {type: Function, default: function() {}},
+        },
         methods: {
             createReport: function() {
-                $("#create-report-button").click();
+                this.callCreateReportDrawer();
             },
             handleReportEditCommand: function(command, scope) {
                 switch (command) {

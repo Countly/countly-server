@@ -732,4 +732,33 @@
         }
     }));
 
+    Vue.component("cly-empty-view", countlyBaseComponent.extend({
+        template: ' <div class="bu-is-flex  bu-is-flex-direction-column bu-is-align-items-center" style="height:calc(100vh - 193px);">\
+                        <slot name="icon">\
+                            <div style="margin-top: 122px;border-radius: 50%;width: 96px;height: 96px;background: gray;">\
+                                <img src="images/icons/empty-view-icon.svg" style="width: 96px;height: 96px;"/>\
+                            </div>\
+                        </slot>\
+                        <div style="width: 400px;">\
+                            <slot name="content">\
+                                <h3 class="color-cool-gray-100 bu-mt-5 bu-mb-4 bu-has-text-centered">{{title}}</h3>\
+                                <div class="color-cool-gray-50 text-medium bu-has-text-centered">{{subTitle}}</div> \
+                                <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered bu-mt-5 color-blue-100 pointer">{{actionTitle}}</div>\
+                            </slot>\
+                        </div>\
+                    </div>',
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            title: { default: "...hmm, seems it’s empty here", type: String },
+            subTitle: { default: "", type: String },
+            actionTitle: { default: "Create", type: String },
+            actionFunc: { default: null, type: Function },
+        },
+        data: function() {
+            return {}
+        },
+        methods: {
+        }
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));

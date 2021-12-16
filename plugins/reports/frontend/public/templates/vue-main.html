@@ -6,12 +6,12 @@
             </h2><span class="cly-vue-tooltip-icon ion-help-circled color-cool-gray-50" style="margin-left:10px;" v-tooltip.top-center="i18n('reports.tips')"/>
         </template>
         <template v-slot:header-right>
-            <el-button id="create-report-button" type="success" icon="el-icon-circle-plus" v-on:click="createReport()">{{i18n('reports.create')}}</el-button>
+            <el-button id="create-report-button" type="success" icon="el-icon-circle-plus" @click="createReport">{{i18n('reports.create')}}</el-button>
         </template>
     </cly-header>
 
     <cly-main>
-        <table-view v-on:open-drawer="openDrawer"></table-view>
+        <table-view v-on:open-drawer="openDrawer" :callCreateReportDrawer="createReport"></table-view>
     </cly-main>
     <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
 </div>
@@ -20,20 +20,15 @@
 
 <script  type="text/x-template" id="reports-table">
 <div>
-<div v-if="tableRows.length === 0" >
-    <div class="bu-is-flex  bu-is-flex-direction-column bu-is-align-items-center empty-view">
-        <div class="no-content-circle">
-        </div>
-        <div   style="width: 400px;">
-            <h3 class="color-cool-gray-100 bu-mt-5 bu-mb-4 bu-has-text-centered">...hmm, seems it’s empty here</h3>
-            <div class="color-cool-gray-50 text-medium bu-has-text-centered">
-                Create something to Lorem ipsum dolor sit amet,
-                consectetur adipiscing elit, 
-            </div>
-            <div  v-on:click="createReport()" class="button bu-has-text-centered bu-mt-5 color-blue-100 pointer">+ Create New Report</div>
-        </div>
-    </div>
-</div>
+<cly-empty-view 
+    v-if="tableRows.length === 0"
+    :title="i18n('reports.empty-title')"
+    :subTitle="i18n('reports.empty-subtitle')"
+    :actionTitle="i18n('reports.empty-action-button-title')"
+    :actionFunc="createReport"
+> 
+</cly-empty-view>
+
 <cly-section v-if="tableRows.length > 0">
     <cly-datatable-n
         class="cly-vue-reports-table"

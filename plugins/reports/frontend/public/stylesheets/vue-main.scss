@@ -1,19 +1,4 @@
 #reports-view {
-    .empty-view {
-        height: calc(100vh - 193px);
-        .no-content-circle {
-            margin-top: 122px;
-            background: gray;
-            border-radius: 50%;
-            width: 96px;
-            height: 96px;
-            background-image: url("../images/empty.svg");
-        }
-        .pointer {
-            cursor: pointer;
-        }
-    }
-    
     .text-heading.title {
         font-size: 13px;
     }
