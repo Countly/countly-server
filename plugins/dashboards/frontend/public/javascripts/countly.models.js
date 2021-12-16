@@ -91,7 +91,7 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/dashboards/widget",
                     data: {
-                        "period": "",
+                        "period": countlyCommon.getPeriodForAjax(),
                         "dashboard_id": dashboardId,
                         "widget_id": widgetId
                     }
@@ -198,36 +198,18 @@
                 },
                 create: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
+                    var settings = widget.settings || {};
 
-                    return countlyDashboards.service.widgets.create(dashboardId, widget);
+                    return countlyDashboards.service.widgets.create(dashboardId, settings);
                 },
                 update: function(context, widget) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
                     var widgetId = widget.id;
-                    delete widget.id;
+                    var settings = widget.settings;
 
-                    return countlyDashboards.service.widgets.update(dashboardId, widgetId, widget).then(function() {
+                    return countlyDashboards.service.widgets.update(dashboardId, widgetId, settings).then(function() {
                         context.dispatch("get", widgetId);
                     });
-                },
-                updatePosition: function(context, params) {
-                    var widget = {
-                        id: params.id
-                    };
-
-                    if (!params.position && !params.size) {
-                        return;
-                    }
-
-                    if (params.position) {
-                        widget.position = params.position;
-                    }
-
-                    if (params.size) {
-                        widget.size = params.size;
-                    }
-
-                    return context.dispatch("update", widget);
                 },
                 delete: function(context, widgetId) {
                     var dashboardId = context.rootGetters["countlyDashboards/selected"].id;
@@ -364,7 +346,7 @@
                     /*
                         data.id will be null when the dashboard is deleted.
                     */
-                    context.dispatch("getDashboard");
+                    context.dispatch("getDashboard", data);
                 }
             },
 

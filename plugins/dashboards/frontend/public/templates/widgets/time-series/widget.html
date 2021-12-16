@@ -2,10 +2,13 @@
     <div class="bu-level">
         <div class="bu-level-left">
             <div class="bu-level-item">
-                {{data.widget_type}}
+                {{title}}
             </div>
         </div>
         <div class="bu-level-right">
+            <div class="bu-level-item">
+                <clyd-bucket :widget-id="data._id" v-model="selectedBucket"></clyd-bucket>
+            </div>
             <slot name="action"></slot>
         </div>
     </div>
