@@ -37,7 +37,7 @@
         <select class="email-list-input" placeholder="Input Email address" v-model="value.address">
         </select>
         <div class="">
-            <textarea v-model="value.emailTemplate" style="width:100%;border: 1px solid #d6d6d6;" name="email-template" rows="5"  cols="60" placeholder="Content template here"></textarea> 
+            <textarea v-html="value.emailTemplate" @change="textChange" style="width:100%;border: 1px solid #d6d6d6;" name="email-template" rows="5"  cols="60" placeholder="Content template here"></textarea> 
         </div>
      </div>
 </div>
@@ -48,7 +48,7 @@
     <div class="text-medium text-heading">
        {{i18n('hooks.CustomCodeEffect')}} 
     </div>
-        <textarea v-model="value.code" style="width:100%;border: 1px solid #d6d6d6;" name="custom-code-input" rows="5"  cols="60" placeholder="//Javascript code here"></textarea>
+        <textarea v-html="value.code" @change="textChange" style="width:100%;border: 1px solid #d6d6d6;" name="custom-code-input" rows="5"  cols="60" placeholder="//Javascript code here"></textarea>
 </div>
 </script>
 
@@ -81,7 +81,7 @@
         {{i18n('hooks.http-intro')}}
         
         </div>
-        <textarea v-model="value.requestData" style="width:100%;border: 1px solid #d6d6d6;" name="http-effect-params" rows="5"  cols="60"></textarea>
+        <textarea v-html="value.requestData"  @change="textChange" style="width:100%;border: 1px solid #d6d6d6;" name="http-effect-params" rows="5"  cols="60"></textarea>
     </div>
 </div>
 </script>
