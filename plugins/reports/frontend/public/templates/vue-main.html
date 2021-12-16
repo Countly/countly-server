@@ -265,10 +265,12 @@
                 :key="idx"
                 v-for="(item, idx) in frequencyOptions"
             border>
-                {{item.label}}
-                <div class="text-small">
+            <div class="bu-is-flex bu-is-justify-content-space-between">
+                <span class="text-medium">{{item.label}}</span>
+                <span class="text-small bu-mt-auto">
                     {{item.description}}
-                </div>
+                </span>
+            </div>
             </el-radio>
         </div>
 
