@@ -58,6 +58,7 @@
                     delete data.triggerEffectColumn;
                     delete data.nameDescColumn;
                     delete data.triggerEffectDom;
+                    delete data.error_logs;
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
@@ -117,7 +118,13 @@
                 type: Object
             },
         },
+        mounted: function() {
+            this.value.requestData = _.unescape(this.value.requestData);
+        },
         methods: {
+            textChange: function(event) {
+                this.value.requestData = _.unescape(event.currentTarget.value);
+            }
         }
     });
 
@@ -208,8 +215,12 @@
                 }
                 this.emailInput[0].selectize.setValue(this.value.address, false);
             }
+            this.value.emailTemplate = _.unescape(this.value.emailTemplate);
         },
         methods: {
+            textChange: function(event) {
+                this.value.emailTemplate = _.unescape(event.currentTarget.value);
+            }
         }
     });
 
@@ -225,7 +236,13 @@
                 type: Object
             },
         },
+        mounted: function() {
+            this.value.code = _.unescape(this.value.code);
+        },
         methods: {
+            textChange: function(event) {
+                this.value.code = _.unescape(event.currentTarget.value);
+            }
         }
     });
 
@@ -800,6 +817,7 @@
                     delete data.triggerEffectColumn;
                     delete data.nameDescColumn;
                     delete data.triggerEffectDom;
+                    delete data.error_logs;
                     this.openDrawer("detail", data);
                 }
                 else if (command === "delete-comment") {
