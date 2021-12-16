@@ -1734,7 +1734,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         params.viewsNamingMap[currEvent.segmentation.name] = view._id;
                         var escapedMetricVal = common.db.encode(view._id + "");
                         currEvent.viewAlias = escapedMetricVal;
-                        currEvent.segmentation._id = escapedMetricVal;
                         resolve(currEvent);
                     }
                 });
@@ -1744,7 +1743,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 getViewNameObject(params, 'app_viewsmeta' + params.app_id, query, null, null, function(err, view) {
                     if (view) {
                         currEvent.viewAlias = common.db.encode(view._id + "");
-                        currEvent.segmentation._id = currEvent.viewAlias;
                         resolve(currEvent);
                     }
                 });
