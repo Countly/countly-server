@@ -48,7 +48,7 @@ class CustomCodeEffect {
                 }
                 CUSTOM_MAIN();
             `;
-            vm.runInNewContext(genCode, {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK}, { timeout: 30000, microtaskMode: 'afterEvaluate' });
+            vm.runInNewContext(genCode, {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK}, { timeout: 30000});
             options.params = params;
         }).catch(e => {
             runtimePassed = false;
@@ -57,7 +57,6 @@ class CustomCodeEffect {
                 stack: ${JSON.stringify(e.stack)}
             `);
             utils.addErrorRecord(rule._id, e);
-            console.log(e, "eee, exech!!");
         });
         return runtimePassed ? options : {...options, logs};
     }
