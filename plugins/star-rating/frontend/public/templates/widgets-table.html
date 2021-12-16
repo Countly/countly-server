@@ -11,7 +11,7 @@
           </el-table-column>
           <el-table-column width="350" fixed :label="i18n('feedback.ratings-widget-name')">
             <template v-slot="rowScope">
-                <div @click="goWidgetDetail(rowScope.row._id)" class="text-medium bu-is-underlined">
+                <div @click="goWidgetDetail(rowScope.row._id)" class="text-medium bu-is-underlined bu-is-clickable">
                   {{rowScope.row.popup_header_text}}
                 </div>
                 <div>
@@ -20,9 +20,9 @@
                 </div>
             </template>
           </el-table-column>
-          <el-table-column width="550" v-if="cohortsEnabled" prop="targeting" :label="i18n('feedback.targeting')">
+          <el-table-column v-if="cohortsEnabled" prop="targeting" :label="i18n('feedback.targeting')">
             <template v-slot="rowScope">
-              <cly-cohort-targeting :targeting="rowScope.row.targeting">
+              <cly-cohort-targeting inline :targeting="rowScope.row.targeting">
               </cly-cohort-targeting>
             </template>
           </el-table-column>
@@ -38,13 +38,6 @@
               <span class="text-medium">
                 {{ rowScope.row.ratingsCount }}
               </span>
-            </template>
-          </el-table-column>
-          <el-table-column type="options">
-            <template :label="i18n('feedback.detail')" v-slot="rowScope">
-                <cly-more-options v-if="rowScope.row.hover" class="bu-ml-2" size="small" @command="handleCommand($event, rowScope.row._id)">
-                  <el-dropdown-item command="show-detail"> {{ i18n('feedback.show-detail') }}</el-dropdown-item>
-                </cly-more-options>
             </template>
           </el-table-column>
         </template>

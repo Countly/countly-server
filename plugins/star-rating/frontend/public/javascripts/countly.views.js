@@ -149,12 +149,8 @@ var WidgetsTable = countlyVue.views.create({
         }
     },
     methods: {
-        handleCommand: function(command, id) {
-            switch (command) {
-            case 'show-detail':
-                window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
-                break;
-            }
+        goWidgetDetail: function(id) {
+            window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
         },
         parseTargeting: function(widget) {
             widget.targeting.steps = JSON.parse(widget.targeting.steps);
