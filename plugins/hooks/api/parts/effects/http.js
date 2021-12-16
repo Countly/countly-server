@@ -26,12 +26,13 @@ class HTTPEffect {
         try {
             const parsedURL = utils.parseStringTemplate(url, params);
             const parsedRequestData = utils.parseStringTemplate(requestData, params, method);
-            log.d("[hook http effect ]", parsedURL, parsedRequestData);
+            log.d("[hook http effect ]", parsedURL, parsedRequestData, method);
 
             // todo: assemble params for request;
             // const params = {}
 
-            switch (method) {
+            const methodOption = method && method.toLowerCase() || "get";
+            switch (methodOption) {
             case 'get':
                 await request.get({uri: parsedURL + "?" + parsedRequestData, timeout: this._timeout}, function(e, r, body) {
                     log.d("[http get effect]", e, body);

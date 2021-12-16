@@ -122,7 +122,7 @@
                 }
             },
             totalPages: function() {
-                return Math.ceil(this.dataView.totalRows / this.controlParams.perPage);
+                return countlyCommon.formatNumber(Math.ceil(this.dataView.totalRows / this.controlParams.perPage));
             },
             lastPage: function() {
                 return this.totalPages;
@@ -328,7 +328,8 @@
     var MutationTrackerMixin = {
         data: function() {
             return {
-                patches: {}
+                patches: {},
+                hasSelection: false
             };
         },
         props: {
@@ -502,6 +503,12 @@
                 return DEFAULT_ROW;
             },
             onCellMouseEnter: function(row) {
+                if (this.hasSelection) {
+                    //If the table is in a selection mode, donot patch
+                    //Because if we patch to show action buttons the selection will be lost
+                    return;
+                }
+
                 var thisRowKey = this.keyOf(row);
                 var hovered = this.mutatedRows.filter(function(r) {
                     return r.hover;
@@ -519,7 +526,19 @@
                     this.patch(row, {hover: true});
                 }
             },
+            onSelectionChange: function(selected) {
+                this.hasSelection = selected.length ? true : false;
+                if (!this.hasSelection) {
+                    this.removeHovered();
+                }
+            },
             onNoCellMouseEnter: function() {
+                if (this.hasSelection) {
+                    //If the table is in a selection mode, donot unpatch
+                    //Because if we unpatch to hide action buttons selection will be lost on unpatch
+                    return;
+                }
+
                 this.removeHovered();
             },
             removeHovered: function() {
