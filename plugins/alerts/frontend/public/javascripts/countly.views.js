@@ -36,7 +36,6 @@
                 apps: [""],
                 defaultAppsSelectorOption: defaultAppsSelectorOption,
                 appsSelectorOption: appsSelectorOption,
-                emailOptions: [{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
                 showSubType1: true,
                 showSubType2: false,
                 showCondition: true,
@@ -219,17 +218,6 @@
                         this.resetAlertConditionShow();
                     }
                     return;
-                }
-            },
-            emailInputFilter: function(val) {
-                var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-                var regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
-                var match = val.match(regex);
-                if (match) {
-                    this.emailOptions = [{value: val, label: val}];
-                }
-                else {
-                    this.emailOptions = [];
                 }
             },
             onSubmit: function(settings) {

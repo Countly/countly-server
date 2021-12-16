@@ -1,11 +1,15 @@
 #alerts-view {
 
     .cly-vue-alerts-table {
-        .is-option-button {
-            visibility: hidden;
+        .no-search-circle {
+            border-radius: 50%;
+            width: 96px;
+            height: 96px;
+            background-image: url("../images/search-empty.svg");
         }
-        tr:hover .is-option-button {
-            visibility: visible;
+        .switch-column {
+            padding-left: 16px;
+            padding-right: 26px;
         }
     }
     .cly-vue-drawer__steps-view {
@@ -31,7 +35,7 @@
 
     
         &__line {
-            margin-top: 13px;
+            margin-top: 12px;
             border-top: 2px solid  #ECECEC;
         }
     }
