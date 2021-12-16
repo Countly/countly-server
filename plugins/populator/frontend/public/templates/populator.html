@@ -1,0 +1,97 @@
+<div> 
+    <cly-tabs v-model="currentTab">
+        <el-tab-pane name="data-populator" :label="i18n('populator.plugin-title')" class="populator-wrapper">
+            <cly-header>
+                <template v-slot:header-left>
+                    <h2>
+                        {{ i18n('populator.plugin-title') }}
+                        <cly-tooltip-icon></cly-tooltip-icon>
+                    </h2>
+                </template>
+            </cly-header>
+            <cly-main>
+                <div>
+                    <cly-notification :closable="false">{{ description }}</cly-notification>
+                </div>
+                <cly-section class="bu-mt-5">
+                    <cly-sub-section>
+                        <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.app-template') }}</span>
+                        <cly-tooltip-icon class="bu-ml-1" title="tooltip"></cly-tooltip-icon>
+                        <el-select class="bu-ml-2" v-model="selectedTemplate" :placeholder="i18n('populator.select-template')">
+                            <el-option :key="item._id" :value="item._id" :label="item.name" v-for="item in templates"></el-option>
+                        </el-select>
+                    </cly-sub-section>
+                    <cly-sub-section>
+                        <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.date-range') }}</span>
+                        <cly-tooltip-icon class="bu-ml-1" title="tooltip"></cly-tooltip-icon>
+                        <cly-date-picker-g class="populator-wrapper__date-picker"></cly-date-picker-g>
+                    </cly-sub-section>
+                    <cly-sub-section>
+                        <span class="text-medium font-weight-bold text-uppercase">{{ i18n('populator.maxtime') }}</span>
+                        <el-input class="populator-wrapper__max-time" v-model="maxTime"></el-input>
+                    </cly-sub-section>
+                    <cly-sub-section class="bu-level-right">
+                        <el-button type="success" :disabled="selectedTemplate.length === 0" @click="openDialog()">{{ i18n('populator.start') }}</el-button>
+                    </cly-sub-section>
+                </cly-section>
+                <cly-confirm-dialog @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" >
+                    <template slot-scope="scope">
+                        <div v-html="dialog.text"></div>
+                    </template>
+                </cly-confirm-dialog> 
+                <el-dialog class="populator-start-modal-wrapper" :visible.sync="generateDataModal.showDialog"  width="30%" :before-close="closeGenerateDataModal">
+                    <img src="/populator/images/generate-data-modal.png" style="width: 100%; height: 177px;">
+                    <div class="populator-start-modal-wrapper__modal-progress-container">
+                        <cly-progress-bar  :percentage="percentage" :color="progressBarColor" :height:=8 class="bu-mt-1 populator-start-modal-wrapper__proggress-bar"></cly-progress-bar>
+                        <h3 class="populator-start-modal-wrapper__generate-data-header">{{ i18n('populator.generating-data') }}</h3>
+                        <span class="text-medium bu-has-text-grey-light populator-start-modal-wrapper__generate-data-bulk" >{{ i18n('populator.bulk') }}</span>
+                        <el-button type="default" class="bu-mt-6" @click="stopPopulate()">{{i18n('populator.stop')}}</el-button>
+                    </div>
+                </el-dialog>
+                <el-dialog class="populator-stop-modal-wrapper" :visible.sync="finishedGenerateModal.showDialog"  width="30%">
+                    <div class="populator-stop-modal-wrapper__modal-progress-container">
+                        <i class="el-icon-success populator-stop-modal-wrapper__success-icon"></i>
+                        <h3 class="populator-stop-modal-wrapper__finished-confirm-header">{{ i18n('populator.finished-confirm-title') }}</h3>
+                        <span class="text-medium populator-stop-modal-wrapper__finished-confirm-sub-title" >{{ i18n('populator.finished-confirm-sub-title') }}</span>
+                        <el-button type="success" class="bu-mt-6" @click="redirectHomePage()">{{i18n('populator.go-to-homepage')}}</el-button>
+                        <el-button type="default" class="bu-mt-4 bu-mb-4" @click="continuePopulate()">{{i18n('populator.cancel')}}</el-button>
+                    </div>
+                </el-dialog>
+            </cly-main>
+        </el-tab-pane>
+        <el-tab-pane name="templates" :label="i18n('populator.templates-tab-title')">
+            <cly-header>
+                <template v-slot:header-left>
+                    <h2>
+                        {{ i18n('populator.templates-tab-title') }}
+                        <cly-tooltip-icon></cly-tooltip-icon>
+                    </h2>
+                </template>
+                <template v-slot:header-right>
+                    <el-button type="success" icon="el-icon-circle-plus" @click="newTemplate">{{i18n("populator.create-new-template")}}</el-button>
+                </template>
+            </cly-header>
+            <cly-main>
+                <cly-datatable-n :rows="templates">
+                    <template v-slot="scope">
+                        <el-table-column prop="name" fixed="left" :label="i18n('populator.template')" width="220" sortable></el-table-column>
+                        <el-table-column prop="isDefault" :label="i18n('populator.template-type')" width="200" sortable></el-table-column>
+                        <el-table-column prop="upCount" :label="i18n('populator.number-of-user-props')" width="240" sortable></el-table-column>
+                        <el-table-column prop="eventCount" :label="i18n('populator.number-of-events')" width="220" sortable></el-table-column>
+                        <el-table-column prop="editedBy" :label="i18n('populator.edited-by')" width="200" sortable></el-table-column>
+                        <el-table-column type="options">
+                            <template v-slot="col">
+                                <cly-more-options v-if="col.row.hover" size="small" @command="changeTemplate($event, col.row)">
+                                    <el-dropdown-item command="edit" v-if="col.row.buttonShow">{{ i18n('populator.edit') }}</el-dropdown-item>
+                                    <el-dropdown-item command="delete" v-if="col.row.buttonShow">{{ i18n('populator.delete') }}</el-dropdown-item>
+                                    <el-dropdown-item command="duplicate">{{ i18n('populator.duplicate') }}</el-dropdown-item>
+                                </cly-more-options>
+                            </template>
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </cly-main>
+        </el-tab-pane>
+    </cly-tabs>
+    <cly-populator-template-drawer ref="populatorTemplateDrawer" @closeHandler="refreshTable" :titleDescription="titleDescription" :controls="drawers.populatorTemplate"></cly-populator-template-drawer>
+</div>
