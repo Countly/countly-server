@@ -122,7 +122,7 @@
                 }
             },
             totalPages: function() {
-                return Math.ceil(this.dataView.totalRows / this.controlParams.perPage);
+                return countlyCommon.formatNumber(Math.ceil(this.dataView.totalRows / this.controlParams.perPage));
             },
             lastPage: function() {
                 return this.totalPages;
