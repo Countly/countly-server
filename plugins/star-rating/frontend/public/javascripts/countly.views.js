@@ -526,6 +526,7 @@ var WidgetDetail = countlyVue.views.create({
     ],
     data: function() {
         return {
+            activeNames: [1],
             cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
             activeFilter: {
                 platform: "",
