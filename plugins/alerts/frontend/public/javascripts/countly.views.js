@@ -380,7 +380,6 @@
         },
         methods: {
             createAlert: function() {
-                console.log("@@@")
                 this.callCreateAlertDrawer();
             },
             handleAlertEditCommand: function(command, scope) {
