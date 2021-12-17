@@ -1,8 +1,8 @@
 {
-  "name": "countly-old-ui-compatability",
-  "title": "Old UI Compatability",
+  "name": "countly-old-ui-compatibility",
+  "title": "Old UI compatability",
   "version": "0.0.0",
-  "description": "Provides compatability libraries for old UI",
+  "description": "Plugin to support old UI type plugins",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/",
   "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
