@@ -26,7 +26,7 @@
     "test": "grunt --verbose"
   },
   "dependencies": {    
-    "apidoc": "^0.29.0",
+    "apidoc": "^0.50.2",
     "apidoc-template": "github:kanwarujjaval/dash-apidoc-template",
     "argon2": "0.28.3",
     "async": "3.2.2",
