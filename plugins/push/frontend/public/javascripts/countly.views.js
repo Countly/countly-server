@@ -320,21 +320,20 @@
             formatDateTime: function(dateTime, format) {
                 return countlyPushNotification.helper.formatDateTime(dateTime, format);
             },
-            setUserPropertiesOptions: function(userPropertiesOptionsDto) {
-                this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
-                    if (userPropertyOptionDto.id) {
-                        allUserPropertyOptions.push({label: userPropertyOptionDto.name, value: userPropertyOptionDto.id});
-                    }
-                    return allUserPropertyOptions;
-                }, []);
-            },
-            fetchUserPropertiesOptionsIfEmpty: function() {
-                if (!this.userPropertiesOptions.length) {
-                    var self = this;
-                    countlySegmentation.initialize("").then(function() {
-                        self.setUserPropertiesOptions(countlySegmentation.getFilters());
-                    });
+            setUserPropertyOptions: function(propertyList) {
+                var allPropertyOptions = [];
+                if (this.type === this.TypeEnum.AUTOMATIC && this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
+                    allPropertyOptions.push({label: "Event Properties", name: "eventProperties", options: countlyPushNotification.helper.getEventPropertyOptions(propertyList)});
                 }
+                allPropertyOptions.push({label: "User Properties", name: "userProperties", options: countlyPushNotification.helper.getUserPropertyOptions(propertyList)});
+                allPropertyOptions.push({label: "Custom Properties", name: "customProperties", options: countlyPushNotification.helper.getCustomPropertyOptions(propertyList)});
+                this.userPropertiesOptions = allPropertyOptions;
+            },
+            fetchUserPropertyOptions: function() {
+                var self = this;
+                countlySegmentation.initialize("").then(function() {
+                    self.setUserPropertyOptions(countlySegmentation.getFilters());
+                });
             },
             isDeliveryNextStepFromInfoStep: function(nextStep, currentStep) {
                 return nextStep === 1 && currentStep === 0;
@@ -362,6 +361,9 @@
                 (this.isReviewNextStepFromContentStep(nextStep, currentStep) && this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.CONTENT);
             },
             onStepClick: function(nextStep, currentStep) {
+                if (this.isContentNextStepFromAnyPreviousStep(nextStep, currentStep)) {
+                    this.fetchUserPropertyOptions();
+                }
                 if (this.shouldRunPrepare(nextStep, currentStep) && this.shouldRunContentValidator(nextStep, currentStep)) {
                     this.$refs.content.validate();
                     return this.prepare();
@@ -519,6 +521,7 @@
                 });
             },
             onSubmit: function(_, done) {
+                var self = this;
                 var promiseMethod = null;
                 if (this.userCommand === this.UserCommandEnum.EDIT_DRAFT) {
                     promiseMethod = this.saveFromDraft;
@@ -572,7 +575,6 @@
                 this.$emit('onClose');
             },
             onOpen: function() {
-                this.fetchUserPropertiesOptionsIfEmpty();
                 if (this.id) {
                     this.fetchPushNotificationById();
                 }

@@ -416,6 +416,37 @@
             }
             return JSON.stringify(JSON.parse(value), null, indentation);
         },
+        getEventPropertyOptions: function(propertyList) {
+            return this.getPropertyOptionsByCategory(propertyList, 'Event Properties');
+        },
+        getUserPropertyOptions: function(propertyList) {
+            return this.getPropertyOptionsByCategory(propertyList, 'User Properties');
+        },
+        getCustomPropertyOptions: function(propertyList) {
+            return this.getPropertyOptionsByCategory(propertyList, 'Custom Properties');
+        },
+        isUserPropertyCategory: function(item) {
+            return !item.id;
+        },
+        isUserPropertyOption: function(item) {
+            return Boolean(item.id);
+        },
+        getPropertyOptionsByCategory: function(propertyList, category) {
+            var result = [];
+            var shouldAddPropertyOption = false;
+            for (var index = 0; index < propertyList.length; index += 1) {
+                if (this.isUserPropertyCategory(propertyList[index]) && propertyList[index].name === category) {
+                    shouldAddPropertyOption = true;
+                }
+                if (this.isUserPropertyCategory(propertyList[index]) && propertyList[index].name !== category) {
+                    shouldAddPropertyOption = false;
+                }
+                if (this.isUserPropertyOption(propertyList[index]) && shouldAddPropertyOption) {
+                    result.push({label: propertyList[index].name, value: propertyList[index].id});
+                }
+            }
+            return result;
+        }
     };
 
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
@@ -584,7 +615,7 @@
             },
             buildMessageText: function(message, userPropertiesDto) {
                 var self = this;
-                if (!message || !userPropertiesDto) {
+                if (!message && !userPropertiesDto) {
                     return message || "";
                 }
                 var messageInHTMLString = message;
