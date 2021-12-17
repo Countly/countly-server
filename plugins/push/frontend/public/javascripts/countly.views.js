@@ -353,25 +353,32 @@
                 this.userCommand === this.UserCommandEnum.EDIT ||
                 this.userCommand === this.UserCommandEnum.RESEND;
             },
-            shouldRunPrepare: function(nextStep, currentStep) {
+            shouldPrepare: function(nextStep, currentStep) {
                 return this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep);
             },
-            shouldRunContentValidator: function(nextStep, currentStep) {
-                return (this.isContentNextStepFromAnyPreviousStep(nextStep, currentStep) && this.isEditMode()) ||
-                (this.isReviewNextStepFromContentStep(nextStep, currentStep) && this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.CONTENT);
+            shouldValidateContentOnEnter: function(nextStep, currentStep) {
+                return (this.isContentNextStepFromAnyPreviousStep(nextStep, currentStep) && this.isEditMode());
             },
-            onStepClick: function(nextStep, currentStep) {
+            shouldValidateContentBeforeExit: function(nextStep, currentStep) {
+                return this.isReviewNextStepFromContentStep(nextStep, currentStep) && this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.CONTENT;
+            },
+            validateContentOnEnterIfNecessary: function(nextStep, currentStep) {
+                if (this.shouldValidateContentOnEnter(nextStep, currentStep)) {
+                    this.$refs.content.validate();
+                }
+            },
+            fetchUserPropertyOptionsOnContentEnter: function(nextStep, currentStep) {
                 if (this.isContentNextStepFromAnyPreviousStep(nextStep, currentStep)) {
                     this.fetchUserPropertyOptions();
                 }
-                if (this.shouldRunPrepare(nextStep, currentStep) && this.shouldRunContentValidator(nextStep, currentStep)) {
-                    this.$refs.content.validate();
+            },
+            onStepClick: function(nextStep, currentStep) {
+                this.validateContentOnEnterIfNecessary(nextStep, currentStep);
+                this.fetchUserPropertyOptionsOnContentEnter(nextStep, currentStep);
+                if (this.shouldPrepare(nextStep, currentStep)) {
                     return this.prepare();
                 }
-                if (this.shouldRunPrepare(nextStep, currentStep)) {
-                    return this.prepare();
-                }
-                if (this.shouldRunContentValidator(nextStep, currentStep)) {
+                if (this.shouldValidateContentBeforeExit(nextStep, currentStep)) {
                     return this.$refs.content.validate();
                 }
                 return Promise.resolve(true);
