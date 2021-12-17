@@ -1,4 +1,4 @@
-/*global countlyVue, CV,_, countlyCommon */
+/*global countlyVue, CV,_, CountlyHelpers, countlyCommon */
 (function(countlyCompareApps) {
     countlyCompareApps.helpers = {
         getTableRows: function(context) {
@@ -72,7 +72,6 @@
             for (var key in allAppsInfo) {
                 obj[key] = true;
             }
-            //  var allAppsInfo = context.rootGetters["countlyCommon/getAllApps"];
             return obj;
         },
         filterSelectedApps: function(tableStateMap, selectedApps) {
@@ -96,7 +95,7 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/compare/apps",
                 data: {
-                    "period": period,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "apps": JSON.stringify(context.state.selectedApps)
                 },
                 dataType: "json",
