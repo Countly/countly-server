@@ -102,6 +102,14 @@ var CommentsTable = countlyVue.views.create({
     template: CV.T("/star-rating/templates/comments-table.html"),
     props: {
         comments: Array
+    },
+    computed: {
+        preparedRows: function() {
+            return this.comments.map(function(comment) {
+                comment.cd = countlyCommon.formatTimeAgo(comment.cd);
+                return comment;
+            });
+        }
     }
 });
 
@@ -141,12 +149,8 @@ var WidgetsTable = countlyVue.views.create({
         }
     },
     methods: {
-        handleCommand: function(command, id) {
-            switch (command) {
-            case 'show-detail':
-                window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
-                break;
-            }
+        goWidgetDetail: function(id) {
+            window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
         },
         parseTargeting: function(widget) {
             widget.targeting.steps = JSON.parse(widget.targeting.steps);
@@ -522,6 +526,7 @@ var WidgetDetail = countlyVue.views.create({
     ],
     data: function() {
         return {
+            activeNames: [1],
             cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
             activeFilter: {
                 platform: "",

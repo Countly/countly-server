@@ -342,7 +342,7 @@
                         <div class="cly-multi-select default-skin">\
                             <div class="cly-multi-select__body">\
                                 <div>\
-                                    <div>\
+                                    <div class="cly-multi-select__title-wrapper">\
                                         <span class="cly-multi-select__title">{{title}}</span>\
                                         <el-button class="cly-multi-select__reset" @click="reset" type="text">{{resetLabel}}</el-button>\
                                     </div>\
@@ -369,8 +369,8 @@
                                     </table>\
                                 </div>\
                                 <div class="cly-multi-select__controls">\
-                                    <el-button v-bind="$attrs" class="cly-multi-select__cancel" @click="close">{{cancelLabel}}</el-button>\
-                                    <el-button v-bind="$attrs" class="cly-multi-select__confirm" @click="save">{{confirmLabel}}</el-button>\
+                                    <el-button v-bind="$attrs" class="el-button el-button--secondary el-button--small" @click="close">{{cancelLabel}}</el-button>\
+                                    <el-button v-bind="$attrs" class="el-button el-button--success el-button--small" @click="save">{{confirmLabel}}</el-button>\
                                 </div>\
                             </div>\
                         </div>\

@@ -40,7 +40,7 @@
                 <el-button class="ratings-drawer__rp-callout-button">{{ drawerScope.editedObject.popup_button_callout }} </el-button>
               </div>
               <div class="ratings-drawer__rp-footer">
-                <img src="images/surveys/powered-by-countly.svg">
+                <img src="/star-rating/images/star-rating/powered-by-countly.svg">
               </div>
             </div>
             <div class="bu-is-size-7 ratings-drawer__stage-label">
@@ -52,7 +52,7 @@
               </div>
               <div class="bu-has-text-weight-medium ratings-drawer__tp-thanks-message bu-is-size-4">{{ drawerScope.editedObject.popup_thanks_message }}</div>
               <div class="ratings-drawer__tp-footer">
-                <img src="images/surveys/powered-by-countly.svg">
+                <img src="/star-rating/images/star-rating/powered-by-countly.svg">
               </div>
             </div>
 					</div>
@@ -71,7 +71,7 @@
 		<template  v-slot:default="drawerScope">
 			<cly-form-step id="step1" :name="i18n('feedback.settings')">
         <div class="cly-vue-drawer-step__section">
-          <div class="text-small text-heading">
+          <div class="text-medium text-heading bu-mb-2">
             {{i18n('feedback.question')}}
           </div>
           <validation-provider name="popup_header_text" rules="required" v-slot="v">
@@ -79,8 +79,11 @@
           </validation-provider>
         </div>
         <div class="cly-vue-drawer-step__section">
-          <div class="text-small text-heading">
-            {{i18n('feedback.rating-symbol')}} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          <div class="text-medium text-heading text-heading">
+            <span class="ratings-section-title bu-mb-2">
+              {{ i18n('feedback.rating-symbol') }}
+            </span>
+            <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
           </div>
           <validation-provider name="rating_symbol" rules="required" v-slot="v">
             <el-select placement="bottom-start" v-model="drawerScope.editedObject.rating_symbol" :placeholder="i18n('feedback.rating-symbol')">
@@ -88,9 +91,9 @@
             </el-select>
           </validation-provider>
         </div>
-        <div class="cly-vue-drawer-step__section-group cly-vue-drawer-step__section-group--filled">
+        <div class="cly-vue-drawer-step__section-group cly-vue-drawer-step__section-group--filled bu-mb-2">
           <div class="cly-vue-drawer-step__section">
-            <div class="text-small text-heading">
+            <div class="text-medium text-heading text-uppercase bu-mb-4 bu-mt-1">
               {{ i18n('feedback.ratings') }}
             </div>
             <validation-provider name="ratings_text_0" v-slot="v">
@@ -126,27 +129,19 @@
           </div>
         </div>
         <div class="cly-vue-drawer-step__section">
-          <validation-provider name="comment_enable" rules="required" v-slot="v">
-            <el-checkbox v-model="drawerScope.editedObject.comment_enable">{{ i18n('feedback.use-add-comment-option') }}</el-checkbox>
-          </validation-provider>
-        </div>
-        <div v-if="drawerScope.editedObject.comment_enable" class="cly-vue-drawer-step__section">
-          <validation-provider name="popup_comment_callout" v-slot="v">
+          <el-checkbox class="bu-mb-4 text-medium text-heading" v-model="drawerScope.editedObject.comment_enable">{{ i18n('feedback.use-add-comment-option') }}</el-checkbox>
+          <validation-provider  v-if="drawerScope.editedObject.comment_enable" name="popup_comment_callout" v-slot="v">
             <el-input v-model="drawerScope.editedObject.popup_comment_callout" :placeholder="i18n('feedback.type-your-option-name')"></el-input>
           </validation-provider>
         </div>
         <div class="cly-vue-drawer-step__section">
-          <validation-provider name="contact_enable" v-slot="v">
-            <el-checkbox v-model="drawerScope.editedObject.contact_enable">{{ i18n('feedback.use-contact-email-option') }}</el-checkbox>
-          </validation-provider>
-        </div>
-        <div v-if="drawerScope.editedObject.contact_enable" class="cly-vue-drawer-step__section">
-          <validation-provider name="popup_email_callout" v-slot="v">
+          <el-checkbox class="bu-mb-4 text-medium text-heading" v-model="drawerScope.editedObject.contact_enable">{{ i18n('feedback.use-contact-email-option') }}</el-checkbox>
+          <validation-provider v-if="drawerScope.editedObject.contact_enable" name="popup_email_callout" v-slot="v">
             <el-input v-model="drawerScope.editedObject.popup_email_callout" :placeholder="i18n('feedback.type-your-option-name')"></el-input>
           </validation-provider>
         </div>
         <div class="cly-vue-drawer-step__section">
-          <div class="text-small text-heading">
+          <div class="text-medium text-heading bu-mb-2">
             {{i18n('feedback.button-callout')}}
           </div>
           <validation-provider name="popup_button_callout" v-slot="v">
@@ -154,7 +149,7 @@
           </validation-provider>
         </div>
         <div class="cly-vue-drawer-step__section">
-          <div class="text-small text-heading">
+          <div class="text-medium text-heading bu-mb-2">
             {{i18n('feedback.thank-you-message')}}
           </div>
           <validation-provider name="popup_thanks_message" rules="required" v-slot="v">
@@ -164,8 +159,11 @@
       </cly-form-step>
 			<cly-form-step id="step2" :name="i18n('feedback.widget-appearance')">
         <div class="cly-vue-drawer-step__section">
-          <div class="text-big text-heading">
-            {{ i18n('feedback.trigger-button-size') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          <div class="bu-mb-2">
+            <span class="text-medium text-heading ratings-section-title">
+              {{ i18n('feedback.trigger-button-size') }}
+            </span>
+            <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
           </div>
           <div class="bu-is-flex bu-is-align-items-center">
             <el-radio 
@@ -180,7 +178,7 @@
           </div>
         </div>
         <div class="cly-vue-drawer-step__section">
-          <div class="text-big text-heading">
+          <div class="text-medium text-heading bu-mb-2">
             {{ i18n('feedback.position-on-the-page') }}
           </div>
           <div class="bu-is-flex text-center ratings-drawer__sticker-size">
@@ -200,7 +198,7 @@
 							</el-radio>
           </div>
           <div class="cly-vue-drawer-step__section">
-            <div class="text-medium text-heading">
+            <div class="text-medium text-heading bu-mb-2">
               {{i18n('feedback.main-color')}}
             </div>
             <cly-colorpicker
@@ -209,7 +207,7 @@
             </cly-colorpicker>
           </div>
           <div class="cly-vue-drawer-step__section">
-            <div class="text-medium text-heading">
+            <div class="text-medium text-heading bu-mb-2">
               {{i18n('feedback.font-color')}}
             </div>
             <cly-colorpicker
@@ -219,18 +217,32 @@
           </div>
           <div class="bu-pt-3 bu-pb-4">
             <div class="text-medium text-heading">
-              {{i18n('feedback.logo')}} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+              <span class="ratings-section-title bu-mb-2">
+                {{ i18n('feedback.logo') }}
+              </span>
+              <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
             </div>
             <cly-dropzone
+              class="ratings-drawer-dropzone"
               ref="logoDropzone"
               id="logo-dropzone"
               @vdropzone-file-added="onFileAdded"
               @vdropzone-complete="onComplete"
-              :options="logoDropzoneOptions">
+              :options="logoDropzoneOptions"
+              :useCustomSlot="true">
+                <div class="dropzone-custom-content">
+                  <h3 class="dropzone-custom-title">
+                    <img src="star-rating/images/star-rating/folder-icon.svg" alt="">
+                  </h3>
+                  <div class="subtitle text-medium bu-mt-2">
+                    <span class="bu-has-text-weight-light bu-has-text-grey">{{ i18n('feedback.drop-message') }}</span>
+                    <span class="bu-has-text-link bu-has-text-weight-medium">{{ i18n('feedback.click-to-upload') }}</span>
+                  </div>
+                </div>
             </cly-dropzone>
           </div>
           <div class="cly-vue-drawer-step__section">
-            <div class="text-small text-heading">
+            <div class="text-medium text-heading bu-mb-2">
               {{ i18n('feedback.trigger-text') }}
             </div>
             <validation-provider name="trigger_button_text" v-slot="v">
@@ -238,8 +250,11 @@
             </validation-provider>
           </div>
           <div class="cly-vue-drawer-step__section">
-            <div class="text-small text-heading">
-              {{ i18n('feedback.visibility') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+            <div class="text-medium text-heading text-heading">
+              <span class="ratings-section-title bu-mb-2">
+                {{ i18n('feedback.visibility') }}
+              </span>
+              <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
             </div>
             <validation-provider name="contact_email_option" v-slot="v">
               <el-checkbox v-model="drawerScope.editedObject.hide_sticker">{{ i18n('feedback.hide-sticker') }}</el-checkbox>
@@ -250,7 +265,7 @@
 			<cly-form-step id="step3" v-slot="stepSlot" :name="i18n('feedback.devices-targeting')">
 				<div class="cly-vue-drawer-step__section">
 					<div class="cly-vue-drawer-step__section">
-            <div v-if="cohortsEnabled" class="text-big text-heading">
+            <div v-if="cohortsEnabled" class="text-medium text-heading bu-mb-2">
               {{ i18n('feedback.segmentation') }}
             </div>
             <div v-if="cohortsEnabled" class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered">
