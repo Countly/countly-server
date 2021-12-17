@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlyCommon,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -513,7 +513,6 @@
                     }
                 }, {disableAutoCatch: true});
             });
-
         },
         update: function(dto) {
             return new Promise(function(resolve, reject) {
@@ -581,6 +580,11 @@
                     url: url
                 },
             }, {disableAutoCatch: true});
+        },
+        findAllUserProperties: function() {
+            return countlySegmentation.initialize("").then(function() {
+                return Promise.resolve(countlySegmentation.getFilters());
+            });
         }
     };
 
@@ -1755,6 +1759,9 @@
         fetchMediaMetadataWithDebounce: _.debounce(function(url, resolveCallback, rejectCallback) {
             this.fetchMediaMetadata(url).then(resolveCallback).catch(rejectCallback);
         }, DEBOUNCE_TIME_IN_MS),
+        fetchUserProperties: function() {
+            return countlyPushNotification.api.findAllUserProperties();
+        },
         prepare: function(pushNotificationModel) {
             return new Promise(function(resolve, reject) {
                 var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);

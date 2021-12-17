@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
 
 (function() {
 
@@ -331,8 +331,8 @@
             },
             fetchUserPropertyOptions: function() {
                 var self = this;
-                countlySegmentation.initialize("").then(function() {
-                    self.setUserPropertyOptions(countlySegmentation.getFilters());
+                countlyPushNotification.service.fetchUserProperties().then(function(result) {
+                    self.setUserPropertyOptions(result);
                 });
             },
             isDeliveryNextStepFromInfoStep: function(nextStep, currentStep) {
@@ -913,11 +913,6 @@
                         self.setIsLoading(false);
                     });
             },
-            getUserProperties: function() {
-                return countlySegmentation.getFilters().map(function(userFilter) {
-                    return {label: userFilter.name, value: userFilter.id};
-                });
-            },
             shouldDisplayPlatformSettings: function(platform) {
                 return this.pushNotificationUnderEdit.platforms.filter(function(selectedPlatform) {
                     return selectedPlatform === platform;
@@ -929,7 +924,6 @@
             this.fetchLocations();
             this.fetchAllEvents();
             this.fetchNumberOfUsers();
-            this.getUserProperties();
         },
         components: {
             "message-setting-element": countlyPushNotificationComponent.MessageSettingElement,
