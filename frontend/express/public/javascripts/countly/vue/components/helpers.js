@@ -759,7 +759,7 @@
             actionFunc: { default: null, type: Function },
         },
         data: function() {
-            return {}
+            return {};
         },
         methods: {
         }
