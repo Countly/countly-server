@@ -1,9 +1,11 @@
 name: Publish Docker image
 
 on:
-  release:
-    types: [published]
-
+  push:
+    tags: '**'
+   # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
 jobs:
   push_server:
     name: Push Countly Server Image
