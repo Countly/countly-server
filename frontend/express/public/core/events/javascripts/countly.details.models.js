@@ -1,4 +1,4 @@
-/*global countlyVue, CV, _, countlyCommon, jQuery */
+/*global countlyVue, CV, _, countlyCommon, CountlyHelpers, jQuery */
 (function(countlyAllEvents) {
 
     countlyAllEvents.helpers = {
@@ -465,7 +465,7 @@
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_events",
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
@@ -492,7 +492,7 @@
                     "method": "events",
                     "event": context.state.selectedEventName,
                     "segmentation": context.state.currentActiveSegmentation === "segment" ? "" : context.state.currentActiveSegmentation,
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
@@ -506,7 +506,7 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "events",
                     "events": JSON.stringify([context.state.selectedEventName]),
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
                     "timestamp": new Date().getTime(),
                     "overview": true
                 },

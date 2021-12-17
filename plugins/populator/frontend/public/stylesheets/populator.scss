@@ -1,0 +1,213 @@
+.populator-template-drawer {
+    &__main-container {
+        background: #F8FAFD;
+        border-radius: 6px;
+    }
+
+    &__key {
+        flex-basis: 160px;
+        flex-shrink: 1;
+    }
+
+    &__values {
+        flex-grow: 1;
+    }
+
+    &__btn-add {
+        background: #E1EFFF;
+        color: #0166D6 !important;
+        margin-top: 24px;
+        font-size: 13px;
+        font-weight: 500 !important;
+        width: 182px;
+    }
+
+    &__btn-delete {
+        font-weight: 500 !important;
+        color: #D23F00 !important;
+    }
+
+    &__text-custom-detail {
+        letter-spacing: 0.5px;
+        font-weight: 500 !important;
+    }
+
+    &__property-container {
+        .text-key, .text-values {
+            font-family: Inter;
+            font-style: normal;
+            font-weight: 500;
+            font-size: 13px;
+            line-height: 13px;
+        }
+        
+        .custom-value {
+            width: 100%;
+        }
+    }
+
+    &__btn-segmentation {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 13px;
+        color: #0166D6;
+        line-height: 13px;
+        padding: unset;
+        margin-top: 16px;
+        height: 20px;
+    }
+    
+    &__event-container {
+        .event-left-container {
+            display: flex;
+            align-items: normal;
+            flex-direction: column;
+            width: 50%;
+
+            .duration-text {
+                font-family: Inter;
+                font-style: normal;
+                font-weight: normal;
+                font-size: 13px;
+                line-height: 18px;
+                color: #81868D;
+                margin-left: 27px;
+            }
+        }
+
+        .event-right-container {
+            margin-left: 40px !important;
+        }
+    }
+}
+
+.populator-wrapper {
+    &__alert-box {
+        display: flex;
+        align-items: center;
+        color: #E49700;
+        background: #FCF5E5;
+        border: 1px solid rgba(239, 148, 0, 0.25);
+        box-sizing: border-box;
+        box-shadow: 0px 5px 8px rgb(239 148 0 / 9%);
+        border-radius: 12px;
+        height: 48px;
+        width: 100%;
+        font-weight: 500;
+
+        .alert-text {
+        font-family: Inter;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 14px;
+        color: #333C48;
+        }
+
+        .alert-image {
+            height: 36px;
+        }
+    }
+
+    &__date-picker {
+        margin-left: 25px
+    }
+
+    .cly-vue-section__sub {
+        border-left: 1px solid #ececec;
+        border-right: 1px solid #ececec;
+        border-bottom: 1px solid #ececec;
+    }
+
+    &__max-time {
+        width: 232px;
+        height: 32px;
+        margin-left: 13px
+    }
+
+    .el-dialog__headerbtn {
+        visibility: hidden;
+    }
+
+    .el-dialog__header {
+        padding: unset;
+    }
+
+    .el-dialog__body {
+        padding: unset;
+    }
+}
+
+.populator-start-modal-wrapper {
+    &__modal-progress-container {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        width: 100%;
+        height: 190px;
+        align-items: center;
+    }
+
+    &__proggress-bar {
+        width: 300px;
+    } 
+
+    &__generate-data-header {
+        margin-top: 20px;
+    }
+
+    &__generate-data-bulk {
+        margin-top: 4px;
+    }
+}
+
+.populator-stop-modal-wrapper {
+    &__modal-progress-container {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+    }
+
+    &__finished-confirm-header {
+        margin-top: 24px;
+    }
+
+    &__finished-confirm-sub-title {
+        margin-top: 16px;
+        margin-left: 75px;
+        margin-right: 65px;
+        text-align: center;
+    }
+
+    &__success-icon {
+        display: flex;
+        color: #12AF51;
+        font-size: 40px;
+        justify-content: center;
+        width: 100%;
+        margin-top: 32px;
+    }
+}
+
+.populator-app-locked-wrapper {
+    position: absolute;
+    width: 400px;
+    height: fit-content;
+    left: 50%;
+    top: 50%;
+    margin-left: -100px;
+    margin-top: -200px;
+    text-align: center;
+
+    &__text {
+        font-family: Inter;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 20px;
+        text-align: center;
+        color: #81868D;
+    }
+}
