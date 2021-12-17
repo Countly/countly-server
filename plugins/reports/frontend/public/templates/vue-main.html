@@ -231,13 +231,14 @@
                 <cly-select-x
                    mode="multi-check"
                    v-model="drawerScope.editedObject.selectedEvents"
+                   maxInputWidth="300"
                    :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="eventOptions">
                 </cly-select-x>
             </validation-provider>
         </div>
         
-        <cly-form-field name="frequency" class="frequency-block" :label="i18n('reports.frequency')" rules="required" v-if="drawerScope.editedObject.metricsArray && drawerScope.editedObject.metricsArray.indexOf('events') > -1">
+        <cly-form-field name="frequency" class="frequency-block" :label="i18n('reports.frequency')" rules="required">
             <div class="cly-vue-report-drawer__report_description bu-mb-4 text-small  color-cool-gray-50">
                 {{i18n('reports.frequency-desc')}}
             </div>
@@ -268,6 +269,7 @@
 
         <cly-form-field name="dayOfWeek" :label="i18n('reports.dow')" rules="required" v-if="drawerScope.editedObject.frequency === 'weekly'">
             <cly-select-x
+                :placeholder="i18n('reports.Select-dow')"
                 mode="single-list"
                 v-model="drawerScope.editedObject.day"
                 class="bu-is-flex"
@@ -280,6 +282,7 @@
                 {{i18n('reports.time-desc')}}
             </div>
             <cly-select-x
+                :placeholder="i18n('reports.Select-time')"
                 mode="single-list"
                 v-model="drawerScope.editedObject.hour"
                 class="bu-is-flex"
@@ -293,6 +296,7 @@
                 {{i18n('reports.timezone-desc')}}
             </div>
             <cly-select-x
+                :placeholder="i18n('reports.Select-timezone')"
                 mode="single-list"
                 v-model="drawerScope.editedObject.timezone"
                 class="bu-is-flex"

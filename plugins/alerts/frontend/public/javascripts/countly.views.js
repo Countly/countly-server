@@ -375,7 +375,13 @@
                 deleteMessage: '',
             };
         },
+        props: {
+            callCreateAlertDrawer: {type: Function, default: function() {}},
+        },
         methods: {
+            createAlert: function() {
+                this.callCreateAlertDrawer();
+            },
             handleAlertEditCommand: function(command, scope) {
                 if (command === "edit-comment") {
                     /* eslint-disable */
