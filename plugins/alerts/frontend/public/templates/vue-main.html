@@ -8,7 +8,7 @@
                 </span>
             </template>
             <template v-slot:header-right>
-            <el-button type="success" icon="el-icon-circle-plus" v-on:click="createAlert()">{{i18n('alert.Add_New_Alert')}}</el-button>
+            <el-button type="success" icon="el-icon-circle-plus" @click="createAlert">{{i18n('alert.Add_New_Alert')}}</el-button>
         </template>
         </cly-header>
     
@@ -23,7 +23,7 @@
              </div>
       
             <div class="bu-mt-6">
-                <table-view  v-on:open-drawer="openDrawer"></table-view>
+                <table-view  v-on:open-drawer="openDrawer" :callCreateAlertDrawer="createAlert"></table-view>
             </div>
         </cly-main>
         <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
@@ -33,7 +33,16 @@
     
     
 <script  type="text/x-template" id="alerts-table">
-    <cly-section>
+<div>
+    <cly-empty-view 
+        v-if="tableRows.length === 0"
+        :title="i18n('alerts.empty-title')"
+        :subTitle="i18n('alerts.empty-subtitle')"
+        :actionTitle="i18n('alerts.empty-action-button-title')"
+        :actionFunc="createAlert"
+    > 
+    </cly-empty-view>
+    <cly-section v-if="tableRows.length > 0">
         <cly-datatable-n
             class="cly-vue-alerts-table"
             :tracked-fields="localTableTrackedFields"
@@ -130,7 +139,8 @@
                 </template>
         </cly-confirm-dialog>
     </cly-section>
-    </script>
+</div>
+</script>
     
     
     
