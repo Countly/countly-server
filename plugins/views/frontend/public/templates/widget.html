@@ -1,37 +1,19 @@
-<div class="grid-stack-item-content cly-widget">
-    <div class="views table">
-        <div class="title">
-			<div class="name">{{title}}</div>
-			<div class="period">{{period}}</div>
-		</div>
-        <div>
-            <table>
-                <colgroup>
-                    <col width="50%" />
-                </colgroup>
-                <thead>
-                <tr>
-                    <th>View</th>
-                    {{#eachOfArray views}}
-                    <th>{{value.name}}</th>
-                    {{/eachOfArray}}
-                </tr>
-                </thead>
-                <tbody>
-                {{#eachOfArray views-data}}
-                <tr>
-                    <td data-view-name="{{value.views}}">{{value.views}}</td>
-                    {{#eachOfArray value.data}}
-                    <td>{{value.value}}</td>
-                    {{/eachOfArray}}
-                </tr>
-                {{/eachOfArray}}
-                </tbody>
-            </table>
-        </div>
-        <div class="app">
-            <div class="icon" style="background-image: url('appimages/{{app.id}}.png');"></div>
-            <div class="name">{{app.name}}</div>
-        </div>
-    </div>
+<div v-bind:class="[componentId]">
+   <div class="bu-level">
+       <div class="bu-level-left">
+           <div class="bu-level-item">
+               {{title}}
+			   {{period}}
+           </div>
+       </div>
+	   <div class="bu-level-right">
+           <slot name="action"></slot>
+       </div>
+   </div>
+
+   <cly-datatable-n :rows="getTableData" :hideTop="true" :height="maxTableHeight" >
+		<template v-slot="scope">	
+			<el-table-column  v-for="(item, index) in tableStructure" :sortable="false" :prop="item.prop" :label="item.title"></el-table-column>
+		</template>
+	</cly-datatable-n>
 </div>

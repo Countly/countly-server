@@ -1,0 +1,38 @@
+<div>
+    <cly-form-field name="app" rules="required">
+        <cly-app-select
+            :placeholder="i18n('placeholder.dashboards.select-applications-single')"
+            v-model="scope.editedObject.selectedApp">
+        </cly-app-select>
+    </cly-form-field>
+
+    <cly-form-field rules="required">
+        <el-select
+            :placeholder="i18n('calculated-metrics.select-a-metric')"
+            v-model="scope.editedObject.views"
+			:multiple="true"
+			:multiple-limit="2">
+            <el-option :key="item.value" :label="item.name" :value="item.value" v-for="item in availableStatsMetric"></el-option>
+        </el-select>
+    </cly-form-field>
+
+	<cly-form-field>
+		<el-checkbox v-model="useCustomTitle">
+			{{i18n("dashboards.custom-widget-title")}}
+		</el-checkbox>
+		
+		<cly-form-field v-if="useCustomTitle" name="title" rules="required">
+			<el-input v-model="scope.editedObject.title"></el-input>
+		</cly-form-field>
+	</cly-form-field>
+	
+	<cly-form-field>
+		<el-checkbox v-model="useCustomPeriod">
+			{{i18n("dashboards.custom-period")}}
+		</el-checkbox>
+		
+		<cly-form-field v-if="useCustomPeriod" name="title" rules="required">
+			<el-input v-model="scope.editedObject.title"></el-input>
+		</cly-form-field>
+	</cly-form-field>
+</div>
