@@ -104,8 +104,8 @@ var CommentsTable = countlyVue.views.create({
         comments: Array
     },
     computed: {
-        preparedRows() {
-            return this.comments.map((comment) => {
+        preparedRows: function() {
+            return this.comments.map(function(comment) {
                 comment.cd = countlyCommon.formatTimeAgo(comment.cd);
                 return comment;
             });
