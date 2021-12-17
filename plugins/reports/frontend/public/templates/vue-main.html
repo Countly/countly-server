@@ -48,7 +48,7 @@
             </div>
         </template>
         <template v-slot="scope">
-            <el-table-column fixed="left" width="108" label="">
+            <el-table-column type="switch" fixed="left" width="100" sortable prop="enabled">
                 <template v-slot="rowScope">
                     <el-switch :value="rowScope.row.enabled" class="switch-column"
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
@@ -73,7 +73,7 @@
                 
             </el-table-column>
 
-            <el-table-column  min-width="140" sortable="true" :label="i18n('reports.frequency')">
+            <el-table-column  min-width="120" sortable="true" :label="i18n('reports.frequency')">
                 <template slot-scope="scope" sortable="true">
                     <span class="text-small  color-cool-gray-50">{{i18n("reports." + scope.row.frequency)}}</span>
                 </template>
@@ -83,7 +83,7 @@
     
             </el-table-column> -->
 
-            <el-table-column  min-width="450" :label="i18n('reports.time')" sortable="true">
+            <el-table-column  min-width="250" :label="i18n('reports.time')" sortable="true">
                 <template slot-scope="scope">
                     <div class="bu-is-flex">
                         <div class="bu-is-flex-grow-1">

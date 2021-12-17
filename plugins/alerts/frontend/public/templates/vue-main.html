@@ -62,9 +62,9 @@
                 </div>
             </template> 
             <template v-slot="scope">
-                <el-table-column fixed="left" width="108" label="">
+                <el-table-column type="switch" fixed="left" width="100" sortable prop="enabled">
                     <template v-slot="rowScope">
-                        <el-switch :value="rowScope.row.enabled"  class="switch-column"
+                        <el-switch :value="rowScope.row.enabled"
                             @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                         </el-switch>
                     </template>
