@@ -756,7 +756,7 @@
         },
     });
 
-    countlyPushNotification.DetailsTabRow = countlyVue.views.create({
+    countlyPushNotificationComponent.DetailsTabRow = countlyVue.views.create({
         template: '#details-tab-row',
         props: {
             value: {
@@ -836,7 +836,7 @@
         components: {
             'user-property-preview': countlyPushNotificationComponent.UserPropertyPreview,
             'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview,
-            'details-tab-row': countlyPushNotification.DetailsTabRow
+            'details-tab-row': countlyPushNotificationComponent.DetailsTabRow
         }
     });
 
@@ -870,10 +870,13 @@
         methods: {
             convertDaysInMsToDays: function(daysInMs) {
                 return daysInMs / this.DAY_TO_MS_RATIO;
-            }
+            },
+            formatDateAndTime: function(date) {
+                return countlyPushNotification.helper.formatDateTime(date, 'MMMM Do, YYYY, h:mm a');
+            },
         },
         components: {
-            'details-tab-row': countlyPushNotification.DetailsTabRow
+            'details-tab-row': countlyPushNotificationComponent.DetailsTabRow
         }
     });
 
