@@ -135,6 +135,9 @@
         margin-left: 0;
         margin-top: 7px;
     }
+	&.is-bordered {
+		border: 1px solid #CFD6E4;
+	}
 }
 
 .el-collapse {
@@ -158,6 +161,13 @@
             margin: 0rem 1.5rem 0rem 1.5rem;
         }
     }
+}
+
+.el-switch {
+	&__label {
+		font-weight: normal;
+		color: #A7AEB8;
+	}
 }
 
 .el-input {
