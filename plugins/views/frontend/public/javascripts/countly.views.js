@@ -981,7 +981,7 @@
                 getTableData: function() {
                     this.data = this.data || {};
                     this.data.dashData = this.data.dashData || {};
-					this.data.dashData.data = this.data.dashData.data || {};
+                    this.data.dashData.data = this.data.dashData.data || {};
                     return this.data.dashData.data.chartData;
 
                 }
