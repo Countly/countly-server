@@ -5,39 +5,40 @@
         <div @click="backToWidgets()" class="ratings-widget-detail-view__back-link bu-is-size-7">
           <i class="el-icon-back"></i> {{ i18n('feedback.back-to-rating-widgets') }}
         </div>
-        <div class="ratings-widget-detail-view__widget-name bu-mt-3">
+        <div class="ratings-widget-detail-view__widget-name">
           <h3 class="ratings-widget-detail-view__widget-name">{{ widget.popup_header_text }}</h3>
         </div>
-        <div class="ratings-widget-detail-view__widget-informations bu-mt-3">
-          <div :class="[widget.status && 'ratings-widget-detail-view__widget-status-active', !widget.status && 'ratings-widget-detail-view__widget-status-disabled', 'bu-has-text-weight-semibold text-small']">
+        <div class="ratings-widget-detail-view__widget-informations bu-mt-4">
+          <div :class="[widget.status && 'ratings-widget-detail-view__widget-status-active', !widget.status && 'ratings-widget-detail-view__widget-status-disabled', 'bu-has-text-weight-semibold text-small bu-mt-1']">
             <span v-if="widget.status" class="blinker"></span> {{ widget.status ? i18n('feedback.active') : i18n('feedback.disabled') }}
           </div>
           <div class="ratings-widget-detail-view__created-at text-medium bu-p-1 bu-ml-2"> <i class="el-icon-time"></i> {{ i18n('feedback.created-at') }} <span v-html="widget.created_at"></span></div>
-          <div class="ratings-widget-detail-view__widget-id text-medium bu-p-1 bu-ml-2"> <i class="el-icon-folder"></i> {{ i18n('feedback.widget-id') }} {{ widget._id }}</div>
+          <div class="ratings-widget-detail-view__widget-id text-medium bu-p-1 bu-ml-2"> <i class="el-icon-folder"></i> <span class="ratings-widget-detail-view__widget-id">{{ i18n('feedback.widget-id') }} </span><span class="ratings-widget-detail-view__ID">{{ widget._id }}</span></div>
         </div>
       </div>
     </template>
     <template v-slot:header-right>
-      <el-button v-if="widget.status" @click="setWidget(false)" class="manage-users-action-btn" size="small" icon="el-icon-video-pause"> {{ i18n('feedback.stop-widget') }}
-      </el-button>
-      <el-button v-if="!widget.status" @click="setWidget(true)" class="manage-users-action-btn" size="small" icon="el-icon-video-play"> {{ i18n('feedback.start-widget') }}
-      </el-button>
-      <el-button @click="editWidget()" class="manage-users-action-btn" size="small" icon="el-icon-edit"> {{ i18n('feedback.edit-widget') }}
-      </el-button>
-      <cly-more-options class="bu-ml-2" size="small" @command="handleCommand($event)">
-        <el-dropdown-item command="delete-widget"> {{ i18n('feedback.delete-widget') }} </el-dropdown-item>
-      </cly-more-options>
+      <div class="bu-mt-2">
+        <el-button v-if="widget.status" @click="setWidget(false)" class="manage-users-action-btn" size="small" icon="el-icon-video-pause"> {{ i18n('feedback.stop-widget') }}
+        </el-button>
+        <el-button v-if="!widget.status" @click="setWidget(true)" class="manage-users-action-btn" size="small" icon="el-icon-video-play"> {{ i18n('feedback.start-widget') }}
+        </el-button>
+        <el-button @click="editWidget()" class="manage-users-action-btn" size="small" icon="el-icon-edit"> {{ i18n('feedback.edit-widget') }}
+        </el-button>
+        <cly-more-options class="bu-ml-2" size="small" @command="handleCommand($event)">
+          <el-dropdown-item command="delete-widget"> {{ i18n('feedback.delete-widget') }} </el-dropdown-item>
+        </cly-more-options>
+      </div>
     </template>
   </cly-header>
   <cly-main>
-    <el-collapse v-if="cohortsEnabled" class="is-bordered-box">
-      <el-collapse-item name="1">
-          <template v-slot:title><div class="text-medium text-uppercase">{{i18n('feedback.targeting')}}</div></template>
-          <cly-cohort-targeting :targeting="widget.targeting"></cly-cohort-targeting>
+    <el-collapse v-if="cohortsEnabled" :icon = "{ position: 'left', direction: 'right'}" style="border:none" v-model="activeNames">
+      <el-collapse-item class="cly-vue-surveys-detail-collapse--padding" :title="i18n('surveys.targeting')" name="1">
+          <cly-cohort-targeting :targeting="widget.targeting">
+          </cly-cohort-targeting>
       </el-collapse-item>
     </el-collapse>
-    
-    <div class="bu-level bu-my-5">
+    <div class="bu-level ratings-widget-detail-view__filter-level">
       <div class="bu-level-left">
         <div class="bu-level-item">
           {{ i18n('feedback.results-for') }}
@@ -53,13 +54,13 @@
     <cly-section>
       <cly-metric-cards class="ratings-widget-detail-view__cards bu-has-background-white">
         <cly-metric-card :number="count">
-          {{ i18n('feedback.ratings') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          <span class="ratings-section-title">{{ i18n('feedback.ratings') }}</span><cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
         <cly-metric-card :number="ratingRate" :is-percentage="true">
-          {{ i18n('feedback.ratings-rate') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          <span class="ratings-section-title">{{ i18n('feedback.ratings-rate') }}</span><cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
         <cly-metric-card :number="widget.timesShown">
-          {{ i18n('feedback.times-shown') }} &nbsp; <cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
+          <span class="ratings-section-title">{{ i18n('feedback.times-shown') }}</span><cly-tooltip-icon icon="ion-help-circled"></cly-tooltip-icon>
         </cly-metric-card>
       </cly-metric-cards>
     </cly-section>

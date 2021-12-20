@@ -27,7 +27,7 @@
                     </cly-select-x>
                 </div>
                 <div class="bu-level-item" v-if="hasExport">
-                    <cly-dropdown :width="230" placement="bottom-end" ref="exportDropdown">
+                    <cly-dropdown :width="332" placement="bottom-end" ref="exportDropdown">
                         <template v-slot:trigger="dropdown">
                             <el-button size="small" icon="el-icon-download"></el-button>
                         </template>
@@ -36,11 +36,10 @@
                                 <p class="bu-mb-4 color-cool-gray-100">{{i18n('export.export-as')}}</p>
                                 <el-radio-group
                                     class="bu-mb-5"
-                                    v-model="selectedExportType"
-                                    size="small">
-                                    <el-radio-button v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value">{{exportType.name}}</el-radio-button>
+                                    v-model="selectedExportType">
+                                    <el-radio-button v-for="exportType in availableExportTypes" :key="exportType.value" :label="exportType.value" style="width: 99px; display: inline-grid;">{{exportType.name}}</el-radio-button>
                                 </el-radio-group>
-                                <el-button size="small" @click="onExportClick" type="success" style="width: 100%">{{i18n('export.export')}}</el-button>
+                                <el-button size="medium" @click="onExportClick" type="success" style="width: 100%">{{i18n('export.export')}}</el-button>
                             </div>
                         </template>
                     </cly-dropdown>

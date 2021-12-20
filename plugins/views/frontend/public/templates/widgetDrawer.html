@@ -32,7 +32,7 @@
 		</el-checkbox>
 		
 		<cly-form-field v-if="useCustomPeriod" name="title" rules="required">
-			<el-input v-model="scope.editedObject.title"></el-input>
+			<cly-date-picker v-model="scope.editedObject.custom_period" timestampFormat="ms"></cly-date-picker>
 		</cly-form-field>
 	</cly-form-field>
 </div>
