@@ -629,6 +629,12 @@
 
         &__shortcuts-col, &__calendars-col {
             display: inline-block;
+
+            .el-tabs {
+                &__active-bar {
+                    background-color: #0166D6;
+                }
+            }
         }
 
         &__shortcut {
