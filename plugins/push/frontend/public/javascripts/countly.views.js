@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
 
 (function() {
 
@@ -320,21 +320,20 @@
             formatDateTime: function(dateTime, format) {
                 return countlyPushNotification.helper.formatDateTime(dateTime, format);
             },
-            setUserPropertiesOptions: function(userPropertiesOptionsDto) {
-                this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
-                    if (userPropertyOptionDto.id) {
-                        allUserPropertyOptions.push({label: userPropertyOptionDto.name, value: userPropertyOptionDto.id});
-                    }
-                    return allUserPropertyOptions;
-                }, []);
-            },
-            fetchUserPropertiesOptionsIfEmpty: function() {
-                if (!this.userPropertiesOptions.length) {
-                    var self = this;
-                    countlySegmentation.initialize("").then(function() {
-                        self.setUserPropertiesOptions(countlySegmentation.getFilters());
-                    });
+            setUserPropertyOptions: function(propertyList) {
+                var allPropertyOptions = [];
+                if (this.type === this.TypeEnum.AUTOMATIC && this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
+                    allPropertyOptions.push({label: "Event Properties", name: "eventProperties", options: countlyPushNotification.helper.getEventPropertyOptions(propertyList)});
                 }
+                allPropertyOptions.push({label: "User Properties", name: "userProperties", options: countlyPushNotification.helper.getUserPropertyOptions(propertyList)});
+                allPropertyOptions.push({label: "Custom Properties", name: "customProperties", options: countlyPushNotification.helper.getCustomPropertyOptions(propertyList)});
+                this.userPropertiesOptions = allPropertyOptions;
+            },
+            fetchUserPropertyOptions: function() {
+                var self = this;
+                countlyPushNotification.service.fetchUserProperties().then(function(result) {
+                    self.setUserPropertyOptions(result);
+                });
             },
             isDeliveryNextStepFromInfoStep: function(nextStep, currentStep) {
                 return nextStep === 1 && currentStep === 0;
@@ -368,8 +367,14 @@
                     this.$refs.content.validate();
                 }
             },
+            fetchUserPropertyOptionsOnContentEnter: function(nextStep, currentStep) {
+                if (this.isContentNextStepFromAnyPreviousStep(nextStep, currentStep)) {
+                    this.fetchUserPropertyOptions();
+                }
+            },
             onStepClick: function(nextStep, currentStep) {
                 this.validateContentOnEnterIfNecessary(nextStep, currentStep);
+                this.fetchUserPropertyOptionsOnContentEnter(nextStep, currentStep);
                 if (this.shouldPrepare(nextStep, currentStep)) {
                     return this.prepare();
                 }
@@ -523,6 +528,7 @@
                 });
             },
             onSubmit: function(_, done) {
+                var self = this;
                 var promiseMethod = null;
                 if (this.userCommand === this.UserCommandEnum.EDIT_DRAFT) {
                     promiseMethod = this.saveFromDraft;
@@ -576,7 +582,6 @@
                 this.$emit('onClose');
             },
             onOpen: function() {
-                this.fetchUserPropertiesOptionsIfEmpty();
                 if (this.id) {
                     this.fetchPushNotificationById();
                 }
@@ -915,11 +920,6 @@
                         self.setIsLoading(false);
                     });
             },
-            getUserProperties: function() {
-                return countlySegmentation.getFilters().map(function(userFilter) {
-                    return {label: userFilter.name, value: userFilter.id};
-                });
-            },
             shouldDisplayPlatformSettings: function(platform) {
                 return this.pushNotificationUnderEdit.platforms.filter(function(selectedPlatform) {
                     return selectedPlatform === platform;
@@ -931,7 +931,6 @@
             this.fetchLocations();
             this.fetchAllEvents();
             this.fetchNumberOfUsers();
-            this.getUserProperties();
         },
         components: {
             "message-setting-element": countlyPushNotificationComponent.MessageSettingElement,

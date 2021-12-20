@@ -1,4 +1,4 @@
-/*global countlyVue,CV,countlyCommon,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
+/*global countlyVue,CV,countlyCommon,countlySegmentation,Promise,moment,_,countlyGlobalLang,countlyEventsOverview,countlyPushNotificationApprover,countlyGlobal,CountlyHelpers*/
 (function(countlyPushNotification) {
 
     var messagesSentLabel = CV.i18n('push-notification.sent-serie-name');
@@ -416,6 +416,47 @@
             }
             return JSON.stringify(JSON.parse(value), null, indentation);
         },
+        getEventPropertyOptions: function(propertyList) {
+            return this.getPropertyOptionsByCategory(propertyList, 'Event Properties');
+        },
+        getUserPropertyOptions: function(propertyList) {
+            return this.getPropertyOptionsByCategory(propertyList, 'User Properties');
+        },
+        getCustomPropertyOptions: function(propertyList) {
+            return this.getPropertyOptionsByCategory(propertyList, 'Custom Properties');
+        },
+        isUserPropertyCategory: function(item) {
+            return !item.id;
+        },
+        isUserPropertyOption: function(item) {
+            return Boolean(item.id);
+        },
+        getPropertyOptionsByCategory: function(propertyList, category) {
+            var result = [];
+            var shouldAddPropertyOption = false;
+            for (var index = 0; index < propertyList.length; index += 1) {
+                if (this.isUserPropertyCategory(propertyList[index]) && propertyList[index].name === category) {
+                    shouldAddPropertyOption = true;
+                }
+                if (this.isUserPropertyCategory(propertyList[index]) && propertyList[index].name !== category) {
+                    shouldAddPropertyOption = false;
+                }
+                if (this.isUserPropertyOption(propertyList[index]) && shouldAddPropertyOption) {
+                    result.push({label: propertyList[index].name, value: propertyList[index].id});
+                }
+            }
+            return result;
+        },
+        findUserPropertyLabelByValue: function(value, propertyList) {
+            var result = "";
+            result = propertyList.find(function(property) {
+                return property.id === value;
+            });
+            if (result) {
+                return result.name;
+            }
+            return result;
+        }
     };
 
     //NOTE: api object will reside temporarily in countlyPushNotification until countlyApi object is created;
@@ -482,7 +523,6 @@
                     }
                 }, {disableAutoCatch: true});
             });
-
         },
         update: function(dto) {
             return new Promise(function(resolve, reject) {
@@ -550,17 +590,30 @@
                     url: url
                 },
             }, {disableAutoCatch: true});
+        },
+        findAllUserProperties: function() {
+            return countlySegmentation.initialize("").then(function() {
+                return Promise.resolve(countlySegmentation.getFilters());
+            });
         }
     };
 
     countlyPushNotification.mapper = {
         incoming: {
+            addLabelToUserPropertiesDto: function(userPropertiesDto, userProperties) {
+                if (!userPropertiesDto) {
+                    return;
+                }
+                Object.keys(userPropertiesDto).forEach(function(key) {
+                    userPropertiesDto[key].l = countlyPushNotification.helper.findUserPropertyLabelByValue(userPropertiesDto[key].k, userProperties);
+                });
+            },
             getUserPropertyElement: function(index, userProperty) {
                 var newElement = document.createElement("span");
                 newElement.setAttribute("id", "id-" + index);
                 newElement.setAttribute("contentEditable", false);
                 newElement.setAttribute("class", "cly-vue-push-notification-message-editor-with-emoji-picker__user-property");
-                newElement.setAttribute("data-user-property-label", userProperty.k);
+                newElement.setAttribute("data-user-property-label", userProperty.l);
                 newElement.setAttribute("data-user-property-value", userProperty.k);
                 newElement.setAttribute("data-user-property-fallback", userProperty.f);
                 newElement.innerText = userProperty.k + "|" + userProperty.f;
@@ -584,8 +637,11 @@
             },
             buildMessageText: function(message, userPropertiesDto) {
                 var self = this;
-                if (!message || !userPropertiesDto) {
-                    return message || "";
+                if (!userPropertiesDto) {
+                    return message;
+                }
+                if (!message) {
+                    message = "";
                 }
                 var messageInHTMLString = message;
                 var buildMessageLength = 0;
@@ -801,7 +857,7 @@
                     userPropertyModel[userPropertyKey] = {
                         id: userPropertyKey,
                         value: userPropertyDto[userPropertyKey].k,
-                        label: "", //TODO-LA: find label value
+                        label: userPropertyDto[userPropertyKey].l || "",
                         fallback: userPropertyDto[userPropertyKey].f,
                         isUppercase: userPropertyDto[userPropertyKey].c
                     };
@@ -820,6 +876,8 @@
                 if (!localeItem) {
                     throw new Error('Unable to find locale item with key:', localeKey);
                 }
+                this.addLabelToUserPropertiesDto(localeItem.titlePers, dto.userProperties);
+                this.addLabelToUserPropertiesDto(localeItem.messagePers, dto.userProperties);
                 var result = {
                     title: this.buildMessageText(localeItem.title, localeItem.titlePers),
                     content: this.buildMessageText(localeItem.message, localeItem.messagePers),
@@ -1678,31 +1736,36 @@
             return countlyPushNotification.api.findAll(data);
         },
         fetchById: function(id) {
+            var self = this;
             return new Promise(function(resolve, reject) {
-                countlyPushNotification.api.findById(id).then(function(response) {
-                    var model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
-                    var cohorts = [];
-                    if (model.type === TypeEnum.ONE_TIME) {
-                        cohorts = model.cohorts;
-                    }
-                    if (model.type === TypeEnum.AUTOMATIC) {
-                        cohorts = model.automatic.cohorts;
-                    }
-                    Promise.all(
-                        [countlyPushNotification.service.fetchCohorts(cohorts, false),
-                            countlyPushNotification.service.fetchLocations(model.locations, false)]
-                    ).then(function(responses) {
+                self.fetchUserProperties().then(function(userProperties) {
+                    countlyPushNotification.api.findById(id).then(function(response) {
+                        response.userProperties = userProperties;
+                        var model = countlyPushNotification.mapper.incoming.mapDtoToModel(response);
+                        var cohorts = [];
                         if (model.type === TypeEnum.ONE_TIME) {
-                            model.cohorts = responses[0];
+                            cohorts = model.cohorts;
                         }
                         if (model.type === TypeEnum.AUTOMATIC) {
-                            model.automatic.cohorts = responses[0];
+                            cohorts = model.automatic.cohorts;
                         }
-                        model.locations = responses[1];
-                        resolve(model);
+                        Promise.all(
+                            [countlyPushNotification.service.fetchCohorts(cohorts, false),
+                                countlyPushNotification.service.fetchLocations(model.locations, false)]
+                        ).then(function(responses) {
+                            if (model.type === TypeEnum.ONE_TIME) {
+                                model.cohorts = responses[0];
+                            }
+                            if (model.type === TypeEnum.AUTOMATIC) {
+                                model.automatic.cohorts = responses[0];
+                            }
+                            model.locations = responses[1];
+                            resolve(model);
+                        });
+                    }).catch(function(error) {
+                        //TODO:log error
+                        reject(error);
                     });
-                }).catch(function(error) {
-                    reject(error);
                 });
             });
         },
@@ -1724,6 +1787,12 @@
         fetchMediaMetadataWithDebounce: _.debounce(function(url, resolveCallback, rejectCallback) {
             this.fetchMediaMetadata(url).then(resolveCallback).catch(rejectCallback);
         }, DEBOUNCE_TIME_IN_MS),
+        fetchUserProperties: function() {
+            return countlyPushNotification.api.findAllUserProperties().catch(function() {
+                //TODO:log error
+                return Promise.resolve([]);
+            });
+        },
         prepare: function(pushNotificationModel) {
             return new Promise(function(resolve, reject) {
                 var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);

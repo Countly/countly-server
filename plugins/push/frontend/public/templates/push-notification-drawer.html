@@ -693,21 +693,16 @@
                                 label="Send User Data"
                                 description="We can add some kind of description for sending user data">
                                 <validation-provider rules="required" v-slot="validation">
-                                    <el-select 
-                                        v-model="pushNotificationUnderEdit.settings.ios.userData" 
-                                        multiple 
-                                        filterable
-                                        reserve-keyword
-                                        style="width:100%;"
-                                        :class="{'is-error': validation.errors.length > 0}"
-                                        placeholder="Select user data">
-                                            <el-option
-                                            v-for="item in userPropertiesOptions"
-                                            :key="item.value"
-                                            :label="item.label"
-                                            :value="item.value">
-                                            </el-option>
-                                    </el-select>
+                                    <cly-select-x
+                                        search-placeholder="Search in Properties"
+                                        v-model="pushNotificationUnderEdit.settings.ios.userData"
+                                        placeholder="Select user data" 
+                                        :width="320"
+                                        mode="multi-check-sortable"
+                                        :hide-all-options-tab="false"
+                                        :options="userPropertiesOptions"
+                                        :class="{'is-error': validation.errors.length > 0}">
+                                    </cly-select-x>
                                 </validation-provider>
                             </message-setting-element>
                         </el-collapse-item>
@@ -787,21 +782,16 @@
                                 label="Send User Data"
                                 description="We can add some kind of description for sending user data">
                                 <validation-provider rules="required" v-slot="validation">
-                                    <el-select 
-                                        v-model="pushNotificationUnderEdit.settings.android.userData" 
-                                        multiple 
-                                        filterable
-                                        reserve-keyword
-                                        style="width:100%;"
-                                        :class="{'is-error': validation.errors.length > 0}"
-                                        placeholder="Select user data">
-                                        <el-option
-                                            v-for="item in userPropertiesOptions"
-                                            :key="item.value"
-                                            :label="item.label"
-                                            :value="item.value">
-                                        </el-option>
-                                    </el-select>
+                                    <cly-select-x
+                                        search-placeholder="Search in Properties"
+                                        v-model="pushNotificationUnderEdit.settings.android.userData"
+                                        placeholder="Select user data" 
+                                        :width="320"
+                                        mode="multi-check-sortable"
+                                        :hide-all-options-tab="false"
+                                        :options="userPropertiesOptions"
+                                        :class="{'is-error': validation.errors.length > 0}">
+                                    </cly-select-x>
                                 </validation-provider>
                             </message-setting-element>
                         </el-collapse-item>
