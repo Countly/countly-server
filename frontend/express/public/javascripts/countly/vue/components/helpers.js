@@ -741,7 +741,7 @@
     }));
 
     Vue.component("cly-empty-view", countlyBaseComponent.extend({
-        template: ' <div>\
+        template: ' <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
                         <slot name="icon">\
                             <div class="bu-mt-6">\
                                 <img src="images/icons/empty-view-icon.svg"/>\
@@ -752,7 +752,7 @@
                                 <h4 class="color-cool-gray-100">{{title}}</h4>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="bu-mt-1 bu-mb-6 text-small color-cool-gray-50">{{subTitle}}</div>\
+                                <div class="bu-mt-1 bu-mb-6 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
                             </slot>\
                             <slot name="action" v-if="hasAction">\
                                 <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered bu-mt-5 color-blue-100 pointer">{{actionTitle}}</div>\
