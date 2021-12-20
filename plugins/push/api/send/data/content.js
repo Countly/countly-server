@@ -50,13 +50,13 @@ class Content extends Jsonable {
             },
             la: {type: 'String', required: false},
             title: {type: 'String', required: false},
-            titlePers: {type: 'Object', required: false, custom: Content.validatePers},
+            titlePers: {type: 'Object', required: false, nonempty: true, custom: Content.validatePers},
             message: {type: 'String', required: false},
-            messagePers: {type: 'Object', required: false, custom: Content.validatePers},
+            messagePers: {type: 'Object', required: false, nonempty: true, custom: Content.validatePers},
             sound: {type: 'String', required: false},
             badge: {type: 'Number', required: false},
-            data: {type: 'JSON', required: false},
-            extras: {type: 'String[]', required: false},
+            data: {type: 'JSON', required: false, nonempty: true},
+            extras: {type: 'String[]', required: false, 'min-length': 1},
             expiration: {type: 'Number', required: false, min: 60000, max: 365 * 24 * 3600000},
             url: {type: 'URL', required: false},
             media: {type: 'URL', required: false},
@@ -65,14 +65,14 @@ class Content extends Jsonable {
                 type: {
                     url: {type: 'URL', required: true},
                     title: {type: 'String', required: true},
-                    pers: {type: 'Object', required: false, custom: Content.validatePers},
+                    pers: {type: 'Object', required: false, nonempty: true, custom: Content.validatePers},
                 },
                 array: true,
                 'min-length': 1,
                 'max-length': 2,
                 required: false
             },
-            specific: { type: 'Object[]', required: false },
+            specific: { type: 'Object[]', required: false, 'min-length': 1 },
         };
     }
 
@@ -94,7 +94,9 @@ class Content extends Jsonable {
             if (Object.keys(opt).length === 0) {
                 return 'Personalisation object cannot be empty';
             }
+            let anykey = false;
             for (let kk in opt) {
+                anykey = true;
                 if (kk === 'k') {
                     if (typeof opt[kk] !== 'string' || !opt[kk]) {
                         return 'Personalisation key must be a non empty string';
@@ -113,6 +115,9 @@ class Content extends Jsonable {
                 else {
                     return 'Invalid key in personalisation object';
                 }
+            }
+            if (!anykey) {
+                return 'Empty object in personalisation object';
             }
         }
     }
