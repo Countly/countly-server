@@ -1638,6 +1638,9 @@
                     color: white;
                 }
                 color: #333C48;
+                .cly-vue-drawer__step-title {
+                    color: #333C48 !important;
+                }
                 + .cly-vue-drawer__step-separator {
                     border-color: #333C48;
                 }
