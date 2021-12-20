@@ -145,8 +145,8 @@
                         enterable: true,
                         renderMode: 'html',
                         textStyle: {
-                            color: "#A7AEB8",
-                            fontSize: 14
+                            color: "#333C48",
+                            fontSize: 12
                         }
                     },
                     xAxis: {
@@ -329,6 +329,26 @@
             },
             echartUpdateOptions: function() {
                 return _merge({}, this.internalUpdateOptions, this.updateOptions || {});
+            },
+            isChartEmpty: function() {
+                var isEmpty = true;
+                var options = _merge({}, this.option);
+                for (var i = 0; i < options.series.length; i++) {
+                    for (var j = 0; j < options.series[i].data.length; j++) {
+                        if (typeof options.series[i].data[j] !== "object") {
+                            if (options.series[i].data[j] !== 0) {
+                                isEmpty = false;
+                            }
+                        }
+                        else {
+                            // time of days case
+                            if (options.series[i].data[j][2] !== 0) {
+                                isEmpty = false;
+                            }
+                        }
+                    }
+                }
+                return isEmpty;
             }
         }
     });
@@ -1094,13 +1114,14 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
                                 <echarts\
+                                    v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
                                     ref="echarts"\
                                     v-bind="$attrs"\
@@ -1109,13 +1130,24 @@
                                     :autoresize="autoresize"\
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
+                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
+                                    <div class="bu-mt-6">\
+                                        <img src="/images/icons/empty-icon.svg" alt="">\
+                                    </div>\
+                                    <div class="bu-mt-2">\
+                                        <h4>{{i18n("common.emtpy-table-title")}}</h4>\
+                                    </div>\
+                                    <div class="bu-mt-1 bu-mb-6">\
+                                        <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
+                                    </div>\
+                                </div>\
                             </div>\
                         </div>\
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
                             :echartRef="echartRef"\
-                            v-if="legendOptions.show"\
+                            v-if="legendOptions.show && !isChartEmpty"\
                             :chartOptions="chartOptions">\
                         </custom-legend>\
                     </div>'
@@ -1159,15 +1191,16 @@
 
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart" :style="{height: \'100%\'}">\
-                            <chart-header ref="header" v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
 							<div class="chart-wrapper" :style="{height: (chartOptions.chartheight) + \'px\'}">\
 							<vue-scroll :ops="scrollOptions" >\
-								<div :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
+								<div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
 										<echarts\
+                                            v-if="!isChartEmpty"\
 											:updateOptions="echartUpdateOptions"\
 											ref="echarts"\
 											v-bind="$attrs"\
@@ -1176,6 +1209,17 @@
 											:autoresize="autoresize"\
 											@datazoom="onZoomFinished">\
 										</echarts>\
+                                        <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
+                                            <div class="bu-mt-6">\
+                                                <img src="/images/icons/empty-icon.svg" alt="">\
+                                            </div>\
+                                            <div class="bu-mt-2">\
+                                                <h4>{{i18n("common.emtpy-table-title")}}</h4>\
+                                            </div>\
+                                            <div class="bu-mt-1 bu-mb-6">\
+                                                <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
+                                            </div>\
+                                        </div>\
 								</div>\
 							</vue-scroll>\
 							</div>\
@@ -1184,12 +1228,11 @@
                             :style="legendStyle"\
                             :options="legendOptions"\
                             :echartRef="echartRef"\
-                            v-if="legendOptions.show"\
+                            v-if="legendOptions.show && !isChartEmpty"\
                             :chartOptions="chartOptions">\
                         </custom-legend>\
                     </div>'
     }));
-
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {
@@ -1212,13 +1255,14 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
                                 <echarts\
+                                    v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
                                     ref="echarts"\
                                     v-bind="$attrs"\
@@ -1227,13 +1271,24 @@
                                     :autoresize="autoresize"\
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
+                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
+                                    <div class="bu-mt-6">\
+                                        <img src="/images/icons/empty-icon.svg" alt="">\
+                                    </div>\
+                                    <div class="bu-mt-2">\
+                                        <h4>{{i18n("common.emtpy-table-title")}}</h4>\
+                                    </div>\
+                                    <div class="bu-mt-1 bu-mb-6">\
+                                        <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
+                                    </div>\
+                                </div>\
                             </div>\
                         </div>\
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
                             :echartRef="echartRef"\
-                            v-if="legendOptions.show"\
+                            v-if="legendOptions.show && !isChartEmpty"\
                             :chartOptions="chartOptions">\
                         </custom-legend>\
                     </div>'
@@ -1328,13 +1383,14 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
                                 <echarts\
+                                    v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
                                     ref="echarts"\
                                     v-bind="$attrs"\
@@ -1343,13 +1399,24 @@
                                     :autoresize="autoresize"\
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
+                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
+                                    <div class="bu-mt-6">\
+                                        <img src="/images/icons/empty-icon.svg" alt="">\
+                                    </div>\
+                                    <div class="bu-mt-2">\
+                                        <h4>{{i18n("common.emtpy-table-title")}}</h4>\
+                                    </div>\
+                                    <div class="bu-mt-1 bu-mb-6">\
+                                        <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
+                                    </div>\
+                                </div>\
                             </div>\
                         </div>\
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
                             :echartRef="echartRef"\
-                            v-if="legendOptions.show"\
+                            v-if="legendOptions.show && !isChartEmpty"\
                             :chartOptions="chartOptions">\
                         </custom-legend>\
                     </div>'
@@ -1376,13 +1443,14 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div :style="echartStyle" class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :style="{height: echartHeight + \'px\'}">\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\']" :style="{height: echartHeight + \'px\'}">\
                                 <echarts\
+                                    v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
                                     ref="echarts"\
                                     v-bind="$attrs"\
@@ -1391,13 +1459,24 @@
                                     :autoresize="autoresize"\
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
+                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
+                                    <div class="bu-mt-6">\
+                                        <img src="/images/icons/empty-icon.svg" alt="">\
+                                    </div>\
+                                    <div class="bu-mt-2">\
+                                        <h4>{{i18n("common.emtpy-table-title")}}</h4>\
+                                    </div>\
+                                    <div class="bu-mt-1 bu-mb-6">\
+                                        <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
+                                    </div>\
+                                </div>\
                             </div>\
                         </div>\
                         <custom-legend\
                             :style="legendStyle"\
                             :options="legendOptions"\
                             :echartRef="echartRef"\
-                            v-if="legendOptions.show"\
+                            v-if="legendOptions.show && !isChartEmpty"\
                             :chartOptions="chartOptions">\
                         </custom-legend>\
                     </div>'
@@ -1448,15 +1527,16 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses">\
                         <div class="cly-vue-chart__echart">\
-                            <chart-header ref="header" v-if="isShowingHeader"  :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                            <chart-header ref="header" v-if="isShowingHeader && !isChartEmpty" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div class="bu-columns bu-is-gapless"\
+                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-columns bu-is-gapless\']"\
                                 :style="{height: echartHeight + \'px\'}">\
                                 <div :class="classes">\
                                     <echarts\
+                                        v-if="!isChartEmpty"\
                                         :updateOptions="echartUpdateOptions"\
                                         ref="echarts"\
                                         v-bind="$attrs"\
@@ -1465,11 +1545,22 @@
                                         :autoresize="autoresize"\
                                         @datazoom="onZoomFinished">\
                                     </echarts>\
+                                    <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
+                                        <div class="bu-mt-6">\
+                                            <img src="/images/icons/empty-icon.svg" alt="">\
+                                        </div>\
+                                        <div class="bu-mt-2">\
+                                            <h4>{{i18n("common.emtpy-table-title")}}</h4>\
+                                        </div>\
+                                        <div class="bu-mt-1 bu-mb-6">\
+                                            <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
+                                        </div>\
+                                    </div>\
                                 </div>\
                                 <custom-legend\
                                     :options="pieLegendOptions"\
                                     :echartRef="echartRef"\
-                                    v-if="pieLegendOptions.show"\
+                                    v-if="pieLegendOptions.show && !isChartEmpty"\
                                     :chartOptions="chartOptions"\
                                     :class="classes">\
                                 </custom-legend>\
