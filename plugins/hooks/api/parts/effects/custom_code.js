@@ -57,11 +57,12 @@ class CustomCodeEffect {
                     timeout: 30000,
                     console: 'inherit',
                     sandbox: {params, setTimeout, request, CUSTOM_CODE_RESOLVER, CUSTOM_CODE_ERROR_CALLBACK},
-                    require:  false,
+                    require: false,
                 });
-                vm.run(genCode, 'vm.js'); 
-            })
-        } catch(e) {
+                vm.run(genCode, 'vm.js');
+            });
+        }
+        catch (e) {
             runtimePassed = false;
             log.e("got error when executing custom code", e, genCode, options);
             logs.push(`message:${e.message}
