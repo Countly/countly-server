@@ -8,46 +8,34 @@
 		v-bind="$props.controls">
         <template v-slot:default="drawerScope" >
             <cly-form-step id="step1" :name="i18n('hooks.step1')">
-                <div class="cly-vue-drawer-step__section">
-                    <div class="text-small text-heading">
-                        {{i18n('hooks.name')}}
-					</div>
-                    <validation-provider name="name" rules="required" v-slot="v">
-						<el-input
-							v-model="drawerScope.editedObject.name"
-							:class="{'is-error': v.errors.length > 0}"
-							:placeholder="i18n('hooks.messages.name.placeholder')">
-						</el-input>
-					</validation-provider>
-                </div>
-                <div class="cly-vue-drawer-step__section">
-                    <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
-                        <div class="text-small text-heading">
-                            {{i18n('hooks.description')}}
-                        </div>
-                        <div class="cly-vue-hook-drawer__help-text">
-                            {{i18n('hooks.optional')}}
-                        </div>
-                    </div>
-                    <el-input v-model="drawerScope.editedObject.description" :placeholder="i18n('hooks.description-placeholder')"></el-input>
-                </div>
+                <cly-form-field name="hooksName" :label="i18n('hooks.name')" rules="required">
+                    <el-input
+                        v-model="drawerScope.editedObject.name"
+                        :placeholder="i18n('hooks.messages.name.placeholder')">
+                    </el-input>
+                </cly-form-field>
 
-                <div class="cly-vue-drawer-step__section">
-                    <div class="text-small text-heading">
-                        {{i18n('hooks.source-application')}} 
-					</div>
-                    <validation-provider name="name" rules="required" v-slot="v">
-                        <cly-select-x
-                           :placeholder="i18n('hooks.select-application')"
-                           mode="single-list"
-                           v-model="drawerScope.editedObject.apps[index]"
-                           v-for="(app, index) in drawerScope.editedObject.apps"
-                           :key="index"
-                           :class="{'is-error': v.errors.length > 0, 'cly-vue-hook-drawer__is-full-line':true}"
-                           :options="appsSelectorOption">
-                        </cly-select-x>
-                    </validation-provider>
-                </div>
+                <cly-form-field name="description" :label="i18n('hooks.description')">
+                    <div class="cly-vue-hook-drawer__help-text">
+                        {{i18n('hooks.optional')}}
+                    </div>
+                    <el-input
+                        v-model="drawerScope.editedObject.description"
+                        :placeholder="i18n('hooks.description-placeholder')">
+                    </el-input>
+                </cly-form-field>
+
+                <cly-form-field name="application" :label="i18n('hooks.source-application')" rules="required">
+                    <cly-select-x
+                        :placeholder="i18n('hooks.select-application')"
+                        mode="single-list"
+                        v-model="drawerScope.editedObject.apps[index]"
+                        v-for="(app, index) in drawerScope.editedObject.apps"
+                        :key="index"
+                        class="cly-vue-hook-drawer__is-full-line"
+                        :options="appsSelectorOption">
+                    </cly-select-x>
+                </cly-form-field>
 
                 <pre v-if="0">
                 {{drawerScope.editedObject}}
