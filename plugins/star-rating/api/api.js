@@ -571,7 +571,7 @@ function uploadFile(myfile, id, callback) {
         var params = ob.params;
         validateCreate(params, FEATURE_NAME, function() {
             uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
-                if (good) {
+                if (typeof good === 'boolean' && good) {
                     common.returnMessage(params, 200, filename);
                 }
                 else {
