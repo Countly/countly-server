@@ -695,17 +695,30 @@
             for (var id in countlyGlobal.apps) {
                 appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
             }
+
             return {
                 title: "",
                 saveButtonLabel: "",
                 appsSelectorOption: appsSelectorOption,
+                testClaps: [],
+                newTest: false,
             };
         },
         computed: {
             testResult: function() {
                 var testResult = this.$store.getters["countlyHooks/testResult"];
+                if ((this.$data.newTest === true) && (testResult.length > 0)) {
+                    this.$data.newTest = false;
+                    this.$data.testClaps = [];
+                    for (var i = 0; i < testResult.length; i++) {
+                        if (testResult[i].logs) {
+                            this.$data.testClaps.push(i);
+                        }
+                    }
+                    
+                }
                 return testResult || [];
-            },
+            }
         },
         props: {
             controls: {
@@ -738,6 +751,7 @@
 
             testHook: function() {
                 var hookData = this.$refs.drawerData.editedObject;
+                this.$data.newTest = true;
                 this.$store.dispatch("countlyHooks/testHook", hookData);
             },
         }
