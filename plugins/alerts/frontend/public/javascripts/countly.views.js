@@ -490,8 +490,9 @@
     }
     $(document).ready(function() {
         if (countlyAuth.validateRead(ALERTS_FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
+            app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 32});
         }
+        
 
         if (countlyGlobal.plugins.indexOf("concurrent_users") > -1) {
             countlyVue.container.registerData("/alerts/data-type", {label: jQuery.i18n.map["concurrent-users.title"], value: 'online-users'});
