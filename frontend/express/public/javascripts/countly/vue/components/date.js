@@ -235,6 +235,11 @@
      * @returns {String} Range label
      */
     function getRangeLabel(state, type) {
+
+        if (state.selectedShortcut === "0days") {
+            return countlyVue.i18n("common.all-time");
+        }
+
         type = type || "date";
         var level = type.replace("range", "");
 
