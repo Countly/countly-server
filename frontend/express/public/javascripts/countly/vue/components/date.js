@@ -709,6 +709,11 @@
                 type: Number,
                 default: -1,
                 required: false
+            },
+            allowCustomRange: {
+                type: Boolean,
+                default: true,
+                required: false
             }
         },
         data: function() {
@@ -861,8 +866,10 @@
                 this.refreshCalendarDOM();
             },
             handleCustomRangeClick: function() {
-                this.customRangeSelection = true;
-                this.refreshCalendarDOM();
+                if (this.allowCustomRange) {
+                    this.customRangeSelection = true;
+                    this.refreshCalendarDOM();
+                }
             },
             handleShortcutClick: function(value) {
                 this.selectedShortcut = value;
