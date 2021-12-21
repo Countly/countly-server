@@ -741,30 +741,33 @@
     }));
 
     Vue.component("cly-empty-view", countlyBaseComponent.extend({
-        template: ' <div class="bu-is-flex  bu-is-flex-direction-column bu-is-align-items-center" style="height:calc(100vh - 193px);">\
+        template: ' <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
                         <slot name="icon">\
-                            <div style="margin-top: 122px;border-radius: 50%;width: 96px;height: 96px;background: gray;">\
-                                <img src="images/icons/empty-view-icon.svg" style="width: 96px;height: 96px;"/>\
+                            <div class="bu-mt-6">\
+                                <img src="images/icons/empty-view-icon.svg"/>\
                             </div>\
                         </slot>\
-                        <div style="width: 400px;">\
+                        <div class="bu-mt-2">\
                             <slot name="title">\
-                                <h3 class="color-cool-gray-100 bu-mt-5 bu-mb-4 bu-has-text-centered">{{title}}</h3>\
+                                <h4 class="color-cool-gray-100">{{title}}</h4>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="color-cool-gray-50 text-medium bu-has-text-centered">{{subTitle}}</div> \
+                                <div class="bu-mt-1 bu-mb-6 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
                             </slot>\
-                            <slot name="action">\
+                            <slot name="action" v-if="hasAction">\
                                 <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered bu-mt-5 color-blue-100 pointer">{{actionTitle}}</div>\
                             </slot>\
                         </div>\
                     </div>',
-        mixins: [countlyVue.mixins.i18n],
+        mixins: [
+            countlyVue.mixins.i18n
+        ],
         props: {
-            title: { default: "...hmm, seems it’s empty here", type: String },
-            subTitle: { default: "", type: String },
+            title: { default: countlyVue.i18n('common.emtpy-view-title'), type: String },
+            subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String },
             actionTitle: { default: "Create", type: String },
             actionFunc: { default: null, type: Function },
+            hasAction: {default: false, type: Boolean}
         },
         data: function() {
             return {};
@@ -772,5 +775,4 @@
         methods: {
         }
     }));
-
 }(window.countlyVue = window.countlyVue || {}));

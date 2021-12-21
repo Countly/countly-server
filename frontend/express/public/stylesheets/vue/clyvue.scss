@@ -3867,3 +3867,9 @@
         }
     }
 }
+
+.el-table {
+    &__empty-text {
+        line-height: normal;
+    }
+}
