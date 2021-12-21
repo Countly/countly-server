@@ -715,7 +715,7 @@
                             this.$data.testClaps.push(i);
                         }
                     }
-                    
+
                 }
                 return testResult || [];
             }
