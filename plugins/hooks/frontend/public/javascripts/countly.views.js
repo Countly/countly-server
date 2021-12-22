@@ -1,5 +1,5 @@
 /*global
-   CV, countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
+   CV, _,  countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
  */
 (function() {
     var FEATURE_NAME = "hooks";
@@ -58,6 +58,7 @@
                     delete data.triggerEffectColumn;
                     delete data.nameDescColumn;
                     delete data.triggerEffectDom;
+                    delete data.error_logs;
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
@@ -117,7 +118,13 @@
                 type: Object
             },
         },
+        mounted: function() {
+            this.value.requestData = _.unescape(this.value.requestData);
+        },
         methods: {
+            textChange: function(event) {
+                this.value.requestData = _.unescape(event.currentTarget.value);
+            }
         }
     });
 
@@ -208,8 +215,12 @@
                 }
                 this.emailInput[0].selectize.setValue(this.value.address, false);
             }
+            this.value.emailTemplate = _.unescape(this.value.emailTemplate);
         },
         methods: {
+            textChange: function(event) {
+                this.value.emailTemplate = _.unescape(event.currentTarget.value);
+            }
         }
     });
 
@@ -225,7 +236,13 @@
                 type: Object
             },
         },
+        mounted: function() {
+            this.value.code = _.unescape(this.value.code);
+        },
         methods: {
+            textChange: function(event) {
+                this.value.code = _.unescape(event.currentTarget.value);
+            }
         }
     });
 
@@ -678,17 +695,30 @@
             for (var id in countlyGlobal.apps) {
                 appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
             }
+
             return {
                 title: "",
                 saveButtonLabel: "",
                 appsSelectorOption: appsSelectorOption,
+                testClaps: [],
+                newTest: false,
             };
         },
         computed: {
             testResult: function() {
                 var testResult = this.$store.getters["countlyHooks/testResult"];
+                if ((this.$data.newTest === true) && (testResult.length > 0)) {
+                    this.$data.newTest = false;
+                    this.$data.testClaps = [];
+                    for (var i = 0; i < testResult.length; i++) {
+                        if (testResult[i].logs) {
+                            this.$data.testClaps.push(i);
+                        }
+                    }
+
+                }
                 return testResult || [];
-            },
+            }
         },
         props: {
             controls: {
@@ -721,6 +751,7 @@
 
             testHook: function() {
                 var hookData = this.$refs.drawerData.editedObject;
+                this.$data.newTest = true;
                 this.$store.dispatch("countlyHooks/testHook", hookData);
             },
         }
@@ -800,6 +831,7 @@
                     delete data.triggerEffectColumn;
                     delete data.nameDescColumn;
                     delete data.triggerEffectDom;
+                    delete data.error_logs;
                     this.openDrawer("detail", data);
                 }
                 else if (command === "delete-comment") {
@@ -884,7 +916,7 @@
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 60});
+            app.addMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 44});
 
             //check if configuration view exists
             if (app.configurationsView) {

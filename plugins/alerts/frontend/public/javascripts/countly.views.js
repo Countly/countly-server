@@ -36,7 +36,6 @@
                 apps: [""],
                 defaultAppsSelectorOption: defaultAppsSelectorOption,
                 appsSelectorOption: appsSelectorOption,
-                emailOptions: [{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
                 showSubType1: true,
                 showSubType2: false,
                 showCondition: true,
@@ -221,17 +220,6 @@
                     return;
                 }
             },
-            emailInputFilter: function(val) {
-                var REGEX_EMAIL = '([a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)';
-                var regex = new RegExp('^' + REGEX_EMAIL + '$', 'i');
-                var match = val.match(regex);
-                if (match) {
-                    this.emailOptions = [{value: val, label: val}];
-                }
-                else {
-                    this.emailOptions = [];
-                }
-            },
             onSubmit: function(settings) {
                 if (settings._id) {
                     var rows = this.$store.getters["countlyAlerts/table/all"];
@@ -387,7 +375,13 @@
                 deleteMessage: '',
             };
         },
+        props: {
+            callCreateAlertDrawer: {type: Function, default: function() {}},
+        },
         methods: {
+            createAlert: function() {
+                this.callCreateAlertDrawer();
+            },
             handleAlertEditCommand: function(command, scope) {
                 if (command === "edit-comment") {
                     /* eslint-disable */
@@ -496,8 +490,9 @@
     }
     $(document).ready(function() {
         if (countlyAuth.validateRead(ALERTS_FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
+            app.addMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 44});
         }
+
 
         if (countlyGlobal.plugins.indexOf("concurrent_users") > -1) {
             countlyVue.container.registerData("/alerts/data-type", {label: jQuery.i18n.map["concurrent-users.title"], value: 'online-users'});

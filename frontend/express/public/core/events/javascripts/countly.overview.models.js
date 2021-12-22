@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon,Promise */
+/*global countlyVue, CV, countlyCommon, CountlyHelpers, Promise */
 (function(countlyEventsOverview) {
 
     countlyEventsOverview.helpers = {
@@ -282,7 +282,7 @@
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_events",
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
@@ -296,7 +296,7 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "events",
                     "events": JSON.stringify(my_events),
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
                     "timestamp": new Date().getTime(),
                     "overview": true
                 },

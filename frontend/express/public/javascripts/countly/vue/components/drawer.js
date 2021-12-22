@@ -27,7 +27,7 @@
                 },
                 size: {
                     type: Number,
-                    default: 6,
+                    default: 4,
                     validator: function(value) {
                         return value >= 1 && value <= 12;
                     }

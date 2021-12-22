@@ -33,6 +33,7 @@
                         json[i].enabled = json[i].enabled + '' === 'false' ? false : true;
                         json[i].pluginEnabled = json[i].report_type === "core" ? true : countlyGlobal.plugins.indexOf(json[i].report_type) > -1;
 
+
                     }
                 }
                 _data = json;
@@ -309,6 +310,7 @@
                                 if (countlyGlobal.member.global_admin === true || data[i].user === countlyGlobal.member._id) {
                                     data[i].createdByMe = false;
                                 }
+
                             }
                         }
                         context.commit("setAll", data);

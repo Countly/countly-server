@@ -8,7 +8,7 @@
                 </span>
             </template>
             <template v-slot:header-right>
-            <el-button type="success" icon="el-icon-circle-plus" v-on:click="createAlert()">{{i18n('alert.Add_New_Alert')}}</el-button>
+            <el-button type="success" icon="el-icon-circle-plus" @click="createAlert">{{i18n('alert.Add_New_Alert')}}</el-button>
         </template>
         </cly-header>
     
@@ -23,7 +23,7 @@
              </div>
       
             <div class="bu-mt-6">
-                <table-view  v-on:open-drawer="openDrawer"></table-view>
+                <table-view  v-on:open-drawer="openDrawer" :callCreateAlertDrawer="createAlert"></table-view>
             </div>
         </cly-main>
         <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
@@ -33,11 +33,34 @@
     
     
 <script  type="text/x-template" id="alerts-table">
-    <cly-section>
+<div>
+    <cly-empty-view 
+        v-if="tableRows.length === 0"
+        :title="i18n('alerts.empty-title')"
+        :subTitle="i18n('alerts.empty-subtitle')"
+        :actionTitle="i18n('alerts.empty-action-button-title')"
+        :hasAction="true"
+        :actionFunc="createAlert"
+    > 
+    </cly-empty-view>
+    <cly-section v-if="tableRows.length > 0">
         <cly-datatable-n
             class="cly-vue-alerts-table"
             :tracked-fields="localTableTrackedFields"
             :rows="tableRows" :resizable="false" >
+
+            <template slot="empty">
+                <div class="bu-is-flex  bu-is-flex-direction-column bu-is-align-items-center bu-my-6 bu-py-5">
+                    <div class="no-search-circle">
+                    </div>
+                    <div style="width: 400px;">
+                        <h4 class="color-cool-gray-100 bu-mt-4 bu-mb-2 bu-has-text-centered">No data found</h4>
+                        <div class="color-cool-gray-50 text-small bu-has-text-centered ">
+                            There is no data found for selected time period 
+                        </div>
+                    </div>
+                </div>
+            </template>
             <template v-slot:header-left="scope">
                 <div>
                     <cly-select-x
@@ -49,7 +72,7 @@
                 </div>
             </template> 
             <template v-slot="scope">
-                <el-table-column fixed="left" width="100" label="">
+                <el-table-column type="switch" fixed="left" width="100" sortable prop="enabled">
                     <template v-slot="rowScope">
                         <el-switch :value="rowScope.row.enabled"
                             @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
@@ -72,26 +95,27 @@
                     </template>
                 </el-table-column>
     
-                <el-table-column  min-width="230" sortable="true"  :label="i18n('alert.CreateBy')">
+                <el-table-column  min-width="130" sortable="true"  :label="i18n('alert.CreateBy')">
                     <template slot-scope="scope">
                         <div class="bu-level">
                             <div class="bu-level-left">
                                 <div class="is-created-by-col">
                                     {{scope.row.createdByUser}}
                                  </div>
-    
                             </div> 
-                          <div class="bu-level-right">
-                             <cly-more-options class="is-option-button" size="small" @command="handleAlertEditCommand($event, scope)">
-                                <el-dropdown-item v-if="canUpdate" icon="el-icon-document-copy" command="edit-comment">
-                                    {{i18n('alert.Edit')}}
-                                </el-dropdown-item>
-                                <el-dropdown-item v-if="canDelete" icon="el-icon-delete" command="delete-comment">
-                                    {{i18n('alert.Delete')}}
-                                </el-dropdown-item>
-                            </cly-more-options>
-                          </div>
                         </div>
+                    </template>
+                </el-table-column>
+                <el-table-column type="options">
+                    <template v-slot="rowScope">
+                        <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleAlertEditCommand($event,rowScope)">
+                            <el-dropdown-item v-if="canUpdate" icon="el-icon-document-copy" command="edit-comment">
+                                {{i18n('alert.Edit')}}
+                            </el-dropdown-item>
+                            <el-dropdown-item v-if="canDelete" icon="el-icon-delete" command="delete-comment">
+                                {{i18n('alert.Delete')}}
+                            </el-dropdown-item>
+                        </cly-more-options>
                     </template>
                 </el-table-column>
 
@@ -116,7 +140,8 @@
                 </template>
         </cly-confirm-dialog>
     </cly-section>
-    </script>
+</div>
+</script>
     
     
     
@@ -131,63 +156,46 @@
         <template v-slot:default="drawerScope">
             <cly-form-step id="alert-drawer-main">
             
-            <div class="bu-py-4 cly-alert-drawer">
-                <div class="text-medium text-heading title">
-                    {{i18n('alert.Alert_Name')}}
-                </div>
-                <validation-provider name="alertName" rules="required" v-slot="v">
-                    <el-input
-                        v-model="drawerScope.editedObject.alertName"
-                        :class="{'is-error': v.errors.length > 0}"
-                        :placeholder="i18n('alert.enter-alert-name')">
-                    </el-input>
-                </validation-provider>
-            </div>
-   
-            <div class="bu-py-4">
-                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
-                    <div class="text-medium text-heading ">
-                        {{i18n('alert.Data_type')}}
-                    </div>
-                </div>
-                <div class="cly-vue-drawer-step__line ">
-                    <el-radio-group v-on:change="dataTypeSelected" v-model="drawerScope.editedObject.alertDataType" class="bu-is-flex alert-data-type-block">
-                        <el-radio-button v-for="(item, idx) in alertDataTypeOptions" :label="item.value" :disabled="drawerScope.editedObject._id && drawerScope.editedObject.alertDataType !== item.value">{{item.label}}</el-radio-button>
-                    </el-radio-group>
-                </div>
-            </div>
+            <cly-form-field name="alertName" :label="i18n('alert.Alert_Name')" rules="required">
+                <el-input
+                    v-model="drawerScope.editedObject.alertName"
+                    class="bu-is-flex" 
+                    :placeholder="i18n('alert.enter-alert-name')">
+                </el-input>
+            </cly-form-field>
 
-            <div class="bu-py-4">
-                <div class="text-medium text-heading  text-heading title">
-                    {{i18n('alert.For_Applications')}} 
-                </div>
-                <validation-provider name="name" rules="required" v-slot="v">
-                    <cly-select-x
-                       :placeholder="i18n('alert.Select_app')"
-                       mode="single-list"
-                       v-on:input="appSelected"
-                       v-model="drawerScope.editedObject.selectedApps[idx]"
-                       v-for="(app, idx) in drawerScope.editedObject.selectedApps"
-                       :key="idx"
-                       :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
-                       :options="appsSelectorOption">
-                    </cly-select-x>
-                </validation-provider>
-            </div>
+            <cly-form-field name="dataType" :label="i18n('alert.Data_type')" rules="required">
+                <el-radio-group v-on:change="dataTypeSelected" v-model="drawerScope.editedObject.alertDataType" class="bu-is-flex alert-data-type-block">
+                    <el-radio-button v-for="(item, idx) in alertDataTypeOptions" :label="item.value" :disabled="drawerScope.editedObject._id && drawerScope.editedObject.alertDataType !== item.value">{{item.label}}</el-radio-button>
+                </el-radio-group>
+            </cly-form-field>
 
+            <cly-form-field name="apps" :label="i18n('alert.For_Applications')" rules="required">
+                <cly-select-x
+                    :placeholder="i18n('alert.Select_app')"
+                    mode="single-list"
+                    v-on:input="appSelected"
+                    v-model="drawerScope.editedObject.selectedApps[idx]"
+                    v-for="(app, idx) in drawerScope.editedObject.selectedApps"
+                    :key="idx"
+                    class="bu-is-flex"
+                    :options="appsSelectorOption">
+                </cly-select-x>
+            </cly-form-field> 
+            
             <div class="bu-my-4 bu-py-4 cly-vue-alert-drawer__card">
-                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-py-1 bu-px-4">
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-px-4">
                     <div class="text-small text-heading">
                         {{i18n('alert.Alert_definition')}} 
                     </div>
-                    <div class="color-cool-gray-50 text-small">
+                    <div class="color-cool-gray-50 text-small bu-mb-1" style="line-height: 18px;">
                         {{i18n('alert.compare-remind')}}
                     </div>
                 </div>
                 <div class="cly-vue-alert-drawer__line">
                 </div>
        
-                <div class="bu-is-flex bu-mx-2 bu-my-4" v-if="showSubType1">
+                <div class="bu-is-flex bu-mx-2 bu-mt-4 bu-mb-2 bu-px-1" v-if="showSubType1">
                     <div class="bu-is-flex-grow-1 bu-mx-1">
                         <validation-provider name="alertDataSubType" rules="required" v-slot="v">
                             <cly-select-x
@@ -266,7 +274,7 @@
                                 :disabled="drawerScope.editedObject._id"
                                 :placeholder="i18n('alert.add-number')"
                                 v-model="drawerScope.editedObject.compareValue2"
-                                :class="{'is-error': v.errors.length > 0, 'bu-is-flex': true}"
+                                class="bu-is-flex"
                             >
                             <i slot="suffix"> Minutes </i>
                             </el-input>
@@ -275,33 +283,10 @@
                 </div>
             </div>
 
-
-   
-            <div class="bu-py-4">
-                <div class="text-medium text-heading  text-heading title">
-                   {{i18n('alert.email-to-receive')}} 
-                </div>
-                    <validation-provider name="alertValues" rules="required" v-slot="v">
-                        <el-select
-                            :class="{'bu-is-flex': true}"
-                            v-model="drawerScope.editedObject.alertValues"
-                            multiple
-                            filterable
-                            remote
-                            default-first-option
-                            no-data-text="Please input full email address"
-                            :remote-method="emailInputFilter"
-                            placeholder="Input Email address">
-                            <el-option
-                                v-for="item in emailOptions"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                            </el-option>
-                        </el-select>
-                    </validation-provider>
-                </div>
-            </div> 
+            <cly-form-field name="alertValues" :label="i18n('alert.email-to-receive')" rules="required">
+                <cly-select-email v-model="drawerScope.editedObject.alertValues"></cly-select-email>
+            </cly-form-field>
+ 
             <pre v-if="0">
                 {{drawerScope.editedObject}}
             </pre>

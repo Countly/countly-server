@@ -21,7 +21,6 @@
                 var rows = this.$store.getters["countlyReports/table/all"];
                 return rows;
             },
-
         },
         data: function() {
             return {
@@ -32,7 +31,13 @@
                 deleteMessage: '',
             };
         },
+        props: {
+            callCreateReportDrawer: {type: Function, default: function() {}},
+        },
         methods: {
+            createReport: function() {
+                this.callCreateReportDrawer();
+            },
             handleReportEditCommand: function(command, scope) {
                 switch (command) {
                 case "edit-comment":
@@ -177,7 +182,7 @@
                 dayOfWeekOptions: dayOfWeekOptions,
                 timeListOptions: timeListOptions,
                 timezoneOptions: zones,
-                emailOptions: [{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
+                // emailOptions: [{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
                 showApps: true,
                 showMetrics: true,
                 showDashboards: false,
@@ -212,6 +217,7 @@
             }
         },
         methods: {
+
             reportTypeChange: function(type) {
                 if (type === 'dashboards') {
                     this.showApps = false;
@@ -259,6 +265,7 @@
                     doc.metrics[m] = true;
                 });
                 delete doc.metricsArray;
+                delete doc.hover;
                 this.$store.dispatch("countlyReports/saveReport", doc);
             },
             onClose: function($event) {
@@ -331,7 +338,7 @@
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+            app.addMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 43});
             if (app.configurationsView) {
                 app.configurationsView.registerLabel("reports", "reports.title");
                 app.configurationsView.registerLabel(

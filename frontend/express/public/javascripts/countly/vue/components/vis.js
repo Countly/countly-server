@@ -809,6 +809,7 @@
         template: '<div class="bu-level" :style="{height: height + \'px\'}">\
                         <div class="bu-level-left">\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
+							<slot name="chart-header-left-input"></slot>\
                         </div>\
                         <div class="bu-level-right">\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
@@ -1124,10 +1125,11 @@
     Vue.component("cly-flow-chart", BaseChart.extend({
         data: function() {
             return {
-                forwardedSlots: ["chart-left", "chart-right"],
+                forwardedSlots: ["chart-left", "chart-right", "chart-header-left-input"],
                 scrollOptions: {
                     vuescroll: {},
                     scrollPanel: {
+                        scrollingY: false
                     },
                     rail: {
                         gutterOfSide: "1px",
@@ -1156,15 +1158,15 @@
         },
 
         template: '<div class="cly-vue-chart" :class="chartClasses">\
-                        <div :style="echartStyle" class="cly-vue-chart__echart">\
+                        <div :style="echartStyle" class="cly-vue-chart__echart" :style="{height: \'100%\'}">\
                             <chart-header ref="header" v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-							<div :style="{height: echartHeight + \'px\'}">\
+							<div class="chart-wrapper" :style="{height: (chartOptions.chartheight) + \'px\'}">\
 							<vue-scroll :ops="scrollOptions" >\
-								<div :style="{height: chartOptions.chartheight + \'px\', width: chartOptions.chartwidth + \'px\'}">\
+								<div :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
 										<echarts\
 											:updateOptions="echartUpdateOptions"\
 											ref="echarts"\

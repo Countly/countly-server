@@ -1,5 +1,4 @@
-<cly-datatable-n class="bu-mt-2"
-  :rows="ratings">
+<cly-datatable-n :rows="ratings">
     <template v-slot="scope">
         <el-table-column sortable="true" prop="rating" :label="i18n('feedback.rating')">
             <template v-slot="rowScope">

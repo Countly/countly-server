@@ -629,6 +629,12 @@
 
         &__shortcuts-col, &__calendars-col {
             display: inline-block;
+
+            .el-tabs {
+                &__active-bar {
+                    background-color: #0166D6;
+                }
+            }
         }
 
         &__shortcut {
@@ -1568,10 +1574,9 @@
 
         &__close-button {
             font-size: 30px;
-            color: #9c9c9c;
+            color: #81868D;
             transition: color 1s;
             cursor: pointer;
-            width: 30px;
             &:hover {
                 color: #333;
                 transition: color 1s;
@@ -1639,6 +1644,9 @@
                     color: white;
                 }
                 color: #333C48;
+                .cly-vue-drawer__step-title {
+                    color: #333C48 !important;
+                }
                 + .cly-vue-drawer__step-separator {
                     border-color: #333C48;
                 }
@@ -1673,7 +1681,7 @@
         //     padding-top: 10px;
         // }
         &__header:not(.is-full-screen) {
-            border-bottom: 1px solid #CFD6E4;
+            border-bottom: 1px solid #E2E4E8;
         }
         &__footer {
             border-top: 2px solid #ECECEC;
@@ -3857,5 +3865,11 @@
                 bottom: 0;
             }
         }
+    }
+}
+
+.el-table {
+    &__empty-text {
+        line-height: normal;
     }
 }

@@ -8,34 +8,34 @@
                 <cly-back-link link="/messaging" :title="i18n('push-notification-details.back-to')"></cly-back-link>
             </template>
             <template v-slot:header-right>
-                <template v-if="pushNotification.status.value === StatusEnum.NOT_APPROVED && hasApproverPermission">
-                    <el-button @click="onReject" class="bu-mr-2"> <i class="ion-close-circled" ></i> Reject </el-button>
-                    <el-button @click="onApprove" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> Approve </el-button>
+                <template v-if="pushNotification.status === StatusEnum.PENDING_APPROVAL && hasApproverPermission">
+                    <el-button @click="onReject(pushNotification._id)" class="bu-mr-2"> <i class="ion-close-circled" ></i> Reject </el-button>
+                    <el-button @click="onApprove(pushNotification._id)" class="bu-mr-2 bu-ml-0"> <i class="ion-checkmark-circled" ></i> Approve </el-button>
                 </template>
-                <cly-more-options size="small" @command="handleUserEvents($event, pushNotification.id)">
-                    <el-dropdown-item :command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
-                    <el-dropdown-item :command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
-                    <el-dropdown-item :command="UserEventEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
+                <cly-more-options size="small" @command="handleUserCommands($event, pushNotification._id)">
+                    <el-dropdown-item v-if="shouldShowDuplicateUserCommand(pushNotification.status)" :command="UserCommandEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowDeleteUserCommand(pushNotification.status)"  :command="UserCommandEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowResendUserCommand(pushNotification.status)" :command="UserCommandEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowApproveUserCommand(pushNotification.status)"  :command="UserCommandEnum.APPROVE">{{i18n('push-notification.approve')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowRejectUserCommand(pushNotification.status)" :command="UserCommandEnum.REJECT">{{i18n('push-notification.reject')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowEditDraftUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
+                    <el-dropdown-item v-if="shouldShowEditUserCommand(pushNotification.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
                 </cly-more-options>
             </template>
             <template v-slot:header-bottom>
                 <div class="bu-level-item cly-vue-push-notification-details-sub-header">
-                    <span class="blinker-wrapper" v-bind:style="{backgroundColor:getStatusBackgroundColor().concat(DEFAULT_ALPHA_COLOR_VALUE_HEX)}"> 
-                        <span class="blinker" v-bind:style="{backgroundColor:getStatusBackgroundColor()}">  </span>
-                        <span class="cly-vue-push-notification-details-sub-header-title"> {{pushNotification.status && pushNotification.status.label}} </span>
-                    </span>
+                    <cly-status-tag :text="statusOptions[pushNotification.status] && statusOptions[pushNotification.status].label || '' " :color="getStatusBackgroundColor(pushNotification.status)"> </cly-status-tag>
                 </div>
                 <div class="bu-level-item cly-vue-push-notification-details-sub-header">
                     <div class="ion ion-ios-time-outline cly-vue-push-notification-details-sub-header-icon"></div>
-                    <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.created')}} {{pushNotification.createdDateTime && formatDateAgoText(pushNotification.createdDateTime.date)}} by  {{pushNotification.createdBy}}  </span>
+                    <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.created')}} {{pushNotification.createdDateTime && formatTimeAgoText(pushNotification.createdDateTime.date)}} by  {{pushNotification.createdBy}}  </span>
                 </div>
-                <div class="bu-level-item cly-vue-push-notification-details-sub-header" >
+                <div class="bu-level-item cly-vue-push-notification-details-sub-header">
                     <div class="ion ion-pricetag cly-vue-push-notification-details-sub-header-icon"></div>
                     <span class="cly-vue-push-notification-details-sub-header-title"> {{i18n('push-notification-details.message-id')}} {{pushNotification.id}} </span>
                 </div>
             </template>
         </cly-header>
-
         <cly-main>
             <div>
                 <div class="bu-level-left" style="margin-bottom:32px">
@@ -123,10 +123,11 @@
                         </cly-header>
                     </div>
                     <div class="bu-column">
-                        <mobile-message-preview :title="message.title" :content="message.content" :platforms="pushNotification.platforms.map(function(platform){return platform.value})" :media="previewMessageMedia" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
+                        <mobile-message-preview :title="message.title" :content="message.content" :platforms="pushNotification.platforms" :media="previewMessageMedia" :buttons="message.buttons.map(function(item){return item.label})" class="cly-vue-push-notification-details-summary__message-preview"> </mobile-message-preview>
                     </div>
                 </div>
             </div>
         </cly-main>
+        <push-notification-drawer @onClose="onDrawerClose" :controls="drawers.pushNotificationDrawer" :type="pushNotification.type" :userCommand="userCommand.type" :id="userCommand.pushNotificationId" :isOpened="isDrawerOpen"></push-notification-drawer>
     </div>
 </script>

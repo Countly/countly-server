@@ -100,9 +100,7 @@
                         </template>
                         <el-table-column width="220" sortable="custom" prop="status" :label="i18n('push-notification.table-status')">
                             <template slot-scope="scope">
-                                <span class="blinker-wrapper" v-bind:style="{backgroundColor:getStatusBackgroundColor(scope.row.status.value).concat(DEFAULT_ALPHA_COLOR_VALUE_HEX)}"> 
-                                    <span class="blinker" v-bind:style="{backgroundColor:getStatusBackgroundColor(scope.row.status.value)}">  </span>{{scope.row.status.label}}
-                                </span>
+                                <cly-status-tag :text="statusOptions[scope.row.status] && statusOptions[scope.row.status].label || '' " :color="getStatusBackgroundColor(scope.row.status)"> </cly-status-tag>
                             </template>
                         </el-table-column>
                         <el-table-column width="220" sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')"  class="cly-vue-push-notification-table-column">
@@ -139,12 +137,14 @@
                         </el-table-column>
                         <el-table-column type="options">
                             <template slot-scope="scope">
-                                <cly-more-options v-if="scope.row.hover" size="small" @command="handleUserEvents($event, scope.row._id )">
-                                    <el-dropdown-item v-if="shouldShowDuplicateUserEvent(scope.row.status.value)" :command="UserEventEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowDeleteUserEvent(scope.row.status.value)"  :command="UserEventEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowResendUserEvent(scope.row.status.value)" :command="UserEventEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowApproveUserEvent(scope.row.status.value)"  :command="UserEventEnum.APPROVE">{{i18n('push-notification.approve')}}</el-dropdown-item>
-                                    <el-dropdown-item v-if="shouldShowRejectUserEvent(scope.row.status.value)" :command="UserEventEnum.REJECT">{{i18n('push-notification.reject')}}</el-dropdown-item>
+                                <cly-more-options v-if="scope.row.hover" size="small" @command="handleUserCommands($event, scope.row._id )">
+                                    <el-dropdown-item v-if="shouldShowDuplicateUserCommand(scope.row.status)" :command="UserCommandEnum.DUPLICATE">{{i18n('push-notification.duplicate')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowDeleteUserCommand(scope.row.status)"  :command="UserCommandEnum.DELETE">{{i18n('push-notification.delete')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowResendUserCommand(scope.row.status)" :command="UserCommandEnum.RESEND">{{i18n('push-notification.resend')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowApproveUserCommand(scope.row.status)"  :command="UserCommandEnum.APPROVE">{{i18n('push-notification.approve')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowRejectUserCommand(scope.row.status)" :command="UserCommandEnum.REJECT">{{i18n('push-notification.reject')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowEditDraftUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT_DRAFT">{{i18n('push-notification.edit-draft')}}</el-dropdown-item>
+                                    <el-dropdown-item v-if="shouldShowEditUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
                                 </cly-more-options>
                             </template>
                         </el-table-column>

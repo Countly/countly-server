@@ -12,15 +12,12 @@
     </template>
   </cly-header>
   <cly-main>
-    <json-editor></json-editor>
     <cly-datatable-n :rows="tableRows">
       <template v-slot:default="scope">
-        <el-table-column type="expand" min-width="50" v-if="isDrillEnabled">
+        <el-table-column type="expand" min-width="50">
           <template v-slot="props">
             <cly-section>
-              <el-tabs type="border-card" value="default_value">
-                {{props.row.conditions}}
-              </el-tabs>
+              <condition-stats :parameter="props.row"></condition-stats>
             </cly-section>
           </template>
         </el-table-column>
