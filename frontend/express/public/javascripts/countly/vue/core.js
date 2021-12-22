@@ -198,7 +198,7 @@
                     },
                     addNotificationToast: function(state, payload) {
                         payload.id = countlyCommon.generateId();
-                        state.notificationToasts.push(payload);
+                        state.notificationToasts.unshift(payload);
                     },
                     removeNotificationToast: function(state, id) {
                         state.notificationToasts = state.notificationToasts.filter(function(item) {
