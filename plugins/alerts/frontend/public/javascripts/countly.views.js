@@ -490,7 +490,7 @@
     }
     $(document).ready(function() {
         if (countlyAuth.validateRead(ALERTS_FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 32});
+            app.addMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 44});
         }
 
 
