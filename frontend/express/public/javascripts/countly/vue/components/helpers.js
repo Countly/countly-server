@@ -692,11 +692,20 @@
                   '</div>\n',
         mixins: [countlyVue.mixins.i18n],
         props: {
+            id: {default: "", type: [String, Number], required: false},
             text: { default: "", type: String },
             color: { default: "light-warning", type: String},
             size: {default: "full", type: String},
             visible: {default: true, type: Boolean},
-            closable: {default: true, type: Boolean}
+            closable: {default: true, type: Boolean},
+            autoHide: {default: true, type: Boolean},
+        },
+        data: function() {
+            return {
+                autoHideTimeout: null,
+                DEFAULT_STAY_TIME_IN_MS: 7000, // 7 seconds
+                isModalVisible: true,
+            };
         },
         watch: {
             visible: {
@@ -728,15 +737,22 @@
                 }
             }
         },
-        data: function() {
-            return {
-                isModalVisible: true,
-            };
-        },
         methods: {
             closeModal: function() {
                 this.isModalVisible = false;
+                this.$emit('close', this.id);
             },
+        },
+        mounted: function() {
+            if (this.autoHide) {
+                this.autoHideTimeout = setTimeout(this.closeModal, this.DEFAULT_STAY_TIME_IN_MS);
+            }
+        },
+        beforeDestroy: function() {
+            if (this.autoHide && this.autoHideTimeout) {
+                clearTimeout(this.autoHideTimeout);
+                this.autoHideTimeout = null;
+            }
         }
     }));
 
