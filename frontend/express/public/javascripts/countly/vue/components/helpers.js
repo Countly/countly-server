@@ -749,10 +749,10 @@
                         </slot>\
                         <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column 	bu-is-align-items-center">\
                             <slot name="title">\
-                                <h4 class="color-cool-gray-100 bu-mt-4">{{title}}</h4>\
+                                <h3 class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="bu-mt-4 bu-mb-5 text-small color-cool-gray-50 bu-has-text-centered ">{{subTitle}}</div>\
+                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered ">{{subTitle}}</div>\
                             </slot>\
                             <slot name="action" v-if="hasAction">\
                                 <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
