@@ -33,7 +33,7 @@
           <cly-form-field name="default-value" :subheading="i18n('remote-config.default-value.description')" :label="i18n('remote-config.default-value')" rules="required">
             <el-autocomplete
               class="cly-vue-remote-config-parameters-drawer__autocomplete"
-              v-model="drawerScope.editedObject.default_value"
+              v-model="defaultValue"
               :fetch-suggestions="querySearch"
               :placeholder="i18n('remote-config.default-value.placeholder')"
               >
@@ -41,6 +41,7 @@
             </el-autocomplete>
           </cly-form-field>
         </div>
+            <json-editor :isOpen="isOpen" v-model="defaultValue"></json-editor>
         <div class="bu-py-4" v-if="isDrillEnabled">
           <div class="font-weight-bold text-smallish bu-mb-1">
             {{i18n('remote-config.conditions')}}
@@ -49,6 +50,48 @@
             {{i18n('remote-config.parameter.conditions.description')}}
           </div>
           <div>
+            <div>
+              <draggable 
+                :disabled="false"
+                handle=".drag-icon" 
+                v-model="conditions">
+                <remote-config-add-condition
+                  ref="addCondition"
+                  v-for="(condition, i) in conditions"
+                  @remove-me="removeConditionAtIndex(i)"
+                  v-on:openJsonEditorForCondition="openJsonEditorForCondition(i)"
+                  :removable="conditions.length > 1"
+                  :key="i"
+                  :condition-index="i"
+                  :max-choices="10"
+                  v-model="conditions[i]">
+                </remote-config-add-condition>
+              </draggable>
+            </div>
+            <el-button
+              class="bg-light-blue-100 color-blue-100"
+              size="small"
+              type="text"
+              @click="addNewCondition">
+              {{i18n('remote-config.parameter.conditions.add.value')}}
+            </el-button>
+          </div>
+          <div                 v-if="showCondition"
+            class="cly-vue-remote-config-parameters-drawer__condition"
+            >
+            <el-autocomplete
+            :highlight-first-item="true"
+              autocomplete="off"
+              v-model="currentConditionValue"
+              :fetch-suggestions="querySearchForCondition"
+              :placeholder="i18n('remote-config.parameter.conditions.placeholder')"
+              @select="handleSelect"
+              >
+              <i slot="prefix" class="el-input__icon el-icon-search"></i>
+            </el-autocomplete>
+            <el-button type="success" size="small" @click="showConditionDialog" icon="el-icon-circle-plus">{{i18n('remote-config.parameter.conditions.new.condition')}}
+            </el-button>
+            <condition-dialog  v-on:closeConditionDialog="handleConditionDialog" v-model="createdCondition"></condition-dialog>
           </div>
         </div>
         <div class="bu-mt-4 cly-vue-drawer-step__section-group cly-vue-drawer-step__section-group--filled">

@@ -24,6 +24,21 @@
       &__no-margin {
           margin-bottom: 0px !important;
       }
+      &__small-icon {
+        margin-left: 5px;
+        font-size: 15px;
+    }
+      &__small-icon-right {
+        margin-right: 2px;
+        font-size: 15px;
+      }
+      &__check_icon {
+        width: 18px;
+        border-radius: 18px;
+        text-align: center;
+        margin-left: 18px;
+        margin-right: 9px;
+      }
 }
 
 .cly-vue-drawer-hook_description {
@@ -33,7 +48,22 @@
     margin-bottom: 14px;
 }
 .cly-vue-drawer-hook_section_margin {
-    margin-top: 32px;
+    margin-top: 24px;
+}
+.hook-test-output-field {
+    padding: 16px 16px;
+    background: #F6F6F6;
+    border-radius: 4px;
+}
+.hoosk-test-result-row {
+    padding: 0px 26px;
+    margin: 4px 0px;
+    background-color: #fff;
+    border: 1px solid;
+    border: 1px solid #E2E4E8;
+    box-sizing: border-box;
+    box-shadow: 0px 1px 0px #ececec;
+    border-radius: 4px;
 }
 
 .cly-vue-hook-drawer-action-card {
@@ -43,17 +73,6 @@
     border-radius: 6px;
     padding: 22px 16px;
     margin: 24px 0px;
-    .is-action-card-title {
-          font-family: Inter;
-          font-style: normal;
-          font-weight: 500;
-          font-size: 12px;
-          line-height: 15px;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          color: #333C48;
-          margin: 2px 0px 12px 0px;
-      }
       .is-action-card-title-right {
           font-family: Inter;
           font-style: normal;
@@ -62,7 +81,7 @@
           line-height: 13px;
           text-align: right;
           color: #D23F00;
-          margin: 2px 0px 12px 0px;
+          margin: 2px px 12px 0px;
       }
       .is-action-card-title-right:hover {
           cursor: pointer;
@@ -169,13 +188,6 @@
         background: #F6F6F6;
         color: #0166D6;
     }
-}
-
-.detail-info {
-    border: 1px solid #ECECEC;
-    box-sizing: border-box;
-    box-shadow: 0px 1px 0px #ECECEC;
-    border-radius: 4px;
 }
 
 .code-pre-line {

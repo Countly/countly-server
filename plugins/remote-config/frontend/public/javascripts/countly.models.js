@@ -132,7 +132,9 @@
             state: function() {
                 return {
                     all: [],
-                    showJsonEditor: false
+                    showJsonEditor: false,
+                    showJsonEditorForCondition: false,
+                    showConditionDialog: false
                 };
             },
             getters: {
@@ -141,6 +143,12 @@
                 },
                 showJsonEditor: function(state) {
                     return state.showJsonEditor;
+                },
+                showJsonEditorForCondition: function(state) {
+                    return state.showJsonEditorForCondition;
+                },
+                showConditionDialog: function(state) {
+                    return state.showConditionDialog;
                 }
             },
             mutations: {
@@ -149,6 +157,12 @@
                 },
                 setShowJsonEditor: function(state, val) {
                     state.showJsonEditor = val;
+                },
+                setShowJsonEditorForCondition: function(state, val) {
+                    state.showJsonEditorForCondition = val;
+                },
+                setConditionDialog: function(state, val) {
+                    state.showConditionDialog = val;
                 }
             },
             actions: {
@@ -157,6 +171,12 @@
                 },
                 showJsonEditor: function(context, parameter) {
                     context.commit("setShowJsonEditor", parameter);
+                },
+                showJsonEditorForCondition: function(context, parameter) {
+                    context.commit("setShowJsonEditorForCondition", parameter);
+                },
+                showConditionDialog: function(context, parameter) {
+                    context.commit("setConditionDialog", parameter);
                 },
                 create: function(context, parameter) {
                     return countlyRemoteConfig.service.createParameter(parameter).then(function() {

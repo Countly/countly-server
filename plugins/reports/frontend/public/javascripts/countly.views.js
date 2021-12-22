@@ -338,7 +338,7 @@
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+            app.addMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 43});
             if (app.configurationsView) {
                 app.configurationsView.registerLabel("reports", "reports.title");
                 app.configurationsView.registerLabel(

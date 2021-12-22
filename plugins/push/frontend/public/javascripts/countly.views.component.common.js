@@ -219,10 +219,16 @@
             },
         },
         methods: {
+            findCategoryOptionByValue: function(value, categoryOptions) {
+                return categoryOptions.find(function(item) {
+                    return item.value === value;
+                });
+            },
             findOptionLabelByValue: function(value) {
-                for (var property in this.options) {
-                    if (this.options[property].value === value) {
-                        return this.options[property].label;
+                for (var index in this.options) {
+                    var item = this.findCategoryOptionByValue(value, this.options[index].options);
+                    if (item) {
+                        return item.label;
                     }
                 }
                 return "";

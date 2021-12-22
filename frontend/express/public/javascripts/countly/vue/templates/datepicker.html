@@ -26,7 +26,7 @@
     </template>
     <div class="cly-vue-daterp">
         <div class="cly-vue-daterp__shortcuts-col" v-if="shortcuts && shortcuts.length > 0">
-            <div class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"
+            <div v-if="allowCustomRange" class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"
                 @click="handleCustomRangeClick">
                 {{i18n('common.time-period-select.custom-range')}}<i class="el-icon-caret-right"></i>
             </div>
@@ -150,7 +150,7 @@
             </div>
             <div class="cly-vue-daterp__commit-section">
                 <el-button @click="handleDiscardClick" size="small">{{ i18n("common.cancel") }}</el-button>
-                <el-button @click="handleConfirmClick" type="success" size="small">{{ i18n("common.confirm") }}</el-button>
+                <el-button @click="handleConfirmClick" type="success" size="small">{{ i18n("common.apply-range") }}</el-button>
             </div>
         </div>
     </div>
