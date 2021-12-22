@@ -77,7 +77,7 @@ const FEATURE_NAME = 'alerts';
 
 
     plugins.register("/alerts/addAlertCount", function(ob) {
-        console.log("/alerts/addAlertCount", ob);
+        log.d("/alerts/addAlertCount", ob);
         utils.addAlertCount(ob);
     });
 
