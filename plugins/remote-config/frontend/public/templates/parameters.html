@@ -17,9 +17,7 @@
         <el-table-column type="expand" min-width="50">
           <template v-slot="props">
             <cly-section>
-              <el-tabs type="border-card" value="default_value">
-                <condition-stats :parameter="props.row"></condition-stats>
-              </el-tabs>
+              <condition-stats :parameter="props.row"></condition-stats>
             </cly-section>
           </template>
         </el-table-column>
