@@ -75,6 +75,12 @@ const FEATURE_NAME = 'alerts';
         }, 2000);
     });
 
+
+    plugins.register("/alerts/addAlertCount", function(ob) {
+        console.log("/alerts/addAlertCount", ob);
+        utils.addAlertCount(ob);
+    });
+
     setTimeout(function() {
         plugins.dispatch("/updateAlert", { method: "alertTrigger" });
     }, 10000);
