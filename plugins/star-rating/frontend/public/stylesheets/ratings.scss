@@ -20,6 +20,10 @@
 
 .ratings-drawer {
 
+  &__target-page-selector {
+    width: 100%;
+  }
+
   &__ratings-texts-input {
     margin: 5px 0px;
   }
