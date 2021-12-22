@@ -1131,15 +1131,7 @@
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                    <div class="bu-mt-6">\
-                                        <img src="/images/icons/empty-icon.svg" alt="">\
-                                    </div>\
-                                    <div class="bu-mt-2">\
-                                        <h4>{{i18n("common.emtpy-table-title")}}</h4>\
-                                    </div>\
-                                    <div class="bu-mt-1 bu-mb-6">\
-                                        <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
-                                    </div>\
+                                    <cly-empty-view></cly-empty-view>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1210,15 +1202,7 @@
 											@datazoom="onZoomFinished">\
 										</echarts>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                            <div class="bu-mt-6">\
-                                                <img src="/images/icons/empty-icon.svg" alt="">\
-                                            </div>\
-                                            <div class="bu-mt-2">\
-                                                <h4>{{i18n("common.emtpy-table-title")}}</h4>\
-                                            </div>\
-                                            <div class="bu-mt-1 bu-mb-6">\
-                                                <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
-                                            </div>\
+                                            <cly-empty-view></cly-empty-view>\
                                         </div>\
 								</div>\
 							</vue-scroll>\
@@ -1272,15 +1256,7 @@
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                    <div class="bu-mt-6">\
-                                        <img src="/images/icons/empty-icon.svg" alt="">\
-                                    </div>\
-                                    <div class="bu-mt-2">\
-                                        <h4>{{i18n("common.emtpy-table-title")}}</h4>\
-                                    </div>\
-                                    <div class="bu-mt-1 bu-mb-6">\
-                                        <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
-                                    </div>\
+                                    <cly-empty-view></cly-empty-view>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1400,15 +1376,7 @@
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                    <div class="bu-mt-6">\
-                                        <img src="/images/icons/empty-icon.svg" alt="">\
-                                    </div>\
-                                    <div class="bu-mt-2">\
-                                        <h4>{{i18n("common.emtpy-table-title")}}</h4>\
-                                    </div>\
-                                    <div class="bu-mt-1 bu-mb-6">\
-                                        <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
-                                    </div>\
+                                    <cly-empty-view></cly-empty-view>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1460,15 +1428,7 @@
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                    <div class="bu-mt-6">\
-                                        <img src="/images/icons/empty-icon.svg" alt="">\
-                                    </div>\
-                                    <div class="bu-mt-2">\
-                                        <h4>{{i18n("common.emtpy-table-title")}}</h4>\
-                                    </div>\
-                                    <div class="bu-mt-1 bu-mb-6">\
-                                        <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
-                                    </div>\
+                                    <cly-empty-view></cly-empty-view>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1546,15 +1506,7 @@
                                         @datazoom="onZoomFinished">\
                                     </echarts>\
                                     <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                        <div class="bu-mt-6">\
-                                            <img src="/images/icons/empty-icon.svg" alt="">\
-                                        </div>\
-                                        <div class="bu-mt-2">\
-                                            <h4>{{i18n("common.emtpy-table-title")}}</h4>\
-                                        </div>\
-                                        <div class="bu-mt-1 bu-mb-6">\
-                                            <span class="text-small color-cool-gray-50">{{i18n("common.emtpy-table-subtitle")}}</span>\
-                                        </div>\
+                                        <cly-empty-view></cly-empty-view>\
                                     </div>\
                                 </div>\
                                 <custom-legend\
