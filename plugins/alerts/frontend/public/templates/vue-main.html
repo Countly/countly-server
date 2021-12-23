@@ -35,32 +35,18 @@
 <script  type="text/x-template" id="alerts-table">
 <div>
     <cly-empty-view 
-        v-if="tableRows.length === 0"
+        v-if="(rowTableRows.length === 0 && initialized)"
         :title="i18n('alerts.empty-title')"
         :subTitle="i18n('alerts.empty-subtitle')"
         :actionTitle="i18n('alerts.empty-action-button-title')"
         :hasAction="true"
         :actionFunc="createAlert"
-    > 
-    </cly-empty-view>
-    <cly-section v-if="tableRows.length > 0">
+    />
+    <cly-section v-else>
         <cly-datatable-n
             class="cly-vue-alerts-table"
             :tracked-fields="localTableTrackedFields"
             :rows="tableRows" :resizable="false" >
-
-            <template slot="empty">
-                <div class="bu-is-flex  bu-is-flex-direction-column bu-is-align-items-center bu-my-6 bu-py-5">
-                    <div class="no-search-circle">
-                    </div>
-                    <div style="width: 400px;">
-                        <h4 class="color-cool-gray-100 bu-mt-4 bu-mb-2 bu-has-text-centered">No data found</h4>
-                        <div class="color-cool-gray-50 text-small bu-has-text-centered ">
-                            There is no data found for selected time period 
-                        </div>
-                    </div>
-                </div>
-            </template>
             <template v-slot:header-left="scope">
                 <div>
                     <cly-select-x

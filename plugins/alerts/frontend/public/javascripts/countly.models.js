@@ -160,6 +160,7 @@
                     url: countlyCommon.API_PARTS.data.w + "/alert/save",
                     data: {
                         "alert_config": JSON.stringify(alertConfig),
+                        "app_id": countlyCommon.ACTIVE_APP_ID,
                     },
                     dataType: "json",
                     success: function() {
@@ -182,13 +183,13 @@
                     },
                 });
             },
-            deleteOnlineUsersAlert: function(context, alertConfig) {
+            deleteOnlineUsersAlert: function(context, alertID) {
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/delete",
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
-                        "alertId": alertConfig._id,
+                        "alertId": alertID,
                     },
                     dataType: "json",
                     success: function() {
@@ -233,6 +234,7 @@
                         r: 0,
                         today: 0,
                     },
+                    initialized: false,
                 };
             },
             getters: {
@@ -241,6 +243,9 @@
                 },
                 count: function(state) {
                     return state.count;
+                },
+                getInitialized: function(state) {
+                    return state.initialized;
                 }
             },
             mutations: {
@@ -249,7 +254,10 @@
                 },
                 setCount: function(state, val) {
                     state.count = val;
-                }
+                },
+                setInitialized: function(state, val) {
+                    state.initialized = val;
+                },
             },
             actions: {
                 updateStatus: function(context, status) {
@@ -286,6 +294,7 @@
                         url: countlyCommon.API_PARTS.data.r + "/alert/list",
                         dataType: "json",
                         data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
                             preventGlobalAbort: true,
                         },
                     }).then(function(data) {
@@ -321,6 +330,7 @@
 
 
                         if (countlyGlobal.plugins.indexOf("concurrent_users") < 0) {
+                            context.commit("setInitialized", true);
                             context.commit("setAll", tableData);
                             context.commit("setCount", count);
                             return;
@@ -357,6 +367,7 @@
                                 });
                                 tableData.push(rowData);
                             }
+                            context.commit("setInitialized", true);
                             context.commit("setAll", tableData);
                             context.commit("setCount", count);
                         });

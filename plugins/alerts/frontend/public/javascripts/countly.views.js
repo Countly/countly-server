@@ -41,7 +41,7 @@
                 showCondition: true,
                 showConditionValue: true,
                 alertDataSubType2Options: [],
-            };
+             };
         },
         computed: {
             alertDataTypeOptions: function() {
@@ -355,6 +355,14 @@
                 }
                 return rows;
             },
+            initialized: function() {
+                var result = this.$store.getters["countlyAlerts/table/getInitialized"];
+                return result;
+            },
+            rowTableRows: function() {
+                var rows = this.$store.getters["countlyAlerts/table/all"]
+                return rows;
+            }
         },
         data: function() {
             var appsSelectorOption = [];
@@ -489,6 +497,7 @@
         });
     }
     $(document).ready(function() {
+        console.log("alerts!!!!!!!");
         if (countlyAuth.validateRead(ALERTS_FEATURE_NAME)) {
             app.addMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 44});
         }
