@@ -80,21 +80,19 @@
 			  </div>
 			<div v-if="monitorEventsData.length===0" class="cly-vue-events-overview-monitor-events__empty">
 				<div class="cly-vue-events-overview-monitor-events__empty__block" >
-					 <table>
-						<tr>
-							<td>
-								<p class="cly-vue-events-overview-subheadings">{{i18n('events.all.empty-title')}}</p>
-								<p class="cly-vue-events-overview-monitor-events--grey cly-vue-events-overview-monitor-events--text">{{i18n('events.all.empty-text')}}</p>
-							</td>
-							<td>
-								<div class="cly-vue-events-overview-monitor-events__empty--image ml-4"></div>
-							</td>
-						</tr>
-					 </table>
+						<cly-empty-view
+            :title="i18n('events.all.empty-title')"
+            :subTitle="i18n('events.all.empty-text')"
+            :actionTitle="i18n('events.overview.events.configure.events')"
+            :hasAction="true"
+            :actionFunc="configureOverview"
+            >
+            </cly-empty-view>
 				</div>
 			</div>
 			  <div v-else class="bu-columns bu-is-gapless bu-is-mobile bu-is-multiline">
 				<monitor-events-breakdown-horizontal-tile
+          v-loading = "isMonitorEventsLoading"
 				  :trend="item.trend"
 				  :change="item.change"
 				  :key="idx"
@@ -116,7 +114,7 @@
 </script>
   <script type="text/x-template" id="overview-tables-events">
 	<div>
-		<cly-datatable-n :rows="eventsTableRows" class="is-clickable">
+		<cly-datatable-n :default-sort="{prop: 'count', order: 'descending'}" :rows="eventsTableRows" v-loading="isTableLoading"  :rows="eventsTableRows" class="is-clickable">
 		  <template v-slot:header-left="selectScope">
 		  </template>
 		  <template v-slot="scope">
