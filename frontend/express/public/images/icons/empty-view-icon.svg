@@ -1,34 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="96px" height="96px" viewBox="0 0 96 96" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>empty-funnels@2x</title>
-    <defs>
-        <circle id="path-1" cx="48" cy="48" r="48"></circle>
-    </defs>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="Artboard" transform="translate(-26.000000, -22.000000)">
-            <g id="empty-funnels" transform="translate(26.000000, 22.000000)">
-                <circle id="Oval" fill="#FFF4CE" fill-rule="nonzero" cx="48" cy="48" r="48"></circle>
-                <g id="Clipped">
-                    <mask id="mask-2" fill="white">
-                        <use xlink:href="#path-1"></use>
-                    </mask>
-                    <g id="Oval"></g>
-                    <g id="Group" mask="url(#mask-2)">
-                        <g transform="translate(-99.999100, 24.000000)">
-                            <rect id="Rectangle" stroke="none" fill="#FFFFFF" fill-rule="nonzero" x="34.1378" y="0" width="145.861" height="91.0075" rx="4.98671"></rect>
-                            <rect id="Rectangle" stroke="none" fill="#12AF51" fill-rule="nonzero" x="155.0002" y="8.0005" width="17" height="6" rx="1"></rect>
-                            <rect id="Rectangle" stroke="none" fill="#ECECEC" fill-rule="nonzero" x="142.0003" y="20.0005" width="30" height="6" rx="1"></rect>
-                            <rect id="Rectangle" stroke="none" fill="#ECECEC" fill-rule="nonzero" x="126.9991" y="8" width="25" height="6" rx="1"></rect>
-                            <rect id="Rectangle" stroke="none" fill="#ECECEC" fill-rule="nonzero" x="130.0001" y="20" width="9" height="6" rx="1"></rect>
-                            <rect id="Rectangle" stroke="none" fill="#E2E4E8" fill-rule="nonzero" x="0" y="28.0009" width="172" height="6" rx="1"></rect>
-                            <rect id="Rectangle" stroke="none" fill="#ECECEC" fill-rule="nonzero" x="106.00044" y="43.5009" width="8" height="3" rx="0.5"></rect>
-                            <polyline id="Path" stroke="#F62404" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round" points="129.0004 47.0009 138.6066 43.0009 147.8569 45.8342 152.4821 44.8342 153.9052 43.0009 157.4631 43.0009 160.3093 44.3342 163.0004 46.9701"></polyline>
-                            <polyline id="Path" stroke="#10A14A" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round" points="129.0004 69.0009 138.7664 65.4453 148.1707 67.9638 152.8728 67.0749 154.3196 65.4453 157.9366 65.4453 160.8302 66.6305 163.0004 65.0009"></polyline>
-                            <line x1="2.0004" y1="56.0009" x2="172.0004" y2="56.0009" id="Path" stroke="#ECECEC" stroke-width="0.362487" fill="none" stroke-linecap="round" stroke-linejoin="round"></line>
-                        </g>
-                    </g>
-                </g>
-            </g>
-        </g>
+<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="30" cy="30" r="30" fill="#E1EFFF"/>
+    <mask id="mask0_24314_162044" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="60" height="60">
+    <circle cx="30" cy="30" r="30" fill="#E1EFFF"/>
+    </mask>
+    <g mask="url(#mask0_24314_162044)">
+    <path d="M29.7222 39.5695L50.4728 33.7334V60.9686L29.7222 66.8047V39.5695Z" fill="#F5C900"/>
+    <path d="M8.97119 33.7334L29.7218 39.5695V66.8047L8.97119 60.9686V33.7334Z" fill="#F5C900"/>
+    <path d="M8.97136 33.7334L29.722 39.5695L23.8858 44.1087L3.13525 38.2726L8.97136 33.7334Z" fill="#FFF4CE"/>
+    <path d="M56.3086 38.2725L35.5665 44.1385L29.7573 39.5544L50.4995 33.6884L56.3086 38.2725Z" fill="#FFF4CE"/>
+    <path d="M29.7871 27.8965L9.04497 33.7625L3.23582 29.1784L23.978 23.3124L29.7871 27.8965Z" fill="#FFF4CE"/>
+    <path d="M35.5583 23.3584L56.3089 29.1945L50.4728 33.7337L29.7222 27.8976L35.5583 23.3584Z" fill="#FFF4CE"/>
+    <path d="M8.97119 33.7323L29.7218 27.8962V33.7323V39.5685L8.97119 33.7323Z" fill="#E6BC00"/>
+    <path d="M50.4502 33.732L29.6996 39.5681L29.6996 33.732L29.6996 27.8959L50.4502 33.732Z" fill="#E5BC00"/>
+    <path d="M18.1375 18.262L19.9873 20.3056" stroke="#616165" stroke-linecap="round"/>
+    <path d="M23.1546 14.1199L24.7918 17.4869" stroke="#616165" stroke-linecap="round"/>
+    <path d="M37.1263 14.2833L35.2277 17.5101" stroke="#616165" stroke-linecap="round"/>
+    <path d="M41.9132 18.2416L40.0037 20.2294" stroke="#616165" stroke-linecap="round"/>
+    <path d="M30 22.4963H30.0113" stroke="#616165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M30 12L30 18.1229" stroke="#616165" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </g>
-</svg>
+    </svg>

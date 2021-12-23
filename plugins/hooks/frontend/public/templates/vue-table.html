@@ -5,13 +5,14 @@
         @row-click="onRowClick" 
         :rows="tableRows" :resizable="false" >
         <template v-slot:header-left="scope">
-            <div>
+            <div class="bu-mr-2">
                 <el-button-group>
                   <el-button type="primary" @click="filterStatus='all'" size="small" class="hooks-button-group">{{i18n('hooks.status-all')}}</el-button>
                   <el-button type="primary" @click="filterStatus='enabled'" size="small" class="hooks-button-group">{{i18n('hooks.status-enabled')}}</el-button>
                   <el-button type="primary" @click="filterStatus='disabled'" size="small" class="hooks-button-group">{{i18n('hooks.status-disabled')}}</el-button>
                 </el-button-group>
-
+            </div>
+            <div>
                 <cly-select-x
                    :placeholder="i18n('hooks.all-applications')"
                    mode="multi-check"
@@ -20,6 +21,7 @@
                 </cly-select-x>
             </div>
         </template>
+
         <template v-slot="scope">
             <el-table-column fixed="left" width="100" label="">
                 <template v-slot="rowScope">
@@ -49,7 +51,7 @@
             <el-table-column sortable="true" align="center" prop="lastTriggerTimestampString" :label="i18n('hooks.trigger-last-time')" min-width="150" >
             </el-table-column>
 
-            <el-table-column :label="i18n('hooks.create-by')" width="200" sortable="true">
+            <el-table-column :label="i18n('hooks.create-by')" width="100" sortable="true">
                 <template slot-scope="scope">
                     <div class="is-last-col">
                         <div class="flex-grow">
@@ -60,17 +62,19 @@
                                  {{ scope.row.created_at_string }}
                              </div>
                         </div> 
-                      <div class="is-option-button">
-                         <cly-more-options size="small" @command="handleHookEditCommand($event, scope)">
-                            <el-dropdown-item  icon="el-icon-document-copy" command="edit-comment">
-                                Edit
-                            </el-dropdown-item>
-                            <el-dropdown-item icon="el-icon-delete" command="delete-comment">
-                                Delete
-                            </el-dropdown-item>
-                        </cly-more-options>
-                      </div>
                     </div>
+                </template>
+            </el-table-column>
+            <el-table-column type="options">
+                <template v-slot="rowScope">
+                    <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleHookEditCommand($event,rowScope)">
+                        <el-dropdown-item icon="el-icon-document-copy" command="edit-comment">
+                            {{i18n('hooks.edit')}}
+                        </el-dropdown-item>
+                        <el-dropdown-item icon="el-icon-delete" command="delete-comment">
+                            {{i18n('hooks.delete')}}
+                        </el-dropdown-item>
+                    </cly-more-options>
                 </template>
             </el-table-column>
         </template>

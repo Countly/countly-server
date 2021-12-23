@@ -28,7 +28,7 @@
                                 </span>
                             </div>
                         </div>
-                        <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile bu-px-5 bu-py-3">
+                        <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile bu-px-5 bu-py-3 bu-mr-6">
                             <div class="bu-column bu-is-12 bu-is-flex bu-is-align-items-center bu-is-justify-content-left">
                                 <div class="cly-vue-drawer__steps-header">
                                     <template v-for="(currentContent, i) in stepContents">
@@ -38,7 +38,7 @@
                                                     <span class="index text-small" :class="{'color-white': i === currentStepIndex}">{{i + 1}}</span>
                                                     <span class="done-icon text-small color-white"><i class="fa fa-check"></i></span>
                                                 </div>
-                                                <div class="cly-vue-drawer__step-title text-medium font-weight-bold">{{currentContent.name}}</div>
+                                                <div class="cly-vue-drawer__step-title text-medium font-weight-bold color-cool-gray-40">{{currentContent.name}}</div>
                                             </div>
                                         </div>
                                         <div :key="'sep_' + i" class="cly-vue-drawer__step-separator" v-if="i < stepContents.length - 1"></div>

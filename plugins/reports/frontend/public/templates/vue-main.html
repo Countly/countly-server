@@ -25,6 +25,7 @@
     :title="i18n('reports.empty-title')"
     :subTitle="i18n('reports.empty-subtitle')"
     :actionTitle="i18n('reports.empty-action-button-title')"
+    :hasAction="true"
     :actionFunc="createReport"
 > 
 </cly-empty-view>
@@ -154,7 +155,7 @@
             <el-input v-model="drawerScope.editedObject.title" :placeholder="i18n('reports.report-name')"></el-input>
         </cly-form-field>
 
-        <cly-form-field name="email" :label="i18n('reports.email-to-receive')" >
+        <cly-form-field name="email" :label="i18n('reports.email-to-receive')" rules="required">
             <cly-select-email v-model="drawerScope.editedObject.emails"></cly-select-email>
         </cly-form-field>
 
@@ -250,10 +251,8 @@
                 :key="idx"
                 v-for="(item, idx) in frequencyOptions"
             border>
-                {{item.label}}
-                <div class="text-small color-cool-gray-50">
-                    {{item.description}}
-                </div>
+                    <span class="text-medium">{{item.label}}</span>
+                    <span class="text-small color-cool-gray-50">{{item.description}}</span>
             </el-radio>
         </cly-form-field>
 

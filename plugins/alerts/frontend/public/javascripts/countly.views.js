@@ -355,6 +355,14 @@
                 }
                 return rows;
             },
+            initialized: function() {
+                var result = this.$store.getters["countlyAlerts/table/getInitialized"];
+                return result;
+            },
+            rowTableRows: function() {
+                var rows = this.$store.getters["countlyAlerts/table/all"];
+                return rows;
+            }
         },
         data: function() {
             var appsSelectorOption = [];
@@ -490,8 +498,9 @@
     }
     $(document).ready(function() {
         if (countlyAuth.validateRead(ALERTS_FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
+            app.addMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 44});
         }
+
 
         if (countlyGlobal.plugins.indexOf("concurrent_users") > -1) {
             countlyVue.container.registerData("/alerts/data-type", {label: jQuery.i18n.map["concurrent-users.title"], value: 'online-users'});

@@ -263,27 +263,47 @@
         </div>
 			</cly-form-step>
 			<cly-form-step id="step3" v-slot="stepSlot" :name="i18n('feedback.devices-targeting')">
+				<div v-if="cohortsEnabled" class="cly-vue-drawer-step__section">
+          <div class="text-medium text-heading bu-mb-2">
+            {{ i18n('feedback.segmentation') }}
+          </div>
+          <div class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered">
+            <div class="bu-column bu-is-12">
+              <cly-cohort-segmentation
+                ref="ratingsSegmentation"
+                :property-segmentation="drawerScope.editedObject.targeting.user_segmentation"
+                :behavior-segmentation="drawerScope.editedObject.targeting.steps">
+              </cly-cohort-segmentation>
+            </div>
+          </div>
+          
+        </div>
 				<div class="cly-vue-drawer-step__section">
-					<div class="cly-vue-drawer-step__section">
-            <div v-if="cohortsEnabled" class="text-medium text-heading bu-mb-2">
-              {{ i18n('feedback.segmentation') }}
-            </div>
-            <div v-if="cohortsEnabled" class="bu-columns bu-is-gapless bu-is-mobile bu-is-centered">
-              <div class="bu-column bu-is-12">
-                <cly-cohort-segmentation
-                  ref="ratingsSegmentation"
-                  :property-segmentation="drawerScope.editedObject.targeting.user_segmentation"
-                  :behavior-segmentation="drawerScope.editedObject.targeting.steps">
-                </cly-cohort-segmentation>
-              </div>
-            </div>
-            <el-checkbox
+          <el-checkbox v-model="drawerScope.editedObject.target_page">{{ i18n('feedback.show-only-selected-pages') }}</el-checkbox>
+          <!-- show only checkbox selected -->
+          <div v-if="drawerScope.editedObject.target_page" class="text-small text-heading bu-mt-3">
+            {{ i18n('feedback.type-pages') }}
+          </div>
+          <el-select
+            v-if="drawerScope.editedObject.target_page"
+            class="ratings-drawer__target-page-selector"
+            v-model="drawerScope.editedObject.target_pages"
+            multiple
+            filterable
+            allow-create
+            default-first-option
+            :placeholder="i18n('feedback.target-pages')">
+            <el-option value="/" label="/"></el-option>
+          </el-select>
+          <!-- show only checkbox selected -->
+        </div>
+        <div class="cly-vue-drawer-step__section">
+          <el-checkbox
               size="small"
               v-bind:label="i18n('feedback.set-feedback-active')"
               v-model="drawerScope.editedObject.status">
             </el-checkbox>
-          </div>
-				</div>
+        </div>
 			</cly-form-step>
 		</template>
 	</cly-drawer>

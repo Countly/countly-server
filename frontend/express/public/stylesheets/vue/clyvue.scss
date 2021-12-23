@@ -629,6 +629,12 @@
 
         &__shortcuts-col, &__calendars-col {
             display: inline-block;
+
+            .el-tabs {
+                &__active-bar {
+                    background-color: #0166D6;
+                }
+            }
         }
 
         &__shortcut {
@@ -1638,6 +1644,9 @@
                     color: white;
                 }
                 color: #333C48;
+                .cly-vue-drawer__step-title {
+                    color: #333C48 !important;
+                }
                 + .cly-vue-drawer__step-separator {
                     border-color: #333C48;
                 }
@@ -3856,5 +3865,11 @@
                 bottom: 0;
             }
         }
+    }
+}
+
+.el-table {
+    &__empty-text {
+        line-height: normal;
     }
 }

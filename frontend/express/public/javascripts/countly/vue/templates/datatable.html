@@ -59,10 +59,14 @@
             :default-sort="defaultSort"
             v-bind="$attrs"
             v-on="$listeners"
+            max-height="500"
             @sort-change="onSortChange"
             @selection-change="onSelectionChange"
             @cell-mouse-enter="onCellMouseEnter"
             ref="elTable">
+                <template slot="empty">
+                    <cly-empty-view></cly-empty-view>
+                </template>
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>
                 </template>

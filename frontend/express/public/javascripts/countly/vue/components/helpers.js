@@ -1,4 +1,4 @@
-/* global Vue, app, countlyEvent, countlyGlobal*/
+/* global Vue, CV, app, countlyEvent, countlyGlobal*/
 
 (function(countlyVue) {
 
@@ -671,6 +671,114 @@
                     </div>'
     }));
 
+    Vue.component("cly-json-editor", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        data: function() {
+            return {
+                jsonerror: "",
+                jsonstr: "",
+                isOpen: this.isOpened
+            };
+        },
+        computed: {
+            opened: {
+                get: function() {
+                    this.validateJson();
+                    return this.isOpen;
+                },
+                set: function(val) {
+                    this.isOpen = val;
+                }
+            }
+        },
+        props: {
+            value: String,
+            isOpened: {type: Boolean, required: true},
+            emitClose: {type: Boolean, required: false, default: false},
+            saveLabel: {type: String, required: false, default: CV.i18n("common.save")},
+            cancelLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
+            title: {type: String, required: false, default: CV.i18n("common.json-editor")},
+
+        },
+        watch: {
+            value: {
+                immediate: true,
+                handler: function(newValue) {
+                    this.jsonstr = newValue;
+                }
+            },
+        },
+        methods: {
+            validateJson: function() {
+                this.jsonerror = "";
+                try {
+                    // try to parse
+                    if (this.jsonstr) {
+                        JSON.parse(this.jsonstr);
+                    }
+                }
+                catch (e) {
+                    this.jsonerror = JSON.stringify(e.message);
+                }
+            },
+            prettyFormat: function() {
+                // reset error
+                var jsonValue = "";
+                try {
+                    // try to parse
+                    jsonValue = JSON.parse(this.jsonstr);
+                    this.jsonstr = JSON.stringify(jsonValue, null, 2);
+                }
+                catch (e) {
+                    // Do nothing
+                }
+            },
+            submit: function() {
+                this.$emit("input", this.jsonstr);
+                this.opened = false;
+                if (this.emitClose) {
+                    this.$emit("closed");
+                }
+            },
+            cancel: function() {
+                this.opened = false;
+                if (this.emitClose) {
+                    this.$emit("closed");
+                }
+            },
+            escKeyEvent: function() {
+                this.opened = false;
+                if (this.emitClose) {
+                    this.$emit("closed");
+                }
+            },
+        },
+        template: '<div class="cly-vue-json-editor" v-show="opened" @keydown.esc="escKeyEvent">\
+                    <slot name="title"><h3 class="bu-pl-4 color-cool-gray-100">{{title}}</h3></slot>\
+                    <div class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center bu-px-4 bu-pb-1">\
+                    <div>\
+                        <div class="text-smallish" v-if="jsonstr && jsonerror"><i class="ion-alert-circled color-danger bu-mr-1"></i>{{i18n("remote-config.json.invalid")}}</div>\
+                        <div class="text-smallish" v-if="!jsonerror"><i class="ion-checkmark-circled color-success bu-mr-1"></i>{{i18n("remote-config.json.valid")}}</div>\
+                    </div>\
+                    <el-button class="color-cool-gray-100" @click="prettyFormat" type="text">{{i18n("remote-config.json.format")}}</el-button>\
+                    </div>\
+                    <textarea\
+                    @input="validateJson"\
+                    v-model="jsonstr"\
+                    rows="15" \
+                    class="cly-vue-json-editor__textarea bu-p-4" \
+                    ref="jsonText"\
+                    ></textarea>\
+    		        <slot name="footer">\
+                    <div class="bu-p-4 bu-is-justify-content-flex-end bu-is-flex">\
+							<el-button size="small" @click="cancel"  type="default" >{{cancelLabel}}</el-button>\
+							<el-button size="small" @click="submit" type="success">{{saveLabel}}</el-button>\
+					</div>\
+                    </slot>\
+                   </div>'
+    }));
     Vue.component("cly-notification", countlyBaseComponent.extend({
         template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
@@ -741,30 +849,33 @@
     }));
 
     Vue.component("cly-empty-view", countlyBaseComponent.extend({
-        template: ' <div class="bu-is-flex  bu-is-flex-direction-column bu-is-align-items-center" style="height:calc(100vh - 193px);">\
+        template: ' <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
                         <slot name="icon">\
-                            <div style="margin-top: 122px;border-radius: 50%;width: 96px;height: 96px;background: gray;">\
-                                <img src="images/icons/empty-view-icon.svg" style="width: 96px;height: 96px;"/>\
+                            <div class="bu-mt-6">\
+                                <img width="96" heigh="96" src="images/icons/empty-view-icon.svg"/>\
                             </div>\
                         </slot>\
-                        <div style="width: 400px;">\
+                        <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column 	bu-is-align-items-center">\
                             <slot name="title">\
-                                <h3 class="color-cool-gray-100 bu-mt-5 bu-mb-4 bu-has-text-centered">{{title}}</h3>\
+                                <h3 class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="color-cool-gray-50 text-medium bu-has-text-centered">{{subTitle}}</div> \
+                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered ">{{subTitle}}</div>\
                             </slot>\
-                            <slot name="action">\
-                                <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered bu-mt-5 color-blue-100 pointer">{{actionTitle}}</div>\
+                            <slot name="action" v-if="hasAction">\
+                                <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
                             </slot>\
                         </div>\
                     </div>',
-        mixins: [countlyVue.mixins.i18n],
+        mixins: [
+            countlyVue.mixins.i18n
+        ],
         props: {
-            title: { default: "...hmm, seems it’s empty here", type: String },
-            subTitle: { default: "", type: String },
+            title: { default: countlyVue.i18n('common.emtpy-view-title'), type: String },
+            subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String },
             actionTitle: { default: "Create", type: String },
             actionFunc: { default: null, type: Function },
+            hasAction: {default: false, type: Boolean}
         },
         data: function() {
             return {};
@@ -772,5 +883,4 @@
         methods: {
         }
     }));
-
 }(window.countlyVue = window.countlyVue || {}));
