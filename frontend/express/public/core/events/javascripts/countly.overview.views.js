@@ -19,6 +19,9 @@
             eventsTableRows: function() {
                 return this.$store.getters["countlyEventsOverview/tableRows"];
             },
+            isTableLoading: function() {
+                return this.$store.getters["countlyEventsOverview/isTableLoading"];
+            }
         },
         template: '#overview-tables-events'
     });
@@ -68,6 +71,7 @@
             },
             onSubmit: function() {
                 var self = this;
+                this.$store.dispatch("countlyEventsOverview/setMonitorEventsLoading", true);
                 this.selectedEvents.forEach(function(item, idx) {
                     self.selectedEvents[idx].order = idx;
                 });
@@ -228,6 +232,9 @@
             updatedAt: function() {
                 var deatilEvents = this.$store.getters["countlyEventsOverview/detailEvents"];
                 return CV.i18n('events.overview.updated') + " " + countlyCommon.formatTimeAgoText(deatilEvents.ts).text;
+            },
+            isMonitorEventsLoading: function() {
+                return this.$store.getters["countlyEventsOverview/isMonitorEventsLoading"];
             }
         },
         data: function() {
@@ -238,7 +245,10 @@
             };
         },
         beforeCreate: function() {
-            this.$store.dispatch('countlyEventsOverview/fetchEventsOverview');
+            var self = this;
+            this.$store.dispatch('countlyEventsOverview/fetchEventsOverview').then(function() {
+                self.$store.dispatch("countlyEventsOverview/setTableLoading", false);
+            });
         }
     });
 

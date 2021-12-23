@@ -1,5 +1,5 @@
 <div v-bind:class="[componentId]">
-    <cly-datatable-n :rows="eventsTableRows">
+    <cly-datatable-n :rows="eventsTableRows" v-loading="isTableLoading">
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">
