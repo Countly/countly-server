@@ -355,6 +355,14 @@
                 }
                 return rows;
             },
+            initialized: function() {
+                var result = this.$store.getters["countlyAlerts/table/getInitialized"];
+                return result;
+            },
+            rowTableRows: function() {
+                var rows = this.$store.getters["countlyAlerts/table/all"];
+                return rows;
+            }
         },
         data: function() {
             var appsSelectorOption = [];
