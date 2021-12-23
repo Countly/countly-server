@@ -92,7 +92,7 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column type="options">
+                <el-table-column type="options" v-if="canUpdate || canDelete">
                     <template v-slot="rowScope">
                         <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleAlertEditCommand($event,rowScope)">
                             <el-dropdown-item v-if="canUpdate" icon="el-icon-document-copy" command="edit-comment">
