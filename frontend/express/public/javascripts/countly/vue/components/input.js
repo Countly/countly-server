@@ -54,9 +54,14 @@
             picker: window.VueColor.Sketch
         },
         template: '<div class="cly-vue-colorpicker">\n' +
-                        '<div @click.stop="open">\n' +
-                            '<div class="preview-box" :style="previewStyle"></div>\n' +
-                            '<input class="preview-input" type="text" v-model="localValue" />\n' +
+                        '<div @click.stop="open" class="preview">\n' +
+                            '<div>\n' +
+                                '<div class="drop bu-mt-auto" :style="previewStyle"></div>\n' +
+                                '<img src="/images/icons/blob.svg"/>\n' +
+                            '</div>\n' +
+                            '<input class="colorInput" v-model="localValue" type="text"/>\n' +
+                            '<img v-if="!isOpened" src="/images/icons/arrow_drop_down_.svg"/>\n' +
+                            '<img v-if="isOpened" src="/images/icons/arrow_drop_up_.svg"/>\n' +
                         '</div>\n' +
                         '<div class="picker-body" v-if="isOpened" v-click-outside="close">\n' +
                             '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
