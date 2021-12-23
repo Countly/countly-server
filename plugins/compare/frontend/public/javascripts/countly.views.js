@@ -39,32 +39,20 @@
         methods: {
             handleCurrentChange: function(selection) {
                 var selectedEvents = [];
-                var self = this;
-                this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
-                this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                 selection.forEach(function(item) {
                     selectedEvents.push(item.id);
                 });
                 this.$store.dispatch('countlyCompareEvents/updateTableStateMap', selection);
-                this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents).then(function() {
-                    self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
-                    self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
-                });
+                this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                 this.$store.dispatch('countlyCompareEvents/fetchLegendData', selectedEvents);
             },
             handleAllChange: function(selection) {
                 var selectedEvents = [];
-                var self = this;
-                this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
-                this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                 selection.forEach(function(item) {
                     selectedEvents.push(item.id);
                 });
                 this.$store.dispatch('countlyCompareEvents/updateTableStateMap', selection);
-                this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents).then(function() {
-                    self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
-                    self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
-                });
+                this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
                 this.$store.dispatch('countlyCompareEvents/fetchLegendData', selectedEvents);
             }
         },

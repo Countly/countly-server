@@ -28,32 +28,20 @@
         methods: {
             handleCurrentChange: function(selection) {
                 var selectedApps = [];
-                var self = this;
-                this.$store.dispatch('countlyCompareApps/setTableLoading', true);
-                this.$store.dispatch('countlyCompareApps/setChartLoading', true);
                 selection.forEach(function(item) {
                     selectedApps.push(item.id);
                 });
                 this.$store.dispatch('countlyCompareApps/updateTableStateMap', selection);
-                this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps).then(function() {
-                    self.$store.dispatch('countlyCompareApps/setTableLoading', false);
-                    self.$store.dispatch('countlyCompareApps/setChartLoading', false);
-                });
+                this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps);
                 this.$store.dispatch('countlyCompareApps/fetchLegendData', selectedApps);
             },
             handleAllChange: function(selection) {
                 var selectedApps = [];
-                var self = this;
-                this.$store.dispatch('countlyCompareApps/setTableLoading', true);
-                this.$store.dispatch('countlyCompareApps/setChartLoading', true);
                 selection.forEach(function(item) {
                     selectedApps.push(item.id);
                 });
                 this.$store.dispatch('countlyCompareApps/updateTableStateMap', selection);
-                this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps).then(function() {
-                    self.$store.dispatch('countlyCompareApps/setTableLoading', false);
-                    self.$store.dispatch('countlyCompareApps/setChartLoading', false);
-                });
+                this.$store.dispatch('countlyCompareApps/fetchLineChartData', selectedApps);
                 this.$store.dispatch('countlyCompareApps/fetchLegendData', selectedApps);
             }
         },
