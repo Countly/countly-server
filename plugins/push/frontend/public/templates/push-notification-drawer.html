@@ -94,6 +94,7 @@
                                     filterable
                                     reserve-keyword
                                     placeholder="Please select a cohort"
+                                    :loading="isFetchCohortsLoading"
                                     :class="{'is-error': validation.errors.length > 0}"
                                     style="width:100%">
                                     <el-option
@@ -114,6 +115,7 @@
                                     multiple
                                     filterable
                                     reserve-keyword
+                                    :loading="isFetchLocationsLoading"
                                     placeholder="Please select a location"
                                     :class="{'is-error': validation.errors.length > 0}"
                                     style="width:100%">
@@ -187,6 +189,7 @@
                                     filterable
                                     reserve-keyword
                                     placeholder="Please select an event"
+                                    :loading="isFetchEventsLoading"
                                     :class="{'is-error': validation.errors.length > 0}"
                                     style="width:100%">
                                     <el-option
@@ -210,6 +213,7 @@
                                     filterable
                                     reserve-keyword
                                     placeholder="Please select a cohort"
+                                    :loading="isFetchCohortsLoading"
                                     :class="{'is-error': validation.errors.length > 0}"
                                     style="width:100%">
                                     <el-option
@@ -232,6 +236,7 @@
                                 filterable
                                 reserve-keyword
                                 placeholder="Please select a location"
+                                :loading="isFetchLocationsLoading"
                                 :class="{'is-error': validation.errors.length > 0}"
                                 style="width:100%">
                                 <el-option
