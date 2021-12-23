@@ -59,7 +59,7 @@
                                 '<div class="drop bu-mt-auto" :style="previewStyle"></div>\n' +
                                 '<img src="/images/icons/blob.svg"/>\n' +
                             '</div>\n' +
-                            '<input class="colorInput" v-model="localValue" type="text"/>\n' +
+                            '<input class="color-input" v-model="localValue" type="text"/>\n' +
                             '<img v-if="!isOpened" src="/images/icons/arrow_drop_down_.svg"/>\n' +
                             '<img v-if="isOpened" src="/images/icons/arrow_drop_up_.svg"/>\n' +
                         '</div>\n' +
