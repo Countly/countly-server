@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon, CountlyHelpers */
+/*global countlyVue, CV, countlyCommon, CountlyHelpers, Promise */
 (function(countlyEventsOverview) {
 
     countlyEventsOverview.helpers = {
