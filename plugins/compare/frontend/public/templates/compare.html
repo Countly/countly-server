@@ -37,7 +37,7 @@
         </el-option>
       </el-select>
       </div>
-      <cly-chart-time :option="lineChartData" :legend="lineLegend"></cly-chart-time>
+      <cly-chart-time :option="lineChartData" :legend="lineLegend" v-loading="isChartLoading"></cly-chart-time>
     </div>
     </cly-section>
     <cly-section>
