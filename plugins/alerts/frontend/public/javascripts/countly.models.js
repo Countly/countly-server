@@ -194,6 +194,9 @@
                     success: function() {
                         context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
                     },
+                    error: function(e) {
+                        CountlyHelpers.notify({message: e});
+                    }
                 });
             },
             saveOnlineUsersAlert: function(context, alertConfig) {
@@ -205,9 +208,16 @@
                         "alert": JSON.stringify(alertConfig),
                     },
                     dataType: "json",
-                    success: function() {
+                    success: function(data) {
+                        if (typeof data === "object" && data.result) {
+                            CountlyHelpers.alert(data.result, "red");
+                            return;
+                        }
                         CountlyHelpers.notify({message: jQuery.i18n.map['alerts.save-alert-success']});
                         context.dispatch("countlyAlerts/table/fetchAll", null, {root: true});
+                    },
+                    error: function(e) {
+                        CountlyHelpers.notify({message: e});
                     }
                 }).then(function() {
                 });
@@ -327,6 +337,9 @@
                         }).then(function(list) {
                             for (var j = 0; j < list.length; j++) {
                                 var rowData = Object.assign({}, list[j]);
+                                if (list[j].enabled === true) {
+                                    count.r++;
+                                }
                                 rowData = Object.assign(rowData, {
                                     _id: list[j]._id,
                                     alertName: list[j].name,
@@ -340,9 +353,9 @@
                                     compareValue: list[j].users,
                                     compareValue2: list[j].minutes,
                                     alertValues: list[j].email,
+                                    createdByUser: "-",
                                 });
                                 tableData.push(rowData);
-
                             }
                             context.commit("setAll", tableData);
                             context.commit("setCount", count);
