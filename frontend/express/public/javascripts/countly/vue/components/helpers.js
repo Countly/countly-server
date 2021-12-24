@@ -883,4 +883,36 @@
         methods: {
         }
     }));
+
+    var BaseEmptyViewForElements = _mixins.BaseContent.extend({
+        props: {
+            image: {default: 'images/icons/empty-view-icon.svg', type: String},
+            title: { default: countlyVue.i18n('common.emtpy-view-title'), type: String },
+            subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String }
+        },
+        data: function() {
+            return {};
+        },
+        template: ' <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
+                        <slot name="icon">\
+                            <div class="bu-mt-6">\
+                                <img :src="image"/>\
+                            </div>\
+                        </slot>\
+                        <div class="bu-mt-2">\
+                            <slot name="title">\
+                                <h4 class="color-cool-gray-100">{{title}}</h4>\
+                            </slot>\
+                            <slot name="subTitle">\
+                                <div class="bu-mt-1 bu-mb-6 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
+                            </slot>\
+                        </div>\
+                    </div>',
+    });
+
+    Vue.component("cly-empty-chart", BaseEmptyViewForElements.extend({
+    }));
+
+    Vue.component("cly-empty-datatable", BaseEmptyViewForElements.extend({
+    }));
 }(window.countlyVue = window.countlyVue || {}));
