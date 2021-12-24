@@ -145,13 +145,13 @@
         var getters = {
             tableData: function(state) {
                 return state.tableData;
-            }
+            },
         };
 
         var mutations = {
             setTableData: function(state, list) {
                 state.tableData = list;
-            }
+            },
         };
 
         var actions = {
@@ -196,18 +196,25 @@
         var tableResource = countlyVue.vuex.Module("table", {
             state: function() {
                 return {
-                    all: []
+                    all: [],
+                    initialized: false,
                 };
             },
             getters: {
                 all: function(state) {
                     return state.all;
+                },
+                getInitialized: function(state) {
+                    return state.initialized;
                 }
             },
             mutations: {
                 setAll: function(state, val) {
                     state.all = val;
-                }
+                },
+                setInitialized: function(state, val) {
+                    state.initialized = val;
+                },
             },
             actions: {
                 updateStatus: function(context, status) {
@@ -313,6 +320,7 @@
 
                             }
                         }
+                        context.commit("setInitialized", true);
                         context.commit("setAll", data);
                     });
                 },
