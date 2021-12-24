@@ -11,7 +11,7 @@
             <cly-chart-bar :option="sessionDurationsOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="sessionDurationsRows" :resizable="true" v-loading="isLoading">
+            <cly-datatable-n  :rows="sessionDurationsRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="duration" :label="i18n('common.session-duration')">
                     </el-table-column>

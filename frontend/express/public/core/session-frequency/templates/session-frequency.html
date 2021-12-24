@@ -11,7 +11,7 @@
             <cly-chart-bar :option="sessionFrequencyOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="sessionFrequencyRows" :resizable="true" v-loading="isLoading">
+            <cly-datatable-n  :rows="sessionFrequencyRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="frequency" :label="i18n('session-frequency.table.frequency')">
                     </el-table-column>

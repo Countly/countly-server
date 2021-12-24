@@ -742,6 +742,11 @@
             hideTop: {
                 type: Boolean,
                 default: false
+            },
+            forceLoading: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         data: function() {
@@ -779,6 +784,9 @@
                 }, {});
             },
             isLoading: function() {
+                if (this.forceLoading === true) {
+                    return true;
+                }
                 if (!this.dataSource) {
                     return false;
                 }
