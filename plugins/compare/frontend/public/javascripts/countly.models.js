@@ -272,7 +272,9 @@
                 selectedGraphMetric: "c",
                 lineLegend: {},
                 groupData: {},
-                tableStateMap: {}
+                tableStateMap: {},
+                isChartLoading: false,
+                isTableLoading: false
             };
         };
 
@@ -345,7 +347,13 @@
                     }
                     context.state.tableStateMap[tableRows[i].id] = isSelected;
                 }
-            }
+            },
+            setTableLoading: function(context, value) {
+                context.commit("setTableLoading", value);
+            },
+            setChartLoading: function(context, value) {
+                context.commit("setChartLoading", value);
+            },
         };
 
         var compareEventsMutations = {
@@ -381,6 +389,12 @@
             },
             setTableStateMap: function(state, value) {
                 state.tableStateMap = value;
+            },
+            setTableLoading: function(state, value) {
+                state.isTableLoading = value;
+            },
+            setChartLoading: function(state, value) {
+                state.isChartLoading = value;
             }
         };
         var compareEventsGetters = {
@@ -416,6 +430,12 @@
             },
             tableStateMap: function(_state) {
                 return _state.tableStateMap;
+            },
+            isTableLoading: function(_state) {
+                return _state.isTableLoading;
+            },
+            isChartLoading: function(_state) {
+                return _state.isChartLoading;
             }
         };
         return countlyVue.vuex.Module("countlyCompareEvents", {
