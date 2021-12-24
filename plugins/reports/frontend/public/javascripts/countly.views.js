@@ -26,7 +26,7 @@
                 return result;
             },
             rawTableRows: function() {
-                var rows = this.$store.getters["countlyReports/table/all"]
+                var rows = this.$store.getters["countlyReports/table/all"];
                 return rows;
             }
         },
