@@ -21,6 +21,14 @@
                 var rows = this.$store.getters["countlyReports/table/all"];
                 return rows;
             },
+            initialized: function() {
+                var result = this.$store.getters["countlyReports/table/getInitialized"];
+                return result;
+            },
+            rawTableRows: function() {
+                var rows = this.$store.getters["countlyReports/table/all"]
+                return rows;
+            }
         },
         data: function() {
             return {
@@ -92,9 +100,10 @@
                 diff.forEach(function(item) {
                     status[item.key] = item.newValue;
                 });
-                this.$store.dispatch("countlyReports/table/updateStatus", status);
-                this.$store.dispatch("countlyReports/table/fetchAll");
-                scope.unpatch();
+                var self = this;
+                this.$store.dispatch("countlyReports/table/updateStatus", status).then(function() {
+                    return self.$store.dispatch("countlyReports/table/fetchAll");
+                });
             },
             refresh: function() {
             // this.$store.dispatch("countlyReports/table/fetchAll");
@@ -266,6 +275,7 @@
                 });
                 delete doc.metricsArray;
                 delete doc.hover;
+                delete doc.user;
                 this.$store.dispatch("countlyReports/saveReport", doc);
             },
             onClose: function($event) {
