@@ -68,6 +68,11 @@
             },
             updateOptions: {
                 type: Object
+            },
+            forceLoading: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         data: function() {
@@ -349,6 +354,14 @@
                     }
                 }
                 return isEmpty;
+            },
+            isLoading: function() {
+                if (this.forceLoading === true) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
             }
         }
     });
@@ -1130,8 +1143,8 @@
                                     :autoresize="autoresize"\
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
-                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                    <cly-empty-view></cly-empty-view>\
+                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
+                                    <cly-empty-chart></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1202,7 +1215,7 @@
 											@datazoom="onZoomFinished">\
 										</echarts>\
                                         <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                            <cly-empty-view></cly-empty-view>\
+                                            <cly-empty-chart></cly-empty-chart>\
                                         </div>\
 								</div>\
 							</vue-scroll>\
@@ -1255,8 +1268,8 @@
                                     :autoresize="autoresize"\
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
-                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                    <cly-empty-view></cly-empty-view>\
+                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
+                                    <cly-empty-chart></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1375,8 +1388,8 @@
                                     :autoresize="autoresize"\
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
-                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                    <cly-empty-view></cly-empty-view>\
+                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
+                                    <cly-empty-chart></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1427,8 +1440,8 @@
                                     :autoresize="autoresize"\
                                     @datazoom="onZoomFinished">\
                                 </echarts>\
-                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                    <cly-empty-view></cly-empty-view>\
+                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
+                                    <cly-empty-chart></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -1505,8 +1518,8 @@
                                         :autoresize="autoresize"\
                                         @datazoom="onZoomFinished">\
                                     </echarts>\
-                                    <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty">\
-                                        <cly-empty-view></cly-empty-view>\
+                                    <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
+                                        <cly-empty-chart></cly-empty-chart>\
                                     </div>\
                                 </div>\
                                 <custom-legend\

@@ -30,7 +30,7 @@
                     </template>
                 </cly-listbox>
                 <div v-if="locations.length < 1" class="geo-chart-empty-state bu-is-flex bu-is-justify-content-center bu-is-flex-direction-column bu-is-align-items-center">
-                    <cly-empty-view></cly-empty-view>
+                    <cly-empty-chart></cly-empty-chart>
                 </div>
             </div>
             <div v-else>
@@ -77,7 +77,7 @@
                     </template>
                 </cly-listbox>
                 <div v-if="locations.length < 1" class="geo-chart-empty-state bu-is-flex bu-is-justify-content-center bu-is-flex-direction-column bu-is-align-items-center">
-                    <cly-empty-view></cly-empty-view>
+                    <cly-empty-chart></cly-empty-chart>
                 </div>
             </div>
             <div class="geo-chart-left-side-wrapper bg-white" v-else-if="currentViewType === 'cities'">
@@ -95,7 +95,7 @@
                     </template>
                 </cly-listbox>
                 <div v-if="locations.length < 1" class="geo-chart-empty-state bu-is-flex bu-is-justify-content-center bu-is-flex-direction-column bu-is-align-items-center">\
-                    <cly-empty-view></cly-empty-view>
+                    <cly-empty-chart></cly-empty-chart>
                 </div>
             </div>
         </div>

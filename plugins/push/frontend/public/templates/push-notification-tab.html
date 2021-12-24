@@ -31,7 +31,7 @@
                 </div>
             </div>
             <cly-section>
-                <cly-chart-time :bucket="selectedPeriodFilter" :option="pushNotificationOptions" :height="400" v-loading="isLoading" :legend="legend" class="cly-vue-push-notification-chart">
+                <cly-chart-time :bucket="selectedPeriodFilter" :option="pushNotificationOptions" :height="400" v-loading="isLoading" :force-loading="isLoading" :legend="legend" class="cly-vue-push-notification-chart">
                     <template v-slot:chart-left="scope">
                         <span class="cly-vue-push-notification-chart__left-text bu-mr-2">{{i18n('push-notification.time-period')}}</span>
                         <div style="width:100px;">
@@ -52,7 +52,7 @@
                 </cly-chart-time>
             </cly-section>
             <cly-section>
-                <cly-datatable-n  :rows="pushNotificationRows" :available-dynamic-cols="optionalTableColumns" :resizable="true" v-loading="isLoading">
+                <cly-datatable-n  :rows="pushNotificationRows" :available-dynamic-cols="optionalTableColumns" :resizable="true" :force-loading="isLoading">
                     <template v-slot:header-left>
                         <el-select v-model="selectedStatusFilter">
                             <el-option

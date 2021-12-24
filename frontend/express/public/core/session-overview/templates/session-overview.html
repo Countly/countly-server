@@ -9,10 +9,10 @@
     <cly-main>
         <cly-date-picker-g class="session-overview-date-picker-container"></cly-date-picker-g>
         <cly-section>
-            <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading" :legend="legend"></cly-chart-line>
+            <cly-chart-line :option="sessionOverviewOptions" :height="400" v-loading="isLoading" :force-loading="isLoading" :legend="legend"></cly-chart-line>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" v-loading="isLoading">
+            <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="date" :label="i18n('common.date')">
                     </el-table-column>
