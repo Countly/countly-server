@@ -57,23 +57,41 @@
     <div>
         <div v-if="isOpen" v-bind:style="getStyleObject" class="cly-vue-push-notification-add-user-property-popover">
             <div class="cly-vue-push-notification-add-user-property-popover__inner">
+                <div class="cly-vue-push-notification-add-user-property-popover__title">Add User Property</div>
+                <div class="bu-is-flex bu-is-align-items-center">
+                    <el-radio-group v-model="selectedPropertyCategory" size="small">
+                        <el-radio-button v-for="item in propertyCategoryOptions" :label="item.value" :key="item.value">
+                            {{item.label}}
+                        </el-radio-button>
+                    </el-radio-group>
+                </div>
                 <validation-observer ref="validationObserver">
-                    <div class="cly-vue-push-notification-add-user-property-popover__title">Add User Property</div>
-                    <div>
-                        <validation-provider vid="userPropertyValidator" v-slot="validation" rules="required">
-                            <cly-select-x
-                                search-placeholder="Search in Properties"
-                                placeholder="Select Property" 
-                                :value="userProperty.value"
-                                :width="320"
-                                @change="onSelect"
-                                mode="single-list"
-                                :hide-all-options-tab="false"
-                                :options="options"
-                                :class="[validation.errors.length > 0 ? 'is-error': null,'cly-vue-push-notification-add-user-property-popover__select-value']">
-                            </cly-select-x>
-                        </validation-provider>
-                    </div>
+                    <template v-if="selectedPropertyCategory === 'external'">
+                        <div class="bu-level bu-is-flex-direction-column bu-is-align-items-flex-start">
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">API Property</div>
+                            <validation-provider vid="apiValueValidator" v-slot="validation" rules="required" style="width:100%">
+                                <el-input :value="userProperty.value" @input="onInput" placeholder="Enter value" :class="{'is-error': validation.errors.length > 0}"> </el-input>
+                            </validation-provider>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Property</div>
+                            <validation-provider vid="userPropertyValidator" v-slot="validation" rules="required">
+                                <cly-select-x
+                                    search-placeholder="Search in Properties"
+                                    placeholder="Select Property" 
+                                    :value="userProperty.value"
+                                    :width="320"
+                                    @change="onSelect"
+                                    mode="single-list"
+                                    :hide-all-options-tab="false"
+                                    :options="options"
+                                    :class="[validation.errors.length > 0 ? 'is-error': null,'cly-vue-push-notification-add-user-property-popover__select-value']">
+                                </cly-select-x>
+                            </validation-provider>
+                        </div>
+                    </template>
                     <div>
                         <el-checkbox :value="userProperty.isUppercase" @change="onUppercase">
                             <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Make user property start with capital letter</div>

@@ -35,8 +35,9 @@
             :options="userPropertiesOptions"
             :position="addUserPropertyPopoverPosition"
             @select="onSelectUserProperty"
-            @input="onInputFallbackUserProperty"
-            @check="onCheckUppercaseUserProperty"
+            @input="onInputUserProperty"
+            @fallback="onInputFallbackUserProperty"
+            @uppercase="onCheckUppercaseUserProperty"
             @remove="onRemoveUserProperty"
             @close="closeAddUserPropertyPopover">
         </add-user-property-popover>
