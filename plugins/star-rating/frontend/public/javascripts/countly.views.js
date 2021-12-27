@@ -894,7 +894,10 @@ countlyVue.container.registerTab("/users/tabs", {
 });
 
 var RatingsMainView = new countlyVue.views.BackboneWrapper({
-    component: RatingsMain
+    component: RatingsMain,
+    templates: [
+        "/drill/templates/query.builder.v2.html"
+    ]
 });
 
 var WidgetDetailView = new countlyVue.views.BackboneWrapper({
