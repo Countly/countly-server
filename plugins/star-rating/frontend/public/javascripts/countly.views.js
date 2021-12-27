@@ -69,6 +69,14 @@ var Drawer = countlyVue.views.create({
                 submitted.targeting = finalizedTargeting;
             }
 
+            if (submitted.target_page) {
+                submitted.target_page = "selected";
+            }
+            else {
+                submitted.target_page = "all";
+                submitted.target_pages = ["/"];
+            }
+
             if (this.settings.isEditMode) {
                 starRatingPlugin.editFeedbackWidget(submitted, function() {
                     self.$emit('widgets-refresh');
@@ -422,7 +430,9 @@ var WidgetsTab = countlyVue.views.create({
                 trigger_font_color: '#fff',
                 hide_sticker: false,
                 status: true,
-                logo: null
+                logo: null,
+                target_pages: ["/"],
+                target_page: false
             });
         },
         refresh: function() {
@@ -665,6 +675,7 @@ var WidgetDetail = countlyVue.views.create({
             if (this.cohortsEnabled && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
                 this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
             }
+            this.widget.target_page = this.widget.target_page === "selected";
             this.openDrawer('widget', this.widget);
         },
         handleCommand: function(command) {

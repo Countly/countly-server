@@ -11,7 +11,7 @@
             <cly-chart-bar :option="slippingAwayUsersOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="slippingAwayUsersRows" :resizable="false" v-loading="isLoading">
+            <cly-datatable-n  :rows="slippingAwayUsersRows" :resizable="false" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" width="226" prop="period" :label="i18n('slipping-away-users.table-period')">
                     </el-table-column>

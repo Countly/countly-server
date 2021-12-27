@@ -64,8 +64,11 @@
             @selection-change="onSelectionChange"
             @cell-mouse-enter="onCellMouseEnter"
             ref="elTable">
-                <template slot="empty">
-                    <cly-empty-view></cly-empty-view>
+                <template slot="empty" v-if="!isLoading">
+                    <cly-empty-datatable></cly-empty-datatable>
+                </template>
+                <template slot="empty" v-if="isLoading">
+                    {{ i18n('common.loading')}}...
                 </template>
                 <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">
                     <slot :name="name" v-bind="commonScope"/>

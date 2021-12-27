@@ -274,7 +274,7 @@
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
             if (countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID]) {
-                app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.title", priority: 70, classes: "populator-menu"});
+                app.addSubMenu("management", {code: "populate", url: "#/manage/populate", text: "populator.plugin-title", priority: 70, classes: "populator-menu"});
             }
         }
 

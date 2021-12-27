@@ -97,10 +97,31 @@ const widgetProperties = {
     logo: {
         required: false,
         type: "String"
+    },
+    target_page: {
+        required: false,
+        type: "String"
+    },
+    target_pages: {
+        required: false,
+        type: "Array"
     }
 };
 
 const widgetPropertyPreprocessors = {
+    target_pages: function(targetPages) {
+        try {
+            return JSON.parse(targetPages);
+        }
+        catch (jsonParseError) {
+            if (Array.isArray(targetPages)) {
+                return targetPages;
+            }
+            else {
+                return ["/"];
+            }
+        }
+    },
     targeting: function(targeting) {
         try {
             return JSON.parse(targeting);

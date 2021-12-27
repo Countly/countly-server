@@ -1073,11 +1073,12 @@
 
     // colorpicker
     .cly-vue-colorpicker {
-        $cp-preview-height: 25px;
+        $cp-preview-height: 32px;
+        $cp-preview-width: 138px;
         $cp-preview-border-size: 1px;
         $cp-picker-body-size: 251px;
         $cp-picker-body-padding: 12px;
-
+        display: flex;
         height: #{$cp-preview-height};
         .picker-body {
             position: relative;
@@ -1087,8 +1088,8 @@
             width: 275px;
             height: 415px;
             background-color: #ffffff;
-            top: #{$cp-preview-height + $cp-preview-border-size * 2};
-            left: #{$cp-preview-height};
+            top: #{$cp-preview-height};
+            left: #{-$cp-preview-width};
             z-index: 9999;
             > .vc-sketch {
                 background-color: transparent;
@@ -1113,23 +1114,41 @@
                 padding-right: #{$cp-picker-body-padding};
             }
         }
-        .preview-box {
-            width: #{$cp-preview-height};
-            height: #{$cp-preview-height};
-            float: left;
-            border-radius: 2px 0 0 2px;
-            border: #{$cp-preview-border-size} solid #d0d0d0;
-            margin-right: -2px;
-        }
-        .preview-input {
-            float: left;
-            height: 23px !important;
+        .preview {
+            float: right;
             outline: none;
-            width: calc(100% - 38px);
-            border: 1px solid #dbdbdb;
+            border: #{$cp-preview-border-size} solid #CFD6E4;
             color: #000;
             font-size: 12px;
-            padding-left: 7px;
+            padding-left: 8px; 
+            border-radius: 4px;
+            display: flex;
+            box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.08);
+            box-sizing: border-box;
+            width: 138px;
+            cursor: pointer;
+            div {
+                margin-top: 5px;
+                img {
+                    position: absolute;
+                }
+            }
+            .drop {
+                width:16px;
+                height:16px;
+                margin-right:10px;
+                position:absolute;
+            }
+            .color-input {
+                border-style:none;
+                width:57px;
+                margin-left:24px;
+                margin-right:24px;
+                font-size: 14px;
+            }
+            img {
+                width: fit-content;
+            }
         }
     }
 
@@ -1516,12 +1535,12 @@
         }
 
         &--half-screen {
-            .cly-vue-drawer__steps-view {
-                width: 50%;
-            }
-            .cly-vue-drawer__sidecars-view {
-                width: 50%;
-            }
+            // .cly-vue-drawer__steps-view {
+            //     width: 50%;
+            // }
+            // .cly-vue-drawer__sidecars-view {
+            //     width: 50%;
+            // }
             .cly-vue-drawer__footer {
                 padding: 16px;
                 display: flex;
@@ -1531,10 +1550,22 @@
             @for $i from 1 through 12 {
                 &-#{$i}{
                     .cly-vue-drawer__steps-view {
-                        width: #{$i*math.div(100%, 12)}
+                        @if $i == 12 {
+                            width: 100%;
+                          } 
+                        @else {
+                            width: #{$i*math.div(1348, 12) + 'px'}
+                          }
+                        
                     }
                     .cly-vue-drawer__sidecars-view {
-                        width: #{(100 - $i*math.div(100, 12)) + '%'}
+                        @if $i == 12 {
+                            width: 0%;
+                          } 
+                        @else {
+                            width: calc(100% - #{$i*math.div(1348, 12) + 'px'})
+                          }
+                        
                     }
                 }
             }
@@ -1577,6 +1608,7 @@
             color: #81868D;
             transition: color 1s;
             cursor: pointer;
+            width: 30px;
             &:hover {
                 color: #333;
                 transition: color 1s;

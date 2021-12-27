@@ -104,6 +104,9 @@
         },
         data: function() {
             return {
+                isFetchCohortsLoading: false,
+                isFetchEventsLoading: false,
+                isFetchLocationsLoading: false,
                 isLoading: false,
                 localizationOptions: [],
                 userPropertiesOptions: [],
@@ -846,11 +849,14 @@
             },
             fetchCohorts: function() {
                 var self = this;
+                this.isFetchCohortsLoading = true;
                 countlyPushNotification.service.fetchCohorts()
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
                     }).catch(function() {
                         self.setCohortOptions([]);
+                    }).finally(function() {
+                        self.isFetchCohortsLoading = false;
                     });
             },
             setLocationOptions: function(locations) {
@@ -858,23 +864,29 @@
             },
             fetchLocations: function() {
                 var self = this;
+                this.isFetchLocationsLoading = true;
                 countlyPushNotification.service.fetchLocations()
                     .then(function(locations) {
                         self.setLocationOptions(locations);
                     }).catch(function() {
                         self.setLocationOptions([]);
+                    }).finally(function() {
+                        self.isFetchLocationsLoading = false;
                     });
             },
             setEventOptions: function(events) {
                 this.eventOptions = events;
             },
-            fetchAllEvents: function() {
+            fetchEvents: function() {
                 var self = this;
+                this.isFetchEventsLoading = true;
                 countlyPushNotification.service.fetchEvents()
                     .then(function(events) {
                         self.setEventOptions(events);
                     }).catch(function() {
                         self.setEventOptions([]);
+                    }).finally(function() {
+                        self.isFetchEventsLoading = false;
                     });
             },
             setTotalAppUsers: function(totalAppUsers) {
@@ -929,7 +941,7 @@
         mounted: function() {
             this.fetchCohorts();
             this.fetchLocations();
-            this.fetchAllEvents();
+            this.fetchEvents();
             this.fetchNumberOfUsers();
         },
         components: {
