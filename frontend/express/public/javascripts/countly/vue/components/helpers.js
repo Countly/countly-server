@@ -784,7 +784,7 @@
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
                             '<div class="bu-is-flex">\n' +
                                 '<img :src="image" class="alert-image bu-mr-4 bu-my-1 bu-ml-1">\n' +
-                                '<slot><span class="alert-text bu-my-3" style="word-break:break-word">{{text}}</span></slot>\n' +
+                                '<slot><span class="alert-text bu-my-3" style="height:35px;overflow-y:hidden;">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="closable" style="margin-block:auto">\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-5" >\n' +
