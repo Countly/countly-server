@@ -46,6 +46,7 @@ class IncomingDataTrigger {
 
     /**
      * process pipeline feed, pick out matched record with rule
+     * @param {string} e - event type
      * @param {object} ob - trggered out from pipeline
      */
     async process(e, ob) {
