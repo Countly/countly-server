@@ -91,7 +91,7 @@
                 this.showDeleteDialog = false;
             },
             submitDeleteForm: function() {
-                this.$store.dispatch("countlyReports/deleteReport", this.deleteElement._id);
+                this.$store.dispatch("countlyReports/deleteReport", this.deleteElement);
                 this.showDeleteDialog = false;
             },
             updateStatus: function(scope) {

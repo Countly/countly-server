@@ -161,14 +161,15 @@
             refresh: function(context) {
                 context.dispatch("countlyReports/table/fetchAll", null, {root: true});
             },
-            deleteReport: function(context, reportId) {
+            deleteReport: function(context, report) {
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/reports/delete",
                     data: {
                         args: JSON.stringify({
-                            "_id": reportId
+                            "_id": report._id
                         }),
+                        app_id: countlyCommon.ACTIVE_APP_ID
                     },
                     dataType: "json",
                     success: function() {
@@ -277,6 +278,7 @@
                                 });
 
                                 var ret = "";
+
                                 if (data[i].report_type === "core") {
                                     for (var rowProp in data[i].metrics) {
                                         ret += jQuery.i18n.map["reports." + rowProp] + ", ";
@@ -292,11 +294,17 @@
                                 else if (!data[i].isValid) {
                                     ret = jQuery.i18n.prop("reports.not-valid");
                                 }
-                                else {
-                                    // var report = app.getReportsCallbacks()[data[i].report_type];
-                                    // if (report && report.tableData) {
-                                    //     ret = report.tableData(data[i]);
-                                    // }
+                             
+                                if (data[i].pluginEnabled && data[i].report_type === "dashboards") {
+                                    var dashboardId = data[i].dashboards;
+                                    var dashboard = {};
+                                    var dashboardsList = context.rootGetters["countlyDashboards/all"];
+                                    for (var i = 0; i < dashboardsList.length; i++) {
+                                        if (dashboardId === dashboardsList[i]._id) {
+                                            dashboard = dashboardsList[i];
+                                        }
+                                    }
+                                    ret = "Dashboard " + (dashboard.name || "");
                                 }
                                 data[i].dataColumn = ret;
 
