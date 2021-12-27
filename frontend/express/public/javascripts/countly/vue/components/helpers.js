@@ -849,7 +849,7 @@
     }));
 
     Vue.component("cly-empty-view", countlyBaseComponent.extend({
-        template: ' <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
+        template: ' <div class="bu-mt-5 bu-pt-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
                         <slot name="icon">\
                             <div class="bu-mt-6">\
                                 <img width="96" heigh="96" src="images/icons/empty-view-icon.svg"/>\
