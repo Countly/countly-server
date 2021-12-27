@@ -75,6 +75,15 @@ class Message extends Mongoable {
      */
     setData(data) {
         super.setData(data);
+
+        let db = require('../../../../../api/utils/common').db;
+
+        if (this._data._id && !db.isoid(this._data._id)) {
+            this._data._id = db.oid(this._data._id);
+        }
+        if (this._data.app && !db.isoid(this._data.app)) {
+            this._data.app = db.oid(this._data.app);
+        }
         if (!(this._data.filter instanceof Filter)) {
             this._data.filter = new Filter(this._data.filter);
         }
@@ -282,6 +291,15 @@ class Message extends Mongoable {
     }
 
     /**
+     * Search for cohort or event trigger
+     * 
+     * @returns {Trigger|undefined} plain trigger if message has it
+     */
+    triggerAuto() {
+        return this.triggerFind(t => t.kind === TriggerKind.Cohort || t.kind === TriggerKind.Event);
+    }
+
+    /**
      * Search for plain trigger
      * 
      * @returns {Trigger|undefined} plain trigger if message has it
@@ -381,7 +399,7 @@ class Message extends Mongoable {
      */
     static userFieldsFor(contents) {
         let keys = contents.map(content => Object.values(content.messagePers || {}).concat(Object.values(content.titlePers || {})).map(obj => obj.k).concat(content.extras || []).map(Message.decodeFieldKey)).flat();
-        if (this.contents.length > 1) {
+        if (contents.length > 1) {
             keys.push('la');
         }
         keys = keys.filter((k, i) => keys.indexOf(k) === i);
@@ -568,7 +586,7 @@ class Message extends Mongoable {
         let plain = this.triggerPlain();
         if (plain) {
             let date = plain.delayed ? plain.start.getTime() - DEFAULTS.schedule_ahead : Date.now();
-            await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id}).replace().once(date);
+            await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app}).replace().once(date);
         }
     }
 }

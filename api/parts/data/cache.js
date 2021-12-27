@@ -178,7 +178,12 @@ class CacheWorker {
             }
 
             if (o === OP.PURGE) {
-                store.write(k, null);
+                if (k) {
+                    store.write(k, null);
+                }
+                else { // purgeAll
+                    store.iterate(id => store.write(id, null));
+                }
             }
             else if (o === OP.READ) {
                 store.write(k, d);
@@ -351,6 +356,26 @@ class CacheWorker {
     }
 
     /**
+     * Remove from cache all records for a given group.
+     *
+     * @param  {String} group  group key
+     */
+    async purgeAll(group) {
+        await this.start();
+
+        if (!group) {
+            throw new Error('Where are my args?!');
+        }
+        else if (!this.data.read(group)) {
+            throw new Error('No such cache group');
+        }
+        log.d(`purging ${group}`);
+        await this.ipc.request({o: OP.PURGE, g: group});
+        let store = this.data.read(group);
+        store.iterate(id => store.write(id, null));
+    }
+
+    /**
      * Read a record from cache:
      * - from local copy if exists;
      * - send a read request to master otherwise.
@@ -416,6 +441,7 @@ class CacheWorker {
             update: this.update.bind(this, group),
             remove: this.remove.bind(this, group),
             purge: this.purge.bind(this, group),
+            purgeAll: this.purgeAll.bind(this, group),
             has: this.has.bind(this, group),
             iterate: f => {
                 let g = this.data.read(group);
@@ -458,6 +484,9 @@ class CacheMaster {
                 log.w(`No store for group ${doc.g}`);
                 return;
             }
+            if (doc.o === OP.PURGE && !doc.k) { // purgeAll
+                store.iterate(id => store.write(id, null));
+            }
             if (doc.o === OP.PURGE || doc.o === OP.REMOVE) {
                 store.write(doc.k, null);
             }
@@ -495,7 +524,12 @@ class CacheMaster {
             }
 
             if (o === OP.PURGE) {
-                return this.purge(g, k, from);
+                if (k) {
+                    return this.purge(g, k, from);
+                }
+                else {
+                    return this.purgeAll(g, from);
+                }
             }
             else if (o === OP.READ) {
                 return this.read(g, k, from);
@@ -708,6 +742,27 @@ class CacheMaster {
     }
 
     /**
+     * Remove from cache all record for given group.
+     *
+     * @param  {String} group  group key
+     * @param  {int} from      originating pid if any
+     * @return {Boolean}       true if removed
+     */
+    async purgeAll(group, from = 0) {
+        if (!group) {
+            throw new Error('Where are my args?!');
+        }
+        log.d(`purging ${group}`);
+
+        let grp = this.data.read(group);
+        grp.iterate(k => grp.write(k, null));
+        this.ipc.send(-from, {o: OP.PURGE, g: group});
+        return this.col.put(OP.PURGE, group).then(() => {
+            return true;
+        });
+    }
+
+    /**
      * Read a record from cache:
      * - from local copy if exists;
      * - send a read request to master otherwise.
@@ -780,6 +835,7 @@ class CacheMaster {
             update: this.update.bind(this, group),
             remove: this.remove.bind(this, group),
             purge: this.purge.bind(this, group),
+            purgeAll: this.purgeAll.bind(this, group),
             has: this.has.bind(this, group),
             iterate: f => {
                 let g = this.data.read(group);

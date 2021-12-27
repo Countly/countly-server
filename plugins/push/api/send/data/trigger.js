@@ -643,7 +643,7 @@ class CohortTrigger extends AutoTrigger {
 /**
  * API (transactional) message trigger
  */
-class APITrigger extends Trigger {
+class APITrigger extends AutoTrigger {
     /**
      * Constructor
      * 

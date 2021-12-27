@@ -1,5 +1,6 @@
 const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, MEDIA_MIME_ALL } = require('./send'),
     { DEFAULTS } = require('./send/data/const'),
+    plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message');
 
@@ -78,8 +79,14 @@ async function validate(args, draft = false) {
             throw new ValidationError('Message platforms cannot be changed');
         }
 
-        // info, state, status & result cannot be updated by API
+        // only 4 props of info can updated
+        let neo = msg.neo;
         msg.info = existing.info;
+        msg.info.title = neo.title;
+        msg.info.silent = neo.silent;
+        msg.info.scheduled = neo.scheduled;
+        msg.info.locales = neo.locales;
+        // state, status & result cannot be updated by API except for special cases handled in .create / .update
         msg.state = existing.state;
         msg.status = existing.status;
         msg.result = existing.result;
@@ -95,13 +102,19 @@ module.exports.create = async params => {
     msg.info.createdBy = params.member._id;
     msg.info.createdByName = params.member.full_name;
 
-    if (params.qstring.status === Status.Draft) {
+    if (params.qstring.status === Status.Draft || params.qstring.status === Status.Inactive) {
+        msg.status = params.qstring.status;
+        msg.state = State.Inactive;
         await msg.save();
     }
     else if (msg.triggerAutoOrApi()) {
         msg.state = State.Streamable;
         msg.status = Status.Scheduled;
         await msg.save();
+        if (msg.triggerPlain()) {
+            await msg.schedule();
+        }
+        await plugins.getPluginsApis().push.cache.write(msg.id, msg.json);
     }
     else if (msg.triggerPlain()) {
         msg.state = State.Created;
@@ -148,9 +161,12 @@ module.exports.update = async params => {
 
     await msg.save();
 
-    // if (msg.triggerPlain()) {
-    //     await msg.schedule();
-    // }
+    if (msg.triggerAutoOrApi()) {
+        await plugins.getPluginsApis().push.cache.write(msg.id, msg.json);
+    }
+    if (msg.triggerPlain()) {
+        await msg.schedule();
+    }
 
     common.returnOutput(params, msg.json);
 };
@@ -160,7 +176,7 @@ module.exports.remove = async params => {
         _id: {type: 'ObjectID', required: true},
     }, true);
 
-    let msg = Message.findOne({_id: data._id, state: {$bitsAllClear: State.Deleted}});
+    let msg = await Message.findOne({_id: data._id, state: {$bitsAllClear: State.Deleted}});
 
     if (msg.is(State.Streaming)) {
         // TODO: stop the sending via cache, clear the queue
@@ -171,6 +187,9 @@ module.exports.remove = async params => {
 
     let ok = await msg.updateAtomically({_id: msg._id, state: msg.state}, {$bit: {state: {or: State.Deleted}}});
     if (ok) {
+        if (msg.triggerAutoOrApi()) {
+            await plugins.getPluginsApis().push.cache.remove(msg.id);
+        }
         common.returnOutput(params, {});
     }
     else {
@@ -194,6 +213,10 @@ module.exports.toggle = async params => {
     let msg = await Message.findOne(data._id);
     if (msg) {
         let update;
+
+        if (!msg.triggerAuto()) {
+            throw new ValidationError(`The message doesn't have Cohort or Event trigger`);
+        }
 
         if (msg.is(State.Created) || msg.is(State.Done)) {
             update = {
@@ -223,6 +246,7 @@ module.exports.toggle = async params => {
 
         msg = await msg.updateAtomically({_id: msg._id, state: msg.state}, update);
         if (msg) {
+            await plugins.getPluginsApis().push.cache.write(msg.id, msg.json);
             common.returnOutput(params, msg.json);
         }
         else {

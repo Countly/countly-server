@@ -71,13 +71,14 @@ plugins.register('/cache/init', function() {
             log.d('cache: initialized with %d msgs: %j', msgs.length, msgs.map(m => m._id));
             return msgs.map(m => [m.id, m]);
         },
+        Cls: ['plugins/push/api/send', 'Message'],
         read: k => {
             log.d('cache: read', k);
             return Message.findOne(k);
         },
         write: async(k, data) => {
             log.d('cache: writing', k, data);
-            if (!(data instanceof Message)) {
+            if (data && !(data instanceof Message)) {
                 data._id = data._id || k;
                 data = new Message(data);
             }

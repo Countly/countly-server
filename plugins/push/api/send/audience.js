@@ -42,7 +42,12 @@ const common = require('../../../../api/utils/common'),
         else {
             return require('../../../pluginManager').getPluginsApis().geo;
         }
-    };
+    },
+
+    /**
+     * Cache of app objects for quick evented/cohorted/tx message mapping
+     */
+    APPS = {};
 
 /**
  * Class encapsulating user selection / queue / message scheduling logic
@@ -68,9 +73,14 @@ class Audience {
      */
     async getApp() {
         if (!this.app) {
-            this.app = await common.db.collection('apps').findOne(this.message.app);
-            if (!this.app) {
-                throw new PushError(`App ${this.message.app} not found`, ERROR.EXCEPTION);
+            if (APPS[this.message.app]) {
+                this.app = APPS[this.message.app];
+            }
+            else {
+                this.app = APPS[this.message.app] = await common.db.collection('apps').findOne({_id: this.message.app});
+                if (!this.app) {
+                    throw new PushError(`App ${this.message.app} not found`, ERROR.EXCEPTION);
+                }
             }
         }
         return this.app;
@@ -117,13 +127,15 @@ class Audience {
         let steps = [];
 
         // We have a token
-        this.addFields(steps);
+        await this.addFields(steps);
 
         // Add message filter steps
-        await this.addFilter(steps, this.message.filter);
+        if (this.message.filter) {
+            await this.addFilter(steps, this.message.filter);
+        }
 
         // Decrease amount of data we process here
-        this.addProjection(steps, project);
+        await this.addProjection(steps, project);
 
         this.log.d('steps: %j', steps);
 
@@ -370,6 +382,7 @@ class Mapper {
                 ret.pr[k] = user[k];
             }
         });
+        common.log('push').d('mapped push', ret);
         return ret;
     }
 }
@@ -463,18 +476,14 @@ class PusherPopper {
         this.audience = audience;
         this.trigger = trigger;
         this.mappers = {};
-        this.audience.message.platforms.map(p => {
-            return Object.values(PLATFORM[p].FIELDS).map(f => {
-                if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
-                    this.mappers[p + f] = new PlainApiMapper(audience.app, audience.message, trigger, p, f);
-                }
-                else {
-                    this.mappers[p + f] = new CohortsEventsMapper(audience.app, audience.message, trigger, p, f);
-                }
-            });
-        });
-        // this.date = {
-        //     [Trigger]: this.datathis.audience.message.triggerFind(t => t.kind === TriggerKind.API || t.kind === TriggerKind.Plain) ? this.datePlainAPI.bind(this) : this.dateCohortsEvents.bind(this);
+        this.audience.message.platforms.forEach(p => Object.values(PLATFORM[p].FIELDS).forEach(f => {
+            if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
+                this.mappers[p + f] = new PlainApiMapper(audience.app, audience.message, trigger, p, f);
+            }
+            else {
+                this.mappers[p + f] = new CohortsEventsMapper(audience.app, audience.message, trigger, p, f);
+            }
+        }));
     }
 
     /**
@@ -486,20 +495,23 @@ class PusherPopper {
         let steps = [];
 
         // We have a token
-        this.audience.addFields(steps);
+        await this.audience.addFields(steps);
 
         // Add filter steps
         if (this.uids) {
             steps.push({$match: {uid: {$in: this.uids}}});
         }
-        if (this.filter) {
-            await this.setFilter(steps, this.filter);
+        else if (this.filter) {
+            await this.audience.addFilter(steps, this.filter);
+        }
+        else if (this.audience.message.filter) {
+            await this.audience.addFilter(steps, this.audience.message.filter);
         }
 
         let userFields = Message.userFieldsFor(this.audience.message.contents.concat(this.contents || []));
 
         // Decrease amount of data we process here
-        this.audience.addProjection(steps, userFields);
+        await this.audience.addProjection(steps, userFields);
 
         // Lookup for tokens & msgs
         steps.push({
@@ -511,7 +523,7 @@ class PusherPopper {
             }
         });
 
-        this.log.d('steps: %j', steps);
+        this.audience.log.d('steps: %j', steps);
 
         return steps;
     }
@@ -588,13 +600,13 @@ class Pusher extends PusherPopper {
      */
     async run() {
         this.audience.log.f('d', log => log('pushing ' + (this.uids ? '%d uids' : 'filter %j') + ' into %s date %s variables %j', this.uids ? this.uids.length : this.filter, this.audience.message._id, this.date ? this.date : '', this.variables ? this.variables : '-')) ||
-            this.audience.log.i('pushing ' + (this.uids ? '%d uids' : 'filter %j') + ' into %s %s %j', this.uids ? this.uids.length : this.filter, this.audience.message._id);
+            this.audience.log.i('pushing ' + (this.uids ? '%d uids' : 'filter %j') + ' into %s', this.uids ? this.uids.length : this.filter, this.audience.message._id);
 
         let batchSize = DEFAULTS.queue_insert_batch,
             steps = await this.steps(),
             stream = common.db.collection(`app_users${this.audience.app._id}`).aggregate(steps).stream(),
             batch = Push.batchInsert(batchSize),
-            start = this.start || this.audience.message.triggerPlain().start, // plain trigger is supposed to be set here as SchedulePusher is only used for plain triggers
+            start = this.start || this.trigger.start,
             next = null;
 
         for await (let user of stream) {
@@ -615,15 +627,15 @@ class Pusher extends PusherPopper {
                 }
                 if (batch.pushSync(note)) {
                     this.audience.log.d('inserting batch of %d, %d records total', batch.length, batch.total);
-                    await batch.flush();
+                    await batch.flush([11000]);
                 }
             }
         }
 
         this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
-        await batch.flush();
+        await batch.flush([11000]);
 
-        return {next: next && next * 1000 || next, total: batch.total};
+        return {next: next, total: batch.total};
     }
 }
 

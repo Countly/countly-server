@@ -174,6 +174,12 @@ class Mongoable extends Validatable {
      * @returns {This|null} instance of this class if the record is found in database, null otherwise
      */
     static async findOne(query) {
+        if (typeof query === 'string') {
+            query = {_id: require('./common').db.ObjectID(query)};
+        }
+        else if (require('./common').db.isoid(query)) {
+            query = {_id: query};
+        }
         let data = await require('./common').db.collection(this.collection).findOne(query);
         if (data) {
             return new this(data);
@@ -189,7 +195,7 @@ class Mongoable extends Validatable {
      * @returns {This|boolean} this instance of this class if the record is found in database, false otherwise
      */
     async refresh() {
-        let data = await require('./common').db.collection(this.collection).findOne({_id: this._id});
+        let data = await require('./common').db.collection(this.constructor.collection).findOne({_id: this._id});
         if (data) {
             this.setData(data);
             return this;
@@ -336,7 +342,7 @@ class Mongoable extends Validatable {
                 total++;
                 buffer.push(record);
                 if (buffer.length >= batch) {
-                    this.flush();
+                    await this.flush();
                 }
             },
 
@@ -354,11 +360,28 @@ class Mongoable extends Validatable {
 
             /**
              * Flush the buffer by inserting documents into collection
+             * 
+             * @param {number[]} ignore_codes error codes to ignore
              */
-            async flush() {
+            async flush(ignore_codes = []) {
                 if (buffer.length) {
-                    await collection.insertMany(buffer);
-                    buffer = [];
+                    try {
+                        let res = await collection.insertMany(buffer);
+                        total -= (buffer.length - res.insertedCount);
+                        return res.insertedIds;
+                    }
+                    catch (e) {
+                        if (e.result && e.result.result && e.result.result.insertedIds) {
+                            total -= (buffer.length - e.result.insertedCount);
+                        }
+                        if (!e.code || ignore_codes.indexOf(e.code) === -1) {
+                            throw e;
+                        }
+                        else {
+                            buffer = [];
+                            return e.result.result.insertedIds;
+                        }
+                    }
                 }
             }
         };
