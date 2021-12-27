@@ -160,7 +160,7 @@
                     url: countlyCommon.API_PARTS.data.w + "/alert/save",
                     data: {
                         "alert_config": JSON.stringify(alertConfig),
-                        "app_id": countlyCommon.ACTIVE_APP_ID,
+                        "app_id": alertConfig.selectedApps[0],
                     },
                     dataType: "json",
                     success: function() {
@@ -170,12 +170,13 @@
                 }).then(function() {
                 });
             },
-            deleteAlert: function(context, alertID) {
+            deleteAlert: function(context, options) {
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/alert/delete",
                     data: {
-                        "alertID": alertID,
+                        "alertID": options.alertID,
+                        "app_id": options.appid,
                     },
                     dataType: "json",
                     success: function() {
@@ -183,13 +184,13 @@
                     },
                 });
             },
-            deleteOnlineUsersAlert: function(context, alertID) {
+            deleteOnlineUsersAlert: function(context, options) {
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/delete",
                     data: {
-                        "app_id": countlyCommon.ACTIVE_APP_ID,
-                        "alertId": alertID,
+                        "app_id": options.appid,
+                        "alertId": options.alertID,
                     },
                     dataType: "json",
                     success: function() {
@@ -265,12 +266,12 @@
                         type: "post",
                         url: countlyCommon.API_PARTS.data.w + "/alert/status",
                         data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
                             "status": JSON.stringify(status),
                         },
                         dataType: "json",
                         success: function() {
-                            CountlyHelpers.notify({message: jQuery.i18n.map['alerts.update-status-success']});
-                            context.dispatch("countlyAlerts/table/fetchAll");
+                            // CountlyHelpers.notify({message: jQuery.i18n.map['alerts.update-status-success']});
                         }
                     });
                 },
@@ -279,12 +280,12 @@
                         type: "post",
                         url: countlyCommon.API_PARTS.data.w + "/concurrent_alert/status",
                         data: {
+                            app_id: countlyCommon.ACTIVE_APP_ID,
                             "status": JSON.stringify(status),
                         },
                         dataType: "json",
                         success: function() {
                             CountlyHelpers.notify({message: jQuery.i18n.map['alerts.update-status-success']});
-                            context.dispatch("countlyAlerts/table/fetchAll");
                         }
                     });
                 },

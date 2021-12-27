@@ -24,7 +24,7 @@
             <cly-chart-generic :height="600"  :option="timesOfDayOptions" :show-zoom="false" :show-toggle="false" v-loading="isLoading"></cly-chart-generic>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="timesOfDayRows" :resizable="false" v-loading="isLoading">
+            <cly-datatable-n  :rows="timesOfDayRows" :resizable="false" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column fixed width="240" sortable="custom" prop="period" :label="i18n('times-of-day.table-hours-period')">
                     </el-table-column>

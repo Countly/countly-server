@@ -81,12 +81,12 @@
                 diff.forEach(function(item) {
                     status[item.key] = item.newValue;
                 });
-                this.$store.dispatch("countlyHooks/table/updateStatus", status);
-
-                scope.unpatch();
+                var self = this;
+                this.$store.dispatch("countlyHooks/table/updateStatus", status).then(function() {
+                    return self.$store.dispatch("countlyHooks/table/fetchAll");
+                });
             },
             refresh: function() {
-            // this.$store.dispatch("countlyHooks/table/fetchAll");
             },
             onRowClick: function(params, target) {
                 if (target.id === 'el-table_1_column_1') {

@@ -20,7 +20,10 @@
             },
             labels: function() {
                 return this.$store.getters["countlyAllEvents/labels"];
-            }
+            },
+            isTableLoading: function() {
+                return this.$store.getters["countlyAllEvents/isTableLoading"];
+            },
         },
         methods: {
             isColumnAllowed: function(column) {
@@ -81,9 +84,15 @@
                     return this.$store.getters["countlyAllEvents/selectedDatePeriod"];
                 },
                 set: function(value) {
+                    var self = this;
                     this.$store.dispatch('countlyAllEvents/fetchSelectedDatePeriod', value);
+                    this.$store.dispatch('countlyAllEvents/setTableLoading', true);
+                    this.$store.dispatch('countlyAllEvents/setChartLoading', true);
                     countlyCommon.setPeriod(value);
-                    this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+                    this.$store.dispatch('countlyAllEvents/fetchAllEventsData').then(function() {
+                        self.$store.dispatch('countlyAllEvents/setTableLoading', false);
+                        self.$store.dispatch('countlyAllEvents/setChartLoading', false);
+                    });
                 }
             },
             selectedEventFromSearchBar: {
@@ -91,9 +100,16 @@
                     return this.$store.getters["countlyAllEvents/selectedEventName"];
                 },
                 set: function(value) {
+                    var self = this;
+                    this.$store.dispatch('countlyAllEvents/setTableLoading', true);
+                    this.$store.dispatch('countlyAllEvents/setChartLoading', true);
+
                     this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', value);
                     this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", "segment");
-                    this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+                    this.$store.dispatch('countlyAllEvents/fetchAllEventsData').then(function() {
+                        self.$store.dispatch('countlyAllEvents/setTableLoading', false);
+                        self.$store.dispatch('countlyAllEvents/setChartLoading', false);
+                    });
                 }
             },
             selectedSegment: {
@@ -101,13 +117,21 @@
                     return this.$store.getters["countlyAllEvents/currentActiveSegmentation"];
                 },
                 set: function(selectedItem) {
+                    var self = this;
+                    this.$store.dispatch('countlyAllEvents/setChartLoading', true);
+
+                    this.$store.dispatch('countlyAllEvents/setTableLoading', true);
+
                     if (selectedItem === "segment") {
                         this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", "segment");
                     }
                     else {
                         this.$store.dispatch("countlyAllEvents/fetchCurrentActiveSegmentation", selectedItem);
                     }
-                    this.$store.dispatch("countlyAllEvents/fetchSelectedEventsData");
+                    this.$store.dispatch("countlyAllEvents/fetchSelectedEventsData").then(function() {
+                        self.$store.dispatch('countlyAllEvents/setTableLoading', false);
+                        self.$store.dispatch('countlyAllEvents/setChartLoading', false);
+                    });
                     this.$store.dispatch("countlyAllEvents/setSegmentDescription");
                 }
             },
@@ -182,6 +206,9 @@
             },
             limitAlerts: function() {
                 return this.$store.getters["countlyAllEvents/limitAlerts"];
+            },
+            isChartLoading: function() {
+                return this.$store.getters["countlyAllEvents/isChartLoading"];
             }
 
         },
@@ -190,6 +217,8 @@
         },
         beforeCreate: function() {
             var self = this;
+            this.$store.dispatch('countlyAllEvents/setTableLoading', true);
+            this.$store.dispatch('countlyAllEvents/setChartLoading', true);
             var currEvent = (this.$route.params && this.$route.params.eventKey) || localStorage.getItem("eventKey");
             if (currEvent) {
                 this.$store.dispatch('countlyAllEvents/fetchSelectedEventName', currEvent);
@@ -197,11 +226,17 @@
             if (countlyGlobal.plugins.indexOf("drill") > -1 && countlyGlobal.plugins.indexOf("data-manager") > -1) {
                 this.$store.dispatch('countlyAllEvents/fetchSegments');
                 this.$store.dispatch('countlyAllEvents/fetchCategories').then(function() {
-                    self.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+                    self.$store.dispatch('countlyAllEvents/fetchAllEventsData').then(function() {
+                        self.$store.dispatch('countlyAllEvents/setTableLoading', false);
+                        self.$store.dispatch('countlyAllEvents/setChartLoading', false);
+                    });
                 });
             }
             else {
-                this.$store.dispatch('countlyAllEvents/fetchAllEventsData');
+                this.$store.dispatch('countlyAllEvents/fetchAllEventsData').then(function() {
+                    self.$store.dispatch('countlyAllEvents/setTableLoading', false);
+                    self.$store.dispatch('countlyAllEvents/setChartLoading', false);
+                });
             }
 
         },
