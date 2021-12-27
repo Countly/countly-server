@@ -294,14 +294,14 @@
                                 else if (!data[i].isValid) {
                                     ret = jQuery.i18n.prop("reports.not-valid");
                                 }
-                             
+
                                 if (data[i].pluginEnabled && data[i].report_type === "dashboards") {
                                     var dashboardId = data[i].dashboards;
                                     var dashboard = {};
                                     var dashboardsList = context.rootGetters["countlyDashboards/all"];
-                                    for (var i = 0; i < dashboardsList.length; i++) {
-                                        if (dashboardId === dashboardsList[i]._id) {
-                                            dashboard = dashboardsList[i];
+                                    for (var idx = 0; i < dashboardsList.length; idx++) {
+                                        if (dashboardId === dashboardsList[idx]._id) {
+                                            dashboard = dashboardsList[idx];
                                         }
                                     }
                                     ret = "Dashboard " + (dashboard.name || "");
