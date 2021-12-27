@@ -148,6 +148,7 @@
                 isAddUserPropertyPopoverOpen: false,
                 isUsersTimezoneSet: false,
                 isEndDateSet: false,
+                isLocationSet: false,
                 multipleLocalizations: false,
                 urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
                 addUserPropertyPopoverPosition: {
@@ -233,17 +234,6 @@
             areCohortsAndLocationsRequired: function() {
                 return !this.pushNotificationUnderEdit.cohorts.length && !this.pushNotificationUnderEdit.locations.length;
             },
-            areEventsAndLocationsRequired: function() {
-                return !this.pushNotificationUnderEdit.automatic.events.length && !this.pushNotificationUnderEdit.locations.length;
-            },
-            areLocationsRequired: function() {
-                if (this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
-                    return this.areEventsAndLocationsRequired;
-                }
-                else {
-                    return this.areCohortsAndLocationsRequired;
-                }
-            },
             hasAllPlatformMediaOnly: function() {
                 return (!this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL &&
                 !this.pushNotificationUnderEdit.settings[this.PlatformEnum.ANDROID].mediaURL) ||
@@ -302,11 +292,14 @@
             },
             previewLocations: function() {
                 var self = this;
-                return this.locationOptions.filter(function(location) {
-                    return self.pushNotificationUnderEdit.locations.some(function(selectedLocationId) {
-                        return location._id === selectedLocationId;
-                    });
-                });
+                return this.locationOptions.reduce(function(allLocations, currentLocation) {
+                    if (self.pushNotificationUnderEdit.locations.some(function(selectedLocationId) {
+                        return currentLocation._id === selectedLocationId;
+                    })) {
+                        allLocations.push(currentLocation.name);
+                    }
+                    return allLocations;
+                }, []);
             }
         },
         methods: {
@@ -420,10 +413,12 @@
                 var self = this;
                 this.setIsLoading(true);
                 return new Promise(function(resolve) {
+                    var options = {};
+                    options.isLocationSet = self.isLocationSet;
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
                     self.addQueryFilterIfFound(preparePushNotificationModel);
-                    countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
+                    countlyPushNotification.service.prepare(preparePushNotificationModel, options).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
                         if (response._id) {
                             self.setId(response._id);
@@ -450,6 +445,7 @@
                 options.settings = this.settings;
                 options.isUsersTimezoneSet = this.isUsersTimezoneSet;
                 options.isEndDateSet = this.isEndDateSet;
+                options.isLocationSet = this.isLocationSet;
                 return options;
             },
             save: function(options) {
@@ -572,6 +568,7 @@
                 this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
                 this.isUsersTimezoneSet = false;
                 this.isEndDateSet = false;
+                this.isLocationSet = false;
                 this.isConfirmed = false;
                 this.multipleLocalizations = false;
                 this.expandedPlatformSettings = [];
