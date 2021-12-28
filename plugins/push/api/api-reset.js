@@ -1,4 +1,5 @@
 const common = require('../../../api/utils/common'),
+    plugins = require('../../pluginManager'),
     { Creds } = require('./send');
 
 /**
@@ -9,8 +10,10 @@ const common = require('../../../api/utils/common'),
 async function reset(ob) {
     let aid = common.db.oid(ob.appId);
     await Promise.all([
+        plugins.getPluginsApis().push.cache.purgeAll(),
         common.db.collection('messages').deleteMany({app: aid}).catch(() => {}),
         common.db.collection('push').deleteMany({a: aid}).catch(() => {}),
+        common.db.collection('jobs').deleteMany({name: 'push:schedule', 'data.aid': aid}).catch(() => {}),
         common.db.collection(`push_${aid}`).drop().catch(() => {}),
         common.db.collection('apps').findOne({a: aid}).catch(() => {}).then(app => {
             if (app && app.plugins && app.plugins.push) {
@@ -34,9 +37,11 @@ async function reset(ob) {
 async function clear(ob) {
     let aid = common.db.oid(ob.appId);
     await Promise.all([
+        plugins.getPluginsApis().push.cache.purgeAll(),
         common.db.collection('messages').deleteMany({app: aid}).catch(() => {}),
         common.db.collection(`push_${aid}`).drop().catch(() => {}),
         common.db.collection('push').deleteMany({a: aid}).catch(() => {}),
+        common.db.collection('jobs').deleteMany({name: 'push:schedule', 'data.aid': aid}).catch(() => {}),
     ]);
 }
 
