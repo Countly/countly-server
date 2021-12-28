@@ -129,6 +129,7 @@
                 TriggerNotMetEnum: countlyPushNotification.service.TriggerNotMetEnum,
                 MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
                 UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
+                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum,
                 messageTypeFilterOptions: messageTypeFilterOptions,
                 startDateOptions: countlyPushNotification.service.startDateOptions,
                 targetingOptions: countlyPushNotification.service.targetingOptions,
@@ -726,8 +727,8 @@
             removeUserPropertyInHTML: function(id, container) {
                 this.$refs[container].removeUserProperty(id);
             },
-            setUserPropertyInHTML: function(id, container, previewValue, value) {
-                this.$refs[container].setUserPropertyValue(id, previewValue, value);
+            setUserPropertyInHTML: function(id, container, previewValue, value, type) {
+                this.$refs[container].setUserPropertyValue(id, previewValue, value, type);
             },
             setUserPropertyFallbackInHTML: function(id, container, previewValue, fallback) {
                 this.$refs[container].setUserPropertyFallbackValue(id, previewValue, fallback);
@@ -742,6 +743,7 @@
                     this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], propertyIndex, {
                         id: propertyIndex,
                         value: "",
+                        type: this.UserPropertyTypeEnum.USER,
                         label: "Select property|",
                         fallback: "",
                         isUppercase: false
@@ -763,11 +765,26 @@
                 var container = payload.container;
                 var value = payload.value;
                 var label = payload.label;
+                var type = payload.type;
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value = value;
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].label = label;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].type = type;
                 var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback;
                 var previewValue = label + "|" + currentFallbackValue;
-                this.setUserPropertyInHTML(id, container, previewValue, value);
+                this.setUserPropertyInHTML(id, container, previewValue, value, type);
+            },
+            onInputUserProperty: function(payload) {
+                var id = payload.id;
+                var container = payload.container;
+                var value = payload.value;
+                var label = payload.value;
+                var type = this.UserPropertyTypeEnum.API;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value = value;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].label = label;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].type = type;
+                var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback;
+                var previewValue = "{" + value + "}|" + currentFallbackValue;
+                this.setUserPropertyInHTML(id, container, previewValue, value, type);
             },
             onInputFallbackUserProperty: function(payload) {
                 var id = payload.id;
