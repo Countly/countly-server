@@ -266,24 +266,32 @@
     * Display dashboard notification using Amaran JS library
     * @param {object} msg - notification message object
     * @param {string=} msg.title - title of the notification
+    * @deprecated 
     * @param {string=} msg.message - main notification text
     * @param {string=} msg.info - some additional information to display in notification
+    * @deprecated 
     * @param {number=} [msg.delay=10000] - delay time in miliseconds before displaying notification
+    * @deprecated 
     * @param {string=} [msg.type=ok] - message type, accepted values ok, error and warning
     * @param {string=} [msg.position=top right] - message position
+    * @deprecated 
     * @param {string=} [msg.sticky=false] - should message stick until closed
     * @param {string=} [msg.clearAll=false] - clear all previous notifications upon showing this one
+    * @deprecated 
     * @param {string=} [msg.closeOnClick=false] - should notification be automatically closed when clicked on
+    * @deprecated 
     * @param {function=} msg.onClick - on click listener
+    * @deprecated 
     * @example
     * CountlyHelpers.notify({
-    *    title: "This is title",
     *    message: "Main message text",
-    *    info: "Additional info"
     * });
     */
     CountlyHelpers.notify = function(msg) {
-        var iconToUse;
+        var payload = {};
+        payload.text = msg.message;
+        payload.autoHide = !msg.sticky;
+        var colorToUse;
 
         if (countlyGlobal.ssr) {
             return;
@@ -291,43 +299,24 @@
 
         switch (msg.type) {
         case "error":
-            iconToUse = "ion-close-circled";
+            colorToUse = "dark-destructive";
             break;
         case "warning":
-            iconToUse = "ion-alert-circled";
+            colorToUse = "dark-warning";
             break;
         case "yellow":
-        case "blue":
-        case "purple":
-            iconToUse = "ion-record";
+            colorToUse = "light-warning";
             break;
+        case "blue":
+            colorToUse = "light-informational";
+            break;
+        case "purple":
         default:
-            iconToUse = "ion-checkmark-circled";
+            colorToUse = "light-successful";
             break;
         }
-
-        $.titleAlert((msg.title || msg.message || msg.info || "Notification"), {
-            requireBlur: true,
-            stopOnFocus: true,
-            duration: (msg.delay || 10000),
-            interval: 1000
-        });
-        $.amaran({
-            content: {
-                title: msg.title || "Notification",
-                message: msg.message || "",
-                info: msg.info || "",
-                icon: iconToUse
-            },
-            theme: 'awesome ' + (msg.type || "ok"),
-            position: msg.position || 'top right',
-            delay: msg.delay || 10000,
-            sticky: msg.sticky || false,
-            clearAll: msg.clearAll || false,
-            closeButton: true,
-            closeOnClick: (msg.closeOnClick === false) ? false : true,
-            onClick: msg.onClick || null
-        });
+        payload.color = colorToUse;
+        countlyCommon.dispatchNotificationToast(payload);
     };
 
     /**

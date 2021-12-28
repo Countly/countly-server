@@ -1,4 +1,4 @@
-/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS*/
+/*global store, Handlebars, CountlyHelpers, countlyGlobal, _, Gauge, d3, moment, countlyTotalUsers, jQuery, filterXSS, Uint32Array*/
 (function(window, $) {
     /**
      * Object with common functions to be used for multiple purposes
@@ -203,6 +203,31 @@
                 },
                 success: function() { }
             });
+        };
+
+        /**
+         * Adds notification toast to the list.
+         * @param {*} payload notification toast
+         *  payload.color: color of the notification toast
+         *  payload.text: text of the notification toast
+         */
+        countlyCommon.dispatchNotificationToast = function(payload) {
+            if (window.countlyVue && window.countlyVue.vuex) {
+                var currentStore = window.countlyVue.vuex.getGlobalStore();
+                if (currentStore) {
+                    currentStore.dispatch('countlyCommon/onAddNotificationToast', payload);
+                }
+            }
+        };
+
+        /**
+         * Generates unique id string using unsigned integer array.
+         * @returns {string} unique id
+         */
+        countlyCommon.generateId = function() {
+            var crypto = window.crypto || window.msCrypto;
+            var uint32 = crypto.getRandomValues(new Uint32Array(1))[0];
+            return uint32.toString(16);
         };
 
         /**
