@@ -1426,7 +1426,7 @@
             mapTransactionalTrigger: function(model) {
                 return [{kind: 'api', start: model.delivery.startDate}];
             },
-            mapFilters: function(model) {
+            mapFilters: function(model, options) {
                 var result = {};
                 if (model.user) {
                     result.user = model.user;
@@ -1434,7 +1434,10 @@
                 if (model.cohorts.length) {
                     result.cohorts = model.cohorts;
                 }
-                if (model.locations.length) {
+                if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
+                    result.geos = model.locations;
+                }
+                if (model.type === TypeEnum.ONE_TIME && model.locations.length) {
                     result.geos = model.locations;
                 }
                 if (model.drill) {
@@ -1510,7 +1513,7 @@
                     contentsDto.push(iosSettingsDto);
                 }
                 resultDto.contents = contentsDto;
-                var filtersDto = this.mapFilters(pushNotificationModel);
+                var filtersDto = this.mapFilters(pushNotificationModel, options);
                 if (filtersDto) {
                     resultDto.filter = filtersDto;
                 }
@@ -1817,14 +1820,14 @@
                 return Promise.resolve([]);
             });
         },
-        prepare: function(pushNotificationModel) {
+        prepare: function(pushNotificationModel, options) {
             return new Promise(function(resolve, reject) {
                 var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
                 var data = {
                     app: countlyCommon.ACTIVE_APP_ID,
                     platforms: platformsDto,
                 };
-                var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel);
+                var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel, options);
                 if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel) && filtersDto) {
                     data.filter = filtersDto;
                 }
