@@ -1,0 +1,10 @@
+.notification-toasts {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+
+    &__item {
+        margin-top: 12px;
+        width: 288px;
+    }
+}

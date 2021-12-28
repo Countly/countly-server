@@ -224,3 +224,19 @@
         }
     }
 }
+
+.el-input-number {
+
+    &.is-slim .el-input__inner {
+        padding-left: 5px;
+        padding-right: 26px;
+    }
+
+    &.is-slim {
+        &.el-input-number--small .el-input-number__decrease, 
+        &.el-input-number--small .el-input-number__increase {
+            width: 22px;
+            font-size: 14px;
+        }
+    }
+}
