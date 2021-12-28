@@ -56,7 +56,6 @@
 
                     delete data.operation;
                     delete data.triggerEffectColumn;
-                    delete data.nameDescColumn;
                     delete data.triggerEffectDom;
                     delete data.error_logs;
                     this.$parent.$parent.openDrawer("home", data);
@@ -88,10 +87,7 @@
             },
             refresh: function() {
             },
-            onRowClick: function(params, target) {
-                if (target.id === 'el-table_1_column_1') {
-                    return;
-                }
+            onRowClick: function(params) {
                 app.navigate("/manage/hooks/" + params._id, true);
             },
         }
@@ -829,7 +825,6 @@
                     var data = Object.assign({}, scope);
                     delete data.operation;
                     delete data.triggerEffectColumn;
-                    delete data.nameDescColumn;
                     delete data.triggerEffectDom;
                     delete data.error_logs;
                     this.openDrawer("detail", data);

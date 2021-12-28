@@ -784,7 +784,7 @@
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
                             '<div class="bu-is-flex">\n' +
                                 '<img :src="image" class="alert-image bu-mr-4 bu-my-1 bu-ml-1">\n' +
-                                '<slot><span class="alert-text bu-my-3" style="word-break:break-word">{{text}}</span></slot>\n' +
+                                '<slot><span class="alert-text bu-my-3" style="height:35px;overflow-y:hidden;">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="closable" style="margin-block:auto">\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-5" >\n' +
@@ -800,11 +800,20 @@
                   '</div>\n',
         mixins: [countlyVue.mixins.i18n],
         props: {
+            id: {default: "", type: [String, Number], required: false},
             text: { default: "", type: String },
             color: { default: "light-warning", type: String},
             size: {default: "full", type: String},
             visible: {default: true, type: Boolean},
-            closable: {default: true, type: Boolean}
+            closable: {default: true, type: Boolean},
+            autoHide: {default: true, type: Boolean},
+        },
+        data: function() {
+            return {
+                autoHideTimeout: null,
+                DEFAULT_STAY_TIME_IN_MS: 7000, // 7 seconds
+                isModalVisible: true,
+            };
         },
         watch: {
             visible: {
@@ -836,15 +845,22 @@
                 }
             }
         },
-        data: function() {
-            return {
-                isModalVisible: true,
-            };
-        },
         methods: {
             closeModal: function() {
                 this.isModalVisible = false;
+                this.$emit('close', this.id);
             },
+        },
+        mounted: function() {
+            if (this.autoHide) {
+                this.autoHideTimeout = setTimeout(this.closeModal, this.DEFAULT_STAY_TIME_IN_MS);
+            }
+        },
+        beforeDestroy: function() {
+            if (this.autoHide && this.autoHideTimeout) {
+                clearTimeout(this.autoHideTimeout);
+                this.autoHideTimeout = null;
+            }
         }
     }));
 
@@ -914,5 +930,28 @@
     }));
 
     Vue.component("cly-empty-datatable", BaseEmptyViewForElements.extend({
+    }));
+
+    Vue.component("cly-breadcrumbs", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            crumbs: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+        },
+        template: "<div class='bu-level cly-breadcrumbs bu-mb-5'>\
+                        <div v-for='(crumb, index) in crumbs'\
+                            :class='[\"bu-level-item text-medium bu-mr-0\",\
+                                    {\"bu-ml-2\": (index !== 0)},\
+                                    {\"color-cool-gray-40\": (index === (crumbs.length - 1))}]'>\
+                            <a :href='crumb.url'>{{crumb.label}}</a>\
+                            <span class='bu-ml-2' v-if='index !== (crumbs.length - 1)'>></span>\
+                        </div>\
+                    </div>"
     }));
 }(window.countlyVue = window.countlyVue || {}));
