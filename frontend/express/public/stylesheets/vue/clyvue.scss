@@ -681,6 +681,17 @@
             margin: 16px;
         }
 
+        &__cancel-button{
+            padding: 8px 12px;
+            border: none;
+            font-weight: 500;
+        }
+
+        &__confirm-button {
+            margin-left: 8px;
+            border: none;
+        }
+        
         &__day-names-wrapper {
             margin: 0 14px 9px 14px;
         }
