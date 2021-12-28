@@ -297,7 +297,7 @@
                                 name: hookList[i].name || '',
                                 description: hookList[i].description || '-',
                                 apps: hookList[i].apps,
-                                 appNameList: appNameList.join(', '),
+                                appNameList: appNameList.join(', '),
                                 triggerCount: hookList[i].triggerCount || 0,
                                 lastTriggerTimestampString: hookList[i].lastTriggerTimestamp && moment(hookList[i].lastTriggerTimestamp).fromNow() || "-",
                                 lastTriggerTimestamp: hookList[i].lastTriggerTimestamp || 0,

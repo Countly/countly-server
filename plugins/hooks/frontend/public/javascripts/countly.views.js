@@ -87,7 +87,7 @@
             },
             refresh: function() {
             },
-            onRowClick: function(params, target) {
+            onRowClick: function(params) {
                 app.navigate("/manage/hooks/" + params._id, true);
             },
         }
