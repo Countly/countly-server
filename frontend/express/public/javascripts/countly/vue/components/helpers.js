@@ -312,9 +312,21 @@
             tooltip: {
                 type: String,
                 default: 'Tooltip here :)'
+            },
+            placement: {
+                type: String,
+                default: 'auto'
             }
         },
-        template: '<i v-bind:class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltip"></i>'
+        computed: {
+            tooltipConf: function() {
+                return {
+                    content: this.tooltip,
+                    placement: this.placement
+                };
+            }
+        },
+        template: '<i :class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltipConf"></i>'
     }));
 
     Vue.component("cly-remover", countlyBaseComponent.extend({
@@ -771,7 +783,7 @@
                     class="cly-vue-json-editor__textarea bu-p-4" \
                     ref="jsonText"\
                     ></textarea>\
-    		        <slot name="footer">\
+                    <slot name="footer">\
                     <div class="bu-p-4 bu-is-justify-content-flex-end bu-is-flex">\
 							<el-button size="small" @click="cancel"  type="default" >{{cancelLabel}}</el-button>\
 							<el-button size="small" @click="submit" type="success">{{saveLabel}}</el-button>\
