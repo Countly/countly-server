@@ -108,6 +108,10 @@
         line-height: 16px;
         color: #A7AEB8;
         margin-top: 6px;
+        text-decoration: none !important;
+    }
+    .is-desc-col:hover {
+        text-decoration: none !important;
     }
     .is-trigger-col-tag {
         background: #FCF5E5;

@@ -2,7 +2,6 @@
     <cly-datatable-n
         class="cly-vue-hook-table is-clickable"
         :tracked-fields="localTableTrackedFields"
-        @row-click="onRowClick" 
         :rows="tableRows" :resizable="false" >
         <template v-slot:header-left="scope">
             <div class="bu-mr-2">
@@ -33,7 +32,10 @@
            
             <el-table-column fixed :label="i18n('hooks.hook-name')" sortable="true"  min-width="100" :class="is-clickable">
                 <template slot-scope="scope">
-                    <div v-html="scope.row.nameDescColumn"></div>
+                    <div>
+                        <div class="is-name-col bu-is-clickable" @click="onRowClick(scope.row)" >{{scope.row.name}}</div>
+                        <div class="is-desc-col">{{scope.row.description}}</div>
+                    </div>
                 </template>
             </el-table-column> 
 
