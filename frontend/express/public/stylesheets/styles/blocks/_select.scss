@@ -4,6 +4,9 @@
 @use "sass:map";
 
 .cly-vue-select-x {
+    .cly-vue-listbox {
+        background-color: map.get(c.$colors, "white");
+    }
     &__pop {
         .el-tabs {
             &__nav-wrap::after {
