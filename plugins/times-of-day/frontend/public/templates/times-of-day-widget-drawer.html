@@ -1,0 +1,28 @@
+<div>
+    <clyd-sourceapps v-model="scope.editedObject.apps" :multiple="(scope.editedObject.apps.length > 1) ? true : false"></clyd-sourceapps>
+    <clyd-datatype v-model="scope.editedObject.data_type" :enabledTypes="['event','session']"></clyd-datatype>
+    <template v-if="scope.editedObject.data_type === 'event'">
+        <cly-form-field name="selectedEvent" rules="required" :label="i18n('times-of-day.event')">
+            <el-select v-model="scope.editedObject.events">
+                <el-option
+                    v-for="item in eventOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                </el-option>
+            </el-select>
+        </cly-form-field>
+    </template>
+    <cly-form-field name="timePeriod" rules="required" :label="i18n('times-of-day.time-period')">
+        <el-select v-model="scope.editedObject.period">
+            <el-option
+                v-for="item in dateBuckets"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+            </el-option>
+        </el-select>
+    </cly-form-field>
+    <clyd-visualization v-model="selectedVisualization" :enabledTypes="['scatter']"></clyd-visualization>
+    <clyd-title v-model="scope.editedObject.title"></clyd-title>
+</div>
