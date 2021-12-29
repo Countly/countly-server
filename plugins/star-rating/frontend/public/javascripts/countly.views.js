@@ -69,6 +69,14 @@ var Drawer = countlyVue.views.create({
                 submitted.targeting = finalizedTargeting;
             }
 
+            if (submitted.target_page) {
+                submitted.target_page = "selected";
+            }
+            else {
+                submitted.target_page = "all";
+                submitted.target_pages = ["/"];
+            }
+
             if (this.settings.isEditMode) {
                 starRatingPlugin.editFeedbackWidget(submitted, function() {
                     self.$emit('widgets-refresh');
@@ -102,6 +110,14 @@ var CommentsTable = countlyVue.views.create({
     template: CV.T("/star-rating/templates/comments-table.html"),
     props: {
         comments: Array
+    },
+    computed: {
+        preparedRows: function() {
+            return this.comments.map(function(comment) {
+                comment.cd = countlyCommon.formatTimeAgo(comment.cd);
+                return comment;
+            });
+        }
     }
 });
 
@@ -141,12 +157,8 @@ var WidgetsTable = countlyVue.views.create({
         }
     },
     methods: {
-        handleCommand: function(command, id) {
-            switch (command) {
-            case 'show-detail':
-                window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
-                break;
-            }
+        goWidgetDetail: function(id) {
+            window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
         },
         parseTargeting: function(widget) {
             widget.targeting.steps = JSON.parse(widget.targeting.steps);
@@ -418,7 +430,9 @@ var WidgetsTab = countlyVue.views.create({
                 trigger_font_color: '#fff',
                 hide_sticker: false,
                 status: true,
-                logo: null
+                logo: null,
+                target_pages: ["/"],
+                target_page: false
             });
         },
         refresh: function() {
@@ -522,6 +536,7 @@ var WidgetDetail = countlyVue.views.create({
     ],
     data: function() {
         return {
+            activeNames: [1],
             cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
             activeFilter: {
                 platform: "",
@@ -660,6 +675,7 @@ var WidgetDetail = countlyVue.views.create({
             if (this.cohortsEnabled && this.widget.targeting.user_segmentation && this.widget.targeting.user_segmentation.query && typeof this.widget.targeting.user_segmentation.query === "object") {
                 this.widget.targeting.user_segmentation.query = JSON.stringify(this.widget.targeting.user_segmentation.query);
             }
+            this.widget.target_page = this.widget.target_page === "selected";
             this.openDrawer('widget', this.widget);
         },
         handleCommand: function(command) {
@@ -878,7 +894,10 @@ countlyVue.container.registerTab("/users/tabs", {
 });
 
 var RatingsMainView = new countlyVue.views.BackboneWrapper({
-    component: RatingsMain
+    component: RatingsMain,
+    templates: [
+        "/drill/templates/query.builder.v2.html"
+    ]
 });
 
 var WidgetDetailView = new countlyVue.views.BackboneWrapper({

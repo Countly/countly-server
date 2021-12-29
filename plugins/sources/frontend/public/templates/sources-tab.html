@@ -30,7 +30,7 @@
     </div>
   </cly-section>
   <cly-section>
-    <cly-datatable-n :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false" v-loading="isLoading">
+    <cly-datatable-n :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false" :force-loading="isLoading">
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">

@@ -7,15 +7,30 @@
     border-bottom: 1px solid #ececec;
     border-top: 1px solid #ececec;
   }
+
+  .cly-vue-cohorts-targeting__seg-hsection {
+    padding: 0px !important;
+  }
+
+  .ratings-drawer-dropzone {
+    border-color: #0166D6;
+    border-radius: 4px;
+  }
 }
 
 .ratings-drawer {
+
+  &__target-page-selector {
+    width: 100%;
+  }
+
   &__ratings-texts-input {
     margin: 5px 0px;
   }
 
   &__ratings-popup {
     padding-top: 30px;
+    margin-bottom: 32px;
     width: 450px;
     height: 515px;
     border-radius: 13px;
@@ -208,6 +223,7 @@
     background-color: #12AF51;
     color: white;
     padding: 14px 12px;
+    border: none;
 
     &:hover {
       background-color: #12AF51;
@@ -227,12 +243,14 @@
     flex-direction: column;
     text-align: center;
   }
+
+  .cly-vue-drawer-step__section {
+    padding: 12px 16px;
+  }
 }
 
-.ratings-tab-view {
-  &__filter-selector {
-    width: 270px;
-  }
+.ratings-section-title {
+  margin-right: 4px;
 }
 
 .rating-color {

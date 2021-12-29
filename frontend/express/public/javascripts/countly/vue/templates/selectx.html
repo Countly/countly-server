@@ -87,7 +87,7 @@
         </el-tabs>
         <div class="cly-vue-select-x__footer" v-if="!autoCommit">
             <div class="cly-vue-select-x__commit-section">
-                <el-button @click="doDiscard" size="small">{{ i18n("common.cancel") }}</el-button>
+                <el-button @click="doDiscard" type="secondary" size="small">{{ i18n("common.cancel") }}</el-button>
                 <el-button @click="doCommit" :disabled="disabled || !isItemCountValid" type="success" size="small">{{ i18n("common.confirm") }}</el-button>
             </div>
         </div>

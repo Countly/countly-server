@@ -164,14 +164,14 @@
                 }
             },
             setStepSafe: function(newIndex, originator) {
-                this.beforeLeavingStep();
+                this.beforeLeavingStep(newIndex < this.currentStepIndex ? "skip" : "onlyCurrent");
                 this.setStep(newIndex, originator, newIndex > this.lastValidIndex);
             },
             prevStep: function() {
                 this.setStep(this.currentStepIndex - 1, 'prev');
             },
             nextStep: function() {
-                this.beforeLeavingStep();
+                this.beforeLeavingStep("onlyCurrent");
                 this.setStep(this.currentStepIndex + 1, 'next', !this.isCurrentStepValid);
             },
             reset: function() {
@@ -207,16 +207,29 @@
             validate: function() {
                 this.callValidators("touch");
             },
-            beforeLeavingStep: function() {
-                this.callValidators("touch");
+            beforeLeavingStep: function(touchPolicy) {
+                if (touchPolicy === "onlyCurrent") {
+                    this.callValidators("touch", true);
+                }
+                else if (touchPolicy !== "skip") {
+                    this.callValidators("touch");
+                }
                 this.$emit("before-leaving-step");
             },
-            callValidators: function(command) {
-                this.stepContents.forEach(function(current) {
-                    if (current[command]) {
-                        current[command]();
+            callValidators: function(command, onlyCurrent) {
+                if (onlyCurrent) {
+                    var target = this.stepContents[this.currentStepIndex];
+                    if (target && target[command]) {
+                        target[command]();
                     }
-                });
+                }
+                else {
+                    this.stepContents.forEach(function(current) {
+                        if (current[command]) {
+                            current[command]();
+                        }
+                    });
+                }
             }
         }
     };

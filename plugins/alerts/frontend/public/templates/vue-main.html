@@ -8,7 +8,7 @@
                 </span>
             </template>
             <template v-slot:header-right>
-            <el-button type="success" icon="el-icon-circle-plus" v-on:click="createAlert()">{{i18n('alert.Add_New_Alert')}}</el-button>
+            <el-button type="success" icon="el-icon-circle-plus" @click="createAlert">{{i18n('alert.Add_New_Alert')}}</el-button>
         </template>
         </cly-header>
     
@@ -23,7 +23,7 @@
              </div>
       
             <div class="bu-mt-6">
-                <table-view  v-on:open-drawer="openDrawer"></table-view>
+                <table-view  v-on:open-drawer="openDrawer" :callCreateAlertDrawer="createAlert"></table-view>
             </div>
         </cly-main>
         <drawer @close="closeDrawer" :controls="drawers.home"></drawer>
@@ -33,24 +33,20 @@
     
     
 <script  type="text/x-template" id="alerts-table">
-    <cly-section>
+<div>
+    <cly-empty-view 
+        v-if="(rowTableRows.length === 0 && initialized)"
+        :title="i18n('alerts.empty-title')"
+        :subTitle="i18n('alerts.empty-subtitle')"
+        :actionTitle="i18n('alerts.empty-action-button-title')"
+        :hasAction="true"
+        :actionFunc="createAlert"
+    />
+    <cly-section v-else>
         <cly-datatable-n
             class="cly-vue-alerts-table"
             :tracked-fields="localTableTrackedFields"
             :rows="tableRows" :resizable="false" >
-
-            <template slot="empty">
-                <div class="bu-is-flex  bu-is-flex-direction-column bu-is-align-items-center bu-my-6 bu-py-5">
-                    <div class="no-search-circle">
-                    </div>
-                    <div style="width: 400px;">
-                        <h4 class="color-cool-gray-100 bu-mt-4 bu-mb-2 bu-has-text-centered">No data found</h4>
-                        <div class="color-cool-gray-50 text-small bu-has-text-centered ">
-                            There is no data found for selected time period 
-                        </div>
-                    </div>
-                </div>
-            </template>
             <template v-slot:header-left="scope">
                 <div>
                     <cly-select-x
@@ -64,7 +60,7 @@
             <template v-slot="scope">
                 <el-table-column type="switch" fixed="left" width="100" sortable prop="enabled">
                     <template v-slot="rowScope">
-                        <el-switch :value="rowScope.row.enabled"
+                        <el-switch :value="rowScope.row.enabled" :disabled="!canUpdate"
                             @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                         </el-switch>
                     </template>
@@ -96,7 +92,7 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column type="options">
+                <el-table-column type="options" v-if="canUpdate || canDelete">
                     <template v-slot="rowScope">
                         <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleAlertEditCommand($event,rowScope)">
                             <el-dropdown-item v-if="canUpdate" icon="el-icon-document-copy" command="edit-comment">
@@ -130,7 +126,8 @@
                 </template>
         </cly-confirm-dialog>
     </cly-section>
-    </script>
+</div>
+</script>
     
     
     

@@ -23,6 +23,15 @@ class Jsonable {
     }
 
     /**
+     * Update internal data doing any decoding / transformations along the way
+     * 
+     * @param {object} update data update
+     */
+    updateData(update) {
+        Object.assign(this._data, update);
+    }
+
+    /**
      * Get new object containing all fields ready for sending to client side
      */
     get json() {
@@ -43,6 +52,15 @@ class Jsonable {
             });
         return json;
     }
+
+    /**
+     * Compatibility layer for cache & standard node.js functions IPC
+     * 
+     * @returns {string} json string
+     */
+    toJSON() {
+        return this.json;
+    }
 }
 
 /**
@@ -56,6 +74,32 @@ class Validatable extends Jsonable {
      */
     static get scheme() {
         throw new Error('Must be overridden');
+    }
+
+    /**
+     * Override Jsonable logic allowing only valid data to be saved
+     */
+    get json() {
+        let json = {},
+            scheme = this.constructor.scheme;
+        Object.keys(scheme)
+            .filter(k => this._data[k] !== null && this._data[k] !== undefined)
+            .forEach(k => {
+                let v = this._data[k];
+                if (v instanceof Validatable) {
+                    json[k] = v.json;
+                }
+                else if (Array.isArray(v)) {
+                    json[k] = v.map(x => x instanceof Validatable ? x.json : x);
+                }
+                else {
+                    let valid = require('./common').validateArgs({data: this._data[k]}, {data: scheme[k]});
+                    if (valid) {
+                        json[k] = valid.data;
+                    }
+                }
+            });
+        return json;
     }
 
     /**
@@ -130,12 +174,34 @@ class Mongoable extends Validatable {
      * @returns {This|null} instance of this class if the record is found in database, null otherwise
      */
     static async findOne(query) {
+        if (typeof query === 'string') {
+            query = {_id: require('./common').db.ObjectID(query)};
+        }
+        else if (require('./common').db.isoid(query)) {
+            query = {_id: query};
+        }
         let data = await require('./common').db.collection(this.collection).findOne(query);
         if (data) {
             return new this(data);
         }
         else {
             return null;
+        }
+    }
+
+    /**
+     * Refresh current instance with data from the database 
+     * 
+     * @returns {This|boolean} this instance of this class if the record is found in database, false otherwise
+     */
+    async refresh() {
+        let data = await require('./common').db.collection(this.constructor.collection).findOne({_id: this._id});
+        if (data) {
+            this.setData(data);
+            return this;
+        }
+        else {
+            return false;
         }
     }
 
@@ -180,7 +246,8 @@ class Mongoable extends Validatable {
      * Pass current data to mongo's save
      */
     async save() {
-        await require('./common').db.collection(this.constructor.collection).save(this.json);
+        let json = this.json;
+        await require('./common').db.collection(this.constructor.collection).save(json);
     }
 
     /**
@@ -275,7 +342,7 @@ class Mongoable extends Validatable {
                 total++;
                 buffer.push(record);
                 if (buffer.length >= batch) {
-                    this.flush();
+                    await this.flush();
                 }
             },
 
@@ -293,11 +360,28 @@ class Mongoable extends Validatable {
 
             /**
              * Flush the buffer by inserting documents into collection
+             * 
+             * @param {number[]} ignore_codes error codes to ignore
              */
-            async flush() {
+            async flush(ignore_codes = []) {
                 if (buffer.length) {
-                    await collection.insertMany(buffer);
-                    buffer = [];
+                    try {
+                        let res = await collection.insertMany(buffer);
+                        total -= (buffer.length - res.insertedCount);
+                        return res.insertedIds;
+                    }
+                    catch (e) {
+                        if (e.result && e.result.result && e.result.result.insertedIds) {
+                            total -= (buffer.length - e.result.insertedCount);
+                        }
+                        if (!e.code || ignore_codes.indexOf(e.code) === -1) {
+                            throw e;
+                        }
+                        else {
+                            buffer = [];
+                            return e.result.result.insertedIds;
+                        }
+                    }
                 }
             }
         };

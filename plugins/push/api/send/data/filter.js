@@ -1,11 +1,11 @@
 'use strict';
 
-const { Jsonable } = require('./const');
+const { Validatable } = require('./const');
 
 /**
  * Class for storing and handling user filters
  */
-class Filter extends Jsonable {
+class Filter extends Validatable {
     /**
      * Constructor
      * 
@@ -24,11 +24,32 @@ class Filter extends Jsonable {
      */
     static get scheme() {
         return {
-            user: { type: 'JSON', required: false },
-            drill: { type: 'JSON', required: false },
-            geos: { type: 'ObjectID[]', required: false },
-            cohorts: { type: 'String[]', required: false },
+            user: { type: 'JSON', required: false, nonempty: true, custom: Filter.filterQueryValidator },
+            drill: { type: 'JSON', required: false, nonempty: true, custom: Filter.filterQueryValidator },
+            geos: { type: 'ObjectID[]', required: false, 'min-length': 1 },
+            cohorts: { type: 'String[]', required: false, 'min-length': 1 },
         };
+    }
+
+    /**
+     * Validator function for user & drill filter queries
+     * 
+     * @param {object} json filter object
+     * @returns {string|undefined} error sting in case of validation error
+     */
+    static filterQueryValidator(json) {
+        if (json === null || json === undefined) {
+            return;
+        }
+        try {
+            json = JSON.parse(json);
+            if (typeof json !== 'object' || Array.isArray(json)) {
+                return 'Filter user/drill must be a JSON string of an object';
+            }
+        }
+        catch (ignored) {
+            return 'Filter user/drill must be a valid JSON string of an object';
+        }
     }
 
     /**

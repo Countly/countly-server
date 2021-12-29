@@ -30,7 +30,7 @@
     <cly-main>
         <cly-section>
             <cly-datatable-n :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :rows="logsData"
-                :resizable="false" v-loading="isLoading" class="is-clickable">
+                :resizable="false" :force-loading="isLoading" class="is-clickable">
                 <template v-slot:header-left="filterScope">
                     <el-select v-model="loggerFilter" placeholder="Select" @change="filterChange()">
                         <el-option v-for="filter in filterOptions" :key="filter.value" :label="filter.label"

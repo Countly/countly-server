@@ -3,6 +3,7 @@
     @submit="onSubmit"
     @close="onClose"
     @open="onOpen"
+    ref="drawer"
     :set-step-callback-fn="onStepClick"
     :title="title"
     :requires-async-submit="true"
@@ -20,6 +21,9 @@
             </mobile-message-preview>
         </cly-content>
     </template>
+    <template v-slot:controls-left="controlsLeft">
+        <el-button size="small" @click="onDraft" type="default" :disabled="!isDraftButtonEnabled">Save as draft</el-button>
+    </template>
     <template v-slot:default="drawerScope">
         <add-user-property-popover 
             :isOpen="isAddUserPropertyPopoverOpen"
@@ -31,18 +35,19 @@
             :options="userPropertiesOptions"
             :position="addUserPropertyPopoverPosition"
             @select="onSelectUserProperty"
-            @input="onInputFallbackUserProperty"
-            @check="onCheckUppercaseUserProperty"
+            @input="onInputUserProperty"
+            @fallback="onInputFallbackUserProperty"
+            @uppercase="onCheckUppercaseUserProperty"
             @remove="onRemoveUserProperty"
             @close="closeAddUserPropertyPopover">
         </add-user-property-popover>
         <div class="bu-column bu-is-10 bu-is-offset-1">
             <cly-form-step id="step1" :name="i18n('push-notification.drawer-step-one')" v-loading="isLoading">
                 <div class="cly-vue-drawer-step__section">
-                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Message Name</div>
-                    <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for message name</div>
+                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Notification Name</div>
+                    <div class="cly-vue-push-notification-drawer__input-description">We can add some kind of description for notification name</div>
                     <validation-provider v-slot="validation">
-                        <el-input v-model="pushNotificationUnderEdit.name"  placeholder="Enter Message Name" :class="{'is-error': validation.errors.length > 0}"></el-input>
+                        <el-input v-model="pushNotificationUnderEdit.name"  placeholder="Enter Notification Name" :class="{'is-error': validation.errors.length > 0}"></el-input>
                     </validation-provider>
                 </div>
                 <div class="cly-vue-drawer-step__section">
@@ -88,9 +93,9 @@
                                     v-model="pushNotificationUnderEdit.cohorts"
                                     multiple
                                     filterable
-                                    remote
                                     reserve-keyword
                                     placeholder="Please select a cohort"
+                                    :loading="isFetchCohortsLoading"
                                     :class="{'is-error': validation.errors.length > 0}"
                                     style="width:100%">
                                     <el-option
@@ -110,8 +115,8 @@
                                     v-model="pushNotificationUnderEdit.locations"
                                     multiple
                                     filterable
-                                    remote
                                     reserve-keyword
+                                    :loading="isFetchLocationsLoading"
                                     placeholder="Please select a location"
                                     :class="{'is-error': validation.errors.length > 0}"
                                     style="width:100%">
@@ -145,6 +150,35 @@
                     </template>
                 </template>
                 <template v-else-if="type === TypeEnum.AUTOMATIC">
+                    <div class="cly-vue-drawer-step__section">
+                        <div class="bu-is-flex bu-is-align-items-center">
+                            <el-switch v-model="isLocationSet" class="bu-mr-1"></el-switch>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                                Geolocation
+                            </div>
+                        </div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Send to the users currently in selected Geolocations</div>
+                        <div class="cly-vue-push-notification-drawer__input-description">Some description for selection goes here</div>
+                        <validation-provider v-slot="validation" :rules="{required:isLocationSet}">
+                            <el-select
+                                v-model="pushNotificationUnderEdit.locations"
+                                multiple
+                                filterable
+                                reserve-keyword
+                                :disabled="!isLocationSet"
+                                placeholder="Please select a location"
+                                :loading="isFetchLocationsLoading"
+                                :class="{'is-error': validation.errors.length > 0}"
+                                style="width:100%">
+                                <el-option
+                                    v-for="item in locationOptions"
+                                    :key="item._id"
+                                    :label="item.name"
+                                    :value="item._id">
+                                </el-option>
+                            </el-select> 
+                        </validation-provider>
+                    </div>
                     <div class="cly-vue-drawer-step__section">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                             Triggers
@@ -183,9 +217,9 @@
                                     v-model="pushNotificationUnderEdit.automatic.events"
                                     multiple
                                     filterable
-                                    remote
                                     reserve-keyword
                                     placeholder="Please select an event"
+                                    :loading="isFetchEventsLoading"
                                     :class="{'is-error': validation.errors.length > 0}"
                                     style="width:100%">
                                     <el-option
@@ -207,9 +241,9 @@
                                     v-model="pushNotificationUnderEdit.automatic.cohorts"
                                     multiple
                                     filterable
-                                    remote
                                     reserve-keyword
                                     placeholder="Please select a cohort"
+                                    :loading="isFetchCohortsLoading"
                                     :class="{'is-error': validation.errors.length > 0}"
                                     style="width:100%">
                                     <el-option
@@ -222,28 +256,6 @@
                             </validation-provider>      
                         </div>
                     </template>
-                    <div class="cly-vue-drawer-step__section">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Send to the users currently in selected Geolocations</div>
-                        <div class="cly-vue-push-notification-drawer__input-description">Some description for selection goes here</div>
-                        <validation-provider v-slot="validation" :detectInput="true">
-                            <el-select
-                                v-model="pushNotificationUnderEdit.locations"
-                                multiple
-                                filterable
-                                remote
-                                reserve-keyword
-                                placeholder="Please select a location"
-                                :class="{'is-error': validation.errors.length > 0}"
-                                style="width:100%">
-                                <el-option
-                                    v-for="item in locationOptions"
-                                    :key="item._id"
-                                    :label="item.name"
-                                    :value="item._id">
-                                </el-option>
-                            </el-select> 
-                        </validation-provider>
-                    </div>
                     <div class="cly-vue-drawer-step__section">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__line-radio-button-group-header">
                             Delivery date calculation
@@ -364,12 +376,12 @@
                         <div class="bu-is-flex bu-is-flex-direction-column">
                             <line-radio-button-with-description 
                                 :label="PastScheduleEnum.SKIP"
-                                v-model="pushNotificationUnderEdit.pastSchedule"
+                                v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].pastSchedule"
                                 title="Do not send the message">
                             </line-radio-button-with-description>
                             <line-radio-button-with-description 
                                 :label="PastScheduleEnum.NEXT_DAY"
-                                v-model="pushNotificationUnderEdit.pastSchedule"
+                                v-model="pushNotificationUnderEdit[TypeEnum.ONE_TIME].pastSchedule"
                                 title="Deliver the message next day">
                             </line-radio-button-with-description>
                         </div>
@@ -528,8 +540,8 @@
                                 <el-checkbox 
                                     class="bu-ml-1"                        
                                     v-tooltip.top-left="isDefaultLocalizationActive?'Default message is required':null"
-                                    :checked="isLocalizationSelected(localization.value)" 
-                                    :disabled="isDefaultLocalization(localization.value)" 
+                                    :checked="isLocalizationSelected(localization)" 
+                                    :disabled="isDefaultLocalization(localization)" 
                                     :key="localization.value" 
                                     @change="onLocalizationChange(localization)">
                                 </el-checkbox>
@@ -689,21 +701,16 @@
                                 label="Send User Data"
                                 description="We can add some kind of description for sending user data">
                                 <validation-provider rules="required" v-slot="validation">
-                                    <el-select 
-                                        v-model="pushNotificationUnderEdit.settings.ios.userData" 
-                                        multiple 
-                                        filterable
-                                        reserve-keyword
-                                        style="width:100%;"
-                                        :class="{'is-error': validation.errors.length > 0}"
-                                        placeholder="Select user data">
-                                            <el-option
-                                            v-for="item in userPropertiesOptions"
-                                            :key="item.value"
-                                            :label="item.label"
-                                            :value="item.value">
-                                            </el-option>
-                                    </el-select>
+                                    <cly-select-x
+                                        search-placeholder="Search in Properties"
+                                        v-model="pushNotificationUnderEdit.settings.ios.userData"
+                                        placeholder="Select user data" 
+                                        :width="320"
+                                        mode="multi-check-sortable"
+                                        :hide-all-options-tab="false"
+                                        :options="userPropertiesOptions"
+                                        :class="{'is-error': validation.errors.length > 0}">
+                                    </cly-select-x>
                                 </validation-provider>
                             </message-setting-element>
                         </el-collapse-item>
@@ -783,21 +790,16 @@
                                 label="Send User Data"
                                 description="We can add some kind of description for sending user data">
                                 <validation-provider rules="required" v-slot="validation">
-                                    <el-select 
-                                        v-model="pushNotificationUnderEdit.settings.android.userData" 
-                                        multiple 
-                                        filterable
-                                        reserve-keyword
-                                        style="width:100%;"
-                                        :class="{'is-error': validation.errors.length > 0}"
-                                        placeholder="Select user data">
-                                        <el-option
-                                            v-for="item in userPropertiesOptions"
-                                            :key="item.value"
-                                            :label="item.label"
-                                            :value="item.value">
-                                        </el-option>
-                                    </el-select>
+                                    <cly-select-x
+                                        search-placeholder="Search in Properties"
+                                        v-model="pushNotificationUnderEdit.settings.android.userData"
+                                        placeholder="Select user data" 
+                                        :width="320"
+                                        mode="multi-check-sortable"
+                                        :hide-all-options-tab="false"
+                                        :options="userPropertiesOptions"
+                                        :class="{'is-error': validation.errors.length > 0}">
+                                    </cly-select-x>
                                 </validation-provider>
                             </message-setting-element>
                         </el-collapse-item>
@@ -806,8 +808,8 @@
             </cly-form-step>
             <cly-form-step id="step4" :name="i18n('push-notification.drawer-step-four')">
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-header">
-                   Review Message
-                   <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-review-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                    Review Message
+                    <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-review-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
                 </div>
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
                     Message Content
@@ -889,7 +891,7 @@
                             <review-section-row label="Trigger Type" :value="triggerOptions[pushNotificationUnderEdit.automatic.trigger].label"></review-section-row>
                             <review-section-row v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT" label="Event(s)" :value="pushNotificationUnderEdit.automatic.events.join(', ')"></review-section-row>
                             <review-section-row v-else label="Cohort(s)" :value="previewCohorts(pushNotificationUnderEdit.automatic.cohorts).join(', ')"></review-section-row>
-                            <review-section-row label="Geolocation(s)" :value="previewLocations.join(', ')"></review-section-row>
+                            <review-section-row v-if="isLocationSet" label="Geolocation(s)" :value="previewLocations.join(', ')"></review-section-row>
                             <review-section-row v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT" label="Delivery date calculation" :value="deliveryDateCalculationOptions[pushNotificationUnderEdit.automatic.deliveryDateCalculation].label"></review-section-row>
                             <review-section-row v-else label="Behavior when trigger condition is no longer met" :value="triggerNotMetOptions[pushNotificationUnderEdit.automatic.triggerNotMet].label"></review-section-row>
                         </template>
@@ -919,7 +921,7 @@
                             </template>
                         </review-section-row>
                     </template>
-               </div>
+                </div>
                 <div class="cly-vue-drawer-step__section cly-vue-push-notification-drawer__review-section-group-header">
                     Confirmation
                 </div>

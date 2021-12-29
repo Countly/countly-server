@@ -38,10 +38,19 @@
                 margin: 8px 0px;
                 .el-radio__label {
                     width: 100%;
+                    display: flex;
+                    justify-content: space-between;
                     .text-small {
-                        float: right;
-                        color: #03060C;
+                        color: #81868D;
+                        margin-top: auto;
                     }
+                    .text-medium {
+                        color: #333C48;
+                        font-size: 13px;    
+                    }
+                }
+                .el-radio__input{
+                    margin-top: auto;
                 }
             }
         }

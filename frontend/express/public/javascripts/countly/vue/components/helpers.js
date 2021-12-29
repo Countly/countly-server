@@ -1,4 +1,4 @@
-/* global Vue, app, countlyEvent, countlyGlobal*/
+/* global Vue, CV, app, countlyEvent, countlyGlobal*/
 
 (function(countlyVue) {
 
@@ -312,9 +312,21 @@
             tooltip: {
                 type: String,
                 default: 'Tooltip here :)'
+            },
+            placement: {
+                type: String,
+                default: 'auto'
             }
         },
-        template: '<i v-bind:class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltip"></i>'
+        computed: {
+            tooltipConf: function() {
+                return {
+                    content: this.tooltip,
+                    placement: this.placement
+                };
+            }
+        },
+        template: '<i :class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltipConf"></i>'
     }));
 
     Vue.component("cly-remover", countlyBaseComponent.extend({
@@ -671,12 +683,120 @@
                     </div>'
     }));
 
+    Vue.component("cly-json-editor", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        data: function() {
+            return {
+                jsonerror: "",
+                jsonstr: "",
+                isOpen: this.isOpened
+            };
+        },
+        computed: {
+            opened: {
+                get: function() {
+                    this.validateJson();
+                    return this.isOpen;
+                },
+                set: function(val) {
+                    this.isOpen = val;
+                }
+            }
+        },
+        props: {
+            value: String,
+            isOpened: {type: Boolean, required: true},
+            emitClose: {type: Boolean, required: false, default: false},
+            saveLabel: {type: String, required: false, default: CV.i18n("common.save")},
+            cancelLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
+            title: {type: String, required: false, default: CV.i18n("common.json-editor")},
+
+        },
+        watch: {
+            value: {
+                immediate: true,
+                handler: function(newValue) {
+                    this.jsonstr = newValue;
+                }
+            },
+        },
+        methods: {
+            validateJson: function() {
+                this.jsonerror = "";
+                try {
+                    // try to parse
+                    if (this.jsonstr) {
+                        JSON.parse(this.jsonstr);
+                    }
+                }
+                catch (e) {
+                    this.jsonerror = JSON.stringify(e.message);
+                }
+            },
+            prettyFormat: function() {
+                // reset error
+                var jsonValue = "";
+                try {
+                    // try to parse
+                    jsonValue = JSON.parse(this.jsonstr);
+                    this.jsonstr = JSON.stringify(jsonValue, null, 2);
+                }
+                catch (e) {
+                    // Do nothing
+                }
+            },
+            submit: function() {
+                this.$emit("input", this.jsonstr);
+                this.opened = false;
+                if (this.emitClose) {
+                    this.$emit("closed");
+                }
+            },
+            cancel: function() {
+                this.opened = false;
+                if (this.emitClose) {
+                    this.$emit("closed");
+                }
+            },
+            escKeyEvent: function() {
+                this.opened = false;
+                if (this.emitClose) {
+                    this.$emit("closed");
+                }
+            },
+        },
+        template: '<div class="cly-vue-json-editor" v-show="opened" @keydown.esc="escKeyEvent">\
+                    <slot name="title"><h3 class="bu-pl-4 color-cool-gray-100">{{title}}</h3></slot>\
+                    <div class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center bu-px-4 bu-pb-1">\
+                    <div>\
+                        <div class="text-smallish" v-if="jsonstr && jsonerror"><i class="ion-alert-circled color-danger bu-mr-1"></i>{{i18n("remote-config.json.invalid")}}</div>\
+                        <div class="text-smallish" v-if="!jsonerror"><i class="ion-checkmark-circled color-success bu-mr-1"></i>{{i18n("remote-config.json.valid")}}</div>\
+                    </div>\
+                    <el-button class="color-cool-gray-100" @click="prettyFormat" type="text">{{i18n("remote-config.json.format")}}</el-button>\
+                    </div>\
+                    <textarea\
+                    @input="validateJson"\
+                    v-model="jsonstr"\
+                    rows="15" \
+                    class="cly-vue-json-editor__textarea bu-p-4" \
+                    ref="jsonText"\
+                    ></textarea>\
+                    <slot name="footer">\
+                    <div class="bu-p-4 bu-is-justify-content-flex-end bu-is-flex">\
+							<el-button size="small" @click="cancel"  type="default" >{{cancelLabel}}</el-button>\
+							<el-button size="small" @click="submit" type="success">{{saveLabel}}</el-button>\
+					</div>\
+                    </slot>\
+                   </div>'
+    }));
     Vue.component("cly-notification", countlyBaseComponent.extend({
         template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
                             '<div class="bu-is-flex">\n' +
                                 '<img :src="image" class="alert-image bu-mr-4 bu-my-1 bu-ml-1">\n' +
-                                '<slot><span class="alert-text bu-my-3" style="word-break:break-word">{{text}}</span></slot>\n' +
+                                '<slot><span class="alert-text bu-my-3" style="height:35px;overflow-y:hidden;">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="closable" style="margin-block:auto">\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-5" >\n' +
@@ -692,11 +812,20 @@
                   '</div>\n',
         mixins: [countlyVue.mixins.i18n],
         props: {
+            id: {default: "", type: [String, Number], required: false},
             text: { default: "", type: String },
             color: { default: "light-warning", type: String},
             size: {default: "full", type: String},
             visible: {default: true, type: Boolean},
-            closable: {default: true, type: Boolean}
+            closable: {default: true, type: Boolean},
+            autoHide: {default: true, type: Boolean},
+        },
+        data: function() {
+            return {
+                autoHideTimeout: null,
+                DEFAULT_STAY_TIME_IN_MS: 7000, // 7 seconds
+                isModalVisible: true,
+            };
         },
         watch: {
             visible: {
@@ -728,43 +857,53 @@
                 }
             }
         },
-        data: function() {
-            return {
-                isModalVisible: true,
-            };
-        },
         methods: {
             closeModal: function() {
                 this.isModalVisible = false;
+                this.$emit('close', this.id);
             },
+        },
+        mounted: function() {
+            if (this.autoHide) {
+                this.autoHideTimeout = setTimeout(this.closeModal, this.DEFAULT_STAY_TIME_IN_MS);
+            }
+        },
+        beforeDestroy: function() {
+            if (this.autoHide && this.autoHideTimeout) {
+                clearTimeout(this.autoHideTimeout);
+                this.autoHideTimeout = null;
+            }
         }
     }));
 
     Vue.component("cly-empty-view", countlyBaseComponent.extend({
-        template: ' <div class="bu-is-flex  bu-is-flex-direction-column bu-is-align-items-center" style="height:calc(100vh - 193px);">\
+        template: ' <div class="bu-mt-5 bu-pt-4 bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
                         <slot name="icon">\
-                            <div style="margin-top: 122px;border-radius: 50%;width: 96px;height: 96px;background: gray;">\
-                                <img src="images/icons/empty-view-icon.svg" style="width: 96px;height: 96px;"/>\
+                            <div class="bu-mt-6">\
+                                <img width="96" heigh="96" src="images/icons/empty-view-icon.svg"/>\
                             </div>\
                         </slot>\
-                        <div style="width: 400px;">\
+                        <div class="bu-mt-2 bu-is-flex bu-is-flex-direction-column 	bu-is-align-items-center">\
                             <slot name="title">\
-                                <h3 class="color-cool-gray-100 bu-mt-5 bu-mb-4 bu-has-text-centered">{{title}}</h3>\
+                                <h3 class="color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
-                                <div class="color-cool-gray-50 text-medium bu-has-text-centered">{{subTitle}}</div> \
+                                <div class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered ">{{subTitle}}</div>\
                             </slot>\
-                            <slot name="action">\
-                                <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered bu-mt-5 color-blue-100 pointer">{{actionTitle}}</div>\
+                            <slot name="action" v-if="hasAction">\
+                                <div @click="actionFunc" class="bu-is-clickable button bu-has-text-centered color-blue-100 pointer">{{actionTitle}}</div>\
                             </slot>\
                         </div>\
                     </div>',
-        mixins: [countlyVue.mixins.i18n],
+        mixins: [
+            countlyVue.mixins.i18n
+        ],
         props: {
-            title: { default: "...hmm, seems it’s empty here", type: String },
-            subTitle: { default: "", type: String },
+            title: { default: countlyVue.i18n('common.emtpy-view-title'), type: String },
+            subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String },
             actionTitle: { default: "Create", type: String },
             actionFunc: { default: null, type: Function },
+            hasAction: {default: false, type: Boolean}
         },
         data: function() {
             return {};
@@ -773,4 +912,58 @@
         }
     }));
 
+    var BaseEmptyViewForElements = _mixins.BaseContent.extend({
+        props: {
+            image: {default: 'images/icons/empty-view-icon.svg', type: String},
+            title: { default: countlyVue.i18n('common.emtpy-view-title'), type: String },
+            subTitle: { default: countlyVue.i18n('common.emtpy-view-subtitle'), type: String }
+        },
+        data: function() {
+            return {};
+        },
+        template: ' <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center">\
+                        <slot name="icon">\
+                            <div class="bu-mt-6">\
+                                <img :src="image"/>\
+                            </div>\
+                        </slot>\
+                        <div class="bu-mt-2">\
+                            <slot name="title">\
+                                <h4 class="color-cool-gray-100">{{title}}</h4>\
+                            </slot>\
+                            <slot name="subTitle">\
+                                <div class="bu-mt-1 bu-mb-6 text-small color-cool-gray-50 bu-has-text-centered">{{subTitle}}</div>\
+                            </slot>\
+                        </div>\
+                    </div>',
+    });
+
+    Vue.component("cly-empty-chart", BaseEmptyViewForElements.extend({
+    }));
+
+    Vue.component("cly-empty-datatable", BaseEmptyViewForElements.extend({
+    }));
+
+    Vue.component("cly-breadcrumbs", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            crumbs: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+        },
+        template: "<div class='bu-level cly-breadcrumbs bu-mb-5'>\
+                        <div v-for='(crumb, index) in crumbs'\
+                            :class='[\"bu-level-item text-medium bu-mr-0\",\
+                                    {\"bu-ml-2\": (index !== 0)},\
+                                    {\"color-cool-gray-40\": (index === (crumbs.length - 1))}]'>\
+                            <a :href='crumb.url'>{{crumb.label}}</a>\
+                            <span class='bu-ml-2' v-if='index !== (crumbs.length - 1)'>></span>\
+                        </div>\
+                    </div>"
+    }));
 }(window.countlyVue = window.countlyVue || {}));

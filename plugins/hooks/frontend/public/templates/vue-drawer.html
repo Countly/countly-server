@@ -2,52 +2,41 @@
 		@submit="onSubmit"
 		@close="onClose"
 		@copy="onCopy"
+        size="6"
 		:title="title"
         ref="drawerData"
 		:saveButtonLabel="saveButtonLabel"
 		v-bind="$props.controls">
         <template v-slot:default="drawerScope" >
             <cly-form-step id="step1" :name="i18n('hooks.step1')">
-                <div class="cly-vue-drawer-step__section">
-                    <div class="text-small text-heading">
-                        {{i18n('hooks.name')}}
-					</div>
-                    <validation-provider name="name" rules="required" v-slot="v">
-						<el-input
-							v-model="drawerScope.editedObject.name"
-							:class="{'is-error': v.errors.length > 0}"
-							:placeholder="i18n('hooks.messages.name.placeholder')">
-						</el-input>
-					</validation-provider>
-                </div>
-                <div class="cly-vue-drawer-step__section">
-                    <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
-                        <div class="text-small text-heading">
-                            {{i18n('hooks.description')}}
-                        </div>
-                        <div class="cly-vue-hook-drawer__help-text">
-                            {{i18n('hooks.optional')}}
-                        </div>
-                    </div>
-                    <el-input v-model="drawerScope.editedObject.description" :placeholder="i18n('hooks.description-placeholder')"></el-input>
-                </div>
+                <cly-form-field name="hooksName" :label="i18n('hooks.name')" rules="required">
+                    <el-input
+                        v-model="drawerScope.editedObject.name"
+                        :placeholder="i18n('hooks.messages.name.placeholder')">
+                    </el-input>
+                </cly-form-field>
 
-                <div class="cly-vue-drawer-step__section">
-                    <div class="text-small text-heading">
-                        {{i18n('hooks.source-application')}} 
-					</div>
-                    <validation-provider name="name" rules="required" v-slot="v">
-                        <cly-select-x
-                           :placeholder="i18n('hooks.select-application')"
-                           mode="single-list"
-                           v-model="drawerScope.editedObject.apps[index]"
-                           v-for="(app, index) in drawerScope.editedObject.apps"
-                           :key="index"
-                           :class="{'is-error': v.errors.length > 0, 'cly-vue-hook-drawer__is-full-line':true}"
-                           :options="appsSelectorOption">
-                        </cly-select-x>
-                    </validation-provider>
-                </div>
+                <cly-form-field name="description" :label="i18n('hooks.description')">
+                    <div class="cly-vue-hook-drawer__help-text">
+                        {{i18n('hooks.optional')}}
+                    </div>
+                    <el-input
+                        v-model="drawerScope.editedObject.description"
+                        :placeholder="i18n('hooks.description-placeholder')">
+                    </el-input>
+                </cly-form-field>
+
+                <cly-form-field name="application" :label="i18n('hooks.source-application')" rules="required">
+                    <cly-select-x
+                        :placeholder="i18n('hooks.select-application')"
+                        mode="single-list"
+                        v-model="drawerScope.editedObject.apps[index]"
+                        v-for="(app, index) in drawerScope.editedObject.apps"
+                        :key="index"
+                        class="cly-vue-hook-drawer__is-full-line"
+                        :options="appsSelectorOption">
+                    </cly-select-x>
+                </cly-form-field>
 
                 <pre v-if="0">
                 {{drawerScope.editedObject}}
@@ -55,8 +44,8 @@
             </cly-form-step>
 
             <cly-form-step id="step2" :name="i18n('hooks.step2')">
-                <div class="text-big text-heading cly-vue-hook-drawer__no-margin">
-                    {{i18n('hooks.trigger')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                <div class="text-big text-heading cly-vue-hook-drawer__no-margin bu-mt-3">
+                {{i18n('hooks.trigger')}}<span class="cly-vue-tooltip-icon ion ion-help-circled" style="margin-left:5.5px; font-size:15px;" v-tooltip.top-center="description"></span>
                 </div>
                 <div class="cly-vue-drawer-hook_description">
                     {{i18n('hooks.trigger-intro')}} 
@@ -73,50 +62,57 @@
             </cly-form-step>
 
             <cly-form-step id="step3" :name="i18n('hooks.step3')">
-                <div class="text-big text-heading cly-vue-hook-drawer__no-margin">
-                   {{i18n('hooks.effects')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                <div class="text-big text-heading cly-vue-hook-drawer__no-margin bu-mt-3">
+                    {{i18n('hooks.effects')}}<span class="cly-vue-tooltip-icon ion ion-help-circled cly-vue-hook-drawer__small-icon"  v-tooltip.top-center="description"></span>
                 </div>
-                <div class="cly-vue-drawer-hook_description" style="margin-bottom:32px;">
+                <div class="cly-vue-drawer-hook_description">
                     {{i18n('hooks.effects-intro')}} 
                 </div>
-                    <hook-effect 
-                        @removeEffect="removeEffect" 
-                        v-bind:index="index" 
-                        v-for="(effect, index) in drawerScope.editedObject.effects" 
-                        :key="index" 
-                        v-model="drawerScope.editedObject.effects[index]"/>
+                <hook-effect 
+                    @removeEffect="removeEffect" 
+                    v-bind:index="index" 
+                    v-for="(effect, index) in drawerScope.editedObject.effects" 
+                    :key="index" 
+                    v-model="drawerScope.editedObject.effects[index]"/>
                 </div>
                 <el-button @click="addEffect" class="1">{{i18n('hooks.add-effect')}}</el-button>
-
 
                 <div>
                     <div class="cly-vue-hook-drawer-action-card">
                         <div style="display:flex">
                             <div class="is-action-card-title" style="flex-grow: 1;">
                                 <div class="text-medium text-heading cly-vue-hook-drawer__no-margin">
-                                    {{i18n('hooks.test-hook')}}<span class="el-icon-question  cly-vue-tooltip-icon" v-tooltip.top-center=""/>
+                                    {{i18n('hooks.test-hook')}}<span class="ion ion-help-circled cly-vue-hook-drawer__small-icon cly-vue-tooltip-icon" v-tooltip.top-center=""/>
                                 </div>
-                                <div class="cly-vue-drawer-hook_description">
+                                <div class="text-normal text-medium color-cool-gray-100 bu-mt-3">
                                     {{i18n('hooks.test-hook-intro')}} 
                                 </div>
                             </div>
-                            <div class="is-action-card-title-right"><el-button @click="testHook" class="1"><span class="el-icon-s-promotion cly-vue-tooltip-icon"></span>{{i18n('hooks.test-hook-button')}}</el-button></div>
+                            <div class="is-action-card-title-right"><el-button @click="testHook" class="1"><span class="el-icon-s-promotion cly-vue-tooltip-icon" style="margin-right:8px;"></span>{{i18n('hooks.test-hook-button')}}</el-button></div>
                         </div>
                        
                         <div>
-                            <section v-for="item, idx in testResult">
-                                <el-collapse v-model="idx"> 
-                                    <el-collapse-item  name="idx">  
-                                        <template slot="title">
-                                            <span class="done-icon text-small color-white cly-bullet--green"><i class="fa fa-check"></i></span>
-                                            {{i18n('hooks.' + item.t)}}
-                                        </template>
-                                        <div>Input: {{item.i}}</div>
-                                        <div>Output: {{item.o}}</div>
-                                        <div v-if="item.logs">Error Logs: {{item.logs}}</div>
-                                    </el-collapse-item>
-                                </el-collapse>
-                            </section>
+                            <el-collapse v-model="testClaps" class="bu-my-4"> 
+                                <section v-for="item, idx in testResult" >
+                                    <div class="hoosk-test-result-row">
+                                        <el-collapse-item  :name="idx">  
+                                            <template slot="title">
+                                                <span class="cly-vue-hook-drawer__check_icon done-icon text-small color-white cly-bullet--green"><i class="fa fa-check"></i></span>
+                                                {{i18n('hooks.' + item.t)}}
+                                            </template>
+                                            <div class="hook-test-output-field">
+                                                <div class="text-medium text-heading">Input: </div>
+                                                <div>{{item.i}}</div>
+
+                                                <div  class="text-medium text-heading bu-mt-2">Output:</div>
+                                                <div>{{item.o}}</div>
+                                                <div v-if="item.logs" class="text-medium text-heading bu-mt-2">Error Logs:</div>
+                                                <div v-if="item.logs">{{item.logs}}</div>
+                                            </div>
+                                        </el-collapse-item>
+                                        </div>
+                                    </section>
+                            </el-collapse>
                         </div>
                     </div>
                 </div>

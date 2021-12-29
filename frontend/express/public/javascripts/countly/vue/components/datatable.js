@@ -145,9 +145,9 @@
 
                 if (filteredTotal > 0) {
                     info = this.i18n("common.showing")
-                        .replace("_START_", startEntries)
-                        .replace("_END_", endEntries)
-                        .replace("_TOTAL_", filteredTotal);
+                        .replace("_START_", countlyCommon.formatNumber(startEntries))
+                        .replace("_END_", countlyCommon.formatNumber(endEntries))
+                        .replace("_TOTAL_", countlyCommon.formatNumber(filteredTotal));
                 }
 
                 if (this.displaySearch && searchQuery) {
@@ -742,6 +742,11 @@
             hideTop: {
                 type: Boolean,
                 default: false
+            },
+            forceLoading: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         data: function() {
@@ -779,6 +784,9 @@
                 }, {});
             },
             isLoading: function() {
+                if (this.forceLoading === true) {
+                    return true;
+                }
                 if (!this.dataSource) {
                     return false;
                 }

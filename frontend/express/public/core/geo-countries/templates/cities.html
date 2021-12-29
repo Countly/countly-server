@@ -31,7 +31,7 @@
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="cityTable" :resizable="true" v-loading="isLoading">
+			<cly-datatable-n  :rows="cityTable" :resizable="true" :force-loading="isLoading">
 				<template v-slot="scope">
 					<el-table-column sortable="custom" prop="city" :label="i18n('countries.table.city')"></el-table-column>
 					<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')"></el-table-column>

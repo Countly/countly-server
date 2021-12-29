@@ -1,4 +1,4 @@
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,countlySegmentation,moment,Promise*/
+/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,jQuery,countlyCommon,$,countlyGlobal,countlyAuth,Promise*/
 
 (function() {
 
@@ -17,7 +17,7 @@
 
     var ONE_TIME_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS = AUTOMATIC_PUSH_NOTIFICATION_STATUS_FILTER_OPTIONS.concat([
         {label: CV.i18n("push-notification.status-draft"), value: countlyPushNotification.service.StatusEnum.DRAFT},
-        {label: CV.i18n("push-notification.status-not-approved"), value: countlyPushNotification.service.StatusEnum.NOT_APPROVED},
+        {label: CV.i18n("push-notification.status-pending-approval"), value: countlyPushNotification.service.StatusEnum.NOT_APPROVED},
     ]);
 
     var statusFilterOptions = {};
@@ -42,88 +42,6 @@
         {label: "Content message", value: countlyPushNotification.service.MessageTypeEnum.CONTENT},
         {label: "Silent message", value: countlyPushNotification.service.MessageTypeEnum.SILENT}
     ];
-
-    var InitialEditedPushNotification = {
-        _id: null,
-        name: "",
-        platforms: [countlyPushNotification.service.PlatformEnum.ANDROID],
-        audienceSelection: countlyPushNotification.service.AudienceSelectionEnum.BEFORE,
-        message: {
-            default: {
-                title: "",
-                content: "",
-                buttons: [],
-                properties: {
-                    title: {},
-                    content: {}
-                }
-            },
-        },
-        settings: {
-            ios: {
-                subtitle: "",
-                mediaURL: "",
-                mediaMime: "",
-                soundFilename: "default",
-                badgeNumber: "",
-                onClickURL: "",
-                json: null,
-                userData: []
-            },
-            android: {
-                mediaURL: "",
-                mediaMime: "",
-                soundFilename: "default",
-                badgeNumber: "",
-                icon: "",
-                onClickURL: "",
-                json: null,
-                userData: []
-            },
-            all: {
-                mediaURL: "",
-                mediaMime: "",
-            }
-        },
-        queryFilter: null,
-        messageType: countlyPushNotification.service.MessageTypeEnum.CONTENT,
-        localizations: [countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE],
-        cohorts: [],
-        locations: [],
-        delivery: {
-            type: countlyPushNotification.service.SendEnum.NOW,
-            startDate: moment().valueOf(),
-            endDate: moment().valueOf(),
-        },
-        timezone: countlyPushNotification.service.TimezoneEnum.SAME,
-        pastSchedule: countlyPushNotification.service.PastScheduleEnum.SKIP,
-        expiration: {
-            days: 7,
-            hours: 0
-        },
-        oneTime: {
-            targeting: countlyPushNotification.service.TargetingEnum.ALL,
-        },
-        automatic: {
-            deliveryMethod: countlyPushNotification.service.DeliveryMethodEnum.IMMEDIATELY,
-            delayed: {
-                days: 0,
-                hours: 0
-            },
-            deliveryDateCalculation: countlyPushNotification.service.DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
-            trigger: countlyPushNotification.service.TriggerEnum.COHORT_ENTRY,
-            triggerNotMet: countlyPushNotification.service.TriggerNotMetEnum.SEND_ANYWAY,
-            events: [],
-            cohorts: [],
-            capping: false,
-            maximumMessagesPerUser: 1,
-            minimumTimeBetweenMessages: {
-                days: 0,
-                hours: 0
-            },
-            usersTimezone: "00"
-        },
-    };
 
     var InitialEnabledUsers = {
         ios: 0,
@@ -157,8 +75,38 @@
     var PushNotificationDrawer = countlyVue.views.create({
         template: CV.T("/push/templates/push-notification-drawer.html"),
         mixins: [countlyVue.mixins.i18n],
+        props: {
+            id: {
+                type: String,
+                default: null,
+                required: false,
+            },
+            type: {
+                type: String,
+                default: countlyPushNotification.service.TypeEnum.ONE_TIME
+            },
+            userCommand: {
+                type: String,
+                default: countlyPushNotification.service.UserCommandEnum.CREATE,
+            },
+            controls: {
+                type: Object
+            },
+            queryFilter: {
+                type: Object,
+                default: null,
+            },
+            wrappedUserProperties: {
+                type: Boolean,
+                default: false,
+                required: false
+            }
+        },
         data: function() {
             return {
+                isFetchCohortsLoading: false,
+                isFetchEventsLoading: false,
+                isFetchLocationsLoading: false,
                 isLoading: false,
                 localizationOptions: [],
                 userPropertiesOptions: [],
@@ -180,6 +128,8 @@
                 DeliveryDateCalculationEnum: countlyPushNotification.service.DeliveryDateCalculationEnum,
                 TriggerNotMetEnum: countlyPushNotification.service.TriggerNotMetEnum,
                 MediaTypeEnum: countlyPushNotification.service.MediaTypeEnum,
+                UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
+                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum,
                 messageTypeFilterOptions: messageTypeFilterOptions,
                 startDateOptions: countlyPushNotification.service.startDateOptions,
                 targetingOptions: countlyPushNotification.service.targetingOptions,
@@ -199,6 +149,7 @@
                 isAddUserPropertyPopoverOpen: false,
                 isUsersTimezoneSet: false,
                 isEndDateSet: false,
+                isLocationSet: false,
                 multipleLocalizations: false,
                 urlRegex: new RegExp('([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&\'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&\'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&\'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?'),
                 addUserPropertyPopoverPosition: {
@@ -210,26 +161,13 @@
                     ios: null,
                     android: null
                 },
-                pushNotificationUnderEdit: JSON.parse(JSON.stringify(InitialEditedPushNotification)),
+                pushNotificationUnderEdit: JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type))),
                 currentNumberOfUsers: 0,
             };
         },
-        props: {
-            type: {
-                type: String,
-                default: countlyPushNotification.service.TypeEnum.ONE_TIME
-            },
-            controls: {
-                type: Object
-            },
-            queryFilter: {
-                type: Object,
-                default: null,
-            },
-            wrappedUserProperties: {
-                type: Boolean,
-                default: false,
-                required: false
+        watch: {
+            type: function() {
+                this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
             }
         },
         computed: {
@@ -259,6 +197,11 @@
                 }
                 return "+Add Second button";
             },
+            isDraftButtonEnabled: function() {
+                return this.userCommand === this.UserCommandEnum.EDIT_DRAFT ||
+                this.userCommand === this.UserCommandEnum.CREATE ||
+                this.userCommand === this.UserCommandEnum.DUPLICATE;
+            },
             isDefaultLocalizationActive: function() {
                 return this.activeLocalization === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
             },
@@ -266,10 +209,7 @@
                 return this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.length === 2;
             },
             selectedLocalizationFilterOptions: function() {
-                var self = this;
-                return this.pushNotificationUnderEdit.localizations.map(function(selectedLocalization) {
-                    return {label: self.pushNotificationUnderEdit.message[selectedLocalization].label, value: selectedLocalization};
-                });
+                return this.pushNotificationUnderEdit.localizations;
             },
             selectedLocalizationMessage: function() {
                 return this.pushNotificationUnderEdit.message[this.selectedLocalizationFilter];
@@ -294,17 +234,6 @@
             },
             areCohortsAndLocationsRequired: function() {
                 return !this.pushNotificationUnderEdit.cohorts.length && !this.pushNotificationUnderEdit.locations.length;
-            },
-            areEventsAndLocationsRequired: function() {
-                return !this.pushNotificationUnderEdit.automatic.events.length && !this.pushNotificationUnderEdit.locations.length;
-            },
-            areLocationsRequired: function() {
-                if (this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
-                    return this.areEventsAndLocationsRequired;
-                }
-                else {
-                    return this.areCohortsAndLocationsRequired;
-                }
             },
             hasAllPlatformMediaOnly: function() {
                 return (!this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].mediaURL &&
@@ -364,11 +293,14 @@
             },
             previewLocations: function() {
                 var self = this;
-                return this.locationOptions.filter(function(location) {
-                    return self.pushNotificationUnderEdit.locations.some(function(selectedLocationId) {
-                        return location._id === selectedLocationId;
-                    });
-                });
+                return this.locationOptions.reduce(function(allLocations, currentLocation) {
+                    if (self.pushNotificationUnderEdit.locations.some(function(selectedLocationId) {
+                        return currentLocation._id === selectedLocationId;
+                    })) {
+                        allLocations.push(currentLocation.name);
+                    }
+                    return allLocations;
+                }, []);
             }
         },
         methods: {
@@ -385,21 +317,20 @@
             formatDateTime: function(dateTime, format) {
                 return countlyPushNotification.helper.formatDateTime(dateTime, format);
             },
-            setUserPropertiesOptions: function(userPropertiesOptionsDto) {
-                this.userPropertiesOptions = userPropertiesOptionsDto.reduce(function(allUserPropertyOptions, userPropertyOptionDto) {
-                    if (userPropertyOptionDto.id) {
-                        allUserPropertyOptions.push({label: userPropertyOptionDto.name, value: userPropertyOptionDto.id});
-                    }
-                    return allUserPropertyOptions;
-                }, []);
-            },
-            fetchUserPropertiesOptionsIfEmpty: function() {
-                if (!this.userPropertiesOptions.length) {
-                    var self = this;
-                    countlySegmentation.initialize("").then(function() {
-                        self.setUserPropertiesOptions(countlySegmentation.getFilters());
-                    });
+            setUserPropertyOptions: function(propertyList) {
+                var allPropertyOptions = [];
+                if (this.type === this.TypeEnum.AUTOMATIC && this.pushNotificationUnderEdit.automatic.trigger === this.TriggerEnum.EVENT) {
+                    allPropertyOptions.push({label: "Event Properties", name: "eventProperties", options: countlyPushNotification.helper.getEventPropertyOptions(propertyList)});
                 }
+                allPropertyOptions.push({label: "User Properties", name: "userProperties", options: countlyPushNotification.helper.getUserPropertyOptions(propertyList)});
+                allPropertyOptions.push({label: "Custom Properties", name: "customProperties", options: countlyPushNotification.helper.getCustomPropertyOptions(propertyList)});
+                this.userPropertiesOptions = allPropertyOptions;
+            },
+            fetchUserPropertyOptions: function() {
+                var self = this;
+                countlyPushNotification.service.fetchUserProperties().then(function(result) {
+                    self.setUserPropertyOptions(result);
+                });
             },
             isDeliveryNextStepFromInfoStep: function(nextStep, currentStep) {
                 return nextStep === 1 && currentStep === 0;
@@ -410,11 +341,41 @@
             isContentNextStepFromInfoStep: function(nextStep, currentStep) {
                 return nextStep === 2 && currentStep === 0;
             },
+            isContentNextStepFromAnyPreviousStep: function(nextStep, currentStep) {
+                return nextStep === 2 && currentStep < 2;
+            },
+            isEditMode: function() {
+                return this.userCommand === this.UserCommandEnum.DUPLICATE ||
+                this.userCommand === this.UserCommandEnum.EDIT_DRAFT ||
+                this.userCommand === this.UserCommandEnum.EDIT ||
+                this.userCommand === this.UserCommandEnum.RESEND;
+            },
+            shouldPrepare: function(nextStep, currentStep) {
+                return this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep);
+            },
+            shouldValidateContentOnEnter: function(nextStep, currentStep) {
+                return (this.isContentNextStepFromAnyPreviousStep(nextStep, currentStep) && this.isEditMode());
+            },
+            shouldValidateContentBeforeExit: function(nextStep, currentStep) {
+                return this.isReviewNextStepFromContentStep(nextStep, currentStep) && this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.CONTENT;
+            },
+            validateContentOnEnterIfNecessary: function(nextStep, currentStep) {
+                if (this.shouldValidateContentOnEnter(nextStep, currentStep)) {
+                    this.$refs.content.validate();
+                }
+            },
+            fetchUserPropertyOptionsOnContentEnter: function(nextStep, currentStep) {
+                if (this.isContentNextStepFromAnyPreviousStep(nextStep, currentStep)) {
+                    this.fetchUserPropertyOptions();
+                }
+            },
             onStepClick: function(nextStep, currentStep) {
-                if (this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep)) {
+                this.validateContentOnEnterIfNecessary(nextStep, currentStep);
+                this.fetchUserPropertyOptionsOnContentEnter(nextStep, currentStep);
+                if (this.shouldPrepare(nextStep, currentStep)) {
                     return this.prepare();
                 }
-                if (this.isReviewNextStepFromContentStep(nextStep, currentStep) && this.pushNotificationUnderEdit.messageType === this.MessageTypeEnum.CONTENT) {
+                if (this.shouldValidateContentBeforeExit(nextStep, currentStep)) {
                     return this.$refs.content.validate();
                 }
                 return Promise.resolve(true);
@@ -453,12 +414,16 @@
                 var self = this;
                 this.setIsLoading(true);
                 return new Promise(function(resolve) {
+                    var options = {};
+                    options.isLocationSet = self.isLocationSet;
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
                     self.addQueryFilterIfFound(preparePushNotificationModel);
-                    countlyPushNotification.service.prepare(preparePushNotificationModel).then(function(response) {
+                    countlyPushNotification.service.prepare(preparePushNotificationModel, options).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
-                        self.setId(response._id);
+                        if (response._id) {
+                            self.setId(response._id);
+                        }
                         self.setCurrentNumberOfUsers(response.total);
                         resolve(true);
                     }).catch(function(error) {
@@ -474,20 +439,122 @@
                     });
                 });
             },
-            onSubmit: function(_, done) {
-                var self = this;
-                var model = Object.assign({}, this.pushNotificationUnderEdit);
-                model.type = this.type;
+            getBaseOptions: function() {
                 var options = {};
                 options.totalAppUsers = this.totalAppUsers;
                 options.localizations = this.localizationOptions;
                 options.settings = this.settings;
                 options.isUsersTimezoneSet = this.isUsersTimezoneSet;
                 options.isEndDateSet = this.isEndDateSet;
+                options.isLocationSet = this.isLocationSet;
+                return options;
+            },
+            save: function(options) {
+                if (!options) {
+                    options = {};
+                }
+                options = Object.assign(options, this.getBaseOptions());
+                var model = Object.assign({}, this.pushNotificationUnderEdit);
+                model.type = this.type;
                 this.addQueryFilterIfFound(model);
-                countlyPushNotification.service.save(model, options).then(function() {
+                return countlyPushNotification.service.save(model, options);
+            },
+            update: function(options) {
+                if (!options) {
+                    options = {};
+                }
+                options = Object.assign(options, this.getBaseOptions());
+                var model = Object.assign({}, this.pushNotificationUnderEdit);
+                model.type = this.type;
+                this.addQueryFilterIfFound(model);
+                return countlyPushNotification.service.update(model, options);
+            },
+            resend: function(options) {
+                if (!options) {
+                    options = {};
+                }
+                options = Object.assign(options, this.getBaseOptions());
+                var model = Object.assign({}, this.pushNotificationUnderEdit);
+                model.type = this.type;
+                this.addQueryFilterIfFound(model);
+                return countlyPushNotification.service.resend(model, options);
+            },
+            saveDraft: function() {
+                var options = {};
+                options.isDraft = true;
+                options.isCreated = false;
+                return this.save(options);
+            },
+            updateDraft: function() {
+                var options = {};
+                options.isDraft = true;
+                options.isCreated = false;
+                return this.update(options);
+            },
+            saveFromDraft: function() {
+                var options = {};
+                options.isDraft = true;
+                options.isCreated = true;
+                return this.update(options);
+            },
+            onDraft: function() {
+                var self = this;
+                var promiseMethod = null;
+                if (this.userCommand === this.UserCommandEnum.EDIT_DRAFT) {
+                    promiseMethod = this.updateDraft;
+                }
+                if (this.userCommand === this.UserCommandEnum.CREATE) {
+                    promiseMethod = this.saveDraft;
+                }
+                if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
+                    promiseMethod = this.saveDraft;
+                }
+                if (!promiseMethod) {
+                    throw new Error('Invalid user command:' + this.userCommand);
+                }
+                promiseMethod().then(function() {
+                    self.$refs.drawer.doClose();
+                    CountlyHelpers.notify({
+                        title: "Push notification",
+                        message: "Push notification message was successfully saved."
+                    });
+                    self.$emit('save');
+                }).catch(function(error) {
+                    CountlyHelpers.notify({
+                        title: "Push notification error",
+                        message: error.message,
+                        type: "error"
+                    });
+                });
+            },
+            onSubmit: function(_, done) {
+                var self = this;
+                var promiseMethod = null;
+                if (this.userCommand === this.UserCommandEnum.EDIT_DRAFT) {
+                    promiseMethod = this.saveFromDraft;
+                }
+                if (this.userCommand === this.UserCommandEnum.EDIT) {
+                    promiseMethod = this.update;
+                }
+                if (this.userCommand === this.UserCommandEnum.CREATE) {
+                    promiseMethod = this.save;
+                }
+                if (this.userCommand === this.UserCommandEnum.DUPLICATE) {
+                    promiseMethod = this.save;
+                }
+                if (this.userCommand === this.UserCommandEnum.RESEND) {
+                    promiseMethod = this.resend;
+                }
+                if (!promiseMethod) {
+                    throw new Error('Invalid user command:' + this.userCommand);
+                }
+                promiseMethod().then(function() {
                     done();
-                    self.$store.dispatch("countlyPushNotification/main/fetchAll", true);
+                    CountlyHelpers.notify({
+                        title: "Push notification",
+                        message: "Push notification message was successfully saved."
+                    });
+                    self.$emit('save');
                 }).catch(function(error) {
                     CountlyHelpers.notify({
                         title: "Push notification error",
@@ -500,22 +567,26 @@
             resetState: function() {
                 this.activeLocalization = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
                 this.selectedLocalizationFilter = countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+                this.isUsersTimezoneSet = false;
+                this.isEndDateSet = false;
+                this.isLocationSet = false;
                 this.isConfirmed = false;
                 this.multipleLocalizations = false;
                 this.expandedPlatformSettings = [];
                 this.selectedUserPropertyContainer = "title";
                 this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
-                this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(InitialEditedPushNotification));
+                this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
             },
             onClose: function() {
                 this.resetState();
                 this.closeAddUserPropertyPopover();
+                this.$emit('onClose');
             },
             onOpen: function() {
-                this.fetchUserPropertiesOptionsIfEmpty();
+                if (this.id) {
+                    this.fetchPushNotificationById();
+                }
             },
-            onInfoAndTargetFormSubmit: function() {},
-            remoteMethod: function() {},
             addButton: function() {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.push({label: "", url: ""});
             },
@@ -527,7 +598,7 @@
             },
             removeAllNonDefaultSelectedLocalizations: function() {
                 this.pushNotificationUnderEdit.localizations = this.pushNotificationUnderEdit.localizations.filter(function(selectedLocalization) {
-                    return selectedLocalization === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+                    return selectedLocalization.value === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
                 });
             },
             deleteAllNonDefaultLocalizationMessages: function() {
@@ -556,12 +627,12 @@
                     this.removeAllNonDefaultSelectedLocalizations();
                 }
             },
-            isDefaultLocalization: function(value) {
-                return value === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
+            isDefaultLocalization: function(item) {
+                return item.value === countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE;
             },
-            isLocalizationSelected: function(value) {
+            isLocalizationSelected: function(item) {
                 return this.pushNotificationUnderEdit.localizations.filter(function(selectedLocalization) {
-                    return value === selectedLocalization;
+                    return item.value === selectedLocalization.value;
                 }).length > 0;
             },
             addEmptyLocalizationMessageIfNotFound: function(localization) {
@@ -578,17 +649,17 @@
                     });
                 }
             },
-            addLocalizationIfNotSelected: function(value) {
-                if (!this.isLocalizationSelected(value)) {
-                    this.pushNotificationUnderEdit.localizations.push(value);
+            addLocalizationIfNotSelected: function(item) {
+                if (!this.isLocalizationSelected(item)) {
+                    this.pushNotificationUnderEdit.localizations.push(item);
                 }
             },
             setActiveLocalization: function(value) {
                 this.activeLocalization = value;
             },
-            removeLocalization: function(value) {
-                this.pushNotificationUnderEdit.localizations = this.pushNotificationUnderEdit.localizations.filter(function(activeLocalization) {
-                    return value !== activeLocalization;
+            removeLocalization: function(item) {
+                this.pushNotificationUnderEdit.localizations = this.pushNotificationUnderEdit.localizations.filter(function(selectedLocalization) {
+                    return item.value !== selectedLocalization.value;
                 });
             },
             resetMessageInHTMLToActiveLocalization: function() {
@@ -602,14 +673,14 @@
                 );
             },
             onLocalizationChange: function(localization) {
-                if (!this.isLocalizationSelected(localization.value)) {
+                if (!this.isLocalizationSelected(localization)) {
                     this.addEmptyLocalizationMessageIfNotFound(localization);
-                    this.addLocalizationIfNotSelected(localization.value);
+                    this.addLocalizationIfNotSelected(localization);
                     this.setActiveLocalization(localization.value);
                     this.resetMessageInHTMLToActiveLocalization();
                 }
                 else {
-                    this.removeLocalization(localization.value);
+                    this.removeLocalization(localization);
                     this.setActiveLocalization(countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE);
                     this.resetMessageInHTMLToActiveLocalization();
                 }
@@ -653,8 +724,8 @@
             removeUserPropertyInHTML: function(id, container) {
                 this.$refs[container].removeUserProperty(id);
             },
-            setUserPropertyInHTML: function(id, container, previewValue, value) {
-                this.$refs[container].setUserPropertyValue(id, previewValue, value);
+            setUserPropertyInHTML: function(id, container, previewValue, value, type) {
+                this.$refs[container].setUserPropertyValue(id, previewValue, value, type);
             },
             setUserPropertyFallbackInHTML: function(id, container, previewValue, fallback) {
                 this.$refs[container].setUserPropertyFallbackValue(id, previewValue, fallback);
@@ -669,6 +740,7 @@
                     this.$set(this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container], propertyIndex, {
                         id: propertyIndex,
                         value: "",
+                        type: this.UserPropertyTypeEnum.USER,
                         label: "Select property|",
                         fallback: "",
                         isUppercase: false
@@ -690,11 +762,26 @@
                 var container = payload.container;
                 var value = payload.value;
                 var label = payload.label;
+                var type = payload.type;
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value = value;
                 this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].label = label;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].type = type;
                 var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback;
                 var previewValue = label + "|" + currentFallbackValue;
-                this.setUserPropertyInHTML(id, container, previewValue, value);
+                this.setUserPropertyInHTML(id, container, previewValue, value, type);
+            },
+            onInputUserProperty: function(payload) {
+                var id = payload.id;
+                var container = payload.container;
+                var value = payload.value;
+                var label = payload.value;
+                var type = this.UserPropertyTypeEnum.API;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].value = value;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].label = label;
+                this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].type = type;
+                var currentFallbackValue = this.pushNotificationUnderEdit.message[this.activeLocalization].properties[container][id].fallback;
+                var previewValue = "{" + value + "}|" + currentFallbackValue;
+                this.setUserPropertyInHTML(id, container, previewValue, value, type);
             },
             onInputFallbackUserProperty: function(payload) {
                 var id = payload.id;
@@ -776,11 +863,14 @@
             },
             fetchCohorts: function() {
                 var self = this;
+                this.isFetchCohortsLoading = true;
                 countlyPushNotification.service.fetchCohorts()
                     .then(function(cohorts) {
                         self.setCohortOptions(cohorts);
                     }).catch(function() {
                         self.setCohortOptions([]);
+                    }).finally(function() {
+                        self.isFetchCohortsLoading = false;
                     });
             },
             setLocationOptions: function(locations) {
@@ -788,23 +878,29 @@
             },
             fetchLocations: function() {
                 var self = this;
+                this.isFetchLocationsLoading = true;
                 countlyPushNotification.service.fetchLocations()
                     .then(function(locations) {
                         self.setLocationOptions(locations);
                     }).catch(function() {
                         self.setLocationOptions([]);
+                    }).finally(function() {
+                        self.isFetchLocationsLoading = false;
                     });
             },
             setEventOptions: function(events) {
                 this.eventOptions = events;
             },
-            fetchAllEvents: function() {
+            fetchEvents: function() {
                 var self = this;
+                this.isFetchEventsLoading = true;
                 countlyPushNotification.service.fetchEvents()
                     .then(function(events) {
                         self.setEventOptions(events);
                     }).catch(function() {
                         self.setEventOptions([]);
+                    }).finally(function() {
+                        self.isFetchEventsLoading = false;
                     });
             },
             setTotalAppUsers: function(totalAppUsers) {
@@ -826,10 +922,29 @@
                         //TODO: log error;
                     });
             },
-            getUserProperties: function() {
-                return countlySegmentation.getFilters().map(function(userFilter) {
-                    return {label: userFilter.name, value: userFilter.id};
-                });
+            setPushNotificationUnderEdit: function(value) {
+                this.pushNotificationUnderEdit = value;
+            },
+            fetchPushNotificationById: function() {
+                var self = this;
+                this.setIsLoading(true);
+                countlyPushNotification.service.fetchById(this.id)
+                    .then(function(response) {
+                        self.setPushNotificationUnderEdit(response);
+                        if (self.userCommand === self.UserCommandEnum.DUPLICATE) {
+                            self.setId(null);
+                        }
+                        self.resetMessageInHTMLToActiveLocalization();
+                    })
+                    .catch(function() {
+                        var initialModel = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
+                        initialModel.type = self.type;
+                        self.setPushNotificationUnderEdit(initialModel);
+                        //TODO: log error;
+                    })
+                    .finally(function() {
+                        self.setIsLoading(false);
+                    });
             },
             shouldDisplayPlatformSettings: function(platform) {
                 return this.pushNotificationUnderEdit.platforms.filter(function(selectedPlatform) {
@@ -840,9 +955,8 @@
         mounted: function() {
             this.fetchCohorts();
             this.fetchLocations();
-            this.fetchAllEvents();
+            this.fetchEvents();
             this.fetchNumberOfUsers();
-            this.getUserProperties();
         },
         components: {
             "message-setting-element": countlyPushNotificationComponent.MessageSettingElement,
@@ -873,12 +987,13 @@
                 oneTimePeriodFilters: oneTimePeriodFilterOptions,
                 selectedOneTimePeriodFilter: countlyPushNotification.service.PeriodEnum.WEEKLY,
                 automaticPeriodFilters: automaticPeriodFilterOptions,
+                statusOptions: countlyPushNotification.service.statusOptions,
                 selectedAutomaticPeriodFilter: countlyPushNotification.service.PeriodEnum.DAILY,
                 transactionalPeriodFilters: transactionalPeriodFilterOptions,
                 selectedTransactionalPeriodFilter: countlyPushNotification.service.PeriodEnum.DAILY,
                 TypeEnum: countlyPushNotification.service.TypeEnum,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
-                UserEventEnum: countlyPushNotification.service.UserEventEnum,
+                UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
                 StatusEnum: countlyPushNotification.service.StatusEnum,
                 optionalTableColumns: [
                     {
@@ -994,70 +1109,98 @@
             },
             getPreviewPlatforms: function(platforms) {
                 return platforms.map(function(item) {
-                    return item.label;
+                    return countlyPushNotification.service.platformOptions[item].label;
                 }).sort().join(', ');
             },
             onApprove: function(id) {
-                var self = this;
-                countlyPushNotification.service.approve(id)
-                    .then(function() {
-                        self.$store.dispatch('countlyPushNotification/main/fetchAll', false);
-                    }).catch(function(error) {
-                        CountlyHelpers.notify({
-                            title: "Push notification approver error",
-                            message: error.message,
-                            type: "error"
-                        });
-                    });
+                this.handleUserCommands(this.UserCommandEnum.APPROVE, id);
             },
-            handleUserEvents: function(event, pushNotificationId) {
-                if (event === this.UserEventEnum.DUPLICATE) {
-                    this.$store.dispatch('countlyPushNotification/main/onDuplicate', pushNotificationId);
+            handleUserCommands: function(command, pushNotificationId) {
+                this.$store.dispatch('countlyPushNotification/main/onUserCommand', {type: command, pushNotificationId: pushNotificationId});
+                switch (command) {
+                case this.UserCommandEnum.RESEND: {
+                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    break;
                 }
-                else if (event === this.UserEventEnum.RESEND) {
-                    this.$store.dispatch('countlyPushNotification/main/onResend', pushNotificationId);
+                case this.UserCommandEnum.DUPLICATE: {
+                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    break;
                 }
-                else if (event === this.UserEventEnum.APPROVE) {
-                    this.onApprove(pushNotificationId);
-                }
-                else if (event === this.UserEventEnum.DELETE) {
+                case this.UserCommandEnum.DELETE: {
                     this.$store.dispatch('countlyPushNotification/main/onDelete', pushNotificationId);
+                    break;
+                }
+                case this.UserCommandEnum.REJECT: {
+                    this.$store.dispatch('countlyPushNotification/main/onReject', pushNotificationId);
+                    break;
+                }
+                case this.UserCommandEnum.APPROVE: {
+                    this.$store.dispatch('countlyPushNotification/main/onApprove', pushNotificationId);
+                    break;
+                }
+                case this.UserCommandEnum.EDIT: {
+                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    break;
+                }
+                case this.UserCommandEnum.EDIT_DRAFT: {
+                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    break;
+                }
+                case this.UserCommandEnum.CREATE: {
+                    this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
+                    break;
+                }
+                default: {
+                    throw new Error("Unknown user command:" + command);
+                }
                 }
             },
-            //TODO-LA: use status action specifications when ready
-            // eslint-disable-next-line no-unused-vars
-            shouldShowDuplicateUserEvent: function(status) {
+            shouldShowDuplicateUserCommand: function() {
                 return true;
             },
-            //TODO-LA: use status action specifications when ready
-            // eslint-disable-next-line no-unused-vars
-            shouldShowResendUserEvent: function(status) {
+            shouldShowDeleteUserCommand: function() {
                 return true;
             },
-            //TODO-LA: use status action specifications when ready
-            // eslint-disable-next-line no-unused-vars
-            shouldShowDeleteUserEvent: function(status) {
-                return true;
+            shouldShowResendUserCommand: function(status) {
+                return status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED;
             },
-            shouldShowApproveUserEvent: function(status) {
-                return status === this.StatusEnum.NOT_APPROVED;
+            shouldShowEditDraftUserCommand: function(status) {
+                return status === this.StatusEnum.DRAFT;
             },
-            shouldShowRejectUserEvent: function(status) {
-                return status === this.StatusEnum.NOT_APPROVED;
+            shouldShowApproveUserCommand: function(status) {
+                return status === this.StatusEnum.PENDING_APPROVAL;
+            },
+            shouldShowRejectUserCommand: function(status) {
+                return status === this.StatusEnum.PENDING_APPROVAL;
+            },
+            shouldShowEditUserCommand: function(status) {
+                return status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED;
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
-                case countlyPushNotification.service.StatusEnum.SENT: {
-                    return "#12AF51";
+                case this.StatusEnum.CREATED: {
+                    return "green";
                 }
-                case countlyPushNotification.service.StatusEnum.ABORTED: {
-                    return "#D23F00";
+                case this.StatusEnum.PENDING_APPROVAL: {
+                    return "yellow";
                 }
-                case countlyPushNotification.service.StatusEnum.SCHEDULED: {
-                    return "#CDAD7A";
+                case this.StatusEnum.DRAFT: {
+                    return "yellow";
                 }
-                case countlyPushNotification.service.StatusEnum.STOPPED: {
-                    return "#D23F00";
+                case this.StatusEnum.SCHEDULED: {
+                    return "yellow";
+                }
+                case this.StatusEnum.SENDING: {
+                    return "blue";
+                }
+                case this.StatusEnum.SENT: {
+                    return "green";
+                }
+                case this.StatusEnum.STOPPED: {
+                    return "red";
+                }
+                case this.StatusEnum.FAILED: {
+                    return "red";
                 }
                 default: {
                     return "#FFFFFF";
@@ -1082,7 +1225,8 @@
                     {title: CV.i18n('push-notification.one-time'), name: countlyPushNotification.service.TypeEnum.ONE_TIME, component: PushNotificationTabView},
                     {title: CV.i18n('push-notification.automatic'), name: countlyPushNotification.service.TypeEnum.AUTOMATIC, component: PushNotificationTabView},
                     {title: CV.i18n('push-notification.transactional'), name: countlyPushNotification.service.TypeEnum.TRANSACTIONAL, component: PushNotificationTabView}
-                ]
+                ],
+                UserCommandEnum: countlyPushNotification.service.UserCommandEnum
             };
         },
         computed: {
@@ -1094,12 +1238,32 @@
                     this.$store.dispatch('countlyPushNotification/main/onSetPushNotificationType', value);
                     this.$store.dispatch('countlyPushNotification/main/fetchAll');
                 }
+            },
+            isDrawerOpen: function() {
+                return this.$store.state.countlyPushNotification.main.isDrawerOpen;
+            },
+            userCommand: function() {
+                return this.$store.state.countlyPushNotification.main.userCommand;
+            },
+        },
+        watch: {
+            isDrawerOpen: function(value) {
+                if (value) {
+                    this.openDrawer("pushNotificationDrawer");
+                }
             }
         },
         methods: {
             onCreatePushNotification: function() {
-                this.openDrawer("pushNotificationDrawer");
+                this.$store.dispatch('countlyPushNotification/main/onUserCommand', {type: this.UserCommandEnum.CREATE, pushNotificationId: null});
+                this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', true);
             },
+            onDrawerClose: function() {
+                this.$store.dispatch('countlyPushNotification/main/onSetIsDrawerOpen', false);
+            },
+            onSave: function() {
+                this.$store.dispatch('countlyPushNotification/main/fetchAll', true);
+            }
         },
         components: {
             "push-notification-drawer": PushNotificationDrawer
@@ -1127,16 +1291,18 @@
 
     var PushNotificationDetailsView = countlyVue.views.BaseView.extend({
         template: "#push-notification-details",
+        mixins: [countlyVue.mixins.hasDrawers("pushNotificationDrawer")],
         data: function() {
             return {
                 StatusEnum: countlyPushNotification.service.StatusEnum,
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 selectedPlatformFilter: countlyPushNotification.service.PlatformEnum.ALL,
                 platformFilters: platformFilterOptions,
+                statusOptions: countlyPushNotification.service.statusOptions,
                 selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 DEFAULT_ALPHA_COLOR_VALUE_HEX: 50,
                 currentSummaryTab: "message",
-                UserEventEnum: countlyPushNotification.service.UserEventEnum,
+                UserCommandEnum: countlyPushNotification.service.UserCommandEnum,
                 summaryTabs: [
                     {
                         title: CV.i18n('push-notification-details.message-tab'),
@@ -1209,51 +1375,121 @@
                 result[this.PlatformEnum.IOS] = {url: this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL, type: this.pushNotification.settings[this.PlatformEnum.IOS].mediaMime };
                 result[this.PlatformEnum.ANDROID] = {url: this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL, type: this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaMime};
                 return result;
+            },
+            isDrawerOpen: function() {
+                return this.$store.state.countlyPushNotification.details.isDrawerOpen;
+            },
+            userCommand: function() {
+                return this.$store.state.countlyPushNotification.details.userCommand;
+            }
+        },
+        watch: {
+            isDrawerOpen: function(value) {
+                if (value) {
+                    this.openDrawer("pushNotificationDrawer");
+                }
             }
         },
         methods: {
-            onApprove: function() {
-                var self = this;
-                countlyPushNotification.service.approve(this.pushNotification.id)
-                    .then(function() {
-                        self.$store.dispatch('countlyPushNotification/details/fetchById', self.pushNotification.id);
-                    }).catch(function(error) {
-                        CountlyHelpers.notify({
-                            title: "Push notification approver error",
-                            message: error.message,
-                            type: "error"
-                        });
-                    });
+            onApprove: function(id) {
+                this.handleUserCommands(this.UserCommandEnum.APPROVE, id);
             },
-            onReject: function() {
-                //TODO-LA:Implement reject message when it is supported from the API
+            onReject: function(id) {
+                this.handleUserCommands(this.UserCommandEnum.REJECT, id);
             },
-            // eslint-disable-next-line no-unused-vars
-            handleUserEvents: function(event, pushNotificationId) {
-            },
-            getStatusBackgroundColor: function() {
-                if (this.pushNotification.status) {
-                    switch (this.pushNotification.status.value) {
-                    case countlyPushNotification.service.StatusEnum.SENT: {
-                        return "#12AF51";
-                    }
-                    case countlyPushNotification.service.StatusEnum.ABORTED: {
-                        return "#D23F00";
-                    }
-                    case countlyPushNotification.service.StatusEnum.SCHEDULED: {
-                        return "#CDAD7A";
-                    }
-                    case countlyPushNotification.service.StatusEnum.STOPPED: {
-                        return "#D23F00";
-                    }
-                    default: {
-                        return "#FFFFFF";
-                    }
-                    }
+            handleUserCommands: function(command, pushNotificationId) {
+                this.$store.dispatch('countlyPushNotification/details/onUserCommand', {type: command, pushNotificationId: pushNotificationId});
+                switch (command) {
+                case this.UserCommandEnum.RESEND: {
+                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    break;
                 }
-                return "#FFFFFF";
+                case this.UserCommandEnum.DUPLICATE: {
+                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    break;
+                }
+                case this.UserCommandEnum.DELETE: {
+                    this.$store.dispatch('countlyPushNotification/details/onDelete', pushNotificationId);
+                    break;
+                }
+                case this.UserCommandEnum.REJECT: {
+                    this.$store.dispatch('countlyPushNotification/details/onReject', pushNotificationId);
+                    break;
+                }
+                case this.UserCommandEnum.APPROVE: {
+                    this.$store.dispatch('countlyPushNotification/details/onApprove', pushNotificationId);
+                    break;
+                }
+                case this.UserCommandEnum.EDIT: {
+                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    break;
+                }
+                case this.UserCommandEnum.EDIT_DRAFT: {
+                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    break;
+                }
+                case this.UserCommandEnum.CREATE: {
+                    this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', true);
+                    break;
+                }
+                default: {
+                    throw new Error("Unknown user command:" + command);
+                }
+                }
             },
-            formatDateAgoText: function(date) {
+            shouldShowDuplicateUserCommand: function() {
+                return true;
+            },
+            shouldShowDeleteUserCommand: function() {
+                return true;
+            },
+            shouldShowResendUserCommand: function(status) {
+                return status === this.StatusEnum.STOPPED || status === this.StatusEnum.FAILED;
+            },
+            shouldShowEditDraftUserCommand: function(status) {
+                return status === this.StatusEnum.DRAFT;
+            },
+            shouldShowApproveUserCommand: function(status) {
+                return status === this.StatusEnum.PENDING_APPROVAL;
+            },
+            shouldShowRejectUserCommand: function(status) {
+                return status === this.StatusEnum.PENDING_APPROVAL;
+            },
+            shouldShowEditUserCommand: function(status) {
+                return status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED;
+            },
+            getStatusBackgroundColor: function(status) {
+                switch (status) {
+                case this.StatusEnum.CREATED: {
+                    return "green";
+                }
+                case this.StatusEnum.PENDING_APPROVAL: {
+                    return "yellow";
+                }
+                case this.StatusEnum.DRAFT: {
+                    return "yellow";
+                }
+                case this.StatusEnum.SCHEDULED: {
+                    return "yellow";
+                }
+                case this.StatusEnum.SENDING: {
+                    return "blue";
+                }
+                case this.StatusEnum.SENT: {
+                    return "green";
+                }
+                case this.StatusEnum.STOPPED: {
+                    return "red";
+                }
+                case this.StatusEnum.FAILED: {
+                    return "red";
+                }
+                default: {
+                    return "#FFFFFF";
+                }
+                }
+            },
+            formatTimeAgoText: function(date) {
                 return countlyCommon.formatTimeAgoText(date).text;
             },
             getDetailsBaseChartOptions: function(seriesData) {
@@ -1282,10 +1518,14 @@
             },
             findFailedPushNotifications: function() {
                 return CountlyHelpers.formatPercentage(this.pushNotification.failed / this.pushNotification.total);
+            },
+            onDrawerClose: function() {
+                this.$store.dispatch('countlyPushNotification/details/onSetIsDrawerOpen', false);
             }
         },
         components: {
-            "mobile-message-preview": countlyPushNotificationComponent.MobileMessagePreview
+            "mobile-message-preview": countlyPushNotificationComponent.MobileMessagePreview,
+            "push-notification-drawer": PushNotificationDrawer
         },
         mounted: function() {
             if (this.$route.params.id) {

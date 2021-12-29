@@ -355,6 +355,14 @@
                 }
                 return rows;
             },
+            initialized: function() {
+                var result = this.$store.getters["countlyAlerts/table/getInitialized"];
+                return result;
+            },
+            rowTableRows: function() {
+                var rows = this.$store.getters["countlyAlerts/table/all"];
+                return rows;
+            }
         },
         data: function() {
             var appsSelectorOption = [];
@@ -375,7 +383,13 @@
                 deleteMessage: '',
             };
         },
+        props: {
+            callCreateAlertDrawer: {type: Function, default: function() {}},
+        },
         methods: {
+            createAlert: function() {
+                this.callCreateAlertDrawer();
+            },
             handleAlertEditCommand: function(command, scope) {
                 if (command === "edit-comment") {
                     /* eslint-disable */
@@ -395,10 +409,10 @@
             },
             submitDeleteForm: function() {
                 if (this.deleteElement.alertDataType === 'online-users') {
-                    this.$store.dispatch("countlyAlerts/deleteOnlineUsersAlert", this.deleteElement._id);
+                    this.$store.dispatch("countlyAlerts/deleteOnlineUsersAlert", {alertID: this.deleteElement._id, appid: this.deleteElement.selectedApps[0]});
                 }
                 else {
-                    this.$store.dispatch("countlyAlerts/deleteAlert", this.deleteElement._id);
+                    this.$store.dispatch("countlyAlerts/deleteAlert", {alertID: this.deleteElement._id, appid: this.deleteElement.selectedApps[0]});
                 }
                 this.showDeleteDialog = false;
             },
@@ -421,11 +435,15 @@
                         }
                     }
                 }
-
-                this.$store.dispatch("countlyAlerts/table/updateStatus", alertStatus);
-                this.$store.dispatch("countlyAlerts/table/updateOnlineusersAlertStatus", onlineUsersAlertStatus);
-                this.$store.dispatch("countlyAlerts/table/fetchAll");
-                scope.unpatch();
+                var self = this;
+                self.scope = scope;
+                self.onlineUsersAlertStatus = onlineUsersAlertStatus;
+                this.$store.dispatch("countlyAlerts/table/updateStatus", alertStatus).then(function() {
+                    return self.$store.dispatch("countlyAlerts/table/updateOnlineusersAlertStatus", self.onlineUsersAlertStatus)
+                        .then(function() {
+                            return self.$store.dispatch("countlyAlerts/table/fetchAll");
+                        });
+                });
             },
             refresh: function() {
             // this.$store.dispatch("countlyHooks/table/fetchAll");
@@ -484,8 +502,9 @@
     }
     $(document).ready(function() {
         if (countlyAuth.validateRead(ALERTS_FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 40});
+            app.addMenu("management", {code: "alerts", url: "#/manage/alerts", text: "alert.plugin-title", priority: 44});
         }
+
 
         if (countlyGlobal.plugins.indexOf("concurrent_users") > -1) {
             countlyVue.container.registerData("/alerts/data-type", {label: jQuery.i18n.map["concurrent-users.title"], value: 'online-users'});

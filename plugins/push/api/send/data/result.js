@@ -1,12 +1,12 @@
 'use strict';
 
 const { PushError, ERROR } = require('./error'),
-    { toDate, Jsonable } = require('./const');
+    { toDate, Validatable } = require('./const');
 
 /**
  * Message sending result
  */
-class Result extends Jsonable {
+class Result extends Validatable {
     /**
      * 
      * @param {object}                  data                delivery data

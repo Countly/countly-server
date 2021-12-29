@@ -21,15 +21,14 @@
 <script  type="text/x-template" id="reports-table">
 <div>
 <cly-empty-view 
-    v-if="tableRows.length === 0"
+    v-if="rawTableRows.length === 0 && initialized"
     :title="i18n('reports.empty-title')"
     :subTitle="i18n('reports.empty-subtitle')"
     :actionTitle="i18n('reports.empty-action-button-title')"
+    :hasAction="true"
     :actionFunc="createReport"
-> 
-</cly-empty-view>
-
-<cly-section v-if="tableRows.length > 0">
+/>
+<cly-section v-else>
     <cly-datatable-n
         class="cly-vue-reports-table"
         :tracked-fields="localTableTrackedFields"
@@ -154,7 +153,7 @@
             <el-input v-model="drawerScope.editedObject.title" :placeholder="i18n('reports.report-name')"></el-input>
         </cly-form-field>
 
-        <cly-form-field name="email" :label="i18n('reports.email-to-receive')" >
+        <cly-form-field name="email" :label="i18n('reports.email-to-receive')" rules="required">
             <cly-select-email v-model="drawerScope.editedObject.emails"></cly-select-email>
         </cly-form-field>
 
@@ -231,13 +230,14 @@
                 <cly-select-x
                    mode="multi-check"
                    v-model="drawerScope.editedObject.selectedEvents"
+                   maxInputWidth="300"
                    :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
                    :options="eventOptions">
                 </cly-select-x>
             </validation-provider>
         </div>
         
-        <cly-form-field name="frequency" class="frequency-block" :label="i18n('reports.frequency')" rules="required" v-if="drawerScope.editedObject.metricsArray && drawerScope.editedObject.metricsArray.indexOf('events') > -1">
+        <cly-form-field name="frequency" class="frequency-block" :label="i18n('reports.frequency')" rules="required">
             <div class="cly-vue-report-drawer__report_description bu-mb-4 text-small  color-cool-gray-50">
                 {{i18n('reports.frequency-desc')}}
             </div>
@@ -249,10 +249,8 @@
                 :key="idx"
                 v-for="(item, idx) in frequencyOptions"
             border>
-                {{item.label}}
-                <div class="text-small color-cool-gray-50">
-                    {{item.description}}
-                </div>
+                    <span class="text-medium">{{item.label}}</span>
+                    <span class="text-small color-cool-gray-50">{{item.description}}</span>
             </el-radio>
         </cly-form-field>
 
@@ -268,6 +266,7 @@
 
         <cly-form-field name="dayOfWeek" :label="i18n('reports.dow')" rules="required" v-if="drawerScope.editedObject.frequency === 'weekly'">
             <cly-select-x
+                :placeholder="i18n('reports.Select-dow')"
                 mode="single-list"
                 v-model="drawerScope.editedObject.day"
                 class="bu-is-flex"
@@ -280,6 +279,7 @@
                 {{i18n('reports.time-desc')}}
             </div>
             <cly-select-x
+                :placeholder="i18n('reports.Select-time')"
                 mode="single-list"
                 v-model="drawerScope.editedObject.hour"
                 class="bu-is-flex"
@@ -293,6 +293,7 @@
                 {{i18n('reports.timezone-desc')}}
             </div>
             <cly-select-x
+                :placeholder="i18n('reports.Select-timezone')"
                 mode="single-list"
                 v-model="drawerScope.editedObject.timezone"
                 class="bu-is-flex"

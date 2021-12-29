@@ -11,7 +11,7 @@
             <cly-chart-bar :option="viewsPerSessionOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="viewsPerSessionRows" :resizable="true" v-loading="isLoading">
+            <cly-datatable-n  :rows="viewsPerSessionRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="viewsBuckets" :label="i18n('views-per-session.table-views-buckets')">
                     </el-table-column>

@@ -79,10 +79,11 @@
             box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08);
             background-color: #fff;
             position: absolute;
-            top: 0px;
+            top: -2px;
+            left: -2px;
             z-index: 100;
             border: 1px solid #d0d0d0;
-            border-radius: 2px;
+            border-radius: 4px;
             padding: 16px;
             width: max-content;
         }
@@ -91,6 +92,10 @@
             float: right;
             margin-top: 10px;
         }
+    }
+
+    &__title-wrapper {
+        margin-bottom: 30px;
     }
 
     &__title {
@@ -104,11 +109,19 @@
     &__reset {
         float: right;
         font-size: 12px;
-        padding-bottom: 26px;
-        padding-top: 0px;
+        padding: 4px 8px;
         color: #D23F00;
         cursor: pointer;
         line-height: 20px;
+
+        span {
+            height: 20px;
+            line-height: 20px;
+        }
+
+        &:hover {
+            background: #F6F6F6;
+        }
     }
 
     &__field {
@@ -120,19 +133,14 @@
         padding-bottom: 3px;
     }
 
+    .cly-multi-select__confirm-button {
+        margin-left: 4px;
+    }
+
     &__field-dropdown{
         width: 320px;
         height: 32px;
         margin-bottom: 16px;
-    }
-
-    &__confirm{
-        background-color: #12AF51;
-        color: white;
-    }
-
-    &__cancel {
-        background: #F6F6F6;
     }
 
     &__dropdown {
@@ -145,7 +153,9 @@
 .cly-vue-dropdown {
     &__pop {
         padding: 0px;
+        width: fit-content;
     }
+
     &__pop-container {
         word-break: initial;
     }
