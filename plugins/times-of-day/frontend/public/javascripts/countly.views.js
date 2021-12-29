@@ -140,7 +140,7 @@ if (countlyAuth.validateRead(featureName)) {
     countlyVue.container.registerData("/custom/dashboards/widget", {
         type: "times-of-day",
         label: CV.i18n("times-of-day.title"),
-        priority: 1,
+        priority: 8,
         drawer: {
             component: TimesOfDayWidgetDrawer,
             getEmpty: function() {
