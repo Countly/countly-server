@@ -538,7 +538,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
         return pipeline;
     }
-
+    pluginOb.createAggregatePipeline = createAggregatePipeline;
 
     /** function return calculated totals for given period. Used in table tata
      * @param {string} collectionName - collection name from where to select
@@ -633,6 +633,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
 
     }
+    pluginOb.getAggregatedData = getAggregatedData;
+
     plugins.register("/o", function(ob) {
         var params = ob.params;
 
