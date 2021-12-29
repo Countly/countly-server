@@ -1,12 +1,12 @@
 'use strict';
 
 const { PushError } = require('./error'),
-    { toDate, TriggerKind, Jsonable } = require('./const');
+    { toDate, TriggerKind, Validatable } = require('./const');
 
 /**
  * Base clsss for message triggers
  */
-class Trigger extends Jsonable {
+class Trigger extends Validatable {
     /**
      * Constructor
      * 
@@ -458,7 +458,7 @@ class EventTrigger extends AutoTrigger {
      */
     static get scheme() {
         return Object.assign({}, super.scheme, {
-            events: {type: 'String[]', required: true},
+            events: {type: 'String[]', required: true, 'min-length': 1},
         });
     }
 
@@ -536,7 +536,7 @@ class CohortTrigger extends AutoTrigger {
      */
     static get scheme() {
         return Object.assign({}, super.scheme, {
-            cohorts: {type: 'String[]', required: true},
+            cohorts: {type: 'String[]', required: true, 'min-length': 1},
             entry: {type: 'Boolean', required: false},
             cancels: {type: 'Boolean', required: false},
         });
@@ -643,7 +643,7 @@ class CohortTrigger extends AutoTrigger {
 /**
  * API (transactional) message trigger
  */
-class APITrigger extends Trigger {
+class APITrigger extends AutoTrigger {
     /**
      * Constructor
      * 

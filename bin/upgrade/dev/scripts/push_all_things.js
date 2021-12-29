@@ -14,8 +14,9 @@ plugins.dbConnection().then(async db => {
         console.log('push collection already exists');
     }).then(() => {
         return db.collection('push').createIndexes([
-            {name: 'main', key: {_id: 1, p: 1, f: 1}},
+            {name: 'main', key: {_id: 1, a: 1, p: 1, f: 1}},
             {name: 'message', key: {m: 1}},
+            {name: 'main_unique', key: {m: 1, u: 1, p: 1, f: 1}, unique: true},
         ]).catch(() => {});
     });
     await db.createCollection('messages_legacy').catch(() => {

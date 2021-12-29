@@ -3725,8 +3725,10 @@
     display: block !important;
     z-index: 100000;
     font-size: 12px;
-
-    $tooltip_color: rgba(10, 10, 10, 0.8);
+    max-width: 320px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    $tooltip_color: #191C20;
     $tooltip_arrow_param: 8px;
 
     .tooltip-inner {
@@ -3736,76 +3738,6 @@
         border-radius: 4px;
         padding: 6px 14px;
         line-height: 18px;
-    }
-
-    .tooltip-arrow {
-        width: 0;
-        height: 0;
-        border-style: solid;
-        position: absolute;
-        margin: 5px;
-        border-color: #{$tooltip_color};
-        z-index: 1;
-    }
-
-    &[x-placement^="top"] {
-        margin-bottom: #{$tooltip_arrow_param * 2};
-
-        .tooltip-arrow {
-            border-width: #{$tooltip_arrow_param} #{$tooltip_arrow_param} 0 #{$tooltip_arrow_param};
-            border-left-color: transparent !important;
-            border-right-color: transparent !important;
-            border-bottom-color: transparent !important;
-            bottom: -#{$tooltip_arrow_param};
-            left: calc(50% - #{$tooltip_arrow_param});
-            margin-top: 0;
-            margin-bottom: 0;
-        }
-    }
-
-    &[x-placement^="bottom"] {
-        margin-top: #{$tooltip_arrow_param * 2};
-
-        .tooltip-arrow {
-            border-width: 0 #{$tooltip_arrow_param} #{$tooltip_arrow_param} #{$tooltip_arrow_param};
-            border-left-color: transparent !important;
-            border-right-color: transparent !important;
-            border-top-color: transparent !important;
-            top: -#{$tooltip_arrow_param};
-            left: calc(50% - #{$tooltip_arrow_param});
-            margin-top: 0;
-            margin-bottom: 0;
-        }
-    }
-
-    &[x-placement^="right"] {
-        margin-left: #{$tooltip_arrow_param * 2};
-
-        .tooltip-arrow {
-            border-width: #{$tooltip_arrow_param} #{$tooltip_arrow_param} #{$tooltip_arrow_param} 0;
-            border-left-color: transparent !important;
-            border-top-color: transparent !important;
-            border-bottom-color: transparent !important;
-            left: -#{$tooltip_arrow_param};
-            top: calc(50% - #{$tooltip_arrow_param});
-            margin-left: 0;
-            margin-right: 0;
-        }
-    }
-
-    &[x-placement^="left"] {
-        margin-right: #{$tooltip_arrow_param * 2};
-
-        .tooltip-arrow {
-            border-width: #{$tooltip_arrow_param} 0 #{$tooltip_arrow_param} #{$tooltip_arrow_param};
-            border-top-color: transparent !important;
-            border-right-color: transparent !important;
-            border-bottom-color: transparent !important;
-            right: -#{$tooltip_arrow_param};
-            top: calc(50% - #{$tooltip_arrow_param});
-            margin-left: 0;
-            margin-right: 0;
-        }
     }
 
     &[aria-hidden="true"] {
