@@ -21,7 +21,7 @@
             </el-select>
         </div>
         <cly-section>
-            <cly-chart-generic :height="600"  :option="timesOfDayOptions" :show-zoom="false" :show-toggle="false" v-loading="isLoading"></cly-chart-generic>
+            <times-of-day-scatter-chart :height="600" :series="series" :maxSeriesValue="maxSeriesValue" v-loading="isLoading"></times-of-day-scatter-chart>
         </cly-section>
         <cly-section>
             <cly-datatable-n  :rows="timesOfDayRows" :resizable="false" :force-loading="isLoading">

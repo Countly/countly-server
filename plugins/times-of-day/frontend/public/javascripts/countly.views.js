@@ -1,7 +1,6 @@
-/*global countlyAuth,countlyCommon,countlyVue,countlyTimesOfDay,CV,countlyEvent */
+/*global countlyAuth,CV,countlyCommon,countlyVue,countlyTimesOfDay,countlyTimesOfDayComponent,countlyEvent */
 
 var featureName = "times_of_day";
-var MAX_SYMBOL_VALUE = 20;
 
 var TimesOfDayView = countlyVue.views.create({
     template: CV.T('/times-of-day/templates/times-of-day.html'),
@@ -12,72 +11,17 @@ var TimesOfDayView = countlyVue.views.create({
         };
     },
     computed: {
+        series: function() {
+            return this.$store.state.countlyTimesOfDay.series;
+        },
+        maxSeriesValue: function() {
+            return this.$store.state.countlyTimesOfDay.maxSeriesValue;
+        },
         timesOfDayRows: function() {
             return this.$store.state.countlyTimesOfDay.rows;
         },
         isLoading: function() {
             return this.$store.getters['countlyTimesOfDay/isLoading'];
-        },
-        normalizedSymbolCoefficient: function() {
-            if (this.$store.state.countlyTimesOfDay.maxSeriesValue < MAX_SYMBOL_VALUE) {
-                return 1;
-            }
-            return MAX_SYMBOL_VALUE / this.$store.state.countlyTimesOfDay.maxSeriesValue;
-        },
-        timesOfDayOptions: function() {
-            var self = this;
-            return {
-                title: {
-                    text: CV.i18n('times-of-day.title')
-                },
-                tooltip: {
-                    position: 'top',
-                    trigger: 'item',
-                    formatter: function(params) {
-                        return '<div class="bu-is-flex bu-is-flex-direction-column times-of-day__scatter-chart-tooltip"> \n' +
-                                    '<span class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.total-users') + '</span>\n' +
-                                    '<span class="times-of-day__scatter-chart-tooltip-total-users-value">' + self.formatNumber(params.value[2]) + '</span> \n' +
-                                    '<span class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.between') + ' ' + countlyTimesOfDay.service.getHoursPeriod(countlyTimesOfDay.service.HOURS[params.value[0]]) + '</span> \n' +
-                                '</div>';
-                    }
-                },
-                xAxis: {
-                    data: countlyTimesOfDay.service.HOURS,
-                    splitLine: {
-                        show: true
-                    },
-                    axisLine: {
-                        show: false
-                    }
-                },
-                yAxis: {
-                    type: 'category',
-                    data: [
-                        CV.i18n('times-of-day.monday'),
-                        CV.i18n('times-of-day.tuesday'),
-                        CV.i18n('times-of-day.wednesday'),
-                        CV.i18n('times-of-day.thursday'),
-                        CV.i18n('times-of-day.friday'),
-                        CV.i18n('times-of-day.saturday'),
-                        CV.i18n('times-of-day.sunday')
-                    ],
-                    nameLocation: 'middle',
-                    boundaryGap: true,
-                    axisTick: {
-                        alignWithLabel: true
-                    }
-                },
-                series: [{
-                    name: CV.i18n('times-of-day.title'),
-                    type: "scatter",
-                    symbolSize: function(val) {
-                        var dataIndexValue = 2;
-                        return val[dataIndexValue] * self.normalizedSymbolCoefficient;
-                    },
-                    data: this.$store.state.countlyTimesOfDay.series,
-                }],
-                color: "#39C0C8"
-            };
         },
         selectedFilter: {
             get: function() {
@@ -104,6 +48,9 @@ var TimesOfDayView = countlyVue.views.create({
     },
     mounted: function() {
         this.$store.dispatch('countlyTimesOfDay/fetchAll', true);
+    },
+    components: {
+        "times-of-day-scatter-chart": countlyTimesOfDayComponent.ScatterChart
     }
 });
 
@@ -133,7 +80,7 @@ var TimesOfDayWidgetComponent = countlyVue.views.create({
     },
     data: function() {
         return {
-            maxSeriesValue: null
+            _maxSeriesValue: 0
         };
     },
     computed: {
@@ -143,80 +90,18 @@ var TimesOfDayWidgetComponent = countlyVue.views.create({
             }
             return [];
         },
-        timesOfDayOptions: function() {
-            var self = this;
-            return {
-                title: {
-                    text: CV.i18n('times-of-day.title')
-                },
-                tooltip: {
-                    position: 'top',
-                    trigger: 'item',
-                    formatter: function(params) {
-                        return '<div class="bu-is-flex bu-is-flex-direction-column times-of-day__scatter-chart-tooltip"> \n' +
-                                    '<span class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.total-users') + '</span>\n' +
-                                    '<span class="times-of-day__scatter-chart-tooltip-total-users-value">' + self.formatNumber(params.value[2]) + '</span> \n' +
-                                    '<span class="times-of-day__scatter-chart-tooltip-text">' + CV.i18n('times-of-day.between') + ' ' + countlyTimesOfDay.service.getHoursPeriod(countlyTimesOfDay.service.HOURS[params.value[0]]) + '</span> \n' +
-                                '</div>';
-                    }
-                },
-                xAxis: {
-                    data: countlyTimesOfDay.service.HOURS,
-                    splitLine: {
-                        show: true
-                    },
-                    axisLine: {
-                        show: false
-                    }
-                },
-                yAxis: {
-                    type: 'category',
-                    data: [
-                        CV.i18n('times-of-day.monday'),
-                        CV.i18n('times-of-day.tuesday'),
-                        CV.i18n('times-of-day.wednesday'),
-                        CV.i18n('times-of-day.thursday'),
-                        CV.i18n('times-of-day.friday'),
-                        CV.i18n('times-of-day.saturday'),
-                        CV.i18n('times-of-day.sunday')
-                    ],
-                    nameLocation: 'middle',
-                    boundaryGap: true,
-                    axisTick: {
-                        alignWithLabel: true
-                    }
-                },
-                series: [{
-                    name: CV.i18n('times-of-day.title'),
-                    type: "scatter",
-                    symbolSize: function(val) {
-                        var dataIndexValue = 2;
-                        return val[dataIndexValue] * self.getNormalizedSymbolCoefficient();
-                    },
-                    data: countlyTimesOfDay.service.mapSeries(this.dashboardData),
-                }],
-                color: "#39C0C8"
-            };
+        series: function() {
+            return countlyTimesOfDay.service.mapSeries(this.dashboardData);
+        },
+        maxSeriesValue: function() {
+            return countlyTimesOfDay.service.findMaxSeriesValue(this.dashboardData);
         }
     },
     methods: {
-        findMaxSeriesValue: function() {
-            return countlyTimesOfDay.service.findMaxSeriesValue(this.dashboardData);
-        },
-        setMaxSeriesValue: function(value) {
-            this.maxSeriesValue = value;
-        },
-        getNormalizedSymbolCoefficient: function() {
-            if (!this.maxSeriesValue) {
-                var value = this.findMaxSeriesValue();
-                this.setMaxSeriesValue(value);
-            }
-            if (this.maxSeriesValue < MAX_SYMBOL_VALUE) {
-                return 1;
-            }
-            return MAX_SYMBOL_VALUE / this.maxSeriesValue;
-        },
     },
+    components: {
+        "times-of-day-scatter-chart": countlyTimesOfDayComponent.ScatterChart
+    }
 });
 
 var TimesOfDayWidgetDrawer = countlyVue.views.create({
