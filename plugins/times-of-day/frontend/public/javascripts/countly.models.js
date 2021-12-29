@@ -1,4 +1,4 @@
-/*global countlyCommon,CV,countlyVue,Promise,moment */
+/*global countlyCommon,CV,countlyVue,countlyEvent,Promise,moment */
 (function(countlyTimesOfDay) {
 
     countlyTimesOfDay.service = {
@@ -9,6 +9,16 @@
             THIS_MONTH: "thisMonth",
             LAST_THREE_MONTHS: "lastThreeMonths",
             ALL_TIME: 'allTime',
+        },
+        findEventKeyByName: function(name) {
+            return countlyEvent.getEvents().find(function(item) {
+                return item.name === name;
+            });
+        },
+        getEventOptions: function() {
+            return countlyEvent.getEvents().map(function(event) {
+                return {label: event.name, value: event.key};
+            });
         },
         getDateBucketsList: function() {
             var self = this;

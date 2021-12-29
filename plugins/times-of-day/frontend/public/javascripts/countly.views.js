@@ -1,4 +1,4 @@
-/*global countlyAuth,CV,countlyCommon,countlyVue,countlyTimesOfDay,countlyTimesOfDayComponent,countlyEvent */
+/*global countlyAuth,CV,countlyCommon,countlyVue,countlyTimesOfDay,countlyTimesOfDayComponent */
 
 var featureName = "times_of_day";
 
@@ -79,9 +79,7 @@ var TimesOfDayWidgetComponent = countlyVue.views.create({
         }
     },
     data: function() {
-        return {
-            _maxSeriesValue: 0
-        };
+        return {};
     },
     computed: {
         dashboardData: function() {
@@ -96,8 +94,6 @@ var TimesOfDayWidgetComponent = countlyVue.views.create({
         maxSeriesValue: function() {
             return countlyTimesOfDay.service.findMaxSeriesValue(this.dashboardData);
         }
-    },
-    methods: {
     },
     components: {
         "times-of-day-scatter-chart": countlyTimesOfDayComponent.ScatterChart
@@ -117,24 +113,11 @@ var TimesOfDayWidgetDrawer = countlyVue.views.create({
     data: function() {
         return {
             dateBuckets: countlyTimesOfDay.service.getDateBucketsList(),
-            eventOptions: countlyEvent.getEvents().map(function(event) {
-                return {label: event.name, value: event.key};
-            }),
+            eventOptions: countlyTimesOfDay.service.getEventOptions(),
             useCustomTitle: false,
         };
     }
 });
-
-/**
- * 
- * @param {string} name of the event 
- * @returns {object} event or null
- */
-function findEventKeyByName(name) {
-    return countlyEvent.getEvents().find(function(item) {
-        return item.name === name;
-    });
-}
 
 if (countlyAuth.validateRead(featureName)) {
     countlyVue.container.registerData("/custom/dashboards/widget", {
@@ -163,7 +146,7 @@ if (countlyAuth.validateRead(featureName)) {
             },
             beforeSaveFn: function(doc) {
                 if (doc.data_type === 'event') {
-                    var eventItem = findEventKeyByName(doc.events);
+                    var eventItem = countlyTimesOfDay.service.findEventKeyByName(doc.events);
                     doc.events = [eventItem.key + '***' + eventItem.name];
                 }
             }
