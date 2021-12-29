@@ -35,8 +35,9 @@
             :options="userPropertiesOptions"
             :position="addUserPropertyPopoverPosition"
             @select="onSelectUserProperty"
-            @input="onInputFallbackUserProperty"
-            @check="onCheckUppercaseUserProperty"
+            @input="onInputUserProperty"
+            @fallback="onInputFallbackUserProperty"
+            @uppercase="onCheckUppercaseUserProperty"
             @remove="onRemoveUserProperty"
             @close="closeAddUserPropertyPopover">
         </add-user-property-popover>
@@ -150,6 +151,35 @@
                 </template>
                 <template v-else-if="type === TypeEnum.AUTOMATIC">
                     <div class="cly-vue-drawer-step__section">
+                        <div class="bu-is-flex bu-is-align-items-center">
+                            <el-switch v-model="isLocationSet" class="bu-mr-1"></el-switch>
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                                Geolocation
+                            </div>
+                        </div>
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Send to the users currently in selected Geolocations</div>
+                        <div class="cly-vue-push-notification-drawer__input-description">Some description for selection goes here</div>
+                        <validation-provider v-slot="validation" :rules="{required:isLocationSet}">
+                            <el-select
+                                v-model="pushNotificationUnderEdit.locations"
+                                multiple
+                                filterable
+                                reserve-keyword
+                                :disabled="!isLocationSet"
+                                placeholder="Please select a location"
+                                :loading="isFetchLocationsLoading"
+                                :class="{'is-error': validation.errors.length > 0}"
+                                style="width:100%">
+                                <el-option
+                                    v-for="item in locationOptions"
+                                    :key="item._id"
+                                    :label="item.name"
+                                    :value="item._id">
+                                </el-option>
+                            </el-select> 
+                        </validation-provider>
+                    </div>
+                    <div class="cly-vue-drawer-step__section">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
                             Triggers
                             <cly-tooltip-icon :tooltip="i18n('push-notification.drawer-triggers-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
@@ -226,28 +256,6 @@
                             </validation-provider>      
                         </div>
                     </template>
-                    <div class="cly-vue-drawer-step__section">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__input-label">Send to the users currently in selected Geolocations</div>
-                        <div class="cly-vue-push-notification-drawer__input-description">Some description for selection goes here</div>
-                        <validation-provider v-slot="validation" :detectInput="true">
-                            <el-select
-                                v-model="pushNotificationUnderEdit.locations"
-                                multiple
-                                filterable
-                                reserve-keyword
-                                placeholder="Please select a location"
-                                :loading="isFetchLocationsLoading"
-                                :class="{'is-error': validation.errors.length > 0}"
-                                style="width:100%">
-                                <el-option
-                                    v-for="item in locationOptions"
-                                    :key="item._id"
-                                    :label="item.name"
-                                    :value="item._id">
-                                </el-option>
-                            </el-select> 
-                        </validation-provider>
-                    </div>
                     <div class="cly-vue-drawer-step__section">
                         <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__line-radio-button-group-header">
                             Delivery date calculation
@@ -883,7 +891,7 @@
                             <review-section-row label="Trigger Type" :value="triggerOptions[pushNotificationUnderEdit.automatic.trigger].label"></review-section-row>
                             <review-section-row v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT" label="Event(s)" :value="pushNotificationUnderEdit.automatic.events.join(', ')"></review-section-row>
                             <review-section-row v-else label="Cohort(s)" :value="previewCohorts(pushNotificationUnderEdit.automatic.cohorts).join(', ')"></review-section-row>
-                            <review-section-row label="Geolocation(s)" :value="previewLocations.join(', ')"></review-section-row>
+                            <review-section-row v-if="isLocationSet" label="Geolocation(s)" :value="previewLocations.join(', ')"></review-section-row>
                             <review-section-row v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT" label="Delivery date calculation" :value="deliveryDateCalculationOptions[pushNotificationUnderEdit.automatic.deliveryDateCalculation].label"></review-section-row>
                             <review-section-row v-else label="Behavior when trigger condition is no longer met" :value="triggerNotMetOptions[pushNotificationUnderEdit.automatic.triggerNotMet].label"></review-section-row>
                         </template>
