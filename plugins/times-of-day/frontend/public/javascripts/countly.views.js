@@ -121,7 +121,6 @@ var TimesOfDayWidgetDrawer = countlyVue.views.create({
                 return {label: event.name, value: event.key};
             }),
             useCustomTitle: false,
-            selectedVisualization: "scatter"
         };
     }
 });

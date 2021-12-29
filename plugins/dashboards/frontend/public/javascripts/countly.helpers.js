@@ -264,11 +264,6 @@
                         value: "table",
                         label: this.i18n("dashboards.visualization.table")
                     },
-                    {
-                        value: "scatter",
-                        label: this.i18n("dashboards.visualization.scatter")
-                    },
-
                 ]
             };
         },
