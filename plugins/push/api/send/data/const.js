@@ -154,6 +154,16 @@ const TriggerKind = {
 const S = '|';
 
 /**
+ * Type of personalization object
+ */
+const PersType = {
+    Event: 'e',
+    User: 'u',
+    UserCustom: 'c',
+    Api: 'a'
+};
+
+/**
  * Convert whatever date we have to Date instance
  * 
  * @param {number|string|Date|undefined} date date in any format
@@ -174,4 +184,27 @@ function toDate(date) {
     }
 }
 
-module.exports = { S, State, Status, STATUSES: Object.values(Status), TriggerKind, toDate, DEFAULTS, MEDIA_MIME_ALL, MEDIA_MIME_IOS, MEDIA_MIME_ANDROID, Jsonable, Validatable, Mongoable };
+module.exports = {
+    S,
+
+    State,
+    Status,
+    STATUSES: Object.values(Status),
+
+    TriggerKind,
+
+    PersType,
+    PERS_TYPES: Object.values(PersType),
+
+    toDate,
+
+    DEFAULTS,
+
+    MEDIA_MIME_ALL,
+    MEDIA_MIME_IOS,
+    MEDIA_MIME_ANDROID,
+
+    Jsonable,
+    Validatable,
+    Mongoable
+};

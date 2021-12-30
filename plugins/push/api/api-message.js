@@ -1,4 +1,4 @@
-const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, MEDIA_MIME_ALL } = require('./send'),
+const { Message, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
     { DEFAULTS } = require('./send/data/const'),
     plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
@@ -15,7 +15,36 @@ const { Message, Creds, State, Status, platforms, Audience, ValidationError, Tri
 async function validate(args, draft = false) {
     let msg;
     if (draft) {
-        msg = new Message(args);
+        let data = common.validateArgs(args, {
+            _id: { required: false, type: 'ObjectID' },
+            app: { required: true, type: 'ObjectID' },
+            platforms: { required: true, type: 'String[]', in: () => require('./send/platforms').platforms },
+            state: { type: 'Number' },
+            status: { type: 'String', in: Object.values(Status) },
+            filter: {
+                type: Filter.scheme,
+            },
+            triggers: {
+                type: Trigger.scheme,
+                array: true,
+                'min-length': 1
+            },
+            contents: {
+                type: Content.scheme,
+                array: true,
+                nonempty: true,
+                'min-length': 1,
+            },
+            info: {
+                type: Info.scheme,
+            }
+        }, true);
+        if (data.result) {
+            msg = new Message(data.obj);
+        }
+        else {
+            throw new ValidationError(data.errors);
+        }
         msg.state = State.Inactive;
         msg.status = Status.Draft;
     }
@@ -80,16 +109,12 @@ async function validate(args, draft = false) {
         }
 
         // only 4 props of info can updated
-        let neo = msg.neo;
-        msg.info = existing.info;
-        msg.info.title = neo.title;
-        msg.info.silent = neo.silent;
-        msg.info.scheduled = neo.scheduled;
-        msg.info.locales = neo.locales;
-        // state, status & result cannot be updated by API except for special cases handled in .create / .update
-        msg.state = existing.state;
-        msg.status = existing.status;
-        msg.result = existing.result;
+        msg.info = new Info(Object.assign(existing.info.json, {
+            title: msg.info.title,
+            silent: msg.info.silent,
+            scheduled: msg.info.scheduled,
+            locales: msg.info.locales,
+        }));
     }
 
     return msg;
@@ -147,10 +172,18 @@ module.exports.update = async params => {
     else {
         if (msg.triggerPlain()) {
             if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
+                msg.status = Status.Created;
+                msg.state = State.Inactive;
                 await msg.schedule();
             }
             else if (msg.is(State.Streamable) || msg.is(State.Created)) {
                 await msg.schedule();
+            }
+        }
+        if (msg.triggerAutoOrApi()) {
+            if (msg.status === Status.Draft && params.qstring.status === Status.Created) {
+                msg.state = State.Streamable;
+                msg.status = Status.Scheduled;
             }
         }
     }
@@ -176,7 +209,14 @@ module.exports.remove = async params => {
         _id: {type: 'ObjectID', required: true},
     }, true);
 
-    let msg = await Message.findOne({_id: data._id, state: {$bitsAllClear: State.Deleted}});
+    if (!data.result) {
+        return common.returnOutput(params, {errors: data.errors});
+    }
+
+    let msg = await Message.findOne({_id: data.obj._id, state: {$bitsAllClear: State.Deleted}});
+    if (!msg) {
+        return common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
+    }
 
     if (msg.is(State.Streaming)) {
         // TODO: stop the sending via cache, clear the queue
@@ -395,6 +435,7 @@ module.exports.all = async params => {
 
         let query = {
             app: data.app_id,
+            state: {$bitsAllClear: State.Deleted},
         };
 
         if (data.auto) {

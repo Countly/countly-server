@@ -1,9 +1,9 @@
-const { toDate, Jsonable } = require('./const');
+const { toDate, Validatable } = require('./const');
 
 /**
  * Message information (non-important stuff)
  */
-class Info extends Jsonable {
+class Info extends Validatable {
     /**
      * 
      * @param {object}      data                message info data
