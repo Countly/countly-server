@@ -10,6 +10,7 @@
         <ul class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center bu-is-justify-content-center">
             <li v-for="item in otherMenuOptions" :key="item.name" @click="onClick(item)" v-tooltip.right="{content: item.tooltip, container: false}" :class="[{'cly-vue-sidebar__menu-option-toggle': item.name === 'toggle'}, 'cly-vue-sidebar__menu-option bu-is-flex bu-is-justify-content-center bu-is-align-items-center']">
                 <users-menu v-if="item.name === 'user'" :item="item"></users-menu>
+                <language-menu v-else-if="item.name === 'language'" :item="item"></language-menu>
                 <i v-else :class="[item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === selectedMenuOption}]"></i>
             </li>
         </ul>

@@ -312,9 +312,21 @@
             tooltip: {
                 type: String,
                 default: 'Tooltip here :)'
+            },
+            placement: {
+                type: String,
+                default: 'auto'
             }
         },
-        template: '<i v-bind:class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltip"></i>'
+        computed: {
+            tooltipConf: function() {
+                return {
+                    content: this.tooltip,
+                    placement: this.placement
+                };
+            }
+        },
+        template: '<i :class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltipConf"></i>'
     }));
 
     Vue.component("cly-remover", countlyBaseComponent.extend({
@@ -771,7 +783,7 @@
                     class="cly-vue-json-editor__textarea bu-p-4" \
                     ref="jsonText"\
                     ></textarea>\
-    		        <slot name="footer">\
+                    <slot name="footer">\
                     <div class="bu-p-4 bu-is-justify-content-flex-end bu-is-flex">\
 							<el-button size="small" @click="cancel"  type="default" >{{cancelLabel}}</el-button>\
 							<el-button size="small" @click="submit" type="success">{{saveLabel}}</el-button>\
@@ -784,7 +796,7 @@
                         '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
                             '<div class="bu-is-flex">\n' +
                                 '<img :src="image" class="alert-image bu-mr-4 bu-my-1 bu-ml-1">\n' +
-                                '<slot><span class="alert-text bu-my-3" style="height:35px;overflow-y:hidden;">{{text}}</span></slot>\n' +
+                                '<slot><span class="alert-text bu-my-3">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="closable" style="margin-block:auto">\n' +
                                 '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-5" >\n' +

@@ -8,7 +8,7 @@
     <cly-main>
         <cly-qb-bar v-model="slippingAwayUsersFilters" queryStore="slipping-away-users" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}"></cly-qb-bar>
         <cly-section>
-            <cly-chart-bar :option="slippingAwayUsersOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
+            <cly-chart-bar :option="slippingAwayUsersOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
             <cly-datatable-n  :rows="slippingAwayUsersRows" :resizable="false" :force-loading="isLoading">

@@ -1,4 +1,4 @@
-/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store*/
+/* global app, jQuery, CV, Vue, countlyGlobal, _, Backbone, store, moment, countlyCommon, countlyLocation*/
 
 (function(countlyVue, $) {
 
@@ -391,6 +391,80 @@
             }
         });
 
+        var LanguageMenu = countlyVue.views.create({
+            template: CV.T('/javascripts/countly/vue/templates/sidebar/language-menu.html'),
+            data: function() {
+                return {
+                    localLang: countlyCommon.BROWSER_LANG_SHORT
+                };
+            },
+            computed: {
+                allLanguages: function() {
+                    return countlyGlobal.languages.map(function(l) {
+                        return {
+                            label: l.name,
+                            value: l.code
+                        };
+                    });
+                },
+                selLang: {
+                    get: function() {
+                        return this.localLang;
+                    },
+                    set: function(langCode) {
+                        store.set("countly_lang", langCode);
+                        countlyCommon.BROWSER_LANG_SHORT = langCode;
+                        countlyCommon.BROWSER_LANG = langCode;
+
+                        this.localLang = langCode;
+
+                        try {
+                            moment.locale(countlyCommon.BROWSER_LANG_SHORT);
+                        }
+                        catch (e) {
+                            moment.locale("en");
+                        }
+
+                        countlyCommon.getMonths(true);
+
+                        CV.$.ajax({
+                            type: "POST",
+                            url: countlyGlobal.path + "/user/settings/lang",
+                            data: {
+                                "username": countlyGlobal.member.username,
+                                "lang": countlyCommon.BROWSER_LANG_SHORT,
+                                _csrf: countlyGlobal.csrf_token
+                            }
+                        });
+
+                        jQuery.i18n.properties({
+                            name: window.production ? 'localization/min/locale' : ["localization/dashboard/dashboard", "localization/help/help", "localization/mail/mail"].concat(countlyGlobal.plugins.map(function(plugin) {
+                                return plugin + "/localization/" + plugin;
+                            })),
+                            cache: true,
+                            language: countlyCommon.BROWSER_LANG_SHORT,
+                            countlyVersion: countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
+                            path: countlyGlobal.cdn,
+                            mode: 'map',
+                            callback: function() {
+                                for (var key in jQuery.i18n.map) {
+                                    if (countlyGlobal.company) {
+                                        jQuery.i18n.map[key] = jQuery.i18n.map[key].replace(new RegExp("Countly", 'ig'), countlyGlobal.company);
+                                    }
+                                    jQuery.i18n.map[key] = countlyCommon.encodeSomeHtml(jQuery.i18n.map[key]);
+                                }
+
+                                app.origLang = JSON.stringify(jQuery.i18n.map);
+                                $.when(countlyLocation.changeLanguage()).then(function() {
+                                    window.location.reload(true);
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
         var SidebarView = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar.html'),
             mixins: [
@@ -402,7 +476,8 @@
             components: {
                 "users-menu": UsersMenu,
                 "analytics-menu": AnalyticsMenu,
-                "management-menu": ManagementMenu
+                "management-menu": ManagementMenu,
+                "language-menu": LanguageMenu
             },
             data: function() {
                 return {
@@ -480,6 +555,11 @@
                             icon: "ion-person",
                             noSelect: true,
                             member: this.member
+                        },
+                        {
+                            name: "language",
+                            noSelect: true,
+                            tooltip: "Language"
                         },
                         {
                             name: "toggle",

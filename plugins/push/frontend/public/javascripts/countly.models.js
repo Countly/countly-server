@@ -92,10 +92,15 @@
         IMMEDIATELY: 'immediately',
         DELAYED: 'delayed'
     });
-
     var IOSAuthConfigTypeEnum = Object.freeze({
         P8: 'p8',
         P12: 'p12'
+    });
+    var UserPropertyTypeEnum = Object.freeze({
+        EVENT: 'event',
+        USER: 'user',
+        CUSTOM: 'custom',
+        API: 'api'
     });
 
     var audienceSelectionOptions = {};
@@ -417,13 +422,13 @@
             return JSON.stringify(JSON.parse(value), null, indentation);
         },
         getEventPropertyOptions: function(propertyList) {
-            return this.getPropertyOptionsByCategory(propertyList, 'Event Properties');
+            return this.getPropertyOptionsByCategory(propertyList, 'Event Properties', UserPropertyTypeEnum.EVENT);
         },
         getUserPropertyOptions: function(propertyList) {
-            return this.getPropertyOptionsByCategory(propertyList, 'User Properties');
+            return this.getPropertyOptionsByCategory(propertyList, 'User Properties', UserPropertyTypeEnum.USER);
         },
         getCustomPropertyOptions: function(propertyList) {
-            return this.getPropertyOptionsByCategory(propertyList, 'Custom Properties');
+            return this.getPropertyOptionsByCategory(propertyList, 'Custom Properties', UserPropertyTypeEnum.CUSTOM);
         },
         isUserPropertyCategory: function(item) {
             return !item.id;
@@ -431,7 +436,7 @@
         isUserPropertyOption: function(item) {
             return Boolean(item.id);
         },
-        getPropertyOptionsByCategory: function(propertyList, category) {
+        getPropertyOptionsByCategory: function(propertyList, category, type) {
             var result = [];
             var shouldAddPropertyOption = false;
             for (var index = 0; index < propertyList.length; index += 1) {
@@ -442,7 +447,7 @@
                     shouldAddPropertyOption = false;
                 }
                 if (this.isUserPropertyOption(propertyList[index]) && shouldAddPropertyOption) {
-                    result.push({label: propertyList[index].name, value: propertyList[index].id});
+                    result.push({label: propertyList[index].name, value: propertyList[index].id, type: type});
                 }
             }
             return result;
@@ -859,7 +864,8 @@
                         value: userPropertyDto[userPropertyKey].k,
                         label: userPropertyDto[userPropertyKey].l || "",
                         fallback: userPropertyDto[userPropertyKey].f,
-                        isUppercase: userPropertyDto[userPropertyKey].c
+                        isUppercase: userPropertyDto[userPropertyKey].c,
+                        type: userPropertyDto[userPropertyKey].t || UserPropertyTypeEnum.USER
                     };
                 });
                 return userPropertyModel;
@@ -1221,7 +1227,23 @@
                     return self.mapPlatformItem(platform);
                 });
             },
+            mapUserPropertyType: function(type) {
+                if (type === UserPropertyTypeEnum.USER) {
+                    return 'u';
+                }
+                if (type === UserPropertyTypeEnum.CUSTOM) {
+                    return 'c';
+                }
+                if (type === UserPropertyTypeEnum.EVENT) {
+                    return 'e';
+                }
+                if (type === UserPropertyTypeEnum.API) {
+                    return 'a';
+                }
+                throw new Error('Unknown user property type:' + type);
+            },
             mapUserProperties: function(localizedMessage, container) {
+                var self = this;
                 var userPropertyDto = {};
                 var indices = this.getUserPropertiesIndices(localizedMessage, container);
                 var userPropertyIds = this.getUserPropertiesIds(localizedMessage, container);
@@ -1229,7 +1251,8 @@
                     userPropertyDto[indices[index]] = {
                         f: localizedMessage.properties[container][userPropertyId].fallback,
                         c: localizedMessage.properties[container][userPropertyId].isUppercase,
-                        k: localizedMessage.properties[container][userPropertyId].value
+                        k: localizedMessage.properties[container][userPropertyId].value,
+                        t: self.mapUserPropertyType(localizedMessage.properties[container][userPropertyId].type),
                     };
                 });
                 return userPropertyDto;
@@ -1403,7 +1426,7 @@
             mapTransactionalTrigger: function(model) {
                 return [{kind: 'api', start: model.delivery.startDate}];
             },
-            mapFilters: function(model) {
+            mapFilters: function(model, options) {
                 var result = {};
                 if (model.user) {
                     result.user = model.user;
@@ -1411,7 +1434,10 @@
                 if (model.cohorts.length) {
                     result.cohorts = model.cohorts;
                 }
-                if (model.locations.length) {
+                if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
+                    result.geos = model.locations;
+                }
+                if (model.type === TypeEnum.ONE_TIME && model.locations.length) {
                     result.geos = model.locations;
                 }
                 if (model.drill) {
@@ -1487,7 +1513,7 @@
                     contentsDto.push(iosSettingsDto);
                 }
                 resultDto.contents = contentsDto;
-                var filtersDto = this.mapFilters(pushNotificationModel);
+                var filtersDto = this.mapFilters(pushNotificationModel, options);
                 if (filtersDto) {
                     resultDto.filter = filtersDto;
                 }
@@ -1617,6 +1643,7 @@
         DeliveryDateCalculationEnum: DeliveryDateCalculationEnum,
         TriggerNotMetEnum: TriggerNotMetEnum,
         IOSAuthConfigTypeEnum: IOSAuthConfigTypeEnum,
+        UserPropertyTypeEnum: UserPropertyTypeEnum,
         platformOptions: platformOptions,
         startDateOptions: startDateOptions,
         audienceSelectionOptions: audienceSelectionOptions,
@@ -1793,14 +1820,14 @@
                 return Promise.resolve([]);
             });
         },
-        prepare: function(pushNotificationModel) {
+        prepare: function(pushNotificationModel, options) {
             return new Promise(function(resolve, reject) {
                 var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
                 var data = {
                     app: countlyCommon.ACTIVE_APP_ID,
                     platforms: platformsDto,
                 };
-                var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel);
+                var filtersDto = countlyPushNotification.mapper.outgoing.mapFilters(pushNotificationModel, options);
                 if (countlyPushNotification.helper.shouldAddFilter(pushNotificationModel) && filtersDto) {
                     data.filter = filtersDto;
                 }

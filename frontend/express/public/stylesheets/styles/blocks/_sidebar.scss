@@ -238,6 +238,13 @@ $bg-color: #24292e;
         color: map.get(c.$colors, "cool-gray-100");
     }
 
+    &__language-popper{
+        font-family: t.$font-family;
+        padding: 0px;
+        min-width: 130px;
+        box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.18815);
+    }
+
     &__user-details {
         .bu-level {
             padding: 6px 12px;
