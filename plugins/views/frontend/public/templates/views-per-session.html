@@ -8,7 +8,7 @@
     <cly-main>
         <cly-date-picker-g style="margin-bottom:32px"></cly-date-picker-g>
         <cly-section>
-            <cly-chart-bar :option="viewsPerSessionOptions" :height="400" v-loading="isLoading"></cly-chart-bar>
+            <cly-chart-bar :option="viewsPerSessionOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
             <cly-datatable-n  :rows="viewsPerSessionRows" :resizable="true" :force-loading="isLoading">
