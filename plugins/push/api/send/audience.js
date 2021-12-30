@@ -190,7 +190,7 @@ class Audience {
     async addFilter(steps, filter) {
         // Geos
         if (filter.geos.length && geo()) {
-            let geos = await common.db.collection('geos').find({_id: {$in: filter.geos}}).toArray();
+            let geos = await common.db.collection('geos').find({_id: {$in: filter.geos.map(common.db.ObjectID)}}).toArray();
             steps.push({$match: {$or: geos.map(g => geo().conds(g))}});
         }
 
