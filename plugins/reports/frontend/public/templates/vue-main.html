@@ -30,26 +30,14 @@
 />
 <cly-section v-else>
     <cly-datatable-n
+        :force-loading="!initialized"
         class="cly-vue-reports-table"
         :tracked-fields="localTableTrackedFields"
         :rows="tableRows" :resizable="false" >
-
-        <template slot="empty">
-            <div class="bu-is-flex  bu-is-flex-direction-column bu-is-align-items-center bu-my-6 bu-py-5">
-                <div class="no-search-circle">
-                </div>
-                <div style="width: 400px;">
-                    <h4 class="color-cool-gray-100 bu-mt-4 bu-mb-2 bu-has-text-centered">No data found</h4>
-                    <div class="color-cool-gray-50 text-small bu-has-text-centered ">
-                        There is no data found for selected time period 
-                    </div>
-                </div>
-            </div>
-        </template>
         <template v-slot="scope">
             <el-table-column type="switch" fixed="left" width="100" sortable prop="enabled">
                 <template v-slot="rowScope">
-                    <el-switch :value="rowScope.row.enabled" class="switch-column"
+                    <el-switch :value="rowScope.row.enabled" class="switch-column" :disabled="!canUpdate"
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                     </el-switch>
                 </template>
@@ -93,10 +81,10 @@
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column type="options">
+            <el-table-column type="options"  v-if="canUpdate || canDelete">
                 <template v-slot="rowScope">
                     <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleReportEditCommand($event,rowScope)">
-                        <el-dropdown-item  icon="el-icon-document-copy" command="edit-comment">
+                        <el-dropdown-item v-if="canUpdate" icon="el-icon-document-copy" command="edit-comment">
                             Edit
                         </el-dropdown-item>
                         <el-dropdown-item  icon="el-icon-position" command="send-comment">
@@ -105,7 +93,7 @@
                         <el-dropdown-item  icon="el-icon-chat-dot-square" command="preview-comment">
                             Preview
                         </el-dropdown-item>
-                        <el-dropdown-item icon="el-icon-delete" command="delete-comment">
+                        <el-dropdown-item v-if="canDelete" icon="el-icon-delete" command="delete-comment">
                             Delete
                         </el-dropdown-item>
                     </cly-more-options>
