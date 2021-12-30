@@ -1,6 +1,7 @@
 const { S, State, Status, STATUSES, TriggerKind, MEDIA_MIME_ALL, MEDIA_MIME_IOS, MEDIA_MIME_ANDROID } = require('./const'),
     { PushError, SendError, ConnectionError, ValidationError, ERROR } = require('./error'),
     { Trigger, PlainTrigger, EventTrigger, CohortTrigger, APITrigger } = require('./trigger'),
+    { Info } = require('./info'),
     { Creds } = require('./creds'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
@@ -27,6 +28,7 @@ module.exports = {
     Filter,
     Content,
     Result,
+    Info,
 
     Message,
 
