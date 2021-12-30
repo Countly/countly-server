@@ -466,6 +466,11 @@
                     {label: 'alert.TOTAL_ALERTS_SENT', value: count.t},
                     {label: 'alert.ALERTS_SENT_TODAY', value: count.today},
                 ];
+            },
+            shouldHideCount: function() {
+                var result = this.$store.getters["countlyAlerts/table/getInitialized"];
+                var rows = this.$store.getters["countlyAlerts/table/all"];
+                return result && (rows.length === 0);
             }
         },
         data: function() {
