@@ -4,10 +4,10 @@
 @use "sass:map";
 
 .cly-vue-select-x {
-    .cly-vue-listbox {
-        background-color: map.get(c.$colors, "white");
-    }
     &__pop {
+        .cly-vue-listbox {
+            background-color: transparent !important;
+        }
         .el-tabs {
             &__nav-wrap::after {
                 background-color: transparent;
@@ -82,6 +82,7 @@
 }
 
 .cly-vue-listbox {
+    background-color: map.get(c.$colors, "white");
 
     label.el-checkbox {
         width: 100%;
