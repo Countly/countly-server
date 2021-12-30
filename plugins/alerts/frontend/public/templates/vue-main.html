@@ -44,6 +44,7 @@
     />
     <cly-section v-else>
         <cly-datatable-n
+            :force-loading="!initialized"
             class="cly-vue-alerts-table"
             :tracked-fields="localTableTrackedFields"
             :rows="tableRows" :resizable="false" >
