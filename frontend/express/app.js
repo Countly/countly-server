@@ -908,6 +908,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 message: req.flash("message"),
                 ssr: serverSideRendering,
                 timezones: timezones,
+                countlyTypeName: COUNTLY_NAMED_TYPE,
                 usermenu: {
                     feedbackLink: COUNTLY_FEEDBACK_LINK,
                     documentationLink: COUNTLY_DOCUMENTATION_LINK,

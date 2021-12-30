@@ -19,4 +19,5 @@
     <analytics-menu v-show="selectedMenuOption === 'analytics'"></analytics-menu>
     <management-menu v-show="selectedMenuOption === 'management'"></management-menu>
     <component v-for="item in components" :is="item.component" v-show="selectedMenuOption === item.name" :key="item.name"></component>
+    <div class="cly-vue-sidebar__version">{{versionInfo}}</div>
 </div>

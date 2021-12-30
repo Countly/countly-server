@@ -202,7 +202,6 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
-                    app.navigate(item.url, true);
                 },
                 sortBy: function(arrayToSort, sortList) {
                     if (!sortList.length) {
@@ -359,7 +358,6 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
-                    app.navigate(item.url, true);
                 },
                 checkCurrentManagementTab: function() {
                     var currLink = Backbone.history.fragment;
@@ -481,7 +479,8 @@
             },
             data: function() {
                 return {
-                    selectedMenuOptionLocal: null
+                    selectedMenuOptionLocal: null,
+                    versionInfo: countlyGlobal.countlyTypeName
                 };
             },
             computed: {

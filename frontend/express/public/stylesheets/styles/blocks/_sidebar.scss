@@ -342,4 +342,17 @@ $bg-color: #24292e;
         margin-top: 5px;
         position: relative;
     }
+
+    &__version {
+        position: absolute;
+        bottom: 0;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 224px;
+        margin-left: 48px;
+        font-size: 10px;
+        background-color: #24292e;
+    }
 }
