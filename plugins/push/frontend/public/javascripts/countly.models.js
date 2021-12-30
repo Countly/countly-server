@@ -352,6 +352,22 @@
             }
             return false;
         },
+        isNoPushCredentialsForAndroidError: function(error) {
+            if (error.responseJSON) {
+                return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
+                    return message === 'No push credentials for platform a';
+                });
+            }
+            return false;
+        },
+        isNoPushCredentialsForIosError: function(error) {
+            if (error.responseJSON) {
+                return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
+                    return message === 'No push credentials for platform i';
+                });
+            }
+            return false;
+        },
         isNoUsersFoundError: function(error) {
             return error.message === 'No users were found from selected configuration';
         },
@@ -548,12 +564,12 @@
                         resolve();
                     },
                     error: function(error) {
+                        //TODO:log error
                         if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
                             reject(new Error('No push notification credentials were found'));
                             return;
                         }
                         reject(new Error('Unknown error occurred.Please try again later.'));
-                        //TODO:log error
                     }
                 }, {disableAutoCatch: true});
             });
@@ -577,12 +593,20 @@
                         resolve(response);
                     },
                     error: function(error) {
+                        //TODO:log error
+                        if (countlyPushNotification.helper.isNoPushCredentialsForAndroidError(error)) {
+                            reject(new Error('No push notification credentials were found for Android'));
+                            return;
+                        }
+                        if (countlyPushNotification.helper.isNoPushCredentialsForIosError(error)) {
+                            reject(new Error('No push notification credentials were found for IOS'));
+                            return;
+                        }
                         if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
                             reject(new Error('No push notification credentials were found'));
                             return;
                         }
                         reject(new Error('Unknown error occurred'));
-                        //TODO:log error
                     }
                 }, {disableAutoCatch: true});
             });
@@ -1840,6 +1864,7 @@
                     var localizations = countlyPushNotification.mapper.incoming.mapLocalizations(localesDto);
                     resolve({localizations: localizations, total: response.count, _id: response._id});
                 }).catch(function(error) {
+                    //TODO:log error
                     reject(error);
                 });
             });

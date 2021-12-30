@@ -429,7 +429,6 @@
                     }).catch(function(error) {
                         self.setLocalizationOptions([]);
                         CountlyHelpers.notify({
-                            title: "Push notification error",
                             message: error.message,
                             type: "error"
                         });
@@ -515,13 +514,11 @@
                 promiseMethod().then(function() {
                     self.$refs.drawer.doClose();
                     CountlyHelpers.notify({
-                        title: "Push notification",
                         message: "Push notification message was successfully saved."
                     });
                     self.$emit('save');
                 }).catch(function(error) {
                     CountlyHelpers.notify({
-                        title: "Push notification error",
                         message: error.message,
                         type: "error"
                     });
@@ -551,13 +548,11 @@
                 promiseMethod().then(function() {
                     done();
                     CountlyHelpers.notify({
-                        title: "Push notification",
                         message: "Push notification message was successfully saved."
                     });
                     self.$emit('save');
                 }).catch(function(error) {
                     CountlyHelpers.notify({
-                        title: "Push notification error",
                         message: error.message,
                         type: "error"
                     });
