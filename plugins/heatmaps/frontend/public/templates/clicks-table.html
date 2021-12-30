@@ -12,12 +12,20 @@
                 </el-table-column>
                 <el-table-column min-width="150"  v-if="showActionMapColumn"  prop="actionLink" :label="i18n('heatmaps.table.heatmap')">
                     <template slot-scope="scope">
-                        <cly-more-options v-if="scope.row.useDropdown" icon="el-icon-right" :text="i18n('heatmaps.view-heatmap')">
+                        <cly-more-options v-if="!scope.row.useDropdown" icon="el-icon-right" :text="i18n('heatmaps.view-heatmap')">
                             <el-dropdown-item :key="idx" v-for="(item, idx) in domains">
                                 <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value)" class="bu-ml-1 ">{{item.label}}</div>
                             </el-dropdown-item>
                         </cly-more-options>
-                        <div v-else class="go-to-actions-link" @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" >{{i18n("heatmaps.view-heatmap")}}</div>
+                         <div v-else>
+                            <el-button 
+                            size="small" 
+                            @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" 
+                            icon="el-icon-right" 
+                            type="default">
+                                {{i18n('heatmaps.view-heatmap')}}
+                            </el-button>
+                        </div>
                     </template>
                 </el-table-column>
             </template>

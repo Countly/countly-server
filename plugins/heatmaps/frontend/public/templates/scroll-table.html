@@ -34,7 +34,15 @@
                                 <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value)" class="bu-ml-1 ">{{item.label}}</div>
                             </el-dropdown-item>
                         </cly-more-options>
-                        <div v-else class="go-to-actions-link" @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" >{{i18n("heatmaps.view-heatmap")}}</div>
+                        <div v-else>
+                            <el-button 
+                            size="small" 
+                            @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" 
+                            icon="el-icon-right" 
+                            type="default">
+                                {{i18n('heatmaps.view-heatmap')}}
+                            </el-button>
+                        </div>
                     </template>
                 </el-table-column>
             </template>
