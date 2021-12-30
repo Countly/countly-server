@@ -190,7 +190,7 @@ module.exports.update = async params => {
 
     msg.info.updated = new Date();
     msg.info.updatedBy = params.member._id;
-    msg.info.updatedName = params.member.full_name;
+    msg.info.updatedByName = params.member.full_name;
 
     await msg.save();
 
@@ -225,7 +225,12 @@ module.exports.remove = async params => {
         // TODO: clear the queue
     }
 
-    let ok = await msg.updateAtomically({_id: msg._id, state: msg.state}, {$bit: {state: {or: State.Deleted}}});
+    let ok = await msg.updateAtomically(
+        {_id: msg._id, state: msg.state},
+        {
+            $bit: {state: {or: State.Deleted}},
+            $set: {removed: new Date(), removedBy: params.member._id, removedByName: params.member.full_name}
+        });
     if (ok) {
         if (msg.triggerAutoOrApi()) {
             await plugins.getPluginsApis().push.cache.remove(msg.id);
