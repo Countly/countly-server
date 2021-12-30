@@ -14,8 +14,13 @@ class Info extends Validatable {
      * @param {object}      data.locales        locales object ({en: .3, de: 0.01, fr: 0.5})
      * @param {Date}        data.created        date of creation
      * @param {string}      data.createdBy      user who created
+     * @param {string}      data.createdByName  full name of a user who created
      * @param {Date}        data.updated        date of last modification
      * @param {string}      data.updatedBy      user who modified last
+     * @param {string}      data.updatedByName  full name of a user who modified this mesage last
+     * @param {Date}        data.removed        date of deletion
+     * @param {string}      data.removedBy      user who deleted this mesage
+     * @param {string}      data.removedByName  full name of a user who deleted this mesage
      * @param {Date}        data.approved       date of approval (push_approver plugin)
      * @param {string}      data.approvedBy     user who approved (push_approver plugin)
      * @param {Date}        data.started        date of first sending start
@@ -42,6 +47,9 @@ class Info extends Validatable {
             updated: {type: 'Date', required: false},
             updatedBy: {type: 'String', required: false},
             updatedByName: {type: 'String', required: false},
+            removed: {type: 'Date', required: false},
+            removedBy: {type: 'String', required: false},
+            removedByName: {type: 'String', required: false},
             approved: {type: 'Date', required: false},
             approvedBy: {type: 'String', required: false},
             approvedByName: {type: 'String', required: false},
@@ -301,6 +309,75 @@ class Info extends Validatable {
         }
         else {
             delete this._data.updatedByName;
+        }
+    }
+
+    /**
+     * Getter for removed
+     * 
+     * @returns {Date|undefined} date of last deletion
+     */
+    get removed() {
+        return this._data.removed;
+    }
+
+    /**
+     * Setter for removed
+     * 
+     * @param {Date|number|string|undefined} removed date of last deletion
+     */
+    set removed(removed) {
+        if (removed !== null && removed !== undefined) {
+            this._data.removed = toDate(removed);
+        }
+        else {
+            delete this._data.removed;
+        }
+    }
+
+    /**
+     * Getter for removedBy
+     * 
+     * @returns {string|undefined} user who deleted
+     */
+    get removedBy() {
+        return this._data.removedBy;
+    }
+
+    /**
+     * Setter for removedBy
+     * 
+     * @param {string|undefined} removedBy user who deleted
+     */
+    set removedBy(removedBy) {
+        if (removedBy !== null && removedBy !== undefined) {
+            this._data.removedBy = removedBy;
+        }
+        else {
+            delete this._data.removedBy;
+        }
+    }
+
+    /**
+     * Getter for removedByName
+     * 
+     * @returns {string|undefined} user who deleted
+     */
+    get removedByName() {
+        return this._data.removedByName;
+    }
+
+    /**
+     * Setter for removedByName
+     * 
+     * @param {string|undefined} removedByName user who deleted
+     */
+    set removedByName(removedByName) {
+        if (removedByName !== null && removedByName !== undefined) {
+            this._data.removedByName = removedByName;
+        }
+        else {
+            delete this._data.removedByName;
         }
     }
 
