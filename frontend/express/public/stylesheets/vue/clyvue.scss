@@ -1419,6 +1419,10 @@
         }
     }
 
+    .cly-vue-section:not(:last-child) {
+        margin-bottom: 0px;
+    }
+
     .cly-vue-popover{
         cursor: pointer;
         z-index: 2000;
