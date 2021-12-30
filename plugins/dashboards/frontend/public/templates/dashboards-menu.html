@@ -11,12 +11,14 @@
     <div class="cly-vue-sidebar__main-menu">
         <ul>
             <li v-for="dashboard in allDashboards" :key="dashboard.id" class="bu-px-3 bu-my-1 bu-is-clickable">
-                <div
-                    :class="['cly-vue-sidebar__menu-items',
-                    {'cly-vue-sidebar__menu-items--selected': selectedDashboard._id === dashboard._id}]"
-                    @click="onDashboardMenuItemClick(dashboard)">
-                    <div class="has-ellipsis">{{dashboard.name}}</div>
-                </div>
+                <a :href="'#/custom/' + dashboard._id">
+                    <div
+                        :class="['cly-vue-sidebar__menu-items has-ellipsis',
+                        {'cly-vue-sidebar__menu-items--selected': selectedDashboard._id === dashboard._id}]"
+                        @click="onDashboardMenuItemClick(dashboard)">
+                        {{dashboard.name}}
+                    </div>
+                </a>
             </li>
         </ul>
     </div>

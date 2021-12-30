@@ -1,6 +1,7 @@
 <script type="text/x-template" id="hooks-detail-errors-table-view">
 <div>
     <cly-datatable-n  
+        :force-loading="!detailLogsInitialized"
         class="cly-vue-hook-table is-clickable"
         :rows="tableRows" :resizable="false" >
    

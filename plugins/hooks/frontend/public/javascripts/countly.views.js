@@ -30,6 +30,10 @@
                 }
                 return rows;
             },
+            initialized: function() {
+                var result = this.$store.getters["countlyHooks/table/getInitialized"];
+                return result;
+            },
         },
         data: function() {
             var appsSelectorOption = [];
@@ -784,6 +788,10 @@
                     item.timestamp_string = moment(item.timestamp).format();
                 });
                 return hookDetail.error_logs || [];
+            },
+            detailLogsInitialized: function() {
+                var result = this.$store.getters["countlyHooks/getDetailLogsInitialized"];
+                return result;
             },
         },
         data: function() {

@@ -5,6 +5,9 @@
 
 .cly-vue-select-x {
     &__pop {
+        .cly-vue-listbox {
+            background-color: transparent !important;
+        }
         .el-tabs {
             &__nav-wrap::after {
                 background-color: transparent;

@@ -1,0 +1,34 @@
+<div v-bind:class="[componentId]">
+    <cly-section class="bu-mt-2">
+        <cly-datatable-n
+                :data-source="remoteTableDataSource"
+                :export-query="getExportQuery"
+                :persist-key="heatmapsClicksPersistKey">
+            <template v-slot="scope">
+                <el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.table.pages')" fixed="left">
+                    <template slot-scope="scope">
+                        {{scope.row.view}}
+                    </template>
+                </el-table-column>
+                <el-table-column min-width="150"  v-if="showActionMapColumn"  prop="actionLink" :label="i18n('heatmaps.table.heatmap')">
+                    <template slot-scope="scope">
+                        <cly-more-options v-if="!scope.row.useDropdown" icon="el-icon-right" :text="i18n('heatmaps.view-heatmap')">
+                            <el-dropdown-item :key="idx" v-for="(item, idx) in domains">
+                                <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value)" class="bu-ml-1 ">{{item.label}}</div>
+                            </el-dropdown-item>
+                        </cly-more-options>
+                         <div v-else>
+                            <el-button 
+                            size="small" 
+                            @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" 
+                            icon="el-icon-right" 
+                            type="default">
+                                {{i18n('heatmaps.view-heatmap')}}
+                            </el-button>
+                        </div>
+                    </template>
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+</div>

@@ -233,6 +233,7 @@
                     });
                 },
                 fetchAll: function(context) {
+                    context.commit("setInitialized", false);
                     return CV.$.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.data.r + "/reports/all",

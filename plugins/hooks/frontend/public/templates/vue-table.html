@@ -1,5 +1,6 @@
 <cly-section>
     <cly-datatable-n
+        :force-loading="!initialized"
         class="cly-vue-hook-table is-clickable"
         :tracked-fields="localTableTrackedFields"
         :rows="tableRows" :resizable="false" >
