@@ -412,7 +412,6 @@
                         return this.localLang;
                     },
                     set: function(langCode) {
-                        var self = this;
                         store.set("countly_lang", langCode);
                         countlyCommon.BROWSER_LANG_SHORT = langCode;
                         countlyCommon.BROWSER_LANG = langCode;
@@ -457,8 +456,7 @@
 
                                 app.origLang = JSON.stringify(jQuery.i18n.map);
                                 $.when(countlyLocation.changeLanguage()).then(function() {
-                                    app.activeView.render();
-                                    // self.$parent.$forceUpdate();
+                                    window.location.reload(true);
                                 });
                             }
                         });
