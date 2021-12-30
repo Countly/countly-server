@@ -37,6 +37,8 @@
                 deleteElement: null,
                 showDeleteDialog: false,
                 deleteMessage: '',
+                canUpdate: countlyAuth.validateUpdate(FEATURE_NAME),
+                canDelete: countlyAuth.validateDelete(FEATURE_NAME),
             };
         },
         props: {
