@@ -1,4 +1,4 @@
-/*global countlyVue, CV,_, countlyCommon */
+/*global countlyVue, CV,_, CountlyHelpers, countlyCommon */
 (function(countlyCompareApps) {
     countlyCompareApps.helpers = {
         getTableRows: function(context) {
@@ -72,7 +72,6 @@
             for (var key in allAppsInfo) {
                 obj[key] = true;
             }
-            //  var allAppsInfo = context.rootGetters["countlyCommon/getAllApps"];
             return obj;
         },
         filterSelectedApps: function(tableStateMap, selectedApps) {
@@ -96,7 +95,7 @@
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r + "/compare/apps",
                 data: {
-                    "period": period,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "apps": JSON.stringify(context.state.selectedApps)
                 },
                 dataType: "json",
@@ -113,7 +112,9 @@
                 lineChartData: {},
                 lineLegend: {},
                 tableRows: [],
-                tableStateMap: {}
+                tableStateMap: {},
+                isChartLoading: false,
+                isTableLoading: false
             };
         };
 
@@ -157,6 +158,12 @@
                     }
                     context.state.tableStateMap[tableRows[i].id] = isSelected;
                 }
+            },
+            setTableLoading: function(context, value) {
+                context.commit("setTableLoading", value);
+            },
+            setChartLoading: function(context, value) {
+                context.commit("setChartLoading", value);
             }
         };
 
@@ -181,6 +188,12 @@
             },
             setTableStateMap: function(state, value) {
                 state.tableStateMap = value;
+            },
+            setTableLoading: function(state, value) {
+                state.isTableLoading = value;
+            },
+            setChartLoading: function(state, value) {
+                state.isChartLoading = value;
             }
         };
         var compareAppsGetters = {
@@ -204,6 +217,12 @@
             },
             tableStateMap: function(_state) {
                 return _state.tableStateMap;
+            },
+            isTableLoading: function(_state) {
+                return _state.isTableLoading;
+            },
+            isChartLoading: function(_state) {
+                return _state.isChartLoading;
             }
         };
         return countlyVue.vuex.Module("countlyCompareApps", {

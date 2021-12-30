@@ -122,7 +122,7 @@
                 }
             },
             totalPages: function() {
-                return Math.ceil(this.dataView.totalRows / this.controlParams.perPage);
+                return countlyCommon.formatNumber(Math.ceil(this.dataView.totalRows / this.controlParams.perPage));
             },
             lastPage: function() {
                 return this.totalPages;
@@ -145,9 +145,9 @@
 
                 if (filteredTotal > 0) {
                     info = this.i18n("common.showing")
-                        .replace("_START_", startEntries)
-                        .replace("_END_", endEntries)
-                        .replace("_TOTAL_", filteredTotal);
+                        .replace("_START_", countlyCommon.formatNumber(startEntries))
+                        .replace("_END_", countlyCommon.formatNumber(endEntries))
+                        .replace("_TOTAL_", countlyCommon.formatNumber(filteredTotal));
                 }
 
                 if (this.displaySearch && searchQuery) {
@@ -328,7 +328,8 @@
     var MutationTrackerMixin = {
         data: function() {
             return {
-                patches: {}
+                patches: {},
+                hasSelection: false
             };
         },
         props: {
@@ -502,6 +503,12 @@
                 return DEFAULT_ROW;
             },
             onCellMouseEnter: function(row) {
+                if (this.hasSelection) {
+                    //If the table is in a selection mode, donot patch
+                    //Because if we patch to show action buttons the selection will be lost
+                    return;
+                }
+
                 var thisRowKey = this.keyOf(row);
                 var hovered = this.mutatedRows.filter(function(r) {
                     return r.hover;
@@ -519,7 +526,19 @@
                     this.patch(row, {hover: true});
                 }
             },
+            onSelectionChange: function(selected) {
+                this.hasSelection = selected.length ? true : false;
+                if (!this.hasSelection) {
+                    this.removeHovered();
+                }
+            },
             onNoCellMouseEnter: function() {
+                if (this.hasSelection) {
+                    //If the table is in a selection mode, donot unpatch
+                    //Because if we unpatch to hide action buttons selection will be lost on unpatch
+                    return;
+                }
+
                 this.removeHovered();
             },
             removeHovered: function() {
@@ -723,6 +742,11 @@
             hideTop: {
                 type: Boolean,
                 default: false
+            },
+            forceLoading: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         data: function() {
@@ -760,6 +784,9 @@
                 }, {});
             },
             isLoading: function() {
+                if (this.forceLoading === true) {
+                    return true;
+                }
                 if (!this.dataSource) {
                     return false;
                 }

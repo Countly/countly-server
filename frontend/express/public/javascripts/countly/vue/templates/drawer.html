@@ -18,19 +18,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="cly-vue-drawer__header bu-pb-2" :class="{ 'is-full-screen': currentScreenMode === 'full'}">
+                <div class="cly-vue-drawer__header" :class="{ 'is-full-screen': currentScreenMode === 'full'}">
                     <div class="cly-vue-drawer__title">
-                        <div v-if="currentScreenMode !== 'full'" class="bu-columns bu-is-gapless bu-is-mobile bu-px-3 bu-pt-3 bu-mb-0">
-                            <div class="bu-column bu-is-11 bu-is-flex bu-is-align-items-center bu-m-3">
-                                <h3>{{title}}</h3>
-                            </div>
-                            <div class="bu-column bu-is-1 bu-is-flex bu-is-align-items-start bu-is-justify-content-center">
-                                <span class="cly-vue-drawer__close-button" v-on:click="doClose">
+                        <div v-if="currentScreenMode !== 'full'">
+                            <div class="bu-is-flex bu-is-justify-content-space-between bu-m-3" style="width: 100%;">
+                                <h3 class="bu-mx-4 bu-my-3">{{title}}</h3>
+                                <span class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose" style="margin-block: auto;">
                                     <i class="ion-ios-close-empty"></i>
                                 </span>
                             </div>
                         </div>
-                        <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile bu-px-5 bu-py-3">
+                        <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile bu-px-5 bu-py-3 bu-mr-6">
                             <div class="bu-column bu-is-12 bu-is-flex bu-is-align-items-center bu-is-justify-content-left">
                                 <div class="cly-vue-drawer__steps-header">
                                     <template v-for="(currentContent, i) in stepContents">
@@ -40,7 +38,7 @@
                                                     <span class="index text-small" :class="{'color-white': i === currentStepIndex}">{{i + 1}}</span>
                                                     <span class="done-icon text-small color-white"><i class="fa fa-check"></i></span>
                                                 </div>
-                                                <div class="cly-vue-drawer__step-title text-medium font-weight-bold">{{currentContent.name}}</div>
+                                                <div class="cly-vue-drawer__step-title text-medium font-weight-bold color-cool-gray-40">{{currentContent.name}}</div>
                                             </div>
                                         </div>
                                         <div :key="'sep_' + i" class="cly-vue-drawer__step-separator" v-if="i < stepContents.length - 1"></div>
@@ -65,13 +63,13 @@
                     </div>
                 </div>
                 <div class="cly-vue-drawer__footer" v-if="isMultiStep || hasCancelButton || saveButtonLabel">
+                    <div class="cly-vue-drawer__controls-left-pc">
+                        <slot name="controls-left"
+                            v-bind="passedScope">
+                        </slot>
+                    </div>
                     <div class="cly-vue-drawer__buttons is-multi-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="isMultiStep">
-                        <div class="cly-vue-drawer__controls-left-pc">
-                            <slot name="controls-left"
-                                v-bind="passedScope">
-                            </slot>
-                        </div>
-                        <el-button @click="prevStep" size="small" v-if="currentStepIndex > 0" :disabled="isSubmitPending">{{i18n('common.drawer.previous-step')}}</el-button>
+                        <el-button class="el-button--secondary" @click="prevStep" size="small" v-if="currentStepIndex > 0" :disabled="isSubmitPending">{{i18n('common.drawer.previous-step')}}</el-button>
                         <el-button @click="nextStep" size="small" type="success" v-if="!isLastStep" :class="{'is-disabled':!isCurrentStepValid}" :disabled="isSubmitPending">{{i18n('common.drawer.next-step')}}</el-button>
                         <el-button @click="submit" :loading="isSubmitPending" size="small" v-if="isLastStep" :class="{'is-disabled':!isSubmissionAllowed}" type="success" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
                     </div>

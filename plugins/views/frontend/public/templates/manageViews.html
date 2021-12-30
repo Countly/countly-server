@@ -13,10 +13,11 @@
 				{{deleteDialogText}}
 			</template>
 		</cly-confirm-dialog>
-		<cly-datatable-n  :default-sort="{prop: 'view', order: 'ascending'}" :trackedFields="['display']" :data-source="remoteTableDataSource" ref="editViewsTable" @selection-change="handleSelectionChange" >
-			<template v-slot:header-left>
-				<el-button ref="deleteManyButton" :disabled="isDeleteButtonDisabled"  type="danger" @click="deleteManyViews" >{{i18n('common.delete')}}</el-button>
-			</template>
+		<cly-section>
+			<cly-datatable-n  :default-sort="{prop: 'view', order: 'ascending'}" :trackedFields="['display']" :data-source="remoteTableDataSource" ref="editViewsTable" @selection-change="handleSelectionChange" >
+				<template v-slot:header-left>
+					<el-button v-if="!isDeleteButtonDisabled" ref="deleteManyButton" :disabled="isDeleteButtonDisabled"  type="danger" @click="deleteManyViews" >{{i18n('common.delete')}}</el-button>
+				</template>
 				<template v-slot="scope">
 					<el-table-column width="65" type="selection"></el-table-column>
 					<el-table-column sortable="custom" prop="view" :label="i18n('views.table.view')"></el-table-column>
@@ -25,14 +26,12 @@
 						<el-input type="text" v-model="rowScope.row.editedDisplay" @input="function(e) {displayNameChanged(e,scope,rowScope);}" ></el-input>
 						</template>
 					</el-table-column>
-					<el-table-column>
-					</el-table-column>
 				</template>
-				 <template v-slot:bottomline="scope">
-                <cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateManyViews" >
-                </cly-diff-helper>
-            </template>
+				<template v-slot:bottomline="scope">
+					<cly-diff-helper :diff="scope.diff" @discard="scope.unpatch()" @save="updateManyViews" ></cly-diff-helper>
+				</template>
 
 			</cly-datatable-n>
+		</cly-section>
     </cly-main>
 </div>

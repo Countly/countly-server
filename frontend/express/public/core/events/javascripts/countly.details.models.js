@@ -1,4 +1,4 @@
-/*global countlyVue, CV, _, countlyCommon, jQuery */
+/*global countlyVue, CV, _, countlyCommon, CountlyHelpers, jQuery */
 (function(countlyAllEvents) {
 
     countlyAllEvents.helpers = {
@@ -399,9 +399,9 @@
                 };
             }
             return {
-                count: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].count : CV.i18n("events.overview.count"),
-                sum: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].sum : CV.i18n("events.overview.sum"),
-                dur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration")
+                count: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].count ? allEventsData.map[selectedEventName].count : CV.i18n("events.overview.count"),
+                sum: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].sum ? allEventsData.map[selectedEventName].sum : CV.i18n("events.overview.sum"),
+                dur: allEventsData && allEventsData.map && allEventsData.map[selectedEventName] && allEventsData.map[selectedEventName].dur ? allEventsData.map[selectedEventName].dur : CV.i18n("events.overview.duration")
             };
 
         },
@@ -465,7 +465,7 @@
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_events",
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
@@ -492,7 +492,7 @@
                     "method": "events",
                     "event": context.state.selectedEventName,
                     "segmentation": context.state.currentActiveSegmentation === "segment" ? "" : context.state.currentActiveSegmentation,
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
@@ -506,7 +506,7 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "events",
                     "events": JSON.stringify([context.state.selectedEventName]),
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
                     "timestamp": new Date().getTime(),
                     "overview": true
                 },
@@ -575,7 +575,9 @@
                 categoriesMap: [],
                 currentCategory: "",
                 segments: [],
-                segmentDescription: ""
+                segmentDescription: "",
+                isChartLoading: true,
+                isTableLoading: true
             };
         };
 
@@ -688,6 +690,12 @@
                     context.commit('setSegmentDescription', "");
                 }
             },
+            setTableLoading: function(context, value) {
+                context.commit("setTableLoading", value);
+            },
+            setChartLoading: function(context, value) {
+                context.commit("setChartLoading", value);
+            },
             fetchRefreshAllEventsData: function(context) {
                 return countlyAllEvents.service.fetchAllEventsData(context)
                     .then(function(res) {
@@ -798,6 +806,12 @@
             setSegmentDescription: function(state, value) {
                 state.segmentDescription = value;
             },
+            setTableLoading: function(state, value) {
+                state.isTableLoading = value;
+            },
+            setChartLoading: function(state, value) {
+                state.isChartLoading = value;
+            }
         };
         var allEventsGetters = {
             allEvents: function(_state) {
@@ -865,8 +879,13 @@
             },
             segmentDescription: function(_state) {
                 return _state.segmentDescription;
+            },
+            isTableLoading: function(_state) {
+                return _state.isTableLoading;
+            },
+            isChartLoading: function(_state) {
+                return _state.isChartLoading;
             }
-
         };
         return countlyVue.vuex.Module("countlyAllEvents", {
             state: getInitialState,

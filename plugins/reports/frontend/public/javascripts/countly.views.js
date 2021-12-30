@@ -7,7 +7,6 @@
     countlyReporting,
     jQuery,
     countlyVue,
-    countlyDashboards,
     app,
     CV,
     $,
@@ -22,7 +21,14 @@
                 var rows = this.$store.getters["countlyReports/table/all"];
                 return rows;
             },
-
+            initialized: function() {
+                var result = this.$store.getters["countlyReports/table/getInitialized"];
+                return result;
+            },
+            rawTableRows: function() {
+                var rows = this.$store.getters["countlyReports/table/all"];
+                return rows;
+            }
         },
         data: function() {
             return {
@@ -33,7 +39,13 @@
                 deleteMessage: '',
             };
         },
+        props: {
+            callCreateReportDrawer: {type: Function, default: function() {}},
+        },
         methods: {
+            createReport: function() {
+                this.callCreateReportDrawer();
+            },
             handleReportEditCommand: function(command, scope) {
                 switch (command) {
                 case "edit-comment":
@@ -79,7 +91,7 @@
                 this.showDeleteDialog = false;
             },
             submitDeleteForm: function() {
-                this.$store.dispatch("countlyReports/deleteReport", this.deleteElement._id);
+                this.$store.dispatch("countlyReports/deleteReport", this.deleteElement);
                 this.showDeleteDialog = false;
             },
             updateStatus: function(scope) {
@@ -88,9 +100,10 @@
                 diff.forEach(function(item) {
                     status[item.key] = item.newValue;
                 });
-                this.$store.dispatch("countlyReports/table/updateStatus", status);
-                this.$store.dispatch("countlyReports/table/fetchAll");
-                scope.unpatch();
+                var self = this;
+                this.$store.dispatch("countlyReports/table/updateStatus", status).then(function() {
+                    return self.$store.dispatch("countlyReports/table/fetchAll");
+                });
             },
             refresh: function() {
             // this.$store.dispatch("countlyReports/table/fetchAll");
@@ -178,7 +191,7 @@
                 dayOfWeekOptions: dayOfWeekOptions,
                 timeListOptions: timeListOptions,
                 timezoneOptions: zones,
-                emailOptions: [{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
+                // emailOptions: [{value: countlyGlobal.member.email, label: countlyGlobal.member.email}],
                 showApps: true,
                 showMetrics: true,
                 showDashboards: false,
@@ -196,10 +209,10 @@
                 return options;
             },
             dashboardsOptions: function() {
-                var dashboardsList = countlyDashboards.getAllDashboards();
+                var dashboardsList = this.$store.getters["countlyDashboards/all"];
                 var dashboardsOptions = [];
                 for (var i = 0; i < dashboardsList.length; i++) {
-                    dashboardsOptions.push({ value: dashboardsList[i].id, label: dashboardsList[i].name });
+                    dashboardsOptions.push({ value: dashboardsList[i]._id, label: dashboardsList[i].name });
                 }
                 countlyVue.container.registerData("/reports/dashboards-option", dashboardsOptions);
                 return dashboardsOptions;
@@ -213,6 +226,7 @@
             }
         },
         methods: {
+
             reportTypeChange: function(type) {
                 if (type === 'dashboards') {
                     this.showApps = false;
@@ -227,7 +241,8 @@
                 }
             },
             reportFrequencyChange: function(reportFrequency) {
-                var reportDateRanges = countlyDashboards.getReportDateRanges(reportFrequency);
+                var dashboardRangesDict = this.$store.getters["countlyDashboards/reportDateRangeDict"];
+                var reportDateRanges = dashboardRangesDict[reportFrequency] || [];
                 this.reportDateRangesOptions = reportDateRanges.map(function(r) {
                     return {value: r.value, label: r.name};
                 });
@@ -259,6 +274,8 @@
                     doc.metrics[m] = true;
                 });
                 delete doc.metricsArray;
+                delete doc.hover;
+                delete doc.user;
                 this.$store.dispatch("countlyReports/saveReport", doc);
             },
             onClose: function($event) {
@@ -331,7 +348,7 @@
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 30});
+            app.addMenu("management", {code: "reports", url: "#/manage/reports", text: "reports.title", priority: 43});
             if (app.configurationsView) {
                 app.configurationsView.registerLabel("reports", "reports.title");
                 app.configurationsView.registerLabel(

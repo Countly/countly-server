@@ -1,0 +1,31 @@
+<div>
+    <div class="bu-py-3">
+        <div class="text-smallish font-weight-bold bu-mb-1">{{i18nM('dashboards.app-count')}}</div>
+        <el-radio-group v-model="appCount" style="width: 100%;">
+            <el-radio
+                border
+                class="is-autosized-vstack"
+                label="single"
+                key="single">
+                <div>
+                    {{i18nM('dashboards.single-app')}}
+                </div>
+                <div class="text-small">
+                    {{i18nM('dashboards.single-app-description')}}
+                </div>
+            </el-radio>
+            <el-radio
+                border
+                class="is-autosized-vstack"
+                label="multiple"
+                key="multiple">
+                <div>
+                    {{i18nM('dashboards.multiple-apps')}}
+                </div>
+                <div class="text-small">
+                    {{i18nM('dashboards.multiple-apps-description')}}
+                </div>
+            </el-radio>
+        </el-radio-group>
+    </div>
+</div>

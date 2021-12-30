@@ -33,6 +33,7 @@
                         json[i].enabled = json[i].enabled + '' === 'false' ? false : true;
                         json[i].pluginEnabled = json[i].report_type === "core" ? true : countlyGlobal.plugins.indexOf(json[i].report_type) > -1;
 
+
                     }
                 }
                 _data = json;
@@ -144,13 +145,13 @@
         var getters = {
             tableData: function(state) {
                 return state.tableData;
-            }
+            },
         };
 
         var mutations = {
             setTableData: function(state, list) {
                 state.tableData = list;
-            }
+            },
         };
 
         var actions = {
@@ -160,14 +161,15 @@
             refresh: function(context) {
                 context.dispatch("countlyReports/table/fetchAll", null, {root: true});
             },
-            deleteReport: function(context, reportId) {
+            deleteReport: function(context, report) {
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.w + "/reports/delete",
                     data: {
                         args: JSON.stringify({
-                            "_id": reportId
+                            "_id": report._id
                         }),
+                        app_id: countlyCommon.ACTIVE_APP_ID
                     },
                     dataType: "json",
                     success: function() {
@@ -195,18 +197,25 @@
         var tableResource = countlyVue.vuex.Module("table", {
             state: function() {
                 return {
-                    all: []
+                    all: [],
+                    initialized: false,
                 };
             },
             getters: {
                 all: function(state) {
                     return state.all;
+                },
+                getInitialized: function(state) {
+                    return state.initialized;
                 }
             },
             mutations: {
                 setAll: function(state, val) {
                     state.all = val;
-                }
+                },
+                setInitialized: function(state, val) {
+                    state.initialized = val;
+                },
             },
             actions: {
                 updateStatus: function(context, status) {
@@ -269,6 +278,7 @@
                                 });
 
                                 var ret = "";
+
                                 if (data[i].report_type === "core") {
                                     for (var rowProp in data[i].metrics) {
                                         ret += jQuery.i18n.map["reports." + rowProp] + ", ";
@@ -284,11 +294,17 @@
                                 else if (!data[i].isValid) {
                                     ret = jQuery.i18n.prop("reports.not-valid");
                                 }
-                                else {
-                                    var report = app.getReportsCallbacks()[data[i].report_type];
-                                    if (report && report.tableData) {
-                                        ret = report.tableData(data[i]);
+
+                                if (data[i].pluginEnabled && data[i].report_type === "dashboards") {
+                                    var dashboardId = data[i].dashboards;
+                                    var dashboard = {};
+                                    var dashboardsList = context.rootGetters["countlyDashboards/all"];
+                                    for (var idx = 0; i < dashboardsList.length; idx++) {
+                                        if (dashboardId === dashboardsList[idx]._id) {
+                                            dashboard = dashboardsList[idx];
+                                        }
                                     }
+                                    ret = "Dashboard " + (dashboard.name || "");
                                 }
                                 data[i].dataColumn = ret;
 
@@ -309,8 +325,10 @@
                                 if (countlyGlobal.member.global_admin === true || data[i].user === countlyGlobal.member._id) {
                                     data[i].createdByMe = false;
                                 }
+
                             }
                         }
+                        context.commit("setInitialized", true);
                         context.commit("setAll", data);
                     });
                 },
@@ -339,7 +357,6 @@
             minute: 0,
             dashboards: null,
             date_range: null,
-
         };
     };
 }(window.countlyReporting = window.countlyReporting || {}, jQuery));

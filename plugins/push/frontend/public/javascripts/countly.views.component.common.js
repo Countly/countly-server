@@ -1,4 +1,4 @@
-/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise*/
+/*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment,Promise, Map*/
 (function(countlyPushNotificationComponent) {
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
         props: {
@@ -121,21 +121,11 @@
         },
         data: function() {
             return {
-                innerInput: "",
-                innerToggle: false
             };
         },
         computed: {
             hasDefaultSlot: function() {
                 return Boolean(this.$slots.default);
-            }
-        },
-        watch: {
-            input: function(value) {
-                this.innerInput = value;
-            },
-            toggle: function(value) {
-                this.innerToggle = value;
             }
         },
         methods: {
@@ -159,6 +149,10 @@
                 type: String,
                 default: ""
             },
+            usePre: {
+                type: Boolean,
+                default: false
+            }
         },
         computed: {
             hasDefaultSlot: function() {
@@ -177,6 +171,7 @@
                         value: "",
                         fallback: "",
                         isUppercase: false,
+                        type: countlyPushNotification.service.UserPropertyTypeEnum.USER
                     };
                 }
             },
@@ -212,7 +207,14 @@
             }
         },
         data: function() {
-            return {};
+            return {
+                selectedPropertyCategory: "internal",
+                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum,
+                propertyCategoryOptions: [
+                    {label: "Internal Properties", value: "internal"},
+                    {label: "External Properties", value: "external"}
+                ]
+            };
         },
         computed: {
             getStyleObject: function() {
@@ -224,22 +226,41 @@
                 return result;
             },
         },
+        watch: {
+            userProperty: function(value) {
+                if (value.type === this.UserPropertyTypeEnum.API) {
+                    this.selectedPropertyCategory = "external";
+                    return;
+                }
+                this.selectedPropertyCategory = "internal";
+            }
+        },
         methods: {
-            findOptionLabelByValue: function(value) {
-                for (var property in this.options) {
-                    if (this.options[property].value === value) {
-                        return this.options[property].label;
+            findCategoryOptionByValue: function(value, categoryOptions) {
+                return categoryOptions.find(function(item) {
+                    return item.value === value;
+                });
+            },
+            findOptionByValue: function(value) {
+                for (var index in this.options) {
+                    var item = this.findCategoryOptionByValue(value, this.options[index].options);
+                    if (item) {
+                        return item;
                     }
                 }
-                return "";
+                throw new Error('Unable to find user property option by value:' + value);
             },
             onSelect: function(value) {
-                this.$emit('select', {id: this.id, container: this.container, value: value, label: this.findOptionLabelByValue(value)});
+                var optionItem = this.findOptionByValue(value);
+                this.$emit('select', {id: this.id, container: this.container, value: value, label: optionItem.label, type: optionItem.type});
             },
             onUppercase: function(value) {
-                this.$emit('check', {id: this.id, container: this.container, value: value});
+                this.$emit('uppercase', {id: this.id, container: this.container, value: value});
             },
             onFallback: function(value) {
+                this.$emit('fallback', {id: this.id, container: this.container, value: value});
+            },
+            onInput: function(value) {
                 this.$emit('input', {id: this.id, container: this.container, value: value});
             },
             onRemove: function() {
@@ -498,11 +519,13 @@
         data: function() {
             return {
                 search: "",
-                defaultLabelValue: "Select property",
-                defaultLabelPreview: "Select property|",
+                defaultLabelValue: "Add user property",
+                defaultLabelPreview: "Add user property|",
                 defaultLocalizationValidationErrors: [],
                 selectionRange: null,
                 mutationObserver: null,
+                userPropertyEvents: new Map(),
+                UserPropertyTypeEnum: countlyPushNotification.service.UserPropertyTypeEnum
             };
         },
         computed: {
@@ -586,9 +609,12 @@
                 newElement.setAttribute("class", "cly-vue-push-notification-message-editor-with-emoji-picker__user-property");
                 newElement.setAttribute("data-user-property-label", this.defaultLabelValue);
                 newElement.setAttribute("data-user-property-value", "");
+                newElement.setAttribute("data-user-property-type", this.UserPropertyTypeEnum.USER);
                 newElement.setAttribute("data-user-property-fallback", "");
                 newElement.innerText = this.defaultLabelPreview;
-                newElement.onclick = this.getOnUserPropertyClickEventListener(id);
+                var onClickListener = this.getOnUserPropertyClickEventListener(id);
+                this.userPropertyEvents.set(id, onClickListener);
+                newElement.onclick = onClickListener;
                 this.insertNodeAtCaretPosition(newElement);
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.onUserPropertyClick(id, newElement);
@@ -597,7 +623,9 @@
             removeUserProperty: function(id) {
                 var userProperty = this.$refs.element.querySelector("#id-" + id);
                 if (userProperty) {
+                    userProperty.removeEventListener('click', this.userPropertyEvents.get(id));
                     userProperty.remove();
+                    this.userPropertyEvents.delete(id);
                     this.$emit('change', this.$refs.element.innerHTML);
                     this.validate();
                 }
@@ -612,11 +640,12 @@
                 }
                 return labelValue;
             },
-            setUserPropertyValue: function(id, previewValue, value) {
+            setUserPropertyValue: function(id, previewValue, value, type) {
                 var element = this.$refs.element.querySelector("#id-" + id);
                 element.innerText = previewValue;
                 element.setAttribute("data-user-property-value", value);
                 element.setAttribute("data-user-property-label", this.getLabelValueFromPreview(previewValue));
+                element.setAttribute("data-user-property-type", type);
                 this.$emit('change', this.$refs.element.innerHTML);
                 this.validate();
             },
@@ -629,12 +658,22 @@
             addEventListeners: function(ids) {
                 var self = this;
                 ids.forEach(function(id) {
-                    document.querySelector("#id-" + id).onclick = self.getOnUserPropertyClickEventListener(id);
+                    var elementEvent = self.userPropertyEvents.get(id);
+                    if (elementEvent) {
+                        document.querySelector("#id-" + id).onclick = elementEvent;
+                    }
+                    else {
+                        var newElementEvent = self.getOnUserPropertyClickEventListener(id);
+                        self.userPropertyEvents.set(id, newElementEvent);
+                        document.querySelector("#id-" + id).onclick = newElementEvent;
+                    }
                 });
             },
             reset: function(htmlContent, ids) {
+                this.disconnectMutationObserver();
                 this.$refs.element.innerHTML = htmlContent;
                 this.addEventListeners(ids);
+                this.startMutationObserver();
             },
             appendEmoji: function(emoji) {
                 this.insertEmojiAtCaretPosition(document.createTextNode(emoji));
@@ -672,6 +711,8 @@
                 nodesList.forEach(function(removedNode) {
                     if (removedNode.id) {
                         var idValue = removedNode.id.split('-')[1];
+                        removedNode.removeEventListener('click', self.userPropertyEvents.get(idValue));
+                        self.userPropertyEvents.delete(idValue);
                         self.$emit('delete', {id: idValue, container: self.container});
                     }
                 });
@@ -709,6 +750,16 @@
             },
             removePasteEventListener: function(callback) {
                 this.$refs.element.removeEventListener('paste', callback);
+            },
+            removeUserPropertyEventListeners: function() {
+                var self = this;
+                this.userPropertyEvents.forEach(function(value, key) {
+                    var userProperty = self.$refs.element.querySelector("#id-" + key);
+                    if (userProperty) {
+                        userProperty.removeEventListener('click', value);
+                    }
+                });
+                this.userPropertyEvents.clear();
             }
         },
         mounted: function() {
@@ -726,7 +777,7 @@
             this.addPasteEventListener(this.onPaste);
         },
         beforeDestroy: function() {
-            //TODO-LA: remove all user properties elements' event listeners
+            this.removeUserPropertyEventListeners();
             this.disconnectMutationObserver();
             this.removePasteEventListener(this.onPaste);
         },
@@ -735,7 +786,7 @@
         },
     });
 
-    countlyPushNotification.DetailsTabRow = countlyVue.views.create({
+    countlyPushNotificationComponent.DetailsTabRow = countlyVue.views.create({
         template: '#details-tab-row',
         props: {
             value: {
@@ -746,6 +797,10 @@
                 type: String,
                 default: ""
             },
+            usePre: {
+                type: Boolean,
+                default: false,
+            }
         },
         computed: {
             hasDefaultSlot: function() {
@@ -759,9 +814,14 @@
         data: function() {
             return {
                 selectedLocalization: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
+                PlatformEnum: countlyPushNotification.service.PlatformEnum,
+                MessageTypeEnum: countlyPushNotification.service.MessageTypeEnum,
             };
         },
         computed: {
+            pushNotification: function() {
+                return this.$store.state.countlyPushNotification.details.pushNotification;
+            },
             message: function() {
                 return this.$store.state.countlyPushNotification.details.pushNotification.message[this.selectedLocalization];
             },
@@ -773,12 +833,40 @@
             },
             previewMessageContent: function() {
                 return countlyPushNotification.helper.getPreviewMessageComponentsList(this.message.content);
+            },
+            previewAndroidMedia: function() {
+                var result = "";
+                if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL;
+                }
+                if (this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
+                }
+                return result;
+            },
+            previewIOSMedia: function() {
+                var result = "";
+                if (this.pushNotification.settings[this.PlatformEnum.ALL].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
+                }
+                if (this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL) {
+                    result = this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL;
+                }
+                return result;
+            },
+            hasAllPlatformMediaOnly: function() {
+                return !this.pushNotification.settings[this.PlatformEnum.IOS].mediaURL && !this.pushNotification.settings[this.PlatformEnum.ANDROID].mediaURL;
+            }
+        },
+        methods: {
+            prettifyJSON: function(value) {
+                return countlyPushNotification.helper.prettifyJSON(value, 2);
             }
         },
         components: {
             'user-property-preview': countlyPushNotificationComponent.UserPropertyPreview,
             'user-property-text-preview': countlyPushNotificationComponent.UserPropertyTextPreview,
-            'details-tab-row': countlyPushNotification.DetailsTabRow
+            'details-tab-row': countlyPushNotificationComponent.DetailsTabRow
         }
     });
 
@@ -812,10 +900,13 @@
         methods: {
             convertDaysInMsToDays: function(daysInMs) {
                 return daysInMs / this.DAY_TO_MS_RATIO;
-            }
+            },
+            formatDateAndTime: function(date) {
+                return countlyPushNotification.helper.formatDateTime(date, 'MMMM Do, YYYY, h:mm a');
+            },
         },
         components: {
-            'details-tab-row': countlyPushNotification.DetailsTabRow
+            'details-tab-row': countlyPushNotificationComponent.DetailsTabRow
         }
     });
 

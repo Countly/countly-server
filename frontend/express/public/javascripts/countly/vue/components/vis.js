@@ -809,6 +809,7 @@
         template: '<div class="bu-level" :style="{height: height + \'px\'}">\
                         <div class="bu-level-left">\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
+							<slot name="chart-header-left-input"></slot>\
                         </div>\
                         <div class="bu-level-right">\
                             <slot v-if="!isZoom" name="chart-right" v-bind:echart="echartRef"></slot>\
@@ -1119,6 +1120,76 @@
                         </custom-legend>\
                     </div>'
     }));
+
+
+    Vue.component("cly-flow-chart", BaseChart.extend({
+        data: function() {
+            return {
+                forwardedSlots: ["chart-left", "chart-right", "chart-header-left-input"],
+                scrollOptions: {
+                    vuescroll: {},
+                    scrollPanel: {
+                        scrollingY: false
+                    },
+                    rail: {
+                        gutterOfSide: "1px",
+                        gutterOfEnds: "15px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: true
+                    }
+                }
+            };
+        },
+        mounted: function() {
+            this.echartRef = this.$refs.echarts;
+        },
+        components: {
+            'chart-header': ChartHeader,
+            'custom-legend': CustomLegend
+        },
+        computed: {
+            chartOptions: function() {
+                return _merge({}, this.baseOptions, this.option);
+            }
+        },
+
+        template: '<div class="cly-vue-chart" :class="chartClasses">\
+                        <div :style="echartStyle" class="cly-vue-chart__echart" :style="{height: \'100%\'}">\
+                            <chart-header ref="header" v-if="isShowingHeader" :echartRef="echartRef" @series-toggle="onSeriesChange" v-bind="$props">\
+                                <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
+                                    <slot :name="item" v-bind="slotScope"></slot>\
+                                </template>\
+                            </chart-header>\
+							<div class="chart-wrapper" :style="{height: (chartOptions.chartheight) + \'px\'}">\
+							<vue-scroll :ops="scrollOptions" >\
+								<div :style="{height: (chartOptions.chartheight) + \'px\', width: chartOptions.chartwidth + \'px\'}">\
+										<echarts\
+											:updateOptions="echartUpdateOptions"\
+											ref="echarts"\
+											v-bind="$attrs"\
+											v-on="$listeners"\
+											:option="chartOptions"\
+											:autoresize="autoresize"\
+											@datazoom="onZoomFinished">\
+										</echarts>\
+								</div>\
+							</vue-scroll>\
+							</div>\
+                        </div>\
+                        <custom-legend\
+                            :style="legendStyle"\
+                            :options="legendOptions"\
+                            :echartRef="echartRef"\
+                            v-if="legendOptions.show"\
+                            :chartOptions="chartOptions">\
+                        </custom-legend>\
+                    </div>'
+    }));
+
 
     Vue.component("cly-chart-line", BaseLineChart.extend({
         data: function() {

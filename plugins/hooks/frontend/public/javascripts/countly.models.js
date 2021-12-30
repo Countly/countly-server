@@ -67,6 +67,11 @@
                 };
             }
             break;
+        case 'ScheduledTrigger':
+            data = {};
+            break;
+        default:
+            data = {};
         }
         return data;
     };
@@ -193,6 +198,7 @@
                     dataType: "json",
                     success: function() {
                         context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
+                        context.dispatch("countlyHooks/initializeDetail", record._id, {root: true});
                     }
                 });
             },
@@ -206,6 +212,7 @@
                     dataType: "json",
                     success: function() {
                         context.dispatch("countlyHooks/table/fetchAll", null, {root: true});
+                        window.app.navigate("/manage/hooks", true);
                     }
                 });
             },
@@ -282,10 +289,7 @@
                                     return countlyGlobal.apps[appID] && countlyGlobal.apps[appID].name;
                                 });
                             }
-                            var nameDescColumn = '<div class="is-name-col">' + row.name + '</div>';
-                            if (row.description) {
-                                nameDescColumn += '<div class="is-desc-col">' + row.description + '</div>';
-                            }
+
 
                             var triggerEffectDom = hooksPlugin.generateTriggerActionsTreeDom(row);
                             tableData.push({
@@ -293,7 +297,6 @@
                                 name: hookList[i].name || '',
                                 description: hookList[i].description || '-',
                                 apps: hookList[i].apps,
-                                nameDescColumn: nameDescColumn,
                                 appNameList: appNameList.join(', '),
                                 triggerCount: hookList[i].triggerCount || 0,
                                 lastTriggerTimestampString: hookList[i].lastTriggerTimestamp && moment(hookList[i].lastTriggerTimestamp).fromNow() || "-",

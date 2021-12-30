@@ -147,7 +147,8 @@
                     period: countlyCommon.getPeriod(),
                     periodLabel: countlyCommon.getDateRangeForCalendar(),
                     activeApp: null,
-                    allApps: countlyGlobal.apps
+                    allApps: countlyGlobal.apps,
+                    notificationToasts: [],
                 },
                 getters: {
                     period: function(state) {
@@ -194,7 +195,16 @@
                     },
                     deleteAllApps: function(state) {
                         state.allApps = null;
-                    }
+                    },
+                    addNotificationToast: function(state, payload) {
+                        payload.id = countlyCommon.generateId();
+                        state.notificationToasts.unshift(payload);
+                    },
+                    removeNotificationToast: function(state, id) {
+                        state.notificationToasts = state.notificationToasts.filter(function(item) {
+                            return item.id !== id;
+                        });
+                    },
                 },
                 actions: {
                     updatePeriod: function(context, obj) {
@@ -223,8 +233,14 @@
                     },
                     deleteAllApps: function(context) {
                         context.commit("deleteAllApps");
+                    },
+                    onAddNotificationToast: function(context, payload) {
+                        context.commit('addNotificationToast', payload);
+                    },
+                    onRemoveNotificationToast: function(context, payload) {
+                        context.commit('removeNotificationToast', payload);
                     }
-                }
+                },
             },
             countlySidebar: {
                 namespaced: true,
@@ -350,7 +366,7 @@
 
     var VuexLoader = function(vuex) {
         this.vuex = vuex;
-        this.loadedModuleIds = [];
+        this.loadedModules = [];
     };
 
     VuexLoader.prototype.load = function() {
@@ -358,16 +374,37 @@
         this.vuex.forEach(function(item) {
             var module = item.clyModel.getVuexModule();
             _vuex.registerGlobally(module);
-            self.loadedModuleIds.push(module.name);
+            self.loadedModules.push(module);
         });
     };
 
     VuexLoader.prototype.destroy = function() {
-        this.loadedModuleIds.forEach(function(mid) {
-            _vuex.unregister(mid);
+        var self = this;
+        this.loadedModules.forEach(function(mid, index) {
+            if (mid.destroy !== false) {
+                _vuex.unregister(mid.name);
+                self.loadedModules.splice(index, 1);
+            }
         });
-        this.loadedModuleIds = [];
     };
+
+    var NotificationToastsView = VueCompositionAPI.defineComponent({
+        name: "NotificationToasts",
+        template: '<div class="notification-toasts"> \
+                        <cly-notification v-for="(toast) in notificationToasts" :key="toast.id" :id="toast.id" :text="toast.text" :autoHide="toast.autoHide" :color="toast.color" :closable="true" @close="onClose" class="notification-toasts__item"></cly-notification>\
+                    </div>',
+        store: _vuex.getGlobalStore(),
+        computed: {
+            notificationToasts: function() {
+                return this.$store.state.countlyCommon.notificationToasts;
+            }
+        },
+        methods: {
+            onClose: function(id) {
+                this.$store.dispatch('countlyCommon/onRemoveNotificationToast', id);
+            }
+        }
+    });
 
     var countlyVueWrapperView = countlyView.extend({
         constructor: function(opts) {
@@ -412,16 +449,17 @@
                 It is not clear why, but when a view with those components destroyed,
                 they leave some memory leaks. Instantiating DummyCompAPI triggers memory cleanups. 
             */
-
             self.vm = new Vue({
                 el: el,
                 store: _vuex.getGlobalStore(),
                 components: {
                     DummyCompAPI: DummyCompAPI,
-                    MainView: self.component
+                    MainView: self.component,
+                    NotificationToasts: NotificationToastsView
                 },
                 template: '<div>\
-                                <MainView></MainView>\
+                                <MainView> </MainView>\
+                                <NotificationToasts> </NotificationToasts> \
                                 <DummyCompAPI></DummyCompAPI>\
                             </div>',
                 beforeCreate: function() {

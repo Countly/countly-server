@@ -1,4 +1,4 @@
-/* global countlyVue, countlyCompareEvents, countlyCommon, countlyAuth CV*/
+/* global countlyVue, countlyCompareEvents, countlyAuth CV*/
 (function() {
     var FEATURE_NAME = "compare";
     var CompareEventsTable = countlyVue.views.create({
@@ -31,7 +31,10 @@
             },
             groupData: function() {
                 return this.$store.getters["countlyCompareEvents/groupData"];
-            }
+            },
+            isTableLoading: function() {
+                return this.$store.getters["countlyCompareEvents/isTableLoading"];
+            },
         },
         methods: {
             handleCurrentChange: function(selection) {
@@ -62,14 +65,29 @@
         },
         methods: {
             compareEvents: function() {
+                var self = this;
+                this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
+                this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                 this.$store.dispatch('countlyCompareEvents/fetchSelectedEvents', this.value);
-                this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData');
+                this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData').then(function() {
+                    self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
+                    self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
+                });
             },
             refresh: function() {
                 var selectedEvents = this.$store.getters["countlyCompareEvents/selectedEvents"];
                 if (selectedEvents.length > 0) {
                     this.$store.dispatch('countlyCompareEvents/fetchRefreshCompareEventsData');
                 }
+            },
+            dateChanged: function() {
+                var self = this;
+                this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
+                this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
+                this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData', this.value).then(function() {
+                    self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
+                    self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
+                });
             }
         },
         computed: {
@@ -81,16 +99,6 @@
             },
             lineLegend: function() {
                 return this.$store.getters["countlyCompareEvents/lineLegend"];
-            },
-            selectedDatePeriod: {
-                get: function() {
-                    return this.$store.getters["countlyCompareEvents/selectedDatePeriod"];
-                },
-                set: function(period) {
-                    this.$store.dispatch('countlyCompareEvents/fetchSelectedDatePeriod', period);
-                    countlyCommon.setPeriod(period);
-                    this.$store.dispatch('countlyCompareEvents/fetchCompareEventsData', this.value);
-                }
             },
             selectedGraph: {
                 get: function() {
@@ -105,24 +113,38 @@
                 },
                 set: function(selectedItem) {
                     var self = this;
+                    this.$store.dispatch('countlyCompareEvents/setTableLoading', true);
+                    this.$store.dispatch('countlyCompareEvents/setChartLoading', true);
                     var selectedEvents = this.$store.getters["countlyCompareEvents/selectedEvents"];
                     if (selectedItem === "Sum") {
                         self.selectedMetric = "Sum";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "s");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
+                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents).then(function() {
+                            self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
+                            self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
+                        });
                     }
                     else if (selectedItem === "Duration") {
                         self.selectedMetric = "Duration";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "dur");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
+                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents).then(function() {
+                            self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
+                            self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
+                        });
                     }
                     else {
                         self.selectedMetric = "Count";
                         this.$store.dispatch('countlyCompareEvents/fetchSelectedGraphMetric', "c");
-                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents);
+                        this.$store.dispatch('countlyCompareEvents/fetchLineChartData', selectedEvents).then(function() {
+                            self.$store.dispatch('countlyCompareEvents/setTableLoading', false);
+                            self.$store.dispatch('countlyCompareEvents/setChartLoading', false);
+                        });
                     }
                 }
             },
+            isChartLoading: function() {
+                return this.$store.getters["countlyCompareEvents/isChartLoading"];
+            }
         },
         data: function() {
             return {

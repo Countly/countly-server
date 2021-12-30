@@ -3,17 +3,15 @@
         font-size: 13px;
     }
     .cly-vue-reports-table {
-        .is-option-button {
-            visibility: hidden;
-            .el-select {
-                -webkit-box-shadow: unset;
-                box-shadow: unset;
-                border-radius: unset;
-            }
-            
+        .no-search-circle {
+            border-radius: 50%;
+            width: 96px;
+            height: 96px;
+            background-image: url("../images/search-empty.svg");
         }
-        tr:hover .is-option-button {
-            visibility: visible;
+        .switch-column {
+            padding-left: 16px;
+            padding-right: 26px;
         }
     }
 
@@ -40,10 +38,19 @@
                 margin: 8px 0px;
                 .el-radio__label {
                     width: 100%;
+                    display: flex;
+                    justify-content: space-between;
                     .text-small {
-                        float: right;
-                        color: #03060C;
+                        color: #81868D;
+                        margin-top: auto;
                     }
+                    .text-medium {
+                        color: #333C48;
+                        font-size: 13px;    
+                    }
+                }
+                .el-radio__input{
+                    margin-top: auto;
                 }
             }
         }

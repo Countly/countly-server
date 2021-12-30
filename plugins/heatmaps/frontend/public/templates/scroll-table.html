@@ -1,0 +1,43 @@
+<div v-bind:class="[componentId]">
+    <cly-section class="bu-mt-2">
+        <cly-datatable-n
+                :data-source="remoteTableDataSource"
+                :export-query="getExportQuery"
+                :persist-key="heatmapsScrollsPersistKey">
+            <template v-slot="scope">
+                <el-table-column min-width="300" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.table.pages')" fixed="left">
+                    <template slot-scope="scope">
+                        {{scope.row.view}}
+                    </template>
+                </el-table-column>
+                <el-table-column min-width="400" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('heatmaps.avg-scroll-depth')" fixed="left">
+                    <template v-slot:default="rowScope">
+                        <div class="bu-is-flex bu-is-align-items-center">
+                            <div class="text-medium">
+                                <span style="width: 60px; display: inline-block;text-align: right;">{{rowScope.row.scr}}&nbsp;px </span>
+                                <span class="color-cool-gray-50">|</span> &nbsp;</div>
+                            <div class="bu-mr-2">{{rowScope.row.scrCalc}}</div>
+                            <cly-progress-bar
+                                :height="8"
+                                class="bu-mr-6"
+                                :percentage="rowScope.row.scrCalcInt || 0"
+                                color="#017AFF"
+                                background-color="#ECECEC">
+                            </cly-progress-bar>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column min-width="150"  v-if="showActionMapColumn"  prop="actionLink" :label="i18n('heatmaps.table.heatmap')">
+                    <template slot-scope="scope">
+                        <cly-more-options v-if="scope.row.useDropdown" icon="el-icon-right" :text="i18n('heatmaps.view-heatmap')">
+                            <el-dropdown-item :key="idx" v-for="(item, idx) in domains">
+                                <div @click="viewActionMapClick(scope.row.actionLink,scope.row._id,item.value)" class="bu-ml-1 ">{{item.label}}</div>
+                            </el-dropdown-item>
+                        </cly-more-options>
+                        <div v-else class="go-to-actions-link" @click="viewActionMapClick(scope.row.actionLink,scope.row._id)" >{{i18n("heatmaps.view-heatmap")}}</div>
+                    </template>
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-section>
+</div>

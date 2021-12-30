@@ -1467,7 +1467,7 @@ var AppRouter = Backbone.Router.extend({
         * @example
         * {{> timezones }}
         */
-        Handlebars.registerPartial("timezones", $("#template-timezones").html());
+        Handlebars.registerPartial("timezones", $("#template-timezones").html() || "");
         /**
         * Display common app category selecting UI element
         * @name app-categories

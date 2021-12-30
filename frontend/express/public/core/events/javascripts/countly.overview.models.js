@@ -1,4 +1,4 @@
-/*global countlyVue, CV, countlyCommon */
+/*global countlyVue, CV, countlyCommon, CountlyHelpers, Promise */
 (function(countlyEventsOverview) {
 
     countlyEventsOverview.helpers = {
@@ -273,7 +273,7 @@
                     "limit": limit
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});//to be able to see if discarded
         },
         fetchMonitorEvents: function(context) {
             return CV.$.ajax({
@@ -282,11 +282,11 @@
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "get_events",
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
                     "preventRequestAbort": true
                 },
                 dataType: "json",
-            });
+            }, {"disableAutoCatch": true});//to be able to see if discarded
         },
         fetchMonitorEventsData: function(my_events, context) {
             return CV.$.ajax({
@@ -296,7 +296,7 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "events",
                     "events": JSON.stringify(my_events),
-                    "period": context.state.selectedDatePeriod,
+                    "period": CountlyHelpers.getPeriodUrlQueryParameter(context.state.selectedDatePeriod),
                     "timestamp": new Date().getTime(),
                     "overview": true
                 },
@@ -347,6 +347,8 @@
                     "value": "dur"
                 }
                 ],
+                isMonitorEventsLoading: true,
+                isTableLoading: true
             };
         };
 
@@ -371,6 +373,7 @@
                                         context.commit("setEventMapping", countlyEventsOverview.helpers.getEventMapping(res, result));
                                         countlyEventsOverview.service.fetchMonitorEventsData(events, context)
                                             .then(function(response) {
+                                                context.dispatch("setMonitorEventsLoading", false);
                                                 if (response) {
                                                     return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context) || []);
                                                 }
@@ -383,6 +386,9 @@
                                         return context.commit("setTopEvents", countlyEventsOverview.helpers.getTopEvents(resp, res.map) || []);
 
                                     }
+                                }).catch(function(/*error*/) {
+                                    //catched error. Could be duplicate warning.
+                                    //return Promise.reject(error);
                                 });
                             countlyEventsOverview.service.fetchEvents()
                                 .then(function(response) {
@@ -394,6 +400,10 @@
                                     }
                                 });
                         }
+                    }).catch(function(/*error*/) {
+                        context.dispatch("setMonitorEventsLoading", false);
+                        //catched error. Could be duplicate warning.
+                        //return Promise.reject(error);
                     });
             },
             fetchTopEvents: function(context, count) {
@@ -403,8 +413,12 @@
                             if (resp) {
                                 return context.commit("setTopEvents", countlyEventsOverview.helpers.getTopEvents(resp, res.map) || []);
                             }
+                        }).catch(function(error) {
+                            return Promise.reject(error);
                         });
                     }
+                }).catch(function(error) {
+                    return Promise.reject(error);
                 });
             },
             fetchMonitorEvents: function(context) {
@@ -427,6 +441,8 @@
                                         context.commit("setEventMapping", countlyEventsOverview.helpers.getEventMapping(res, result));
                                         countlyEventsOverview.service.fetchMonitorEventsData(events, context)
                                             .then(function(response) {
+                                                context.dispatch("setMonitorEventsLoading", false);
+
                                                 if (response) {
                                                     return context.commit("setMonitorEventsData", countlyEventsOverview.helpers.getMonitorEvents(response, context) || []);
                                                 }
@@ -434,6 +450,9 @@
                                     }
                                 });
                         }
+                    }).catch(function(error) {
+                        context.dispatch("setMonitorEventsLoading", false);
+                        return Promise.reject(error);
                     });
             },
             fetchSelectedDatePeriod: function(context, period) {
@@ -452,6 +471,12 @@
                             context.dispatch("fetchMonitorEvents");
                         }
                     });
+            },
+            setMonitorEventsLoading: function(context, value) {
+                context.commit("setMonitorEventsLoading", value);
+            },
+            setTableLoading: function(context, value) {
+                context.commit("setTableLoading", value);
             }
 
         };
@@ -492,6 +517,12 @@
             },
             setEventMapping: function(state, value) {
                 state.eventMapping = value;
+            },
+            setMonitorEventsLoading: function(state, value) {
+                state.isMonitorEventsLoading = value;
+            },
+            setTableLoading: function(state, value) {
+                state.isTableLoading = value;
             }
         };
         var eventsOverviewGetters = {
@@ -530,6 +561,12 @@
             },
             tableRows: function(_state) {
                 return _state.tableRows;
+            },
+            isMonitorEventsLoading: function(_state) {
+                return _state.isMonitorEventsLoading;
+            },
+            isTableLoading: function(_state) {
+                return _state.isTableLoading;
             }
         };
         return countlyVue.vuex.Module("countlyEventsOverview", {

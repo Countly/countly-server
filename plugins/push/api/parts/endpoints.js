@@ -1340,7 +1340,7 @@ function cachedData(note) {
                 }
 
                 const key = data.file.substring(data.file.indexOf(',') + 1);
-                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', oldid).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
+                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', {_id: oldid}).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
                     return common.dbPromise('credentials', 'insertOne', {
                         _id: id,
                         type: data.type,
@@ -1372,7 +1372,7 @@ function cachedData(note) {
                     credsToRemove.push(oldid);
                 }
 
-                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', oldid).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
+                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', {_id: oldid}).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
                     return common.dbPromise('credentials', 'insertOne', {
                         _id: id,
                         type: data.type,
@@ -1402,7 +1402,7 @@ function cachedData(note) {
                     credsToRemove.push(oldid);
                 }
 
-                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', oldid).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
+                credsToCheck.push((oldid ? common.dbPromise('credentials', 'findOne', {_id: oldid}).then(cr => cr && cr.seq || 0) : Promise.resolve(0)).then(seq => {
                     return common.dbPromise('credentials', 'insertOne', {
                         _id: id,
                         type: data.type,
@@ -1686,7 +1686,7 @@ function cachedData(note) {
             ], (err, counts) => {
                 if (counts && counts.length) {
                     counts.forEach(count => {
-                        common.db.collection('messages').findOne(count._id, (e2, msg) => {
+                        common.db.collection('messages').findOne({_id: count._id}, (e2, msg) => {
                             if (e2 || !msg) {
                                 log.e('Error while looking for a message', e2);
                                 return;

@@ -1,19 +1,4 @@
-<cly-confirm-dialog class="cly-vue-remote-config-conditions-drawer-json-editor" @cancel="cancel" @confirm="submit" :visible.sync="centerDialogVisible" :show-close="false" center>
-  <template v-slot:title>
-    <h3 class="color-cool-gray-100">{{i18n('remote-config.json.editor')}}</h3>
-  </template>
-  <div class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center bu-px-4 bu-pb-1">
-    <div>
-      <div class="text-smallish" v-if="jsonstr && jsonerror"><i class="ion-alert-circled color-danger bu-mr-1"></i>{{i18n('remote-config.json.invalid')}}</div>
-      <div class="text-smallish" v-if="!jsonerror"><i class="ion-checkmark-circled color-success bu-mr-1"></i>{{i18n('remote-config.json.valid')}}</div>
-    </div>
-    <el-button class="color-cool-gray-100" @click="prettyFormat" type="text">{{i18n('remote-config.json.format')}}</el-button>
-  </div>
-  <textarea 
-    @input="validateJson"
-    v-model="jsonstr" 
-    rows="15" 
-    class="cly-vue-remote-config-conditions-drawer-json-editor__textarea bu-p-4" 
-    ref="jsonText" 
-    ></textarea>
-</cly-confirm-dialog>
+<cly-dialog ref="dialog" class="cly-vue-remote-config-conditions-drawer-json-editor" :visible.sync="isOpen" :show-close="false" width="500px"
+    :modal="false" center>
+    <cly-json-editor v-on:closed="handleClose" :emitClose="true" :isOpened="isOpen" ref="jsonEditor" v-model="currentVal"></cly-json-editor>
+</cly-dialog>

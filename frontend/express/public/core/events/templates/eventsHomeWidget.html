@@ -1,16 +1,14 @@
 <div v-bind:class="[componentId]">
-	
-	
-	<div class="bu-level bu-pb-3">
+	<div class="bu-level">
 		<div class="bu-level-left">
 			<h4 class="bu-pt-2 bu-mb-4 cly-vue-events-overview-subheadings--font">{{i18n('events.overview.top.events.by.count')}} </h4>
 		</div>
 		<div class="bu-level-right">
 			<a v-if="linkTo" class="cly-back-link text-medium" :href="linkTo.href"><span>{{linkTo.label}}<i class="fas fa-arrow-right bu-pl-3"></i></span></a>
 		</div>
-	</div>		
+	</div>
 	<cly-section>
-		<cly-metric-cards>
+		<cly-metric-cards v-loading="isLoading">
 			<cly-metric-card formatting="long" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in items">
 				{{item.name}}
 				<cly-tooltip-icon v-if="item.info" icon="ion-help-circled" :tooltip="item.info"></cly-tooltip-icon>

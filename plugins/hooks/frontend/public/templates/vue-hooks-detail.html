@@ -28,7 +28,7 @@
     </cly-header>
     <cly-main>
       <cly-section>
-        <div class="bu-mx-5 white-bg bu-p-5 detail-info">
+        <div class="bu-mx-5 white-bg bu-p-5 ">
           <div class="text-medium color-cool-gray-100">HOOK DETAILS</div>
           <div class="bu-mt-5">
             <div class="bu-columns">
@@ -52,6 +52,20 @@
         <error-table-view ></error-table-view>
       </cly-section>
       <drawer @close="closeDrawer" :controls="drawers.detail"></drawer>
+      <cly-confirm-dialog 
+        @cancel="closeDeleteForm" 
+        @confirm="submitDeleteForm" 
+        :before-close="closeDeleteForm" 
+        ref="deleteConfirmDialog" 
+        :visible.sync="showDeleteDialog" 
+        dialogType="danger" 
+        :saveButtonLabel="i18n('common.delete')" 
+        :cancelButtonLabel="i18n('common.no-dont-delete')" 
+        :title="i18n('hooks.delete-confirm-title')" >
+            <template slot-scope="scope">
+                <div v-html="deleteMessage"></div>
+            </template>
+    </cly-confirm-dialog>
     </cly-main>
 </div>
 </script>   

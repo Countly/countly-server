@@ -27,6 +27,7 @@
 @use "blocks/vis";
 @use "blocks/helpers";
 @use "blocks/sidebar";
+@use "blocks/notification-toasts";
 
 // All "States" specific SASS partials
 // Defined at the last to increase specificity
@@ -46,4 +47,5 @@
 @use "../../core/device-and-type/stylesheets/main" as analytics-device-and-type-main-style;
 @use "../../core/geo-countries/stylesheets/main" as geo-countries-main-style;
 @use "../../core/user-management/stylesheets/main" as user-management-main-style;
+@use "../../core/home/stylesheets/main" as home-main-style;
 @use "../../core/app-management/stylesheets/main" as app-management-main-style;

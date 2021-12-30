@@ -1,4 +1,4 @@
-/*global CountlyHelpers, countlyAuth, countlyDashboards, countlyView, simpleheat, countlyWidgets, countlySegmentation, ActionMapView, countlyCommon, countlyGlobal, countlyViews, T, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
+/*global CountlyHelpers, countlyAuth, countlyView, simpleheat, countlyWidgets, countlySegmentation, ActionMapView, countlyCommon, countlyGlobal, countlyViews, T, app, $, jQuery, moment, countlyVue, countlyViewsPerSession, CV,countlyTokenManager*/
 
 (function() {
     var FEATURE_NAME = "views";
@@ -934,47 +934,180 @@
             }
         });
 
-        app.addPageScript("/custom#", function() {
-            addWidgetType();
-            addSettingsSection();
-            /**
-             * Function to add widget
-             */
-            function addWidgetType() {
-                var viewsWidget = '<div data-widget-type="views" class="opt dashboard-widget-item">' +
-                                    '    <div class="inner">' +
-                                    '        <span class="icon views"></span>' + jQuery.i18n.prop("views.widget-type") +
-                                    '    </div>' +
-                                    '</div>';
+        var GridComponent = countlyVue.views.create({
+            template: CV.T('/views/templates/widget.html'),
+            props: {
+                data: {
+                    type: Object,
+                    default: function() {
+                        return {};
+                    }
+                }
+            },
+            mounted: function() {
+            },
+            methods: {
+                refresh: function() {
+                }
+            },
+            computed: {
+                title: function() {
+                    if (this.data.title) {
+                        return this.data.title;
+                    }
+                    if (this.data.dashData) {
+                        return CV.i18n("views.widget-type");
+                    }
+                    return "";
+                },
+                period: function() {
+                    var pp = countlyWidgets.formatPeriod(this.data.custom_period);
+                    pp = pp || {};
+                    return pp.longName || "";
+                },
+                maxTableHeight: function() {
+                    return 200;
+                },
+                tableStructure: function() {
+                    var columns = [{prop: "view", "title": CV.i18n("views.widget-type")}];
 
-                $("#widget-drawer .details #widget-types .opts").append(viewsWidget);
+                    this.data = this.data || {};
+                    this.data.views = this.data.views || [];
+                    for (var k = 0; k < this.data.views.length; k++) {
+                        columns.push({"prop": this.data.views[k], "title": CV.i18n("views." + this.data.views[k])});
+                    }
+                    return columns;
+                },
+                getTableData: function() {
+                    this.data = this.data || {};
+                    this.data.dashData = this.data.dashData || {};
+                    this.data.dashData.data = this.data.dashData.data || {};
+                    return this.data.dashData.data.chartData;
+
+                }
             }
 
-            /**
-             * Function to add setting section
-             */
-            function addSettingsSection() {
-                var setting = '<div id="widget-section-multi-views" class="settings section">' +
-                                '    <div class="label">' + jQuery.i18n.prop("views.widget-type") + '</div>' +
-                                '    <div id="multi-views-dropdown" class="cly-multi-select" data-max="2" style="width: 100%; box-sizing: border-box;">' +
-                                '        <div class="select-inner">' +
-                                '            <div class="text-container">' +
-                                '                <div class="text">' +
-                                '                    <div class="default-text">' + jQuery.i18n.prop("views.select") + '</div>' +
-                                '                </div>' +
-                                '            </div>' +
-                                '            <div class="right combo"></div>' +
-                                '        </div>' +
-                                '        <div class="select-items square" style="width: 100%;"></div>' +
-                                '    </div>' +
-                                '</div>';
+        });
 
-                $(setting).insertAfter(".cly-drawer .details .settings:last");
+        var DrawerComponent = countlyVue.views.create({
+            template: CV.T('/views/templates/widgetDrawer.html'),
+            data: function() {
+                return {
+                    useCustomTitle: false,
+                    useCustomPeriod: false,
+                    availableStatsMetric: [
+                        { name: CV.i18n("views.u"), value: "u" },
+                        { name: CV.i18n("views.n"), value: "n" },
+                        { name: CV.i18n("views.t"), value: "t" },
+                        { name: CV.i18n("views.d"), value: "d" },
+                        { name: CV.i18n("views.s"), value: "s" },
+                        { name: CV.i18n("views.e"), value: "e" },
+                        { name: CV.i18n("views.b"), value: "b" },
+                        { name: CV.i18n("views.br"), value: "br" },
+                        { name: CV.i18n("views.uvc"), value: "uvc" }
+                    ]
+                };
+            },
+            computed: {
+            },
+            mounted: function() {
+            },
+            methods: {
+            },
+            watch: {
+                useCustomTitle: function(newVal) {
+                    if (!newVal) {
+                        this.scope.editedObject.title = '';
+                    }
+                },
+                useCustomPeriod: function(newVal) {
+                    if (!newVal) {
+                        this.scope.editedObject.period = '';
+                    }
+                },
+                'scope.editedObject.selectedApp': function(newVal) {
+                    if (countlyGlobal.apps[newVal] && countlyGlobal.apps[newVal].type === "web") {
+                        this.availableStatsMetric = [
+                            { name: CV.i18n("web.common.table.total-users"), value: "u" },
+                            { name: CV.i18n("web.common.table.new-users"), value: "n" },
+                            { name: CV.i18n("views.t"), value: "t" },
+                            { name: CV.i18n("views.d"), value: "d" },
+                            { name: CV.i18n("views.s"), value: "s" },
+                            { name: CV.i18n("views.e"), value: "e" },
+                            { name: CV.i18n("views.b"), value: "b" },
+                            { name: CV.i18n("views.br"), value: "br" },
+                            { name: CV.i18n("views.uvc"), value: "uvc" },
+                            { name: CV.i18n("views.scr"), value: "scr" }
+                        ];
+                    }
+                    else {
+                        this.availableStatsMetric = [
+                            { name: CV.i18n("views.u"), value: "u" },
+                            { name: CV.i18n("views.n"), value: "n" },
+                            { name: CV.i18n("views.t"), value: "t" },
+                            { name: CV.i18n("views.d"), value: "d" },
+                            { name: CV.i18n("views.s"), value: "s" },
+                            { name: CV.i18n("views.e"), value: "e" },
+                            { name: CV.i18n("views.b"), value: "b" },
+                            { name: CV.i18n("views.br"), value: "br" },
+                            { name: CV.i18n("views.uvc"), value: "uvc" }
+                        ];
+                    }
+                    this.scope.editedObject.views = [];
+                },
+            },
+            props: {
+                scope: {
+                    type: Object,
+                    default: function() {
+                        return {};
+                    }
+                }
+            }
+        });
+
+        countlyVue.container.registerData("/custom/dashboards/widget", {
+            type: "views",
+            label: CV.i18n("views.widget-type"),
+            priority: 5,
+            drawer: {
+                component: DrawerComponent,
+                getEmpty: function() {
+                    return {
+                        apps: [], // Only present in backend
+                        cmetric_refs: [], // Only present in backend
+                        widget_type: "views",
+                        selectedApp: null,
+                        title: "",
+                        custom_period: "30days",
+                        isPluginWidget: true,
+                        views: []
+                    };
+                },
+                beforeLoadFn: function(doc, isEdited) {
+                    if (isEdited) {
+                        doc.selectedApp = doc.apps[0];
+                        delete doc.apps;
+                    }
+                },
+                beforeSaveFn: function(doc) {
+
+                    doc.apps = [doc.selectedApp];
+
+                }
+            },
+            grid: {
+                component: GridComponent,
+                dimensions: function() {
+                    return {
+                        minWidth: 4,
+                        minHeight: 3,
+                        width: 4,
+                        height: 3
+                    };
+                }
             }
 
-            $("#multi-views-dropdown").on("cly-multi-select-change", function() {
-                $("#widget-drawer").trigger("cly-widget-section-complete");
-            });
         });
     }
 
@@ -1008,329 +1141,4 @@
             app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
         }
     });
-
-    initializeViewsWidget();
-
-    /**
-     * Function that initializes widget
-     */
-    function initializeViewsWidget() {
-
-        if (countlyGlobal.plugins.indexOf("dashboards") < 0) {
-            return;
-        }
-
-        var widgetOptions = {
-            init: initWidgetSections,
-            settings: widgetSettings,
-            placeholder: addPlaceholder,
-            create: createWidgetView,
-            reset: resetWidget,
-            set: setWidget,
-            refresh: refreshWidget
-        };
-
-        if (!app.dashboardsWidgetCallbacks) {
-            app.dashboardsWidgetCallbacks = {};
-        }
-
-        app.dashboardsWidgetCallbacks.views = widgetOptions;
-
-        //TO REFRESH VIEWS DATA CHECK FETCH.JS IN API LINE NO: 926
-        //SEGMENT THINGY REMAINING
-
-        var viewsWidgetTemplate;
-        var viewsMetric = [
-            { name: jQuery.i18n.prop("views.u"), value: "u" },
-            { name: jQuery.i18n.prop("views.n"), value: "n" },
-            { name: jQuery.i18n.prop("views.t"), value: "t" },
-            { name: jQuery.i18n.prop("views.d"), value: "d" },
-            { name: jQuery.i18n.prop("views.s"), value: "s" },
-            { name: jQuery.i18n.prop("views.e"), value: "e" },
-            { name: jQuery.i18n.prop("views.b"), value: "b" },
-            { name: jQuery.i18n.prop("views.br"), value: "br" },
-            { name: jQuery.i18n.prop("views.uvc"), value: "uvc" }
-        ];
-        /**
-         * Function to return view name
-         * @param  {String} view - View value
-         * @param  {String} appType - optional. App type. Used to set correct labels for web type
-         * @returns {String} name - View name
-         */
-        function returnViewName(view, appType) {
-            var name = "Unknown";
-
-            var viewName = viewsMetric.filter(function(obj) {
-                return obj.value === view;
-            });
-
-            if (viewName.length) {
-                name = viewName[0].name;
-                if (appType === "web" && viewName[0].value === "u") {
-                    name = jQuery.i18n.prop("web.common.table.total-users");
-                }
-                if (appType === "web" && viewName[0].value === "n") {
-                    name = jQuery.i18n.prop("web.common.table.new-users");
-                }
-            }
-
-
-            return name;
-        }
-
-        $.when(
-            T.render('/views/templates/widget.html', function(src) {
-                viewsWidgetTemplate = src;
-            })
-        ).then(function() {});
-        /**
-         * Function to init widget sections
-         */
-        function initWidgetSections() {
-            var selWidgetType = $("#widget-types").find(".opt.selected").data("widget-type");
-
-            if (selWidgetType !== "views") {
-                return;
-            }
-
-            $("#widget-drawer .details #data-types").parent(".section").hide();
-            $("#widget-section-single-app").show();
-            $("#multi-views-dropdown").clyMultiSelectSetItems(viewsMetric);
-            $("#widget-section-multi-views").show();
-        }
-        /**
-         * Function to set widget settings
-         * @returns {Object} Settings - Settings object
-         */
-        function widgetSettings() {
-            var $singleAppDrop = $("#single-app-dropdown"),
-                $multiViewsDrop = $("#multi-views-dropdown");
-
-            var selectedApp = $singleAppDrop.clySelectGetSelection();
-            var selectedViews = $multiViewsDrop.clyMultiSelectGetSelection();
-
-            if (selectedApp) {
-                if (countlyGlobal.apps[selectedApp].type === "web") {
-                    $("#multi-views-dropdown").find("div[data-value='u']").html(jQuery.i18n.prop("web.common.table.total-users"));
-                    $("#multi-views-dropdown").find("div[data-value='n']").html(jQuery.i18n.prop("web.common.table.new-users"));
-
-                    $("#multi-views-dropdown").find(".selection[data-value='u']").html(jQuery.i18n.prop("web.common.table.total-users"));
-                    $("#multi-views-dropdown").find(".selection[data-value='n']").html(jQuery.i18n.prop("web.common.table.new-users"));
-
-                }
-                else {
-                    $("#multi-views-dropdown").find("div[data-value='u']").html(jQuery.i18n.prop("views.u"));
-                    $("#multi-views-dropdown").find("div[data-value='n']").html(jQuery.i18n.prop("views.n"));
-                    $("#multi-views-dropdown").find(".selection[data-value='u']").html(jQuery.i18n.prop("views.u"));
-                    $("#multi-views-dropdown").find(".selection[data-value='n']").html(jQuery.i18n.prop("views.n"));
-                }
-            }
-            var settings = {
-                apps: (selectedApp) ? [ selectedApp ] : [],
-                views: selectedViews
-            };
-
-            return settings;
-        }
-        /**
-         * Function to set placeholder values
-         * @param  {Object} dimensions - dimensions object
-         */
-        function addPlaceholder(dimensions) {
-            dimensions.min_height = 4;
-            dimensions.min_width = 4;
-            dimensions.width = 4;
-            dimensions.height = 4;
-        }
-        /**
-         * Function to create widget front end view
-         * @param  {Object} widgetData - widget data object
-         */
-        function createWidgetView(widgetData) {
-            var placeHolder = widgetData.placeholder;
-
-            formatData(widgetData);
-            render();
-            /**
-             * Function to render view
-             */
-            function render() {
-                var title = widgetData.title,
-                    app = widgetData.apps,
-                    data = widgetData.formattedData;
-
-                var appName = countlyDashboards.getAppName(app[0]),
-                    appId = app[0];
-
-                var periodDesc = countlyWidgets.formatPeriod(widgetData.custom_period);
-                var $widget = $(viewsWidgetTemplate({
-                    title: title,
-                    period: periodDesc.name,
-                    app: {
-                        id: appId,
-                        name: appName
-                    },
-                    "views": data.viewsValueNames,
-                    "views-data": data.viewsData,
-                }));
-
-                placeHolder.find("#loader").fadeOut();
-                placeHolder.find(".cly-widget").html($widget.html());
-
-                if (!title) {
-                    var widgetTitle = jQuery.i18n.prop("views.heading");
-                    placeHolder.find(".title .name").text(widgetTitle);
-                }
-
-                addTooltip(placeHolder);
-            }
-        }
-        /**
-         * Function to format widget data
-         * @param  {Object} widgetData - Widget data object
-         */
-        function formatData(widgetData) {
-            var appType = "mobile";
-            if (widgetData.apps && widgetData.apps[0]) {
-                if (countlyGlobal.apps[widgetData.apps[0]].type === "web") {
-                    appType = "web";
-                }
-
-            }
-            var data = widgetData.dashData.data,
-                views = widgetData.views;
-
-            var viewsValueNames = [];
-            var i;
-
-            for (i = 0; i < views.length; i++) {
-                viewsValueNames.push({
-                    name: returnViewName(views[i], appType),
-                    value: views[i]
-                });
-            }
-
-            data.chartData.splice(10);
-
-            var viewsData = [];
-            for (i = 0; i < data.chartData.length; i++) {
-                viewsData.push({
-                    views: data.chartData[i].display,
-                    data: []
-                });
-                for (var j = 0; j < viewsValueNames.length; j++) {
-                    var fullName = viewsValueNames[j].name;
-                    var metricName = viewsValueNames[j].value;
-                    var value = data.chartData[i][metricName];
-                    if (metricName === "d") {
-                        var totalVisits = data.chartData[i].t;
-                        var time = (value === 0 || totalVisits === 0) ? 0 : value / totalVisits;
-                        value = countlyCommon.timeString(time / 60);
-                    }
-                    viewsData[i].data.push({
-                        value: value,
-                        name: fullName
-                    });
-                }
-            }
-            var returnData = {
-                viewsData: viewsData,
-                viewsValueNames: viewsValueNames
-            };
-
-            widgetData.formattedData = returnData;
-        }
-        /**
-         * Function to reset widget
-         */
-        function resetWidget() {
-            $("#multi-views-dropdown").clyMultiSelectClearSelection();
-        }
-        /**
-         * Function to set widget data
-         * @param  {Object} widgetData - Widget data object
-         */
-        function setWidget(widgetData) {
-            var views = widgetData.views;
-            var apps = widgetData.apps;
-            var $multiViewsDrop = $("#multi-views-dropdown");
-            var $singleAppDrop = $("#single-app-dropdown");
-
-            $singleAppDrop.clySelectSetSelection(apps[0], countlyDashboards.getAppName(apps[0]));
-
-            var viewsValueNames = [];
-            for (var i = 0; i < views.length; i++) {
-                viewsValueNames.push({
-                    name: returnViewName(views[i]),
-                    value: views[i]
-                });
-            }
-
-            $multiViewsDrop.clyMultiSelectSetSelection(viewsValueNames);
-        }
-        /**
-         * Function to refresh widget
-         * @param  {Object} widgetEl - DOM element
-         * @param  {Object} widgetData - Widget data object
-         */
-        function refreshWidget(widgetEl, widgetData) {
-            formatData(widgetData);
-            var data = widgetData.formattedData;
-
-            var $widget = $(viewsWidgetTemplate({
-                title: "",
-                app: {
-                    id: "",
-                    name: ""
-                },
-                "views": data.viewsValueNames,
-                "views-data": data.viewsData,
-            }));
-
-            widgetEl.find("table").replaceWith($widget.find("table"));
-            addTooltip(widgetEl);
-            countlyWidgets.setPeriod(widgetEl, widgetData.custom_period);
-        }
-        /**
-         * Function to add tooltip
-         * @param  {Object} placeHolder - DOM element
-         */
-        function addTooltip(placeHolder) {
-            placeHolder.find('.views table tr td:first-child').tooltipster({
-                animation: "fade",
-                animationDuration: 50,
-                delay: 100,
-                theme: 'tooltipster-borderless',
-                trigger: 'custom',
-                triggerOpen: {
-                    mouseenter: true,
-                    touchstart: true
-                },
-                triggerClose: {
-                    mouseleave: true,
-                    touchleave: true
-                },
-                interactive: true,
-                contentAsHTML: true,
-                functionInit: function(instance, helper) {
-                    instance.content(getTooltipText($(helper.origin)));
-                }
-            });
-            /**
-             * Function to add tooltip text
-             * @param  {Object} jqueryEl - DOM element
-             * @returns {String} tooltipStr - Tool tip text string
-             */
-            function getTooltipText(jqueryEl) {
-                var viewName = $(jqueryEl).data("view-name");
-                var tooltipStr = "<div id='views-tip'>";
-
-                tooltipStr += viewName;
-
-                tooltipStr += "</div>";
-
-                return tooltipStr;
-            }
-        }
-    }
 })();

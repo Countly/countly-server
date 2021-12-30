@@ -12,8 +12,7 @@ var pluginOb = {},
     { validateCreate, validateRead } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'views';
-
-const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true};
+const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true};
 //keys to not use as segmentation
 (function() {
     plugins.register("/permissions/features", function(ob) {
@@ -539,7 +538,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
         return pipeline;
     }
-
+    pluginOb.createAggregatePipeline = createAggregatePipeline;
 
     /** function return calculated totals for given period. Used in table tata
      * @param {string} collectionName - collection name from where to select
@@ -634,6 +633,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
 
     }
+    pluginOb.getAggregatedData = getAggregatedData;
+
     plugins.register("/o", function(ob) {
         var params = ob.params;
 
@@ -1779,7 +1780,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         }
         var segmentList = [""];
         var addToSetRules = {};
-
         if (currEvent.segmentation) {
             for (let segKey in currEvent.segmentation) {
                 let tmpSegKey = "";

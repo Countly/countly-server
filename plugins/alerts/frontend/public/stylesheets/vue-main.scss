@@ -1,13 +1,4 @@
 #alerts-view {
-
-    .cly-vue-alerts-table {
-        .is-option-button {
-            visibility: hidden;
-        }
-        tr:hover .is-option-button {
-            visibility: visible;
-        }
-    }
     .cly-vue-drawer__steps-view {
         min-width: 850px;
     }
@@ -31,7 +22,7 @@
 
     
         &__line {
-            margin-top: 13px;
+            margin-top: 12px;
             border-top: 2px solid  #ECECEC;
         }
     }

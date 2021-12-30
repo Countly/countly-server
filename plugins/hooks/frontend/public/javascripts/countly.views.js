@@ -1,5 +1,5 @@
 /*global
-  DrillQueryBuilder, CV, countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
+   CV, _,  countlyVue, Uint8Array, $, countlyCommon, jQuery,countlyGlobal, app, hooksPlugin, moment, CountlyHelpers,  countlyEvent, countlyAuth
  */
 (function() {
     var FEATURE_NAME = "hooks";
@@ -56,8 +56,8 @@
 
                     delete data.operation;
                     delete data.triggerEffectColumn;
-                    delete data.nameDescColumn;
                     delete data.triggerEffectDom;
+                    delete data.error_logs;
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {
@@ -80,17 +80,14 @@
                 diff.forEach(function(item) {
                     status[item.key] = item.newValue;
                 });
-                this.$store.dispatch("countlyHooks/table/updateStatus", status);
-
-                scope.unpatch();
+                var self = this;
+                this.$store.dispatch("countlyHooks/table/updateStatus", status).then(function() {
+                    return self.$store.dispatch("countlyHooks/table/fetchAll");
+                });
             },
             refresh: function() {
-            // this.$store.dispatch("countlyHooks/table/fetchAll");
             },
-            onRowClick: function(params, target) {
-                if (target.id === 'el-table_1_column_1') {
-                    return;
-                }
+            onRowClick: function(params) {
                 app.navigate("/manage/hooks/" + params._id, true);
             },
         }
@@ -109,7 +106,7 @@
         template: '#hooks-effect-HTTPEffect',
         data: function() {
             return {
-                methodOptions: [{label: 'GET', value: 'GET'}, {label: 'POST', value: 'POST'}],
+                methodOptions: [{label: 'GET', value: 'get'}, {label: 'POST', value: 'post'}],
             };
         },
         props: {
@@ -117,7 +114,13 @@
                 type: Object
             },
         },
+        mounted: function() {
+            this.value.requestData = _.unescape(this.value.requestData);
+        },
         methods: {
+            textChange: function(event) {
+                this.value.requestData = _.unescape(event.currentTarget.value);
+            }
         }
     });
 
@@ -208,8 +211,12 @@
                 }
                 this.emailInput[0].selectize.setValue(this.value.address, false);
             }
+            this.value.emailTemplate = _.unescape(this.value.emailTemplate);
         },
         methods: {
+            textChange: function(event) {
+                this.value.emailTemplate = _.unescape(event.currentTarget.value);
+            }
         }
     });
 
@@ -225,7 +232,13 @@
                 type: Object
             },
         },
+        mounted: function() {
+            this.value.code = _.unescape(this.value.code);
+        },
         methods: {
+            textChange: function(event) {
+                this.value.code = _.unescape(event.currentTarget.value);
+            }
         }
     });
 
@@ -302,13 +315,14 @@
                 result = {
                     eventOptions: [],
                     hiddenFields: [],
+                    openSegmentTab: this.$props.value.filter ? true : false,
                     query: defaultFilter.dbFilter,
                 };
             }
             return result;
         },
         components: {
-            "segmentation-filter": DrillQueryBuilder.genericSegmentation,
+
         },
         props: {
             value: {
@@ -349,7 +363,15 @@
         watch: {
             selectedApp: function() {
                 this.getEventOptions();
-            }
+            },
+            'openSegmentTab': {
+                deep: true,
+                handler: function(newVal) {
+                    if (!newVal) {
+                        this.queryObj = {} ;
+                    }
+                }
+            },
         },
         methods: {
             eventChange: function() {
@@ -669,17 +691,30 @@
             for (var id in countlyGlobal.apps) {
                 appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id});
             }
+
             return {
                 title: "",
                 saveButtonLabel: "",
                 appsSelectorOption: appsSelectorOption,
+                testClaps: [],
+                newTest: false,
             };
         },
         computed: {
             testResult: function() {
                 var testResult = this.$store.getters["countlyHooks/testResult"];
+                if ((this.$data.newTest === true) && (testResult.length > 0)) {
+                    this.$data.newTest = false;
+                    this.$data.testClaps = [];
+                    for (var i = 0; i < testResult.length; i++) {
+                        if (testResult[i].logs) {
+                            this.$data.testClaps.push(i);
+                        }
+                    }
+
+                }
                 return testResult || [];
-            },
+            }
         },
         props: {
             controls: {
@@ -712,6 +747,7 @@
 
             testHook: function() {
                 var hookData = this.$refs.drawerData.editedObject;
+                this.$data.newTest = true;
                 this.$store.dispatch("countlyHooks/testHook", hookData);
             },
         }
@@ -768,6 +804,13 @@
             "error-table-view": DetailErrorsTableView,
             "drawer": HookDrawer,
         },
+        data: function() {
+            return {
+                deleteElement: null,
+                showDeleteDialog: false,
+                deleteMessage: '',
+            };
+        },
         computed: {
             hookDetail: function() {
                 var hookDetail = this.$store.getters["countlyHooks/hookDetail"];
@@ -782,22 +825,23 @@
                     var data = Object.assign({}, scope);
                     delete data.operation;
                     delete data.triggerEffectColumn;
-                    delete data.nameDescColumn;
                     delete data.triggerEffectDom;
+                    delete data.error_logs;
                     this.openDrawer("detail", data);
                 }
                 else if (command === "delete-comment") {
-                    var hookID = scope._id;
-                    var name = scope.name;
-                    var self = this;
-                    return CountlyHelpers.confirm(jQuery.i18n.prop("hooks.delete-confirm", "<b>" + name + "</b>"), "popStyleGreen", function(result) {
-                        if (result) {
-                            hooksPlugin.deleteHook(hookID, function() {
-                                self.$store.dispatch("countlyHooks/table/fetchAll");
-                            });
-                        }
-                    }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["hooks.yes-delete-hook"]], {title: jQuery.i18n.map["hooks.delete-confirm-title"], image: "delete-an-event"});
+                    this.deleteElement = scope;
+                    this.showDeleteDialog = true;
+                    this.deleteMessage = CV.i18n("hooks.delete-confirm", "<b>" + this.deleteElement.name + "</b>");
                 }
+            },
+            closeDeleteForm: function() {
+                this.deleteElement = null;
+                this.showDeleteDialog = false;
+            },
+            submitDeleteForm: function() {
+                this.$store.dispatch("countlyHooks/deleteHook", this.deleteElement._id);
+                this.showDeleteDialog = false;
             },
         },
         beforeCreate: function() {
@@ -867,7 +911,7 @@
 
     $(document).ready(function() {
         if (countlyAuth.validateRead(FEATURE_NAME)) {
-            app.addSubMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 60});
+            app.addMenu("management", {code: "hooks", url: "#/manage/hooks", text: "hooks.plugin-title", priority: 44});
 
             //check if configuration view exists
             if (app.configurationsView) {

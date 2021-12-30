@@ -41,7 +41,7 @@
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="countryTable" :resizable="true" v-loading="isLoading">
+			<cly-datatable-n  :rows="countryTable" :resizable="true" :force-loading="isLoading">
 				<template v-slot="scope">
 					<el-table-column sortable="custom" prop="countryTranslated" :label="i18n('countries.table.country')">
 						<template slot-scope="scope">

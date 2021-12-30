@@ -2870,4 +2870,4 @@ function loadDbVersionMarks(callback) {
 }
 
 /** @lends module:api/utils/requestProcessor */
-module.exports = {processRequest: processRequest};
+module.exports = {processRequest: processRequest, processUserFunction: processUser};

@@ -943,6 +943,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                             return false;
                         }
                     }
+                    else {
+                        parsed = args[arg];
+                    }
                 }
                 else if (argProperties[arg].type === 'Object') {
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
@@ -954,6 +957,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         else {
                             return false;
                         }
+                    }
+                    else {
+                        parsed = args[arg];
                     }
                 }
                 else if (argProperties[arg].type === 'ObjectID') {
@@ -1028,7 +1034,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (typeof args[arg] === 'string') {
                         try {
-                            JSON.parse(args[arg]);
+                            parsed = JSON.stringify(JSON.parse(args[arg])); // to remove all whitespaces
                         }
                         catch (e) {
                             if (returnErrors) {
@@ -1074,7 +1080,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         return false;
                     }
                     else {
-                        parsed = subret.obj;
+                        parsed = args[arg];
+                        // parsed = subret.obj;
                     }
                 }
                 else if ((typeof argProperties[arg].type === 'object' && argProperties[arg].array) || argProperties[arg].type.indexOf('[]') === argProperties[arg].type.length - 2) {
@@ -1101,7 +1108,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
 
                         args[arg].forEach((v, i) => {
-                            scheme[i] = { type, required: true };
+                            scheme[i] = { type, nonempty: argProperties[arg].nonempty, required: true };
                         });
 
                         ret = common.validateArgs(args[arg], scheme, true);
@@ -1118,6 +1125,9 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         else {
                             parsed = Object.values(ret.obj);
                         }
+                    }
+                    else {
+                        parsed = args[arg];
                     }
                 }
                 else {
@@ -1260,6 +1270,31 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else {
                         return false;
+                    }
+                }
+            }
+
+            if (argProperties[arg].nonempty) {
+                if (parsed !== null && parsed !== undefined) {
+                    let value = parsed;
+                    if (argProperties[arg].type === 'JSON') {
+                        value = JSON.parse(value);
+                    }
+                    let any = false;
+                    // eslint-disable-next-line no-unused-vars
+                    for (let ignored in value) {
+                        any = true;
+                        break;
+                    }
+                    if (!any) {
+                        if (returnErrors) {
+                            returnObj.errors.push(`Value of ${arg} must not be empty`);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
                     }
                 }
             }
@@ -1526,6 +1561,10 @@ common.getIpAddress = function(req) {
     var ipAddress = (req) ? req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '') : "";
     /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
     var ips = ipAddress.split(',');
+
+    if (req.headers['x-real-ip']) {
+        ips.push(req.headers['x-real-ip']);
+    }
 
     //if ignoreProxies not setup, use outmost left ip address
     if (!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length) {

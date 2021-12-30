@@ -1,0 +1,53 @@
+<div v-bind:class="[componentId, 'grid-stack']">
+    <div
+        class="grid-stack-item"
+        v-for="(widget, index) in allWidgets"
+        v-if="__widgets[widget.widget_type]"
+        :key="index"
+        :data-id="widget._id"
+        :gs-id="widget._id"
+        :gs-x="widget.position && widget.position[0]"
+        :gs-y="widget.position && widget.position[1]"
+        :gs-w="widget.size && widget.size[0]"
+        :gs-h="widget.size && widget.size[1]"
+        :gs-locked="isWidgetDisabled(widget) || isWidgetInvalid(widget)"
+        :gs-no-resize="isWidgetDisabled(widget) || isWidgetInvalid(widget)"
+        :gs-no-move="isWidgetDisabled(widget) || isWidgetInvalid(widget)"
+        :gs-min-w="__widgets[widget.widget_type].grid.dimensions().minWidth"
+        :gs-min-h="__widgets[widget.widget_type].grid.dimensions().minHeight"
+        @click="__widgets[widget.widget_type].grid.onClick && __widgets[widget.widget_type].grid.onClick(widget)"
+    >
+        <div class="grid-stack-item-content bu-p-4">
+            <widget-disabled v-if="isWidgetDisabled(widget)" :data="widget">
+                <template v-slot:action v-if="canUpdate">
+                    <div class="bu-level-item">
+                        <cly-more-options @command="onWidgetAction($event, widget)">
+                            <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                        </cly-more-options>
+                    </div>
+                </template>
+            </widget-disabled>
+            <widget-invalid v-else-if="isWidgetInvalid(widget)" :data="widget">
+                <template v-slot:action v-if="canUpdate">
+                    <div class="bu-level-item">
+                        <cly-more-options @command="onWidgetAction($event, widget)">
+                            <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                        </cly-more-options>
+                    </div>
+                </template>
+            </widget-invalid>
+            <component v-else :is="__widgets[widget.widget_type].grid.component" :data="widget">
+                <template v-slot:action v-if="canUpdate">
+                    <div class="bu-level-item">
+                        <cly-more-options @command="onWidgetAction($event, widget)">
+                            <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+                            <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
+                        </cly-more-options>
+                    </div>
+                </template>
+            </component>
+        </div>
+    </div>
+    <widgets-drawer @reset="onReset" :controls="drawers.widgets"></widgets-drawer>
+</div>
+
