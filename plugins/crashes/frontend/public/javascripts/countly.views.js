@@ -335,9 +335,32 @@
                 currentTab: (this.$route.params && this.$route.params.tab) || "crash-groups",
                 statisticsGraphTab: "total-occurances",
                 selectedCrashgroups: [],
-                formatDate: function(row, col, cell) {
-                    return moment(cell * 1000).format("lll");
+                tablePersistKey: 'crashGroupsTable_' + countlyCommon.ACTIVE_APP_ID,
+                tableDynamicCols: [{
+                    value: "os",
+                    label: CV.i18n('crashes.platform'),
+                    required: true
                 },
+                {
+                    value: "reports",
+                    label: CV.i18n('crashes.reports'),
+                    default: true
+                },
+                {
+                    value: "lastTs",
+                    label: CV.i18n('crashes.last_time'),
+                    default: true
+                },
+                {
+                    value: "users",
+                    label: CV.i18n('crashes.affected-users'),
+                    default: true
+                },
+                {
+                    value: "latest_version",
+                    label: CV.i18n('crashes.latest_app'),
+                    default: true
+                }],
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyCrashes", "crashgroups"),
                 crashgroupsFilterProperties: filterProperties,
                 crashgroupsFilterRules: (window.countlyQueryBuilder) ? [
@@ -400,7 +423,10 @@
                             }
                         })]
                     }),
-                ] : []
+                ] : [],
+                formatDate: function(row, col, cell) {
+                    return moment(cell * 1000).format("lll");
+                },
             };
         },
         computed: {
@@ -465,12 +491,16 @@
             },
             statistics: function() {
                 return this.$store.getters["countlyCrashes/overview/statistics"];
+            },
+            errorColumnLabel: function() {
+                var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
+                return appType === 'mobile' ? CV.i18n('crashes.crash-group') : CV.i18n('crashes.error');
             }
         },
         methods: {
             refresh: function() {
                 return Promise.all([
-                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(this.crashgroupsFilter)}),
+                    this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(this.crashgroupsFilter.query)}),
                     this.$store.dispatch("countlyCrashes/overview/refresh")
                 ]);
             },
@@ -484,6 +514,35 @@
             },
             badgesFor: function(crash) {
                 return countlyCrashes.generateBadges(crash);
+            },
+            setSelectedAs: function(state) {
+                var ajaxPromise;
+                var self = this;
+                if (state === "resolved") {
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolved", this.$data.selectedCrashgroups);
+                }
+                else if (state === "resolving") {
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolving", this.$data.selectedCrashgroups);
+                }
+                else if (state === "unresolved") {
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsUnresolved", this.$data.selectedCrashgroups);
+                }
+                else if (state === "hide") {
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsHidden", this.$data.selectedCrashgroups);
+                }
+                else if (state === "show") {
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsShown", this.$data.selectedCrashgroups);
+                }
+                else if (state === "delete") {
+                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsDeleted", this.$data.selectedCrashgroups);
+                }
+                
+                if (typeof ajaxPromise !== "undefined") {
+                    ajaxPromise.finally(function() {
+                        // self.$data.selectedCrashgroups = [];
+                        // TODO: apply the above line after we found the way to uncheck all checkboxes from here
+                    });
+                }
             }
         },
         beforeCreate: function() {
@@ -821,7 +880,6 @@
                         }
                     });
                 }
-
             }
         },
         beforeCreate: function() {
