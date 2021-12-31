@@ -892,9 +892,17 @@
                 return this.$store.state.countlyPushNotification.details.pushNotification;
             },
             previewCohorts: function() {
-                return this.pushNotification.cohorts.map(function(cohortItem) {
-                    return cohortItem.name;
-                });
+                if (this.pushNotification.type === this.TypeEnum.ONE_TIME) {
+                    return this.pushNotification.cohorts.map(function(cohortItem) {
+                        return cohortItem.name;
+                    });
+                }
+                if (this.pushNotification.type === this.TypeEnum.AUTOMATIC) {
+                    return this.pushNotification[this.TypeEnum.AUTOMATIC].cohorts.map(function(cohortItem) {
+                        return cohortItem.name;
+                    });
+                }
+                return [];
             },
         },
         methods: {
