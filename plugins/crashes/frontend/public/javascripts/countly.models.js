@@ -1,4 +1,4 @@
-/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyGlobal, countlyVue, countlyCrashesEventLogs */
+/* globals app, countlyCrashSymbols, jQuery, countlyCommon, countlyGlobal, countlyVue, countlyCrashesEventLogs, Promise */
 
 (function(countlyCrashes) {
     countlyCrashes.getVuexModule = function() {

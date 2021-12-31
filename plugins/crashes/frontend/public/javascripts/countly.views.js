@@ -1,5 +1,5 @@
 /* eslint-disable no-unreachable */
-/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV */
+/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV, Promise */
 
 (function() {
     var groupId, crashId;
