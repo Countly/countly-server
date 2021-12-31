@@ -9,11 +9,15 @@
             background-color: transparent !important;
         }
         .el-tabs {
+            &__active-bar{
+                background-color: #0166d6;
+            }
             &__nav-wrap::after {
                 background-color: transparent;
             }
             &__nav-scroll {
-                padding: 0 14px;
+                // padding: 0 14px;
+                margin: 0 14px;
             }
             &__header {
                 margin: 0 0 1px 0;
