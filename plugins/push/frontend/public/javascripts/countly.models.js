@@ -352,7 +352,7 @@
             }
             return false;
         },
-        isNoPushCredentialsForAndroidError: function(error) {
+        hasNoAndroidCredentialsError: function(error) {
             if (error.responseJSON) {
                 return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
                     return message === 'No push credentials for platform a';
@@ -360,7 +360,7 @@
             }
             return false;
         },
-        isNoPushCredentialsForIosError: function(error) {
+        hasNoIosCredentialsError: function(error) {
             if (error.responseJSON) {
                 return error.responseJSON.errors && error.responseJSON.errors.some(function(message) {
                     return message === 'No push credentials for platform i';
@@ -534,11 +534,7 @@
                         }
                         resolve();
                     },
-                    error: function(error) {
-                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
-                            reject(new Error('No push notification credentials were found'));
-                            return;
-                        }
+                    error: function() {
                         reject(new Error('Unknown error occurred.Please try again later.'));
                         //TODO:log error
                     }
@@ -563,12 +559,8 @@
                         }
                         resolve();
                     },
-                    error: function(error) {
+                    error: function() {
                         //TODO:log error
-                        if (countlyPushNotification.helper.isNoPushCredentialsError(error)) {
-                            reject(new Error('No push notification credentials were found'));
-                            return;
-                        }
                         reject(new Error('Unknown error occurred.Please try again later.'));
                     }
                 }, {disableAutoCatch: true});
@@ -587,18 +579,18 @@
                             return;
                         }
                         if (response.error) {
-                            reject(new Error('Unknown error occurred'));
+                            reject(new Error('Unknown error occurred.Please try again later.'));
                             return;
                         }
                         resolve(response);
                     },
                     error: function(error) {
                         //TODO:log error
-                        if (countlyPushNotification.helper.isNoPushCredentialsForAndroidError(error)) {
+                        if (countlyPushNotification.helper.hasNoAndroidCredentialsError(error)) {
                             reject(new Error('No push notification credentials were found for Android'));
                             return;
                         }
-                        if (countlyPushNotification.helper.isNoPushCredentialsForIosError(error)) {
+                        if (countlyPushNotification.helper.hasNoIosCredentialsError(error)) {
                             reject(new Error('No push notification credentials were found for IOS'));
                             return;
                         }
@@ -606,7 +598,7 @@
                             reject(new Error('No push notification credentials were found'));
                             return;
                         }
-                        reject(new Error('Unknown error occurred'));
+                        reject(new Error('Unknown error occurred. Please try again later.'));
                     }
                 }, {disableAutoCatch: true});
             });
@@ -770,7 +762,7 @@
                         },
                         sent: pushNotificationDtoItem.result.sent || 0,
                         actioned: pushNotificationDtoItem.result.actioned || 0,
-                        createdBy: pushNotificationDtoItem.info && pushNotificationDtoItem.info.createdBy || '',
+                        createdBy: pushNotificationDtoItem.info && pushNotificationDtoItem.info.createdByName || '',
                         platforms: self.mapPlatforms(pushNotificationDtoItem.platforms),
                         content: self.findDefaultLocaleItem(pushNotificationDtoItem.contents).message
                     };
@@ -979,7 +971,7 @@
                     failed: dto.result.errors,
                     processed: dto.result.processed,
                     total: dto.result.total,
-                    createdBy: dto.info && dto.info.createdBy || '',
+                    createdBy: dto.info && dto.info.createdByName || '',
                     platforms: this.mapPlatforms(dto.platforms),
                     localizations: localizations,
                     message: this.mapMessageLocalizationsList(localizations, dto),
@@ -1454,13 +1446,13 @@
                 if (model.user) {
                     result.user = model.user;
                 }
-                if (model.cohorts.length) {
+                if (model.type === TypeEnum.ONE_TIME && model[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED && model.cohorts.length) {
                     result.cohorts = model.cohorts;
                 }
-                if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
+                if (model.type === TypeEnum.ONE_TIME && model[TypeEnum.ONE_TIME].targeting === TargetingEnum.SEGMENTED && model.locations.length) {
                     result.geos = model.locations;
                 }
-                if (model.type === TypeEnum.ONE_TIME && model.locations.length) {
+                if (model.type === TypeEnum.AUTOMATIC && options.isLocationSet && model.locations.length) {
                     result.geos = model.locations;
                 }
                 if (model.drill) {
@@ -1847,7 +1839,7 @@
                 return Promise.resolve([]);
             });
         },
-        prepare: function(pushNotificationModel, options) {
+        estimate: function(pushNotificationModel, options) {
             return new Promise(function(resolve, reject) {
                 var platformsDto = countlyPushNotification.mapper.outgoing.mapPlatforms(pushNotificationModel.platforms);
                 var data = {

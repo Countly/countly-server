@@ -350,7 +350,7 @@
                 this.userCommand === this.UserCommandEnum.EDIT ||
                 this.userCommand === this.UserCommandEnum.RESEND;
             },
-            shouldPrepare: function(nextStep, currentStep) {
+            shouldEstimate: function(nextStep, currentStep) {
                 return this.isDeliveryNextStepFromInfoStep(nextStep, currentStep) || this.isContentNextStepFromInfoStep(nextStep, currentStep);
             },
             shouldValidateContentOnEnter: function(nextStep, currentStep) {
@@ -372,8 +372,8 @@
             onStepClick: function(nextStep, currentStep) {
                 this.validateContentOnEnterIfNecessary(nextStep, currentStep);
                 this.fetchUserPropertyOptionsOnContentEnter(nextStep, currentStep);
-                if (this.shouldPrepare(nextStep, currentStep)) {
-                    return this.prepare();
+                if (this.shouldEstimate(nextStep, currentStep)) {
+                    return this.estimate();
                 }
                 if (this.shouldValidateContentBeforeExit(nextStep, currentStep)) {
                     return this.$refs.content.validate();
@@ -410,7 +410,7 @@
                     model.queryFilter = this.getQueryFilter();
                 }
             },
-            prepare: function() {
+            estimate: function() {
                 var self = this;
                 this.setIsLoading(true);
                 return new Promise(function(resolve) {
@@ -419,7 +419,7 @@
                     var preparePushNotificationModel = Object.assign({}, self.pushNotificationUnderEdit);
                     preparePushNotificationModel.type = self.type;
                     self.addQueryFilterIfFound(preparePushNotificationModel);
-                    countlyPushNotification.service.prepare(preparePushNotificationModel, options).then(function(response) {
+                    countlyPushNotification.service.estimate(preparePushNotificationModel, options).then(function(response) {
                         self.setLocalizationOptions(response.localizations);
                         if (response._id) {
                             self.setId(response._id);
