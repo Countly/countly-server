@@ -1,5 +1,5 @@
 /* eslint-disable no-unreachable */
-/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, Promise, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV */
+/* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV */
 
 (function() {
     var groupId, crashId;
@@ -516,32 +516,23 @@
                 return countlyCrashes.generateBadges(crash);
             },
             setSelectedAs: function(state) {
-                var ajaxPromise;
-                var self = this;
                 if (state === "resolved") {
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolved", this.$data.selectedCrashgroups);
+                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolved", this.$data.selectedCrashgroups);
                 }
                 else if (state === "resolving") {
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolving", this.$data.selectedCrashgroups);
+                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsResolving", this.$data.selectedCrashgroups);
                 }
                 else if (state === "unresolved") {
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsUnresolved", this.$data.selectedCrashgroups);
+                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsUnresolved", this.$data.selectedCrashgroups);
                 }
                 else if (state === "hide") {
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsHidden", this.$data.selectedCrashgroups);
+                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsHidden", this.$data.selectedCrashgroups);
                 }
                 else if (state === "show") {
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsShown", this.$data.selectedCrashgroups);
+                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsShown", this.$data.selectedCrashgroups);
                 }
                 else if (state === "delete") {
-                    ajaxPromise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsDeleted", this.$data.selectedCrashgroups);
-                }
-                
-                if (typeof ajaxPromise !== "undefined") {
-                    ajaxPromise.finally(function() {
-                        // self.$data.selectedCrashgroups = [];
-                        // TODO: apply the above line after we found the way to uncheck all checkboxes from here
-                    });
+                    this.$store.dispatch("countlyCrashes/overview/setSelectedAsDeleted", this.$data.selectedCrashgroups);
                 }
             }
         },
